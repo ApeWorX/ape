@@ -12,7 +12,7 @@ extras_require["dev"] = [
 ] + extras_require["lint"]
 
 setup(
-    name="apeworx",
+    name="ape",
     version="0.0.0-alpha.0",
     description="",
     long_description="",
