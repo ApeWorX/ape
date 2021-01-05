@@ -22,6 +22,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "click>=7.1.2",
+        "pyyaml>=0.2.5",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli.__init__:cli"],
