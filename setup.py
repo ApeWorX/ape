@@ -9,7 +9,7 @@ extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
         "pytest>=6.0,<7.0",  # Core testing package
         "pytest-xdist",  # multi-process runner
-        "pytest-coverage",  # Coverage analyzer plugin
+        "pytest-cov",  # Coverage analyzer plugin
     ],
     "fuzz": [  # `fuzz` GitHub Action job uses this
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
