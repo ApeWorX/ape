@@ -6,4 +6,4 @@ try:
     __version__ = version("ape")
 except PackageNotFoundError:
     # package is not installed
-    pass
+    __version__ = "<unknown>"
