@@ -21,7 +21,7 @@ jobs:
           run: black --check .
 
         - name: Run flake8
-          run: flake8 ./ape_accounts ./tests ./setup.py
+          run: flake8 ./ape ./tests ./setup.py
     
     type-check:
         runs-on: ubuntu-latest
@@ -38,7 +38,7 @@ jobs:
           run: pip install .[lint]
 
         - name: Run MyPy
-          run: mypy -p ape_accounts
+          run: mypy -p ape
 
     functional:
         runs-on: ubuntu-latest
