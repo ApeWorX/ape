@@ -21,6 +21,9 @@ class ApeCLI(click.MultiCommand):
         return list(sorted(n for n in CLI_PLUGINS))
 
     def get_command(self, ctx, name):
+        if name not in CLI_PLUGINS:
+            raise ValueError(f"'{name}' is not a valid subcommand!")
+
         return CLI_PLUGINS[name]()
 
 
