@@ -55,8 +55,8 @@ with open("./README.md") as readme:
 
 setup(
     name="eth-ape",
-    # *IMPORTANT*: Don't manually change the version here. Use `cz bump`
-    version="0.1.0-alpha.1",
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
     description="Ape Ethereum Framework",
     long_description=long_description,
     long_description_content_type="text/markdown",
