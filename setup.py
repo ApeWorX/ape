@@ -70,7 +70,7 @@ setup(
         "pyyaml>=0.2.5",
     ],
     entry_points={
-        "console_scripts": ["ape=ape._cli.__init__:cli"],
+        "console_scripts": ["ape=ape._cli:cli"],
     },
     python_requires=">=3.6,<4",
     extras_require=extras_require,
