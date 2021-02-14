@@ -4,7 +4,7 @@
 from typing import Dict
 import sys as _sys
 
-from pathlib import Path as _Path
+from pathlib import Path
 
 from .constants import (
     INSTALL_FOLDER,
@@ -24,31 +24,43 @@ _python_version = (
     f"{_sys.version_info.major}.{_sys.version_info.minor}"
     f".{_sys.version_info.micro} {_sys.version_info.releaselevel}"
 )
-REQUEST_HEADERS = {"User-Agent": f"Ape/{__version__} (Python/{_python_version})"}
+
+REQUEST_HEADERS = {
+    "User-Agent": f"Ape/{__version__} (Python/{_python_version})",
+}
+
 
 # Our example config file, with all the defaults set
-DEFAULT_CONFIG = _load_config(INSTALL_FOLDER.joinpath("data/default-config.yaml"), must_exist=True)
+DEFAULT_CONFIG = _load_config(
+    INSTALL_FOLDER.joinpath("data/default-config.yaml"),
+    must_exist=True,
+)
 
 # The config from the user's environment
 _user_config = _load_config(PROJECT_FOLDER.joinpath("ape-config.yaml"))
 
+
 # Configuration items (these can be modified from their initial state)
-def get_merged_config(name: str) -> Dict:
+def _get_merged_config(name: str) -> Dict:
     return _deep_merge(
         DEFAULT_CONFIG[name],
         _user_config.get(name, {}),
     )
 
 
+def load_config(path: Path) -> Dict:
+    return _deep_merge(DEFAULT_CONFIG, _load_config(path))
+
+
 # Do this so we have typing info for these objects
-project_structure = get_merged_config("project_structure")
-compiler = get_merged_config("compiler")
-console = get_merged_config("console")
-hypothesis = get_merged_config("hypothesis")
-autofetch_sources = get_merged_config("autofetch_sources")
-dependencies = get_merged_config("dependencies")
-dev_deployment_artifacts = get_merged_config("dev_deployment_artifacts")
-_user_network_settings = get_merged_config("networks")
+project_structure = _get_merged_config("project_structure")
+compiler = _get_merged_config("compiler")
+console = _get_merged_config("console")
+hypothesis = _get_merged_config("hypothesis")
+autofetch_sources = _get_merged_config("autofetch_sources")
+dependencies = _get_merged_config("dependencies")
+dev_deployment_artifacts = _get_merged_config("dev_deployment_artifacts")
+_user_network_settings = _get_merged_config("networks")
 
 # Allow using custom (unsupported) config items
 custom = {k: v for k, v in _user_config.items() if k not in DEFAULT_CONFIG.keys()}
@@ -97,4 +109,5 @@ def get_active_network_params() -> Dict:
 
 def set_active_network(id: str):
     _get_network_type(id)  # Raises if not valid
+    global active_network
     active_network = id

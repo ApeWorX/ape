@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict
 
 import collections
 import json
@@ -7,13 +7,6 @@ import yaml
 
 from copy import deepcopy
 from pathlib import Path as Path
-
-
-LOADER = {
-    ".json": json.loads,
-    ".yml": yaml.safe_load,
-    ".yaml": yaml.safe_load,
-}
 
 
 def deep_merge(dict1, dict2):
@@ -39,8 +32,18 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
         contents = path.read_text()
         if expand_envars:
             contents = expand_environment_variables(contents)
-        return LOADER[path.suffix](contents)
+
+        if path.suffix in (".json",):
+            config = json.loads(contents)
+        elif path.suffix in (".yml", ".yaml"):
+            config = yaml.safe_load(contents)
+        else:
+            raise TypeError(f"Cannot parse '{path.suffix}' files!")
+
+        return config
+
     elif must_exist:
         raise IOError(f"{path} does not exist!")
+
     else:
         return {}

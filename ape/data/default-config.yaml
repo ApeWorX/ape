@@ -21,7 +21,7 @@ networks:
         gas_price: 0
         reverting_tx_gas_limit: max
         default_contract_owner: true
-        cmd_settings: null
+        cmd_settings: []
     public:
         gas_limit: auto
         gas_buffer: 1.1
@@ -30,13 +30,13 @@ networks:
         default_contract_owner: false
 
 compiler:
-    evm_version: null
+    evm_version: istanbul
     solc:
         version: null
         optimizer:
             enabled: true
             runs: 200
-        remappings: null
+        remappings: []
     vyper:
         version: null
 
@@ -47,8 +47,8 @@ console:
     completions: true
 
 reports:
-    exclude_paths: null
-    exclude_contracts: null
+    exclude_paths: []
+    exclude_contracts: []
 
 hypothesis:
     deadline: null
@@ -63,5 +63,5 @@ hypothesis:
         shrink: true
 
 autofetch_sources: false
-dependencies: null
+dependencies: []
 dev_deployment_artifacts: false
