@@ -1,44 +1,61 @@
-from typing import Iterator, Optional
+from typing import Iterator, List
 
-from eth_account.messages import SignableMessage  # type: ignore
-from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
+from ape.plugins.account_api import AccountAPI, AccountContainerAPI
 
+# NOTE: This class is an aggregated container for all of the registered containers
+class Accounts(AccountContainerAPI):
+    def __init__(self):
+        # NOTE: Delayed loading of cached accounts (prevents circular imports)
+        self._all_accounts = None
 
-class AccountAPI:
     @property
-    def address(self) -> str:
-        ...
+    def all_accounts(self):
+        if not self._all_accounts:
+            from ape import plugins
 
-    def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
-        ...
+            account_plugins = plugins.registered_plugins[plugins.AccountPlugin]
+            self._all_accounts = [p.data() for p in account_plugins]
 
-    def sign_transaction(self, txn: dict) -> Optional[SignedTransaction]:
-        ...
+        return self._all_accounts
 
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.address}>"
+    @property
+    def aliases(self) -> List[str]:
+        aliases = []
+        for accounts in self.all_accounts:
+            aliases += accounts.aliases
 
-    def __str__(self) -> str:
-        return self.address
+        return aliases
 
-
-class AccountControllerAPI:
     def __len__(self) -> int:
-        ...
+        return sum(len(accounts) for accounts in self.all_accounts)
 
     def __iter__(self) -> Iterator[AccountAPI]:
-        ...
+        for accounts in self.all_accounts:
+            for account in accounts:
+                # TODO: Inject Web3
+                yield account
 
-    def __getitem__(self, address: str) -> AccountAPI:
-        for account in self.__iter__():
-            if account.address == address:
+    def load(self, alias: str) -> AccountAPI:
+        if alias == "":
+            raise ValueError("Cannot use empty string as alias!")
+
+        for account in self:
+            if account.alias == alias:
+                # TODO: Inject Web3
                 return account
 
-        raise IndexError(f"No local account {address}.")
+        raise IndexError(f"No account with alias `{alias}`.")
+
+    def __getitem__(self, address: str) -> AccountAPI:
+        for account in self:
+            if address == account.address:
+                # TODO: Inject Web3
+                return account
+
+        raise IndexError(f"No account with address `{address}`.")
 
     def __contains__(self, address: str) -> bool:
-        try:
-            self.__getitem__(address)
-            return True
-        except IndexError:
-            return False
+        return any(address in accounts for accounts in self.all_accounts)
+
+
+accounts = Accounts()
