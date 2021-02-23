@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional
+from typing import Iterator, Optional
 
 from eth_account.messages import SignableMessage  # type: ignore
 from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
@@ -43,7 +43,7 @@ class AccountContainerAPI(ABC):
 
     @property
     @abstractmethod
-    def aliases(self) -> Iterable[str]:
+    def aliases(self) -> Iterator[str]:
         ...
 
     @abstractmethod
@@ -51,7 +51,7 @@ class AccountContainerAPI(ABC):
         ...
 
     @abstractmethod
-    def __iter__(self) -> Iterable[AccountAPI]:
+    def __iter__(self) -> Iterator[AccountAPI]:
         ...
 
     def __getitem__(self, address: str) -> AccountAPI:
