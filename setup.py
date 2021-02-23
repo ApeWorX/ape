@@ -17,6 +17,7 @@ extras_require = {
     "lint": [
         "black>=20.8b1,<21.0",  # auto-formatter and linter
         "mypy>=0.800,<1.0",  # Static type analyzer
+        "isort>=5.7.0,<6.0",  # Import sorting linter
     ],
     "doc": [
         "Sphinx>=3.4.3,<4",  # Documentation generator
@@ -72,7 +73,7 @@ setup(
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
     },
-    python_requires=">=3.6,<4",
+    python_requires=">=3.6,<3.9",
     extras_require=extras_require,
     py_modules=["ape"],
     license="Apache-2.0",
@@ -91,6 +92,5 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
     ],
 )

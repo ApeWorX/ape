@@ -20,6 +20,9 @@ jobs:
         - name: Run Black
           run: black --check .
 
+        - name: Run isort
+          run: isort --check-only --diff ./ape ./tests
+
         - name: Run flake8
           run: flake8 ./ape ./tests ./setup.py
 
@@ -45,7 +48,7 @@ jobs:
 
         strategy:
             matrix:
-                python-version: [3.6, 3.7, 3.8, 3.9]
+                python-version: [3.6, 3.7, 3.8]
 
         steps:
         - uses: actions/checkout@v2
