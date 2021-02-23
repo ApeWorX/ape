@@ -8,12 +8,20 @@ from eth_account.datastructures import SignedMessage, SignedTransaction  # type:
 from ape import config
 
 
-class AccountAPI(ABC):
+class AddressAPI(ABC):
     @property
     @abstractmethod
     def address(self) -> str:
         ...
 
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {self.address}>"
+
+    def __str__(self) -> str:
+        return self.address
+
+
+class AccountAPI(AddressAPI, ABC):
     @property
     def alias(self) -> str:
         return ""
@@ -25,12 +33,6 @@ class AccountAPI(ABC):
     @abstractmethod
     def sign_transaction(self, txn: dict) -> Optional[SignedTransaction]:
         ...
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.address}>"
-
-    def __str__(self) -> str:
-        return self.address
 
 
 class AccountContainerAPI(ABC):
