@@ -7,6 +7,7 @@ import pkgutil
 import click
 
 from .account_api import AccountContainerAPI
+from .compiler_api import CompilerAPI
 
 _Provides = TypeVar("_Provides")
 _PluginHookFn = Callable[[], _Provides]
@@ -54,10 +55,15 @@ class AccountPlugin(BasePlugin):
     provides = AccountContainerAPI
 
 
+class CompilerPlugin(BasePlugin):
+    provides = CompilerAPI
+
+
 # NOTE: These are the plugins that actually perform proper registration.
 registered_plugins: Dict[Type[BasePlugin], List] = {
     CliPlugin: [],
     AccountPlugin: [],
+    CompilerPlugin: [],
 }
 
 _PluginDecorator = Callable[[_PluginHookFn], _Provides]

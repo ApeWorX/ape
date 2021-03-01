@@ -56,7 +56,7 @@ with open("./README.md") as readme:
 setup(
     name="eth-ape",
     use_scm_version=True,
-    setup_requires=['setuptools_scm'],
+    setup_requires=["setuptools_scm"],
     description="Ape Ethereum Framework",
     long_description=long_description,
     long_description_content_type="text/markdown",
