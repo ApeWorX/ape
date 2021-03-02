@@ -1,30 +1,20 @@
-from collections import OrderedDict
-
 import click
 
-from ape.plugins import discovered_plugins, CLI_GROUP_REGISTRATION_FN
+from ape.plugins import CliPlugin, registered_plugins
 
 
-def clean_plugin_name(name: str) -> str:
-    return name.replace("ape_", "").replace("_", "-")
-
-
-CLI_PLUGINS = OrderedDict(
-    (clean_plugin_name(n), getattr(p, CLI_GROUP_REGISTRATION_FN))
-    for n, p in discovered_plugins.items()
-    if hasattr(p, CLI_GROUP_REGISTRATION_FN)
-)
+CLI_PLUGINS = {p.name: p for p in registered_plugins[CliPlugin]}
 
 
 class ApeCLI(click.MultiCommand):
     def list_commands(self, ctx):
-        return list(sorted(n for n in CLI_PLUGINS))
+        return list(sorted(CLI_PLUGINS.keys()))
 
     def get_command(self, ctx, name):
-        if name not in CLI_PLUGINS:
-            raise ValueError(f"'{name}' is not a valid subcommand!")
+        if name in CLI_PLUGINS:
+            return CLI_PLUGINS[name].data
 
-        return CLI_PLUGINS[name]()
+        # NOTE: don't return anything so Click displays proper error
 
 
 @click.command(cls=ApeCLI, context_settings=dict(help_option_names=["-h", "--help"]))
