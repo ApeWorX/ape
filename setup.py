@@ -57,7 +57,7 @@ with open("./README.md") as readme:
 setup(
     name="eth-ape",
     use_scm_version=True,
-    setup_requires=['setuptools_scm'],
+    setup_requires=["setuptools_scm"],
     description="Ape Ethereum Framework",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -80,7 +80,9 @@ setup(
     zip_safe=False,
     keywords="ethereum",
     packages=find_packages(exclude=["tests", "tests.*"]),
-    package_data={"ape_accounts": ["py.typed"]},
+    package_data={
+        "ape": ["py.typed"],
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
