@@ -1,6 +1,7 @@
 from importlib.metadata import version, PackageNotFoundError
 
-from . import _setup  # NOTE: Do this before anything else
+# NOTE: Do this before anything else
+from . import _setup  # noqa E302
 
 try:
     __version__ = version(__name__)

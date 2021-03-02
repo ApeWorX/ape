@@ -2,6 +2,7 @@ from typing import Iterator, List
 
 from ape.plugins.account_api import AccountAPI, AccountContainerAPI
 
+
 # NOTE: This class is an aggregated container for all of the registered containers
 class Accounts(AccountContainerAPI):
     def __init__(self):

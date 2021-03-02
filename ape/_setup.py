@@ -1,6 +1,5 @@
 # NOTE: This file only executes once on module load
 import shutil
-from pathlib import Path
 
 from .constants import (
     INSTALL_FOLDER,
