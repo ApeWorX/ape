@@ -41,7 +41,7 @@ jobs:
           run: pip install .[lint]
 
         - name: Run MyPy
-          run: mypy -p ape
+          run: mypy .
 
     functional:
         runs-on: ubuntu-latest

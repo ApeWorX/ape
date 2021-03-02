@@ -76,7 +76,7 @@ setup(
     },
     python_requires=">=3.6,<3.9",
     extras_require=extras_require,
-    py_modules=["ape"],
+    py_modules=["ape", "ape-accounts"],
     license="Apache-2.0",
     zip_safe=False,
     keywords="ethereum",
@@ -84,6 +84,7 @@ setup(
     package_dir={"": "src"},
     package_data={
         "ape": ["py.typed"],
+        "ape_accounts": ["py.typed"],
     },
     classifiers=[
         "Development Status :: 3 - Alpha",
