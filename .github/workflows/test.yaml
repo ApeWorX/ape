@@ -24,7 +24,7 @@ jobs:
           run: isort --check-only --diff ./ape ./tests
 
         - name: Run flake8
-          run: flake8 ./ape ./tests ./setup.py
+          run: flake8 ./src ./tests ./setup.py
 
     type-check:
         runs-on: ubuntu-latest

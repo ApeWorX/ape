@@ -80,7 +80,8 @@ setup(
     license="Apache-2.0",
     zip_safe=False,
     keywords="ethereum",
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    packages=find_packages("src"),
+    package_dir={"": "src"},
     package_data={
         "ape": ["py.typed"],
     },
