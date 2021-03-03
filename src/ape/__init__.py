@@ -1,4 +1,7 @@
-from importlib.metadata import PackageNotFoundError, version
+try:
+    from importlib.metadata import PackageNotFoundError, version  # type: ignore
+except ModuleNotFoundError:
+    from importlib_metadata import PackageNotFoundError, version  # type: ignore
 
 # NOTE: Do this before anything else
 from . import _setup  # noqa E302

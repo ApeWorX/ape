@@ -67,6 +67,7 @@ setup(
         "click>=7.1.2",
         "eth-account>=0.5.4,<0.6.0",
         "pyyaml>=0.2.5",
+        "importlib-metadata ; python_version<'3.8'",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
