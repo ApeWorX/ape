@@ -47,7 +47,7 @@ class BasePlugin(Generic[_Provides]):
 
 
 class CliPlugin(BasePlugin):
-    provides = click.Group
+    provides = click.Command
 
 
 class AccountPlugin(BasePlugin):
