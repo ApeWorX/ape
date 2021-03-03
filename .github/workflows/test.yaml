@@ -62,7 +62,7 @@ jobs:
           run: pip install .[test]
 
         - name: Run Tests
-          run: pytest -m "not fuzzing" -s --coverage
+          run: pytest -m "not fuzzing" -s --cov
 
     fuzzing:
         runs-on: ubuntu-latest
