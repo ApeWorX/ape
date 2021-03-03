@@ -79,7 +79,7 @@ jobs:
               python-version: 3.8
 
         - name: Install Dependencies
-          run: pip install .[fuzz]
+          run: pip install .[test]
 
         - name: Run Tests
           run: pytest -m "fuzzing" --no-cov -s
