@@ -1,4 +1,4 @@
-from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError, version
 
 # NOTE: Do this before anything else
 from . import _setup  # noqa E302

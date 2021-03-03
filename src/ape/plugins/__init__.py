@@ -1,8 +1,7 @@
-from abc import ABCMeta
-from typing import Callable, Dict, Generic, List, Type, TypeVar
-
 import importlib
 import pkgutil
+from abc import ABCMeta
+from typing import Callable, Dict, Generic, List, Type, TypeVar
 
 import click
 

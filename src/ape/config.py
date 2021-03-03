@@ -1,23 +1,15 @@
 # NOTE: Modules in Python are singletons, this module implements
 #       all of the configuration items for the ape tool
 # https://docs.python.org/3/faq/programming.html#how-do-i-share-global-variables-across-modules
-from typing import Dict
 import sys as _sys
-
 from pathlib import Path
-
-from .constants import (
-    INSTALL_FOLDER,
-    PROJECT_FOLDER,
-    DATA_FOLDER,
-)
-from ._utils import (
-    deep_merge as _deep_merge,
-    load_config as _load_config,
-)
+from typing import Dict
 
 from ape import __version__
 
+from ._utils import deep_merge as _deep_merge
+from ._utils import load_config as _load_config
+from .constants import DATA_FOLDER, INSTALL_FOLDER, PROJECT_FOLDER
 
 # For all HTTP requests we make
 _python_version = (

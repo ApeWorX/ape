@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Iterator, Optional
 
-from eth_account.messages import SignableMessage  # type: ignore
 from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
-
+from eth_account.messages import SignableMessage  # type: ignore
 
 from ape import config
 

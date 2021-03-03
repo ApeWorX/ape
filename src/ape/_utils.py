@@ -1,12 +1,11 @@
-from typing import Dict
-
 import collections
 import json
 import os
-import yaml
-
 from copy import deepcopy
 from pathlib import Path as Path
+from typing import Dict
+
+import yaml
 
 
 def deep_merge(dict1, dict2):
