@@ -71,5 +71,5 @@ def delete(alias):
         click.echo(f"Account '{alias}' is not able to be deleted")
         return
 
-    account.path.unlink()
+    account.delete()
     click.echo(f"Account '{alias}' has been deleted")

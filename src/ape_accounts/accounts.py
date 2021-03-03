@@ -6,6 +6,7 @@ import click
 from eth_account import Account  # type: ignore
 from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
 from eth_account.messages import SignableMessage  # type: ignore
+from eth_utils import to_bytes
 
 from ape.convert import to_address
 from ape.plugins.account_api import AccountAPI, AccountContainerAPI
@@ -46,7 +47,8 @@ class KeyfileAccount(AccountAPI):
 
     @classmethod
     def from_key(cls, path: Path) -> "KeyfileAccount":
-        a = Account(click.prompt("Enter Private Key", hide_input=True))
+        key = click.prompt("Enter Private Key", hide_input=True)
+        a = Account.from_key(to_bytes(hexstr=key))
         passphrase = click.prompt(
             "Create Passphrase",
             hide_input=True,
@@ -100,6 +102,17 @@ class KeyfileAccount(AccountAPI):
         )
 
         self._keyfile.write_text(json.dumps(Account.encrypt(key, passphrase)))
+
+    def delete(self):
+        passphrase = click.prompt(
+            f"Enter Passphrase to delete '{self.alias}'",
+            hide_input=True,
+            default="",  # Just in case there's no passphrase
+        )
+
+        Account.decrypt(self.keyfile, passphrase)
+
+        self._keyfile.unlink()
 
     def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
         if self.locked and not click.confirm(f"Sign: {msg}"):
