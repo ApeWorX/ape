@@ -21,10 +21,10 @@ jobs:
           run: black --check .
 
         - name: Run isort
-          run: isort --check-only --diff ./ape ./tests
+          run: isort --check-only .
 
         - name: Run flake8
-          run: flake8 ./src ./tests ./setup.py
+          run: flake8 .
 
     type-check:
         runs-on: ubuntu-latest
