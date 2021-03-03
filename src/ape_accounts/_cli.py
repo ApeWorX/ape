@@ -1,6 +1,3 @@
-import shutil
-from pathlib import Path
-
 import click
 
 from ape.accounts import accounts
@@ -52,24 +49,6 @@ def _import(alias):
 
     a = KeyfileAccount.from_key(accounts.DATA_FOLDER.joinpath(f"{alias}.json"))
     click.echo(f"A new account '{a.address}' has been added with the id '{alias}'")
-
-
-@cli.command(short_help="Import a new account via a keystore file")
-@click.argument("alias", type=click.Choice(accounts.aliases))
-@click.argument("path", type=click.Path(exists=False, dir_okay=False, allow_dash=True))
-def export(alias, path):
-    account = accounts.load(alias)
-    if not isinstance(account, KeyfileAccount):
-        click.echo(f"Account '{alias}' cannot be exported")
-        return
-
-    dest_path = Path(path).absolute()
-    if not dest_path.suffix:
-        dest_path = dest_path.with_suffix(".json")
-
-    shutil.copy(account.path, dest_path)
-
-    click.echo(f"Account with alias '{alias}' has been exported to keystore '{dest_path}'")
 
 
 @cli.command(short_help="Change the password of an existing account")
