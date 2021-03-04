@@ -1,8 +1,7 @@
-from abc import ABCMeta
-from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar, Union
-
 import importlib
 import pkgutil
+from abc import ABCMeta
+from typing import Callable, Dict, Generic, List, Type, TypeVar
 
 import click
 
@@ -47,7 +46,7 @@ class BasePlugin(Generic[_Provides]):
 
 
 class CliPlugin(BasePlugin):
-    provides = click.Group
+    provides = click.Command
 
 
 class AccountPlugin(BasePlugin):

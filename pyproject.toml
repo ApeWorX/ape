@@ -2,7 +2,7 @@
 requires = ["setuptools>=51.1.1", "wheel", "setuptools_scm[toml]>=5.0"]
 
 [tool.setuptools_scm]
-write_to = "ape/version.py"
+write_to = "src/ape/version.py"
 
 # NOTE: you have to use single-quoted strings in TOML for regular expressions.
 # It's the equivalent of r-strings in Python.  Multiline strings are treated as
@@ -35,7 +35,7 @@ addopts = """
 	--cov-report term
 	--cov-report html
 	--cov-report xml
-	--cov=ape
+	--cov=src
 """
 python_files = "test_*.py"
 testpaths = "tests"

@@ -1,13 +1,7 @@
 # NOTE: This file only executes once on module load
 import shutil
-from pathlib import Path
 
-from .constants import (
-    INSTALL_FOLDER,
-    DATA_FOLDER,
-    DATA_SUBFOLDERS,
-)
-
+from .constants import DATA_FOLDER, DATA_SUBFOLDERS, INSTALL_FOLDER
 
 # create data folder structure
 DATA_FOLDER.mkdir(exist_ok=True)

@@ -2,7 +2,6 @@ import click
 
 from ape.plugins import CliPlugin, registered_plugins
 
-
 CLI_PLUGINS = {p.name: p for p in registered_plugins[CliPlugin]}
 
 
