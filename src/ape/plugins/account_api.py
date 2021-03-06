@@ -1,19 +1,26 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional
+from typing import Iterator, Optional
 
-from eth_account.messages import SignableMessage  # type: ignore
 from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
-
+from eth_account.messages import SignableMessage  # type: ignore
 
 from ape import config
 
 
-class AccountAPI(ABC):
+class AddressAPI(ABC):
     @property
     @abstractmethod
     def address(self) -> str:
         ...
 
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {self.address}>"
+
+    def __str__(self) -> str:
+        return self.address
+
+
+class AccountAPI(AddressAPI, ABC):
     @property
     def alias(self) -> str:
         return ""
@@ -26,12 +33,6 @@ class AccountAPI(ABC):
     def sign_transaction(self, txn: dict) -> Optional[SignedTransaction]:
         ...
 
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.address}>"
-
-    def __str__(self) -> str:
-        return self.address
-
 
 class AccountContainerAPI(ABC):
     @property
@@ -41,7 +42,7 @@ class AccountContainerAPI(ABC):
 
     @property
     @abstractmethod
-    def aliases(self) -> Iterable[str]:
+    def aliases(self) -> Iterator[str]:
         ...
 
     @abstractmethod
@@ -49,7 +50,7 @@ class AccountContainerAPI(ABC):
         ...
 
     @abstractmethod
-    def __iter__(self) -> Iterable[AccountAPI]:
+    def __iter__(self) -> Iterator[AccountAPI]:
         ...
 
     def __getitem__(self, address: str) -> AccountAPI:
