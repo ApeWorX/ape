@@ -12,31 +12,8 @@ write_to = "src/ape/version.py"
 line-length = 100
 target-version = ['py36', 'py37', 'py38']
 include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | build
-  | dist
-  | env
-  | venv
-)/
-'''
 
 [tool.pytest.ini_options]
-addopts = """
-    -n auto
-	--cov-branch
-	--cov-report term
-	--cov-report html
-	--cov-report xml
-	--cov=src
-"""
 python_files = "test_*.py"
 testpaths = "tests"
 markers = "fuzzing: Run Hypothesis fuzz test suite"
