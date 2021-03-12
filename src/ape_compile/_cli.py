@@ -2,7 +2,7 @@ import click
 
 
 @click.command(short_help="Compile the contract source files")
-@click.argument("contracts", type=str, nargs=-1)
+@click.argument("contracts", nargs=-1, type=click.Path())
 @click.option(
     "-a", "--all", "compile_all", default=False, is_flag=True, help="Recompile all contracts"
 )

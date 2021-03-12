@@ -1,6 +1,6 @@
 import click
 
-from ape.accounts import accounts
+from ape import accounts
 
 from .accounts import KeyfileAccount
 

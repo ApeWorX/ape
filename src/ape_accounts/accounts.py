@@ -8,8 +8,8 @@ from eth_account.datastructures import SignedMessage, SignedTransaction  # type:
 from eth_account.messages import SignableMessage  # type: ignore
 from eth_utils import to_bytes
 
+from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.convert import to_address
-from ape.plugins.account_api import AccountAPI, AccountContainerAPI
 
 
 class KeyfileAccount(AccountAPI):
