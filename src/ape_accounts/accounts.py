@@ -65,7 +65,7 @@ class KeyfileAccount(AccountAPI):
             hide_input=True,
             confirmation_prompt=True,
         )
-        path.write_text(json.dumps(Account.encrypt(a.privateKey, passphrase)))
+        path.write_text(json.dumps(Account.encrypt(a.key, passphrase)))
         return cls(path)
 
     @classmethod
@@ -78,7 +78,7 @@ class KeyfileAccount(AccountAPI):
             hide_input=True,
             confirmation_prompt=True,
         )
-        path.write_text(json.dumps(Account.encrypt(a.privateKey, passphrase)))
+        path.write_text(json.dumps(Account.encrypt(a.key, passphrase)))
         return cls(path)
 
     @property
