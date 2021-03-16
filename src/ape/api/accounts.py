@@ -20,6 +20,9 @@ class AddressAPI(ABC):
 
 
 class AccountAPI(AddressAPI, ABC):
+    # Should be injected by container, so it has a link back
+    container: "AccountContainerAPI"
+
     @property
     def alias(self) -> str:
         return ""
@@ -33,9 +36,16 @@ class AccountAPI(AddressAPI, ABC):
         ...
 
 
+# NOTE: Should be singleton
 class AccountContainerAPI(ABC):
-    def __init__(self, DATA_FOLDER: Path):
-        self.DATA_FOLDER = DATA_FOLDER
+    # Inject this constant into the class before instantiation
+    _data_folder: Path
+
+    @property
+    def DATA_FOLDER(self) -> Path:
+        assert self.__class__._data_folder is not None
+        self.__class__._data_folder.mkdir(exist_ok=True)
+        return self.__class__._data_folder
 
     @property
     @abstractmethod
@@ -70,14 +80,31 @@ class Accounts(AccountContainerAPI):
     def __init__(self):
         # NOTE: Delayed loading of cached accounts (prevents circular imports)
         self._account_plugins: List[AccountContainerAPI] = None
+        self._data_folder = None
+
+    @property
+    def DATA_FOLDER(self):
+        if not self._data_folder:
+            import ape
+
+            ape.DATA_FOLDER.mkdir(exist_ok=True)
+            self._data_folder = ape.DATA_FOLDER
+
+        return self._data_folder
 
     @property
     def account_plugins(self) -> Iterator[AccountContainerAPI]:
         if not self._account_plugins:
-            from ape import DATA_FOLDER, plugins
+            from ape import plugins
 
-            account_plugins = plugins.registered_plugins[plugins.AccountPlugin]
-            self._account_plugins = [p.data(DATA_FOLDER / p.name) for p in account_plugins]
+            self._account_plugins = list()
+            for plugin in plugins.registered_plugins[plugins.AccountPlugin]:
+                container_class = plugin.data
+                # Inject DATA_FOLDER into AccountContainerAPI subclass
+                container_class._data_folder = self.DATA_FOLDER / plugin.name
+
+                # Initialize plugin class here and add it to plugins
+                self._account_plugins.append(container_class())
 
         for container in self._account_plugins:
             yield container

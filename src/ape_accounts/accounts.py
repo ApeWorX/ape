@@ -12,6 +12,28 @@ from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.convert import to_address
 
 
+class AccountContainer(AccountContainerAPI):
+    def __init__(self):
+        # Inject container into account class
+        KeyfileAccount.container = self
+
+    @property
+    def _keyfiles(self) -> Iterator[Path]:
+        return self.DATA_FOLDER.glob("*.json")
+
+    @property
+    def aliases(self) -> Iterator[str]:
+        for p in self._keyfiles:
+            yield p.stem
+
+    def __len__(self) -> int:
+        return len([*self._keyfiles])
+
+    def __iter__(self) -> Iterator[AccountAPI]:
+        for keyfile in self._keyfiles:
+            yield KeyfileAccount(keyfile)
+
+
 class KeyfileAccount(AccountAPI):
     def __init__(self, keyfile: Path):
         self._keyfile = keyfile
@@ -31,7 +53,8 @@ class KeyfileAccount(AccountAPI):
         return to_address(self.keyfile["address"])
 
     @classmethod
-    def generate(cls, path: Path) -> "KeyfileAccount":
+    def generate(cls, alias: str) -> "KeyfileAccount":
+        path = cls.container.DATA_FOLDER.joinpath(f"{alias}.json")
         extra_entropy = click.prompt(
             "Add extra entropy for key generation...",
             hide_input=True,
@@ -46,7 +69,8 @@ class KeyfileAccount(AccountAPI):
         return cls(path)
 
     @classmethod
-    def from_key(cls, path: Path) -> "KeyfileAccount":
+    def from_key(cls, alias: str) -> "KeyfileAccount":
+        path = cls.container.DATA_FOLDER.joinpath(f"{alias}.json")
         key = click.prompt("Enter Private Key", hide_input=True)
         a = Account.from_key(to_bytes(hexstr=key))
         passphrase = click.prompt(
@@ -128,21 +152,3 @@ class KeyfileAccount(AccountAPI):
 
 
 # TODO: LedgerAccount, TrezorAccount, etc. for hw wallets
-
-
-class AccountContainer(AccountContainerAPI):
-    @property
-    def _keyfiles(self) -> Iterator[Path]:
-        return self.DATA_FOLDER.glob("*.json")
-
-    @property
-    def aliases(self) -> Iterator[str]:
-        for p in self._keyfiles:
-            yield p.stem
-
-    def __len__(self) -> int:
-        return len([*self._keyfiles])
-
-    def __iter__(self) -> Iterator[AccountAPI]:
-        for keyfile in self._keyfiles:
-            yield KeyfileAccount(keyfile)
