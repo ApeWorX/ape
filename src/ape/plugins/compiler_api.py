@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Dict
 from pathlib import Path
 
+from ape.ethpm import PackageManifest
+
 
 class CompilerAPI(ABC):
     @property
@@ -9,17 +11,15 @@ class CompilerAPI(ABC):
     def name(self) -> str:
         ...
 
-    # TODO move to cls method so instantiation isn't required
     @classmethod
     @abstractmethod
-    def extension(self) -> str:
+    def handles(self, contract_type: str) -> bool:
         ...
 
-    # CompilerAPI.compile() -> BuildData
     @abstractmethod
-    def compile(self, contracts_folder: Path) -> Dict:
+    def compile(self, pkg_manifest: PackageManifest) -> PackageManifest:
         """
-        Compile the source given `contracts_folder`.
+        Compile the source given `pkg_manifest`.
         All compiler plugins must implement this function.
         """
 

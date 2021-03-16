@@ -3,12 +3,13 @@ import shutil
 
 from ape.compilers import load
 from ape.utils import notify
+from ape.ethpm import PackageManifest
 
 import click
 
 
 @click.command(short_help="Compile the contract source files")
-@click.argument("contracts", type=str, nargs=-1)
+@click.argument("manifest_path", type=str, nargs=-1)
 @click.option(
     "-a", "--all", "compile_all", default=False, is_flag=True, help="Recompile all contracts"
 )
@@ -20,51 +21,60 @@ import click
     is_flag=True,
     help="Show deployed bytecode sizes contracts",
 )
-def cli(contracts, compile_all, display_size):
+def cli(manifest_path, compile_all, display_size):
     """
-    Compiles the contract source files for this project and saves the results
-    in the build/contracts/ folder.
-
-    An optional list of specific CONTRACTS can be provided.
+    Compiles the manifest for this project and saves the results
+    back to the manifest.
 
     Note that ape automatically recompiles any changed contracts each time
     a project is loaded. You do not have to manually trigger a recompile.
     """
 
-    if len(contracts) == 0:
-        notify("ERROR", "No contracts argument provided")
+    # TODO look for local manifest, if not, look for local config, if not, error
+    # if no config assume everything is default, if config merge (override) default
+    # config is the source of truth, the manifest is an artifact of the config, both pre-and post procesing
+
+    if not manifest_path:
+        notify("ERROR", "No manifest argument provided")
         return
 
-    for p in contracts:
-        extensions = {
-            os.path.splitext(c)[1] for c in os.listdir(p) if not os.path.splitext(c)[1] == ""
-        }
-        for c in extensions:
-            try:
-                compiler = load(c)
-            except IndexError:
-                click.echo(f"No compiler found for '{c}'")
-                click.echo()
-                continue
+    manifest = PackageManifest.from_file(manifest_path[0])
 
-            click.echo(f"{compiler.name} loaded to handle '{c}' contracts")
-            result = compiler.compile(p)
+    if not manifest.sources:
+        notify("ERROR", "Manifest contains no sources to compile")
+        return
 
-            if display_size:
-                click.echo()
-                click.echo("============ Deployment Bytecode Sizes ============")
-                codesize = []
-                for contract in result.keys():
-                    if contract == "version":
-                        continue
-                    bytecode = result[contract]["bytecode"]
-                    if bytecode:
-                        codesize.append((contract, len(bytecode) // 2))
-                indent = max(len(i[0]) for i in codesize)
-                for name, size in sorted(codesize, key=lambda k: k[1], reverse=True):
-                    pct = size / 24577
-                    # pct_color = color(next((i[1] for i in CODESIZE_COLORS if pct >= i[0]), ""))
-                    # TODO Get colors fixed for bytecode size output
-                    # click.echo(f"  {name:<{indent}}  -  {size:>6,}B  ({pct_color}{pct:.2%}{color})")
-                    click.echo(f"  {name:<{indent}}  -  {size:>6,}B  ({pct:.2%})")
-                click.echo()
+    contract_types = {s.type for (n, s) in manifest.sources.items() if not s.type == ""}
+
+    compilers = []
+
+    for t in contract_types:
+        try:
+            compilers.append(load(t))
+            click.echo(f"{compilers[-1].name} loaded to handle '{t}' contracts")
+        except IndexError:
+            click.echo(f"No compiler found for '{t}'")
+            click.echo()
+            continue
+
+    for c in compilers:
+        c.compile(manifest)
+
+        if display_size:
+            click.echo()
+            click.echo("============ Deployment Bytecode Sizes ============")
+            codesize = []
+            for contract in manifest.contractTypes:
+                bytecode = contract.deploymentBytecode.bytecode
+                if bytecode:
+                    codesize.append((contract.contractName, len(bytecode) // 2))
+            indent = max(len(i[0]) for i in codesize)
+            for name, size in sorted(codesize, key=lambda k: k[1], reverse=True):
+                pct = size / 24577
+                # pct_color = color(next((i[1] for i in CODESIZE_COLORS if pct >= i[0]), ""))
+                # TODO Get colors fixed for bytecode size output
+                # click.echo(f"  {name:<{indent}}  -  {size:>6,}B  ({pct_color}{pct:.2%}{color})")
+                click.echo(f"  {name:<{indent}}  -  {size:>6,}B  ({pct:.2%})")
+            click.echo()
+
+    manifest.to_file(manifest_path[0])
