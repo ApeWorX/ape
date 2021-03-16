@@ -44,3 +44,10 @@ __discovered_plugins = __load_plugins()
 
 # NOTE: Project must be last to load (loads project in current directory)
 project = Project()
+
+
+__all__ = [
+    "accounts",
+    "project",
+    "Project",  # So you can load other projects
+]
