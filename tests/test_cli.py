@@ -13,6 +13,8 @@ from ape import DATA_FOLDER
     (
         [],
         ["--version"],
+        ["--config"],
+        ["--plugins"],
         ["--help"],
         ["accounts"],
         ["accounts", "list"],
