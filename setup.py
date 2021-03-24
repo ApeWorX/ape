@@ -60,6 +60,7 @@ setup(
         "click>=7.1.2",
         "dataclassy>=0.7.2,<1.0",
         "eth-account>=0.5.2,<0.6.0",
+        "pluggy>=0.13.1,<1.0",
         "pyyaml>=0.2.5",
         "importlib-metadata ; python_version<'3.8'",
         "IPython==7.16",  # Pinned for py3.6
