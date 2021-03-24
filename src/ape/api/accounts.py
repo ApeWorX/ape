@@ -95,13 +95,14 @@ class Accounts(AccountContainerAPI):
     @property
     def account_plugins(self) -> Iterator[AccountContainerAPI]:
         if not self._account_plugins:
-            from ape import plugins
+            from ape.plugins import clean_plugin_name, plugin_manager
 
             self._account_plugins = list()
-            for plugin in plugins.registered_plugins[plugins.AccountPlugin]:
-                container_class = plugin.data
+            for impl in plugin_manager.hook.accounts_container.get_hookimpls():
+                plugin_name = clean_plugin_name(impl.plugin_name)
+                container_class = impl.plugin.accounts_container()
                 # Inject DATA_FOLDER into AccountContainerAPI subclass
-                container_class._data_folder = self.DATA_FOLDER / plugin.name
+                container_class._data_folder = self.DATA_FOLDER / plugin_name
 
                 # Initialize plugin class here and add it to plugins
                 self._account_plugins.append(container_class())

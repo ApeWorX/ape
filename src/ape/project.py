@@ -2,40 +2,44 @@ import json
 from pathlib import Path
 from typing import Dict, Optional
 
-from . import plugins
+from ape.api.config import ConfigItem
+from ape.plugins import clean_plugin_name, plugin_manager
+
 from .utils import load_config
 
 
 class ProjectConfig:
     def __init__(self, config_file: Path):
         user_config = load_config(config_file)
-        plugin_configs: Dict[str, plugins.ConfigItem] = {}
+        plugin_configs: Dict[str, ConfigItem] = {}
 
-        for plugin in plugins.registered_plugins[plugins.Config]:
+        for hookimpl in plugin_manager.hook.config_class.get_hookimpls():
+            plugin_name = clean_plugin_name(hookimpl.plugin_name)
+            config_class = hookimpl.plugin.config_class()
 
-            if plugin.name in user_config:
-                user_override = user_config[plugin.name]
-                del user_config[plugin.name]  # For checking if all config was processed
+            if plugin_name in user_config:
+                user_override = user_config[plugin_name]
+                del user_config[plugin_name]  # For checking if all config was processed
             else:
                 user_override = {}
 
             # NOTE: Will raise if improperly provided keys
-            config = plugin.data(**user_override)
+            config = config_class(**user_override)
 
             # NOTE: Should raise if settings violate some sort of plugin requirement
             config.validate_config()
 
-            plugin_configs[plugin.name] = config
+            plugin_configs[plugin_name] = config
 
         if len(user_config.keys()) > 0:
             raise  # Unprocessed config items
 
         self._plugin_configs = plugin_configs
 
-    def get_config(self, plugin_name: str) -> plugins.ConfigItem:
+    def get_config(self, plugin_name: str) -> ConfigItem:
         if plugin_name not in self._plugin_configs:
             # plugin has no registered config class, so return empty config
-            return plugins.ConfigItem()
+            return ConfigItem()
 
         return self._plugin_configs[plugin_name]
 

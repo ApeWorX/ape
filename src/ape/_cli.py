@@ -1,9 +1,9 @@
+from typing import Dict
+
 import click
 import yaml
 
-from ape.plugins import CliPlugin, registered_plugins
-
-CLI_PLUGINS = {p.name: p for p in registered_plugins[CliPlugin]}
+from ape.plugins import clean_plugin_name, plugin_manager
 
 
 def display_config(ctx, param, value):
@@ -27,7 +27,7 @@ def display_plugins(ctx, param, value):
     from ape import __discovered_plugins as installed_plugins
 
     click.echo("Installed plugins:")
-    for module in installed_plugins.values():
+    for module in installed_plugins:
         version_str = f" ({module.__version__})" if hasattr(module, "__version__") else ""
         click.echo(f"  {module.__name__}" + version_str)
 
@@ -35,12 +35,24 @@ def display_plugins(ctx, param, value):
 
 
 class ApeCLI(click.MultiCommand):
+    _commands = None
+
+    @property
+    def commands(self) -> Dict:
+        if self._commands is None:
+            self._commands = {
+                clean_plugin_name(impl.plugin_name): impl.plugin.cli_subcommand
+                for impl in plugin_manager.hook.cli_subcommand.get_hookimpls()
+            }
+
+        return self._commands
+
     def list_commands(self, ctx):
-        return list(sorted(CLI_PLUGINS.keys()))
+        return list(sorted(self.commands))
 
     def get_command(self, ctx, name):
-        if name in CLI_PLUGINS:
-            return CLI_PLUGINS[name].data
+        if name in self.commands:
+            return self.commands[name]()
 
         # NOTE: don't return anything so Click displays proper error
 
