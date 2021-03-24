@@ -5,7 +5,7 @@ from eth_account import Account  # type: ignore
 from hypothesis import given, settings  # type: ignore
 from hypothesis import strategies as st  # type: ignore
 
-from ape import config
+import ape
 
 
 @pytest.mark.parametrize(
@@ -13,6 +13,8 @@ from ape import config
     (
         [],
         ["--version"],
+        ["--config"],
+        ["--plugins"],
         ["--help"],
         ["accounts"],
         ["accounts", "list"],
@@ -35,7 +37,7 @@ word_st = st.text(alphabet=list("abcdefghijklmnopqrstuvwxyz"), min_size=3, max_s
 )
 @settings(deadline=1000)
 def test_keygen(ape_cli, runner, alias, password, private_key):
-    keyfile = Path(config.DATA_FOLDER / "accounts" / f"{alias}.json")
+    keyfile = Path(ape.DATA_FOLDER / "accounts" / f"{alias}.json")
     if keyfile.exists():
         keyfile.unlink()
 

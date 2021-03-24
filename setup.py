@@ -59,7 +59,8 @@ setup(
     include_package_data=True,
     install_requires=[
         "click>=7.1.2",
-        "eth-account>=0.5.4,<0.6.0",
+        "dataclassy>=0.7.2,<1.0",
+        "eth-account>=0.5.2,<0.6.0",
         "pyyaml>=0.2.5",
         "importlib-metadata ; python_version<'3.8'",
     ],

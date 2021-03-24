@@ -4,8 +4,10 @@ from abc import ABCMeta
 from typing import Callable, Dict, Generic, List, Type, TypeVar
 
 import click
+from dataclassy.dataclass import DataClassMeta
 
-from .account_api import AccountContainerAPI
+from .api.accounts import AccountContainerAPI
+from .api.config import ConfigItem
 
 _Provides = TypeVar("_Provides")
 _PluginHookFn = Callable[[], _Provides]
@@ -27,7 +29,7 @@ class BasePlugin(Generic[_Provides]):
 
             # NOTE: Dynamic registration type check
             # (assures all values in `registered_plugins` are consistent)
-            if isinstance(self.provides, ABCMeta):  # One of our `*API` classes
+            if isinstance(self.provides, (ABCMeta, DataClassMeta)):  # One of our `*API` classes
                 if not issubclass(data, self.provides):
                     raise ValueError(
                         f"Registering a `{self.__class__.__name__}` must be a function "
@@ -45,6 +47,10 @@ class BasePlugin(Generic[_Provides]):
         return self._data
 
 
+class Config(BasePlugin):
+    provides = ConfigItem
+
+
 class CliPlugin(BasePlugin):
     provides = click.Command
 
@@ -55,6 +61,7 @@ class AccountPlugin(BasePlugin):
 
 # NOTE: These are the plugins that actually perform proper registration.
 registered_plugins: Dict[Type[BasePlugin], List] = {
+    Config: [],
     CliPlugin: [],
     AccountPlugin: [],
 }
@@ -76,11 +83,9 @@ def _clean_plugin_name(name: str) -> str:
     return name.replace("ape_", "").replace("_", "-")
 
 
-# NOTE: This is how plugins actually are brought into the namespace to be registered.
-#       It also provides a convienent debugging endpoint. Should not be used directly.
-# NOTE: Must be after `register` to avoid circular reference
-__discovered_plugins = {
-    _clean_plugin_name(name): importlib.import_module(name)
-    for _, name, ispkg in pkgutil.iter_modules()
-    if name.startswith("ape_") and ispkg
-}
+def __load_plugins():
+    return {
+        _clean_plugin_name(name): importlib.import_module(name)
+        for _, name, ispkg in pkgutil.iter_modules()
+        if name.startswith("ape_") and ispkg
+    }
