@@ -28,7 +28,6 @@ extras_require = {
     "dev": [
         "commitizen",  # Manage commits and publishing releases
         "pytest-watch",  # `ptw` test watcher/runner
-        "IPython",  # Console for interacting
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
     ],
 }
@@ -63,6 +62,7 @@ setup(
         "eth-account>=0.5.2,<0.6.0",
         "pyyaml>=0.2.5",
         "importlib-metadata ; python_version<'3.8'",
+        "IPython==7.16",  # Pinned for py3.6
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
