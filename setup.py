@@ -70,7 +70,7 @@ setup(
         "ape_cli_subcommands": [
             "ape_accounts=ape_accounts._cli:cli",
             "ape_compile=ape_compile._cli:cli",
-            "ape_console=ape_console._cli:cli",
+            "ape_console=ape_console:cli",
         ],
     },
     python_requires=">=3.6,<3.9",
