@@ -1,4 +1,8 @@
-from importlib import metadata
+try:
+    from importlib import metadata  # type: ignore
+except ImportError:
+    import importlib_metadata as metadata  # type: ignore
+
 from typing import Dict
 
 import click
