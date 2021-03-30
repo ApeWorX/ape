@@ -3,7 +3,7 @@ import IPython  # type: ignore
 from IPython.terminal.ipapp import load_default_config  # type: ignore
 
 import ape
-from ape.version import version as ape_version
+from ape.version import version as ape_version  # type: ignore
 
 
 @click.command(short_help="Load the console", context_settings=dict(ignore_unknown_options=True))

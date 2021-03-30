@@ -1,9 +1,10 @@
+from importlib import metadata
 from typing import Dict
 
 import click
 import yaml
 
-from ape.plugins import clean_plugin_name, plugin_manager
+from ape.plugins import clean_plugin_name
 
 
 def display_config(ctx, param, value):
@@ -40,9 +41,14 @@ class ApeCLI(click.MultiCommand):
     @property
     def commands(self) -> Dict:
         if self._commands is None:
+            entry_points = metadata.entry_points()
+
+            if "ape_cli_subcommands" not in entry_points:
+                raise  # Missing registered cli subcommands
+
             self._commands = {
-                clean_plugin_name(impl.plugin_name): impl.plugin.cli_subcommand
-                for impl in plugin_manager.hook.cli_subcommand.get_hookimpls()
+                clean_plugin_name(entry_point.name): entry_point.load
+                for entry_point in entry_points["ape_cli_subcommands"]
             }
 
         return self._commands

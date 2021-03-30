@@ -60,6 +60,4 @@ def __load_plugins():
         if name.startswith("ape_") and ispkg:
             plugin_manager.register(importlib.import_module(name))
 
-    plugin_manager.load_setuptools_entrypoints("ape")
-
     return plugin_manager.get_plugins()
