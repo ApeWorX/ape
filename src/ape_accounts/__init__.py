@@ -5,10 +5,10 @@ from .accounts import AccountContainer
 
 
 @plugins.register(plugins.CliPlugin)
-def register_cli():
+def cli_subcommand():
     return cli
 
 
 @plugins.register(plugins.AccountPlugin)
-def register_accounts():
+def accounts_container():
     return AccountContainer

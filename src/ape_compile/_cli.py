@@ -9,7 +9,7 @@ import click
 
 
 @click.command(short_help="Compile the contract source files")
-@click.argument("manifest_path", type=str, nargs=-1)
+@click.argument("manifest_path", nargs=-1, type=click.Path())
 @click.option(
     "-a", "--all", "compile_all", default=False, is_flag=True, help="Recompile all contracts"
 )

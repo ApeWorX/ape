@@ -1,6 +1,10 @@
+from pathlib import Path
+from tempfile import mkdtemp
+
 import pytest  # type: ignore
 from click.testing import CliRunner
 
+import ape
 from ape._cli import cli
 
 
@@ -10,5 +14,11 @@ def runner():
 
 
 @pytest.fixture(scope="session")
-def ape_cli():
+def data_folder():
+    yield Path(mkdtemp())
+
+
+@pytest.fixture(scope="session")
+def ape_cli(data_folder):
+    ape.DATA_FOLDER = data_folder
     yield cli

@@ -1,92 +1,65 @@
+import functools
 import importlib
 import pkgutil
-from abc import ABCMeta
-from typing import Callable, Dict, Generic, List, Type, TypeVar
+from typing import cast
 
-import click
-
-from .account_api import AccountContainerAPI
-from .compiler_api import CompilerAPI
-
-_Provides = TypeVar("_Provides")
-_PluginHookFn = Callable[[], _Provides]
+from .account import AccountPlugin
+from .cli import CliPlugin
+from .config import Config
+from .pluggy import hookimpl, plugin_manager
 
 
-class BasePlugin(Generic[_Provides]):
-    provides: Type[_Provides]
-
-    def __init__(self, name: str, hook_fn: _PluginHookFn):
-        self.name = name
-        self._hook_fn = hook_fn
-        self._data = None
-
-    @property
-    def data(self):
-        # Cache hook function return data
-        if not self._data:
-            data = self._hook_fn()
-
-            # NOTE: Dynamic registration type check
-            # (assures all values in `registered_plugins` are consistent)
-            if isinstance(self.provides, ABCMeta):  # One of our `*API` classes
-                if not issubclass(data, self.provides):
-                    raise ValueError(
-                        f"Registering a `{self.__class__.__name__}` must be a function "
-                        f"that returns `{self.provides}`, not `{type(data).__name__}`"
-                    )
-            else:
-                if not isinstance(data, self.provides):  # An external type
-                    raise ValueError(
-                        f"Registering a `{self.__class__.__name__}` must be a function "
-                        f"that returns `{self.provides}`, not `{type(data).__name__}`"
-                    )
-
-            self._data = data
-
-        return self._data
+class PluginError(Exception):
+    pass
 
 
-class CliPlugin(BasePlugin):
-    provides = click.Command
+# Combine all the plugins together via subclassing (merges `hookspec`s)
+class Plugins(AccountPlugin, CliPlugin, Config):
+    pass
 
 
-class AccountPlugin(BasePlugin):
-    provides = AccountContainerAPI
+# All hookspecs are registered
+plugin_manager.add_hookspecs(Plugins)
+
+# Add cast so that mypy knows that pm.hook is actually a `Plugins` instance.
+# Without this hint there really is no way for mypy to know this.
+plugin_manager.hook = cast(Plugins, plugin_manager.hook)
 
 
-class CompilerPlugin(BasePlugin):
-    provides = CompilerAPI
-
-
-# NOTE: These are the plugins that actually perform proper registration.
-registered_plugins: Dict[Type[BasePlugin], List] = {
-    CliPlugin: [],
-    AccountPlugin: [],
-    CompilerPlugin: [],
-}
-
-_PluginDecorator = Callable[[_PluginHookFn], _Provides]
-
-
-# TODO: Make it so this function properly type-checks uses in plugins
-def register(plugin_type: Type[BasePlugin]) -> _PluginDecorator:
-    def add_plugin(hook_fn: _PluginHookFn) -> None:
-        name = _clean_plugin_name(hook_fn.__module__)
-        plugin = plugin_type(name, hook_fn)
-        registered_plugins[plugin_type].append(plugin)
-
-    return add_plugin
-
-
-def _clean_plugin_name(name: str) -> str:
+def clean_plugin_name(name: str) -> str:
     return name.replace("ape_", "").replace("_", "-")
 
 
-# NOTE: This is how plugins actually are brought into the namespace to be registered.
-#       It also provides a convienent debugging endpoint. Should not be used directly.
-# NOTE: Must be after `register` to avoid circular reference
-__discovered_plugins = {
-    _clean_plugin_name(name): importlib.import_module(name)
-    for _, name, ispkg in pkgutil.iter_modules()
-    if name.startswith("ape_") and ispkg
-}
+def register(plugin_type):
+    # NOTE: we are basically checking that `plugin_type`
+    #       is one of the parent classes of `Plugins`
+    if not issubclass(Plugins, plugin_type):
+        raise PluginError("Not a valid plugin type to register")
+
+    def check_hook(plugin_type, fn):
+        fn = hookimpl(fn)
+
+        if not hasattr(plugin_type, fn.__name__):
+            hooks = [
+                name for name, method in plugin_type.__dict__.items() if hasattr(method, "ape_spec")
+            ]
+            raise PluginError(
+                f"Registered function `{fn.__name__}` is not"
+                f" a valid hook for {plugin_type.__name__}, must be one of:"
+                f" {hooks}"
+            )
+
+        return fn
+
+    # NOTE: Get around issue with using `plugin_type` raw in `check_hook`
+    return functools.partial(check_hook, plugin_type)
+
+
+def __load_plugins():
+    for _, name, ispkg in pkgutil.iter_modules():
+        if name.startswith("ape_") and ispkg:
+            plugin_manager.register(importlib.import_module(name))
+
+    plugin_manager.load_setuptools_entrypoints("ape")
+
+    return plugin_manager.get_plugins()

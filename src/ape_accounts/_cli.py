@@ -1,6 +1,6 @@
 import click
 
-from ape.accounts import accounts
+from ape import accounts
 
 from .accounts import KeyfileAccount
 
@@ -35,7 +35,7 @@ def _list():
 @click.argument("alias")
 def generate(alias):
     assert alias not in accounts.aliases
-    a = KeyfileAccount.generate(accounts.path.joinpath(f"{alias}.json"))
+    a = KeyfileAccount.generate(alias)
     click.echo(f"A new account '{a.address}' has been added with the id '{alias}'")
 
 
@@ -47,7 +47,7 @@ def _import(alias):
         click.echo(f"Account with alias '{alias}' already exists")
         return
 
-    a = KeyfileAccount.from_key(accounts.DATA_FOLDER.joinpath(f"{alias}.json"))
+    a = KeyfileAccount.from_key(alias)
     click.echo(f"A new account '{a.address}' has been added with the id '{alias}'")
 
 
@@ -55,10 +55,6 @@ def _import(alias):
 @click.argument("alias", type=click.Choice(accounts.aliases))
 def change_password(alias):
     account = accounts.load(alias)
-    if not isinstance(account, KeyfileAccount):
-        click.echo(f"Account '{alias}' cannot change it's password")
-        return
-
     account.change_password()
     click.echo(f"Password has been changed for account '{alias}'")
 
@@ -67,9 +63,5 @@ def change_password(alias):
 @click.argument("alias", type=click.Choice(accounts.aliases))
 def delete(alias):
     account = accounts.load(alias)
-    if not isinstance(account, KeyfileAccount):
-        click.echo(f"Account '{alias}' is not able to be deleted")
-        return
-
     account.delete()
     click.echo(f"Account '{alias}' has been deleted")
