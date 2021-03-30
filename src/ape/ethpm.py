@@ -1,17 +1,9 @@
 import dataclasses as dc
 from copy import deepcopy
-from typing import Dict, List
+from typing import Optional, Dict, List
 from pathlib import Path
 import json
 
-# TODO Set optional fields and remove from dict
-# TODO Validate ethPM/3 standard is followed for field values
-# TODO Drive manifest from ape config
-# TODO Populate compiler info, generated from ape config
-# TODO Tests
-# TODO PR
-# TODO Solidity
-# TODO Build Dependencies, increase complexity of what compilers can handle
 
 # TODO link references & link values are for solidity, not used with Vyper
 # Offsets are for dynamic links, e.g. doggie's proxy forwarder
@@ -26,51 +18,162 @@ class LinkDependency:
 class LinkReference:
     offsets: List[int]
     length: int
-    name: str
+    name: Optional[str]
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "LinkReference":
+        data = deepcopy(data)
+        if "name" not in data:
+            data["name"] = None
+        return LinkReference(**data)
+
+    def to_dict(self) -> Dict:
+        data = dc.asdict(self)
+        if self.name is None:
+            del data["name"]
+        return data
 
 
 @dc.dataclass()
 class Bytecode:
     bytecode: str
-    linkReferences: List[LinkReference]
-    linkDependencies: List[LinkDependency]
+    linkReferences: Optional[List[LinkReference]]
+    linkDependencies: Optional[List[LinkDependency]]
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Bytecode":
+        data = deepcopy(data)
+        if data.get("linkReferences"):
+            data["linkReferences"] = [LinkReference.from_dict(l) for l in data["linkReferences"]]
+        else:
+            data["linkReferences"] = None
+        if data.get("linkDependencies"):
+            data["linkDependencies"] = [LinkDependency(**l) for l in data["linkDependencies"]]
+        else:
+            data["linkDependencies"] = None
+        return Bytecode(**data)
+
+    def to_dict(self) -> Dict:
+        data = dc.asdict(self)
+        if self.linkReferences is None:
+            del data["linkReferences"]
+        else:
+            data["linkReferences"] = [l.to_dict() for l in self.linkReferences]
+        if self.linkDependencies is None:
+            del data["linkDependencies"]
+        return data
 
 
 @dc.dataclass()
 class ContractInstance:
     contractType: str
     address: str
-    transaction: str
-    block: str
-    runtimeBytecode: Bytecode
+    transaction: Optional[str]
+    block: Optional[str]
+    runtimeBytecode: Optional[Bytecode]
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "ContractInstance":
+        data = deepcopy(data)
+        if "transaction" not in data:
+            data["transaction"] = None
+        if "block" not in data:
+            data["block"] = None
+        if data.get("runtimeBytecode"):
+            data["runtimeBytecode"] = Bytecode.from_dict(data["runtimeBytecode"])
+        else:
+            data["runtimeBytecode"] = None
+        return ContractInstance(**data)
+
+    def to_dict(self) -> Dict:
+        data = dc.asdict(self)
+        if self.transaction is None:
+            del data["transaction"]
+        if self.block is None:
+            del data["block"]
+        if self.runtimeBytecode is None:
+            del data["runtimeBytecode"]
+        else:
+            data["runtimeBytecode"] = self.runtimeBytecode.to_dict()
+        return data
 
 
 @dc.dataclass()
 class Compiler:
     name: str
     version: str
-    # settings should be an object
-    settings: str
-    contractTypes: List[str]
+    settings: Optional[str]
+    contractTypes: Optional[List[str]]
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Compiler":
+        data = deepcopy(data)
+        if "settings" not in data:
+            data["settings"] = None
+        if "contractTypes" not in data:
+            data["contractTypes"] = None
+        return Compiler(**data)
+
+    def to_dict(self) -> Dict:
+        data = dc.asdict(self)
+        if self.settings is None:
+            del data["settings"]
+        if self.contractTypes is None:
+            del data["contractTypes"]
+        return data
 
 
 @dc.dataclass()
 class ContractType:
     contractName: str
-    sourceId: str
-    deploymentBytecode: Bytecode
-    runtimeBytecode: Bytecode
+    sourceId: Optional[str]
+    deploymentBytecode: Optional[Bytecode]
+    runtimeBytecode: Optional[Bytecode]
     # abi, userdoc and devdoc must conform to spec
-    abi: str
-    userdoc: str
-    devdoc: str
+    abi: Optional[str]
+    userdoc: Optional[str]
+    devdoc: Optional[str]
 
     @classmethod
     def from_dict(cls, data: Dict) -> "ContractType":
         data = deepcopy(data)
-        data["deploymentBytecode"] = Bytecode(**data["deploymentBytecode"])
-        data["runtimeBytecode"] = Bytecode(**data["runtimeBytecode"])
+        if "sourceId" not in data:
+            data["sourceId"] = None
+        if data.get("deploymentBytecode"):
+            data["deploymentBytecode"] = Bytecode.from_dict(data["deploymentBytecode"])
+        else:
+            data["deploymentBytecode"] = None
+        if data.get("runtimeBytecode"):
+            data["runtimeBytecode"] = Bytecode.from_dict(data["runtimeBytecode"])
+        else:
+            data["runtimeBytecode"] = None
+        if "abi" not in data:
+            data["abi"] = None
+        if "userdoc" not in data:
+            data["userdoc"] = None
+        if "devdoc" not in data:
+            data["devdoc"] = None
         return ContractType(**data)
+
+    def to_dict(self) -> Dict:
+        data = dc.asdict(self)
+        if self.sourceId is None:
+            del data["sourceId"]
+        if self.deploymentBytecode is None:
+            del data["deploymentBytecode"]
+        else:
+            data["deploymentBytecode"] = self.deploymentBytecode.to_dict()
+        if self.runtimeBytecode is None:
+            del data["runtimeBytecode"]
+        else:
+            data["runtimeBytecode"] = self.runtimeBytecode.to_dict()
+        if self.abi is None:
+            del data["abi"]
+        if self.userdoc is None:
+            del data["userdoc"]
+        if self.devdoc is None:
+            del data["devdoc"]
+        return data
 
 
 @dc.dataclass()
@@ -87,9 +190,9 @@ class Source:
     # TODO This was probably done for solidity, needs files cached to disk for compiling
     # If processing a local project, code already exists, so no issue
     # If processing remote project, cache them in ape project data folder
-    installPath: str
-    type: str
-    license: str
+    installPath: Optional[str]
+    type: Optional[str]
+    license: Optional[str]
 
     def load_content(self):
         """loads resource at `urls` into `content`"""
@@ -104,16 +207,69 @@ class Source:
     @classmethod
     def from_dict(cls, data: Dict) -> "Source":
         data = deepcopy(data)
+        if data.get("checksum"):
+            data["checksum"] = Checksum(**data["checksum"])
+        else:
+            data["checksum"] = None
+        if "urls" not in data:
+            data["urls"] = None
+        if "content" not in data:
+            data["content"] = None
+        if "installPath" not in data:
+            data["installPath"] = None
+        if "type" not in data:
+            data["type"] = None
+        if "license" not in data:
+            data["license"] = None
         return Source(**data)
+
+    def to_dict(self) -> Dict:
+        data = dc.asdict(self)
+        if self.installPath is None:
+            del data["installPath"]
+        if self.type is None:
+            del data["type"]
+        if self.license is None:
+            del data["license"]
+        return data
 
 
 @dc.dataclass()
 class PackageMeta:
-    authors: List[str]
-    license: str
-    description: str
-    keywords: List[str]
-    links: Dict[str, str]
+    authors: Optional[List[str]]
+    license: Optional[str]
+    description: Optional[str]
+    keywords: Optional[List[str]]
+    links: Optional[Dict[str, str]]
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "PackageMeta":
+        data = deepcopy(data)
+        if "authors" not in data:
+            data["authors"] = None
+        if "license" not in data:
+            data["license"] = None
+        if "description" not in data:
+            data["description"] = None
+        if "keywords" not in data:
+            data["keywords"] = None
+        if "links" not in data:
+            data["links"] = None
+        return PackageMeta(**data)
+
+    def to_dict(self) -> Dict:
+        data = dc.asdict(self)
+        if self.authors is None:
+            del data["authors"]
+        if self.license is None:
+            del data["license"]
+        if self.description is None:
+            del data["description"]
+        if self.keywords is None:
+            del data["keywords"]
+        if self.links is None:
+            del data["links"]
+        return data
 
 
 @dc.dataclass()
@@ -121,17 +277,17 @@ class PackageManifest:
     manifest: str
     name: str
     version: str
-    meta: PackageMeta
-    sources: Dict[str, Source]
-    contractTypes: List[ContractType]
-    compilers: List[Compiler]
+    meta: Optional[PackageMeta]
+    sources: Optional[Dict[str, Source]]
+    contractTypes: Optional[List[ContractType]]
+    compilers: Optional[List[Compiler]]
     # Populated as part of ape packge, actualy deployments would all be custom scripts
-    deployments: Dict[str, Dict[str, ContractInstance]]
+    deployments: Optional[Dict[str, Dict[str, ContractInstance]]]
     # Sourced from ape config - e.g. OpenZeppelin.
     # Force manifest to publish everything that's not published, to keep our manifest slim
     # Manifest will link to one we've published, not the github
     # We maintain an 'ape registry' of popular packages, that we can link in here (instead of finding potential malicious ones)
-    buildDependencies: Dict[str, str]
+    buildDependencies: Optional[Dict[str, str]]
 
     @classmethod
     def from_file(cls, path: Path) -> "PackageManifest":
@@ -143,8 +299,28 @@ class PackageManifest:
     @classmethod
     def from_dict(cls, data: Dict) -> "PackageManifest":
         data = deepcopy(data)
-        data["sources"] = {n: Source.from_dict(s) for (n, s) in data["sources"].items()}
-        data["contractTypes"] = [ContractType.from_dict(c) for c in data["contractTypes"]]
+        if isinstance(data.get("meta"), dict):
+            data["meta"] = PackageMeta.from_dict(data["meta"])
+        else:
+            data["meta"] = None
+        if data["sources"]:
+            data["sources"] = {n: Source.from_dict(s) for (n, s) in data["sources"].items()}
+        if data["contractTypes"]:
+            data["contractTypes"] = [ContractType.from_dict(c) for c in data["contractTypes"]]
+        if data.get("compilers"):
+            data["compilers"] = [Compiler.from_dict(c) for c in data["compilers"]]
+        else:
+            data["compilers"] = None
+        if data.get("deployments"):
+            data["deployments"] = {
+                uri: {name: ContractInstance.from_dict(value) for (name, value) in pair.items()}
+                for (uri, pair) in data["deployments"].items()
+            }
+        else:
+            data["deployments"] = None
+        if "buildDependencies" not in data:
+            data["buildDependencies"] = None
+
         return PackageManifest(**data)
 
     @classmethod
@@ -159,7 +335,29 @@ class PackageManifest:
 
     def to_dict(self) -> Dict:
         data = dc.asdict(self)
-        # TODO remove optional data from dict
-        # if self.contractTypes is None:
-        #     del data["contractTypes"]
+        if self.meta:
+            data["meta"] = self.meta.to_dict()
+        else:
+            del data["meta"]
+        if self.sources is None:
+            del data["sources"]
+        else:
+            data["sources"] = {k: s.to_dict() for (k, s) in self.sources.items()}
+        if self.contractTypes is None:
+            del data["contractTypes"]
+        else:
+            data["contractTypes"] = [c.to_dict() for c in self.contractTypes]
+        if self.compilers is None:
+            del data["compilers"]
+        else:
+            data["compilers"] = [c.to_dict() for c in self.compilers]
+        if self.deployments is None:
+            del data["deployments"]
+        else:
+            data["deployments"] = {
+                uri: {name: ci.to_dict() for (name, ci) in pair.items()}
+                for (uri, pair) in self.deployments.items()
+            }
+        if self.buildDependencies is None:
+            del data["buildDependencies"]
         return data
