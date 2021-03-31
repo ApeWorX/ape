@@ -1,8 +1,6 @@
 from ape import plugins
 from ape.api.config import ConfigEnum, ConfigItem
 
-from ._cli import cli
-
 
 class EvmVersion(ConfigEnum):
     constaninople = "constaninople"
@@ -19,8 +17,3 @@ class Config(ConfigItem):
 @plugins.register(plugins.Config)
 def config_class():
     return Config
-
-
-@plugins.register(plugins.CliPlugin)
-def cli_subcommand():
-    return cli

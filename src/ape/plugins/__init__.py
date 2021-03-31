@@ -4,7 +4,6 @@ import pkgutil
 from typing import cast
 
 from .account import AccountPlugin
-from .cli import CliPlugin
 from .config import Config
 from .pluggy import hookimpl, plugin_manager
 
@@ -14,7 +13,7 @@ class PluginError(Exception):
 
 
 # Combine all the plugins together via subclassing (merges `hookspec`s)
-class Plugins(AccountPlugin, CliPlugin, Config):
+class Plugins(AccountPlugin, Config):
     pass
 
 
@@ -59,7 +58,5 @@ def __load_plugins():
     for _, name, ispkg in pkgutil.iter_modules():
         if name.startswith("ape_") and ispkg:
             plugin_manager.register(importlib.import_module(name))
-
-    plugin_manager.load_setuptools_entrypoints("ape")
 
     return plugin_manager.get_plugins()
