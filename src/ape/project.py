@@ -5,7 +5,7 @@ from typing import Dict, Optional
 from ape.api.config import ConfigItem
 from ape.plugins import clean_plugin_name, plugin_manager
 
-from .utils import load_config
+from ape.utils import load_config
 
 
 class ProjectConfig:

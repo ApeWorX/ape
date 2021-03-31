@@ -5,6 +5,7 @@ from typing import cast
 
 from .account import AccountPlugin
 from .cli import CliPlugin
+from .compiler import CompilerPlugin
 from .config import Config
 from .pluggy import hookimpl, plugin_manager
 
@@ -14,7 +15,7 @@ class PluginError(Exception):
 
 
 # Combine all the plugins together via subclassing (merges `hookspec`s)
-class Plugins(AccountPlugin, CliPlugin, Config):
+class Plugins(AccountPlugin, CliPlugin, CompilerPlugin, Config):
     pass
 
 

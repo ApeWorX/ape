@@ -83,11 +83,13 @@ def test_contractinstance_to_dict():
     assert "runtimeBytecode" in cid
     assert isinstance(cid["runtimeBytecode"], dict)
 
+
 def test_compiler_from_dict():
     c = Compiler(None, None, None, None)
     cd = c.to_dict()
     c = Compiler.from_dict(cd)
     assert isinstance(c, Compiler)
+
 
 def test_compiler_to_dict():
     c = Compiler(None, None, None, None)
@@ -220,6 +222,7 @@ def test_packagemanifest_from_dict():
     assert isinstance(p.deployments["outer"], dict)
     assert isinstance(p.deployments["outer"]["inner"], ContractInstance)
     assert isinstance(p.buildDependencies, dict)
+
 
 def test_packagemanifest_to_dict():
     p = PackageManifest(None, None, None, None, None, None, None, None, None)
