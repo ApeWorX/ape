@@ -17,10 +17,10 @@ class Config(ConfigItem):
 
 
 @plugins.register(plugins.Config)
-def register_config():
+def config_class():
     return Config
 
 
 @plugins.register(plugins.CliPlugin)
-def register_cli():
+def cli_subcommand():
     return cli

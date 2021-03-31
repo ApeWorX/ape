@@ -4,5 +4,5 @@ from ._cli import cli
 
 
 @plugins.register(plugins.CliPlugin)
-def register_cli():
+def cli_subcommand():
     return cli
