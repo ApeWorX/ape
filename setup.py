@@ -65,6 +65,7 @@ setup(
         "PyGithub>=1.54,<2.0",
         "pyyaml>=0.2.5",
         "importlib-metadata ; python_version<'3.8'",
+        "singledispatchmethod ; python_version<'3.8'",
         "IPython==7.16",  # Pinned for py3.6
         "jedi==0.17.2",  # Pinned for IPython 7.16 incompatibility
     ],

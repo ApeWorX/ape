@@ -3,6 +3,11 @@ try:
 except ImportError:
     from backports.cached_property import cached_property  # type: ignore
 
+try:
+    from functools import singledispatchmethod
+except ImportError:
+    from singledispatchmethod import singledispatchmethod  # type: ignore
+
 from typing import Iterator, List
 
 from dataclassy import dataclass
@@ -58,7 +63,21 @@ class AccountManager:
 
         raise IndexError(f"No account with alias `{alias}`.")
 
+    @singledispatchmethod
     def __getitem__(self, account_id) -> AccountAPI:
+        raise NotImplementedError("Cannot used " + type(account_id) + " as account id")
+
+    @__getitem__.register
+    def __getitem_int(self, account_id: int) -> AccountAPI:
+        for idx, account in enumerate(self.__iter__()):
+            if account_id == idx:
+                # TODO: Inject `NetworkAPI` here
+                return account
+
+        raise IndexError(f"No account at index `{account_id}`.")
+
+    @__getitem__.register
+    def __getitem_str(self, account_id: str) -> AccountAPI:
         for container in self.account_containers:
             if account_id in container:
                 # TODO: Inject `NetworkAPI` here
