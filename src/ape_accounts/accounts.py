@@ -27,7 +27,7 @@ class AccountContainer(AccountContainerAPI):
 
     def __iter__(self) -> Iterator[AccountAPI]:
         for keyfile in self._keyfiles:
-            yield KeyfileAccount(self, keyfile)
+            yield KeyfileAccount(self, keyfile)  # type: ignore
 
 
 class KeyfileAccount(AccountAPI):
