@@ -13,13 +13,9 @@ from ape.convert import to_address
 
 
 class AccountContainer(AccountContainerAPI):
-    def __init__(self):
-        # Inject container into account class
-        KeyfileAccount.container = self
-
     @property
     def _keyfiles(self) -> Iterator[Path]:
-        return self.DATA_FOLDER.glob("*.json")
+        return self.data_folder.glob("*.json")
 
     @property
     def aliases(self) -> Iterator[str]:
@@ -31,12 +27,13 @@ class AccountContainer(AccountContainerAPI):
 
     def __iter__(self) -> Iterator[AccountAPI]:
         for keyfile in self._keyfiles:
-            yield KeyfileAccount(keyfile)
+            yield KeyfileAccount(self, keyfile)
 
 
 class KeyfileAccount(AccountAPI):
-    def __init__(self, keyfile: Path):
-        self._keyfile = keyfile
+    _keyfile: Path
+
+    def __init__(self):
         self.locked = True
         self.__cached_key = None
 
@@ -54,7 +51,7 @@ class KeyfileAccount(AccountAPI):
 
     @classmethod
     def generate(cls, alias: str) -> "KeyfileAccount":
-        path = cls.container.DATA_FOLDER.joinpath(f"{alias}.json")
+        path = cls.container.data_folder.joinpath(f"{alias}.json")
         extra_entropy = click.prompt(
             "Add extra entropy for key generation...",
             hide_input=True,
@@ -70,7 +67,7 @@ class KeyfileAccount(AccountAPI):
 
     @classmethod
     def from_key(cls, alias: str) -> "KeyfileAccount":
-        path = cls.container.DATA_FOLDER.joinpath(f"{alias}.json")
+        path = cls.container.data_folder.joinpath(f"{alias}.json")
         key = click.prompt("Enter Private Key", hide_input=True)
         a = Account.from_key(to_bytes(hexstr=key))
         passphrase = click.prompt(

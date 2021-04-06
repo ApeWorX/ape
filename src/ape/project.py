@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
+
+from dataclassy import dataclass
 
 from ape.api.config import ConfigItem
 from ape.plugins import clean_plugin_name, plugin_manager
@@ -8,9 +10,16 @@ from ape.plugins import clean_plugin_name, plugin_manager
 from .utils import load_config
 
 
-class ProjectConfig:
-    def __init__(self, config_file: Path):
-        user_config = load_config(config_file)
+class Config:
+    @classmethod
+    def default(cls):
+        return cls({})
+
+    @classmethod
+    def from_config_file(cls, config_file: Path):
+        cls(load_config(config_file))
+
+    def __init__(self, user_config: Dict):
         plugin_configs: Dict[str, ConfigItem] = {}
 
         for hookimpl in plugin_manager.hook.config_class.get_hookimpls():
@@ -55,33 +64,45 @@ class ProjectConfig:
         return json.dumps(self.serialize())
 
 
+CONFIG_FILE_NAME = "ape-config.yaml"
+
+
+@dataclass
 class Project:
-    def __init__(self, project_path: Path = Path.cwd()):
-        self._path = project_path
-        self._config: Optional[ProjectConfig] = None
+    path: Path = Path.cwd()
+    config: Config = None  # type: ignore
+
+    depedendencies: Dict[str, "Project"] = dict()
+
+    def __init__(self):
+        if self.config is None:
+            config_file = self.path / CONFIG_FILE_NAME
+            if config_file.exists():
+                self.config = Config.from_config_file(config_file)
+            else:
+                self.config = Config.default()
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}("{self._path}")'
+        return f'Project("{self.path}")'
 
-    @property
-    def config(self) -> ProjectConfig:
-        if self._config is None:
-            self._config = ProjectConfig(self._path / "ape-config.yaml")
-        return self._config
-
-    @property
     def _cache_folder(self) -> Path:
-        cache_folder = self._path / ".build"
-        cache_folder.mkdir(exist_ok=True)
-        return cache_folder
+        folder = self.path / ".build"
+        # NOTE: If we use the cache folder, we expect it to exist
+        folder.mkdir(exist_ok=True)
+        return folder
 
-    @property
+    # NOTE: Using these paths should handle the case when the folder doesn't exist
     def _contracts_folder(self) -> Path:
-        contracts_folder = self._path / "contracts"
-        if contracts_folder.exists():
-            return contracts_folder
-        else:
-            raise  # No contracts folder in project
+        return self.path / "contracts"
+
+    def _interfaces_folder(self) -> Path:
+        return self.path / "interfaces"
+
+    def _scripts_folder(self) -> Path:
+        return self.path / "scripts"
+
+    def _tests_folder(self) -> Path:
+        return self.path / "tests"
 
     # TODO: Add `contracts` property, that gives attrdict of all compiled contract types in project
     # TODO: Add `manifest` property, that fully compiles and assembles the EthPM Manifest

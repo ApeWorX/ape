@@ -1,12 +1,16 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Type
 
+from dataclassy import dataclass
 from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
 from eth_account.messages import SignableMessage  # type: ignore
 
 
-class AddressAPI(ABC):
+@dataclass
+class AddressAPI(metaclass=ABCMeta):
+    # TODO add `network: NetworkController`
+
     @property
     @abstractmethod
     def address(self) -> str:
@@ -19,8 +23,8 @@ class AddressAPI(ABC):
         return self.address
 
 
-class AccountAPI(AddressAPI, ABC):
-    # Should be injected by container, so it has a link back
+# NOTE: AddressAPI is a dataclass already
+class AccountAPI(AddressAPI):
     container: "AccountContainerAPI"
 
     @property
@@ -36,16 +40,10 @@ class AccountAPI(AddressAPI, ABC):
         ...
 
 
-# NOTE: Should be singleton
-class AccountContainerAPI(ABC):
-    # Inject this constant into the class before instantiation
-    _data_folder: Path
-
-    @property
-    def DATA_FOLDER(self) -> Path:
-        assert self.__class__._data_folder is not None
-        self.__class__._data_folder.mkdir(exist_ok=True)
-        return self.__class__._data_folder
+@dataclass
+class AccountContainerAPI(metaclass=ABCMeta):
+    data_folder: Path
+    account_type: Type[AccountAPI]
 
     @property
     @abstractmethod
