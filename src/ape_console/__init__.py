@@ -32,7 +32,7 @@ def console(project=None, verbose=False, extra_locals=None, ipython_args=None):
             python_version=ape._python_version,
             ipython_version=IPython.__version__,
             ape_version=ape_version,
-            project_path=project._path,
+            project_path=project.path,
         )
 
     else:

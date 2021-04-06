@@ -57,9 +57,14 @@ def register(plugin_type):
     return functools.partial(check_hook, plugin_type)
 
 
-def __load_plugins():
-    for _, name, ispkg in pkgutil.iter_modules():
-        if name.startswith("ape_") and ispkg:
-            plugin_manager.register(importlib.import_module(name))
+# NOTE: This actually loads the plugins, and should only be used once
+for _, name, ispkg in pkgutil.iter_modules():
+    if name.startswith("ape_") and ispkg:
+        plugin_manager.register(importlib.import_module(name))
 
-    return plugin_manager.get_plugins()
+
+__all__ = [
+    "plugin_manager",
+    "clean_plugin_name",
+    "register",
+]
