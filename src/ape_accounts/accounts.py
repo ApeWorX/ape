@@ -6,7 +6,6 @@ import click
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
 from eth_account.messages import SignableMessage  # type: ignore
-from eth_utils import to_bytes
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.convert import to_address
@@ -30,6 +29,7 @@ class AccountContainer(AccountContainerAPI):
             yield KeyfileAccount(self, keyfile)  # type: ignore
 
 
+# NOTE: `AccountAPI` is a dataclass
 class KeyfileAccount(AccountAPI):
     _keyfile: Path
 
@@ -48,35 +48,6 @@ class KeyfileAccount(AccountAPI):
     @property
     def address(self) -> str:
         return to_address(self.keyfile["address"])
-
-    @classmethod
-    def generate(cls, alias: str) -> "KeyfileAccount":
-        path = cls.container.data_folder.joinpath(f"{alias}.json")
-        extra_entropy = click.prompt(
-            "Add extra entropy for key generation...",
-            hide_input=True,
-        )
-        a = EthAccount.create(extra_entropy)
-        passphrase = click.prompt(
-            "Create Passphrase",
-            hide_input=True,
-            confirmation_prompt=True,
-        )
-        path.write_text(json.dumps(EthAccount.encrypt(a.key, passphrase)))
-        return cls(path)
-
-    @classmethod
-    def from_key(cls, alias: str) -> "KeyfileAccount":
-        path = cls.container.data_folder.joinpath(f"{alias}.json")
-        key = click.prompt("Enter Private Key", hide_input=True)
-        a = EthAccount.from_key(to_bytes(hexstr=key))
-        passphrase = click.prompt(
-            "Create Passphrase",
-            hide_input=True,
-            confirmation_prompt=True,
-        )
-        path.write_text(json.dumps(EthAccount.encrypt(a.key, passphrase)))
-        return cls(path)
 
     @property
     def __key(self) -> EthAccount:
