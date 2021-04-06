@@ -5,7 +5,7 @@ from typing import cast
 
 from .account import AccountPlugin
 from .config import Config
-from .pluggy import hookimpl, plugin_manager
+from .pluggy_patch import hookimpl, plugin_manager
 
 
 class PluginError(Exception):

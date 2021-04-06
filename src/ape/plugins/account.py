@@ -2,7 +2,7 @@ from typing import Type
 
 from ape.api.accounts import AccountContainerAPI
 
-from .pluggy import hookspec
+from .pluggy_patch import hookspec
 
 
 class AccountPlugin:
