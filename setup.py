@@ -64,6 +64,7 @@ setup(
         "pyyaml>=0.2.5",
         "importlib-metadata ; python_version<'3.8'",
         "IPython==7.16",  # Pinned for py3.6
+        "jedi==0.17.2",  # Pinned for IPython 7.16 incompatibility
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
@@ -75,7 +76,12 @@ setup(
     },
     python_requires=">=3.6,<3.9",
     extras_require=extras_require,
-    py_modules=["ape", "ape_accounts", "ape_compile"],
+    py_modules=[
+        "ape",
+        "ape_accounts",
+        "ape_compile",
+        "ape_console",
+    ],
     license="Apache-2.0",
     zip_safe=False,
     keywords="ethereum",
