@@ -1,15 +1,14 @@
-import pytest  # type: ignore
-from ape.ethpm import (
+from ape.package import (
+    Bytecode,
+    Checksum,
+    Compiler,
+    ContractInstance,
+    ContractType,
     LinkDependency,
     LinkReference,
-    Bytecode,
-    ContractInstance,
-    Compiler,
-    ContractType,
-    Checksum,
-    Source,
-    PackageMeta,
     PackageManifest,
+    PackageMeta,
+    Source,
 )
 
 

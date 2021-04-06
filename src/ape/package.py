@@ -1,8 +1,9 @@
-import dataclasses as dc
-from copy import deepcopy
-from typing import Optional, Dict, List
-from pathlib import Path
 import json
+from copy import deepcopy
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import dataclassy as dc
 
 
 # TODO link references & link values are for solidity, not used with Vyper
@@ -25,7 +26,7 @@ class LinkReference:
         data = deepcopy(data)
         if "name" not in data:
             data["name"] = None
-        return LinkReference(**data)
+        return LinkReference(**data)  # type: ignore
 
     def to_dict(self) -> Dict:
         data = dc.asdict(self)
@@ -44,21 +45,23 @@ class Bytecode:
     def from_dict(cls, data: Dict) -> "Bytecode":
         data = deepcopy(data)
         if data.get("linkReferences"):
-            data["linkReferences"] = [LinkReference.from_dict(l) for l in data["linkReferences"]]
+            data["linkReferences"] = [LinkReference.from_dict(lr) for lr in data["linkReferences"]]
         else:
             data["linkReferences"] = None
         if data.get("linkDependencies"):
-            data["linkDependencies"] = [LinkDependency(**l) for l in data["linkDependencies"]]
+            data["linkDependencies"] = [
+                LinkDependency(**lr) for lr in data["linkDependencies"]  # type: ignore
+            ]
         else:
             data["linkDependencies"] = None
-        return Bytecode(**data)
+        return Bytecode(**data)  # type: ignore
 
     def to_dict(self) -> Dict:
         data = dc.asdict(self)
         if self.linkReferences is None:
             del data["linkReferences"]
         else:
-            data["linkReferences"] = [l.to_dict() for l in self.linkReferences]
+            data["linkReferences"] = [lr.to_dict() for lr in self.linkReferences]
         if self.linkDependencies is None:
             del data["linkDependencies"]
         return data
@@ -83,7 +86,7 @@ class ContractInstance:
             data["runtimeBytecode"] = Bytecode.from_dict(data["runtimeBytecode"])
         else:
             data["runtimeBytecode"] = None
-        return ContractInstance(**data)
+        return ContractInstance(**data)  # type: ignore
 
     def to_dict(self) -> Dict:
         data = dc.asdict(self)
@@ -112,7 +115,7 @@ class Compiler:
             data["settings"] = None
         if "contractTypes" not in data:
             data["contractTypes"] = None
-        return Compiler(**data)
+        return Compiler(**data)  # type: ignore
 
     def to_dict(self) -> Dict:
         data = dc.asdict(self)
@@ -153,7 +156,7 @@ class ContractType:
             data["userdoc"] = None
         if "devdoc" not in data:
             data["devdoc"] = None
-        return ContractType(**data)
+        return ContractType(**data)  # type: ignore
 
     def to_dict(self) -> Dict:
         data = dc.asdict(self)
@@ -208,7 +211,7 @@ class Source:
     def from_dict(cls, data: Dict) -> "Source":
         data = deepcopy(data)
         if data.get("checksum"):
-            data["checksum"] = Checksum(**data["checksum"])
+            data["checksum"] = Checksum(**data["checksum"])  # type: ignore
         else:
             data["checksum"] = None
         if "urls" not in data:
@@ -221,7 +224,7 @@ class Source:
             data["type"] = None
         if "license" not in data:
             data["license"] = None
-        return Source(**data)
+        return Source(**data)  # type: ignore
 
     def to_dict(self) -> Dict:
         data = dc.asdict(self)
@@ -255,7 +258,7 @@ class PackageMeta:
             data["keywords"] = None
         if "links" not in data:
             data["links"] = None
-        return PackageMeta(**data)
+        return PackageMeta(**data)  # type: ignore
 
     def to_dict(self) -> Dict:
         data = dc.asdict(self)
@@ -284,9 +287,10 @@ class PackageManifest:
     # Populated as part of ape packge, actualy deployments would all be custom scripts
     deployments: Optional[Dict[str, Dict[str, ContractInstance]]]
     # Sourced from ape config - e.g. OpenZeppelin.
-    # Force manifest to publish everything that's not published, to keep our manifest slim
-    # Manifest will link to one we've published, not the github
-    # We maintain an 'ape registry' of popular packages, that we can link in here (instead of finding potential malicious ones)
+    # Force manifest to publish everything that's not published, to keep our
+    # manifest slim. Manifest will link to one we've published, not the github.
+    # We maintain an 'ape registry' of popular packages, that we can link in
+    # here (instead of finding potential malicious ones)
     buildDependencies: Optional[Dict[str, str]]
 
     @classmethod
@@ -321,7 +325,7 @@ class PackageManifest:
         if "buildDependencies" not in data:
             data["buildDependencies"] = None
 
-        return PackageManifest(**data)
+        return PackageManifest(**data)  # type: ignore
 
     @classmethod
     def from_config(cls, path: Path) -> "PackageManifest":

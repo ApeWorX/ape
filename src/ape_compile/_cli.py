@@ -1,11 +1,8 @@
-import os
-import shutil
+import click
 
 from ape.compilers import load
+from ape.package import PackageManifest
 from ape.utils import notify
-from ape.ethpm import PackageManifest
-
-import click
 
 
 @click.command(short_help="Compile the contract source files")
@@ -30,9 +27,13 @@ def cli(manifest_path, compile_all, display_size):
     a project is loaded. You do not have to manually trigger a recompile.
     """
 
-    # TODO look for local manifest, if not, look for local config, if not, error
-    # if no config assume everything is default, if config merge (override) default
-    # config is the source of truth, the manifest is an artifact of the config, both pre-and post procesing
+    # TODO
+    # * Look for local manifest
+    # * If not, look for local config
+    # * If no config assume everything is default
+    # Config should override defaults. If no config value, use default.
+    # default config is the source of truth, the manifest is an artifact of the
+    # config, both pre-and post procesing
 
     if not manifest_path:
         notify("ERROR", "No manifest argument provided")

@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Dict
-from pathlib import Path
 
-from ape.ethpm import PackageManifest
+from ape.package import PackageManifest
 
 
 class CompilerAPI(ABC):

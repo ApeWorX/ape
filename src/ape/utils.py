@@ -5,8 +5,8 @@ from copy import deepcopy
 from pathlib import Path as Path
 from typing import Dict
 
-import yaml
 import click
+import yaml
 
 NOTIFY_COLORS = {"WARNING": "bright_red", "ERROR": "bright_red", "SUCCESS": "bright_green"}
 
