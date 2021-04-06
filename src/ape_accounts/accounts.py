@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Iterator, Optional
 
 import click
-from eth_account import Account  # type: ignore
+from eth_account import Account as EthAccount  # type: ignore
 from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
 from eth_account.messages import SignableMessage  # type: ignore
 from eth_utils import to_bytes
@@ -56,30 +56,30 @@ class KeyfileAccount(AccountAPI):
             "Add extra entropy for key generation...",
             hide_input=True,
         )
-        a = Account.create(extra_entropy)
+        a = EthAccount.create(extra_entropy)
         passphrase = click.prompt(
             "Create Passphrase",
             hide_input=True,
             confirmation_prompt=True,
         )
-        path.write_text(json.dumps(Account.encrypt(a.key, passphrase)))
+        path.write_text(json.dumps(EthAccount.encrypt(a.key, passphrase)))
         return cls(path)
 
     @classmethod
     def from_key(cls, alias: str) -> "KeyfileAccount":
         path = cls.container.data_folder.joinpath(f"{alias}.json")
         key = click.prompt("Enter Private Key", hide_input=True)
-        a = Account.from_key(to_bytes(hexstr=key))
+        a = EthAccount.from_key(to_bytes(hexstr=key))
         passphrase = click.prompt(
             "Create Passphrase",
             hide_input=True,
             confirmation_prompt=True,
         )
-        path.write_text(json.dumps(Account.encrypt(a.key, passphrase)))
+        path.write_text(json.dumps(EthAccount.encrypt(a.key, passphrase)))
         return cls(path)
 
     @property
-    def __key(self) -> Account:
+    def __key(self) -> EthAccount:
         if self.__cached_key is not None:
             if not self.locked:
                 click.echo(f"Using cached key for '{self.alias}'")
@@ -93,7 +93,7 @@ class KeyfileAccount(AccountAPI):
             default="",  # Just in case there's no passphrase
         )
 
-        key = Account.decrypt(self.keyfile, passphrase)
+        key = EthAccount.decrypt(self.keyfile, passphrase)
 
         if click.confirm("Leave '{self.alias}' unlocked?"):
             self.locked = False
@@ -107,7 +107,7 @@ class KeyfileAccount(AccountAPI):
             hide_input=True,
         )
 
-        self.__cached_key = Account.decrypt(self.keyfile, passphrase)
+        self.__cached_key = EthAccount.decrypt(self.keyfile, passphrase)
 
     def lock(self):
         self.locked = True
@@ -122,7 +122,7 @@ class KeyfileAccount(AccountAPI):
             confirmation_prompt=True,
         )
 
-        self._keyfile.write_text(json.dumps(Account.encrypt(key, passphrase)))
+        self._keyfile.write_text(json.dumps(EthAccount.encrypt(key, passphrase)))
 
     def delete(self):
         passphrase = click.prompt(
@@ -131,7 +131,7 @@ class KeyfileAccount(AccountAPI):
             default="",  # Just in case there's no passphrase
         )
 
-        Account.decrypt(self.keyfile, passphrase)
+        EthAccount.decrypt(self.keyfile, passphrase)
 
         self._keyfile.unlink()
 
@@ -139,13 +139,10 @@ class KeyfileAccount(AccountAPI):
         if self.locked and not click.confirm(f"Sign: {msg}"):
             return None
 
-        return Account.sign_message(msg, self.__key)
+        return EthAccount.sign_message(msg, self.__key)
 
     def sign_transaction(self, txn: dict) -> Optional[SignedTransaction]:
         if self.locked and not click.confirm(f"Sign: {txn}"):
             return None
 
-        return Account.sign_transaction(txn, self.__key)
-
-
-# TODO: LedgerAccount, TrezorAccount, etc. for hw wallets
+        return EthAccount.sign_transaction(txn, self.__key)
