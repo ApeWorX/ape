@@ -28,8 +28,11 @@ class AccountAPI(AddressAPI):
     container: "AccountContainerAPI"
 
     @property
-    def alias(self) -> str:
-        return ""
+    def alias(self) -> Optional[str]:
+        """
+        Override with whatever alias might want to use, if applicable
+        """
+        return None
 
     @abstractmethod
     def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
