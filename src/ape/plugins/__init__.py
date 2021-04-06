@@ -13,35 +13,38 @@ class PluginError(Exception):
 
 
 # Combine all the plugins together via subclassing (merges `hookspec`s)
-class Plugins(AccountPlugin, Config):
+class AllPluginHooks(AccountPlugin, Config):
     pass
 
 
 # All hookspecs are registered
-plugin_manager.add_hookspecs(Plugins)
+plugin_manager.add_hookspecs(AllPluginHooks)
 
 # Add cast so that mypy knows that pm.hook is actually a `Plugins` instance.
 # Without this hint there really is no way for mypy to know this.
-plugin_manager.hook = cast(Plugins, plugin_manager.hook)
+plugin_manager.hook = cast(AllPluginHooks, plugin_manager.hook)
 
 
 def clean_plugin_name(name: str) -> str:
     return name.replace("ape_", "").replace("_", "-")
 
 
+def get_hooks(plugin_type):
+    return [name for name, method in plugin_type.__dict__.items() if hasattr(method, "ape_spec")]
+
+
 def register(plugin_type):
     # NOTE: we are basically checking that `plugin_type`
     #       is one of the parent classes of `Plugins`
-    if not issubclass(Plugins, plugin_type):
+    if not issubclass(AllPluginHooks, plugin_type):
         raise PluginError("Not a valid plugin type to register")
 
     def check_hook(plugin_type, fn):
         fn = hookimpl(fn)
 
         if not hasattr(plugin_type, fn.__name__):
-            hooks = [
-                name for name, method in plugin_type.__dict__.items() if hasattr(method, "ape_spec")
-            ]
+            hooks = get_hooks(plugin_type)
+
             raise PluginError(
                 f"Registered function `{fn.__name__}` is not"
                 f" a valid hook for {plugin_type.__name__}, must be one of:"
