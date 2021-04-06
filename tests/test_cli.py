@@ -14,13 +14,14 @@ import ape
         [],
         ["--version"],
         ["--config"],
-        ["--plugins"],
         ["--help"],
         ["accounts"],
         ["accounts", "list"],
         ["compile"],
         ["console"],
         ["console", "--verbose"],
+        ["plugins"],
+        ["plugins", "list"],
     ),
 )
 def test_invocation(ape_cli, runner, args):
