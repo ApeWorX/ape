@@ -20,6 +20,7 @@ import ape
         ["accounts", "list"],
         ["compile"],
         ["console"],
+        ["console", "--verbose"],
     ),
 )
 def test_invocation(ape_cli, runner, args):
