@@ -74,3 +74,18 @@ def test_compile(project_folder, project, manifest):
     # Remove it from the folder, nothing to compile now
     manifest_file.unlink()
     assert len(project.contracts) == 0
+
+
+def test_apetest(runner, ape_cli):
+    example_folder = Path.cwd() / "example"
+    # TODO: Click 8.x adds the ability to override the isolated filesystem to this
+    with runner.isolated_filesystem():  # Should just override to `./example`
+        # Make symlinks to all contents in example folder
+        project_folder = Path.cwd()
+        for file in example_folder.iterdir():
+            (project_folder / file.name).symlink_to(file, target_is_directory=file.is_dir())
+        # Also update the config
+        config.PROJECT_FOLDER = project_folder
+        # Make the call
+        result = runner.invoke(ape_cli, ["test"])
+    assert result.exit_code == 0
