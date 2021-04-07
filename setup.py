@@ -4,7 +4,6 @@ from setuptools import find_packages, setup  # type: ignore
 
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
-        "pytest>=6.0,<7.0",  # Core testing package
         "pytest-xdist",  # multi-process runner
         "pytest-cov",  # Coverage analyzer plugin
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
@@ -64,6 +63,7 @@ setup(
         "eth-account>=0.5.2,<0.6.0",
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
+        "pytest>=6.0,<7.0",
         "pyyaml>=0.2.5",
         "importlib-metadata ; python_version<'3.8'",
         "singledispatchmethod ; python_version<'3.8'",
@@ -73,12 +73,14 @@ setup(
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
+        "pytest11": ["pytest-ape=ape_test.plugin"],
         "ape_cli_subcommands": [
             "ape_accounts=ape_accounts._cli:cli",
             "ape_compile=ape_compile._cli:cli",
             "ape_console=ape_console._cli:cli",
             "ape_plugins=ape_plugins:cli",
             "ape_networks=ape_networks._cli:cli",
+            "ape_test=ape_test._cli:cli",
         ],
     },
     python_requires=">=3.6,<3.9",
