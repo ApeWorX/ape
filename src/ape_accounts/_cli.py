@@ -30,7 +30,7 @@ def _list():
 
     for account in accounts:
         alias_display = f" (alias: '{account.alias}')" if account.alias else ""
-        click.echo(f"{account.address}{alias_display}")
+        click.echo(f"  {account.address}{alias_display}")
 
 
 @cli.command(short_help="Add a new account with a random private key")

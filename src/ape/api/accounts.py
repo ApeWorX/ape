@@ -28,8 +28,11 @@ class AccountAPI(AddressAPI):
     container: "AccountContainerAPI"
 
     @property
-    def alias(self) -> str:
-        return ""
+    def alias(self) -> Optional[str]:
+        """
+        Override with whatever alias might want to use, if applicable
+        """
+        return None
 
     @abstractmethod
     def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
@@ -64,6 +67,22 @@ class AccountContainerAPI(metaclass=ABCMeta):
                 return account
 
         raise IndexError(f"No local account {address}.")
+
+    def append(self, account: AccountAPI):
+        if not isinstance(account, self.account_type):
+            raise  # Not the right type for this container
+
+        if account in self:
+            raise  # Account already in container
+
+        if account.alias and account.alias in self.aliases:
+            raise  # Alias already in use
+
+        self.__setitem__(account.address, account)
+
+    @abstractmethod
+    def __setitem__(self, address: str, account: AccountAPI):
+        raise NotImplementedError("Must define this method to use `container.append(...)`")
 
     def __contains__(self, address: str) -> bool:
         try:
