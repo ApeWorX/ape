@@ -25,6 +25,7 @@ from ape import config
         ["plugins", "list"],
         ["networks"],
         ["networks", "list"],
+        ["test", "-h"],  # NOTE: Executes pytest's help
     ),
 )
 def test_invocation(ape_cli, runner, args):
