@@ -1,8 +1,8 @@
 import sys as _sys
 from pathlib import Path as _Path
 
-from .api import Accounts as _Accounts
-from .plugins import __load_plugins
+from .managers.accounts import AccountManager as _AccountManager
+from .plugins import plugin_manager
 from .project import Project
 
 try:
@@ -34,15 +34,8 @@ REQUEST_HEADER = {
     "User-Agent": f"Ape/{__version__} (Python/{_python_version})",
 }
 
-# Exported Ape data types (Must not create circular dependencies with plugins)
-accounts = _Accounts()
-
-# NOTE: This is how plugins actually are brought into the namespace to be registered.
-#       It also provides a convienent debugging endpoint. Should not be used directly.
-# NOTE: Must be after exported data types to avoid circular reference issues
-__discovered_plugins = __load_plugins()
-
-# NOTE: Project must be last to load (loads project in current directory)
+# Wiring together the application
+accounts = _AccountManager(plugin_manager)  # type: ignore
 project = Project()
 
 

@@ -1,8 +1,8 @@
 from ape import plugins
 
-from .accounts import AccountContainer
+from .accounts import AccountContainer, KeyfileAccount
 
 
 @plugins.register(plugins.AccountPlugin)
-def accounts_container():
-    return AccountContainer
+def account_types():
+    return AccountContainer, KeyfileAccount

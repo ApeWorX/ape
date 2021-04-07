@@ -1,8 +1,10 @@
+import json
+
 import click
+from eth_account import Account as EthAccount  # type: ignore
+from eth_utils import to_bytes
 
-from ape import accounts
-
-from .accounts import KeyfileAccount
+from ape import DATA_FOLDER, accounts
 
 
 @click.group(short_help="Manage local accounts")
@@ -35,7 +37,20 @@ def _list():
 @click.argument("alias")
 def generate(alias):
     assert alias not in accounts.aliases
-    a = KeyfileAccount.generate(alias)
+
+    path = DATA_FOLDER.joinpath(f"{alias}.json")
+    extra_entropy = click.prompt(
+        "Add extra entropy for key generation...",
+        hide_input=True,
+    )
+    a = EthAccount.create(extra_entropy)
+    passphrase = click.prompt(
+        "Create Passphrase",
+        hide_input=True,
+        confirmation_prompt=True,
+    )
+    path.write_text(json.dumps(EthAccount.encrypt(a.key, passphrase)))
+
     click.echo(f"A new account '{a.address}' has been added with the id '{alias}'")
 
 
@@ -47,7 +62,16 @@ def _import(alias):
         click.echo(f"Account with alias '{alias}' already exists")
         return
 
-    a = KeyfileAccount.from_key(alias)
+    path = DATA_FOLDER.joinpath(f"{alias}.json")
+    key = click.prompt("Enter Private Key", hide_input=True)
+    a = EthAccount.from_key(to_bytes(hexstr=key))
+    passphrase = click.prompt(
+        "Create Passphrase",
+        hide_input=True,
+        confirmation_prompt=True,
+    )
+    path.write_text(json.dumps(EthAccount.encrypt(a.key, passphrase)))
+
     click.echo(f"A new account '{a.address}' has been added with the id '{alias}'")
 
 

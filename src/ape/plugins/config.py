@@ -2,7 +2,7 @@ from typing import Type
 
 from ape.api.config import ConfigItem
 
-from .pluggy import hookspec
+from .pluggy_patch import hookspec
 
 
 class Config:

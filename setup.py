@@ -57,6 +57,7 @@ setup(
     url="https://github.com/ApeWorX/ape",
     include_package_data=True,
     install_requires=[
+        "backports.cached_property ; python_version<'3.8'",
         "click>=7.1.2",
         "dataclassy>=0.7.2,<1.0",
         "eth-account>=0.5.2,<0.6.0",

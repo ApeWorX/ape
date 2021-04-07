@@ -1,13 +1,13 @@
-from typing import Type
+from typing import Tuple, Type
 
-from ape.api.accounts import AccountContainerAPI
+from ape.api.accounts import AccountAPI, AccountContainerAPI
 
-from .pluggy import hookspec
+from .pluggy_patch import hookspec
 
 
 class AccountPlugin:
     @hookspec
-    def accounts_container(self) -> Type[AccountContainerAPI]:
+    def account_types(self) -> Tuple[Type[AccountContainerAPI], Type[AccountAPI]]:
         """
         Must return an Account Container object
         """
