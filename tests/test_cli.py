@@ -19,6 +19,7 @@ import ape
         ["accounts"],
         ["accounts", "list"],
         ["compile"],
+        ["console"],
     ),
 )
 def test_invocation(ape_cli, runner, args):
