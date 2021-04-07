@@ -61,6 +61,7 @@ setup(
         "dataclassy>=0.7.2,<1.0",
         "eth-account>=0.5.2,<0.6.0",
         "pluggy>=0.13.1,<1.0",
+        "PyGithub>=1.54,<2.0",
         "pyyaml>=0.2.5",
         "importlib-metadata ; python_version<'3.8'",
         "IPython==7.16",  # Pinned for py3.6
@@ -72,6 +73,7 @@ setup(
             "ape_accounts=ape_accounts._cli:cli",
             "ape_compile=ape_compile._cli:cli",
             "ape_console=ape_console:cli",
+            "ape_plugins=ape_plugins:cli",
         ],
     },
     python_requires=">=3.6,<3.9",
@@ -81,6 +83,7 @@ setup(
         "ape_accounts",
         "ape_compile",
         "ape_console",
+        "ape_plugins",
     ],
     license="Apache-2.0",
     zip_safe=False,
