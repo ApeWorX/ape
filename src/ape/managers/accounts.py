@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Iterator, List
 
 from dataclassy import dataclass
@@ -14,19 +15,20 @@ class AccountManager:
     All containers must subclass AccountContainerAPI, and are treated as singletons
     """
 
+    data_folder: Path
     plugin_manager: PluginManager
     # network_manager: NetworkManager
 
     @cached_property
     def account_containers(self) -> List[AccountContainerAPI]:
-        from ape import DATA_FOLDER
+        containers = []
+        self.data_folder.mkdir(exist_ok=True)
+        for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
+            accounts_folder = self.data_folder / plugin_name
+            accounts_folder.mkdir(exist_ok=True)
+            containers.append(container_type(accounts_folder, account_type))
 
-        accounts_folder = DATA_FOLDER / "accounts"  # TODO: Use plugin name
-        accounts_folder.mkdir(exist_ok=True)
-        return [
-            container_type(accounts_folder, account_type)
-            for container_type, account_type in self.plugin_manager.hook.account_types()
-        ]
+        return containers
 
     @property
     def aliases(self) -> Iterator[str]:

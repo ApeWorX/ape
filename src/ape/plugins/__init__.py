@@ -1,7 +1,9 @@
 import functools
 import importlib
 import pkgutil
-from typing import cast
+from typing import Iterator, Tuple, cast
+
+from ape.utils import cached_property
 
 from .account import AccountPlugin
 from .config import Config
@@ -57,14 +59,38 @@ def register(plugin_type):
     return functools.partial(check_hook, plugin_type)
 
 
-# NOTE: This actually loads the plugins, and should only be used once
-for _, name, ispkg in pkgutil.iter_modules():
-    if name.startswith("ape_") and ispkg:
-        plugin_manager.register(importlib.import_module(name))
+class PluginManager:
+    @cached_property
+    def hook(self):
+        # NOTE: This actually loads the plugins, and should only be done once
+        for _, name, ispkg in pkgutil.iter_modules():
+            if name.startswith("ape_") and ispkg:
+                plugin_manager.register(importlib.import_module(name))
+
+        return plugin_manager.hook
+
+    def __getattr__(self, hook_name: str) -> Iterator[Tuple[str, tuple]]:
+        if not hasattr(self.hook, hook_name):
+            raise  # Invalid hook name
+
+        # Do this to get access to the package name
+        hook_fn = getattr(self.hook, hook_name)
+        hookimpls = hook_fn.get_hookimpls()
+
+        for plugin_name, results in zip(map(lambda h: h.plugin_name, hookimpls), hook_fn()):
+            # NOTE: Some plugins return a tuple and some return iterators
+            if not isinstance(results, tuple) and hasattr(results, "__iter__"):
+                # Only if it's an iterator, provider results as a series
+                for result in results:
+                    yield clean_plugin_name(plugin_name), result
+
+            else:
+                # Otherwise, provide results directly
+                yield clean_plugin_name(plugin_name), results
 
 
 __all__ = [
-    "plugin_manager",
+    "PluginManager",
     "clean_plugin_name",
     "register",
 ]

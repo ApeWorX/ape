@@ -2,7 +2,7 @@ import sys as _sys
 from pathlib import Path as _Path
 
 from .managers.accounts import AccountManager as _AccountManager
-from .plugins import plugin_manager
+from .plugins import PluginManager as _PluginManager
 from .project import Project
 
 try:
@@ -35,7 +35,8 @@ REQUEST_HEADER = {
 }
 
 # Wiring together the application
-accounts = _AccountManager(plugin_manager)  # type: ignore
+plugin_manager = _PluginManager()
+accounts = _AccountManager(DATA_FOLDER, plugin_manager)  # type: ignore
 project = Project()
 
 
