@@ -2,8 +2,9 @@ import sys as _sys
 from pathlib import Path as _Path
 
 from .managers.accounts import AccountManager as _AccountManager
+from .managers.config import ConfigManager as _ConfigManager
+from .managers.project import ProjectManager as _ProjectManager
 from .plugins import PluginManager as _PluginManager
-from .project import Project
 
 try:
     from importlib.metadata import PackageNotFoundError as _PackageNotFoundError  # type: ignore
@@ -18,30 +19,41 @@ except _PackageNotFoundError:
     # package is not installed
     __version__ = "<unknown>"
 
-# Path constants for Ape
-# NOTE: Make sure this exists for plugins to use
-# NOTE: We overwrite this for testing
-DATA_FOLDER = _Path.home().joinpath(".ape")
 
-
-# For all HTTP requests we make
 # NOTE: DO NOT OVERWRITE
 _python_version = (
     f"{_sys.version_info.major}.{_sys.version_info.minor}"
     f".{_sys.version_info.micro} {_sys.version_info.releaselevel}"
 )
-REQUEST_HEADER = {
-    "User-Agent": f"Ape/{__version__} (Python/{_python_version})",
-}
 
 # Wiring together the application
 plugin_manager = _PluginManager()
-accounts = _AccountManager(DATA_FOLDER, plugin_manager)  # type: ignore
-project = Project()
+config = _ConfigManager(  # type: ignore
+    # Store all globally-cached files
+    DATA_FOLDER=_Path.home().joinpath(".ape"),
+    # NOTE: For all HTTP requests we make
+    REQUEST_HEADER={
+        "User-Agent": f"Ape/{__version__} (Python/{_python_version})",
+    },
+    # What we are considering to be the starting project directory
+    PROJECT_FOLDER=_Path.cwd(),
+    plugin_manager=plugin_manager,
+)
+
+# Main types we export for the user
+accounts = _AccountManager(config, plugin_manager)  # type: ignore
+
+
+def Project(path):
+    return _ProjectManager(path=path, config=config)
+
+
+project = Project(config.PROJECT_FOLDER)
 
 
 __all__ = [
     "accounts",
+    "config",
     "project",
     "Project",  # So you can load other projects
 ]

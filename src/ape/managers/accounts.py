@@ -1,11 +1,12 @@
-from pathlib import Path
-from typing import Iterator, List
+from typing import Dict, Iterator
 
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.utils import cached_property, singledispatchmethod
+
+from .config import ConfigManager
 
 
 @dataclass
@@ -15,32 +16,33 @@ class AccountManager:
     All containers must subclass AccountContainerAPI, and are treated as singletons
     """
 
-    data_folder: Path
+    config: ConfigManager
     plugin_manager: PluginManager
     # network_manager: NetworkManager
 
     @cached_property
-    def account_containers(self) -> List[AccountContainerAPI]:
-        containers = []
-        self.data_folder.mkdir(exist_ok=True)
+    def containers(self) -> Dict[str, AccountContainerAPI]:
+        containers = dict()
+        data_folder = self.config.DATA_FOLDER
+        data_folder.mkdir(exist_ok=True)
         for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
-            accounts_folder = self.data_folder / plugin_name
+            accounts_folder = data_folder / plugin_name
             accounts_folder.mkdir(exist_ok=True)
-            containers.append(container_type(accounts_folder, account_type))
+            containers[plugin_name] = container_type(accounts_folder, account_type)
 
         return containers
 
     @property
     def aliases(self) -> Iterator[str]:
-        for container in self.account_containers:
+        for container in self.containers.values():
             for alias in container.aliases:
                 yield alias
 
     def __len__(self) -> int:
-        return sum(len(container) for container in self.account_containers)
+        return sum(len(container) for container in self.containers.values())
 
     def __iter__(self) -> Iterator[AccountAPI]:
-        for container in self.account_containers:
+        for container in self.containers.values():
             for account in container:
                 # TODO: Inject `NetworkAPI` here
                 yield account
@@ -71,7 +73,7 @@ class AccountManager:
 
     @__getitem__.register
     def __getitem_str(self, account_id: str) -> AccountAPI:
-        for container in self.account_containers:
+        for container in self.containers.values():
             if account_id in container:
                 # TODO: Inject `NetworkAPI` here
                 return container[account_id]
@@ -79,4 +81,4 @@ class AccountManager:
         raise IndexError(f"No account with address `{account_id}`.")
 
     def __contains__(self, address: str) -> bool:
-        return any(address in container for container in self.account_containers)
+        return any(address in container for container in self.containers.values())
