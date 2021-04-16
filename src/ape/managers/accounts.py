@@ -1,19 +1,10 @@
-try:
-    from functools import cached_property
-except ImportError:
-    from backports.cached_property import cached_property  # type: ignore
-
-try:
-    from functools import singledispatchmethod
-except ImportError:
-    from singledispatchmethod import singledispatchmethod  # type: ignore
-
 from typing import Iterator, List
 
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
+from ape.utils import cached_property, singledispatchmethod
 
 
 @dataclass

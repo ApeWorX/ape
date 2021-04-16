@@ -8,6 +8,16 @@ from typing import Dict
 import click
 import yaml
 
+try:
+    from functools import cached_property
+except ImportError:
+    from backports.cached_property import cached_property  # type: ignore
+
+try:
+    from functools import singledispatchmethod
+except ImportError:
+    from singledispatchmethod import singledispatchmethod  # type: ignore
+
 NOTIFY_COLORS = {"WARNING": "bright_red", "ERROR": "bright_red", "SUCCESS": "bright_green"}
 
 
@@ -54,3 +64,13 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
 
     else:
         return {}
+
+
+__all__ = [
+    "cached_property",
+    "deep_merge",
+    "expand_environment_variables",
+    "load_config",
+    "notify",
+    "singledispatchmethod",
+]
