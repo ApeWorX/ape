@@ -4,7 +4,7 @@ from tempfile import mkdtemp
 import pytest  # type: ignore
 from click.testing import CliRunner
 
-import ape
+from ape import config
 from ape._cli import cli
 
 
@@ -20,5 +20,5 @@ def data_folder():
 
 @pytest.fixture(scope="session")
 def ape_cli(data_folder):
-    ape.DATA_FOLDER = data_folder
+    config.DATA_FOLDER = data_folder
     yield cli
