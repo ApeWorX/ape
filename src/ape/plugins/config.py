@@ -2,10 +2,10 @@ from typing import Type
 
 from ape.api.config import ConfigItem
 
-from .pluggy_patch import hookspec
+from .pluggy_patch import PluginType, hookspec
 
 
-class Config:
+class Config(PluginType):
     @hookspec
     def config_class(self) -> Type[ConfigItem]:
         """

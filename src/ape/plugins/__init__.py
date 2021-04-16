@@ -1,13 +1,13 @@
 import functools
 import importlib
 import pkgutil
-from typing import Iterator, Tuple, cast
+from typing import Callable, Iterator, Tuple, Type, cast
 
 from ape.utils import cached_property
 
 from .account import AccountPlugin
 from .config import Config
-from .pluggy_patch import hookimpl, plugin_manager
+from .pluggy_patch import PluginType, hookimpl, plugin_manager
 
 
 class PluginError(Exception):
@@ -35,7 +35,7 @@ def get_hooks(plugin_type):
     return [name for name, method in plugin_type.__dict__.items() if hasattr(method, "ape_spec")]
 
 
-def register(plugin_type):
+def register(plugin_type: Type[PluginType]) -> Callable:
     # NOTE: we are basically checking that `plugin_type`
     #       is one of the parent classes of `Plugins`
     if not issubclass(AllPluginHooks, plugin_type):
