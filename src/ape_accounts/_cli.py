@@ -4,8 +4,11 @@ import click
 from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
 
-from ape import DATA_FOLDER, accounts
+from ape import accounts
 from ape.utils import notify
+
+# NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
+container = accounts.containers["accounts"]
 
 
 @click.group(short_help="Manage local accounts")
@@ -34,14 +37,14 @@ def _list():
         click.echo(f"  {account.address}{alias_display}")
 
 
-@cli.command(short_help="Add a new account with a random private key")
+@cli.command(short_help="Create a new keyfile account with a random private key")
 @click.argument("alias")
 def generate(alias):
     if alias in accounts.aliases:
         notify("ERROR", f"Account with alias '{alias}' already exists")
         return
 
-    path = DATA_FOLDER.joinpath(f"{alias}.json")
+    path = container.data_folder.joinpath(f"{alias}.json")
     extra_entropy = click.prompt(
         "Add extra entropy for key generation...",
         hide_input=True,
@@ -58,14 +61,14 @@ def generate(alias):
 
 
 # Different name because `import` is a keyword
-@cli.command(name="import", short_help="Add a new account by entering a private key")
+@cli.command(name="import", short_help="Add a new keyfile account by entering a private key")
 @click.argument("alias")
 def _import(alias):
     if alias in accounts.aliases:
         notify("ERROR", f"Account with alias '{alias}' already exists")
         return
 
-    path = DATA_FOLDER.joinpath(f"{alias}.json")
+    path = container.data_folder.joinpath(f"{alias}.json")
     key = click.prompt("Enter Private Key", hide_input=True)
     a = EthAccount.from_key(to_bytes(hexstr=key))
     passphrase = click.prompt(
