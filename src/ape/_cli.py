@@ -60,6 +60,7 @@ class ApeCLI(click.MultiCommand):
     is_eager=True,
     expose_value=False,
     callback=display_config,
+    help="Show configuration options (using `ape-config.yaml`)",
 )
 def cli():
     pass
