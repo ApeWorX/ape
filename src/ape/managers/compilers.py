@@ -25,6 +25,10 @@ class CompilerManager:
             compiler = compiler_class()
 
             for extension in extensions:
+
+                if extension in registered_compilers:
+                    raise  # Extension already registered!
+
                 registered_compilers[extension] = compiler
 
         return registered_compilers
