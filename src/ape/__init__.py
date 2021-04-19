@@ -2,6 +2,7 @@ import sys as _sys
 from pathlib import Path as _Path
 
 from .managers.accounts import AccountManager as _AccountManager
+from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
 from .managers.project import ProjectManager as _ProjectManager
 from .plugins import PluginManager as _PluginManager
@@ -42,10 +43,11 @@ config = _ConfigManager(  # type: ignore
 
 # Main types we export for the user
 accounts = _AccountManager(config, plugin_manager)  # type: ignore
+compilers = _CompilerManager(config, plugin_manager)  # type: ignore
 
 
 def Project(path):
-    return _ProjectManager(path=path, config=config)
+    return _ProjectManager(path=path, config=config, compilers=compilers)
 
 
 project = Project(config.PROJECT_FOLDER)
@@ -53,6 +55,7 @@ project = Project(config.PROJECT_FOLDER)
 
 __all__ = [
     "accounts",
+    "compilers",
     "config",
     "project",
     "Project",  # So you can load other projects

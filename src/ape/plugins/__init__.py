@@ -6,6 +6,7 @@ from typing import Callable, Iterator, Tuple, Type, cast
 from ape.utils import cached_property
 
 from .account import AccountPlugin
+from .compiler import CompilerPlugin
 from .config import Config
 from .pluggy_patch import PluginType, hookimpl, plugin_manager
 
@@ -15,7 +16,7 @@ class PluginError(Exception):
 
 
 # Combine all the plugins together via subclassing (merges `hookspec`s)
-class AllPluginHooks(AccountPlugin, Config):
+class AllPluginHooks(AccountPlugin, CompilerPlugin, Config):
     pass
 
 
