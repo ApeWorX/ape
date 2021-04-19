@@ -36,10 +36,9 @@ class ProjectManager:
 
     @property
     def sources(self) -> List[Path]:
-        files = []
+        files: List[Path] = []
         for extension in self.compilers.registered_compilers:
-            for f in self._contracts_folder.rglob("*" + extension):
-                files.append(f.relative_to(self.path))
+            files.extend(self._contracts_folder.rglob("*" + extension))
 
         return files
 
