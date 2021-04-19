@@ -1,4 +1,4 @@
-from ape.package import (
+from ape.types.contract import (
     Bytecode,
     Checksum,
     Compiler,
@@ -6,10 +6,9 @@ from ape.package import (
     ContractType,
     LinkDependency,
     LinkReference,
-    PackageManifest,
-    PackageMeta,
     Source,
 )
+from ape.types.manifest import PackageManifest, PackageMeta
 
 
 def test_linkreference_to_dict():
