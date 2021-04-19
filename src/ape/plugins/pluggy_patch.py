@@ -7,3 +7,7 @@ hookimpl = cast(Callable[[F], F], pluggy.HookimplMarker("ape"))
 hookspec = pluggy.HookspecMarker("ape")
 
 plugin_manager = pluggy.PluginManager("ape")
+
+
+class PluginType:
+    pass
