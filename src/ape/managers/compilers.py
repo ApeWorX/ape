@@ -6,7 +6,7 @@ from dataclassy import dataclass
 from ape.api.compiler import CompilerAPI
 from ape.plugins import PluginManager
 from ape.types import ContractType
-from ape.utils import cached_property
+from ape.utils import cached_property, notify
 
 from .config import ConfigManager
 
@@ -37,6 +37,7 @@ class CompilerManager:
         extension = contract_filepath.suffix
 
         if extension in self.registered_compilers:
+            notify("INFO", f"Compiling '{contract_filepath.relative_to(Path.cwd())}'")
             return self.registered_compilers[extension].compile(contract_filepath)
 
         else:
