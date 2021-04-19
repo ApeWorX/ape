@@ -18,7 +18,12 @@ try:
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
-NOTIFY_COLORS = {"WARNING": "bright_red", "ERROR": "bright_red", "SUCCESS": "bright_green"}
+NOTIFY_COLORS = {
+    "WARNING": "bright_red",
+    "ERROR": "bright_red",
+    "SUCCESS": "bright_green",
+    "INFO": "blue",
+}
 
 
 def notify(type_, msg):
