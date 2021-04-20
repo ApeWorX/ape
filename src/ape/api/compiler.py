@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import List
 
 from ape.types import ContractType
 
@@ -11,7 +12,7 @@ class CompilerAPI(ABC):
         ...
 
     @abstractmethod
-    def compile(self, contract_filepath: Path) -> ContractType:
+    def compile(self, contract_filepaths: List[Path]) -> List[ContractType]:
         """
         Compile the source given `pkg_manifest`.
         All compiler plugins must implement this function.

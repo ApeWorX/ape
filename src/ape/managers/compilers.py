@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 from dataclassy import dataclass
 
@@ -33,12 +33,21 @@ class CompilerManager:
 
         return registered_compilers
 
-    def compile(self, contract_filepath: Path) -> ContractType:
-        extension = contract_filepath.suffix
-
-        if extension in self.registered_compilers:
-            notify("INFO", f"Compiling '{contract_filepath.relative_to(Path.cwd())}'")
-            return self.registered_compilers[extension].compile(contract_filepath)
-
-        else:
+    def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
+        extensions = set(path.suffix for path in contract_filepaths)
+        if extensions > set(self.registered_compilers):
             raise  # No compiler found for extension
+
+        contract_types = {}
+        for extension in extensions:
+            paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
+            for path in paths_to_compile:
+                notify("INFO", f"Compiling '{path.relative_to(Path.cwd())}'")
+            for contract_type in self.registered_compilers[extension].compile(paths_to_compile):
+
+                if contract_type.contractName in contract_types:
+                    raise  # ContractType collision across compiler plugins
+
+                contract_types[contract_type.contractName] = contract_type
+
+        return contract_types

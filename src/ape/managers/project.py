@@ -44,16 +44,7 @@ class ProjectManager:
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
-        contract_types = {}
-        for filepath in self.sources:
-            contract_type = self.compilers.compile(filepath)
-
-            if contract_type.contractName in contract_types:
-                raise  # ContractType collision across compiler plugins
-
-            contract_types[contract_type.contractName] = contract_type
-
-        return contract_types
+        return self.compilers.compile(self.sources)
 
     def _interfaces_folder(self) -> Path:
         return self.path / "interfaces"
