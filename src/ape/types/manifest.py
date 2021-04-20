@@ -13,9 +13,9 @@ class PackageMeta(SerializableType):
 
 
 class PackageManifest(SerializableType, FileMixin):
-    manifest: str
-    name: str
-    version: str
+    manifest: str = "ethpm/3"
+    name: Optional[str] = None
+    version: Optional[str] = None
     meta: Optional[PackageMeta] = None
     sources: Optional[Dict[str, Source]] = None
     contractTypes: Optional[List[ContractType]] = None
