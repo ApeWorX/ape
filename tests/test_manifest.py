@@ -10,6 +10,7 @@ ETHPM_MANIFEST_SCHEMA_URI = (
 )
 
 
+@pytest.mark.xfail(reason="Schema is poorly formed")
 @pytest.mark.fuzzing
 @given(manifest_dict=from_schema(requests.get(ETHPM_MANIFEST_SCHEMA_URI).json()))
 @settings(suppress_health_check=(HealthCheck.too_slow,))
