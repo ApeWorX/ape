@@ -28,4 +28,6 @@ class FileMixin:
         return cls.from_dict(json.load(path.open()))
 
     def to_file(self, path: Path):
-        json.dump(self.to_dict(), path.open("w"), indent=4)
+        # NOTE: EIP-2678 specifies document *must* be tightly packed
+        # NOTE: EIP-2678 specifies document *must* have sorted keys
+        json.dump(self.to_dict(), path.open("w"), indent=4, sort_keys=True)
