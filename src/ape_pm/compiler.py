@@ -14,9 +14,19 @@ class PackageCompiler(CompilerAPI):
     def compile(self, filepaths: List[Path]) -> List[ContractType]:
         contract_types: List[ContractType] = []
         for path in filepaths:
-            manifest = PackageManifest.from_dict(json.loads(path.read_text()))
+            data = json.load(path.open())
+            if "manifest" in data:
+                manifest = PackageManifest.from_dict(data)
 
-            if manifest.contractTypes:
-                contract_types.extend(manifest.contractTypes.values())
+                if manifest.contractTypes:  # type: ignore
+                    contract_types.extend(manifest.contractTypes.values())  # type: ignore
+
+            else:
+                contract_types.append(
+                    ContractType(  # type: ignore
+                        contractName=path.stem,
+                        abi=json.load(path.open()),
+                    )
+                )
 
         return contract_types
