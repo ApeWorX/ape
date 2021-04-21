@@ -3,8 +3,6 @@ import importlib
 import pkgutil
 from typing import Callable, Iterator, Tuple, Type, cast
 
-from ape.utils import cached_property
-
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
 from .config import Config
@@ -61,21 +59,19 @@ def register(plugin_type: Type[PluginType]) -> Callable:
 
 
 class PluginManager:
-    @cached_property
-    def hook(self):
+    def __init__(self):
         # NOTE: This actually loads the plugins, and should only be done once
         for _, name, ispkg in pkgutil.iter_modules():
             if name.startswith("ape_") and ispkg:
                 plugin_manager.register(importlib.import_module(name))
 
-        return plugin_manager.hook
-
     def __getattr__(self, hook_name: str) -> Iterator[Tuple[str, tuple]]:
-        if not hasattr(self.hook, hook_name):
+        if not hasattr(plugin_manager.hook, hook_name):
+            breakpoint()
             raise AttributeError(f"{self.__class__.__name__} has no hook '{hook_name}'")
 
         # Do this to get access to the package name
-        hook_fn = getattr(self.hook, hook_name)
+        hook_fn = getattr(plugin_manager.hook, hook_name)
         hookimpls = hook_fn.get_hookimpls()
 
         for plugin_name, results in zip(map(lambda h: h.plugin_name, hookimpls), hook_fn()):
