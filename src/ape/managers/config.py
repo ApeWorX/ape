@@ -5,7 +5,7 @@ from typing import Dict
 from dataclassy import dataclass
 
 from ape.api.config import ConfigItem
-from ape.plugins import PluginManager, clean_plugin_name
+from ape.plugins import PluginManager
 from ape.utils import load_config
 
 CONFIG_FILE_NAME = "ape-config.yaml"
@@ -26,10 +26,7 @@ class ConfigManager:
         else:
             user_config = {}
 
-        for hookimpl in self.plugin_manager.hook.config_class.get_hookimpls():
-            plugin_name = clean_plugin_name(hookimpl.plugin_name)
-            config_class = hookimpl.plugin.config_class()
-
+        for plugin_name, config_class in self.plugin_manager.config_class:
             if plugin_name in user_config:
                 user_override = user_config[plugin_name]
                 del user_config[plugin_name]  # For checking if all config was processed
