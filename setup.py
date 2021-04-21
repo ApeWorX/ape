@@ -87,6 +87,7 @@ setup(
         "ape_accounts",
         "ape_compile",
         "ape_console",
+        "ape_ethereum",
         "ape_networks",
         "ape_plugins",
     ],
@@ -99,6 +100,7 @@ setup(
         "ape": ["py.typed"],
         "ape_accounts": ["py.typed"],
         "ape_compile": ["py.typed"],
+        "ape_ethereum": ["py.typed"],
     },
     classifiers=[
         "Development Status :: 3 - Alpha",
