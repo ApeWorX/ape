@@ -1,6 +1,13 @@
+from copy import deepcopy
 from typing import Dict, List, Optional
 
-from .abstract import FileMixin, SerializableType
+from .abstract import (
+    FileMixin,
+    SerializableType,
+    update_dict_params,
+    update_list_params,
+    update_params,
+)
 from .contract import Compiler, ContractInstance, ContractType, Source
 
 
@@ -12,7 +19,7 @@ class PackageMeta(SerializableType):
     links: Optional[Dict[str, str]] = None
 
 
-class PackageManifest(SerializableType, FileMixin):
+class PackageManifest(FileMixin, SerializableType):
     # NOTE: Must not override this key
     manifest: str = "ethpm/3"
     # NOTE: `name` and `version` should appear together
@@ -28,7 +35,7 @@ class PackageManifest(SerializableType, FileMixin):
     sources: Optional[Dict[str, Source]] = None
     # NOTE: `contractTypes` should only include types directly computed from manifest
     # NOTE: `contractTypes` should not include abstracts
-    contractTypes: Optional[List[ContractType]] = None
+    contractTypes: Optional[Dict[str, ContractType]] = None
     compilers: Optional[List[Compiler]] = None
     # NOTE: Keys must be a valid BIP122 URI chain definition
     # NOTE: Values must be a dict of `ContractType.contractName` => `ContractInstance` objects
@@ -39,3 +46,38 @@ class PackageManifest(SerializableType, FileMixin):
     # NOTE: values must be a Content Addressible URI that conforms to the same manifest
     #       version as `manifest`
     buildDependencies: Optional[Dict[str, str]] = None
+
+    def to_dict(self):
+        data = super().to_dict()
+
+        if "contractTypes" in data and data["contractTypes"]:
+            for name in data["contractTypes"]:
+                # NOTE: This was inserted by us, remove it
+                del data["contractTypes"][name]["contractName"]
+
+        return data
+
+    @classmethod
+    def from_dict(cls, params: Dict):
+        params = deepcopy(params)
+        update_params(params, "meta", PackageMeta)
+        update_dict_params(params, "sources", Source)
+
+        # NOTE: Special 1-level dict with key in type as arg
+        if "contractTypes" in params and params["contractTypes"]:
+            for name in params["contractTypes"]:
+                params["contractTypes"][name] = ContractType.from_dict(  # type: ignore
+                    {
+                        "contractName": name,
+                        **params["contractTypes"][name],
+                    }
+                )
+
+        update_list_params(params, "compilers", Compiler)
+
+        # NOTE: Special 2-level dict
+        if "deployments" in params and params["deployments"]:
+            for name in params["deployments"]:
+                update_dict_params(params["deployments"], name, ContractInstance)
+
+        return cls(**params)  # type: ignore
