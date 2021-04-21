@@ -69,6 +69,7 @@ setup(
         "singledispatchmethod ; python_version<'3.8'",
         "IPython==7.16",  # Pinned for py3.6
         "jedi==0.17.2",  # Pinned for IPython 7.16 incompatibility
+        "web3[tester]>=5.18.0,<6.0.0",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
@@ -91,6 +92,7 @@ setup(
         "ape_infura",
         "ape_networks",
         "ape_plugins",
+        "ape_test",
     ],
     license="Apache-2.0",
     zip_safe=False,
@@ -103,6 +105,7 @@ setup(
         "ape_compile": ["py.typed"],
         "ape_ethereum": ["py.typed"],
         "ape_infura": ["py.typed"],
+        "ape_test": ["py.typed"],
     },
     classifiers=[
         "Development Status :: 3 - Alpha",
