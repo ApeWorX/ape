@@ -72,7 +72,7 @@ class PluginManager:
 
     def __getattr__(self, hook_name: str) -> Iterator[Tuple[str, tuple]]:
         if not hasattr(self.hook, hook_name):
-            raise  # Invalid hook name
+            raise AttributeError(f"{self.__class__.__name__} has no hook '{hook_name}'")
 
         # Do this to get access to the package name
         hook_fn = getattr(self.hook, hook_name)
