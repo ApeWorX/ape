@@ -7,6 +7,7 @@ from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.utils import cached_property, singledispatchmethod
 
 from .config import ConfigManager
+from .networks import NetworkManager
 
 
 @dataclass
@@ -18,7 +19,7 @@ class AccountManager:
 
     config: ConfigManager
     plugin_manager: PluginManager
-    # network_manager: NetworkManager
+    network_manager: NetworkManager
 
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:

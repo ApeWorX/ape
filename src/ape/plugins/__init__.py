@@ -6,6 +6,7 @@ from typing import Callable, Iterator, Tuple, Type, cast
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
 from .config import Config
+from .network import EcosystemPlugin, ExplorerPlugin, NetworkPlugin, ProviderPlugin
 from .pluggy_patch import PluginType, hookimpl, plugin_manager
 
 
@@ -14,7 +15,15 @@ class PluginError(Exception):
 
 
 # Combine all the plugins together via subclassing (merges `hookspec`s)
-class AllPluginHooks(AccountPlugin, CompilerPlugin, Config):
+class AllPluginHooks(
+    Config,
+    AccountPlugin,
+    CompilerPlugin,
+    EcosystemPlugin,
+    ExplorerPlugin,
+    NetworkPlugin,
+    ProviderPlugin,
+):
     pass
 
 
