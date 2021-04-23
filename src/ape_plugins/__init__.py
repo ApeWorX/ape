@@ -18,6 +18,7 @@ FIRST_CLASS_PLUGINS: Set[str] = {
 SECOND_CLASS_PLUGINS: Set[str] = set()
 
 # TODO: Should the github client be in core?
+# TODO: Handle failures with connecting to github (potentially cached on disk?)
 if "GITHUB_ACCESS_TOKEN" in os.environ:
     author = Github(os.environ["GITHUB_ACCESS_TOKEN"]).get_organization("ApeWorX")
 

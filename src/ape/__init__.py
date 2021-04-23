@@ -4,6 +4,7 @@ from pathlib import Path as _Path
 from .managers.accounts import AccountManager as _AccountManager
 from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
+from .managers.networks import NetworkManager as _NetworkManager
 from .managers.project import ProjectManager as _ProjectManager
 from .plugins import PluginManager as _PluginManager
 
@@ -42,8 +43,9 @@ config = _ConfigManager(  # type: ignore
 )
 
 # Main types we export for the user
-accounts = _AccountManager(config, plugin_manager)  # type: ignore
 compilers = _CompilerManager(config, plugin_manager)  # type: ignore
+networks = _NetworkManager(config, plugin_manager)  # type: ignore
+accounts = _AccountManager(config, plugin_manager, networks)  # type: ignore
 
 
 def Project(path):
@@ -57,6 +59,7 @@ __all__ = [
     "accounts",
     "compilers",
     "config",
+    "networks",
     "project",
     "Project",  # So you can load other projects
 ]

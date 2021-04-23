@@ -22,6 +22,8 @@ from ape import config
         ["console", "--verbose"],
         ["plugins"],
         ["plugins", "list"],
+        ["networks"],
+        ["networks", "list"],
     ),
 )
 def test_invocation(ape_cli, runner, args):
