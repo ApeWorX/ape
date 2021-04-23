@@ -6,6 +6,12 @@ from ape.api import ProviderAPI
 class LocalNetwork(Web3, ProviderAPI):
     _web3: Web3 = None  # type: ignore
 
+    def connect(self):
+        pass
+
+    def disconnect(self):
+        pass
+
     def __init__(self):
         self._web3 = Web3(EthereumTesterProvider())
 

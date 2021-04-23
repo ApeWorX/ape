@@ -12,6 +12,12 @@ class Infura(Web3, ProviderAPI):
         key = os.environ.get("WEB3_INFURA_PROJECT_ID") or os.environ.get("WEB3_INFURA_API_KEY")
         self._web3 = Web3(HTTPProvider(f"https://{self.network.name}.infura.io/v3/{key}"))
 
+    def connect(self):
+        pass
+
+    def disconnect(self):
+        pass
+
     def transfer_cost(self, address: str) -> int:
         if self.get_code(address) == b"":
             return 21000
