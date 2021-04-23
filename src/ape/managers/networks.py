@@ -3,7 +3,7 @@ from typing import Dict, Iterator, Optional
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
-from ape.api import EcosystemAPI, ProviderContextManager
+from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.utils import cached_property
 
 from .config import ConfigManager
@@ -39,6 +39,7 @@ class NetworkManager:
 
     config: ConfigManager
     plugin_manager: PluginManager
+    active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
 
     @cached_property
@@ -46,6 +47,7 @@ class NetworkManager:
         return {
             plugin_name: ecosystem_class(
                 name=plugin_name,
+                network_manager=self,
                 plugin_manager=self.plugin_manager,
                 data_folder=self.config.DATA_FOLDER / plugin_name,
                 request_header=self.config.REQUEST_HEADER,

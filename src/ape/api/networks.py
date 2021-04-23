@@ -8,6 +8,8 @@ from pluggy import PluginManager  # type: ignore
 from ape.utils import cached_property
 
 if TYPE_CHECKING:
+    from ape.managers.networks import NetworkManager
+
     from .explorers import ExplorerAPI
     from .providers import ProviderAPI
 
@@ -19,6 +21,7 @@ class EcosystemAPI:
     """
 
     name: str  # Set as plugin name
+    network_manager: "NetworkManager"
     plugin_manager: PluginManager
     data_folder: Path
     request_header: str
@@ -92,15 +95,35 @@ class EcosystemAPI:
 
 
 class ProviderContextManager:
-    def __init__(self, provider: "ProviderAPI"):
+    # NOTE: Class variable, so it will manage stack across instances of this object
+    _connected_providers: List["ProviderAPI"] = []
+
+    def __init__(self, network_manager: "NetworkManager", provider: "ProviderAPI"):
+        self.network_manager = network_manager
         self.provider = provider
 
     def __enter__(self, *args, **kwargs):
+        # If we are already connected to a provider, disconnect and add
+        # it to our stack of providers that were connected
+        if self._connected_providers:
+            self._connected_providers[-1].disconnect()
+
+        # Connect to our provider
         self.provider.connect()
+        self.network_manager.active_provider = self.provider
+        self._connected_providers.append(self.provider)
+
         return self.provider
 
     def __exit__(self, *args, **kwargs):
-        self.provider.disconnect()
+        # Put our providers back the way it was
+        provider = self._connected_providers.pop()
+        assert self.provider == provider
+        provider.disconnect()
+
+        if self._connected_providers:
+            self._connected_providers[-1].connect()
+            self.network_manager.active_provider = self._connected_providers[-1]
 
 
 @dataclass
@@ -180,7 +203,10 @@ class NetworkAPI(metaclass=ABCMeta):
             provider_name = provider_name.split(":")[0]
 
         if provider_name in self.providers:
-            return ProviderContextManager(self.providers[provider_name](provider_settings))
+            return ProviderContextManager(
+                self.ecosystem.network_manager,
+                self.providers[provider_name](provider_settings),
+            )
 
         else:
             raise  # Not a registered provider name
