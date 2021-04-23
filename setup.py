@@ -8,6 +8,7 @@ extras_require = {
         "pytest-xdist",  # multi-process runner
         "pytest-cov",  # Coverage analyzer plugin
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
+        "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
         "black>=20.8b1,<21.0",  # auto-formatter and linter
