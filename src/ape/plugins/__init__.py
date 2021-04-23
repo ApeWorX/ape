@@ -74,16 +74,16 @@ class PluginManager:
             if name.startswith("ape_") and ispkg:
                 plugin_manager.register(importlib.import_module(name))
 
-    def __getattr__(self, hook_name: str) -> Iterator[Tuple[str, tuple]]:
-        if not hasattr(plugin_manager.hook, hook_name):
-            raise AttributeError(f"{self.__class__.__name__} has no hook '{hook_name}'")
+    def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
+        if not hasattr(plugin_manager.hook, attr_name):
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
 
         # Do this to get access to the package name
-        hook_fn = getattr(plugin_manager.hook, hook_name)
+        hook_fn = getattr(plugin_manager.hook, attr_name)
         hookimpls = hook_fn.get_hookimpls()
 
         def get_plugin_name_and_hookfn(h):
-            return h.plugin_name, getattr(h.plugin, hook_name)()
+            return h.plugin_name, getattr(h.plugin, attr_name)()
 
         for plugin_name, results in map(get_plugin_name_and_hookfn, hookimpls):
             # NOTE: Some plugins return a tuple and some return iterators

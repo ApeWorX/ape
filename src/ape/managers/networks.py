@@ -65,11 +65,11 @@ class NetworkManager:
 
         return self.ecosystems[ecosystem_name]
 
-    def __getattr__(self, ecosystem_name: str) -> EcosystemAPI:
-        if ecosystem_name not in self.ecosystems:
-            raise AttributeError(f"{self.__class__.__name__} has no ecosystem '{ecosystem_name}'")
+    def __getattr__(self, attr_name: str) -> EcosystemAPI:
+        if attr_name not in self.ecosystems:
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
 
-        return self.ecosystems[ecosystem_name]
+        return self.ecosystems[attr_name]
 
     @property
     def network_choices(self) -> Iterator[str]:
