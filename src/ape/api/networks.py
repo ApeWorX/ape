@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
+from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Dict, Iterator, Optional, Type
+from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Type
 
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
@@ -166,7 +167,7 @@ class NetworkAPI(metaclass=ABCMeta):
         return None  # May not have an block explorer
 
     @cached_property
-    def providers(self) -> Dict[str, Callable[[dict], "ProviderAPI"]]:  # noqa: F811
+    def providers(self):  # -> Dict[str, Partial[ProviderAPI]]
         providers = {}
 
         for plugin_name, plugin_tuple in self.plugin_manager.providers:
@@ -174,10 +175,10 @@ class NetworkAPI(metaclass=ABCMeta):
 
             if self.ecosystem.name == ecosystem_name and self.name == network_name:
                 # NOTE: Lazily load and provider config on load
-                providers[plugin_name] = lambda config: provider_class(
+                providers[plugin_name] = partial(
+                    provider_class,
                     name=plugin_name,
                     network=self,
-                    config=config,
                     # NOTE: No need to have separate folder, caching should be interoperable
                     data_folder=self.data_folder,
                     request_header=self.request_header,
@@ -205,7 +206,7 @@ class NetworkAPI(metaclass=ABCMeta):
         if provider_name in self.providers:
             return ProviderContextManager(
                 self.ecosystem.network_manager,
-                self.providers[provider_name](provider_settings),
+                self.providers[provider_name](config=provider_settings),
             )
 
         else:
