@@ -34,14 +34,14 @@ def get_hooks(plugin_type):
     return [name for name, method in plugin_type.__dict__.items() if hasattr(method, "ape_spec")]
 
 
-def register(plugin_type: Type[PluginType]) -> Callable:
+def register(plugin_type: Type[PluginType], **hookimpl_kwargs) -> Callable:
     # NOTE: we are basically checking that `plugin_type`
     #       is one of the parent classes of `Plugins`
     if not issubclass(AllPluginHooks, plugin_type):
         raise PluginError("Not a valid plugin type to register")
 
-    def check_hook(plugin_type, fn):
-        fn = hookimpl(fn)
+    def check_hook(plugin_type, hookimpl_kwargs, fn):
+        fn = hookimpl(fn, **hookimpl_kwargs)
 
         if not hasattr(plugin_type, fn.__name__):
             hooks = get_hooks(plugin_type)
@@ -55,7 +55,7 @@ def register(plugin_type: Type[PluginType]) -> Callable:
         return fn
 
     # NOTE: Get around issue with using `plugin_type` raw in `check_hook`
-    return functools.partial(check_hook, plugin_type)
+    return functools.partial(check_hook, plugin_type, hookimpl_kwargs)
 
 
 class PluginManager:
@@ -74,7 +74,10 @@ class PluginManager:
         hook_fn = getattr(plugin_manager.hook, hook_name)
         hookimpls = hook_fn.get_hookimpls()
 
-        for plugin_name, results in zip(map(lambda h: h.plugin_name, hookimpls), hook_fn()):
+        def get_plugin_name_and_hookfn(h):
+            return h.plugin_name, getattr(h.plugin, hook_name)()
+
+        for plugin_name, results in map(get_plugin_name_and_hookfn, hookimpls):
             # NOTE: Some plugins return a tuple and some return iterators
             if not isinstance(results, tuple) and hasattr(results, "__iter__"):
                 # Only if it's an iterator, provider results as a series
