@@ -45,7 +45,8 @@ class AccountManager:
     def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
             for account in container:
-                # TODO: Inject `NetworkAPI` here
+                # NOTE: Inject network manager
+                account.network_manager = self.network_manager
                 yield account
 
     def load(self, alias: str) -> AccountAPI:
@@ -54,20 +55,22 @@ class AccountManager:
 
         for account in self:
             if account.alias and account.alias == alias:
-                # TODO: Inject `NetworkAPI` here
+                # NOTE: Inject network manager
+                account.network_manager = self.network_manager
                 return account
 
         raise IndexError(f"No account with alias `{alias}`.")
 
     @singledispatchmethod
     def __getitem__(self, account_id) -> AccountAPI:
-        raise NotImplementedError("Cannot used " + type(account_id) + " as account id")
+        raise NotImplementedError("Cannot use " + type(account_id) + " as account id")
 
     @__getitem__.register
     def __getitem_int(self, account_id: int) -> AccountAPI:
         for idx, account in enumerate(self.__iter__()):
             if account_id == idx:
-                # TODO: Inject `NetworkAPI` here
+                # NOTE: Inject network manager
+                account.network_manager = self.network_manager
                 return account
 
         raise IndexError(f"No account at index `{account_id}`.")
@@ -76,8 +79,10 @@ class AccountManager:
     def __getitem_str(self, account_id: str) -> AccountAPI:
         for container in self.containers.values():
             if account_id in container:
-                # TODO: Inject `NetworkAPI` here
-                return container[account_id]
+                account = container[account_id]
+                # NOTE: Inject network manager
+                account.network_manager = self.network_manager
+                return account
 
         raise IndexError(f"No account with address `{account_id}`.")
 

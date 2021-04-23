@@ -1,15 +1,28 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
-from typing import Iterator, Optional, Type
+from typing import TYPE_CHECKING, Iterator, Optional, Type
 
 from dataclassy import dataclass
 from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
 from eth_account.messages import SignableMessage  # type: ignore
 
+if TYPE_CHECKING:
+    from ape.managers.networks import NetworkManager
+
 
 @dataclass
 class AddressAPI(metaclass=ABCMeta):
-    # TODO add `network: NetworkController`
+    network_manager: Optional["NetworkManager"] = None
+
+    @property
+    def _provider(self):
+        if not self.network_manager:
+            raise  # Not wired correctly
+
+        if not self.network_manager.active_provider:
+            raise  # Not connected to any network!
+
+        return self.network_manager.active_provider
 
     @property
     @abstractmethod
@@ -21,6 +34,27 @@ class AddressAPI(metaclass=ABCMeta):
 
     def __str__(self) -> str:
         return self.address
+
+    @property
+    def nonce(self) -> int:
+        return self._provider.get_nonce(self.address)
+
+    @property
+    def balance(self) -> int:
+        return self._provider.get_balance(self.address)
+
+    @property
+    def code(self) -> bytes:
+        # TODO: Explore caching this (based on `self.provider.network` and examining code)
+        return self._provider.get_code(self.address)
+
+    @property
+    def codesize(self) -> int:
+        return len(self.code)
+
+    @property
+    def is_contract(self) -> bool:
+        return len(self.code) > 0
 
 
 # NOTE: AddressAPI is a dataclass already
