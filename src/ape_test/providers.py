@@ -26,13 +26,13 @@ class LocalNetwork(Web3, ProviderAPI):
         return 0
 
     def get_nonce(self, address: str) -> int:
-        return self._web3.eth.getTransactionCount(address)  # type: ignore
+        return self._web3.eth.get_transaction_count(address)  # type: ignore
 
     def get_balance(self, address: str) -> int:
-        return self._web3.eth.getBalance(address)  # type: ignore
+        return self._web3.eth.get_balance(address)  # type: ignore
 
     def get_code(self, address: str) -> bytes:
-        return self._web3.eth.getCode(address)  # type: ignore
+        return self._web3.eth.get_code(address)  # type: ignore
 
     def send_transaction(self, data: bytes) -> bytes:
-        return self._web3.eth.sendRawTransaction(data)  # type: ignore
+        return self._web3.eth.send_raw_transaction(data)  # type: ignore
