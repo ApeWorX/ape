@@ -5,7 +5,7 @@ import pytest  # type: ignore
 import requests
 from click.testing import CliRunner
 
-from ape import config
+from ape import Project, config
 from ape._cli import cli
 
 
@@ -22,9 +22,21 @@ def data_folder():
 
 
 @pytest.fixture(scope="session")
+def project_folder():
+    project_folder = Path(mkdtemp())
+    config.PROJECT_FOLDER = project_folder
+    yield project_folder
+
+
+@pytest.fixture(scope="session")
 def ape_cli():
     # TODO: Ensure cli is invoked with project_folder
     yield cli
+
+
+@pytest.fixture(scope="session")
+def project(project_folder):
+    yield Project(project_folder)
 
 
 @pytest.fixture(

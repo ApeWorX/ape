@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest  # type: ignore
@@ -54,3 +55,21 @@ def test_keygen(ape_cli, runner, alias, password, private_key):
 
     if keyfile.exists():
         keyfile.unlink()
+
+
+def test_compile(project_folder, project, manifest):
+    # Nothing to start (no manifests in folder)
+    contracts_folder = project_folder / "contracts"
+    contracts_folder.mkdir(exist_ok=True)
+    assert len(project.contracts) == 0
+
+    # Add a manifest to the folder, now it will compile it
+    manifest_file = contracts_folder / (manifest["name"] + ".json")
+    manifest_file.write_text(json.dumps(manifest))
+    assert len(project.contracts) == (
+        len(manifest["contractTypes"]) if "contractTypes" in manifest else 0
+    )
+
+    # Remove it from the folder, nothing to compile now
+    manifest_file.unlink()
+    assert len(project.contracts) == 0
