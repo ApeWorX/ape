@@ -19,25 +19,5 @@ def test_manifest_parsing(manifest_dict):
     assert manifest.to_dict() == manifest_dict
 
 
-@pytest.mark.parametrize(
-    "example",
-    [
-        # From https://github.com/ethpm/ethpm-spec/tree/master/examples
-        "escrow",
-        "owned",
-        "piper-coin",
-        "safe-math-lib",
-        "standard-token",
-        "transferable",
-        "wallet-with-send",
-        "wallet",
-    ],
-)
-def test_example_manifests(example):
-    # NOTE: `v3-pretty.json` exists for each, and can be used for debugging
-    manifest_uri = (
-        f"https://raw.githubusercontent.com/ethpm/ethpm-spec/master/examples/{example}/v3.json"
-    )
-    manifest_dict = requests.get(manifest_uri).json()
-    manifest = PackageManifest.from_dict(manifest_dict)
-    assert manifest.to_dict() == manifest_dict
+def test_example_manifests(manifest):
+    assert PackageManifest.from_dict(manifest).to_dict() == manifest
