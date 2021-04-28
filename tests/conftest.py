@@ -16,12 +16,14 @@ def runner():
 
 @pytest.fixture(scope="session")
 def data_folder():
-    yield Path(mkdtemp())
+    data_folder = Path(mkdtemp())
+    config.DATA_FOLDER = data_folder
+    yield data_folder
 
 
 @pytest.fixture(scope="session")
-def ape_cli(data_folder):
-    config.DATA_FOLDER = data_folder
+def ape_cli():
+    # TODO: Ensure cli is invoked with project_folder
     yield cli
 
 
