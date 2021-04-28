@@ -42,7 +42,7 @@ class CompilerManager:
         for extension in extensions:
             paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
             for path in paths_to_compile:
-                notify("INFO", f"Compiling '{path.relative_to(Path.cwd())}'")
+                notify("INFO", f"Compiling '{path.relative_to(self.config.PROJECT_FOLDER)}'")
             for contract_type in self.registered_compilers[extension].compile(paths_to_compile):
 
                 if contract_type.contractName in contract_types:
