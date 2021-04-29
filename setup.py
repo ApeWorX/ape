@@ -94,6 +94,7 @@ setup(
         "ape_networks",
         "ape_plugins",
         "ape_test",
+        "ape_pm",
     ],
     license="Apache-2.0",
     zip_safe=False,
@@ -108,6 +109,7 @@ setup(
         "ape_etherscan": ["py.typed"],
         "ape_infura": ["py.typed"],
         "ape_test": ["py.typed"],
+        "ape_pm": ["py.typed"],
     },
     classifiers=[
         "Development Status :: 3 - Alpha",
