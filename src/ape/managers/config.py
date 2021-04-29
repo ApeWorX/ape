@@ -23,6 +23,11 @@ class ConfigManager:
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
         if config_file.exists():
             user_config = load_config(config_file)
+
+            # In case user just has an empty file
+            if user_config is None:
+                user_config = {}
+
         else:
             user_config = {}
 
