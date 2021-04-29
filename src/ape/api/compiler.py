@@ -11,6 +11,13 @@ class CompilerAPI(ABC):
     def name(self) -> str:
         ...
 
+    @property
+    @abstractmethod
+    def versions(self) -> List[str]:
+        # TODO: Does this need the set of all files in a package
+        #       to determine the full set of versions?
+        ...
+
     @abstractmethod
     def compile(self, contract_filepaths: List[Path]) -> List[ContractType]:
         """

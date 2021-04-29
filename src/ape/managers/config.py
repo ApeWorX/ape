@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 from dataclassy import dataclass
 
@@ -16,6 +16,9 @@ class ConfigManager:
     DATA_FOLDER: Path
     REQUEST_HEADER: Dict
     PROJECT_FOLDER: Path
+    name: str = ""
+    version: str = ""
+    dependencies: List[str] = []
     plugin_manager: PluginManager
     _plugin_configs: Dict[str, ConfigItem] = dict()
 
@@ -28,8 +31,8 @@ class ConfigManager:
 
         for plugin_name, config_class in self.plugin_manager.config_class:
             if plugin_name in user_config:
-                user_override = user_config[plugin_name]
-                del user_config[plugin_name]  # For checking if all config was processed
+                user_override = user_config.pop(plugin_name)
+                # NOTE: `dict.pop()` is used for checking if all config was processed
             else:
                 user_override = {}
 
@@ -40,6 +43,11 @@ class ConfigManager:
             config.validate_config()
 
             self._plugin_configs[plugin_name] = config
+
+        # Top level config items
+        self.name = user_config.pop("name", "")
+        self.version = user_config.pop("version", "")
+        self.dependencies = user_config.pop("dependencies", [])
 
         if len(user_config.keys()) > 0:
             raise  # Unprocessed config items

@@ -11,6 +11,12 @@ class PackageCompiler(CompilerAPI):
     def name(self) -> str:
         return "ethpm"
 
+    @property
+    def versions(self) -> List[str]:
+        # NOTE: This bypasses the serialization of this compiler into the package manifest's
+        #       `compilers` field. You should not do this with a real compiler plugin.
+        return []
+
     def compile(self, filepaths: List[Path]) -> List[ContractType]:
         contract_types: List[ContractType] = []
         for path in filepaths:

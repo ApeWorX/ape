@@ -47,6 +47,13 @@ class PackageManifest(FileMixin, SerializableType):
     #       version as `manifest`
     buildDependencies: Optional[Dict[str, str]] = None
 
+    def __getattr__(self, attr_name: str):
+        if self.contractTypes and attr_name in self.contractTypes:
+            return self.contractTypes[attr_name]
+
+        else:
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
+
     def to_dict(self):
         data = super().to_dict()
 

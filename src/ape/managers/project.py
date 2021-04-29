@@ -1,12 +1,25 @@
+import json
+from hashlib import md5
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
+import requests
 from dataclassy import dataclass
 
-from ape.types import ContractType  # Compiler, PackageManifest, PackageMeta
+from ape.types import Compiler, ContractType, PackageManifest, Source  # PackageMeta
 
 from .compilers import CompilerManager
 from .config import ConfigManager
+
+
+def compute_checksum(source: str, algorithm: str = "md5") -> str:
+    if algorithm == "md5":
+        hasher = md5()
+        hasher.update(source.encode("utf-8"))
+        return hasher.hexdigest()
+
+    else:
+        raise  # Unknown algorithm
 
 
 @dataclass
@@ -15,19 +28,51 @@ class ProjectManager:
     config: ConfigManager
     compilers: CompilerManager
 
-    depedendencies: Dict[str, "ProjectManager"] = dict()
+    dependencies: Dict[str, "ProjectManager"] = dict()
 
     def __init__(self):
-        pass  # Look for depedencies from config
+        if isinstance(self.path, str):
+            # TODO: Handle URIs for external package references
+            self.path = Path(self.path)
+
+        self.dependencies = {
+            manifest.name: manifest
+            for manifest in map(self._extract_manifest, self.config.dependencies)
+        }
+
+    def _extract_manifest(self, manifest_uri: str) -> PackageManifest:
+        manifest_dict = requests.get(manifest_uri).json()
+        # TODO: Handle non-manifest URLs e.g. Ape/Brownie projects, Hardhat/Truffle projects, etc.
+        if "name" not in manifest_dict:
+            raise  # Dependencies must have a name!
+        return PackageManifest.from_dict(manifest_dict)
 
     def __str__(self) -> str:
         return f'Project("{self.path}")'
 
+    @property
     def _cache_folder(self) -> Path:
         folder = self.path / ".build"
         # NOTE: If we use the cache folder, we expect it to exist
         folder.mkdir(exist_ok=True)
         return folder
+
+    @property
+    def manifest_cachefile(self) -> Path:
+        file_name = self.config.name or "__local__"
+        return self._cache_folder / (file_name + ".json")
+
+    @property
+    def cached_manifest(self) -> Optional[PackageManifest]:
+        manifest_file = self.manifest_cachefile
+        if manifest_file.exists():
+            manifest_json = json.loads(manifest_file.read_text())
+            if "manifest" not in manifest_json:
+                raise  # Corrupted Manifest
+            return PackageManifest.from_dict(manifest_json)
+
+        else:
+            return None
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
     @property
@@ -44,39 +89,122 @@ class ProjectManager:
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
-        return self.compilers.compile(self.sources)
+        # Load a cached or clean manifest (to use for caching)
+        manifest = self.cached_manifest or PackageManifest()
+        cached_sources = {source["name"]: source for source in manifest.get("sources", [])}
+        contract_types = manifest.get("contractTypes", {})
 
+        # NOTE: if a file is deleted from `self.sources` but in `cached_sources`,
+        #       remove it's corresponding `contract_types` use `ContractType.sourceId`
+        deleted_sources = set(s["name"] for s in cached_sources) - set(self.sources)
+        contract_types = {
+            name: ct for name, ct in contract_types.items() if ct.sourceId not in deleted_sources
+        }
+
+        def file_needs_compiling(source: Path) -> bool:
+            # New file added
+            if source.name not in cached_sources:
+                return True
+
+            # File changed in source code folder
+            checksum = compute_checksum(
+                source.read_text(),
+                algorithm=cached_sources[source.name]["algorithm"],
+            )
+            return checksum != cached_sources[source.name]["hash"]
+
+        # NOTE: filter by checksum, etc., and compile what's needed
+        #       to bring our cached manifest up-to-date
+        needs_compiling = filter(file_needs_compiling, self.sources)
+        contract_types.update(self.compilers.compile(list(needs_compiling)))
+
+        # Update our cached contract types in our cached manifest
+        if manifest.contractTypes:
+            manifest.contractTypes.update(contract_types)
+        else:
+            manifest.contractTypes = contract_types
+
+        # Update our cached source code entries in our cached manifest
+        cached_sources = {
+            str(source): Source(  # type: ignore
+                checksum=compute_checksum(source.read_text()),
+                algorithm="md5",
+            )
+            for source in self.sources
+        }
+        if manifest.sources:
+            manifest.sources.update(cached_sources)
+        else:
+            manifest.sources = cached_sources
+
+        # NOTE: Cache the updated manifest to disk (so `self.cached_manifest` reads next time)
+        self.manifest_cachefile.write_text(json.dumps(manifest.to_dict()))
+
+        return contract_types
+
+    def __getattr__(self, attr_name: str):
+        if attr_name in self.contracts:
+            return self.contracts[attr_name]
+
+        elif attr_name in self.dependencies:
+            return self.dependencies[attr_name]
+
+        else:
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
+
+    @property
     def _interfaces_folder(self) -> Path:
         return self.path / "interfaces"
 
+    @property
     def _scripts_folder(self) -> Path:
         return self.path / "scripts"
 
+    @property
     def _tests_folder(self) -> Path:
         return self.path / "tests"
 
     # TODO: Make this work for generating and caching the manifest file
+    @property
+    def compiler_data(self) -> List[Compiler]:
+        compilers = []
+
+        for compiler in self.compilers.registered_compilers.values():
+            for version in compiler.versions:
+                compilers.append(Compiler(compiler.name, version))  # type: ignore
+
+        return compilers
+
+    @property
+    def manifest(self) -> PackageManifest:
+        manifest = PackageManifest(
+            sources=self.sources,
+            contractTypes=list(self.contracts.values()),
+            compilers=self.compiler_data,  # type: ignore
+        )
+
+        # NOTE: This property is optional here, but mandatory for publishing
+        if self.config.name:
+            manifest.name = self.config.name
+
+        # NOTE: This property is optional here, but mandatory for publishing
+        if self.config.version:
+            manifest.version = self.config.version
+
+        return manifest
 
     # @property
     # def meta(self) -> PackageMeta:
     #     return PackageMeta(**self.config.get_config("ethpm").serialize())
 
-    # @property
-    # def manifest(self) -> PackageManifest:
-    #     return PackageManifest(
-    #         name=self.config.name,
-    #         version=self.config.version,
-    #         meta=self.meta,
-    #         sources=self.sources,
-    #         contractTypes=list(self.contracts.values()),
-    #         compilers=list(
-    #             Compiler(c.name, c.version)  # type: ignore
-    #             for c in self.compilers.registered_compilers.values()
-    #         ),
-    #     )
-
     # def publish_manifest(self):
     #     manifest = self.manifest.to_dict()  # noqa: F841
-    #     # TODO: Clean up manifest
+    #     if not manifest.name:
+    #         raise
+    #     if not manifest.version:
+    #         raise
+    #     if self.meta:
+    #         manifest.meta = self.meta
+    #     # TODO: Clean up manifest and minify it
     #     # TODO: Publish sources to IPFS and replace with CIDs
     #     # TODO: Publish to IPFS

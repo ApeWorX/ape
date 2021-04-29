@@ -1,4 +1,4 @@
-from .contract import Bytecode, Compiler, ContractType
+from .contract import Bytecode, Compiler, ContractType, Source
 from .manifest import PackageManifest, PackageMeta
 
 __all__ = [
@@ -7,4 +7,5 @@ __all__ = [
     "ContractType",
     "PackageManifest",
     "PackageMeta",
+    "Source",
 ]
