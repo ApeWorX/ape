@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Iterator, Optional, Type
 
 from eth_account.datastructures import SignedMessage  # type: ignore
-from eth_account.datastructures import SignedTransaction
 from eth_account.messages import SignableMessage  # type: ignore
 
 from .base import abstractdataclass, abstractmethod
@@ -10,13 +9,15 @@ from .base import abstractdataclass, abstractmethod
 if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
+from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
+
 
 @abstractdataclass
 class AddressAPI:
     network_manager: Optional["NetworkManager"] = None
 
     @property
-    def _provider(self):
+    def _provider(self) -> ProviderAPI:
         if not self.network_manager:
             raise Exception("Not wired correctly")
 
@@ -24,6 +25,14 @@ class AddressAPI:
             raise Exception("Not connected to any network!")
 
         return self.network_manager.active_provider
+
+    @property
+    def _receipt_class(self) -> Type[ReceiptAPI]:
+        return self._provider.network.ecosystem.receipt_class
+
+    @property
+    def _transaction_class(self) -> Type[TransactionAPI]:
+        return self._provider.network.ecosystem.transaction_class
 
     @property
     @abstractmethod
@@ -73,9 +82,38 @@ class AccountAPI(AddressAPI):
     def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
         ...
 
-    @abstractmethod
-    def sign_transaction(self, txn: dict) -> Optional[SignedTransaction]:
-        ...
+    def sign_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+        # NOTE: Some accounts may not offer signing things
+        return txn
+
+    def transfer(self, account: "AddressAPI", value: int = None, data: bytes = None) -> ReceiptAPI:
+        txn = self._transaction_class(  # type: ignore
+            sender=self.address,
+            receiver=account.address,
+            nonce=self.nonce,
+        )
+
+        if data:
+            txn.data = data
+
+        if value:
+            txn.value = value
+
+        else:
+            # NOTE: If `value` is `None`, send everything
+            txn.value = self.balance - txn.gas_limit * txn.gas_price
+
+        return self.call(txn)
+
+    def call(self, txn: TransactionAPI) -> ReceiptAPI:
+        txn.gas_limit = self._provider.estimate_gas_cost(txn)
+        txn.gas_price = self._provider.gas_price
+
+        if txn.gas_limit * txn.gas_price + txn.value > self.balance:
+            raise  # Transfer value meets or exceeds account balance
+
+        txn = self.sign_transaction(txn)
+        return self._provider.send_transaction(txn)
 
 
 @abstractdataclass

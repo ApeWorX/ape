@@ -5,10 +5,9 @@ from typing import Iterator, Optional
 import click
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account.datastructures import SignedMessage  # type: ignore
-from eth_account.datastructures import SignedTransaction
 from eth_account.messages import SignableMessage  # type: ignore
 
-from ape.api.accounts import AccountAPI, AccountContainerAPI
+from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.convert import to_address
 
 
@@ -113,8 +112,16 @@ class KeyfileAccount(AccountAPI):
 
         return EthAccount.sign_message(msg, self.__key)
 
-    def sign_transaction(self, txn: dict) -> Optional[SignedTransaction]:
+    def sign_transaction(self, txn: TransactionAPI) -> TransactionAPI:
         if self.locked and not click.confirm(f"Sign: {txn}"):
-            return None
+            raise  # User declined to sign!
 
-        return EthAccount.sign_transaction(txn, self.__key)
+        signed_txn = EthAccount.sign_transaction(txn.as_dict(), self.__key)
+
+        txn.signature = (
+            signed_txn.v.to_bytes(1, "big")
+            + signed_txn.r.to_bytes(32, "big")
+            + signed_txn.s.to_bytes(32, "big")
+        )
+
+        return txn

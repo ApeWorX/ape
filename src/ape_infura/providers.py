@@ -1,9 +1,10 @@
 import os
+from typing import Any
 
 from web3 import HTTPProvider, Web3  # type: ignore
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 
-from ape.api import ProviderAPI
+from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
 
 
 class Infura(ProviderAPI):
@@ -20,11 +21,8 @@ class Infura(ProviderAPI):
     def disconnect(self):
         pass
 
-    def transfer_cost(self, address: str) -> int:
-        if self.get_code(address) == b"":
-            return 21000
-        else:
-            raise Exception("Transfer cost error")
+    def estimate_gas_cost(self, txn: TransactionAPI) -> int:
+        return self._web3.eth.estimate_gas(txn.as_dict())
 
     @property
     def gas_price(self):
@@ -39,5 +37,16 @@ class Infura(ProviderAPI):
     def get_code(self, address: str) -> bytes:
         return self._web3.eth.getCode(address)  # type: ignore
 
-    def send_transaction(self, data: bytes) -> bytes:
-        return self._web3.eth.sendRawTransaction(data)  # type: ignore
+    def send_call(self, txn: TransactionAPI) -> Any:
+        data = txn.encode()
+        return self._web3.eth.call(data)
+
+    def get_transaction(self, txn_hash: str) -> ReceiptAPI:
+        # TODO: Work on API that let's you work with ReceiptAPI and re-send transactions
+        receipt = self._web3.eth.wait_for_transaction_receipt(txn_hash)  # type: ignore
+        txn = self._web3.eth.get_transaction(txn_hash)  # type: ignore
+        return self.network.ecosystem.receipt_class.decode({**txn, **receipt})
+
+    def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+        txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
+        return self.get_transaction(txn_hash.hex())

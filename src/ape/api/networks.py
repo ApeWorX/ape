@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
     from .explorers import ExplorerAPI
-    from .providers import ProviderAPI
+    from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
 
 
 @dataclass
@@ -26,6 +26,9 @@ class EcosystemAPI:
     plugin_manager: PluginManager
     data_folder: Path
     request_header: str
+
+    transaction_class: Type["TransactionAPI"]
+    receipt_class: Type["ReceiptAPI"]
 
     _default_network: str = "development"
 
