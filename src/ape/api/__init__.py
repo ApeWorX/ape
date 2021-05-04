@@ -1,4 +1,12 @@
 from .accounts import AccountAPI, AccountContainerAPI
+from .address import AddressAPI
+from .contracts import (
+    ContractCallAPI,
+    ContractConstructorAPI,
+    ContractEventAPI,
+    ContractInstance,
+    ContractTransactionAPI,
+)
 from .explorers import ExplorerAPI
 from .networks import EcosystemAPI, NetworkAPI, ProviderContextManager, create_network_type
 from .providers import ProviderAPI, ReceiptAPI, TransactionAPI, TransactionStatusEnum
@@ -6,6 +14,13 @@ from .providers import ProviderAPI, ReceiptAPI, TransactionAPI, TransactionStatu
 __all__ = [
     "AccountAPI",
     "AccountContainerAPI",
+    "AddressAPI",
+    "Contract",
+    "ContractCallAPI",
+    "ContractConstructorAPI",
+    "ContractEventAPI",
+    "ContractInstance",
+    "ContractTransactionAPI",
     "EcosystemAPI",
     "ExplorerAPI",
     "ProviderAPI",

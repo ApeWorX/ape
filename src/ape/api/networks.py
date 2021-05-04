@@ -11,6 +11,12 @@ from .base import abstractdataclass, abstractmethod, dataclass
 if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
+    from .contracts import (
+        ContractCallAPI,
+        ContractConstructorAPI,
+        ContractEventAPI,
+        ContractTransactionAPI,
+    )
     from .explorers import ExplorerAPI
     from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
 
@@ -29,6 +35,11 @@ class EcosystemAPI:
 
     transaction_class: Type["TransactionAPI"]
     receipt_class: Type["ReceiptAPI"]
+
+    contract_constructor_class: Type["ContractConstructorAPI"]
+    contract_event_class: Type["ContractEventAPI"]
+    contract_call_class: Type["ContractCallAPI"]
+    contract_transaction_class: Type["ContractTransactionAPI"]
 
     _default_network: str = "development"
 

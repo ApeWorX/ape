@@ -1,70 +1,15 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, Optional, Type
+from typing import Iterator, Optional, Type
 
 from eth_account.datastructures import SignedMessage  # type: ignore
 from eth_account.messages import SignableMessage  # type: ignore
 
+from ape.types import ContractType
+
+from .address import AddressAPI
 from .base import abstractdataclass, abstractmethod
-
-if TYPE_CHECKING:
-    from ape.managers.networks import NetworkManager
-
-from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
-
-
-@abstractdataclass
-class AddressAPI:
-    network_manager: Optional["NetworkManager"] = None
-
-    @property
-    def _provider(self) -> ProviderAPI:
-        if not self.network_manager:
-            raise Exception("Not wired correctly")
-
-        if not self.network_manager.active_provider:
-            raise Exception("Not connected to any network!")
-
-        return self.network_manager.active_provider
-
-    @property
-    def _receipt_class(self) -> Type[ReceiptAPI]:
-        return self._provider.network.ecosystem.receipt_class
-
-    @property
-    def _transaction_class(self) -> Type[TransactionAPI]:
-        return self._provider.network.ecosystem.transaction_class
-
-    @property
-    @abstractmethod
-    def address(self) -> str:
-        ...
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.address}>"
-
-    def __str__(self) -> str:
-        return self.address
-
-    @property
-    def nonce(self) -> int:
-        return self._provider.get_nonce(self.address)
-
-    @property
-    def balance(self) -> int:
-        return self._provider.get_balance(self.address)
-
-    @property
-    def code(self) -> bytes:
-        # TODO: Explore caching this (based on `self.provider.network` and examining code)
-        return self._provider.get_code(self.address)
-
-    @property
-    def codesize(self) -> int:
-        return len(self.code)
-
-    @property
-    def is_contract(self) -> bool:
-        return len(self.code) > 0
+from .contracts import ContractContainer, ContractInstance
+from .providers import ReceiptAPI, TransactionAPI
 
 
 # NOTE: AddressAPI is a dataclass already
@@ -106,14 +51,46 @@ class AccountAPI(AddressAPI):
         return self.call(txn)
 
     def call(self, txn: TransactionAPI) -> ReceiptAPI:
-        txn.gas_limit = self._provider.estimate_gas_cost(txn)
-        txn.gas_price = self._provider.gas_price
+        txn.gas_limit = self._active_provider.estimate_gas_cost(txn)
+        txn.gas_price = self._active_provider.gas_price
 
         if txn.gas_limit * txn.gas_price + txn.value > self.balance:
             raise  # Transfer value meets or exceeds account balance
 
         txn = self.sign_transaction(txn)
-        return self._provider.send_transaction(txn)
+        return self._active_provider.send_transaction(txn)
+
+    def deploy(self, contract_type: ContractType, *args, **kwargs) -> ContractInstance:
+        kwargs["sender"] = self.address
+        c = ContractContainer(  # type: ignore
+            provider=self._active_provider,
+            contract_type=contract_type,
+        )
+
+        txn = c.build_deployment(*args, **kwargs)
+        txn.nonce = self.nonce
+        txn.gas_limit = self._active_provider.estimate_gas_cost(txn)
+        txn.gas_price = self._active_provider.gas_price
+
+        txn_cost = txn.gas_limit * txn.gas_price
+        if "value" in kwargs:
+            txn_cost += kwargs["value"]
+
+        if txn_cost > self.balance:
+            raise  # Transfer value meets or exceeds account balance
+
+        txn = self.sign_transaction(txn)
+        receipt = self._active_provider.send_transaction(txn)
+
+        if not receipt.contract_address:
+            raise  # `receipt.txn_hash` did not create a contract
+
+        breakpoint()
+        return ContractInstance(  # type: ignore
+            address=receipt.contract_address,
+            provider=self._active_provider,
+            contract_type=contract_type,
+        )
 
 
 @abstractdataclass

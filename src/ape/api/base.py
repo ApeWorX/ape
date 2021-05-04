@@ -11,6 +11,7 @@ class AbstractDataClassMeta(DataClassMeta, ABCMeta):
 
 abstractdataclass = partial(dataclass, meta=AbstractDataClassMeta)
 
+
 __all__ = [
     "abstractdataclass",
     "abstractmethod",
