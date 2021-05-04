@@ -49,6 +49,8 @@ accounts = _AccountManager(config, plugin_manager, networks)  # type: ignore
 
 
 def Project(path):
+    if isinstance(path, str):
+        path = _Path(path)
     return _ProjectManager(path=path, config=config, compilers=compilers)
 
 

@@ -1,6 +1,7 @@
 import os
 
 from web3 import HTTPProvider, Web3  # type: ignore
+from web3.gas_strategies.rpc import rpc_gas_price_strategy
 
 from ape.api import ProviderAPI
 
@@ -11,6 +12,7 @@ class Infura(Web3, ProviderAPI):
     def __init__(self):
         key = os.environ.get("WEB3_INFURA_PROJECT_ID") or os.environ.get("WEB3_INFURA_API_KEY")
         self._web3 = Web3(HTTPProvider(f"https://{self.network.name}.infura.io/v3/{key}"))
+        self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
     def connect(self):
         pass
@@ -26,7 +28,7 @@ class Infura(Web3, ProviderAPI):
 
     @property
     def gas_price(self):
-        return 0
+        return self._web3.eth.generate_gas_price()
 
     def get_nonce(self, address: str) -> int:
         return self._web3.eth.getTransactionCount(address)  # type: ignore
