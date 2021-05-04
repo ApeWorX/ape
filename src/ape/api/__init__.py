@@ -1,5 +1,5 @@
 from .accounts import AccountAPI, AccountContainerAPI
-from .address import AddressAPI
+from .address import Address, AddressAPI
 from .contracts import (
     ContractCallAPI,
     ContractConstructorAPI,
@@ -14,6 +14,7 @@ from .providers import ProviderAPI, ReceiptAPI, TransactionAPI, TransactionStatu
 __all__ = [
     "AccountAPI",
     "AccountContainerAPI",
+    "Address",
     "AddressAPI",
     "Contract",
     "ContractCallAPI",

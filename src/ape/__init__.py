@@ -1,6 +1,7 @@
 import sys as _sys
 from pathlib import Path as _Path
 
+from .api import Address as _Address
 from .managers.accounts import AccountManager as _AccountManager
 from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
@@ -44,6 +45,12 @@ def Project(path):
     return _ProjectManager(path=path, config=config, compilers=compilers)
 
 
+def Contract(address):
+    return _Address(address=address, network_manager=networks)
+    # TODO: If we can find the `ContractType` for this address in cache or ExplorerAPI
+    # return _ContractInstance(address=address, provider=networks.active_provider)
+
+
 project = Project(config.PROJECT_FOLDER)
 
 
@@ -51,6 +58,7 @@ __all__ = [
     "accounts",
     "compilers",
     "config",
+    "Contract",
     "networks",
     "project",
     "Project",  # So you can load other projects
