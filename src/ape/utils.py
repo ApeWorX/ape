@@ -2,8 +2,9 @@ import collections
 import json
 import os
 from copy import deepcopy
-from pathlib import Path as Path
-from typing import Dict
+from functools import lru_cache
+from pathlib import Path
+from typing import Any, Dict
 
 import click
 import yaml
@@ -17,6 +18,42 @@ try:
     from functools import singledispatchmethod
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
+
+from importlib_metadata import PackageNotFoundError, packages_distributions, version
+
+
+@lru_cache(maxsize=None)
+def get_distributions():
+    return packages_distributions()
+
+
+def get_package_version(obj: Any) -> str:
+    # If value is already cached/static
+    if hasattr(obj, "__version__"):
+        return obj.__version__
+
+    # NOTE: In case were don't pass a module name
+    if not isinstance(obj, str):
+        obj = obj.__name__
+
+    # Reduce module string to base package
+    # NOTE: Assumed that string input is module name e.g. `__name__`
+    pkg_name = obj.split(".")[0]
+
+    # NOTE: In case the distribution and package name differ
+    dists = get_distributions()
+    if pkg_name in dists:
+        # NOTE: Shouldn't really be more than 1, but never know
+        assert len(dists[pkg_name]) == 1
+        pkg_name = dists[pkg_name][0]
+
+    try:
+        return version(pkg_name)
+
+    except PackageNotFoundError:
+        # NOTE: Must handle empty string result here
+        return ""
+
 
 NOTIFY_COLORS = {
     "WARNING": "bright_red",

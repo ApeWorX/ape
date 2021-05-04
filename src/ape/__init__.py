@@ -7,19 +7,9 @@ from .managers.config import ConfigManager as _ConfigManager
 from .managers.networks import NetworkManager as _NetworkManager
 from .managers.project import ProjectManager as _ProjectManager
 from .plugins import PluginManager as _PluginManager
+from .utils import get_package_version
 
-try:
-    from importlib.metadata import PackageNotFoundError as _PackageNotFoundError  # type: ignore
-    from importlib.metadata import version as _version  # type: ignore
-except ModuleNotFoundError:
-    from importlib_metadata import PackageNotFoundError as _PackageNotFoundError  # type: ignore
-    from importlib_metadata import version as _version  # type: ignore
-
-try:
-    __version__ = _version(__name__)
-except _PackageNotFoundError:
-    # package is not installed
-    __version__ = "<unknown>"
+__version__ = get_package_version(__name__)
 
 
 # NOTE: DO NOT OVERWRITE
