@@ -61,6 +61,8 @@ class PackageManifest(FileMixin, SerializableType):
             for name in data["contractTypes"]:
                 # NOTE: This was inserted by us, remove it
                 del data["contractTypes"][name]["contractName"]
+                # convert Path to str, or else we can't serialize this as JSON
+                data["contractTypes"][name]["sourceId"] = str(data["contractTypes"][name]["sourceId"])
 
         return data
 

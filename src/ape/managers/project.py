@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 import requests
 from dataclassy import dataclass
 
-from ape.types import Compiler, ContractType, PackageManifest, Source  # PackageMeta
+from ape.types import Compiler, ContractType, PackageManifest, Source, Checksum # PackageMeta
 
 from .compilers import CompilerManager
 from .config import ConfigManager
@@ -20,7 +20,6 @@ def compute_checksum(source: str, algorithm: str = "md5") -> str:
 
     else:
         raise  # Unknown algorithm
-
 
 @dataclass
 class ProjectManager:
@@ -87,31 +86,32 @@ class ProjectManager:
 
         return files
 
-    @property
-    def contracts(self) -> Dict[str, ContractType]:
+
+    def _load_contracts(self) -> Dict[str, ContractType]:
         # Load a cached or clean manifest (to use for caching)
         manifest = self.cached_manifest or PackageManifest()
-        cached_sources = {source["name"]: source for source in manifest.get("sources", [])}
-        contract_types = manifest.get("contractTypes", {})
+        cached_sources = manifest.sources or {}
+        contract_types = manifest.contractTypes or {}
 
         # NOTE: if a file is deleted from `self.sources` but in `cached_sources`,
         #       remove it's corresponding `contract_types` use `ContractType.sourceId`
-        deleted_sources = set(s["name"] for s in cached_sources) - set(self.sources)
+        deleted_sources = cached_sources.keys() - set(map(str, self.sources))
         contract_types = {
             name: ct for name, ct in contract_types.items() if ct.sourceId not in deleted_sources
         }
 
         def file_needs_compiling(source: Path) -> bool:
-            # New file added
-            if source.name not in cached_sources:
+            source_path = str(source)
+            # New file added?
+            if source_path not in cached_sources:
                 return True
 
-            # File changed in source code folder
+            # File contents changed in source code folder?
             checksum = compute_checksum(
                 source.read_text(),
-                algorithm=cached_sources[source.name]["algorithm"],
+                algorithm=cached_sources[source_path].checksum.algorithm,
             )
-            return checksum != cached_sources[source.name]["hash"]
+            return checksum != cached_sources[source_path].checksum.hash
 
         # NOTE: filter by checksum, etc., and compile what's needed
         #       to bring our cached manifest up-to-date
@@ -127,8 +127,8 @@ class ProjectManager:
         # Update our cached source code entries in our cached manifest
         cached_sources = {
             str(source): Source(  # type: ignore
-                checksum=compute_checksum(source.read_text()),
-                algorithm="md5",
+                checksum=Checksum(algorithm="md5", hash=compute_checksum(source.read_text())),
+                urls=[],
             )
             for source in self.sources
         }
@@ -142,13 +142,16 @@ class ProjectManager:
 
         return contract_types
 
-    def __getattr__(self, attr_name: str):
-        if attr_name in self.contracts:
-            return self.contracts[attr_name]
+    @property
+    def contracts(self) -> Dict[str, ContractType]:
+        return self._load_contracts()
 
+    def __getattr__(self, attr_name: str):
+        contracts = self._load_contracts()
+        if attr_name in contracts:
+            return contracts[attr_name]
         elif attr_name in self.dependencies:
             return self.dependencies[attr_name]
-
         else:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
 
