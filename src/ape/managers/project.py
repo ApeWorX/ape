@@ -178,24 +178,6 @@ class ProjectManager:
 
         return compilers
 
-    @property
-    def manifest(self) -> PackageManifest:
-        manifest = PackageManifest(
-            sources=self.sources,
-            contractTypes=list(self.contracts.values()),
-            compilers=self.compiler_data,  # type: ignore
-        )
-
-        # NOTE: This property is optional here, but mandatory for publishing
-        if self.config.name:
-            manifest.name = self.config.name
-
-        # NOTE: This property is optional here, but mandatory for publishing
-        if self.config.version:
-            manifest.version = self.config.version
-
-        return manifest
-
     # @property
     # def meta(self) -> PackageMeta:
     #     return PackageMeta(**self.config.get_config("ethpm").serialize())
