@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 import requests
 from dataclassy import dataclass
 
-from ape.types import Compiler, ContractType, PackageManifest, Source, Checksum # PackageMeta
+from ape.types import Compiler, ContractType, PackageManifest, Source, Checksum  # PackageMeta
 
 from .compilers import CompilerManager
 from .config import ConfigManager
@@ -17,9 +17,9 @@ def compute_checksum(source: str, algorithm: str = "md5") -> str:
         hasher = md5()
         hasher.update(source.encode("utf-8"))
         return hasher.hexdigest()
-
     else:
         raise  # Unknown algorithm
+
 
 @dataclass
 class ProjectManager:
@@ -86,32 +86,36 @@ class ProjectManager:
 
         return files
 
-
     def _load_contracts(self) -> Dict[str, ContractType]:
         # Load a cached or clean manifest (to use for caching)
         manifest = self.cached_manifest or PackageManifest()
         cached_sources = manifest.sources or {}
         contract_types = manifest.contractTypes or {}
 
-        # NOTE: if a file is deleted from `self.sources` but in `cached_sources`,
-        #       remove it's corresponding `contract_types` use `ContractType.sourceId`
+        # NOTE: if a file is deleted from `self.sources` but is in `cached_sources`,
+        #       remove its corresponding `contract_types` by using `ContractType.sourceId`
         deleted_sources = cached_sources.keys() - set(map(str, self.sources))
         contract_types = {
             name: ct for name, ct in contract_types.items() if ct.sourceId not in deleted_sources
         }
 
         def file_needs_compiling(source: Path) -> bool:
-            source_path = str(source)
+            path = str(source)
             # New file added?
-            if source_path not in cached_sources:
+            if path not in cached_sources:
                 return True
+
+            # Recalculate checksum if it doesn't exist yet
+            cached = cached_sources[path]
+            cached.compute_checksum(algorithm="md5")
+            assert cached.checksum  # to tell mypy this can't be None
 
             # File contents changed in source code folder?
             checksum = compute_checksum(
                 source.read_text(),
-                algorithm=cached_sources[source_path].checksum.algorithm,
+                algorithm=cached.checksum.algorithm,
             )
-            return checksum != cached_sources[source_path].checksum.hash
+            return checksum != cached.checksum.hash
 
         # NOTE: filter by checksum, etc., and compile what's needed
         #       to bring our cached manifest up-to-date
@@ -127,7 +131,7 @@ class ProjectManager:
         # Update our cached source code entries in our cached manifest
         cached_sources = {
             str(source): Source(  # type: ignore
-                checksum=Checksum(algorithm="md5", hash=compute_checksum(source.read_text())),
+                checksum=Checksum(algorithm="md5", hash=compute_checksum(source.read_text())),  # type: ignore
                 urls=[],
             )
             for source in self.sources

@@ -1,6 +1,7 @@
 import urllib.request
 from copy import deepcopy
 from typing import Dict, List, Optional
+from hashlib import md5
 
 from .abstract import SerializableType, update_list_params, update_params
 
@@ -102,6 +103,24 @@ class Source(SerializableType):
 
         response = urllib.request.urlopen(self.urls[0])
         self.content = response.read().decode("utf-8")
+
+    def compute_checksum(self, algorithm: str = "md5", force: bool = False):
+        """
+        Compute the checksum if `content` exists but `checksum` doesn't
+        exist yet. Or compute the checksum regardless if `force` is `True`.
+        """
+        if self.checksum and not force:
+            return  # skip recalculating
+
+        if not self.content:
+            raise ValueError("Content not loaded yet. Can't compute checksum.")
+
+        if algorithm == "md5":
+            hasher = md5
+        else:
+            raise  # Unknown algorithm
+
+        self.checksum = Checksum(hash=hasher(self.content).hexdigest(), algorithm=algorithm)  # type: ignore
 
     @classmethod
     def from_dict(cls, params: Dict):
