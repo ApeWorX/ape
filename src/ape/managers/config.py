@@ -24,17 +24,20 @@ class ConfigManager:
 
     def __init__(self):
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
+
         if config_file.exists():
             user_config = load_config(config_file)
         else:
             user_config = {}
 
+        # Top level config items
+        self.name = user_config.pop("name", "")
+        self.version = user_config.pop("version", "")
+        self.dependencies = user_config.pop("dependencies", [])
+
         for plugin_name, config_class in self.plugin_manager.config_class:
-            if plugin_name in user_config:
-                user_override = user_config.pop(plugin_name)
-                # NOTE: `dict.pop()` is used for checking if all config was processed
-            else:
-                user_override = {}
+            # NOTE: `dict.pop()` is used for checking if all config was processed
+            user_override = user_config.pop(plugin_name, {})
 
             # NOTE: Will raise if improperly provided keys
             config = config_class(**user_override)
@@ -43,11 +46,6 @@ class ConfigManager:
             config.validate_config()
 
             self._plugin_configs[plugin_name] = config
-
-        # Top level config items
-        self.name = user_config.pop("name", "")
-        self.version = user_config.pop("version", "")
-        self.dependencies = user_config.pop("dependencies", [])
 
         if len(user_config.keys()) > 0:
             raise  # Unprocessed config items

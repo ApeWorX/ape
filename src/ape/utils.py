@@ -3,6 +3,7 @@ import json
 import os
 from copy import deepcopy
 from functools import lru_cache
+from hashlib import md5
 from pathlib import Path
 from typing import Any, Dict
 
@@ -106,6 +107,15 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
 
     else:
         return {}
+
+
+def compute_checksum(source: str, algorithm: str = "md5") -> str:
+    if algorithm == "md5":
+        hasher = md5()
+        hasher.update(source.encode("utf-8"))
+        return hasher.hexdigest()
+    else:
+        raise  # Unknown algorithm
 
 
 __all__ = [

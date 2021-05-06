@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List
+from typing import List, Set
 
 from ape.types import ContractType
 
@@ -11,11 +11,8 @@ class CompilerAPI(ABC):
     def name(self) -> str:
         ...
 
-    @property
     @abstractmethod
-    def versions(self) -> List[str]:
-        # TODO: Does this need the set of all files in a package
-        #       to determine the full set of versions?
+    def get_versions(self, all_paths: List[Path]) -> Set[str]:
         ...
 
     @abstractmethod

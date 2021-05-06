@@ -1,24 +1,15 @@
 import json
-from hashlib import md5
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import requests
 from dataclassy import dataclass
 
-from ape.types import Compiler, ContractType, PackageManifest, Source, Checksum  # PackageMeta
+from ape.types import Checksum, Compiler, ContractType, PackageManifest, Source  # PackageMeta
+from ape.utils import compute_checksum
 
 from .compilers import CompilerManager
 from .config import ConfigManager
-
-
-def compute_checksum(source: str, algorithm: str = "md5") -> str:
-    if algorithm == "md5":
-        hasher = md5()
-        hasher.update(source.encode("utf-8"))
-        return hasher.hexdigest()
-    else:
-        raise  # Unknown algorithm
 
 
 @dataclass
@@ -27,11 +18,10 @@ class ProjectManager:
     config: ConfigManager
     compilers: CompilerManager
 
-    dependencies: Dict[str, "ProjectManager"] = dict()
+    dependencies: Dict[str, PackageManifest] = dict()
 
     def __init__(self):
         if isinstance(self.path, str):
-            # TODO: Handle URIs for external package references
             self.path = Path(self.path)
 
         self.dependencies = {
@@ -86,9 +76,9 @@ class ProjectManager:
 
         return files
 
-    def _load_contracts(self) -> Dict[str, ContractType]:
+    def load_contracts(self, use_cache: bool=True) -> Dict[str, ContractType]:
         # Load a cached or clean manifest (to use for caching)
-        manifest = self.cached_manifest or PackageManifest()
+        manifest = use_cache and self.cached_manifest or PackageManifest()
         cached_sources = manifest.sources or {}
         contract_types = manifest.contractTypes or {}
 
@@ -148,10 +138,10 @@ class ProjectManager:
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
-        return self._load_contracts()
+        return self.load_contracts()
 
     def __getattr__(self, attr_name: str):
-        contracts = self._load_contracts()
+        contracts = self.load_contracts()
         if attr_name in contracts:
             return contracts[attr_name]
         elif attr_name in self.dependencies:
@@ -176,8 +166,8 @@ class ProjectManager:
     def compiler_data(self) -> List[Compiler]:
         compilers = []
 
-        for compiler in self.compilers.registered_compilers.values():
-            for version in compiler.versions:
+        for extension, compiler in self.compilers.registered_compilers.items():
+            for version in compiler.get_versions(p for p in self.sources if p.suffix == extension):
                 compilers.append(Compiler(compiler.name, version))  # type: ignore
 
         return compilers
@@ -188,12 +178,10 @@ class ProjectManager:
 
     # def publish_manifest(self):
     #     manifest = self.manifest.to_dict()  # noqa: F841
-    #     if not manifest.name:
-    #         raise
-    #     if not manifest.version:
-    #         raise
-    #     if self.meta:
-    #         manifest.meta = self.meta
+    #     if not manifest["name"]:
+    #         raise  # Need name to release manifest
+    #     if not manifest["version"]:
+    #         raise  # Need version to release manifest
     #     # TODO: Clean up manifest and minify it
     #     # TODO: Publish sources to IPFS and replace with CIDs
     #     # TODO: Publish to IPFS
