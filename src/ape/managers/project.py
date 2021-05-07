@@ -3,9 +3,10 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import requests
+from dataclassy import dataclass
+
 from ape.types import Checksum, Compiler, ContractType, PackageManifest, Source  # PackageMeta
 from ape.utils import compute_checksum
-from dataclassy import dataclass
 
 from .compilers import CompilerManager
 from .config import ConfigManager

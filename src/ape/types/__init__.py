@@ -1,4 +1,4 @@
-from .contract import Bytecode, Compiler, ContractType, Source, Checksum
+from .contract import Bytecode, Checksum, Compiler, ContractType, Source
 from .manifest import PackageManifest, PackageMeta
 
 __all__ = [
