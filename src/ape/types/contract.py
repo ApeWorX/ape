@@ -1,7 +1,8 @@
 import urllib.request
 from copy import deepcopy
-from typing import Dict, List, Optional
 from hashlib import md5
+from pathlib import Path
+from typing import Dict, List, Optional
 
 from .abstract import SerializableType, update_list_params, update_params
 
@@ -57,6 +58,7 @@ class Compiler(SerializableType):
 class ContractType(SerializableType):
     contractName: str
     sourceId: Optional[str] = None
+    sourcePath: Optional[Path] = None
     deploymentBytecode: Optional[Bytecode] = None
     runtimeBytecode: Optional[Bytecode] = None
     # abi, userdoc and devdoc must conform to spec
@@ -77,6 +79,8 @@ class ContractType(SerializableType):
         params = deepcopy(params)
         update_params(params, "deploymentBytecode", Bytecode)
         update_params(params, "runtimeBytecode", Bytecode)
+        if params.get("sourcePath"):
+            params["sourcePath"] = Path(params["sourcePath"])
         return cls(**params)  # type: ignore
 
 
@@ -120,7 +124,9 @@ class Source(SerializableType):
         else:
             raise  # Unknown algorithm
 
-        self.checksum = Checksum(hash=hasher(self.content).hexdigest(), algorithm=algorithm)  # type: ignore
+        self.checksum = Checksum(  # type: ignore
+            hash=hasher(self.content.encode("utf8")).hexdigest(), algorithm=algorithm
+        )
 
     @classmethod
     def from_dict(cls, params: Dict):

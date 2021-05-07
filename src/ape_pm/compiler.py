@@ -25,13 +25,16 @@ class PackageCompiler(CompilerAPI):
                 manifest = PackageManifest.from_dict(data)
 
                 if manifest.contractTypes:  # type: ignore
-                    contract_types.extend(manifest.contractTypes.values())  # type: ignore
+                    for c in manifest.contractTypes.values():
+                        c.sourcePath = path
+                        contract_types.append(c)
 
             else:
                 contract_types.append(
                     ContractType(  # type: ignore
                         contractName=path.stem,
                         abi=data,
+                        sourcePath=path,
                     )
                 )
 

@@ -9,6 +9,7 @@ from typing import Any, Dict
 
 import click
 import yaml
+from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
 try:
     from functools import cached_property
@@ -19,8 +20,6 @@ try:
     from functools import singledispatchmethod
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
-
-from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
 
 @lru_cache(maxsize=None)
@@ -109,10 +108,10 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
         return {}
 
 
-def compute_checksum(source: str, algorithm: str = "md5") -> str:
+def compute_checksum(source: Path, algorithm: str = "md5") -> str:
     if algorithm == "md5":
         hasher = md5()
-        hasher.update(source.encode("utf-8"))
+        hasher.update(source.read_bytes())
         return hasher.hexdigest()
     else:
         raise  # Unknown algorithm

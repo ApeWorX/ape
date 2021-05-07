@@ -65,6 +65,10 @@ class PackageManifest(FileMixin, SerializableType):
                 data["contractTypes"][name]["sourceId"] = str(
                     data["contractTypes"][name]["sourceId"]
                 )
+                if "sourcePath" in data["contractTypes"][name]:
+                    data["contractTypes"][name]["sourcePath"] = str(
+                        data["contractTypes"][name]["sourcePath"]
+                    )
 
         return data
 

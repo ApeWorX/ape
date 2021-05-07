@@ -3,10 +3,9 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import requests
-from dataclassy import dataclass
-
 from ape.types import Checksum, Compiler, ContractType, PackageManifest, Source  # PackageMeta
 from ape.utils import compute_checksum
+from dataclassy import dataclass
 
 from .compilers import CompilerManager
 from .config import ConfigManager
@@ -76,18 +75,24 @@ class ProjectManager:
 
         return files
 
-    def load_contracts(self, use_cache: bool=True) -> Dict[str, ContractType]:
+    def load_contracts(self, use_cache: bool = True) -> Dict[str, ContractType]:
         # Load a cached or clean manifest (to use for caching)
         manifest = use_cache and self.cached_manifest or PackageManifest()
         cached_sources = manifest.sources or {}
-        contract_types = manifest.contractTypes or {}
+        cached_contract_types = manifest.contractTypes or {}
 
-        # NOTE: if a file is deleted from `self.sources` but is in `cached_sources`,
-        #       remove its corresponding `contract_types` by using `ContractType.sourceId`
+        # If a file is deleted from `self.sources` but is in `cached_sources`,
+        # remove its corresponding `contract_types` by using
+        # `ContractType.sourceId` and `ContractType.sourcePath`
         deleted_sources = cached_sources.keys() - set(map(str, self.sources))
-        contract_types = {
-            name: ct for name, ct in contract_types.items() if ct.sourceId not in deleted_sources
-        }
+        contract_types = {}
+        for name, ct in cached_contract_types.items():
+            if ct.sourcePath and str(ct.sourcePath) in deleted_sources:
+                pass  # the ethpm JSON file containing this contract was deleted
+            elif ct.sourceId in deleted_sources:
+                pass  # this contract's source code file was deleted
+            else:
+                contract_types[name] = ct
 
         def file_needs_compiling(source: Path) -> bool:
             path = str(source)
@@ -102,7 +107,7 @@ class ProjectManager:
 
             # File contents changed in source code folder?
             checksum = compute_checksum(
-                source.read_text(),
+                source,
                 algorithm=cached.checksum.algorithm,
             )
             return checksum != cached.checksum.hash
@@ -112,24 +117,16 @@ class ProjectManager:
         needs_compiling = filter(file_needs_compiling, self.sources)
         contract_types.update(self.compilers.compile(list(needs_compiling)))
 
-        # Update our cached contract types in our cached manifest
-        if manifest.contractTypes:
-            manifest.contractTypes.update(contract_types)
-        else:
-            manifest.contractTypes = contract_types
-
-        # Update our cached source code entries in our cached manifest
+        # Update cached contract types & source code entries in cached manifest
+        manifest.contractTypes = contract_types
         cached_sources = {
             str(source): Source(  # type: ignore
-                checksum=Checksum(algorithm="md5", hash=compute_checksum(source.read_text())),  # type: ignore
+                checksum=Checksum(algorithm="md5", hash=compute_checksum(source)),  # type: ignore
                 urls=[],
             )
             for source in self.sources
         }
-        if manifest.sources:
-            manifest.sources.update(cached_sources)
-        else:
-            manifest.sources = cached_sources
+        manifest.sources = cached_sources
 
         # NOTE: Cache the updated manifest to disk (so `self.cached_manifest` reads next time)
         self.manifest_cachefile.write_text(json.dumps(manifest.to_dict()))
@@ -167,7 +164,9 @@ class ProjectManager:
         compilers = []
 
         for extension, compiler in self.compilers.registered_compilers.items():
-            for version in compiler.get_versions(p for p in self.sources if p.suffix == extension):
+            for version in compiler.get_versions(
+                [p for p in self.sources if p.suffix == extension]
+            ):
                 compilers.append(Compiler(compiler.name, version))  # type: ignore
 
         return compilers
