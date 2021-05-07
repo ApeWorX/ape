@@ -108,13 +108,13 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
         return {}
 
 
-def compute_checksum(source: Path, algorithm: str = "md5") -> str:
+def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
     if algorithm == "md5":
-        hasher = md5()
-        hasher.update(source.read_bytes())
-        return hasher.hexdigest()
+        hasher = md5
     else:
         raise  # Unknown algorithm
+
+    return hasher(source).hexdigest()
 
 
 __all__ = [

@@ -1,8 +1,9 @@
 import urllib.request
 from copy import deepcopy
-from hashlib import md5
 from pathlib import Path
 from typing import Dict, List, Optional
+
+from ape.utils import compute_checksum
 
 from .abstract import SerializableType, update_list_params, update_params
 
@@ -119,13 +120,9 @@ class Source(SerializableType):
         if not self.content:
             raise ValueError("Content not loaded yet. Can't compute checksum.")
 
-        if algorithm == "md5":
-            hasher = md5
-        else:
-            raise  # Unknown algorithm
-
         self.checksum = Checksum(  # type: ignore
-            hash=hasher(self.content.encode("utf8")).hexdigest(), algorithm=algorithm
+            hash=compute_checksum(self.content.encode("utf8"), algorithm=algorithm),
+            algorithm=algorithm,
         )
 
     @classmethod

@@ -108,7 +108,7 @@ class ProjectManager:
 
             # File contents changed in source code folder?
             checksum = compute_checksum(
-                source,
+                source.read_bytes(),
                 algorithm=cached.checksum.algorithm,
             )
             return checksum != cached.checksum.hash
@@ -122,7 +122,9 @@ class ProjectManager:
         manifest.contractTypes = contract_types
         cached_sources = {
             str(source): Source(  # type: ignore
-                checksum=Checksum(algorithm="md5", hash=compute_checksum(source)),  # type: ignore
+                checksum=Checksum(  # type: ignore
+                    algorithm="md5", hash=compute_checksum(source.read_bytes())
+                ),
                 urls=[],
             )
             for source in self.sources
