@@ -3,11 +3,13 @@ import json
 import os
 from copy import deepcopy
 from functools import lru_cache
+from hashlib import md5
 from pathlib import Path
 from typing import Any, Dict
 
 import click
 import yaml
+from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
 try:
     from functools import cached_property
@@ -18,8 +20,6 @@ try:
     from functools import singledispatchmethod
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
-
-from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
 
 @lru_cache(maxsize=None)
@@ -106,6 +106,15 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
 
     else:
         return {}
+
+
+def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
+    if algorithm == "md5":
+        hasher = md5
+    else:
+        raise  # Unknown algorithm
+
+    return hasher(source).hexdigest()
 
 
 __all__ = [

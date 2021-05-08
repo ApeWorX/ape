@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 from dataclassy import dataclass
 
@@ -16,22 +16,28 @@ class ConfigManager:
     DATA_FOLDER: Path
     REQUEST_HEADER: Dict
     PROJECT_FOLDER: Path
+    name: str = ""
+    version: str = ""
+    dependencies: List[str] = []
     plugin_manager: PluginManager
     _plugin_configs: Dict[str, ConfigItem] = dict()
 
     def __init__(self):
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
+
         if config_file.exists():
             user_config = load_config(config_file)
         else:
             user_config = {}
 
+        # Top level config items
+        self.name = user_config.pop("name", "")
+        self.version = user_config.pop("version", "")
+        self.dependencies = user_config.pop("dependencies", [])
+
         for plugin_name, config_class in self.plugin_manager.config_class:
-            if plugin_name in user_config:
-                user_override = user_config[plugin_name]
-                del user_config[plugin_name]  # For checking if all config was processed
-            else:
-                user_override = {}
+            # NOTE: `dict.pop()` is used for checking if all config was processed
+            user_override = user_config.pop(plugin_name, {})
 
             # NOTE: Will raise if improperly provided keys
             config = config_class(**user_override)

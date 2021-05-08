@@ -47,6 +47,13 @@ class PackageManifest(FileMixin, SerializableType):
     #       version as `manifest`
     buildDependencies: Optional[Dict[str, str]] = None
 
+    def __getattr__(self, attr_name: str):
+        if self.contractTypes and attr_name in self.contractTypes:
+            return self.contractTypes[attr_name]
+
+        else:
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
+
     def to_dict(self):
         data = super().to_dict()
 
@@ -54,6 +61,14 @@ class PackageManifest(FileMixin, SerializableType):
             for name in data["contractTypes"]:
                 # NOTE: This was inserted by us, remove it
                 del data["contractTypes"][name]["contractName"]
+                # convert Path to str, or else we can't serialize this as JSON
+                data["contractTypes"][name]["sourceId"] = str(
+                    data["contractTypes"][name]["sourceId"]
+                )
+                if "sourcePath" in data["contractTypes"][name]:
+                    data["contractTypes"][name]["sourcePath"] = str(
+                        data["contractTypes"][name]["sourcePath"]
+                    )
 
         return data
 

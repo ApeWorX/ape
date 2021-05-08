@@ -1,6 +1,9 @@
 import urllib.request
 from copy import deepcopy
+from pathlib import Path
 from typing import Dict, List, Optional
+
+from ape.utils import compute_checksum
 
 from .abstract import SerializableType, update_list_params, update_params
 
@@ -56,6 +59,7 @@ class Compiler(SerializableType):
 class ContractType(SerializableType):
     contractName: str
     sourceId: Optional[str] = None
+    sourcePath: Optional[Path] = None
     deploymentBytecode: Optional[Bytecode] = None
     runtimeBytecode: Optional[Bytecode] = None
     # abi, userdoc and devdoc must conform to spec
@@ -76,6 +80,8 @@ class ContractType(SerializableType):
         params = deepcopy(params)
         update_params(params, "deploymentBytecode", Bytecode)
         update_params(params, "runtimeBytecode", Bytecode)
+        if params.get("sourcePath"):
+            params["sourcePath"] = Path(params["sourcePath"])
         return cls(**params)  # type: ignore
 
 
@@ -102,6 +108,22 @@ class Source(SerializableType):
 
         response = urllib.request.urlopen(self.urls[0])
         self.content = response.read().decode("utf-8")
+
+    def compute_checksum(self, algorithm: str = "md5", force: bool = False):
+        """
+        Compute the checksum if `content` exists but `checksum` doesn't
+        exist yet. Or compute the checksum regardless if `force` is `True`.
+        """
+        if self.checksum and not force:
+            return  # skip recalculating
+
+        if not self.content:
+            raise ValueError("Content not loaded yet. Can't compute checksum.")
+
+        self.checksum = Checksum(  # type: ignore
+            hash=compute_checksum(self.content.encode("utf8"), algorithm=algorithm),
+            algorithm=algorithm,
+        )
 
     @classmethod
     def from_dict(cls, params: Dict):

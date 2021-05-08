@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List
+from typing import List, Set
 
 from ape.types import ContractType
 
@@ -9,6 +9,10 @@ class CompilerAPI(ABC):
     @property
     @abstractmethod
     def name(self) -> str:
+        ...
+
+    @abstractmethod
+    def get_versions(self, all_paths: List[Path]) -> Set[str]:
         ...
 
     @abstractmethod
