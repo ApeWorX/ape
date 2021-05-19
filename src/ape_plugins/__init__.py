@@ -32,7 +32,6 @@ else:
 
 
 def is_plugin_installed(plugin: str) -> bool:
-    print(plugin)
     try:
         __import__(plugin)
         return True
