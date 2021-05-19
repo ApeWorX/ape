@@ -45,8 +45,8 @@ def cli():
 
 
 @cli.command(name="list", short_help="List installed plugins")
-def _list():
-    click.echo("Installed plugins:")
+def _list(display_all):
+    plugins = []
     for name, plugin in plugin_manager.list_name_plugin():
         version_str = ""
         version = get_package_version(name)
@@ -57,7 +57,14 @@ def _list():
         elif version:
             version_str = f" ({version})"
 
-        click.echo(f"  {name}{version_str}")
+        plugins.append(f"{name}{version_str}")
+
+    if plugins:
+        click.echo("Installed plugins:")
+        click.echo("  " + "\n  ".join(plugins))
+
+    else:
+        notify("INFO", "No plugins installed")
 
 
 @cli.command(short_help="Install an ape plugin")
