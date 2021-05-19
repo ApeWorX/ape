@@ -106,7 +106,15 @@ def add(plugin):
 
 @cli.command(short_help="Uninstall an ape plugin")
 @click.argument("plugin")
-def remove(plugin):
+@click.option(
+    "-y",
+    "--yes",
+    "skip_confirmation",
+    default=False,
+    is_flag=True,
+    help="Don't ask for confirmation to remove plugin",
+)
+def remove(plugin, skip_confirmation):
     if plugin.startswith("ape"):
         raise Abort(f"Namespace 'ape' in '{plugin}' is not required")
 
@@ -119,7 +127,9 @@ def remove(plugin):
     elif plugin in FIRST_CLASS_PLUGINS:
         raise Abort(f"Cannot remove 1st class plugin '{plugin}'")
 
-    elif click.confirm(f"Remove plugin '{plugin} ({get_package_version(plugin)})'"):
+    elif skip_confirmation or click.confirm(
+        f"Remove plugin '{plugin} ({get_package_version(plugin)})'"
+    ):
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
