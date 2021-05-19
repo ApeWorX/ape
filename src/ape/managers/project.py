@@ -88,9 +88,7 @@ class ProjectManager:
         deleted_sources = cached_sources.keys() - set(map(str, self.sources))
         contract_types = {}
         for name, ct in cached_contract_types.items():
-            if ct.sourcePath and str(ct.sourcePath) in deleted_sources:
-                pass  # the ethpm JSON file containing this contract was deleted
-            elif ct.sourceId in deleted_sources:
+            if ct.sourceId in deleted_sources:
                 pass  # this contract's source code file was deleted
             else:
                 contract_types[name] = ct
