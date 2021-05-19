@@ -53,7 +53,7 @@ class ApeCLI(click.MultiCommand):
 
 
 @click.command(cls=ApeCLI, context_settings=dict(help_option_names=["-h", "--help"]))
-@click.version_option(message="%(version)s")
+@click.version_option(message="%(version)s", package_name="eth-ape")
 @click.option(
     "--config",
     is_flag=True,
