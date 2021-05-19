@@ -102,7 +102,7 @@ def add(plugin):
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
-        subprocess.call([sys.executable, "-m", "pip", "install", plugin])
+        subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", plugin])
 
 
 @cli.command(short_help="Uninstall an ape plugin")
@@ -124,4 +124,4 @@ def remove(plugin):
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
-        subprocess.call([sys.executable, "-m", "pip", "install", plugin])
+        subprocess.call([sys.executable, "-m", "pip", "uninstall", "--quiet", "-y", plugin])
