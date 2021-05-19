@@ -48,6 +48,14 @@ def cli():
 
 
 @cli.command(name="list", short_help="List installed plugins")
+@click.option(
+    "-a",
+    "--all",
+    "display_all",
+    default=False,
+    is_flag=True,
+    help="Display all plugins (including Core)",
+)
 def _list(display_all):
     plugins = []
     for name, plugin in plugin_manager.list_name_plugin():
@@ -55,6 +63,8 @@ def _list(display_all):
         version = get_package_version(name)
 
         if name in FIRST_CLASS_PLUGINS:
+            if not display_all:
+                continue  # NOTE: Skip 1st class plugins unless specified
             version_str = " (core)"
 
         elif version:
