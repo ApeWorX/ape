@@ -22,7 +22,7 @@ class ConfigManager:
     plugin_manager: PluginManager
     _plugin_configs: Dict[str, ConfigItem] = dict()
 
-    def __init__(self):
+    def __post_init__(self):
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
 
         if config_file.exists():

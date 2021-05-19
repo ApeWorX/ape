@@ -33,7 +33,7 @@ class AccountContainer(AccountContainerAPI):
 class KeyfileAccount(AccountAPI):
     _keyfile: Path
 
-    def __init__(self):
+    def __post_init__(self):
         self.locked = True
         self.__cached_key = None
 

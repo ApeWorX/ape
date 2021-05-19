@@ -50,7 +50,7 @@ class EcosystemAPI:
         else:
             raise  # No networks found!
 
-    def __init__(self):
+    def __post_init__(self):
         if len(self.networks) == 0:
             raise  # Must define at least one network in ecosystem
 
