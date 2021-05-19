@@ -68,6 +68,10 @@ def notify(type_, msg):
     click.echo(f"{click.style(type_, fg=NOTIFY_COLORS[type_])}: {msg}")
 
 
+class Abort(click.ClickException):
+    """Wrapper around a CLI exception"""
+
+
 def deep_merge(dict1, dict2):
     """ Return a new dictionary by merging two dictionaries recursively. """
 
