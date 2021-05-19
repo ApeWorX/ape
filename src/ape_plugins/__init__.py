@@ -27,6 +27,9 @@ if "GITHUB_ACCESS_TOKEN" in os.environ:
         repo.name.replace("-", "_") for repo in author.get_repos() if repo.name.startswith("ape-")
     }
 
+else:
+    notify("WARNING", "$GITHUB_ACCESS_TOKEN not set, skipping 2nd class plugins")
+
 
 def is_plugin_installed(plugin: str) -> bool:
     print(plugin)
