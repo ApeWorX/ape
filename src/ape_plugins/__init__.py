@@ -8,7 +8,7 @@ import click
 from github import Github
 
 from ape.plugins import clean_plugin_name, plugin_manager
-from ape.utils import get_package_version
+from ape.utils import Abort, get_package_version, notify
 
 # Plugins included with ape core
 FIRST_CLASS_PLUGINS: Set[str] = {
@@ -64,20 +64,21 @@ def _list():
 @click.argument("plugin")
 def add(plugin):
     if plugin.startswith("ape"):
-        raise click.ClickException(f"Namespace 'ape' in '{plugin}' is not required")
+        raise Abort(f"Namespace 'ape' in '{plugin}' is not required")
 
     # NOTE: Add namespace prefix (prevents arbitrary installs)
     plugin = f"ape_{clean_plugin_name(plugin)}"
 
     if plugin in FIRST_CLASS_PLUGINS:
-        raise click.ClickException(f"Cannot add 1st class plugin '{plugin}'")
+        raise Abort(f"Cannot add 1st class plugin '{plugin}'")
 
     elif is_plugin_installed(plugin):
-        raise click.ClickException(f"Plugin '{plugin}' already installed")
+        raise Abort(f"Plugin '{plugin}' already installed")
 
     elif plugin in SECOND_CLASS_PLUGINS or click.confirm(
         f"Install unknown 3rd party plugin '{plugin}'?"
     ):
+        notify("INFO", f"Installing {plugin}...")
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
@@ -88,16 +89,16 @@ def add(plugin):
 @click.argument("plugin")
 def remove(plugin):
     if plugin.startswith("ape"):
-        raise click.ClickException(f"Namespace 'ape' in '{plugin}' is not required")
+        raise Abort(f"Namespace 'ape' in '{plugin}' is not required")
 
     # NOTE: Add namespace prefix (match behavior of `install`)
     plugin = f"ape_{clean_plugin_name(plugin)}"
 
     if not is_plugin_installed(plugin):
-        raise click.ClickException(f"Plugin '{plugin}' is not installed")
+        raise Abort(f"Plugin '{plugin}' is not installed")
 
     elif plugin in FIRST_CLASS_PLUGINS:
-        raise click.ClickException(f"Cannot remove 1st class plugin '{plugin}'")
+        raise Abort(f"Cannot remove 1st class plugin '{plugin}'")
 
     elif click.confirm(f"Remove plugin '{plugin} ({get_package_version(plugin)})'"):
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
