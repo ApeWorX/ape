@@ -9,7 +9,7 @@ from ape.api import ProviderAPI
 class Infura(Web3, ProviderAPI):
     _web3: Web3 = None  # type: ignore
 
-    def __init__(self):
+    def __post_init__(self):
         key = os.environ.get("WEB3_INFURA_PROJECT_ID") or os.environ.get("WEB3_INFURA_API_KEY")
         self._web3 = Web3(HTTPProvider(f"https://{self.network.name}.infura.io/v3/{key}"))
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)

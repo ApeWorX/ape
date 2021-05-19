@@ -20,7 +20,7 @@ class ProjectManager:
 
     dependencies: Dict[str, PackageManifest] = dict()
 
-    def __init__(self):
+    def __post_init__(self):
         if isinstance(self.path, str):
             self.path = Path(self.path)
 

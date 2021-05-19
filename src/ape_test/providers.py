@@ -12,7 +12,7 @@ class LocalNetwork(Web3, ProviderAPI):
     def disconnect(self):
         pass
 
-    def __init__(self):
+    def __post_init__(self):
         self._web3 = Web3(EthereumTesterProvider())
 
     def transfer_cost(self, address: str) -> int:
