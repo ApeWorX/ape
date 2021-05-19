@@ -82,7 +82,7 @@ def _import(alias):
 
 
 @cli.command(short_help="Change the password of an existing account")
-@click.argument("alias", type=click.Choice(accounts.aliases))
+@click.argument("alias", type=click.Choice(list(accounts.aliases)))
 def change_password(alias):
     account = accounts.load(alias)
     account.change_password()
@@ -90,7 +90,7 @@ def change_password(alias):
 
 
 @cli.command(short_help="Delete an existing account")
-@click.argument("alias", type=click.Choice(accounts.aliases))
+@click.argument("alias", type=click.Choice(list(accounts.aliases)))
 def delete(alias):
     account = accounts.load(alias)
     account.delete()

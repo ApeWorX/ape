@@ -59,7 +59,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "backports.cached_property ; python_version<'3.8'",
-        "click>=7.1.2",
+        "click>=8.0.0",
         "dataclassy>=0.8.2,<1.0",
         "eth-account>=0.5.2,<0.6.0",
         "pluggy>=0.13.1,<1.0",
