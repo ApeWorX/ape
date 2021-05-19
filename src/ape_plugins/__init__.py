@@ -24,7 +24,7 @@ if "GITHUB_ACCESS_TOKEN" in os.environ:
     author = Github(os.environ["GITHUB_ACCESS_TOKEN"]).get_organization("ApeWorX")
 
     SECOND_CLASS_PLUGINS = {
-        repo.name for repo in author.get_repos() if repo.name.startswith("ape-")
+        repo.name.replace("-", "_") for repo in author.get_repos() if repo.name.startswith("ape-")
     }
 
 
