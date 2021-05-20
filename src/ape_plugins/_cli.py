@@ -81,12 +81,16 @@ def _list(display_all):
 
 @cli.command(short_help="Install an ape plugin")
 @click.argument("plugin")
-def add(plugin):
+@click.option("-v", "--version", help="Specify version (Default is latest)")
+def add(plugin, version):
     if plugin.startswith("ape"):
         raise Abort(f"Namespace 'ape' in '{plugin}' is not required")
 
     # NOTE: Add namespace prefix (prevents arbitrary installs)
     plugin = f"ape_{clean_plugin_name(plugin)}"
+
+    if version:
+        plugin = f"{plugin}=={version}"
 
     if plugin in FIRST_CLASS_PLUGINS:
         raise Abort(f"Cannot add 1st class plugin '{plugin}'")
