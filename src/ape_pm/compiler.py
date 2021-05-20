@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import List, Set
 
 from ape.api.compiler import CompilerAPI
-from ape.types import ContractType, PackageManifest
+from ape.types import ContractType
 
 
-class PackageCompiler(CompilerAPI):
+class InterfaceCompiler(CompilerAPI):
     @property
     def name(self) -> str:
         return "ethpm"
@@ -21,20 +21,16 @@ class PackageCompiler(CompilerAPI):
         for path in filepaths:
             with path.open() as f:
                 data = json.load(f)
-            if "manifest" in data:
-                manifest = PackageManifest.from_dict(data)
 
-                if manifest.contractTypes:  # type: ignore
-                    for c in manifest.contractTypes.values():
-                        c.sourcePath = path
-                        contract_types.append(c)
+            if not isinstance(data, list):
+                raise  # Not a valid ABI interface JSON file
 
             else:
                 contract_types.append(
                     ContractType(  # type: ignore
                         contractName=path.stem,
                         abi=data,
-                        sourcePath=path,
+                        sourceId=str(path),
                     )
                 )
 

@@ -1,6 +1,5 @@
 import urllib.request
 from copy import deepcopy
-from pathlib import Path
 from typing import Dict, List, Optional
 
 from ape.utils import compute_checksum
@@ -59,7 +58,6 @@ class Compiler(SerializableType):
 class ContractType(SerializableType):
     contractName: str
     sourceId: Optional[str] = None
-    sourcePath: Optional[Path] = None
     deploymentBytecode: Optional[Bytecode] = None
     runtimeBytecode: Optional[Bytecode] = None
     # abi, userdoc and devdoc must conform to spec
@@ -80,8 +78,6 @@ class ContractType(SerializableType):
         params = deepcopy(params)
         update_params(params, "deploymentBytecode", Bytecode)
         update_params(params, "runtimeBytecode", Bytecode)
-        if params.get("sourcePath"):
-            params["sourcePath"] = Path(params["sourcePath"])
         return cls(**params)  # type: ignore
 
 
