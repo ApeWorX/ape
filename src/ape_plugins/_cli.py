@@ -7,6 +7,7 @@ from typing import Set
 import click
 from github import Github
 
+from ape import config
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import Abort, get_package_version, notify
 
@@ -106,6 +107,26 @@ def add(plugin, version):
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
         subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", plugin])
+
+
+@cli.command(short_help="Install all plugins in the local config file")
+@click.pass_context
+def install(ctx):
+    for plugin, version in config.get_config("plugins").items():
+        if not plugin.startswith("ape-"):
+            raise Abort(f"Namespace 'ape' required in config item '{plugin}'")
+
+        if not is_plugin_installed(plugin.replace("-", "_")) and (
+            plugin.replace("-", "_") in SECOND_CLASS_PLUGINS
+            or click.confirm(f"Install unknown 3rd party plugin '{plugin}'?")
+        ):
+            notify("INFO", f"Installing {plugin}...")
+            # NOTE: Be *extremely careful* with this command, as it modifies the user's
+            #       installed packages, to potentially catastrophic results
+            # NOTE: This is not abstracted into another function *on purpose*
+            subprocess.call(
+                [sys.executable, "-m", "pip", "install", "--quiet", f"{plugin}=={version}"]
+            )
 
 
 @cli.command(short_help="Uninstall an ape plugin")
