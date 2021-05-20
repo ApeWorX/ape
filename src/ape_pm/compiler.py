@@ -31,7 +31,6 @@ class InterfaceCompiler(CompilerAPI):
                         contractName=path.stem,
                         abi=data,
                         sourceId=str(path),
-                        sourcePath=path,
                     )
                 )
 
