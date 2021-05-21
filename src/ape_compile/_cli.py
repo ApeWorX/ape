@@ -1,13 +1,28 @@
+from itertools import chain
+from pathlib import Path
+
 import click
 
 from ape import project
 from ape.utils import notify
 
+flatten = chain.from_iterable
 
-@click.command(short_help="Compile the contract source files")
-@click.argument("contracts", nargs=-1, type=click.Path())
+
+@click.command(short_help="Compile select contract source files")
+@click.argument(
+    "filepaths",
+    nargs=-1,
+    type=click.Path(exists=True, path_type=Path),
+)
 @click.option(
-    "-a", "--all", "compile_all", default=False, is_flag=True, help="Recompile all contracts"
+    "-f",
+    "--force",
+    "use_cache",
+    flag_value=False,
+    default=True,
+    is_flag=True,
+    help="Force recompiling selected contracts",
 )
 @click.option(
     "-s",
@@ -15,9 +30,9 @@ from ape.utils import notify
     "display_size",
     default=False,
     is_flag=True,
-    help="Show deployed bytecode sizes contracts",
+    help="Show deployment bytecode size for all contracts",
 )
-def cli(contracts, compile_all, display_size):
+def cli(filepaths, use_cache, display_size):
     """
     Compiles the manifest for this project and saves the results
     back to the manifest.
@@ -26,33 +41,55 @@ def cli(contracts, compile_all, display_size):
     a project is loaded. You do not have to manually trigger a recompile.
     """
 
-    # TODO
-    # * Look for local manifest
-    # * If not, look for local config
-    # * If no config assume everything is default
-    # * `contracts` allows selecting specific contracts to compile from manifest
-    # Config should override defaults. If no config value, use default.
-    # default config is the source of truth, the manifest is an artifact of the
-    # config, both pre-and post procesing
+    # Expand source tree based on selection
+    if not filepaths:
+        if not (Path.cwd() / "contracts").exists():
+            notify("ERROR", "No `contracts/` directory detected")
+            return
 
-    if len(project.sources) == 0:
-        notify("ERROR", "Manifest contains no sources to compile")
+        # If no paths are specified, use all local project sources
+        contract_filepaths = project.sources
+
+    else:
+        # Expand any folder paths
+        expanded_filepaths = flatten([d.rglob("*.*") if d.is_dir() else [d] for d in filepaths])
+        # Filter by what's in our project's source tree
+        # NOTE: Make the paths absolute like `project.sources`
+        contract_filepaths = [
+            c.resolve() for c in expanded_filepaths if c.resolve() in project.sources
+        ]
+
+    if not contract_filepaths:
+        if filepaths:
+            selected_paths = "', '".join(str(p.resolve()) for p in filepaths)
+
+        else:
+            selected_paths = str(Path.cwd() / "contracts")
+
+        notify("WARNING", f"No project files detected in '{selected_paths}'")
         return
 
-    # NOTE: This compiles all types in `contracts/`
-    contract_types = list(project.contracts.values())
+    # TODO: only compile selected contracts
+    contract_types = project.load_contracts(use_cache)
 
+    # Display bytecode size for *all* contract types (not just ones we compiled)
     if display_size:
-        click.echo()
-        click.echo("============ Deployment Bytecode Sizes ============")
-
         codesize = []
-        for contract in contract_types:
+        for contract in contract_types.values():
+            if not contract.deploymentBytecode:
+                continue  # Skip if not bytecode to display
+
             bytecode = contract.deploymentBytecode.bytecode
 
             if bytecode:
                 codesize.append((contract.contractName, len(bytecode) // 2))
 
+        if not codesize:
+            notify("INFO", "No contracts with bytecode to display")
+            return
+
+        click.echo()
+        click.echo("============ Deployment Bytecode Sizes ============")
         indent = max(len(i[0]) for i in codesize)
         for name, size in sorted(codesize, key=lambda k: k[1], reverse=True):
             pct = size / 24577
