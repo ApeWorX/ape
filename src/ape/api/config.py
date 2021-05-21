@@ -33,5 +33,5 @@ class ConfigItem:
 
 
 class ConfigDict(ConfigItem):
-    def __post__init__(self):
+    def __post_init__(self):
         raise ValueError("Do not use this class directly!")
