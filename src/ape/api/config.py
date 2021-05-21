@@ -30,3 +30,8 @@ class ConfigItem:
 
     def validate_config(self):
         pass
+
+
+class ConfigDict(ConfigItem):
+    def __post_init__(self):
+        raise ValueError("Do not use this class directly!")

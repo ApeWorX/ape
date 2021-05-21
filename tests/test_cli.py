@@ -22,6 +22,7 @@ from ape import config
         ["console", "--verbose"],
         ["plugins"],
         ["plugins", "list"],
+        ["plugins", "list", "--all"],
         ["networks"],
         ["networks", "list"],
     ),

@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from dataclassy import dataclass
 
-from ape.api.config import ConfigItem
+from ape.api.config import ConfigDict, ConfigItem
 from ape.plugins import PluginManager
 from ape.utils import load_config
 
@@ -39,11 +39,16 @@ class ConfigManager:
             # NOTE: `dict.pop()` is used for checking if all config was processed
             user_override = user_config.pop(plugin_name, {})
 
-            # NOTE: Will raise if improperly provided keys
-            config = config_class(**user_override)
+            if config_class != ConfigDict:
+                # NOTE: Will raise if improperly provided keys
+                config = config_class(**user_override)
 
-            # NOTE: Should raise if settings violate some sort of plugin requirement
-            config.validate_config()
+                # NOTE: Should raise if settings violate some sort of plugin requirement
+                config.validate_config()
+
+            else:
+                # NOTE: Just use it directly as a dict if `ConfigDict` is passed
+                config = user_override
 
             self._plugin_configs[plugin_name] = config
 
@@ -61,7 +66,8 @@ class ConfigManager:
         project_config = dict()
 
         for name, config in self._plugin_configs.items():
-            project_config[name] = config.serialize()
+            # NOTE: `config` is either `ConfigItem` or `dict`
+            project_config[name] = config.serialize() if isinstance(config, ConfigItem) else config
 
         return project_config
 
