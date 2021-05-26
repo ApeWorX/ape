@@ -1,14 +1,14 @@
 import urllib.request
 from copy import deepcopy
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set, Union
 
 from ape.utils import compute_checksum
 
-from .abstract import SerializableType, update_list_params, update_params
+from .abstract import FileMixin, SerializableType, update_list_params, update_params
 
 
 # TODO link references & link values are for solidity, not used with Vyper
-# Offsets are for dynamic links, e.g. doggie's proxy forwarder
+# Offsets are for dynamic links, e.g. EIP1167 proxy forwarder
 class LinkDependency(SerializableType):
     offsets: List[int]
     type: str
@@ -25,6 +25,17 @@ class Bytecode(SerializableType):
     bytecode: Optional[str] = None
     linkReferences: Optional[List[LinkReference]] = None
     linkDependencies: Optional[List[LinkDependency]] = None
+
+    def __repr__(self) -> str:
+        self_str = super().__repr__()
+
+        # Truncate bytecode for display
+        if self.bytecode:
+            self_str = self_str.replace(
+                self.bytecode, self.bytecode[:5] + "..." + self.bytecode[-3:]
+            )
+
+        return self_str
 
     @classmethod
     def from_dict(cls, params: Dict):
@@ -55,27 +66,105 @@ class Compiler(SerializableType):
     contractTypes: Optional[List[str]] = None
 
 
-class ContractType(SerializableType):
+class ABIType(SerializableType):
+    name: str = ""  # NOTE: Tuples don't have names by default
+    indexed: Optional[bool] = None
+    type: Union[str, "ABIType"]
+    internalType: Optional[str] = None
+
+
+class ABI(SerializableType):
+    name: str = ""
+    inputs: List[ABIType] = []
+    outputs: List[ABIType] = []
+    # ABI v2 Field
+    # NOTE: Only functions have this field
+    stateMutability: Optional[str] = None
+    # NOTE: Only events have this field
+    anonymous: Optional[bool] = None
+    # TODO: Handle events and functions separately (maybe also default and constructor)
+    #       Would parse based on value of type here, so some indirection required
+    #       Might make most sense to add to `ContractType` as a serde extension
+    type: str
+
+    @property
+    def is_event(self) -> bool:
+        return self.anonymous is not None
+
+    @property
+    def is_stateful(self) -> bool:
+        return self.stateMutability not in ("view", "pure")
+
+    @classmethod
+    def from_dict(cls, params: Dict):
+        params = deepcopy(params)
+
+        # Handle ABI v1 fields (convert to ABI v2)
+        if "anonymous" not in params and "stateMutability" not in params:
+            if params.get("constant", False):
+                params["stateMutability"] = "view"
+
+            elif params.get("payable", False):
+                params["stateMutability"] = "payable"
+
+            else:
+                params["stateMutability"] = "nonpayable"
+
+            if "constant" in params:
+                params.pop("constant")
+
+            elif "payable" in params:
+                params.pop("payable")
+
+        update_list_params(params, "inputs", ABIType)
+        update_list_params(params, "outputs", ABIType)
+        return cls(**params)  # type: ignore
+
+
+class ContractType(FileMixin, SerializableType):
+    _keep_fields_: Set[str] = {"abi"}
+    _skip_fields_: Set[str] = {"contractName"}
     contractName: str
     sourceId: Optional[str] = None
     deploymentBytecode: Optional[Bytecode] = None
     runtimeBytecode: Optional[Bytecode] = None
     # abi, userdoc and devdoc must conform to spec
-    abi: Optional[str] = None
+    abi: List[ABI] = []
     userdoc: Optional[str] = None
     devdoc: Optional[str] = None
 
-    def to_dict(self):
-        data = super().to_dict()
+    @property
+    def constructor(self) -> Optional[ABI]:
+        for abi in self.abi:
+            if abi.type == "constructor":
+                return abi
 
-        if "abi" in data:
-            data["abi"] = self.abi  # NOTE: Don't prune this one of empty lists
+        return None
 
-        return data
+    @property
+    def fallback(self) -> Optional[ABI]:
+        for abi in self.abi:
+            if abi.type == "fallback":
+                return abi
+
+        return None
+
+    @property
+    def events(self) -> List[ABI]:
+        return [abi for abi in self.abi if abi.type == "event"]
+
+    @property
+    def calls(self) -> List[ABI]:
+        return [abi for abi in self.abi if abi.type == "function" and abi.is_stateful]
+
+    @property
+    def transactions(self) -> List[ABI]:
+        return [abi for abi in self.abi if abi.type == "function" and not abi.is_stateful]
 
     @classmethod
     def from_dict(cls, params: Dict):
         params = deepcopy(params)
+        update_list_params(params, "abi", ABI)
         update_params(params, "deploymentBytecode", Bytecode)
         update_params(params, "runtimeBytecode", Bytecode)
         return cls(**params)  # type: ignore
