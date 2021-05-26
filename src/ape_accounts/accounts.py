@@ -4,7 +4,8 @@ from typing import Iterator, Optional
 
 import click
 from eth_account import Account as EthAccount  # type: ignore
-from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
+from eth_account.datastructures import SignedMessage  # type: ignore
+from eth_account.datastructures import SignedTransaction
 from eth_account.messages import SignableMessage  # type: ignore
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI

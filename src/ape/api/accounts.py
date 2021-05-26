@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Iterator, Optional, Type
 
 from dataclassy import dataclass
-from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
+from eth_account.datastructures import SignedMessage  # type: ignore
+from eth_account.datastructures import SignedTransaction
 from eth_account.messages import SignableMessage  # type: ignore
 
 if TYPE_CHECKING:
