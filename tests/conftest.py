@@ -1,8 +1,8 @@
+import json
 from pathlib import Path
 from tempfile import mkdtemp
 
 import pytest  # type: ignore
-import requests
 from click.testing import CliRunner
 
 from ape import Project, config
@@ -42,7 +42,7 @@ def project(project_folder):
 @pytest.fixture(
     scope="session",
     params=[
-        # From https://github.com/ethpm/ethpm-spec/tree/master/examples
+        # Copied from https://github.com/ethpm/ethpm-spec/tree/master/examples
         "escrow",
         "owned",
         "piper-coin",
@@ -54,9 +54,4 @@ def project(project_folder):
     ],
 )
 def manifest(request):
-    # NOTE: `v3-pretty.json` exists for each, and can be used for debugging
-    manifest_uri = (
-        "https://raw.githubusercontent.com/ethpm/ethpm-spec/master/examples/"
-        f"{request.param}/v3.json"
-    )
-    yield requests.get(manifest_uri).json()
+    yield json.loads((Path(__file__).parent / "manifests" / f"{request.param}.json").read_text())

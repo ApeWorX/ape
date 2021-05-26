@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict, Optional, Set, Union
 
 import dataclassy as dc
 
@@ -22,28 +22,49 @@ def update_dict_params(params, param_name, param_type):
             params[param_name][key] = param_type.from_dict(params[param_name][key])
 
 
-def remove_none_fields(data):
+def remove_empty_fields(data, keep_fields: Optional[Set[str]] = None):
     if isinstance(data, dict):
         return {
-            k: remove_none_fields(v)
-            for k, v in data.items()
-            if v is not None and remove_none_fields(v) is not None
+            k: v
+            for k, v in zip(data.keys(), map(remove_empty_fields, data.values()))
+            if isinstance(v, bool) or (keep_fields and k in keep_fields) or v
         }
 
     elif isinstance(data, list):
-        return [
-            remove_none_fields(v)
-            for v in data
-            if v is not None and remove_none_fields(v) is not None
-        ]
+        return [v for v in map(remove_empty_fields, data) if isinstance(v, bool) or v]
 
     return data
 
 
-@dc.dataclass(slots=True, kwargs=True)
+def to_dict(v: Any) -> Optional[Union[list, dict, str, int, bool]]:
+    if isinstance(v, SerializableType):
+        return v.to_dict()
+
+    elif isinstance(v, list):
+        return [to_dict(i) for i in v]  # type: ignore
+
+    elif isinstance(v, dict):
+        return {k: to_dict(i) for k, i in v.items()}
+
+    elif isinstance(v, (str, int, bool)) or v is None:
+        return v
+
+    else:
+        raise  # Unhandled type
+
+
+@dc.dataclass(slots=True, kwargs=True, repr=True)
 class SerializableType:
+    _keep_fields_: Set[str] = set()
+    _skip_fields_: Set[str] = set()
+
     def to_dict(self) -> Dict:
-        return remove_none_fields({k: v for k, v in dc.asdict(self).items() if v})
+        data = {
+            k: to_dict(v)
+            for k, v in dc.values(self).items()
+            if not (k.startswith("_") or k in self._skip_fields_)
+        }
+        return remove_empty_fields(data, keep_fields=self._keep_fields_)
 
     @classmethod
     def from_dict(cls, params: Dict):

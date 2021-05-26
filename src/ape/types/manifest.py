@@ -54,24 +54,6 @@ class PackageManifest(FileMixin, SerializableType):
         else:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
 
-    def to_dict(self):
-        data = super().to_dict()
-
-        if "contractTypes" in data and data["contractTypes"]:
-            for name in data["contractTypes"]:
-                # NOTE: This was inserted by us, remove it
-                del data["contractTypes"][name]["contractName"]
-                # convert Path to str, or else we can't serialize this as JSON
-                data["contractTypes"][name]["sourceId"] = str(
-                    data["contractTypes"][name]["sourceId"]
-                )
-                if "sourcePath" in data["contractTypes"][name]:
-                    data["contractTypes"][name]["sourcePath"] = str(
-                        data["contractTypes"][name]["sourcePath"]
-                    )
-
-        return data
-
     @classmethod
     def from_dict(cls, params: Dict):
         params = deepcopy(params)
@@ -83,6 +65,7 @@ class PackageManifest(FileMixin, SerializableType):
             for name in params["contractTypes"]:
                 params["contractTypes"][name] = ContractType.from_dict(  # type: ignore
                     {
+                        # NOTE: We inject this parameter ourselves, remove it when serializing
                         "contractName": name,
                         **params["contractTypes"][name],
                     }
