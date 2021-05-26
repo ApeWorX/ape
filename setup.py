@@ -81,7 +81,7 @@ setup(
             "ape_networks=ape_networks._cli:cli",
         ],
     },
-    python_requires=">=3.6,<3.9",
+    python_requires=">=3.6,<3.10",
     extras_require=extras_require,
     py_modules=[
         "ape",
@@ -122,5 +122,6 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
 )
