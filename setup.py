@@ -61,7 +61,7 @@ setup(
     install_requires=[
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.0.0",
-        "dataclassy>=0.8.2,<1.0",
+        "dataclassy==0.10.0",  # see https://github.com/biqqles/dataclassy/issues/46
         "eth-account>=0.5.2,<0.6.0",
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
