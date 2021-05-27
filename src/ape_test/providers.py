@@ -12,6 +12,9 @@ class LocalNetwork(Web3, ProviderAPI):
     def disconnect(self):
         pass
 
+    def update_settings(self, new_settings: dict):
+        pass
+
     def __post_init__(self):
         self._web3 = Web3(EthereumTesterProvider())
 
