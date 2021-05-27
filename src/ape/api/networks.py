@@ -1,12 +1,12 @@
-from abc import ABCMeta, abstractmethod
 from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Type
 
-from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
 from ape.utils import cached_property
+
+from .base import abstractdataclass, abstractmethod, dataclass
 
 if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
@@ -127,8 +127,8 @@ class ProviderContextManager:
             self.network_manager.active_provider = self._connected_providers[-1]
 
 
-@dataclass
-class NetworkAPI(metaclass=ABCMeta):
+@abstractdataclass
+class NetworkAPI:
     """
     A Network is a wrapper around a Provider for a specific Ecosystem
     """

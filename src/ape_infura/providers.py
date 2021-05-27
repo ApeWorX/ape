@@ -6,7 +6,7 @@ from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from ape.api import ProviderAPI
 
 
-class Infura(Web3, ProviderAPI):
+class Infura(ProviderAPI):
     _web3: Web3 = None  # type: ignore
 
     def __post_init__(self):

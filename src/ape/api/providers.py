@@ -1,13 +1,11 @@
-from abc import ABCMeta, abstractmethod
 from pathlib import Path
 
-from dataclassy import dataclass
-
 from . import networks
+from .base import abstractdataclass, abstractmethod
 
 
-@dataclass
-class ProviderAPI(metaclass=ABCMeta):
+@abstractdataclass
+class ProviderAPI:
     """
     A Provider must work with a particular Network in a particular Ecosystem
     """

@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, Union
 
-from dataclassy import dataclass
+from .base import dataclass
 
 
 class ConfigEnum(str, Enum):

@@ -1,18 +1,18 @@
-from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterator, Optional, Type
 
-from dataclassy import dataclass
 from eth_account.datastructures import SignedMessage  # type: ignore
 from eth_account.datastructures import SignedTransaction
 from eth_account.messages import SignableMessage  # type: ignore
+
+from .base import abstractdataclass, abstractmethod
 
 if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
-@dataclass
-class AddressAPI(metaclass=ABCMeta):
+@abstractdataclass
+class AddressAPI:
     network_manager: Optional["NetworkManager"] = None
 
     @property
@@ -78,8 +78,8 @@ class AccountAPI(AddressAPI):
         ...
 
 
-@dataclass
-class AccountContainerAPI(metaclass=ABCMeta):
+@abstractdataclass
+class AccountContainerAPI:
     data_folder: Path
     account_type: Type[AccountAPI]
 
@@ -107,7 +107,7 @@ class AccountContainerAPI(metaclass=ABCMeta):
         if not isinstance(account, self.account_type):
             raise  # Not the right type for this container
 
-        if account in self:
+        if account.address in self:
             raise  # Account already in container
 
         if account.alias and account.alias in self.aliases:
@@ -115,9 +115,23 @@ class AccountContainerAPI(metaclass=ABCMeta):
 
         self.__setitem__(account.address, account)
 
-    @abstractmethod
     def __setitem__(self, address: str, account: AccountAPI):
-        raise NotImplementedError("Must define this method to use `container.append(...)`")
+        raise NotImplementedError("Must define this method to use `container.append(acct)`")
+
+    def remove(self, account: AccountAPI):
+        if not isinstance(account, self.account_type):
+            raise  # Not the right type for this container
+
+        if account.address not in self:
+            raise  # Account not in container
+
+        if account.alias and account.alias in self.aliases:
+            raise  # Alias already in use
+
+        self.__delitem__(account.address)
+
+    def __delitem__(self, address: str):
+        raise NotImplementedError("Must define this method to use `container.remove(acct)`")
 
     def __contains__(self, address: str) -> bool:
         try:
