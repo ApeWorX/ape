@@ -116,7 +116,22 @@ class AccountContainerAPI:
         self.__setitem__(account.address, account)
 
     def __setitem__(self, address: str, account: AccountAPI):
-        raise NotImplementedError("Must define this method to use `container.append(...)`")
+        raise NotImplementedError("Must define this method to use `container.append(acct)`")
+
+    def remove(self, account: AccountAPI):
+        if not isinstance(account, self.account_type):
+            raise  # Not the right type for this container
+
+        if account.address not in self:
+            raise  # Account not in container
+
+        if account.alias and account.alias in self.aliases:
+            raise  # Alias already in use
+
+        self.__delitem__(account.address)
+
+    def __delitem__(self, address: str):
+        raise NotImplementedError("Must define this method to use `container.remove(acct)`")
 
     def __contains__(self, address: str) -> bool:
         try:
