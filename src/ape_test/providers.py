@@ -3,7 +3,7 @@ from web3 import EthereumTesterProvider, Web3  # type: ignore
 from ape.api import ProviderAPI
 
 
-class LocalNetwork(Web3, ProviderAPI):
+class LocalNetwork(ProviderAPI):
     _web3: Web3 = None  # type: ignore
 
     def connect(self):
