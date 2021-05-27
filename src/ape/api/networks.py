@@ -4,24 +4,20 @@ from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Type
 
 from pluggy import PluginManager  # type: ignore
 
+from ape.types import ABI
 from ape.utils import cached_property
 
-from .base import abstractdataclass, abstractmethod, dataclass
+from .base import abstractdataclass, abstractmethod
 
 if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
-    from .contracts import (
-        ContractCallAPI,
-        ContractConstructorAPI,
-        ContractEventAPI,
-        ContractTransactionAPI,
-    )
+    from .contracts import ContractLog
     from .explorers import ExplorerAPI
     from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
 
 
-@dataclass
+@abstractdataclass
 class EcosystemAPI:
     """
     An Ecosystem is a set of related Networks
@@ -35,11 +31,6 @@ class EcosystemAPI:
 
     transaction_class: Type["TransactionAPI"]
     receipt_class: Type["ReceiptAPI"]
-
-    contract_constructor_class: Type["ContractConstructorAPI"]
-    contract_event_class: Type["ContractEventAPI"]
-    contract_call_class: Type["ContractCallAPI"]
-    contract_transaction_class: Type["ContractTransactionAPI"]
 
     _default_network: str = "development"
 
@@ -107,6 +98,20 @@ class EcosystemAPI:
             self._default_network = network_name
         else:
             raise Exception("Not a valid network for ecosystem `self.name`")
+
+    @abstractmethod
+    def encode_deployment(
+        self, deployment_bytecode: bytes, abi: Optional[ABI], *args, **kwargs
+    ) -> "TransactionAPI":
+        ...
+
+    @abstractmethod
+    def encode_transaction(self, abi: ABI, *args, **kwargs) -> "TransactionAPI":
+        ...
+
+    @abstractmethod
+    def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
+        ...
 
 
 class ProviderContextManager:

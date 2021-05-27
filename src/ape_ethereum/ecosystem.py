@@ -1,21 +1,16 @@
+from typing import Any, Optional
+
+from eth_abi import decode_abi as abi_decode
+from eth_abi import encode_abi as abi_encode
 from eth_account._utils.transactions import (  # type: ignore
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import to_int
-from rlp import decode as rlp_decode  # type: ignore
-from rlp import encode as rlp_encode  # type: ignore
+from eth_utils import keccak, to_bytes, to_int
+from hexbytes import HexBytes
 
-from ape.api import (
-    ContractCallAPI,
-    ContractConstructorAPI,
-    ContractEventAPI,
-    ContractTransactionAPI,
-    EcosystemAPI,
-    ReceiptAPI,
-    TransactionAPI,
-    TransactionStatusEnum,
-)
+from ape.api import ContractLog, EcosystemAPI, ReceiptAPI, TransactionAPI, TransactionStatusEnum
+from ape.types import ABI
 
 NETWORKS = {
     # chain_id, network_id
@@ -35,17 +30,14 @@ class Transaction(TransactionAPI):
         data = super().as_dict()
 
         # Clean up data to what we expect
-        del data["chain_id"]
-        del data["sender"]
-        data["to"] = data["receiver"]
-        del data["receiver"]
-        data["gas"] = data["gas_limit"]
-        del data["gas_limit"]
-        data["gasPrice"] = data["gas_price"]
-        del data["gas_price"]
+        data.pop("chain_id")
+        data.pop("sender")
+        data["to"] = data.pop("receiver")
+        data["gas"] = data.pop("gas_limit")
+        data["gasPrice"] = data.pop("gas_price")
 
         # NOTE: Don't publish signature
-        del data["signature"]
+        data.pop("signature")
 
         return data
 
@@ -76,38 +68,47 @@ class Receipt(ReceiptAPI):
         )
 
 
-class ContractConstructor(ContractConstructorAPI):
-    def __call__(self, *args, **kwargs) -> TransactionAPI:
-        txn = Transaction(**kwargs)  # type: ignore
-        txn.data = self.deployment_bytecode + rlp_encode(self.inputs, *args)
-        return txn
-
-
-class ContractCall(ContractCallAPI):
-    def __call__(self, *args, **kwargs) -> TransactionAPI:
-        txn = Transaction(**kwargs)  # type: ignore
-        txn.data = rlp_encode(self.inputs, *args)
-        return txn
-
-
-class ContractTransaction(ContractTransactionAPI):
-    def __call__(self, *args, **kwargs) -> TransactionAPI:
-        txn = Transaction(**kwargs)  # type: ignore
-        txn.data = rlp_encode(self.inputs, *args)
-        return txn
-
-
-class ContractEvent(ContractEventAPI):
-    def decode(self, data: bytes) -> dict:
-        event_data = rlp_decode(self.inputs, data)
-        return event_data
-
-
 class Ethereum(EcosystemAPI):
     transaction_class = Transaction
     receipt_class = Receipt
 
-    contract_constructor_class = ContractConstructor
-    contract_call_class = ContractCall
-    contract_transaction_class = ContractTransaction
-    contract_event_class = ContractEvent
+    def encode_calldata(self, abi: ABI, *args) -> bytes:
+        if abi.inputs:
+            input_types = [i.canonical_type for i in abi.inputs]
+            return abi_encode(input_types, *args)
+
+        else:
+            return HexBytes(b"")
+
+    def decode_calldata(self, abi: ABI, raw_data: bytes) -> Any:
+        output_types = [o.canonical_type for o in abi.outputs]
+        return abi_decode(output_types, raw_data)
+
+    def encode_deployment(
+        self, deployment_bytecode: bytes, abi: Optional[ABI], *args, **kwargs
+    ) -> Transaction:
+        txn = Transaction(**kwargs)  # type: ignore
+        txn.data = deployment_bytecode
+
+        # Encode args, if there are any
+        if abi:
+            txn.data += self.encode_calldata(abi, *args)
+
+        return txn
+
+    def encode_transaction(self, abi: ABI, *args, **kwargs) -> Transaction:
+        txn = Transaction(**kwargs)  # type: ignore
+
+        # Add method ID
+        txn.data = keccak(to_bytes(text=abi.selector))[:4]
+        txn.data += self.encode_calldata(abi, *args)
+
+        return txn
+
+    def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
+        filter_id = keccak(to_bytes(text=abi.selector))
+        event_data = next(log for log in receipt.logs if log["filter_id"] == filter_id)
+        return ContractLog(  # type: ignore
+            name=abi.name,
+            inputs={i.name: event_data[i.name] for i in abi.inputs},
+        )

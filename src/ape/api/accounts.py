@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterator, Optional, Type
+from typing import Iterator, Optional, Type, Union
 
 from eth_account.datastructures import SignedMessage  # type: ignore
 from eth_account.messages import SignableMessage  # type: ignore
@@ -31,11 +31,26 @@ class AccountAPI(AddressAPI):
         # NOTE: Some accounts may not offer signing things
         return txn
 
-    def transfer(self, account: "AddressAPI", value: int = None, data: bytes = None) -> ReceiptAPI:
+    def call(self, txn: TransactionAPI) -> ReceiptAPI:
+        txn.nonce = self.nonce
+        txn.gas_limit = self.provider.estimate_gas_cost(txn)
+        txn.gas_price = self.provider.gas_price
+
+        if txn.gas_limit * txn.gas_price + txn.value > self.balance:
+            raise  # Transfer value meets or exceeds account balance
+
+        txn = self.sign_transaction(txn)
+        return self.provider.send_transaction(txn)
+
+    def transfer(
+        self,
+        account: Union[str, "AddressAPI"],
+        value: int = None,
+        data: bytes = None,
+    ) -> ReceiptAPI:
         txn = self._transaction_class(  # type: ignore
             sender=self.address,
-            receiver=account.address,
-            nonce=self.nonce,
+            receiver=account.address if isinstance(account, AddressAPI) else account,
         )
 
         if data:
@@ -50,46 +65,23 @@ class AccountAPI(AddressAPI):
 
         return self.call(txn)
 
-    def call(self, txn: TransactionAPI) -> ReceiptAPI:
-        txn.gas_limit = self._active_provider.estimate_gas_cost(txn)
-        txn.gas_price = self._active_provider.gas_price
-
-        if txn.gas_limit * txn.gas_price + txn.value > self.balance:
-            raise  # Transfer value meets or exceeds account balance
-
-        txn = self.sign_transaction(txn)
-        return self._active_provider.send_transaction(txn)
-
     def deploy(self, contract_type: ContractType, *args, **kwargs) -> ContractInstance:
-        kwargs["sender"] = self.address
         c = ContractContainer(  # type: ignore
-            provider=self._active_provider,
-            contract_type=contract_type,
+            _provider=self.provider,
+            _contract_type=contract_type,
         )
 
-        txn = c.build_deployment(*args, **kwargs)
-        txn.nonce = self.nonce
-        txn.gas_limit = self._active_provider.estimate_gas_cost(txn)
-        txn.gas_price = self._active_provider.gas_price
-
-        txn_cost = txn.gas_limit * txn.gas_price
-        if "value" in kwargs:
-            txn_cost += kwargs["value"]
-
-        if txn_cost > self.balance:
-            raise  # Transfer value meets or exceeds account balance
-
-        txn = self.sign_transaction(txn)
-        receipt = self._active_provider.send_transaction(txn)
+        txn = c(*args, **kwargs)
+        txn.sender = self.address
+        receipt = self.call(txn)
 
         if not receipt.contract_address:
             raise  # `receipt.txn_hash` did not create a contract
 
-        breakpoint()
         return ContractInstance(  # type: ignore
-            address=receipt.contract_address,
-            provider=self._active_provider,
-            contract_type=contract_type,
+            _provider=self.provider,
+            _address=receipt.contract_address,
+            _contract_type=contract_type,
         )
 
 

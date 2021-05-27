@@ -4,6 +4,8 @@ from typing import List, Optional
 
 from dataclassy import as_dict
 
+from ape.utils import notify
+
 from . import networks
 from .base import abstractdataclass, abstractmethod
 
@@ -21,7 +23,7 @@ class TransactionAPI:
 
     signature: bytes = b""
 
-    def __init__(self):
+    def __post_init__(self):
         if not self.is_valid:
             raise  # Not valid!
 
@@ -59,6 +61,9 @@ class ReceiptAPI:
     gas_price: int
     logs: List[dict] = []
     contract_address: Optional[str] = None
+
+    def __post_init__(self):
+        notify("INFO", f"Submitted {self.txn_hash.hex()}")
 
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
@@ -115,7 +120,7 @@ class ProviderAPI:
         ...
 
     @abstractmethod
-    def send_call(self, txn: TransactionAPI) -> ReceiptAPI:
+    def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
         ...
 
     @abstractmethod

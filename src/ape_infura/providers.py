@@ -1,5 +1,4 @@
 import os
-from typing import Any
 
 from web3 import HTTPProvider, Web3  # type: ignore
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
@@ -21,6 +20,9 @@ class Infura(ProviderAPI):
     def disconnect(self):
         pass
 
+    def update_settings(self, new_settings: dict):
+        pass
+
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         return self._web3.eth.estimate_gas(txn.as_dict())
 
@@ -37,7 +39,7 @@ class Infura(ProviderAPI):
     def get_code(self, address: str) -> bytes:
         return self._web3.eth.getCode(address)  # type: ignore
 
-    def send_call(self, txn: TransactionAPI) -> Any:
+    def send_call(self, txn: TransactionAPI) -> bytes:
         data = txn.encode()
         return self._web3.eth.call(data)
 

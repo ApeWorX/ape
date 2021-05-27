@@ -1,132 +1,260 @@
-from typing import List, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from eth_utils import to_bytes
 
-from ape.types import ContractType
+from ape.types import ABI, ContractType
+from ape.utils import notify
 
-from .address import AddressAPI
-from .base import abstractdataclass, abstractmethod, dataclass
-from .providers import ProviderAPI, TransactionAPI
+from .address import Address, AddressAPI
+from .base import dataclass
+from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
+
+if TYPE_CHECKING:
+    from ape.managers.networks import NetworkManager
 
 
-@abstractdataclass
-class ContractConstructorAPI:
+@dataclass
+class ContractConstructor:
     deployment_bytecode: bytes
-    inputs: List[dict] = []
+    abi: Optional[ABI]
     provider: ProviderAPI
 
-    @abstractmethod
-    def __call__(self, *args, **kwargs) -> TransactionAPI:
-        ...
+    def __repr__(self) -> str:
+        return self.abi.signature if self.abi else "constructor()"
+
+    def encode(self, *args, **kwargs) -> TransactionAPI:
+        return self.provider.network.ecosystem.encode_deployment(
+            self.deployment_bytecode, self.abi, *args, **kwargs
+        )
+
+    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        if "sender" in kwargs:
+            sender = kwargs["sender"]
+            kwargs["sender"] = sender.address
+
+            txn = self.encode(*args, **kwargs)
+            return sender.call(txn)
+
+        else:
+            txn = self.encode(*args, **kwargs)
+            return self.provider.send_transaction(txn)
 
 
-@abstractdataclass
-class ContractCallAPI:
+@dataclass
+class ContractCall:
+    abi: ABI
+    provider: ProviderAPI
+
+    def __repr__(self) -> str:
+        return self.abi.signature
+
+    def encode(self, *args, **kwargs) -> TransactionAPI:
+        return self.provider.network.ecosystem.encode_transaction(self.abi, *args, **kwargs)
+
+    def __call__(self, *args, **kwargs) -> Any:
+        txn = self.encode(*args, **kwargs)
+
+        if "sender" in kwargs and not isinstance(kwargs["sender"], str):
+            txn.sender = kwargs["sender"].address
+
+        raw_output = self.provider.send_call(txn)
+        return self.provider.network.ecosystem.decode_calldata(self.abi, raw_output)  # type: ignore
+
+
+@dataclass
+class ContractCallHandler:
+    provider: ProviderAPI
+    abis: List[ABI]
+
+    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        # NOTE: Should only match one ABI in set
+        abi = next(abi for abi in self.abis if len(args) == len(abi.inputs))
+        return ContractCall(  # type: ignore
+            abi=abi,
+            provider=self.provider,
+        )(*args, **kwargs)
+
+
+@dataclass
+class ContractTransaction:
+    abi: ABI
+    provider: ProviderAPI
+
+    def __repr__(self) -> str:
+        return self.abi.signature
+
+    def encode(self, *args, **kwargs) -> TransactionAPI:
+        return self.provider.network.ecosystem.encode_transaction(self.abi, *args, **kwargs)
+
+    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+
+        if "sender" in kwargs:
+            sender = kwargs["sender"]
+            kwargs["sender"] = sender.address
+
+            txn = self.encode(*args, **kwargs)
+            return sender.call(txn)
+
+        else:
+            raise  # Must specify a `sender`
+
+
+@dataclass
+class ContractTransactionHandler:
+    provider: ProviderAPI
+    abis: List[ABI]
+
+    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        # NOTE: Should only match one ABI in set
+        abi = next(abi for abi in self.abis if len(args) == len(abi.inputs))
+        return ContractTransaction(  # type: ignore
+            abi=abi,
+            provider=self.provider,
+        )(*args, **kwargs)
+
+
+@dataclass
+class ContractEvent:
     name: str
     inputs: List[dict]
-    outputs: List[dict]
     provider: ProviderAPI
 
-    @abstractmethod
-    def __call__(self, *args, **kwargs) -> TransactionAPI:
-        ...
 
-
-@abstractdataclass
-class ContractTransactionAPI:
+@dataclass
+class ContractLog:
     name: str
-    payable: bool
-    inputs: List[dict]
-    outputs: List[dict]
-    provider: ProviderAPI
-
-    @abstractmethod
-    def __call__(self, *args, **kwargs) -> TransactionAPI:
-        ...
-
-
-@abstractdataclass
-class ContractEventAPI:
-    name: str
-    inputs: List[dict]
-    provider: ProviderAPI
-
-    @abstractmethod
-    def decode(self, data: bytes) -> dict:
-        ...
+    data: Dict[str, Any]
 
 
 class ContractInstance(AddressAPI):
-    address: str
-    provider: ProviderAPI
-    contract_type: ContractType
+    _address: str
+    _contract_type: ContractType
+
+    def __repr__(self) -> str:
+        return f"<{self._contract_type.contractName} {self.address}>"
 
     @property
-    def event_class(self) -> Type[ContractEventAPI]:
-        return self.provider.network.ecosystem.contract_event_class
+    def address(self) -> str:
+        return self._address
 
-    @property
-    def call_class(self) -> Type[ContractCallAPI]:
-        return self.provider.network.ecosystem.contract_call_class
+    def __getattr__(self, attr_name: str) -> Any:
+        def get_name(abi: ABI):
+            return abi.name
 
-    @property
-    def transaction_class(self) -> Type[ContractTransactionAPI]:
-        return self.provider.network.ecosystem.contract_transaction_class
+        try:
+            if attr_name in map(get_name, self._contract_type.events):
+                selected_abis = [
+                    abi for abi in self._contract_type.events if get_name(abi) == attr_name
+                ]
+                assert len(selected_abis) == 1
+                return self._event_class(  # type: ignore
+                    provider=self.provider,
+                    abis=selected_abis[0],  # type: ignore
+                )
 
-    def __getattr__(
-        self, attr_name: str
-    ) -> Union[ContractEventAPI, ContractCallAPI, ContractTransactionAPI]:
-        if attr_name in self.contract_type.events:
-            return self.event_class(  # type: ignore
-                provider=self.provider,
-                **self.contract_type.events[attr_name],  # type: ignore
-            )
+            elif attr_name in map(get_name, self._contract_type.calls):
+                selected_abis = [
+                    abi for abi in self._contract_type.calls if get_name(abi) == attr_name
+                ]
+                return ContractCallHandler(  # type: ignore
+                    provider=self.provider,
+                    abis=selected_abis,
+                )
 
-        elif attr_name in self.contract_type.calls:
-            return self.call_class(  # type: ignore
-                provider=self.provider,
-                **self.contract_type.calls[attr_name],  # type: ignore
-            )
+            elif attr_name in map(get_name, self._contract_type.transactions):
+                selected_abis = [
+                    abi for abi in self._contract_type.transactions if get_name(abi) == attr_name
+                ]
+                return ContractTransactionHandler(  # type: ignore
+                    provider=self.provider,
+                    abis=selected_abis,
+                )
 
-        elif attr_name in self.contract_type.transactions:
-            return self.transaction_class(  # type: ignore
-                provider=self.provider,
-                **self.contract_type.transactions[attr_name],  # type: ignore
-            )
+        except Exception as e:
+            raise AttributeError from e
 
-        else:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
+        raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
 
 
 @dataclass
 class ContractContainer:
-    provider: ProviderAPI
-    contract_type: ContractType
+    _provider: ProviderAPI
+    _contract_type: ContractType
 
-    @property
-    def constructor_class(self) -> Type[ContractConstructorAPI]:
-        return self.provider.network.ecosystem.contract_constructor_class
-
-    @property
-    def deployment_bytecode(self) -> bytes:
-        if self.contract_type.deploymentBytecode and self.contract_type.deploymentBytecode.bytecode:
-            return to_bytes(hexstr=self.contract_type.deploymentBytecode.bytecode)
-
-        else:
-            return b""
-
-    @property
-    def runtime_bytecode(self) -> bytes:
-        if self.contract_type.runtimeBytecode and self.contract_type.runtimeBytecode.bytecode:
-            return to_bytes(hexstr=self.contract_type.runtimeBytecode.bytecode)
-
-        else:
-            return b""
-
-    def build_deployment(self, *args, **kwargs) -> TransactionAPI:
-        constructor = self.constructor_class(  # type: ignore
-            provider=self.provider,
-            deployment_bytecode=self.deployment_bytecode,
-            **self.contract_type.constructor,
+    def at(self, address: str) -> ContractInstance:
+        return ContractInstance(  # type: ignore
+            _address=address,
+            _provider=self._provider,
+            _contract_type=self._contract_type,
         )
-        return constructor(*args, **kwargs)
+
+    @property
+    def _deployment_bytecode(self) -> bytes:
+        if (
+            self._contract_type.deploymentBytecode
+            and self._contract_type.deploymentBytecode.bytecode
+        ):
+            return to_bytes(hexstr=self._contract_type.deploymentBytecode.bytecode)
+
+        else:
+            return b""
+
+    @property
+    def _runtime_bytecode(self) -> bytes:
+        if self._contract_type.runtimeBytecode and self._contract_type.runtimeBytecode.bytecode:
+            return to_bytes(hexstr=self._contract_type.runtimeBytecode.bytecode)
+
+        else:
+            return b""
+
+    def __call__(self, *args, **kwargs) -> TransactionAPI:
+        constructor = ContractConstructor(  # type: ignore
+            abi=self._contract_type.constructor,
+            provider=self._provider,
+            deployment_bytecode=self._deployment_bytecode,
+        )
+        return constructor.encode(*args, **kwargs)
+
+
+def Contract(
+    address: str,
+    networks: "NetworkManager",
+    contract_type: Optional[ContractType] = None,
+) -> AddressAPI:
+    """
+    Function used to triage whether we have a contract type available for
+    the given address/network combo, or explicitly provided. If none are found,
+    returns a simple `Address` instance instead of throwing (provides a warning)
+    """
+
+    # Check contract cache (e.g. previously deployed/downloaded contracts)
+    # TODO: Add `contract_cache` dict-like object to `NetworkAPI`
+    # network = provider.network
+    # if not contract_type and address in network.contract_cache:
+    #    contract_type = network.contract_cache[address]
+
+    # Check explorer API/cache (e.g. publicly published contracts)
+    # TODO: Add `get_contract_type` to `ExplorerAPI`
+    # TODO: Store in `NetworkAPI.contract_cache` to reduce API calls
+    # explorer = provider.network.explorer
+    # if not contract_type and explorer:
+    #    contract_type = explorer.get_contract_type(address)
+
+    # We have a contract type either:
+    #   1) explicity provided,
+    #   2) from network cache, or
+    #   3) from explorer
+    if contract_type:
+        return ContractInstance(  # type: ignore
+            _address=address,
+            _provider=networks.active_provider,
+            _contract_type=contract_type,
+        )
+
+    else:
+        # We don't have a contract type from any source, provide raw address instead
+        notify("WARNING", f"No contract type found for {address}")
+        return Address(  # type: ignore
+            _address=address,
+            _provider=networks.active_provider,
+        )

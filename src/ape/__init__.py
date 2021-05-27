@@ -1,7 +1,8 @@
 import sys as _sys
+from functools import partial as _partial
 from pathlib import Path as _Path
 
-from .api import Address as _Address
+from .api import Contract as _Contract
 from .managers.accounts import AccountManager as _AccountManager
 from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
@@ -38,20 +39,10 @@ compilers = _CompilerManager(config, plugin_manager)  # type: ignore
 networks = _NetworkManager(config, plugin_manager)  # type: ignore
 accounts = _AccountManager(config, plugin_manager, networks)  # type: ignore
 
-
-def Project(path):
-    if isinstance(path, str):
-        path = _Path(path)
-    return _ProjectManager(path=path, config=config, compilers=compilers)
-
-
-def Contract(address):
-    return _Address(address=address, network_manager=networks)
-    # TODO: If we can find the `ContractType` for this address in cache or ExplorerAPI
-    # return _ContractInstance(address=address, provider=networks.active_provider)
-
-
+Project = _partial(_ProjectManager, config=config, compilers=compilers)
 project = Project(config.PROJECT_FOLDER)
+
+Contract = _partial(_Contract, networks=networks)
 
 
 __all__ = [

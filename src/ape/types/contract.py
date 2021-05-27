@@ -72,6 +72,14 @@ class ABIType(SerializableType):
     type: Union[str, "ABIType"]
     internalType: Optional[str] = None
 
+    @property
+    def canonical_type(self) -> str:
+        if isinstance(self.type, str):
+            return self.type
+
+        else:
+            return self.type.canonical_type
+
 
 class ABI(SerializableType):
     name: str = ""
@@ -124,6 +132,10 @@ class ABI(SerializableType):
     @property
     def is_event(self) -> bool:
         return self.anonymous is not None
+
+    @property
+    def is_payable(self) -> bool:
+        return self.stateMutability == "payable"
 
     @property
     def is_stateful(self) -> bool:

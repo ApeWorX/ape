@@ -1,33 +1,27 @@
-from typing import TYPE_CHECKING, Optional, Type
+from typing import Optional, Type
 
 from .base import abstractdataclass, abstractmethod
 from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
 
-if TYPE_CHECKING:
-    from ape.managers.networks import NetworkManager
-
 
 @abstractdataclass
 class AddressAPI:
-    _network_manager: Optional["NetworkManager"] = None
+    _provider: Optional[ProviderAPI] = None
 
     @property
-    def _active_provider(self) -> ProviderAPI:
-        if not self._network_manager:
-            raise Exception("Not wired correctly")
+    def provider(self) -> ProviderAPI:
+        if not self._provider:
+            raise Exception("Wired incorrectly")
 
-        if not self._network_manager.active_provider:
-            raise Exception("Not connected to any network!")
-
-        return self._network_manager.active_provider
+        return self._provider
 
     @property
     def _receipt_class(self) -> Type[ReceiptAPI]:
-        return self._active_provider.network.ecosystem.receipt_class
+        return self.provider.network.ecosystem.receipt_class
 
     @property
     def _transaction_class(self) -> Type[TransactionAPI]:
-        return self._active_provider.network.ecosystem.transaction_class
+        return self.provider.network.ecosystem.transaction_class
 
     @property
     @abstractmethod
@@ -42,16 +36,16 @@ class AddressAPI:
 
     @property
     def nonce(self) -> int:
-        return self._active_provider.get_nonce(self.address)
+        return self.provider.get_nonce(self.address)
 
     @property
     def balance(self) -> int:
-        return self._active_provider.get_balance(self.address)
+        return self.provider.get_balance(self.address)
 
     @property
     def code(self) -> bytes:
         # TODO: Explore caching this (based on `self.provider.network` and examining code)
-        return self._active_provider.get_code(self.address)
+        return self.provider.get_code(self.address)
 
     @property
     def codesize(self) -> int:

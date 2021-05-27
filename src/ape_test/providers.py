@@ -1,5 +1,3 @@
-from typing import Any
-
 from web3 import EthereumTesterProvider, Web3  # type: ignore
 
 from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
@@ -37,8 +35,10 @@ class LocalNetwork(ProviderAPI):
     def get_code(self, address: str) -> bytes:
         return self._web3.eth.get_code(address)  # type: ignore
 
-    def send_call(self, txn: TransactionAPI) -> Any:
-        data = txn.encode()
+    def send_call(self, txn: TransactionAPI) -> bytes:
+        data = txn.as_dict()
+        if data["gas"] == 0:
+            data["gas"] = int(1e12)
         return self._web3.eth.call(data)
 
     def get_transaction(self, txn_hash: str) -> ReceiptAPI:

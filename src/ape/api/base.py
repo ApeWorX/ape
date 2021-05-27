@@ -9,7 +9,7 @@ class AbstractDataClassMeta(DataClassMeta, ABCMeta):
     pass
 
 
-abstractdataclass = partial(dataclass, meta=AbstractDataClassMeta)
+abstractdataclass = partial(dataclass, kwargs=True, meta=AbstractDataClassMeta)
 
 
 __all__ = [
