@@ -107,7 +107,7 @@ class AccountContainerAPI:
         if not isinstance(account, self.account_type):
             raise  # Not the right type for this container
 
-        if account in self:
+        if account.address in self:
             raise  # Account already in container
 
         if account.alias and account.alias in self.aliases:
