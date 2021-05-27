@@ -115,7 +115,6 @@ class AccountContainerAPI:
 
         self.__setitem__(account.address, account)
 
-    @abstractmethod
     def __setitem__(self, address: str, account: AccountAPI):
         raise NotImplementedError("Must define this method to use `container.append(...)`")
 
