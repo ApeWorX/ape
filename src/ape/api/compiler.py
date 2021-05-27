@@ -1,11 +1,13 @@
-from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Set
 
 from ape.types import ContractType
 
+from .base import abstractdataclass, abstractmethod
 
-class CompilerAPI(ABC):
+
+@abstractdataclass
+class CompilerAPI:
     @property
     @abstractmethod
     def name(self) -> str:

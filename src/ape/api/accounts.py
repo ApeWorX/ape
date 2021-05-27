@@ -1,18 +1,18 @@
-from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterator, Optional, Type
 
-from dataclassy import dataclass
 from eth_account.datastructures import SignedMessage  # type: ignore
 from eth_account.datastructures import SignedTransaction
 from eth_account.messages import SignableMessage  # type: ignore
+
+from .base import abstractdataclass, abstractmethod
 
 if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
-@dataclass
-class AddressAPI(metaclass=ABCMeta):
+@abstractdataclass
+class AddressAPI:
     network_manager: Optional["NetworkManager"] = None
 
     @property
@@ -78,8 +78,8 @@ class AccountAPI(AddressAPI):
         ...
 
 
-@dataclass
-class AccountContainerAPI(metaclass=ABCMeta):
+@abstractdataclass
+class AccountContainerAPI:
     data_folder: Path
     account_type: Type[AccountAPI]
 

@@ -1,12 +1,9 @@
-from abc import ABCMeta, abstractmethod
-
-from dataclassy import dataclass
-
 from . import networks
+from .base import abstractdataclass, abstractmethod
 
 
-@dataclass
-class ExplorerAPI(metaclass=ABCMeta):
+@abstractdataclass
+class ExplorerAPI:
     """
     An Explorer must work with a particular Network in a particular Ecosystem
     """
