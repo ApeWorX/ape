@@ -73,7 +73,7 @@ class Abort(click.ClickException):
 
 
 def deep_merge(dict1, dict2):
-    """ Return a new dictionary by merging two dictionaries recursively. """
+    """Return a new dictionary by merging two dictionaries recursively."""
 
     result = deepcopy(dict1)
 
