@@ -1,6 +1,7 @@
+import faulthandler
+
 import click
 import IPython  # type: ignore
-from IPython.terminal.ipapp import load_default_config  # type: ignore
 
 from ape import networks
 from ape import project as default_project
@@ -25,30 +26,31 @@ class NetworkChoice(click.Choice):
     show_default=True,
     show_choices=False,
 )
-@click.argument("ipython_args", nargs=-1, type=click.UNPROCESSED)
-def cli(verbose, network, ipython_args):
+def cli(verbose, network):
     """
     Opens a console for the local project."""
 
     with networks.parse_network_choice(network):
-        return console(verbose=verbose, ipython_args=ipython_args)
+        return console(verbose=verbose)
 
 
-def console(project=None, verbose=False, extra_locals=None, ipython_args=None):
+def console(project=None, verbose=False, extra_locals=None):
     import ape
 
     if not project:
         # Use default project
         project = default_project
 
-    config = load_default_config()
+    banner = ""
 
     if verbose:
-        config.TerminalInteractiveShell.banner1 = """
+        banner = """
    Python:  {python_version}
   IPython:  {ipython_version}
       Ape:  {ape_version}
   Project:  {project_path}
+
+    Are you ready to Ape, anon?
     """.format(
             python_version=ape._python_version,
             ipython_version=IPython.__version__,
@@ -56,11 +58,11 @@ def console(project=None, verbose=False, extra_locals=None, ipython_args=None):
             project_path=project.path,
         )
 
-    else:
-        config.TerminalInteractiveShell.banner1 = ""
+        faulthandler.enable()  # NOTE: In case we segfault
 
     namespace = {component: getattr(ape, component) for component in ape.__all__}
+
     if extra_locals:
         namespace.update(extra_locals)
 
-    return IPython.start_ipython(argv=ipython_args, user_ns=namespace, config=config)
+    IPython.embed(colors="Neutral", banner1=banner, user_ns=namespace)
