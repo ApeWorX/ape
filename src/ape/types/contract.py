@@ -177,7 +177,7 @@ class Checksum(SerializableType):
 
 class Source(SerializableType):
     checksum: Optional[Checksum] = None
-    urls: List[str]
+    urls: List[str] = []
     content: Optional[str] = None
     # TODO This was probably done for solidity, needs files cached to disk for compiling
     # If processing a local project, code already exists, so no issue
