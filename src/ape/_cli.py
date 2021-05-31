@@ -33,7 +33,7 @@ class ApeCLI(click.MultiCommand):
             entry_points = metadata.entry_points()
 
             if "ape_cli_subcommands" not in entry_points:
-                raise  # Missing registered cli subcommands
+                raise Exception("Missing registered cli subcommands")
 
             self._commands = {
                 clean_plugin_name(entry_point.name): entry_point.load
