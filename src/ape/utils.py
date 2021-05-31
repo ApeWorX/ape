@@ -107,7 +107,7 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
         else:
             raise TypeError(f"Cannot parse '{path.suffix}' files!")
 
-        return config
+        return config or {}
 
     elif must_exist:
         raise IOError(f"{path} does not exist!")

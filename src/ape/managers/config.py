@@ -26,7 +26,7 @@ class ConfigManager:
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
 
         if config_file.exists():
-            user_config = load_config(config_file) or {}
+            user_config = load_config(config_file)
         else:
             user_config = {}
 
