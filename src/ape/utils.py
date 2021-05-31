@@ -73,9 +73,9 @@ class Abort(click.ClickException):
 
     def show(self, file=None):
         """Override default `show` to print CLI errors in red text."""
-        if file is None:
-            file = click._compat.get_text_stderr()
-        click.secho(f"Error: {self.format_message()}", file=file, fg="bright_red")
+        # if file is None:
+        #     file = click._compat.get_text_stderr()
+        click.secho(f"Error: {self.format_message()}", err=True, fg="bright_red")
 
 
 def deep_merge(dict1, dict2):
