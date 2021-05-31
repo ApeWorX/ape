@@ -71,6 +71,12 @@ def notify(type_, msg):
 class Abort(click.ClickException):
     """Wrapper around a CLI exception"""
 
+    def show(self, file=None):
+        """Override default `show` to print CLI errors in red text."""
+        if file is None:
+            file = click._compat.get_text_stderr()
+        click.secho(f"Error: {self.format_message()}", file=file, fg="bright_red")
+
 
 def deep_merge(dict1, dict2):
     """Return a new dictionary by merging two dictionaries recursively."""
