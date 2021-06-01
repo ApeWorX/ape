@@ -61,7 +61,7 @@ class NetworkManager:
 
     def __getitem__(self, ecosystem_name: str) -> EcosystemAPI:
         if ecosystem_name not in self.ecosystems:
-            raise
+            raise Exception(f"Unknown ecosystem {ecosystem_name}")
 
         return self.ecosystems[ecosystem_name]
 
@@ -118,7 +118,7 @@ class NetworkManager:
 
         else:
             # NOTE: Might be unreachable
-            raise  # Invalid selection
+            raise Exception("Invalid selection")
 
     @property
     def default_ecosystem(self) -> EcosystemAPI:
@@ -130,11 +130,11 @@ class NetworkManager:
             return self.ecosystems[list(self.__iter__())[0]]
 
         else:
-            raise  # No ecosystems installed
+            raise Exception("No ecosystems installed")
 
     def set_default_ecosystem(self, ecosystem_name: str):
         if ecosystem_name in self.__iter__():
             self._default = ecosystem_name
 
         else:
-            raise  # Not a registered ecosystem
+            raise Exception("Not a registered ecosystem")

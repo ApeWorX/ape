@@ -48,11 +48,11 @@ class EcosystemAPI:
             return networks
 
         else:
-            raise  # No networks found!
+            raise Exception("No networks found!")
 
     def __post_init__(self):
         if len(self.networks) == 0:
-            raise  # Must define at least one network in ecosystem
+            raise Exception("Must define at least one network in ecosystem")
 
     def __iter__(self) -> Iterator[str]:
         """
@@ -66,21 +66,21 @@ class EcosystemAPI:
             return self.networks[network_name]
 
         else:
-            raise  # No network with name
+            raise Exception("No network with name")
 
     def __getattr__(self, network_name: str) -> "NetworkAPI":
         if network_name in self.networks:
             return self.networks[network_name]
 
         else:
-            raise  # No network with name
+            raise Exception("No network with name")
 
     def add_network(self, network_name: str, network: "NetworkAPI"):
         """
         Used to attach new networks to an ecosystem (e.g. L2 networks like Optimism)
         """
         if network_name in self.networks:
-            raise  # Can't overwrite an existing network!
+            raise Exception("Can't overwrite an existing network!")
         else:
             self.networks[network_name] = network
 
@@ -92,7 +92,7 @@ class EcosystemAPI:
         if network_name in self.networks:
             self._default_network = network_name
         else:
-            raise  # Not a valid network for ecosystem `self.name`
+            raise Exception("Not a valid network for ecosystem `self.name`")
 
 
 class ProviderContextManager:
@@ -188,7 +188,7 @@ class NetworkAPI:
             return providers
 
         else:
-            raise  # No providers found
+            raise Exception("No providers found")
 
     def use_provider(
         self,
@@ -210,7 +210,7 @@ class NetworkAPI:
             )
 
         else:
-            raise  # Not a registered provider name
+            raise Exception("Not a registered provider name")
 
     @property
     def default_provider(self) -> str:
@@ -220,7 +220,7 @@ class NetworkAPI:
         if provider_name in self.providers:
             self._default_provider = provider_name
         else:
-            raise  # Not a valid provider for network `self.name`
+            raise Exception("Not a valid provider for network `self.name`")
 
     def use_default_provider(self) -> ProviderContextManager:
         # NOTE: If multiple providers, use whatever is "first" registered

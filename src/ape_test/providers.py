@@ -22,7 +22,7 @@ class LocalNetwork(ProviderAPI):
         if self.get_code(address) == b"":
             return 21000
         else:
-            raise
+            raise Exception("Transfer cost error")
 
     @property
     def gas_price(self):
