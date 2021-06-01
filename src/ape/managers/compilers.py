@@ -27,7 +27,7 @@ class CompilerManager:
             for extension in extensions:
 
                 if extension in registered_compilers:
-                    raise  # Extension already registered!
+                    raise Exception("Extension already registered!")
 
                 registered_compilers[extension] = compiler
 
@@ -36,7 +36,7 @@ class CompilerManager:
     def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
         extensions = set(path.suffix for path in contract_filepaths)
         if extensions > set(self.registered_compilers):
-            raise  # No compiler found for extension
+            raise Exception("No compiler found for extension")
 
         contract_types = {}
         for extension in extensions:
@@ -49,7 +49,7 @@ class CompilerManager:
             for contract_type in self.registered_compilers[extension].compile(paths_to_compile):
 
                 if contract_type.contractName in contract_types:
-                    raise  # ContractType collision across compiler plugins
+                    raise Exception("ContractType collision across compiler plugins")
 
                 contract_types[contract_type.contractName] = contract_type
 

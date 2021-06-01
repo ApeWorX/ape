@@ -17,7 +17,7 @@ class NetworkPlugin(PluginType):
     @hookspec
     def networks(self) -> Iterator[Tuple[str, str, Type[NetworkAPI]]]:
         """
-        Must return an iterator of tiples of:
+        Must return an iterator of tuples of:
             the target Ecosystem plugin's name
             the Network name
             a NetworkAPI subclass
@@ -41,6 +41,6 @@ class ExplorerPlugin(PluginType):
         """
         Must return an iterator of tuples of:
             the target Ecosystem plugin's name
-            the Network it works with (which must be valid Network in the Rcosystem)
+            the Network it works with (which must be valid Network in the Ecosystem)
             a ExplorerAPI subclass
         """

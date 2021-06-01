@@ -28,7 +28,7 @@ extras_require = {
     ],
     "dev": [
         "commitizen",  # Manage commits and publishing releases
-        "pre-commit",  # Ensure that linters are run prior to commiting
+        "pre-commit",  # Ensure that linters are run prior to committing
         "pytest-watch",  # `ptw` test watcher/runner
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
     ],

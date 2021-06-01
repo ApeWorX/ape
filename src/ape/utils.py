@@ -71,6 +71,10 @@ def notify(type_, msg):
 class Abort(click.ClickException):
     """Wrapper around a CLI exception"""
 
+    def show(self, file=None):
+        """Override default `show` to print CLI errors in red text."""
+        click.secho(f"Error: {self.format_message()}", err=True, fg="bright_red")
+
 
 def deep_merge(dict1, dict2):
     """Return a new dictionary by merging two dictionaries recursively."""
@@ -103,7 +107,7 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
         else:
             raise TypeError(f"Cannot parse '{path.suffix}' files!")
 
-        return config
+        return config or {}
 
     elif must_exist:
         raise IOError(f"{path} does not exist!")
@@ -116,7 +120,7 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
     if algorithm == "md5":
         hasher = md5
     else:
-        raise  # Unknown algorithm
+        raise Exception("Unknown algorithm")
 
     return hasher(source).hexdigest()
 

@@ -18,10 +18,10 @@ class AddressAPI:
     @property
     def _provider(self):
         if not self.network_manager:
-            raise  # Not wired correctly
+            raise Exception("Not wired correctly")
 
         if not self.network_manager.active_provider:
-            raise  # Not connected to any network!
+            raise Exception("Not connected to any network!")
 
         return self.network_manager.active_provider
 
@@ -105,13 +105,13 @@ class AccountContainerAPI:
 
     def append(self, account: AccountAPI):
         if not isinstance(account, self.account_type):
-            raise  # Not the right type for this container
+            raise Exception("Not the right type for this container")
 
         if account.address in self:
-            raise  # Account already in container
+            raise Exception("Account already in container")
 
         if account.alias and account.alias in self.aliases:
-            raise  # Alias already in use
+            raise Exception("Alias already in use")
 
         self.__setitem__(account.address, account)
 
@@ -120,13 +120,13 @@ class AccountContainerAPI:
 
     def remove(self, account: AccountAPI):
         if not isinstance(account, self.account_type):
-            raise  # Not the right type for this container
+            raise Exception("Not the right type for this container")
 
         if account.address not in self:
-            raise  # Account not in container
+            raise Exception("Account not in container")
 
         if account.alias and account.alias in self.aliases:
-            raise  # Alias already in use
+            raise Exception("Alias already in use")
 
         self.__delitem__(account.address)
 

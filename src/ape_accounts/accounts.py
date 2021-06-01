@@ -67,7 +67,7 @@ class KeyfileAccount(AccountAPI):
 
         key = EthAccount.decrypt(self.keyfile, passphrase)
 
-        if click.confirm("Leave '{self.alias}' unlocked?"):
+        if click.confirm(f"Leave '{self.alias}' unlocked?"):
             self.locked = False
             self.__cached_key = key
 

@@ -23,7 +23,7 @@ class InterfaceCompiler(CompilerAPI):
                 data = json.load(f)
 
             if not isinstance(data, list):
-                raise  # Not a valid ABI interface JSON file
+                raise Exception("Not a valid ABI interface JSON file")
 
             else:
                 contract_types.append(
