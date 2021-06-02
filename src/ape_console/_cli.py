@@ -15,7 +15,11 @@ class NetworkChoice(click.Choice):
         return "ecosystem-name[:network-name[:provider-name]]"
 
 
-@click.command(short_help="Load the console", context_settings=dict(ignore_unknown_options=True))
+@click.command(
+    name="console",
+    short_help="Load the console",
+    context_settings=dict(ignore_unknown_options=True),
+)
 @click.option("--verbose", is_flag=True, flag_value=True, default=False)
 @click.option(
     "--network",

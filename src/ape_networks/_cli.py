@@ -3,7 +3,7 @@ import click
 from ape import networks
 
 
-@click.group(short_help="Manage networks")
+@click.group(name="networks", short_help="Manage networks")
 def cli():
     """
     Command-line helper for managing networks.

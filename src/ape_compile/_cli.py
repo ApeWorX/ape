@@ -9,7 +9,7 @@ from ape.utils import notify
 flatten = chain.from_iterable
 
 
-@click.command(short_help="Compile select contract source files")
+@click.command(name="compile", short_help="Compile select contract source files")
 @click.argument(
     "filepaths",
     nargs=-1,

@@ -11,12 +11,13 @@ from ape.utils import notify
 container = accounts.containers["accounts"]
 
 
-@click.group(short_help="Manage local accounts")
+@click.group(name="account", short_help="Manage local accounts")
 def cli():
     """
     Command-line helper for managing local accounts. You can unlock local accounts from
     scripts or the console using the accounts.load() method.
     """
+    pass
 
 
 # Different name because `list` is a keyword

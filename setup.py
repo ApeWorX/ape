@@ -74,13 +74,6 @@ setup(
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
-        "ape_cli_subcommands": [
-            "ape_accounts=ape_accounts._cli:cli",
-            "ape_compile=ape_compile._cli:cli",
-            "ape_console=ape_console._cli:cli",
-            "ape_plugins=ape_plugins._cli:cli",
-            "ape_networks=ape_networks._cli:cli",
-        ],
     },
     python_requires=">=3.6,<3.10",
     extras_require=extras_require,

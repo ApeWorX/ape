@@ -40,7 +40,7 @@ def is_plugin_installed(plugin: str) -> bool:
         return False
 
 
-@click.group(short_help="Manage ape plugins")
+@click.group(name="plugins", short_help="Manage ape plugins")
 def cli():
     """
     Command-line helper for managing installed plugins.
