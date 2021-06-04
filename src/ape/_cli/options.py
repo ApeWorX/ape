@@ -26,10 +26,9 @@ config_option = click.option(
 version_option = click.version_option(message="%(version)s", package_name="eth-ape")
 
 
-def state_options():
-    """Allow a state object to automatically passed into commands.
-    Use as a decorator over your `click.command` methods to get access to the state object.
-    Properties
+def shared_options():
+    """
+    Shared options for every command.
     """
 
     def decorator(f):
