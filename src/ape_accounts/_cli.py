@@ -12,7 +12,7 @@ from ape.utils import notify
 container = accounts.containers["accounts"]
 
 
-@click.group(cls=ApeCLI, name="account", short_help="Manage local accounts")
+@click.group(cls=ApeCLI, name="accounts", short_help="Manage local accounts")
 def cli():
     """
     Command-line helper for managing local accounts. You can unlock local accounts from
