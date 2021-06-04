@@ -21,7 +21,7 @@ CONTEXT_SETTINGS = {
     no_args_is_help=True,
 )
 @state_options()
-def cli(state):
+def cli():
     pass
 
 

@@ -15,12 +15,6 @@ def display_config(ctx, param, value):
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 
 
-class ApeCLIState:
-    def __init__(self):
-        self._config = None
-
-
-pass_state = click.make_pass_decorator(ApeCLIState, ensure=True)
 config_option = click.option(
     "--config",
     is_flag=True,
@@ -33,10 +27,14 @@ version_option = click.version_option(message="%(version)s", package_name="eth-a
 
 
 def state_options():
+    """Allow a state object to automatically passed into commands.
+    Use as a decorator over your `click.command` methods to get access to the state object.
+    Properties
+    """
+
     def decorator(f):
         f = config_option(f)
         f = version_option(f)
-        f = pass_state(f)
         return f
 
     return decorator
