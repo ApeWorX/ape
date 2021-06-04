@@ -25,8 +25,8 @@ def cli():
     pass
 
 
-cli.add_command(accounts)
-cli.add_command(compile)
-cli.add_command(console)
-cli.add_command(plugins)
-cli.add_command(networks)
+cli.add_command(accounts)  # type: ignore
+cli.add_command(compile)  # type: ignore
+cli.add_command(console)  # type: ignore
+cli.add_command(plugins)  # type: ignore
+cli.add_command(networks)  # type: ignore

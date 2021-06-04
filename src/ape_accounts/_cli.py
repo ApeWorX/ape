@@ -5,13 +5,14 @@ from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
 
 from ape import accounts
+from ape._cli import ApeCLI
 from ape.utils import notify
 
 # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
 container = accounts.containers["accounts"]
 
 
-@click.group(name="account", short_help="Manage local accounts")
+@click.group(cls=ApeCLI, name="account", short_help="Manage local accounts")
 def cli():
     """
     Command-line helper for managing local accounts. You can unlock local accounts from
