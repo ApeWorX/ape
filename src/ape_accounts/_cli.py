@@ -18,7 +18,6 @@ def cli():
     Command-line helper for managing local accounts. You can unlock local accounts from
     scripts or the console using the accounts.load() method.
     """
-    pass
 
 
 # Different name because `list` is a keyword

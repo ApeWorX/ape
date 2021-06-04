@@ -22,7 +22,7 @@ CONTEXT_SETTINGS = {
 )
 @shared_options()
 def cli():
-    pass
+    ...
 
 
 cli.add_command(accounts)  # type: ignore
