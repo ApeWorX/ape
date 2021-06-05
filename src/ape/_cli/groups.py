@@ -30,5 +30,7 @@ class ApeCLI(click.Group):
                 )
                 if not suggested_commands:
                     raise usage_err
-                usage_err.message = f"No such command '{bad_arg}'. Did you mean {' or '.join(suggested_commands)}?"
+                usage_err.message = (
+                    f"No such command '{bad_arg}'. Did you mean {' or '.join(suggested_commands)}?"
+                )
         raise usage_err
