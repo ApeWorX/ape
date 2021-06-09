@@ -5,7 +5,7 @@ from eth_account import Account  # type: ignore
 from hypothesis import given, settings  # type: ignore
 from hypothesis import strategies as st  # type: ignore
 
-from ape import config
+from ape import __all__, config
 
 
 @pytest.mark.parametrize(
@@ -19,7 +19,6 @@ from ape import config
         ["accounts", "list"],
         ["compile"],
         ["console"],
-        ["console", "--verbose"],
         ["plugins"],
         ["plugins", "list"],
         ["plugins", "list", "--all"],
@@ -33,6 +32,13 @@ def test_invocation(ape_cli, runner, args):
 
 
 word_st = st.text(alphabet=list("abcdefghijklmnopqrstuvwxyz"), min_size=3, max_size=7)
+
+
+@pytest.mark.parametrize("item", __all__)
+# NOTE: We export `__all__` into the IPython session that the console runs in
+def test_console(ape_cli, runner, item):
+    result = runner.invoke(ape_cli, "console", input=f"{item}\nexit\n")
+    assert result.exit_code == 0
 
 
 @pytest.mark.fuzzing

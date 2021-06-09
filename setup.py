@@ -12,7 +12,7 @@ extras_require = {
     ],
     "lint": [
         "black>=20.8b1,<21.0",  # auto-formatter and linter
-        "mypy>=0.800,<1.0",  # Static type analyzer
+        "mypy>=0.800,<0.900",  # Static type analyzer
         "flake8>=3.8.3,<4.0",  # Style linter
         "isort>=5.7.0,<6.0",  # Import sorting linter
     ],
@@ -61,7 +61,7 @@ setup(
     install_requires=[
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.0.0",
-        "dataclassy>=0.10.1,<1.0",
+        "dataclassy>=0.10.3,<1.0",
         "eth-account>=0.5.2,<0.6.0",
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
