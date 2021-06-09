@@ -19,7 +19,6 @@ from ape import __all__, config
         ["accounts", "list"],
         ["compile"],
         ["console"],
-        ["console", "--verbose"],
         ["plugins"],
         ["plugins", "list"],
         ["plugins", "list", "--all"],
