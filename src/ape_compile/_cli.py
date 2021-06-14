@@ -44,7 +44,7 @@ def cli(filepaths, use_cache, display_size):
     # Expand source tree based on selection
     if not filepaths:
         if not (Path.cwd() / "contracts").exists():
-            notify("ERROR", "No `contracts/` directory detected")
+            notify("WARNING", "No `contracts/` directory detected")
             return
 
         # If no paths are specified, use all local project sources
