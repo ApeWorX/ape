@@ -21,6 +21,7 @@ def display_config(ctx, param, value):
 
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 
+
 CONTEXT_SETTINGS = {
     "help_option_names": ["-h", "--help"],
     "max_content_width": 200,
@@ -45,7 +46,7 @@ version_option = click.version_option(message="%(version)s", package_name="eth-a
 @config_option
 @version_option
 def cli():
-    ...
+    pass
 
 
 cli.add_command(accounts)  # type: ignore
