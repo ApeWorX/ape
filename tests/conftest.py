@@ -1,57 +1,58 @@
-import json
 from pathlib import Path
 from tempfile import mkdtemp
 
 import pytest  # type: ignore
-from click.testing import CliRunner
 
-from ape import Project, config
-from ape._cli import cli
+import ape
+from ape import Project
+from ape import config as ape_config
 
-
-@pytest.fixture(scope="session")
-def runner():
-    yield CliRunner()
-
-
-@pytest.fixture(scope="session")
-def data_folder():
-    data_folder = Path(mkdtemp())
-    config.DATA_FOLDER = data_folder
-    yield data_folder
+TEMP_FOLDER = Path(mkdtemp())
+# NOTE: Don't change this setting
+ape_config.DATA_FOLDER = TEMP_FOLDER / ".ape"
+# NOTE: Ensure that a temp path is used by default (avoids `.build` appearing in src)
+ape_config.PROJECT_FOLDER = TEMP_FOLDER
+ape.project = Project(TEMP_FOLDER)
 
 
 @pytest.fixture(scope="session")
-def project_folder():
-    project_folder = Path(mkdtemp())
-    config.PROJECT_FOLDER = project_folder
-    yield project_folder
+def config():
+    yield ape_config
 
 
 @pytest.fixture(scope="session")
-def ape_cli():
-    # TODO: Ensure cli is invoked with project_folder
-    yield cli
+def plugin_manager():
+    from ape import plugin_manager
+
+    yield plugin_manager
 
 
 @pytest.fixture(scope="session")
-def project(project_folder):
-    yield Project(project_folder)
+def accounts():
+    from ape import accounts
+
+    yield accounts
 
 
-@pytest.fixture(
-    scope="session",
-    params=[
-        # Copied from https://github.com/ethpm/ethpm-spec/tree/master/examples
-        "escrow",
-        "owned",
-        "piper-coin",
-        "safe-math-lib",
-        "standard-token",
-        "transferable",
-        "wallet-with-send",
-        "wallet",
-    ],
-)
-def manifest(request):
-    yield json.loads((Path(__file__).parent / "manifests" / f"{request.param}.json").read_text())
+@pytest.fixture(scope="session")
+def compilers():
+    from ape import compilers
+
+    yield compilers
+
+
+@pytest.fixture(scope="session")
+def networks():
+    from ape import networks
+
+    yield networks
+
+
+@pytest.fixture(scope="session")
+def project():
+    yield ape.project
+
+
+@pytest.fixture(scope="session")
+def data_folder(config):
+    yield config.DATA_FOLDER

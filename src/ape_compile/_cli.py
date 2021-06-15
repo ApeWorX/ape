@@ -3,7 +3,6 @@ from pathlib import Path
 
 import click
 
-from ape import project
 from ape.utils import notify
 
 flatten = chain.from_iterable
@@ -40,11 +39,13 @@ def cli(filepaths, use_cache, display_size):
     Note that ape automatically recompiles any changed contracts each time
     a project is loaded. You do not have to manually trigger a recompile.
     """
+    # NOTE: Lazy load so that testing works properly
+    from ape import project
 
     # Expand source tree based on selection
     if not filepaths:
-        if not (Path.cwd() / "contracts").exists():
-            notify("ERROR", "No `contracts/` directory detected")
+        if not (project.path / "contracts").exists():
+            notify("WARNING", "No `contracts/` directory detected")
             return
 
         # If no paths are specified, use all local project sources
@@ -64,7 +65,7 @@ def cli(filepaths, use_cache, display_size):
             selected_paths = "', '".join(str(p.resolve()) for p in filepaths)
 
         else:
-            selected_paths = str(Path.cwd() / "contracts")
+            selected_paths = str(project.path / "contracts")
 
         notify("WARNING", f"No project files detected in '{selected_paths}'")
         return
