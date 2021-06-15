@@ -13,11 +13,11 @@ TEST_PROJECTS_FOLDER = Path(__file__).parent / "data" / "projects"
 @pytest.fixture(params=[p for p in TEST_PROJECTS_FOLDER.iterdir() if p.is_dir()])
 def project_folder(request, config):
     project_source_dir = request.param
-    project_folder = config.PROJECT_FOLDER / project_source_dir.name
-    copy_tree(project_source_dir.as_posix(), project_folder.as_posix())
+    project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
+    copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
     previous_project_folder = config.PROJECT_FOLDER
-    config.PROJECT_FOLDER = project_folder
-    yield project_folder
+    config.PROJECT_FOLDER = project_dest_dir
+    yield project_dest_dir
     config.PROJECT_FOLDER = previous_project_folder
 
 
