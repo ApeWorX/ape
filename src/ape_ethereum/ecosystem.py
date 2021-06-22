@@ -96,8 +96,8 @@ class Ethereum(EcosystemAPI):
 
         return txn
 
-    def encode_transaction(self, abi: ABI, *args, **kwargs) -> Transaction:
-        txn = Transaction(**kwargs)  # type: ignore
+    def encode_transaction(self, address: str, abi: ABI, *args, **kwargs) -> Transaction:
+        txn = Transaction(receiver=address, **kwargs)  # type: ignore
 
         # Add method ID
         txn.data = keccak(to_bytes(text=abi.selector))[:4]

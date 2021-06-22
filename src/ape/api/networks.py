@@ -106,7 +106,7 @@ class EcosystemAPI:
         ...
 
     @abstractmethod
-    def encode_transaction(self, abi: ABI, *args, **kwargs) -> "TransactionAPI":
+    def encode_transaction(self, address: str, abi: ABI, *args, **kwargs) -> "TransactionAPI":
         ...
 
     @abstractmethod

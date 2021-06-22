@@ -1,3 +1,5 @@
+from typing import Iterator
+
 from web3 import EthereumTesterProvider, Web3  # type: ignore
 
 from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
@@ -50,3 +52,6 @@ class LocalNetwork(ProviderAPI):
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
         return self.get_transaction(txn_hash.hex())
+
+    def get_events(self, **filter_params) -> Iterator[dict]:
+        return iter(self._web3.eth.get_logs(filter_params))  # type: ignore

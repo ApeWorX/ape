@@ -47,13 +47,16 @@ class ContractConstructor:
 @dataclass
 class ContractCall:
     abi: ABI
+    address: str
     provider: ProviderAPI
 
     def __repr__(self) -> str:
         return self.abi.signature
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
-        return self.provider.network.ecosystem.encode_transaction(self.abi, *args, **kwargs)
+        return self.provider.network.ecosystem.encode_transaction(
+            self.address, self.abi, *args, **kwargs
+        )
 
     def __call__(self, *args, **kwargs) -> Any:
         txn = self.encode(*args, **kwargs)
@@ -62,19 +65,38 @@ class ContractCall:
             txn.sender = kwargs["sender"].address
 
         raw_output = self.provider.send_call(txn)
-        return self.provider.network.ecosystem.decode_calldata(self.abi, raw_output)  # type: ignore
+        tuple_output = self.provider.network.ecosystem.decode_calldata(  # type: ignore
+            self.abi,
+            raw_output,
+        )
+
+        # NOTE: Returns a tuple, so make sure to handle all the cases
+        if len(tuple_output) < 2:
+            return tuple_output[0] if len(tuple_output) == 1 else None
+
+        else:
+            # TODO: Handle struct output
+            return tuple_output
 
 
 @dataclass
 class ContractCallHandler:
     provider: ProviderAPI
+    address: str
     abis: List[ABI]
 
-    def __call__(self, *args, **kwargs) -> ReceiptAPI:
-        # NOTE: Should only match one ABI in set
-        abi = next(abi for abi in self.abis if len(args) == len(abi.inputs))
+    def __call__(self, *args, **kwargs) -> Any:
+        selected_abi = None
+        for abi in self.abis:
+            if len(args) == len(abi.inputs):
+                selected_abi = abi
+
+        if not selected_abi:
+            raise Exception("Number of args does not match")
+
         return ContractCall(  # type: ignore
-            abi=abi,
+            abi=selected_abi,
+            address=self.address,
             provider=self.provider,
         )(*args, **kwargs)
 
@@ -82,13 +104,16 @@ class ContractCallHandler:
 @dataclass
 class ContractTransaction:
     abi: ABI
+    address: str
     provider: ProviderAPI
 
     def __repr__(self) -> str:
         return self.abi.signature
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
-        return self.provider.network.ecosystem.encode_transaction(self.abi, *args, **kwargs)
+        return self.provider.network.ecosystem.encode_transaction(
+            self.address, self.abi, *args, **kwargs
+        )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
 
@@ -100,34 +125,43 @@ class ContractTransaction:
             return sender.call(txn)
 
         else:
-            raise  # Must specify a `sender`
+            raise Exception("Must specify a `sender`")
 
 
 @dataclass
 class ContractTransactionHandler:
     provider: ProviderAPI
+    address: str
     abis: List[ABI]
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
-        # NOTE: Should only match one ABI in set
-        abi = next(abi for abi in self.abis if len(args) == len(abi.inputs))
+        selected_abi = None
+        for abi in self.abis:
+            if len(args) == len(abi.inputs):
+                selected_abi = abi
+
+        if not selected_abi:
+            raise Exception("Number of args does not match")
+
         return ContractTransaction(  # type: ignore
-            abi=abi,
+            abi=selected_abi,
+            address=self.address,
             provider=self.provider,
         )(*args, **kwargs)
-
-
-@dataclass
-class ContractEvent:
-    name: str
-    inputs: List[dict]
-    provider: ProviderAPI
 
 
 @dataclass
 class ContractLog:
     name: str
     data: Dict[str, Any]
+
+
+@dataclass
+class ContractEvent:
+    provider: ProviderAPI
+    address: str
+    abis: List[ABI]
+    cached_logs: List[ContractLog] = []
 
 
 class ContractInstance(AddressAPI):
@@ -150,10 +184,10 @@ class ContractInstance(AddressAPI):
                 selected_abis = [
                     abi for abi in self._contract_type.events if get_name(abi) == attr_name
                 ]
-                assert len(selected_abis) == 1
-                return self._event_class(  # type: ignore
+                return ContractEvent(  # type: ignore
                     provider=self.provider,
-                    abis=selected_abis[0],  # type: ignore
+                    address=self.address,
+                    abis=selected_abis,  # type: ignore
                 )
 
             elif attr_name in map(get_name, self._contract_type.calls):
@@ -162,6 +196,7 @@ class ContractInstance(AddressAPI):
                 ]
                 return ContractCallHandler(  # type: ignore
                     provider=self.provider,
+                    address=self.address,
                     abis=selected_abis,
                 )
 
@@ -171,6 +206,7 @@ class ContractInstance(AddressAPI):
                 ]
                 return ContractTransactionHandler(  # type: ignore
                     provider=self.provider,
+                    address=self.address,
                     abis=selected_abis,
                 )
 
@@ -184,6 +220,9 @@ class ContractInstance(AddressAPI):
 class ContractContainer:
     _provider: ProviderAPI
     _contract_type: ContractType
+
+    def __repr__(self) -> str:
+        return f"<{self._contract_type.contractName}>"
 
     def at(self, address: str) -> ContractInstance:
         return ContractInstance(  # type: ignore

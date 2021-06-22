@@ -1,6 +1,6 @@
 from enum import IntEnum
 from pathlib import Path
-from typing import List, Optional
+from typing import Iterator, List, Optional
 
 from dataclassy import as_dict
 
@@ -129,4 +129,8 @@ class ProviderAPI:
 
     @abstractmethod
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+        ...
+
+    @abstractmethod
+    def get_events(self, **filter_params) -> Iterator[dict]:
         ...
