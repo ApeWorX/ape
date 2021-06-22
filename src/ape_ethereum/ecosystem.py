@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
+from eth_abi.exceptions import InsufficientDataBytes
 from eth_account._utils.transactions import (  # type: ignore
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
@@ -75,14 +76,18 @@ class Ethereum(EcosystemAPI):
     def encode_calldata(self, abi: ABI, *args) -> bytes:
         if abi.inputs:
             input_types = [i.canonical_type for i in abi.inputs]
-            return abi_encode(input_types, *args)
+            return abi_encode(input_types, args)
 
         else:
             return HexBytes(b"")
 
     def decode_calldata(self, abi: ABI, raw_data: bytes) -> Any:
         output_types = [o.canonical_type for o in abi.outputs]
-        return abi_decode(output_types, raw_data)
+        try:
+            return abi_decode(output_types, raw_data)
+
+        except InsufficientDataBytes as e:
+            raise Exception("Output corrupted") from e
 
     def encode_deployment(
         self, deployment_bytecode: bytes, abi: Optional[ABI], *args, **kwargs
