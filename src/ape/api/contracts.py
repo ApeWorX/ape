@@ -19,6 +19,10 @@ class ContractConstructor:
     abi: Optional[ABI]
     provider: ProviderAPI
 
+    def __post_init__(self):
+        if len(self.deployment_bytecode) == 0:
+            raise Exception("No bytecode to deploy")
+
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
 
