@@ -7,7 +7,7 @@ from eth_account._utils.transactions import (  # type: ignore
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import keccak, to_bytes, to_int
+from eth_utils import keccak, to_bytes, to_int  # type: ignore
 from hexbytes import HexBytes
 
 from ape.api import ContractLog, EcosystemAPI, ReceiptAPI, TransactionAPI, TransactionStatusEnum

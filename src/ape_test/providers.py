@@ -21,7 +21,7 @@ class LocalNetwork(ProviderAPI):
         self._web3 = Web3(EthereumTesterProvider())
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        return self._web3.eth.estimate_gas(txn.as_dict())
+        return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
 
     @property
     def gas_price(self):
