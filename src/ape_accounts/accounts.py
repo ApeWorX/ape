@@ -112,9 +112,9 @@ class KeyfileAccount(AccountAPI):
 
         return EthAccount.sign_message(msg, self.__key)
 
-    def sign_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionAPI]:
         if self.locked and not click.confirm(f"{txn}\n\nSign: "):
-            raise  # User declined to sign!
+            return None
 
         signed_txn = EthAccount.sign_transaction(txn.as_dict(), self.__key)
 

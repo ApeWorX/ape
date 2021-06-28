@@ -38,7 +38,7 @@ class AccountAPI(AddressAPI):
     def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
         ...
 
-    def sign_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionAPI]:
         # NOTE: Some accounts may not offer signing things
         return txn
 
@@ -50,8 +50,12 @@ class AccountAPI(AddressAPI):
         if txn.gas_limit * txn.gas_price + txn.value > self.balance:
             raise  # Transfer value meets or exceeds account balance
 
-        txn = self.sign_transaction(txn)
-        return self.provider.send_transaction(txn)
+        signed_txn = self.sign_transaction(txn)
+
+        if not signed_txn:
+            raise Exception("User didn't sign!")
+
+        return self.provider.send_transaction(signed_txn)
 
     def transfer(
         self,
