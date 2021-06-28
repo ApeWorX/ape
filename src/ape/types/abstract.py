@@ -75,9 +75,11 @@ class SerializableType:
 class FileMixin(SerializableType):
     @classmethod
     def from_file(cls, path: Path):
-        return cls.from_dict(json.load(path.open()))
+        with path.open("r") as f:
+            return cls.from_dict(json.load(f))
 
     def to_file(self, path: Path):
         # NOTE: EIP-2678 specifies document *must* be tightly packed
         # NOTE: EIP-2678 specifies document *must* have sorted keys
-        json.dump(self.to_dict(), path.open("w"), indent=4, sort_keys=True)
+        with path.open("w") as f:
+            json.dump(self.to_dict(), f, indent=4, sort_keys=True)
