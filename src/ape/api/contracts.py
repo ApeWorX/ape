@@ -271,7 +271,7 @@ class ContractContainer:
         return constructor.encode(*args, **kwargs)
 
 
-def Contract(
+def _Contract(
     address: str,
     networks: "NetworkManager",
     contract_type: Optional[ContractType] = None,

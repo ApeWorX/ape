@@ -2,7 +2,7 @@ import sys as _sys
 from functools import partial as _partial
 from pathlib import Path as _Path
 
-from .api import Contract as _Contract
+from .api.contracts import _Contract
 from .managers.accounts import AccountManager as _AccountManager
 from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
