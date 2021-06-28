@@ -175,6 +175,12 @@ class ContractInstance(AddressAPI):
     def address(self) -> str:
         return self._address
 
+    def __dir__(self) -> List[str]:
+        # This displays methods to IPython on `c.[TAB]` tab completion
+        return list(super(AddressAPI, self).__dir__()) + [
+            abi.name for abi in self._contract_type.abi
+        ]
+
     def __getattr__(self, attr_name: str) -> Any:
         def get_name(abi: ABI):
             return abi.name

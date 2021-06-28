@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import List, Optional, Type
 
 from .base import abstractdataclass, abstractmethod
 from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
@@ -27,6 +27,18 @@ class AddressAPI:
     @abstractmethod
     def address(self) -> str:
         ...
+
+    def __dir__(self) -> List[str]:
+        # This displays methods to IPython on `a.[TAB]` tab completion
+        return [
+            "address",
+            "balance",
+            "code",
+            "codesize",
+            "nonce",
+            "is_contract",
+            "provider",
+        ]
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.address}>"

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterator, Optional, Type, Union
+from typing import Iterator, List, Optional, Type, Union
 
 from eth_account.datastructures import SignedMessage  # type: ignore
 from eth_account.messages import SignableMessage  # type: ignore
@@ -15,6 +15,17 @@ from .providers import ReceiptAPI, TransactionAPI
 # NOTE: AddressAPI is a dataclass already
 class AccountAPI(AddressAPI):
     container: "AccountContainerAPI"
+
+    def __dir__(self) -> List[str]:
+        # This displays methods to IPython on `a.[TAB]` tab completion
+        return list(super(AddressAPI, self).__dir__()) + [
+            "alias",
+            "sign_message",
+            "sign_transaction",
+            "call",
+            "transfer",
+            "deploy",
+        ]
 
     @property
     def alias(self) -> Optional[str]:
