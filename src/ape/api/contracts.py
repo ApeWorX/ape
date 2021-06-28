@@ -190,43 +190,41 @@ class ContractInstance(AddressAPI):
         ]
 
     def __getattr__(self, attr_name: str) -> Any:
-        def get_name(abi: ABI):
-            return abi.name
+        handlers = {
+            "events": ContractEvent,
+            "calls": ContractCallHandler,
+            "transactions": ContractTransactionHandler,
+        }
 
-        try:
-            if attr_name in map(get_name, self._contract_type.events):
-                selected_abis = [
-                    abi for abi in self._contract_type.events if get_name(abi) == attr_name
-                ]
-                return ContractEvent(  # type: ignore
-                    provider=self.provider,
-                    address=self.address,
-                    abis=selected_abis,  # type: ignore
-                )
+        def get_handler(abi_type: str) -> Any:
+            selected_abis = [
+                abi for abi in getattr(self._contract_type, abi_type) if abi.name == attr_name
+            ]
 
-            elif attr_name in map(get_name, self._contract_type.calls):
-                selected_abis = [
-                    abi for abi in self._contract_type.calls if get_name(abi) == attr_name
-                ]
-                return ContractCallHandler(  # type: ignore
-                    provider=self.provider,
-                    address=self.address,
-                    abis=selected_abis,
-                )
+            if not selected_abis:
+                return  # No ABIs found for this type
 
-            elif attr_name in map(get_name, self._contract_type.transactions):
-                selected_abis = [
-                    abi for abi in self._contract_type.transactions if get_name(abi) == attr_name
-                ]
-                return ContractTransactionHandler(  # type: ignore
-                    provider=self.provider,
-                    address=self.address,
-                    abis=selected_abis,
-                )
+            kwargs = {
+                "provider": self.provider,
+                "address": self.address,
+                "abis": selected_abis,
+            }
 
-        except Exception as e:
-            raise AttributeError from e
+            try:
+                return handlers[abi_type](**kwargs)  # type: ignore
 
+            except Exception as e:
+                # NOTE: Just a hack, because `__getattr__` *must* raise `AttributeError`
+                raise AttributeError from e
+
+        # Reverse search for the proper handler for this ABI name, if one exists
+        for abi_type in handlers:
+            handler = get_handler(abi_type)
+            if handler:
+                return handler
+            # else: No ABI found with `attr_name`
+
+        # No ABIs w/ name `attr_name` found at all
         raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
 
 
