@@ -85,6 +85,10 @@ class ContractCallHandler:
     address: str
     abis: List[ABI]
 
+    def __repr__(self) -> str:
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))
+        return abis[-1].signature
+
     def __call__(self, *args, **kwargs) -> Any:
         selected_abi = None
         for abi in self.abis:
@@ -133,6 +137,10 @@ class ContractTransactionHandler:
     provider: ProviderAPI
     address: str
     abis: List[ABI]
+
+    def __repr__(self) -> str:
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))
+        return abis[-1].signature
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         selected_abi = None
