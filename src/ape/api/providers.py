@@ -41,10 +41,21 @@ class TransactionAPI:
     def as_dict(self) -> dict:
         return as_dict(self)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         data = as_dict(self)  # NOTE: `as_dict` could be overriden
         params = ", ".join(f"{k}={v}" for k, v in data.items())
         return f"<{self.__class__.__name__} {params}>"
+
+    def __str__(self) -> str:
+        data = as_dict(self)  # NOTE: `as_dict` could be overriden
+        if len(data["data"]) > 9:
+            data["data"] = (
+                "0x" + bytes(data["data"][:3]).hex() + "..." + bytes(data["data"][-3:]).hex()
+            )
+        else:
+            data["data"] = "0x" + bytes(data["data"]).hex()
+        params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
+        return f"{self.__class__.__name__}:\n  {params}"
 
 
 class TransactionStatusEnum(IntEnum):

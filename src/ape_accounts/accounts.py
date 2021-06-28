@@ -107,13 +107,13 @@ class KeyfileAccount(AccountAPI):
         self._keyfile.unlink()
 
     def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
-        if self.locked and not click.confirm(f"Sign: {msg}"):
+        if self.locked and not click.confirm(f"{msg}\n\nSign: "):
             return None
 
         return EthAccount.sign_message(msg, self.__key)
 
     def sign_transaction(self, txn: TransactionAPI) -> TransactionAPI:
-        if self.locked and not click.confirm(f"Sign: {txn}"):
+        if self.locked and not click.confirm(f"{txn}\n\nSign: "):
             raise  # User declined to sign!
 
         signed_txn = EthAccount.sign_transaction(txn.as_dict(), self.__key)
