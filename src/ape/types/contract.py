@@ -105,18 +105,22 @@ class ABI(SerializableType):
 
         def encode_arg(arg: ABIType) -> str:
             encoded_arg = arg.canonical_type
-            encoded_arg += " "
             # For events (handles both None and False conditions)
             if arg.indexed:
-                encoded_arg += "indexed "
-            encoded_arg += arg.name
+                encoded_arg += " indexed"
+            if arg.name:
+                encoded_arg += f" {arg.name}"
             return encoded_arg
 
         input_args = ", ".join(map(encode_arg, self.inputs))
         output_args = ""
 
         if self.outputs:
-            output_args = " -> (" + ", ".join(map(encode_arg, self.outputs)) + ")"
+            output_args = " -> "
+            if len(self.outputs) > 1:
+                output_args += "(" + ", ".join(map(encode_arg, self.outputs)) + ")"
+            else:
+                output_args += encode_arg(self.outputs[0])
 
         return f"{name}({input_args}){output_args}"
 
