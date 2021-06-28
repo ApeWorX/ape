@@ -48,7 +48,7 @@ class AccountAPI(AddressAPI):
         txn.gas_price = self.provider.gas_price
 
         if txn.gas_limit * txn.gas_price + txn.value > self.balance:
-            raise  # Transfer value meets or exceeds account balance
+            raise Exception("Transfer value meets or exceeds account balance")
 
         signed_txn = self.sign_transaction(txn)
 
@@ -91,7 +91,7 @@ class AccountAPI(AddressAPI):
         receipt = self.call(txn)
 
         if not receipt.contract_address:
-            raise  # `receipt.txn_hash` did not create a contract
+            raise Exception(f"{receipt.txn_hash} did not create a contract")
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,

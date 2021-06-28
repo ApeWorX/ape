@@ -25,7 +25,7 @@ class TransactionAPI:
 
     def __post_init__(self):
         if not self.is_valid:
-            raise  # Not valid!
+            raise Exception("Transaction is not valid!")
 
     @property
     @abstractmethod
