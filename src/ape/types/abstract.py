@@ -50,7 +50,7 @@ def to_dict(v: Any) -> Optional[Union[list, dict, str, int, bool]]:
         return v
 
     else:
-        raise  # Unhandled type
+        raise Exception("Unhandled type")
 
 
 @dc.dataclass(slots=True, kwargs=True, repr=True)
