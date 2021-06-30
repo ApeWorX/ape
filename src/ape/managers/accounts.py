@@ -45,8 +45,8 @@ class AccountManager:
     def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
             for account in container:
-                # NOTE: Inject network manager
-                account.network_manager = self.network_manager
+                # NOTE: Inject provider
+                account._provider = self.network_manager.active_provider
                 yield account
 
     def load(self, alias: str) -> AccountAPI:
@@ -55,8 +55,8 @@ class AccountManager:
 
         for account in self:
             if account.alias and account.alias == alias:
-                # NOTE: Inject network manager
-                account.network_manager = self.network_manager
+                # NOTE: Inject provider
+                account._provider = self.network_manager.active_provider
                 return account
 
         raise IndexError(f"No account with alias `{alias}`.")
@@ -69,8 +69,8 @@ class AccountManager:
     def __getitem_int(self, account_id: int) -> AccountAPI:
         for idx, account in enumerate(self.__iter__()):
             if account_id == idx:
-                # NOTE: Inject network manager
-                account.network_manager = self.network_manager
+                # NOTE: Inject provider
+                account._provider = self.network_manager.active_provider
                 return account
 
         raise IndexError(f"No account at index `{account_id}`.")
@@ -80,8 +80,8 @@ class AccountManager:
         for container in self.containers.values():
             if account_id in container:
                 account = container[account_id]
-                # NOTE: Inject network manager
-                account.network_manager = self.network_manager
+                # NOTE: Inject provider
+                account._provider = self.network_manager.active_provider
                 return account
 
         raise IndexError(f"No account with address `{account_id}`.")

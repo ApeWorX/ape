@@ -5,10 +5,9 @@ from typing import Iterator, Optional
 import click
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account.datastructures import SignedMessage  # type: ignore
-from eth_account.datastructures import SignedTransaction
 from eth_account.messages import SignableMessage  # type: ignore
 
-from ape.api.accounts import AccountAPI, AccountContainerAPI
+from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.convert import to_address
 
 
@@ -65,7 +64,11 @@ class KeyfileAccount(AccountAPI):
             default="",  # Just in case there's no passphrase
         )
 
-        key = EthAccount.decrypt(self.keyfile, passphrase)
+        try:
+            key = EthAccount.decrypt(self.keyfile, passphrase)
+
+        except ValueError as e:
+            raise Exception("Invalid password") from e
 
         if click.confirm(f"Leave '{self.alias}' unlocked?"):
             self.locked = False
@@ -79,7 +82,11 @@ class KeyfileAccount(AccountAPI):
             hide_input=True,
         )
 
-        self.__cached_key = EthAccount.decrypt(self.keyfile, passphrase)
+        try:
+            self.__cached_key = EthAccount.decrypt(self.keyfile, passphrase)
+
+        except ValueError as e:
+            raise Exception("Invalid password") from e
 
     def lock(self):
         self.locked = True
@@ -108,13 +115,21 @@ class KeyfileAccount(AccountAPI):
         self._keyfile.unlink()
 
     def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
-        if self.locked and not click.confirm(f"Sign: {msg}"):
+        if self.locked and not click.confirm(f"{msg}\n\nSign: "):
             return None
 
         return EthAccount.sign_message(msg, self.__key)
 
-    def sign_transaction(self, txn: dict) -> Optional[SignedTransaction]:
-        if self.locked and not click.confirm(f"Sign: {txn}"):
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionAPI]:
+        if self.locked and not click.confirm(f"{txn}\n\nSign: "):
             return None
 
-        return EthAccount.sign_transaction(txn, self.__key)
+        signed_txn = EthAccount.sign_transaction(txn.as_dict(), self.__key)
+
+        txn.signature = (
+            signed_txn.v.to_bytes(1, "big")
+            + signed_txn.r.to_bytes(32, "big")
+            + signed_txn.s.to_bytes(32, "big")
+        )
+
+        return txn

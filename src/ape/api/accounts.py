@@ -1,66 +1,31 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, Optional, Type
+from typing import Iterator, List, Optional, Type, Union
 
 from eth_account.datastructures import SignedMessage  # type: ignore
-from eth_account.datastructures import SignedTransaction
 from eth_account.messages import SignableMessage  # type: ignore
 
+from ape.types import ContractType
+
+from .address import AddressAPI
 from .base import abstractdataclass, abstractmethod
-
-if TYPE_CHECKING:
-    from ape.managers.networks import NetworkManager
-
-
-@abstractdataclass
-class AddressAPI:
-    network_manager: Optional["NetworkManager"] = None
-
-    @property
-    def _provider(self):
-        if not self.network_manager:
-            raise Exception("Not wired correctly")
-
-        if not self.network_manager.active_provider:
-            raise Exception("Not connected to any network!")
-
-        return self.network_manager.active_provider
-
-    @property
-    @abstractmethod
-    def address(self) -> str:
-        ...
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.address}>"
-
-    def __str__(self) -> str:
-        return self.address
-
-    @property
-    def nonce(self) -> int:
-        return self._provider.get_nonce(self.address)
-
-    @property
-    def balance(self) -> int:
-        return self._provider.get_balance(self.address)
-
-    @property
-    def code(self) -> bytes:
-        # TODO: Explore caching this (based on `self.provider.network` and examining code)
-        return self._provider.get_code(self.address)
-
-    @property
-    def codesize(self) -> int:
-        return len(self.code)
-
-    @property
-    def is_contract(self) -> bool:
-        return len(self.code) > 0
+from .contracts import ContractContainer, ContractInstance
+from .providers import ReceiptAPI, TransactionAPI
 
 
 # NOTE: AddressAPI is a dataclass already
 class AccountAPI(AddressAPI):
     container: "AccountContainerAPI"
+
+    def __dir__(self) -> List[str]:
+        # This displays methods to IPython on `a.[TAB]` tab completion
+        return list(super(AddressAPI, self).__dir__()) + [
+            "alias",
+            "sign_message",
+            "sign_transaction",
+            "call",
+            "transfer",
+            "deploy",
+        ]
 
     @property
     def alias(self) -> Optional[str]:
@@ -73,9 +38,66 @@ class AccountAPI(AddressAPI):
     def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
         ...
 
-    @abstractmethod
-    def sign_transaction(self, txn: dict) -> Optional[SignedTransaction]:
-        ...
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionAPI]:
+        # NOTE: Some accounts may not offer signing things
+        return txn
+
+    def call(self, txn: TransactionAPI) -> ReceiptAPI:
+        txn.nonce = self.nonce
+        txn.gas_limit = self.provider.estimate_gas_cost(txn)
+        txn.gas_price = self.provider.gas_price
+
+        if txn.gas_limit * txn.gas_price + txn.value > self.balance:
+            raise Exception("Transfer value meets or exceeds account balance")
+
+        signed_txn = self.sign_transaction(txn)
+
+        if not signed_txn:
+            raise Exception("User didn't sign!")
+
+        return self.provider.send_transaction(signed_txn)
+
+    def transfer(
+        self,
+        account: Union[str, "AddressAPI"],
+        value: int = None,
+        data: bytes = None,
+    ) -> ReceiptAPI:
+        txn = self._transaction_class(  # type: ignore
+            sender=self.address,
+            receiver=account.address if isinstance(account, AddressAPI) else account,
+        )
+
+        if data:
+            txn.data = data
+
+        if value:
+            txn.value = value
+
+        else:
+            # NOTE: If `value` is `None`, send everything
+            txn.value = self.balance - txn.gas_limit * txn.gas_price
+
+        return self.call(txn)
+
+    def deploy(self, contract_type: ContractType, *args, **kwargs) -> ContractInstance:
+        c = ContractContainer(  # type: ignore
+            _provider=self.provider,
+            _contract_type=contract_type,
+        )
+
+        txn = c(*args, **kwargs)
+        txn.sender = self.address
+        receipt = self.call(txn)
+
+        if not receipt.contract_address:
+            raise Exception(f"{receipt.txn_hash} did not create a contract")
+
+        return ContractInstance(  # type: ignore
+            _provider=self.provider,
+            _address=receipt.contract_address,
+            _contract_type=contract_type,
+        )
 
 
 @abstractdataclass
