@@ -64,7 +64,11 @@ class KeyfileAccount(AccountAPI):
             default="",  # Just in case there's no passphrase
         )
 
-        key = EthAccount.decrypt(self.keyfile, passphrase)
+        try:
+            key = EthAccount.decrypt(self.keyfile, passphrase)
+
+        except ValueError as e:
+            raise Exception("Invalid password") from e
 
         if click.confirm(f"Leave '{self.alias}' unlocked?"):
             self.locked = False
@@ -78,7 +82,11 @@ class KeyfileAccount(AccountAPI):
             hide_input=True,
         )
 
-        self.__cached_key = EthAccount.decrypt(self.keyfile, passphrase)
+        try:
+            self.__cached_key = EthAccount.decrypt(self.keyfile, passphrase)
+
+        except ValueError as e:
+            raise Exception("Invalid password") from e
 
     def lock(self):
         self.locked = True
