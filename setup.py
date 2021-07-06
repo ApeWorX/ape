@@ -79,7 +79,7 @@ setup(
             "ape_compile=ape_compile._cli:cli",
             "ape_console=ape_console._cli:cli",
             "ape_plugins=ape_plugins._cli:cli",
-            "ape_run=ape_run:cli",
+            "ape_run=ape_run._cli:cli",
             "ape_networks=ape_networks._cli:cli",
         ],
     },
