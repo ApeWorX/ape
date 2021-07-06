@@ -45,7 +45,7 @@ def cli(scripts, interactive):
     will be injected dynamically during script execution. The dynamically injected objects are
     the exports from the `ape` top-level package (similar to how the console works)
     """
-    if len(scripts) == 0:
+    if not scripts:
         raise Abort("Must provide at least one script name or path")
 
     scripts_folder = config.PROJECT_FOLDER / "scripts"
