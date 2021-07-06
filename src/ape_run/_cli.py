@@ -4,7 +4,7 @@ import click
 
 from ape import config, networks
 from ape.utils import Abort
-from ape_console._cli import NetworkChoice
+from ape_console._cli import NetworkChoice, console
 
 # TODO: Migrate this to a CLI toolkit under `ape`
 
@@ -32,7 +32,7 @@ def _run_script(script_file, interactive=False):
         raise Abort("No `main` or `cli` method detected")
 
     if interactive:
-        pass  # run console w/ `ns` from running script
+        return console()
 
 
 @click.command(short_help="Run scripts from the `scripts` folder")
