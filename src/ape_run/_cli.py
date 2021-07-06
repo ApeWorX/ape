@@ -2,6 +2,7 @@ from pathlib import Path
 
 import click
 
+from ape import config
 from ape.utils import Abort
 
 
@@ -46,8 +47,6 @@ def cli(scripts, interactive):
     """
     if len(scripts) == 0:
         raise Abort("Must provide at least one script name or path")
-
-    from ape import config
 
     scripts_folder = config.PROJECT_FOLDER / "scripts"
 
