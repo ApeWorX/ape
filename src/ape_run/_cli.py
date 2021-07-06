@@ -2,8 +2,11 @@ from pathlib import Path
 
 import click
 
-from ape import config
+from ape import config, networks
 from ape.utils import Abort
+from ape_console._cli import NetworkChoice
+
+# TODO: Migrate this to a CLI toolkit under `ape`
 
 
 def _run_script(script_file, interactive=False):
@@ -41,7 +44,15 @@ def _run_script(script_file, interactive=False):
     default=False,
     help="Drop into interactive console session after running",
 )
-def cli(scripts, interactive):
+@click.option(
+    "--network",
+    type=NetworkChoice(case_sensitive=False),
+    default=networks.default_ecosystem.name,
+    help="Override the default network and provider. (see `ape networks list` for options)",
+    show_default=True,
+    show_choices=False,
+)
+def cli(scripts, interactive, network):
     """
     NAME - Path or script name (from `scripts/` folder)
 
@@ -60,18 +71,19 @@ def cli(scripts, interactive):
     # NOTE: If folder does not exist, this will be empty (same as if there are no files)
     available_scripts = {p.stem: p for p in scripts_folder.glob("*.py")}
 
-    for name in scripts:
-        if Path(name).exists():
-            # NOTE: This injects the path as the only option (bypassing the lookup)
-            script_file = Path(name)
+    with networks.parse_network_choice(network):
+        for name in scripts:
+            if Path(name).exists():
+                # NOTE: This injects the path as the only option (bypassing the lookup)
+                script_file = Path(name)
 
-        elif not scripts_folder.exists():
-            raise Abort("No `scripts/` directory detected to run script")
+            elif not scripts_folder.exists():
+                raise Abort("No `scripts/` directory detected to run script")
 
-        elif name not in available_scripts:
-            raise Abort(f"No script named '{name}' detected in scripts folder")
+            elif name not in available_scripts:
+                raise Abort(f"No script named '{name}' detected in scripts folder")
 
-        else:
-            script_file = available_scripts[name]
+            else:
+                script_file = available_scripts[name]
 
-        _run_script(script_file, interactive)
+            _run_script(script_file, interactive)
