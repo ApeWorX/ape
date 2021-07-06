@@ -19,11 +19,11 @@ def _run_script(script_file, interactive=False):
     # Execute the hooks
     if "cli" in ns:
         # TODO: Pass context to `cli` before calling it
-        return ns["cli"]()
+        ns["cli"]()
 
     elif "main" in ns:
         # NOTE: `main()` accepts no arguments
-        return ns["main"]()
+        ns["main"]()
 
     else:
         raise Abort("No `main` or `cli` method detected")
