@@ -34,7 +34,13 @@ def _run_script(script_file, interactive=False):
 
 @click.command(short_help="Run scripts from the `scripts` folder")
 @click.argument("scripts", nargs=-1)
-@click.option("-i", "--interactive", help="Drop into interactive console session after running")
+@click.option(
+    "-i",
+    "--interactive",
+    is_flag=True,
+    default=False,
+    help="Drop into interactive console session after running",
+)
 def cli(scripts, interactive):
     """
     NAME - Path or script name (from `scripts/` folder)
