@@ -1,3 +1,4 @@
+from importlib import import_module
 from pathlib import Path
 
 import click
@@ -11,22 +12,21 @@ from ape_console._cli import NetworkChoice, console
 
 def _run_script(script_file, interactive=False):
     # Load the python module and find our hook functions
-    ns: dict = {}
+    import_str = ".".join(script_file.parts[:-1] + (script_file.stem,))
     try:
-        py_module = compile(script_file.read_text(), str(script_file), "exec")
-        eval(py_module, ns, ns)
+        py_module = import_module(import_str)
 
     except Exception as e:
         raise Abort(e.with_traceback()) from e
 
     # Execute the hooks
-    if "cli" in ns:
+    if hasattr(py_module, "cli"):
         # TODO: Pass context to `cli` before calling it
-        ns["cli"]()
+        py_module.cli()
 
-    elif "main" in ns:
+    elif hasattr(py_module, "main"):
         # NOTE: `main()` accepts no arguments
-        ns["main"]()
+        py_module.main()
 
     else:
         raise Abort("No `main` or `cli` method detected")
