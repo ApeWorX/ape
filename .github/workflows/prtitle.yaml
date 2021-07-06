@@ -23,4 +23,6 @@ jobs:
           run: pip install .[dev]
 
         - name: Check PR Title
-          run: cz check --message "${{ github.event.pull_request.title }}"
+          env:
+              TITLE: ${{ github.event.pull_request.title }}
+          run: cz check --message "$TITLE"
