@@ -63,15 +63,15 @@ def generate(alias):
         "Add extra entropy for key generation...",
         hide_input=True,
     )
-    a = EthAccount.create(extra_entropy)
+    account = EthAccount.create(extra_entropy)
     passphrase = click.prompt(
         "Create Passphrase",
         hide_input=True,
         confirmation_prompt=True,
     )
-    path.write_text(json.dumps(EthAccount.encrypt(a.key, passphrase)))
+    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
 
-    notify("SUCCESS", f"A new account '{a.address}' has been added with the id '{alias}'")
+    notify("SUCCESS", f"A new account '{account.address}' has been added with the id '{alias}'")
 
 
 # Different name because `import` is a keyword
@@ -84,15 +84,19 @@ def _import(alias):
 
     path = container.data_folder.joinpath(f"{alias}.json")
     key = click.prompt("Enter Private Key", hide_input=True)
-    a = EthAccount.from_key(to_bytes(hexstr=key))
+    try:
+        account = EthAccount.from_key(to_bytes(hexstr=key))
+    except Exception as error:
+        notify("ERROR", f"Key can't be imported {error}")
+        return
     passphrase = click.prompt(
         "Create Passphrase",
         hide_input=True,
         confirmation_prompt=True,
     )
-    path.write_text(json.dumps(EthAccount.encrypt(a.key, passphrase)))
+    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
 
-    notify("SUCCESS", f"A new account '{a.address}' has been added with the id '{alias}'")
+    notify("SUCCESS", f"A new account '{account.address}' has been added with the id '{alias}'")
 
 
 @cli.command(short_help="Change the password of an existing account")
