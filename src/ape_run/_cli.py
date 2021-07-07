@@ -17,7 +17,7 @@ def _run_script(script_file, interactive=False):
         py_module = import_module(import_str)
 
     except Exception as e:
-        raise Abort(e.with_traceback()) from e
+        raise Abort() from e
 
     # Execute the hooks
     if hasattr(py_module, "cli"):
