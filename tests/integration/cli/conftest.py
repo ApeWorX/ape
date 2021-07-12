@@ -1,3 +1,4 @@
+import os
 from distutils.dir_util import copy_tree
 from pathlib import Path
 
@@ -30,11 +31,13 @@ def project(project_folder):
     ape.project = previous_project
 
 
-@pytest.fixture(scope="session")
-def runner(config):
+@pytest.fixture
+def runner(project_folder):
+    previous_cwd = str(Path.cwd())
+    os.chdir(str(project_folder))
     runner = CliRunner()
-    with runner.isolated_filesystem(temp_dir=config.PROJECT_FOLDER):
-        yield runner
+    yield runner
+    os.chdir(previous_cwd)
 
 
 @pytest.fixture(scope="session")
