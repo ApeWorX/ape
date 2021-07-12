@@ -48,6 +48,7 @@ class NetworkManager:
             plugin_name: ecosystem_class(
                 name=plugin_name,
                 network_manager=self,
+                config_manager=self.config,
                 plugin_manager=self.plugin_manager,
                 data_folder=self.config.DATA_FOLDER / plugin_name,
                 request_header=self.config.REQUEST_HEADER,

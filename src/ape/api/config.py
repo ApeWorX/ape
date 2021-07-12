@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 from .base import dataclass
 
@@ -30,6 +30,12 @@ class ConfigItem:
 
     def validate_config(self):
         pass
+
+    def __getitem__(self, attrname: str) -> Any:
+        if attrname in self.__slots__:
+            return getattr(self, attrname)
+
+        raise KeyError(f"''{attrname}'")
 
 
 class ConfigDict(ConfigItem):

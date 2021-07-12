@@ -8,6 +8,7 @@ from ape.utils import notify
 
 from . import networks
 from .base import abstractdataclass, abstractmethod
+from .config import ConfigItem
 
 
 @abstractdataclass
@@ -93,7 +94,8 @@ class ProviderAPI:
 
     name: str  # Plugin name
     network: networks.NetworkAPI
-    config: dict
+    config: ConfigItem
+    provider_settings: dict
     data_folder: Path
     request_header: str
 
