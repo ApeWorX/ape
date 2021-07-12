@@ -22,7 +22,7 @@ class ConfigItem:
                 data[name] = value.serialize()
             elif isinstance(value, ConfigEnum):
                 data[name] = value.name
-            elif isinstance(value, (int, str)):
+            elif isinstance(value, (int, str, dict)):
                 data[name] = value
             else:
                 raise TypeError("Received unknown type when serializing a config item")
