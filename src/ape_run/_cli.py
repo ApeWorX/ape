@@ -10,7 +10,7 @@ from ape_console._cli import NetworkChoice, console
 # TODO: Migrate this to a CLI toolkit under `ape`
 
 
-def _run_script(script_path, interactive=False):
+def _run_script(script_path, interactive=False, verbose=False):
     script_path = get_relative_path(script_path, Path.cwd())
     script_parts = script_path.parts[:-1]
 
@@ -23,7 +23,11 @@ def _run_script(script_path, interactive=False):
         py_module = import_module(import_str)
 
     except Exception as e:
-        raise Abort(f"Exception while executing script: {script_path}") from e
+        if verbose:
+            raise e
+
+        else:
+            raise Abort(f"Exception while executing script: {script_path}") from e
 
     # Execute the hooks
     if hasattr(py_module, "cli"):
@@ -44,6 +48,13 @@ def _run_script(script_path, interactive=False):
 @click.command(short_help="Run scripts from the `scripts` folder")
 @click.argument("scripts", nargs=-1)
 @click.option(
+    "-v",
+    "--verbose",
+    is_flag=True,
+    default=False,
+    help="Display errors from scripts",
+)
+@click.option(
     "-i",
     "--interactive",
     is_flag=True,
@@ -58,7 +69,7 @@ def _run_script(script_path, interactive=False):
     show_default=True,
     show_choices=False,
 )
-def cli(scripts, interactive, network):
+def cli(scripts, verbose, interactive, network):
     """
     NAME - Path or script name (from `scripts/` folder)
 
@@ -91,4 +102,4 @@ def cli(scripts, interactive, network):
             else:
                 script_file = available_scripts[name]
 
-            _run_script(script_file, interactive)
+            _run_script(script_file, interactive, verbose)
