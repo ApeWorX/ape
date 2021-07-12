@@ -1,3 +1,4 @@
+import sys
 from importlib import import_module
 from pathlib import Path
 
@@ -17,10 +18,12 @@ def _run_script(script_path, interactive=False, verbose=False):
     if any(p == ".." for p in script_parts):
         raise Abort("Cannot execute script from outside current directory")
 
-    import_str = ".".join(script_parts + (script_path.stem,))
+    # Add to Python path so we can search for the given script to import
+    sys.path.append(str(script_path.parent.resolve()))
+
     # Load the python module to find our hook functions
     try:
-        py_module = import_module(import_str)
+        py_module = import_module(script_path.stem)
 
     except Exception as e:
         if verbose:
@@ -28,6 +31,10 @@ def _run_script(script_path, interactive=False, verbose=False):
 
         else:
             raise Abort(f"Exception while executing script: {script_path}") from e
+
+    finally:
+        # Undo adding the path to make sure it's not permanent
+        sys.path.remove(str(script_path.parent.resolve()))
 
     # Execute the hooks
     if hasattr(py_module, "cli"):
