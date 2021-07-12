@@ -4,20 +4,26 @@ from pathlib import Path
 import click
 
 from ape import config, networks
-from ape.utils import Abort
+from ape.utils import Abort, get_relative_path
 from ape_console._cli import NetworkChoice, console
 
 # TODO: Migrate this to a CLI toolkit under `ape`
 
 
-def _run_script(script_file, interactive=False):
-    # Load the python module and find our hook functions
-    import_str = ".".join(script_file.parts[:-1] + (script_file.stem,))
+def _run_script(script_path, interactive=False):
+    script_path = get_relative_path(script_path, Path.cwd())
+    script_parts = script_path.parts[:-1]
+
+    if any(p == ".." for p in script_parts):
+        raise Abort("Cannot execute script from outside current directory")
+
+    import_str = ".".join(script_parts + (script_path.stem,))
+    # Load the python module to find our hook functions
     try:
         py_module = import_module(import_str)
 
     except Exception as e:
-        raise Abort() from e
+        raise Abort(f"Exception while executing script: {script_path}") from e
 
     # Execute the hooks
     if hasattr(py_module, "cli"):
@@ -69,13 +75,12 @@ def cli(scripts, interactive, network):
 
     # Generate the lookup based on all the scripts defined in the project's `scripts/` folderi
     # NOTE: If folder does not exist, this will be empty (same as if there are no files)
-    available_scripts = {p.stem: p for p in scripts_folder.glob("*.py")}
+    available_scripts = {p.stem: p.resolve() for p in scripts_folder.glob("*.py")}
 
     with networks.parse_network_choice(network):
         for name in scripts:
             if Path(name).exists():
-                # NOTE: This injects the path as the only option (bypassing the lookup)
-                script_file = Path(name)
+                script_file = Path(name).resolve()
 
             elif not scripts_folder.exists():
                 raise Abort("No `scripts/` directory detected to run script")
