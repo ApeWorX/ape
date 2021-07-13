@@ -38,7 +38,7 @@ jobs:
               python-version: 3.8
 
         - name: Install Dependencies
-          run: pip install .[lint]
+          run: pip install .[lint,test]
 
         - name: Run MyPy
           run: mypy .
