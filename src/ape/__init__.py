@@ -6,6 +6,7 @@ from .api.contracts import _Contract
 from .managers.accounts import AccountManager as _AccountManager
 from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
+from .managers.converters import ConversionManager as _ConversionManager
 from .managers.networks import NetworkManager as _NetworkManager
 from .managers.project import ProjectManager as _ProjectManager
 from .plugins import PluginManager as _PluginManager
@@ -44,11 +45,14 @@ project = Project(config.PROJECT_FOLDER)
 
 Contract = _partial(_Contract, networks=networks)
 
+_converters = _ConversionManager(config, plugin_manager, networks)  # type: ignore
+convert = _converters.convert
 
 __all__ = [
     "accounts",
     "compilers",
     "config",
+    "convert",
     "Contract",
     "networks",
     "project",
