@@ -61,15 +61,13 @@ class AccountAPI(AddressAPI):
         self,
         account: Union[str, "AddressAPI"],
         value: int = None,
-        data: bytes = None,
+        **kwargs,
     ) -> ReceiptAPI:
         txn = self._transaction_class(  # type: ignore
             sender=self.address,
             receiver=account.address if isinstance(account, AddressAPI) else account,
+            **kwargs,
         )
-
-        if data:
-            txn.data = data
 
         if value:
             txn.value = value
