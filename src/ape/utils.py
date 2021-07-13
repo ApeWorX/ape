@@ -77,7 +77,8 @@ def get_package_version(obj: Any) -> str:
     dists = get_distributions()
     if pkg_name in dists:
         # NOTE: Shouldn't really be more than 1, but never know
-        assert len(dists[pkg_name]) == 1
+        if len(dists[pkg_name]) != 1:
+            notify("WARNING", f"duplicate pkg_name '{pkg_name}'")
         pkg_name = dists[pkg_name][0]
 
     try:
