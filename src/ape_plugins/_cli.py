@@ -83,7 +83,15 @@ def _list(display_all):
 @cli.command(short_help="Install an ape plugin")
 @click.argument("plugin")
 @click.option("-v", "--version", help="Specify version (Default is latest)")
-def add(plugin, version):
+@click.option(
+    "-y",
+    "--yes",
+    "skip_confirmation",
+    default=False,
+    is_flag=True,
+    help="Don't ask for confirmation to remove plugin",
+)
+def add(plugin, version, skip_confirmation):
     if plugin.startswith("ape"):
         raise Abort(f"Namespace 'ape' in '{plugin}' is not required")
 
@@ -99,8 +107,10 @@ def add(plugin, version):
     elif is_plugin_installed(plugin):
         raise Abort(f"Plugin '{plugin}' already installed")
 
-    elif plugin in SECOND_CLASS_PLUGINS or click.confirm(
-        f"Install unknown 3rd party plugin '{plugin}'?"
+    elif (
+        plugin in SECOND_CLASS_PLUGINS
+        or skip_confirmation
+        or click.confirm(f"Install unknown 3rd party plugin '{plugin}'?")
     ):
         notify("INFO", f"Installing {plugin}...")
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
@@ -110,14 +120,22 @@ def add(plugin, version):
 
 
 @cli.command(short_help="Install all plugins in the local config file")
-@click.pass_context
-def install(ctx):
+@click.option(
+    "-y",
+    "--yes",
+    "skip_confirmation",
+    default=False,
+    is_flag=True,
+    help="Don't ask for confirmation to remove plugin",
+)
+def install(skip_confirmation):
     for plugin, version in config.get_config("plugins").items():
         if not plugin.startswith("ape-"):
             raise Abort(f"Namespace 'ape' required in config item '{plugin}'")
 
         if not is_plugin_installed(plugin.replace("-", "_")) and (
             plugin.replace("-", "_") in SECOND_CLASS_PLUGINS
+            or skip_confirmation
             or click.confirm(f"Install unknown 3rd party plugin '{plugin}'?")
         ):
             notify("INFO", f"Installing {plugin}...")
