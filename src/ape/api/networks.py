@@ -252,9 +252,11 @@ def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
     """
 
     class network_def(NetworkAPI):
+        @property
         def chain_id(self) -> int:
             return chain_id
 
+        @property
         def network_id(self) -> int:
             return network_id
 
