@@ -1,10 +1,12 @@
 from pathlib import Path
-from typing import Iterator, List, Optional, Type, Union
+from typing import Callable, Iterator, List, Optional, Type, Union
 
 from eth_account.datastructures import SignedMessage  # type: ignore
 from eth_account.messages import SignableMessage  # type: ignore
+from eth_typing import ChecksumAddress
 
 from ape.types import ContractType
+from ape.utils import cached_property
 
 from .address import AddressAPI
 from .base import abstractdataclass, abstractmethod
@@ -57,20 +59,31 @@ class AccountAPI(AddressAPI):
 
         return self.provider.send_transaction(signed_txn)
 
+    @cached_property
+    def _convert(self) -> Callable:
+        # NOTE: Need to differ loading this property
+        from ape import convert
+
+        return convert
+
     def transfer(
         self,
-        account: Union[str, "AddressAPI"],
-        value: int = None,
+        account: Union[str, ChecksumAddress, "AddressAPI"],
+        value: Union[str, int, None] = None,
+        data: Union[bytes, str, None] = None,
         **kwargs,
     ) -> ReceiptAPI:
         txn = self._transaction_class(  # type: ignore
             sender=self.address,
-            receiver=account.address if isinstance(account, AddressAPI) else account,
+            receiver=self._convert(account, ChecksumAddress),
             **kwargs,
         )
 
+        if data:
+            txn.data = self._convert(data, bytes)
+
         if value:
-            txn.value = value
+            txn.value = self._convert(value, int)
 
         else:
             # NOTE: If `value` is `None`, send everything
