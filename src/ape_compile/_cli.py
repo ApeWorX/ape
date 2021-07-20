@@ -68,13 +68,8 @@ def cli(filepaths, use_cache, display_size):
         else:
             selected_paths = str(project.path / "contracts")
 
-        if any(".sol" or ".vy" in s for s in listdir(selected_paths)):
-            if any(".sol" in s for s in listdir(selected_paths)):
-                notify("WARNING", "The required compiler plugin Ape-Solidity is not installed")
-            if any(".vy" in s for s in listdir(selected_paths)):
-                notify("WARNING", "The required compiler plugin Ape-Vyper is not installed")
-        else:
-            notify("WARNING", f"No contract files detected in '{selected_paths}'")
+        extensions = ", ".join(set(f.suffix for f in selected_paths))
+        notify("WARNING", f"No compilers detected for the following extensions: {extensions}")
         return
 
     # TODO: only compile selected contracts
