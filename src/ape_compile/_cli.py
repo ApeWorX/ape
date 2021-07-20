@@ -1,5 +1,6 @@
 from itertools import chain
 from pathlib import Path
+from os import listdir
 
 import click
 
@@ -67,7 +68,13 @@ def cli(filepaths, use_cache, display_size):
         else:
             selected_paths = str(project.path / "contracts")
 
-        notify("WARNING", f"No project files detected in '{selected_paths}'")
+        if any(".sol" or ".vy" in s for s in listdir(selected_paths)):
+            if any(".sol" in s for s in listdir(selected_paths)):
+                notify("WARNING", "The required compiler plugin Ape-Solidity is not installed")
+            if any(".vy" in s for s in listdir(selected_paths)):
+                notify("WARNING", "The required compiler plugin Ape-Vyper is not installed")
+        else:
+            notify("WARNING", f"No contract files detected in '{selected_paths}'")
         return
 
     # TODO: only compile selected contracts
