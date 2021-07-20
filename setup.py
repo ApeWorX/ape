@@ -68,8 +68,7 @@ setup(
         "pyyaml>=0.2.5",
         "importlib-metadata",
         "singledispatchmethod ; python_version<'3.8'",
-        "IPython==7.16",  # Pinned for py3.6
-        "jedi==0.17.2",  # Pinned for IPython 7.16 incompatibility
+        "IPython>=7.25",
         "web3[tester]>=5.18.0,<6.0.0",
     ],
     entry_points={
@@ -83,7 +82,7 @@ setup(
             "ape_networks=ape_networks._cli:cli",
         ],
     },
-    python_requires=">=3.6,<3.10",
+    python_requires=">=3.7,<3.10",
     extras_require=extras_require,
     py_modules=[
         "ape",
@@ -123,7 +122,6 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: POSIX",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
