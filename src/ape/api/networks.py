@@ -159,7 +159,7 @@ class ProviderContextManager:
 @dataclass
 class NetworkAPI:
     """
-    A Network is a wrapper around a Provider for a specific Ecosystem
+    A Network is a wrapper around a Provider for a specific Ecosystem.
     """
 
     name: str  # Name given when regsitered in ecosystem
@@ -271,7 +271,7 @@ class NetworkAPI:
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
     """
-    Helper function that allows creating a `NetworkAPI` subclass easily
+    Helper function that allows creating a :class:`NetworkAPI` subclass easily.
     """
 
     class network_def(NetworkAPI):

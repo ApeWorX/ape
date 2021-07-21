@@ -13,6 +13,8 @@ container = accounts.containers["accounts"]
 
 
 class Alias(click.Choice):
+    """Wraps ``click.Choice`` to load account aliases for the active project at runtime."""
+
     name = "alias"
 
     def __init__(self):

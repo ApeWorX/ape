@@ -161,7 +161,7 @@ def remove(plugin, skip_confirmation):
     if plugin.startswith("ape"):
         raise Abort(f"Namespace 'ape' in '{plugin}' is not required")
 
-    # NOTE: Add namespace prefix (match behavior of `install`)
+    # NOTE: Add namespace prefix (match behavior of ``install``)
     plugin = f"ape_{clean_plugin_name(plugin)}"
 
     if not is_plugin_installed(plugin):

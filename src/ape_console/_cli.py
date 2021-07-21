@@ -9,6 +9,8 @@ from ape.version import version as ape_version  # type: ignore
 
 
 class NetworkChoice(click.Choice):
+    """Wraps ``click.Choice`` to provide network choice defaults for the active project."""
+
     def __init__(self, case_sensitive=True):
         super().__init__(list(networks.network_choices), case_sensitive)
 
@@ -22,7 +24,7 @@ class NetworkChoice(click.Choice):
     "--network",
     type=NetworkChoice(case_sensitive=False),
     default=networks.default_ecosystem.name,
-    help="Override the default network and provider. (see `ape networks list` for options)",
+    help="Override the default network and provider. (see ``ape networks list`` for options)",
     show_default=True,
     show_choices=False,
 )

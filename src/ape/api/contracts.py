@@ -281,18 +281,18 @@ def _Contract(
     """
     Function used to triage whether we have a contract type available for
     the given address/network combo, or explicitly provided. If none are found,
-    returns a simple `Address` instance instead of throwing (provides a warning)
+    returns a simple ``Address`` instance instead of throwing (provides a warning)
     """
 
     # Check contract cache (e.g. previously deployed/downloaded contracts)
-    # TODO: Add `contract_cache` dict-like object to `NetworkAPI`
+    # TODO: Add ``contract_cache`` dict-like object to ``NetworkAPI``
     # network = provider.network
     # if not contract_type and address in network.contract_cache:
     #    contract_type = network.contract_cache[address]
 
     # Check explorer API/cache (e.g. publicly published contracts)
-    # TODO: Add `get_contract_type` to `ExplorerAPI`
-    # TODO: Store in `NetworkAPI.contract_cache` to reduce API calls
+    # TODO: Add ``get_contract_type`` to ``ExplorerAPI``
+    # TODO: Store in ``NetworkAPI.contract_cache`` to reduce API calls
     # explorer = provider.network.explorer
     # if not contract_type and explorer:
     #    contract_type = explorer.get_contract_type(address)

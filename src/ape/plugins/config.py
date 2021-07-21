@@ -9,8 +9,8 @@ class Config(PluginType):
     @hookspec
     def config_class(self) -> Type[ConfigItem]:
         """
-        Returns a ConfigItem parser class that can be used to deconstruct the user
-        config options for this plugins.
+        Returns a :class:`ape.api.config.ConfigItem` parser class that can be
+        used to deconstruct the user config options for this plugins.
 
-        NOTE: If none are specified, all injected `ConfigItem`s are empty
+        NOTE: If none are specified, all injected :class:`ape.api.config.ConfigItem`'s are empty.
         """
