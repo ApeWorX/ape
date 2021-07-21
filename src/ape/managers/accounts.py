@@ -49,6 +49,9 @@ class AccountManager:
                 account._provider = self.network_manager.active_provider
                 yield account
 
+    def __repr__(self) -> str:
+        return "[" + ", ".join(repr(a) for a in self) + "]"
+
     def load(self, alias: str) -> AccountAPI:
         if alias == "":
             raise ValueError("Cannot use empty string as alias!")
