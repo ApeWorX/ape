@@ -1,13 +1,13 @@
 from typing import Any, Dict, List, Type
 
 from dataclassy import dataclass
-from eth_utils import is_checksum_address, is_hex
+from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
 from hexbytes import HexBytes
 
 from ape.api import AddressAPI, ConverterAPI
 from ape.plugins import PluginManager
 from ape.types import AddressType
-from ape.utils import cached_property
+from ape.utils import cached_property, notify
 
 from .config import ConfigManager
 from .networks import NetworkManager
@@ -25,7 +25,7 @@ class HexConverter(ConverterAPI):
 hex_converter = HexConverter(None, None)  # type: ignore
 
 
-class AddressConverter(ConverterAPI):
+class AddressAPIConverter(ConverterAPI):
     def is_convertible(self, value: Any) -> bool:
         return isinstance(value, AddressAPI)
 
@@ -33,7 +33,19 @@ class AddressConverter(ConverterAPI):
         return value.address
 
 
-address_converter = AddressConverter(None, None)  # type: ignore
+address_api_converter = AddressAPIConverter(None, None)  # type: ignore
+
+
+class HexAddressConverter(ConverterAPI):
+    def is_convertible(self, value: str) -> bool:
+        return isinstance(value, str) and is_hex_address(value) and not is_checksum_address(value)
+
+    def convert(self, value: str) -> AddressType:
+        notify("WARNING", f"'{value}' is not in checksummed form")
+        return to_checksum_address(value)
+
+
+hex_address_converter = HexAddressConverter(None, None)  # type: ignore
 
 
 @dataclass
@@ -45,7 +57,7 @@ class ConversionManager:
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
         converters: Dict[Type, List[ConverterAPI]] = {
-            AddressType: [address_converter],
+            AddressType: [address_api_converter, hex_address_converter],
             bytes: [hex_converter],
             int: [],
         }
