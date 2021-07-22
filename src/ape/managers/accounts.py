@@ -7,6 +7,7 @@ from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.utils import cached_property, singledispatchmethod
 
 from .config import ConfigManager
+from .converters import ConversionManager
 from .networks import NetworkManager
 
 
@@ -18,6 +19,7 @@ class AccountManager:
     """
 
     config: ConfigManager
+    converters: ConversionManager
     plugin_manager: PluginManager
     network_manager: NetworkManager
 

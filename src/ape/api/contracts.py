@@ -10,6 +10,7 @@ from .base import dataclass
 from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
+    from ape.managers.converters import ConversionManager
     from ape.managers.networks import NetworkManager
 
 
@@ -274,6 +275,7 @@ class ContractContainer:
 def _Contract(
     address: str,
     networks: "NetworkManager",
+    converters: "ConversionManager",
     contract_type: Optional[ContractType] = None,
 ) -> AddressAPI:
     """
