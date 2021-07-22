@@ -11,7 +11,7 @@ from eth_utils import keccak, to_bytes, to_int  # type: ignore
 from hexbytes import HexBytes
 
 from ape.api import ContractLog, EcosystemAPI, ReceiptAPI, TransactionAPI, TransactionStatusEnum
-from ape.types import ABI
+from ape.types import ABI, AddressType
 
 NETWORKS = {
     # chain_id, network_id
@@ -102,7 +102,13 @@ class Ethereum(EcosystemAPI):
 
         return txn
 
-    def encode_transaction(self, address: str, abi: ABI, *args, **kwargs) -> Transaction:
+    def encode_transaction(
+        self,
+        address: AddressType,
+        abi: ABI,
+        *args,
+        **kwargs,
+    ) -> Transaction:
         txn = Transaction(receiver=address, **kwargs)  # type: ignore
 
         # Add method ID

@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from eth_utils import to_bytes
 
-from ape.types import ABI, ContractType
+from ape.types import ABI, AddressType, ContractType
 from ape.utils import notify
 
 from .address import Address, AddressAPI
@@ -48,7 +48,7 @@ class ContractConstructor:
 @dataclass
 class ContractCall:
     abi: ABI
-    address: str
+    address: AddressType
     provider: ProviderAPI
 
     def __repr__(self) -> str:
@@ -83,7 +83,7 @@ class ContractCall:
 @dataclass
 class ContractCallHandler:
     provider: ProviderAPI
-    address: str
+    address: AddressType
     abis: List[ABI]
 
     def __repr__(self) -> str:
@@ -109,7 +109,7 @@ class ContractCallHandler:
 @dataclass
 class ContractTransaction:
     abi: ABI
-    address: str
+    address: AddressType
     provider: ProviderAPI
 
     def __repr__(self) -> str:
@@ -136,7 +136,7 @@ class ContractTransaction:
 @dataclass
 class ContractTransactionHandler:
     provider: ProviderAPI
-    address: str
+    address: AddressType
     abis: List[ABI]
 
     def __repr__(self) -> str:
@@ -174,14 +174,14 @@ class ContractEvent:
 
 
 class ContractInstance(AddressAPI):
-    _address: str
+    _address: AddressType
     _contract_type: ContractType
 
     def __repr__(self) -> str:
         return f"<{self._contract_type.contractName} {self.address}>"
 
     @property
-    def address(self) -> str:
+    def address(self) -> AddressType:
         return self._address
 
     def __dir__(self) -> List[str]:
@@ -273,7 +273,7 @@ class ContractContainer:
 
 
 def _Contract(
-    address: str,
+    address: Union[str, AddressAPI, AddressType],
     networks: "NetworkManager",
     converters: "ConversionManager",
     contract_type: Optional[ContractType] = None,
@@ -303,7 +303,7 @@ def _Contract(
     #   3) from explorer
     if contract_type:
         return ContractInstance(  # type: ignore
-            _address=address,
+            _address=converters.convert(address, AddressType),
             _provider=networks.active_provider,
             _contract_type=contract_type,
         )
@@ -312,6 +312,6 @@ def _Contract(
         # We don't have a contract type from any source, provide raw address instead
         notify("WARNING", f"No contract type found for {address}")
         return Address(  # type: ignore
-            _address=address,
+            _address=converters.convert(address, AddressType),
             _provider=networks.active_provider,
         )

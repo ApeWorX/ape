@@ -1,12 +1,12 @@
 from typing import Any, Dict, List, Type
 
 from dataclassy import dataclass
-from eth_typing import ChecksumAddress
 from eth_utils import is_checksum_address, is_hex
 from hexbytes import HexBytes
 
 from ape.api import AddressAPI, ConverterAPI
 from ape.plugins import PluginManager
+from ape.types import AddressType
 from ape.utils import cached_property
 
 from .config import ConfigManager
@@ -29,7 +29,7 @@ class AddressConverter(ConverterAPI):
     def is_convertible(self, value: Any) -> bool:
         return isinstance(value, AddressAPI)
 
-    def convert(self, value: AddressAPI) -> ChecksumAddress:
+    def convert(self, value: AddressAPI) -> AddressType:
         return value.address
 
 
@@ -45,7 +45,7 @@ class ConversionManager:
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
         converters: Dict[Type, List[ConverterAPI]] = {
-            ChecksumAddress: [address_converter],
+            AddressType: [address_converter],
             bytes: [hex_converter],
             int: [],
         }
@@ -61,7 +61,7 @@ class ConversionManager:
         return converters
 
     def is_type(self, value: Any, type: Type) -> bool:
-        if type is ChecksumAddress:
+        if type is AddressType:
             return is_checksum_address(value)
 
         else:

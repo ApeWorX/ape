@@ -1,5 +1,7 @@
 from typing import List, Optional, Type
 
+from ape.types import AddressType
+
 from .base import abstractdataclass, abstractmethod
 from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
 
@@ -25,7 +27,7 @@ class AddressAPI:
 
     @property
     @abstractmethod
-    def address(self) -> str:
+    def address(self) -> AddressType:
         ...
 
     def __dir__(self) -> List[str]:
@@ -69,8 +71,8 @@ class AddressAPI:
 
 
 class Address(AddressAPI):
-    _address: str
+    _address: AddressType
 
     @property
-    def address(self) -> str:
+    def address(self) -> AddressType:
         return self._address
