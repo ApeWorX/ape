@@ -3,7 +3,7 @@ from typing import Any, Optional
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
 from eth_abi.exceptions import InsufficientDataBytes
-from eth_account._utils.transactions import (  # type: ignore
+from eth_account._utils.legacy_transactions import (  # type: ignore
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
@@ -23,6 +23,7 @@ NETWORKS = {
 }
 
 
+# TODO: Fix this to add support for TypedTransaction
 class Transaction(TransactionAPI):
     def is_valid(self) -> bool:
         return False
