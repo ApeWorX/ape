@@ -5,7 +5,7 @@ from eth_typing import ChecksumAddress
 from eth_utils import is_checksum_address, is_hex
 from hexbytes import HexBytes
 
-from ape.api import ConverterAPI
+from ape.api import AddressAPI, ConverterAPI
 from ape.plugins import PluginManager
 from ape.utils import cached_property
 
@@ -25,6 +25,17 @@ class HexConverter(ConverterAPI):
 hex_converter = HexConverter(None, None)  # type: ignore
 
 
+class AddressConverter(ConverterAPI):
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, AddressAPI)
+
+    def convert(self, value: AddressAPI) -> ChecksumAddress:
+        return value.address
+
+
+address_converter = AddressConverter(None, None)  # type: ignore
+
+
 @dataclass
 class ConversionManager:
     config: ConfigManager
@@ -34,7 +45,7 @@ class ConversionManager:
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
         converters: Dict[Type, List[ConverterAPI]] = {
-            ChecksumAddress: [],
+            ChecksumAddress: [address_converter],
             bytes: [hex_converter],
             int: [],
         }
@@ -50,7 +61,7 @@ class ConversionManager:
         return converters
 
     def is_type(self, value: Any, type: Type) -> bool:
-        if type is ChecksumAddress and isinstance(value, str):
+        if type is ChecksumAddress:
             return is_checksum_address(value)
 
         else:
