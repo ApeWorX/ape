@@ -62,7 +62,7 @@ setup(
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.0.0",
         "dataclassy>=0.10.3,<1.0",
-        "eth-account>=0.5.2,<0.6.0",
+        "eth-account>=0.5.5,<0.6.0",
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
         "pyyaml>=0.2.5",
