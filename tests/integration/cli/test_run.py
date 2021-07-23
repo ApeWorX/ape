@@ -15,5 +15,7 @@ def test_run(ape_cli, runner, project):
         assert f"No script named '{BAD_COMMAND}' detected in scripts folder" in result.output
 
     for script_file in (project.path / "scripts").glob("*.py"):
-        result = runner.invoke(ape_cli, ["run", script_file.stem])
+        result = runner.invoke(
+            ape_cli, ["run", script_file.stem, "--network", "ethereum:development:test"]
+        )
         assert result.exit_code == 0
