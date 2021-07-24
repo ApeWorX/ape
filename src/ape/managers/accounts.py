@@ -4,9 +4,11 @@ from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
+from ape.types import AddressType
 from ape.utils import cached_property, singledispatchmethod
 
 from .config import ConfigManager
+from .converters import ConversionManager
 from .networks import NetworkManager
 
 
@@ -18,6 +20,7 @@ class AccountManager:
     """
 
     config: ConfigManager
+    converters: ConversionManager
     plugin_manager: PluginManager
     network_manager: NetworkManager
 
@@ -49,6 +52,9 @@ class AccountManager:
                 account._provider = self.network_manager.active_provider
                 yield account
 
+    def __repr__(self) -> str:
+        return "[" + ", ".join(repr(a) for a in self) + "]"
+
     def load(self, alias: str) -> AccountAPI:
         if alias == "":
             raise ValueError("Cannot use empty string as alias!")
@@ -76,7 +82,9 @@ class AccountManager:
         raise IndexError(f"No account at index `{account_id}`.")
 
     @__getitem__.register
-    def __getitem_str(self, account_id: str) -> AccountAPI:
+    def __getitem_str(self, account_str: str) -> AccountAPI:
+        account_id = self.converters.convert(account_str, AddressType)
+
         for container in self.containers.values():
             if account_id in container:
                 account = container[account_id]
@@ -86,5 +94,5 @@ class AccountManager:
 
         raise IndexError(f"No account with address `{account_id}`.")
 
-    def __contains__(self, address: str) -> bool:
+    def __contains__(self, address: AddressType) -> bool:
         return any(address in container for container in self.containers.values())

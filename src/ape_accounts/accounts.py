@@ -9,6 +9,7 @@ from eth_account.messages import SignableMessage  # type: ignore
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.convert import to_address
+from ape.types import AddressType
 
 
 class AccountContainer(AccountContainerAPI):
@@ -46,7 +47,7 @@ class KeyfileAccount(AccountAPI):
         return json.loads(self._keyfile.read_text())
 
     @property
-    def address(self) -> str:
+    def address(self) -> AddressType:
         return to_address(self.keyfile["address"])
 
     @property

@@ -6,6 +6,7 @@ from typing import Callable, Iterator, Tuple, Type, cast
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
 from .config import Config
+from .converter import ConversionPlugin
 from .network import EcosystemPlugin, ExplorerPlugin, NetworkPlugin, ProviderPlugin
 from .pluggy_patch import PluginType, hookimpl, plugin_manager
 
@@ -19,6 +20,7 @@ class AllPluginHooks(
     Config,
     AccountPlugin,
     CompilerPlugin,
+    ConversionPlugin,
     EcosystemPlugin,
     ExplorerPlugin,
     NetworkPlugin,

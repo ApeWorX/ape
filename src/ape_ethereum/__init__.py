@@ -1,7 +1,13 @@
 from ape import plugins
 from ape.api import create_network_type
 
+from .converters import WeiConversions
 from .ecosystem import NETWORKS, Ethereum
+
+
+@plugins.register(plugins.ConversionPlugin)
+def converters():
+    yield int, WeiConversions
 
 
 @plugins.register(plugins.EcosystemPlugin)

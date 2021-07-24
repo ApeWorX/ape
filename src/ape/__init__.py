@@ -6,6 +6,7 @@ from .api.contracts import _Contract
 from .managers.accounts import AccountManager as _AccountManager
 from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
+from .managers.converters import ConversionManager as _ConversionManager
 from .managers.networks import NetworkManager as _NetworkManager
 from .managers.project import ProjectManager as _ProjectManager
 from .plugins import PluginManager as _PluginManager
@@ -37,18 +38,21 @@ config = _ConfigManager(  # type: ignore
 # Main types we export for the user
 compilers = _CompilerManager(config, plugin_manager)  # type: ignore
 networks = _NetworkManager(config, plugin_manager)  # type: ignore
-accounts = _AccountManager(config, plugin_manager, networks)  # type: ignore
+_converters = _ConversionManager(config, plugin_manager, networks)  # type: ignore
+accounts = _AccountManager(config, _converters, plugin_manager, networks)  # type: ignore
 
 Project = _partial(_ProjectManager, config=config, compilers=compilers)
 project = Project(config.PROJECT_FOLDER)
 
-Contract = _partial(_Contract, networks=networks)
+Contract = _partial(_Contract, networks=networks, converters=_converters)
 
+convert = _converters.convert
 
 __all__ = [
     "accounts",
     "compilers",
     "config",
+    "convert",
     "Contract",
     "networks",
     "project",

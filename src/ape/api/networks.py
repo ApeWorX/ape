@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Type
 
 from pluggy import PluginManager  # type: ignore
 
-from ape.types import ABI
+from ape.types import ABI, AddressType
 from ape.utils import cached_property
 
 from .base import abstractdataclass, abstractmethod
@@ -114,7 +114,9 @@ class EcosystemAPI:
         ...
 
     @abstractmethod
-    def encode_transaction(self, address: str, abi: ABI, *args, **kwargs) -> "TransactionAPI":
+    def encode_transaction(
+        self, address: AddressType, abi: ABI, *args, **kwargs
+    ) -> "TransactionAPI":
         ...
 
     @abstractmethod

@@ -1,10 +1,11 @@
 from pathlib import Path
-from typing import Iterator, List, Optional, Type, Union
+from typing import Callable, Iterator, List, Optional, Type, Union
 
 from eth_account.datastructures import SignedMessage  # type: ignore
 from eth_account.messages import SignableMessage  # type: ignore
 
-from ape.types import ContractType
+from ape.types import AddressType, ContractType
+from ape.utils import cached_property
 
 from .address import AddressAPI
 from .base import abstractdataclass, abstractmethod
@@ -57,20 +58,31 @@ class AccountAPI(AddressAPI):
 
         return self.provider.send_transaction(signed_txn)
 
+    @cached_property
+    def _convert(self) -> Callable:
+        # NOTE: Need to differ loading this property
+        from ape import convert
+
+        return convert
+
     def transfer(
         self,
-        account: Union[str, "AddressAPI"],
-        value: int = None,
+        account: Union[str, AddressType, "AddressAPI"],
+        value: Union[str, int, None] = None,
+        data: Union[bytes, str, None] = None,
         **kwargs,
     ) -> ReceiptAPI:
         txn = self._transaction_class(  # type: ignore
             sender=self.address,
-            receiver=account.address if isinstance(account, AddressAPI) else account,
+            receiver=self._convert(account, AddressType),
             **kwargs,
         )
 
+        if data:
+            txn.data = self._convert(data, bytes)
+
         if value:
-            txn.value = value
+            txn.value = self._convert(value, int)
 
         else:
             # NOTE: If `value` is `None`, send everything
@@ -116,7 +128,7 @@ class AccountContainerAPI:
     def __iter__(self) -> Iterator[AccountAPI]:
         ...
 
-    def __getitem__(self, address: str) -> AccountAPI:
+    def __getitem__(self, address: AddressType) -> AccountAPI:
         for account in self.__iter__():
             if account.address == address:
                 return account
@@ -135,7 +147,7 @@ class AccountContainerAPI:
 
         self.__setitem__(account.address, account)
 
-    def __setitem__(self, address: str, account: AccountAPI):
+    def __setitem__(self, address: AddressType, account: AccountAPI):
         raise NotImplementedError("Must define this method to use `container.append(acct)`")
 
     def remove(self, account: AccountAPI):
@@ -150,10 +162,10 @@ class AccountContainerAPI:
 
         self.__delitem__(account.address)
 
-    def __delitem__(self, address: str):
+    def __delitem__(self, address: AddressType):
         raise NotImplementedError("Must define this method to use `container.remove(acct)`")
 
-    def __contains__(self, address: str) -> bool:
+    def __contains__(self, address: AddressType) -> bool:
         try:
             self.__getitem__(address)
             return True
