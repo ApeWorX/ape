@@ -1,28 +1,50 @@
-import os
 from typing import Iterator
 
 from web3 import HTTPProvider, Web3  # type: ignore
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
+from web3.middleware import geth_poa_middleware
 
 from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
+from ape.api.config import ConfigItem
+
+DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
 
 
-class Infura(ProviderAPI):
+class EthereumNetworkConfig(ConfigItem):
+    # Make sure you are running the right networks when you try for these
+    mainnet: dict = DEFAULT_SETTINGS.copy()
+    ropsten: dict = DEFAULT_SETTINGS.copy()
+    rinkeby: dict = DEFAULT_SETTINGS.copy()
+    kovan: dict = DEFAULT_SETTINGS.copy()
+    goerli: dict = DEFAULT_SETTINGS.copy()
+    # Make sure to run via `geth --dev` (or similar)
+    development: dict = DEFAULT_SETTINGS.copy()
+
+
+class NetworkConfig(ConfigItem):
+    ethereum: EthereumNetworkConfig = EthereumNetworkConfig()
+
+
+class EthereumProvider(ProviderAPI):
     _web3: Web3 = None  # type: ignore
 
-    def __post_init__(self):
-        key = os.environ.get("WEB3_INFURA_PROJECT_ID") or os.environ.get("WEB3_INFURA_API_KEY")
-        self._web3 = Web3(HTTPProvider(f"https://{self.network.name}.infura.io/v3/{key}"))
-        self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
+    @property
+    def uri(self) -> str:
+        return self.config[self.network.ecosystem.name][self.network.name]["uri"]
 
     def connect(self):
-        pass
+        self._web3 = Web3(HTTPProvider(self.uri))
+        self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
+        if self.network.name not in ("mainnet", "ropsten"):
+            self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     def disconnect(self):
-        pass
+        self._web3 = None
 
     def update_settings(self, new_settings: dict):
-        pass
+        self.disconnect()
+        self.provider_settings.update(new_settings)
+        self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore

@@ -8,8 +8,10 @@ from ape.types import ABI
 from ape.utils import cached_property
 
 from .base import abstractdataclass, abstractmethod
+from .config import ConfigItem
 
 if TYPE_CHECKING:
+    from ape.managers.config import ConfigManager
     from ape.managers.networks import NetworkManager
 
     from .contracts import ContractLog
@@ -25,6 +27,7 @@ class EcosystemAPI:
 
     name: str  # Set as plugin name
     network_manager: "NetworkManager"
+    config_manager: "ConfigManager"
     plugin_manager: PluginManager
     data_folder: Path
     request_header: str
@@ -33,6 +36,10 @@ class EcosystemAPI:
     receipt_class: Type["ReceiptAPI"]
 
     _default_network: str = "development"
+
+    @cached_property
+    def config(self) -> ConfigItem:
+        return self.config_manager.get_config(self.name)
 
     @cached_property
     def networks(self) -> Dict[str, "NetworkAPI"]:
@@ -44,6 +51,7 @@ class EcosystemAPI:
                 networks[network_name] = network_class(
                     name=network_name,
                     ecosystem=self,
+                    config_manager=self.config_manager,
                     plugin_manager=self.plugin_manager,
                     data_folder=network_folder,
                     request_header=self.request_header,
@@ -154,11 +162,16 @@ class NetworkAPI:
 
     name: str  # Name given when regsitered in ecosystem
     ecosystem: EcosystemAPI
+    config_manager: "ConfigManager"
     plugin_manager: PluginManager
     data_folder: Path  # For caching any data that might need caching
     request_header: str
 
     _default_provider: str = ""
+
+    @cached_property
+    def config(self) -> ConfigItem:
+        return self.config_manager.get_config(self.ecosystem.name)
 
     @property
     @abstractmethod
@@ -197,6 +210,7 @@ class NetworkAPI:
                 providers[plugin_name] = partial(
                     provider_class,
                     name=plugin_name,
+                    config=self.config_manager.get_config(plugin_name),
                     network=self,
                     # NOTE: No need to have separate folder, caching should be interoperable
                     data_folder=self.data_folder,
@@ -225,7 +239,7 @@ class NetworkAPI:
         if provider_name in self.providers:
             return ProviderContextManager(
                 self.ecosystem.network_manager,
-                self.providers[provider_name](config=provider_settings),
+                self.providers[provider_name](provider_settings=provider_settings),
             )
 
         else:

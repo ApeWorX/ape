@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 from .base import dataclass
 
@@ -22,7 +22,7 @@ class ConfigItem:
                 data[name] = value.serialize()
             elif isinstance(value, ConfigEnum):
                 data[name] = value.name
-            elif isinstance(value, (int, str)):
+            elif isinstance(value, (int, str, dict)):
                 data[name] = value
             else:
                 raise TypeError("Received unknown type when serializing a config item")
@@ -30,6 +30,12 @@ class ConfigItem:
 
     def validate_config(self):
         pass
+
+    def __getitem__(self, attrname: str) -> Any:
+        if attrname in self.__slots__:
+            return getattr(self, attrname)
+
+        raise KeyError(f"''{attrname}'")
 
 
 class ConfigDict(ConfigItem):
