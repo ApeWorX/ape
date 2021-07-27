@@ -13,7 +13,7 @@ class NetworkChoice(click.Choice):
         super().__init__(list(networks.network_choices), case_sensitive)
 
     def get_metavar(self, param):
-        return "ecosystem-name[:network-name[:provider-name]]"
+        return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
 
 @click.command(short_help="Load the console", context_settings=dict(ignore_unknown_options=True))

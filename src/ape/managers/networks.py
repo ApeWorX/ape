@@ -74,11 +74,31 @@ class NetworkManager:
 
     @property
     def network_choices(self) -> Iterator[str]:
+        """
+        Produce the set of all possible network choices that could be provided
+        for a "network selection" choice e.g. `--network [ECOSYSTEM:NETWORK:PROVIDER]`
+        """
         for ecosystem_name, ecosystem in self.ecosystems.items():
             yield ecosystem_name
             for network_name, network in ecosystem.networks.items():
+                if ecosystem_name == self.default_ecosystem.name:
+                    yield f":{network_name}"
+
                 yield f"{ecosystem_name}:{network_name}"
+
                 for provider in network.providers:
+                    if (
+                        ecosystem_name == self.default_ecosystem.name
+                        and network_name == ecosystem.default_network
+                    ):
+                        yield f"::{provider}"
+
+                    elif ecosystem_name == self.default_ecosystem.name:
+                        yield f":{network_name}:{provider}"
+
+                    elif network_name == ecosystem.default_network:
+                        yield f"{ecosystem_name}::{provider}"
+
                     yield f"{ecosystem_name}:{network_name}:{provider}"
 
     def parse_network_choice(
@@ -97,7 +117,7 @@ class NetworkManager:
         if selections == network_choice or len(selections) == 1:
             # Either split didn't work (in which case it matches the start)
             # or there was nothing after the `:` (e.g. "ethereum:")
-            ecosystem = self.__getattr__(selections[0])
+            ecosystem = self.__getattr__(selections[0] or self.default_ecosystem.name)
             # By default, the "development" network should be specified for
             # any ecosystem (this should not correspond to a production chain)
             return ecosystem["development"].use_default_provider()
@@ -105,16 +125,16 @@ class NetworkManager:
         elif len(selections) == 2:
             # Only ecosystem and network were specified, not provider
             ecosystem_name, network_name = selections
-            ecosystem = self.__getattr__(ecosystem_name)
-            network = ecosystem[network_name]
+            ecosystem = self.__getattr__(ecosystem_name or self.default_ecosystem.name)
+            network = ecosystem[network_name or ecosystem.default_network]
             return network.use_default_provider()
 
         elif len(selections) == 3:
             # Everything is specified, use specified provider for ecosystem
             # and network
             ecosystem_name, network_name, provider_name = selections
-            ecosystem = self.__getattr__(ecosystem_name)
-            network = ecosystem[network_name]
+            ecosystem = self.__getattr__(ecosystem_name or self.default_ecosystem.name)
+            network = ecosystem[network_name or ecosystem.default_network]
             return network.use_provider(provider_name)
 
         else:
