@@ -7,7 +7,7 @@ from pluggy import PluginManager  # type: ignore
 from ape.types import ABI, AddressType
 from ape.utils import cached_property
 
-from .base import abstractdataclass, abstractmethod
+from .base import abstractdataclass, abstractmethod, dataclass
 from .config import ConfigItem
 
 if TYPE_CHECKING:
@@ -156,7 +156,7 @@ class ProviderContextManager:
             self.network_manager.active_provider = self._connected_providers[-1]
 
 
-@abstractdataclass
+@dataclass
 class NetworkAPI:
     """
     A Network is a wrapper around a Provider for a specific Ecosystem
@@ -176,14 +176,15 @@ class NetworkAPI:
         return self.config_manager.get_config(self.ecosystem.name)
 
     @property
-    @abstractmethod
     def chain_id(self) -> int:
-        ...
+        # NOTE: Unless overriden, returns same as `provider.chain_id`
+        with self.use_provider(self.default_provider) as p:
+            return p.chain_id
 
     @property
-    @abstractmethod
     def network_id(self) -> int:
-        ...
+        # NOTE: Unless overriden, returns same as chain_id
+        return self.chain_id
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:
