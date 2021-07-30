@@ -24,6 +24,10 @@ class LocalNetwork(ProviderAPI):
         return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
 
     @property
+    def chain_id(self) -> int:
+        return self._web3.eth.chain_id
+
+    @property
     def gas_price(self):
         # NOTE: Test chain doesn't care about gas prices
         return 0
