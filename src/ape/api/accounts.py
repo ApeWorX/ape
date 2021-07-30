@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Callable, Iterator, List, Optional, Type, Union
 
-from eth_account.datastructures import SignedMessage  # type: ignore
+from eth_account.datastructures import SignedMessage, SignedTransaction
 from eth_account.messages import SignableMessage  # type: ignore
 
 from ape.types import AddressType, ContractType
@@ -39,9 +39,9 @@ class AccountAPI(AddressAPI):
     def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
         ...
 
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionAPI]:
-        # NOTE: Some accounts may not offer signing things
-        return txn
+    @abstractmethod
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[SignedTransaction]:
+        ...
 
     def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
@@ -70,12 +70,12 @@ class AccountAPI(AddressAPI):
         if txn.gas_limit * txn.gas_price + txn.value > self.balance:
             raise Exception("Transfer value meets or exceeds account balance")
 
-        signed_txn = self.sign_transaction(txn)
+        txn.signature = self.sign_transaction(txn)
 
-        if not signed_txn:
+        if not txn.signature:
             raise Exception("User didn't sign!")
 
-        return self.provider.send_transaction(signed_txn)
+        return self.provider.send_transaction(txn)
 
     @cached_property
     def _convert(self) -> Callable:

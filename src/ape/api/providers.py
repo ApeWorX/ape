@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Iterator, List, Optional
 
 from dataclassy import as_dict
+from eth_account.datastructures import SignedTransaction
 
 from ape.utils import notify
 
@@ -22,7 +23,7 @@ class TransactionAPI:
     gas_price: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     data: bytes = b""
 
-    signature: bytes = b""
+    signature: Optional[SignedTransaction] = None
 
     def __post_init__(self):
         if not self.is_valid:
