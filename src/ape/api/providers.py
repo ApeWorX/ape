@@ -16,10 +16,10 @@ class TransactionAPI:
     chain_id: int = 0
     sender: str = ""
     receiver: str = ""
-    nonce: int = 0
+    nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
-    gas_limit: int = 0
-    gas_price: int = 0
+    gas_limit: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
+    gas_price: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     data: bytes = b""
 
     signature: bytes = b""
