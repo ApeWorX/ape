@@ -178,8 +178,14 @@ class NetworkAPI:
     @property
     def chain_id(self) -> int:
         # NOTE: Unless overriden, returns same as `provider.chain_id`
-        with self.use_provider(self.default_provider) as p:
-            return p.chain_id
+        provider = self.ecosystem.network_manager.active_provider
+
+        if not provider:
+            raise Exception(
+                "Cannot determine `chain_id`, please make sure you are connected to a provider"
+            )
+
+        return provider.chain_id
 
     @property
     def network_id(self) -> int:

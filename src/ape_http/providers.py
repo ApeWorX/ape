@@ -39,7 +39,8 @@ class EthereumProvider(ProviderAPI):
         if self.network.name not in ("mainnet", "ropsten"):
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
-        if self.network.chain_id != self._web3.eth.chain_id:
+        if self.network.name != "development" and self.network.chain_id != self.chain_id:
+            breakpoint()
             raise Exception(
                 "HTTP Connection does not match expected chain ID. "
                 f"Are you connected to '{self.network.name}'?"
@@ -55,6 +56,10 @@ class EthereumProvider(ProviderAPI):
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
+
+    @property
+    def chain_id(self) -> int:
+        return self._web3.eth.chain_id
 
     @property
     def gas_price(self):

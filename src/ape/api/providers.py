@@ -112,6 +112,11 @@ class ProviderAPI:
     def update_settings(self, new_settings: dict):
         ...
 
+    @property
+    @abstractmethod
+    def chain_id(self) -> int:
+        ...
+
     @abstractmethod
     def get_balance(self, address: str) -> int:
         ...
