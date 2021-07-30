@@ -3,11 +3,12 @@ from typing import Any, Optional
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
 from eth_abi.exceptions import InsufficientDataBytes
+from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (  # type: ignore
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import keccak, to_bytes, to_int  # type: ignore
+from eth_utils import keccak, to_bytes  # type: ignore
 from hexbytes import HexBytes
 
 from ape.api import ContractLog, EcosystemAPI, ReceiptAPI, TransactionAPI, TransactionStatusEnum
@@ -32,28 +33,35 @@ class Transaction(TransactionAPI):
         data = super().as_dict()
 
         # Clean up data to what we expect
-        data.pop("chain_id")
-        data.pop("sender")
-        data["to"] = data.pop("receiver")
+        data["chainId"] = data.pop("chain_id")
+
+        receiver = data.pop("receiver")
+        if receiver:
+            data["to"] = receiver
+
         data["gas"] = data.pop("gas_limit")
         data["gasPrice"] = data.pop("gas_price")
 
-        # NOTE: Don't publish signature
+        # NOTE: Don't publish signature or sender
         data.pop("signature")
+        data.pop("sender")
 
         return data
 
     def encode(self) -> bytes:
-        data = self.as_dict()
-        unsigned_txn = serializable_unsigned_transaction_from_dict(data)
-        return encode_transaction(
-            unsigned_txn,
-            (
-                to_int(self.signature[:1]),
-                to_int(self.signature[1:33]),
-                to_int(self.signature[33:65]),
-            ),
-        )
+        if not self.signature:
+            raise Exception("Transaction is not signed!")
+
+        txn_data = self.as_dict()
+        unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
+        signature = (self.signature.v, self.signature.r, self.signature.s)
+
+        signed_txn = encode_transaction(unsigned_txn, signature)
+
+        if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
+            raise Exception("Recovered Signer doesn't match sender!")
+
+        return signed_txn
 
 
 class Receipt(ReceiptAPI):
