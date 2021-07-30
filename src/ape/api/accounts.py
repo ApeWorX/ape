@@ -44,8 +44,10 @@ class AccountAPI(AddressAPI):
         return txn
 
     def call(self, txn: TransactionAPI) -> ReceiptAPI:
+        txn.chain_id = self.provider.network.chain_id
         txn.nonce = self.nonce
         txn.gas_limit = self.provider.estimate_gas_cost(txn)
+        # TODO: Add `GasEstimationAPI`
         txn.gas_price = self.provider.gas_price
 
         if txn.gas_limit * txn.gas_price + txn.value > self.balance:
