@@ -43,12 +43,29 @@ class AccountAPI(AddressAPI):
         # NOTE: Some accounts may not offer signing things
         return txn
 
-    def call(self, txn: TransactionAPI) -> ReceiptAPI:
+    def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
+        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
         txn.chain_id = self.provider.network.chain_id
-        txn.nonce = self.nonce
-        txn.gas_limit = self.provider.estimate_gas_cost(txn)
+
+        # NOTE: Allow overriding nonce, assume user understand what this does
+        if txn.nonce is None:
+            txn.nonce = self.nonce
+        elif txn.nonce < self.nonce:
+            raise Exception("Invalid nonce, will not publish!")
+
         # TODO: Add `GasEstimationAPI`
-        txn.gas_price = self.provider.gas_price
+        if txn.gas_price is None:
+            txn.gas_price = self.provider.gas_price
+        # else: assume user specified a correct price, or will take too much time to confirm
+
+        # NOTE: Allow overriding gas limit
+        if txn.gas_limit is None:
+            txn.gas_limit = 0  # NOTE: Need a starting estimate
+            txn.gas_limit = self.provider.estimate_gas_cost(txn)
+        # else: assume user specified the correct amount or txn will fail and waste gas
+
+        if send_everything:
+            txn.value = self.balance - txn.gas_limit * txn.gas_price
 
         if txn.gas_limit * txn.gas_price + txn.value > self.balance:
             raise Exception("Transfer value meets or exceeds account balance")
@@ -86,11 +103,7 @@ class AccountAPI(AddressAPI):
         if value:
             txn.value = self._convert(value, int)
 
-        else:
-            # NOTE: If `value` is `None`, send everything
-            txn.value = self.balance - txn.gas_limit * txn.gas_price
-
-        return self.call(txn)
+        return self.call(txn, send_everything=value is None)
 
     def deploy(self, contract_type: ContractType, *args, **kwargs) -> ContractInstance:
         c = ContractContainer(  # type: ignore
