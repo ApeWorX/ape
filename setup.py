@@ -15,6 +15,7 @@ extras_require = {
         "mypy>=0.800,<0.900",  # Static type analyzer
         "flake8>=3.8.3,<4.0",  # Style linter
         "flake8-breakpoint>=1.1.0,<2.0.0",  # detect breakpoints left in code
+        "flake8-print>=4.0.0,<5.0.0",  # detect print statements left in code
         "isort>=5.7.0,<6.0",  # Import sorting linter
     ],
     "doc": [
