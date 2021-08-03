@@ -3,6 +3,8 @@ import importlib
 import pkgutil
 from typing import Callable, Iterator, Tuple, Type, cast
 
+from ape.utils import notify
+
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
 from .config import Config
@@ -74,7 +76,11 @@ class PluginManager:
         # NOTE: This actually loads the plugins, and should only be done once
         for _, name, ispkg in pkgutil.iter_modules():
             if name.startswith("ape_") and ispkg:
-                plugin_manager.register(importlib.import_module(name))
+                try:
+                    plugin_manager.register(importlib.import_module(name))
+                except Exception:
+                    notify("WARNING", f"Error loading plugin package '{name}'")
+                    # notify("DEBUG", str(e))
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
         if not hasattr(plugin_manager.hook, attr_name):
