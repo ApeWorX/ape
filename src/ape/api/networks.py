@@ -246,10 +246,13 @@ class NetworkAPI:
             provider_name = provider_name.split(":")[0]
 
         if provider_name in self.providers:
-            return ProviderContextManager(
-                self.ecosystem.network_manager,
-                self.providers[provider_name](provider_settings=provider_settings),
-            )
+            try:
+                return ProviderContextManager(
+                    self.ecosystem.network_manager,
+                    self.providers[provider_name](provider_settings=provider_settings),
+                )
+            except TypeError as e:
+                raise Exception(f"Plugin {provider_name} failed to load!")
 
         else:
             raise Exception("Not a registered provider name")
