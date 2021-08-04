@@ -1,10 +1,13 @@
 from pathlib import Path
 from typing import Callable, Iterator, List, Optional, Type, Union
 
-from eth_account.datastructures import SignedMessage, SignedTransaction
-from eth_account.messages import SignableMessage  # type: ignore
-
-from ape.types import AddressType, ContractType
+from ape.types import (
+    AddressType,
+    ContractType,
+    MessageSignature,
+    SignableMessage,
+    TransactionSignature,
+)
 from ape.utils import cached_property
 
 from .address import AddressAPI
@@ -36,11 +39,11 @@ class AccountAPI(AddressAPI):
         return None
 
     @abstractmethod
-    def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
+    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         ...
 
     @abstractmethod
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[SignedTransaction]:
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         ...
 
     def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:

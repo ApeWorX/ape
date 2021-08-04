@@ -4,12 +4,10 @@ from typing import Iterator, Optional
 
 import click
 from eth_account import Account as EthAccount  # type: ignore
-from eth_account.datastructures import SignedMessage, SignedTransaction  # type: ignore
-from eth_account.messages import SignableMessage  # type: ignore
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.convert import to_address
-from ape.types import AddressType
+from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 
 
 class AccountContainer(AccountContainerAPI):
@@ -115,14 +113,16 @@ class KeyfileAccount(AccountAPI):
 
         self._keyfile.unlink()
 
-    def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
+    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         if self.locked and not click.confirm(f"{msg}\n\nSign: "):
             return None
 
-        return EthAccount.sign_message(msg, self.__key)
+        signed_msg = EthAccount.sign_message(msg, self.__key)
+        return MessageSignature(v=signed_msg.v, r=signed_msg.r, s=signed_msg.s)  # type: ignore
 
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[SignedTransaction]:
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         if self.locked and not click.confirm(f"{txn}\n\nSign: "):
             return None
 
-        return EthAccount.sign_transaction(txn.as_dict(), self.__key)
+        signed_txn = EthAccount.sign_transaction(txn.as_dict(), self.__key)
+        return TransactionSignature(v=signed_txn.v, r=signed_txn.r, s=signed_txn.s)  # type: ignore
