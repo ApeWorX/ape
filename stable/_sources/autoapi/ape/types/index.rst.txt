@@ -16,6 +16,7 @@
    abstract/index.rst
    contract/index.rst
    manifest/index.rst
+   signatures/index.rst
 
 
 
@@ -36,6 +37,8 @@
    ape.types.Source
    ape.types.PackageManifest
    ape.types.PackageMeta
+   ape.types.MessageSignature
+   ape.types.TransactionSignature
 
 
 
@@ -400,6 +403,20 @@
       :annotation: :Optional[Dict[str, str]]
 
       
+
+
+
+
+.. py:class:: MessageSignature
+
+   Bases: :py:obj:`_Signature`
+
+
+
+
+.. py:class:: TransactionSignature
+
+   Bases: :py:obj:`_Signature`
 
 
 

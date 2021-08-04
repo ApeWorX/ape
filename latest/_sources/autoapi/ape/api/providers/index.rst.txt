@@ -69,7 +69,7 @@
       
 
    .. attribute:: signature
-      :annotation: :Optional[eth_account.datastructures.SignedTransaction]
+      :annotation: :Optional[ape.types.TransactionSignature]
 
       
 

@@ -44,11 +44,11 @@
       Override with whatever alias might want to use, if applicable
 
 
-   .. py:method:: sign_message(self, msg: eth_account.messages.SignableMessage) -> Optional[eth_account.datastructures.SignedMessage]
+   .. py:method:: sign_message(self, msg: ape.types.SignableMessage) -> Optional[ape.types.MessageSignature]
       :abstractmethod:
 
 
-   .. py:method:: sign_transaction(self, txn: ape.api.providers.TransactionAPI) -> Optional[eth_account.datastructures.SignedTransaction]
+   .. py:method:: sign_transaction(self, txn: ape.api.providers.TransactionAPI) -> Optional[ape.types.TransactionSignature]
       :abstractmethod:
 
 

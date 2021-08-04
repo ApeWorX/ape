@@ -63,6 +63,7 @@
 <li class="toctree-l2"><a class="reference internal" href="abstract/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.types.abstract</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="contract/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.types.contract</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="manifest/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.types.manifest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="signatures/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.types.signatures</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.types.ABI">ABI</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.types.ABI.name">name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.types.ABI.inputs">inputs</a></li>
@@ -150,6 +151,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.types.PackageMeta.links">links</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.types.MessageSignature">MessageSignature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.types.TransactionSignature">TransactionSignature</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.utils</span></code></a></li>
@@ -223,6 +226,7 @@
 <li class="toctree-l1"><a class="reference internal" href="abstract/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.types.abstract</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="contract/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.types.contract</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="manifest/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.types.manifest</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="signatures/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.types.signatures</span></code></a></li>
 </ul>
 </div>
 <h3>Package Contents</h3><p><strong>Classes</strong>:</p>
@@ -254,6 +258,12 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.types.PackageMeta" title="ape.types.PackageMeta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PackageMeta</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.types.MessageSignature" title="ape.types.MessageSignature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MessageSignature</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.types.TransactionSignature" title="ape.types.TransactionSignature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionSignature</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -627,6 +637,18 @@ exist yet. Or compute the checksum regardless if <code class="docutils literal n
 <code class="sig-name descname"><span class="pre">links</span></code><em class="property"> <span class="pre">:Optional[Dict[str,</span> <span class="pre">str]]</span></em><a class="headerlink" href="#ape.types.PackageMeta.links" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.types.MessageSignature">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.</span></code><code class="sig-name descname"><span class="pre">MessageSignature</span></code><a class="headerlink" href="#ape.types.MessageSignature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">_Signature</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.types.TransactionSignature">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.</span></code><code class="sig-name descname"><span class="pre">TransactionSignature</span></code><a class="headerlink" href="#ape.types.TransactionSignature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">_Signature</span></code></p>
 </dd></dl>
 
 </div>

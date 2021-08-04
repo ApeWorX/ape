@@ -107,10 +107,10 @@
    .. py:method:: delete(self)
 
 
-   .. py:method:: sign_message(self, msg: eth_account.messages.SignableMessage) -> Optional[eth_account.datastructures.SignedMessage]
+   .. py:method:: sign_message(self, msg: ape.types.SignableMessage) -> Optional[ape.types.MessageSignature]
 
 
-   .. py:method:: sign_transaction(self, txn: ape.api.TransactionAPI) -> Optional[eth_account.datastructures.SignedTransaction]
+   .. py:method:: sign_transaction(self, txn: ape.api.TransactionAPI) -> Optional[ape.types.TransactionSignature]
 
 
 
