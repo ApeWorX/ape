@@ -1,7 +1,8 @@
-from typing import Iterator
+from typing import Iterator, Union
 
 from dataclassy import dataclass
 from eth_account.messages import SignableMessage  # type: ignore
+from eth_utils import to_bytes
 
 
 @dataclass(frozen=True, slots=True, kwargs=True)
@@ -10,8 +11,9 @@ class _Signature:
     r: bytes
     s: bytes
 
-    def __iter__(self) -> Iterator[bytes]:
-        yield bytes(self.v)
+    def __iter__(self) -> Iterator[Union[int, bytes]]:
+        # NOTE: Allows tuple destructuring
+        yield self.v
         yield self.r
         yield self.s
 
@@ -19,10 +21,10 @@ class _Signature:
         return f"<{self.__class__.__name__} v={self.v} r={self.r.hex()} s={self.s.hex()}>"
 
     def encode_vrs(self) -> bytes:
-        return bytes(self.v) + self.r + self.s
+        return to_bytes(self.v) + self.r + self.s
 
     def encode_rsv(self) -> bytes:
-        return self.r + self.s + bytes(self.v)
+        return self.r + self.s + to_bytes(self.v)
 
 
 class MessageSignature(_Signature):
