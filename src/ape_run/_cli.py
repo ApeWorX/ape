@@ -8,7 +8,7 @@ from ape import config, networks
 from ape.utils import Abort, get_relative_path
 from ape_console._cli import NetworkChoice, console
 
-# TODO: Migrate this to a CLI toolkit under `ape`
+# TODO: Migrate this to a CLI toolkit under ``ape``
 
 
 def _run_script(script_path, interactive=False, verbose=False):
@@ -38,11 +38,11 @@ def _run_script(script_path, interactive=False, verbose=False):
 
     # Execute the hooks
     if hasattr(py_module, "cli"):
-        # TODO: Pass context to `cli` before calling it
+        # TODO: Pass context to ``cli`` before calling it
         py_module.cli()
 
     elif hasattr(py_module, "main"):
-        # NOTE: `main()` accepts no arguments
+        # NOTE: ``main()`` accepts no arguments
         py_module.main()
 
     else:
@@ -78,20 +78,20 @@ def _run_script(script_path, interactive=False, verbose=False):
 )
 def cli(scripts, verbose, interactive, network):
     """
-    NAME - Path or script name (from `scripts/` folder)
+    NAME - Path or script name (from ``scripts/`` folder)
 
-    Run scripts from the `scripts` folder. A script must either define a `main()` method,
-    or define an import named `cli` that is a `click.Command` or `click.Group` object.
-    `click.Group` and `click.Command` objects will be provided with additional context, which
+    Run scripts from the ``scripts`` folder. A script must either define a ``main()`` method,
+    or define an import named ``cli`` that is a ``click.Command`` or ``click.Group`` object.
+    ``click.Group`` and ``click.Command`` objects will be provided with additional context, which
     will be injected dynamically during script execution. The dynamically injected objects are
-    the exports from the `ape` top-level package (similar to how the console works)
+    the exports from the ``ape`` top-level package (similar to how the console works)
     """
     if not scripts:
         raise Abort("Must provide at least one script name or path")
 
     scripts_folder = config.PROJECT_FOLDER / "scripts"
 
-    # Generate the lookup based on all the scripts defined in the project's `scripts/` folderi
+    # Generate the lookup based on all the scripts defined in the project's ``scripts/`` folder
     # NOTE: If folder does not exist, this will be empty (same as if there are no files)
     available_scripts = {p.stem: p.resolve() for p in scripts_folder.glob("*.py")}
 

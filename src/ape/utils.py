@@ -29,7 +29,7 @@ def get_distributions():
 
 def is_relative_to(path: Path, target: Path) -> bool:
     if hasattr(path, "is_relative_to"):
-        # NOTE: Only available `>=3.9`
+        # NOTE: Only available ``>=3.9``
         return target.is_relative_to(path)  # type: ignore
 
     else:
@@ -41,7 +41,7 @@ def is_relative_to(path: Path, target: Path) -> bool:
 
 def get_relative_path(target: Path, anchor: Path) -> Path:
     """
-    Compute the relative path of `target` relative to `anchor`,
+    Compute the relative path of ``target`` relative to ``anchor``,
     which may or may not share a common ancestor.
     NOTE: Both paths must be absolute
     """
@@ -70,7 +70,7 @@ def get_package_version(obj: Any) -> str:
         obj = obj.__name__
 
     # Reduce module string to base package
-    # NOTE: Assumed that string input is module name e.g. `__name__`
+    # NOTE: Assumed that string input is module name e.g. ``__name__``
     pkg_name = obj.split(".")[0]
 
     # NOTE: In case the distribution and package name differ
@@ -106,7 +106,7 @@ class Abort(click.ClickException):
     """Wrapper around a CLI exception"""
 
     def show(self, file=None):
-        """Override default `show` to print CLI errors in red text."""
+        """Override default ``show`` to print CLI errors in red text."""
         click.secho(f"Error: {self.format_message()}", err=True, fg="bright_red")
 
 

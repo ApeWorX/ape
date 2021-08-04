@@ -20,7 +20,7 @@ class CompilerAPI:
     @abstractmethod
     def compile(self, contract_filepaths: List[Path]) -> List[ContractType]:
         """
-        Compile the source given `pkg_manifest`.
+        Compile the source given ``pkg_manifest``.
         All compiler plugins must implement this function.
         """
 

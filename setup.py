@@ -22,6 +22,8 @@ extras_require = {
         "Sphinx>=3.4.3,<4",  # Documentation generator
         "sphinx_rtd_theme>=0.1.9,<1",  # Readthedocs.org theme
         "towncrier>=19.2.0, <20",  # Generate release notes
+        "sphinx-multiversion>=0.2.4,<0.3.0",  # build multiple versions of docs from tags & branches
+        "sphinx-autoapi<=1.9.0",  # for better generation of docs beyond the built-in `autogen`
     ],
     "release": [  # `release` GitHub Action job uses this
         "setuptools",  # Installation tool

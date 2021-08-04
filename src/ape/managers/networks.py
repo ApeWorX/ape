@@ -12,29 +12,7 @@ from .config import ConfigManager
 @dataclass
 class NetworkManager:
     """
-    The set of all blockchain network ecosystems that Ape has registered through it's plugin system.
-
-    You can access a network via the following:
-
-    ```
-    chain: ProviderAPI = networks.<ecosystem-name>.<chain-name>.use_provider(<provider-name>)
-    ```
-
-    e.g.
-
-    ```
-    eth_mainnet = networks.ethereum.mainnet.use_provider("http://localhost:8545")
-    bsc_mainnet = networks.binance.mainnet.use_provider("infura")
-    optimism = networks.ethereum.optimism  # use default provider
-    zksync = networks.ethereum.zksync
-    ```
-
-    When there are multiple providers in use, you must specify which to work with:
-
-    ```
-    eth_contract = Contract.at(network=eth_mainnet)
-    bsc_contract = account.deploy(Contract, network=bsc_mainnet)
-    ```
+    The set of all blockchain network ecosystems that Ape has registered through its plugin system.
     """
 
     config: ConfigManager
@@ -116,7 +94,7 @@ class NetworkManager:
 
         if selections == network_choice or len(selections) == 1:
             # Either split didn't work (in which case it matches the start)
-            # or there was nothing after the `:` (e.g. "ethereum:")
+            # or there was nothing after the ``:`` (e.g. "ethereum:")
             ecosystem = self.__getattr__(selections[0] or self.default_ecosystem.name)
             # By default, the "development" network should be specified for
             # any ecosystem (this should not correspond to a production chain)

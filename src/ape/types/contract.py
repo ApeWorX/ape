@@ -92,7 +92,7 @@ class ABI(SerializableType):
     anonymous: Optional[bool] = None
     # TODO: Handle events and functions separately (maybe also default and constructor)
     #       Would parse based on value of type here, so some indirection required
-    #       Might make most sense to add to `ContractType` as a serde extension
+    #       Might make most sense to add to ``ContractType`` as a serde extension
     type: str
 
     @property
@@ -127,7 +127,7 @@ class ABI(SerializableType):
     @property
     def selector(self) -> str:
         """
-        String representing the function selector, used to compute `method_id` and `event_id`
+        String representing the function selector, used to compute ``method_id`` and ``event_id``.
         """
         name = self.name if (self.type == "function" or self.type == "event") else self.type
         input_names = ", ".join(i.canonical_type for i in self.inputs)
@@ -237,7 +237,7 @@ class Source(SerializableType):
     license: Optional[str] = None
 
     def load_content(self):
-        """loads resource at `urls` into `content`"""
+        """Loads resource at ``urls`` into ``content``."""
         if len(self.urls) == 0:
             return
 
@@ -246,8 +246,8 @@ class Source(SerializableType):
 
     def compute_checksum(self, algorithm: str = "md5", force: bool = False):
         """
-        Compute the checksum if `content` exists but `checksum` doesn't
-        exist yet. Or compute the checksum regardless if `force` is `True`.
+        Compute the checksum if ``content`` exists but ``checksum`` doesn't
+        exist yet. Or compute the checksum regardless if ``force`` is ``True``.
         """
         if self.checksum and not force:
             return  # skip recalculating
