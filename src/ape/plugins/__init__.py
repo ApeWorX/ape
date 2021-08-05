@@ -1,7 +1,9 @@
 import functools
 import importlib
 import pkgutil
-from typing import Callable, Iterator, Tuple, Type, cast
+from typing import Any, Callable, Iterator, Tuple, Type, cast
+
+from ape.utils import notify
 
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
@@ -69,12 +71,28 @@ def register(plugin_type: Type[PluginType], **hookimpl_kwargs) -> Callable:
     return functools.partial(check_hook, plugin_type, hookimpl_kwargs)
 
 
+def valid_impl(api_class: Any) -> bool:
+    if isinstance(api_class, tuple):
+        return all(valid_impl(c) for c in api_class)
+
+    # Is not an ABC base class or abstractdataclass
+    if not hasattr(api_class, "__abstractmethods__"):
+        return True  # not an abstract class
+
+    else:
+        return len(api_class.__abstractmethods__) == 0
+
+
 class PluginManager:
     def __init__(self):
         # NOTE: This actually loads the plugins, and should only be done once
         for _, name, ispkg in pkgutil.iter_modules():
             if name.startswith("ape_") and ispkg:
-                plugin_manager.register(importlib.import_module(name))
+                try:
+                    plugin_manager.register(importlib.import_module(name))
+                except Exception:
+                    notify("WARNING", f"Error loading plugin package '{name}'")
+                    # notify("DEBUG", str(e))
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
         if not hasattr(plugin_manager.hook, attr_name):
@@ -92,11 +110,23 @@ class PluginManager:
             if not isinstance(results, tuple) and hasattr(results, "__iter__"):
                 # Only if it's an iterator, provider results as a series
                 for result in results:
-                    yield clean_plugin_name(plugin_name), result
+                    if valid_impl(result):
+                        yield clean_plugin_name(plugin_name), result
 
-            else:
+                    else:
+                        notify(
+                            "WARNING",
+                            f"'{result.__name__}' from '{plugin_name}' is not fully implemented",
+                        )
+
+            elif valid_impl(results):
                 # Otherwise, provide results directly
                 yield clean_plugin_name(plugin_name), results
+
+            else:
+                notify(
+                    "WARNING", f"'{results.__name__}' from '{plugin_name}' is not fully implemented"
+                )
 
 
 __all__ = [

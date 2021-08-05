@@ -9,6 +9,7 @@ import click
 import yaml
 
 from ape.plugins import clean_plugin_name
+from ape.utils import notify
 
 
 def display_config(ctx, param, value):
@@ -47,7 +48,10 @@ class ApeCLI(click.MultiCommand):
 
     def get_command(self, ctx, name):
         if name in self.commands:
-            return self.commands[name]()
+            try:
+                return self.commands[name]()
+            except Exception:
+                notify("WARNING", f"Error loading cli endpoint for plugin 'ape_{name}'")
 
         # NOTE: don't return anything so Click displays proper error
 
