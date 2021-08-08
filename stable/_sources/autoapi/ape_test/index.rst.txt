@@ -34,7 +34,6 @@
 
 .. autoapisummary::
 
-   ape_test.networks
    ape_test.providers
 
 
@@ -97,11 +96,6 @@
 
    .. py:method:: get_events(self, **filter_params) -> Iterator[dict]
 
-
-
-
-
-.. py:function:: networks()
 
 
 
