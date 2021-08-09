@@ -1,0 +1,152 @@
+:mod:`ape_http.providers`
+=========================
+
+.. py:module:: ape_http.providers
+
+
+
+
+.. raw:: html
+
+   <h3>Module Contents</h3>
+
+**Classes**:
+
+.. autoapisummary::
+
+   ape_http.providers.EthereumNetworkConfig
+   ape_http.providers.NetworkConfig
+   ape_http.providers.EthereumProvider
+
+
+
+
+**Attributes**:
+
+.. autoapisummary::
+
+   ape_http.providers.DEFAULT_SETTINGS
+
+
+
+-----------
+
+
+.. data:: DEFAULT_SETTINGS
+   
+
+   
+
+
+
+.. py:class:: EthereumNetworkConfig
+
+   Bases: :py:obj:`ape.api.config.ConfigItem`
+
+   Each plugin must inherit from this Config base class
+
+   .. attribute:: mainnet
+      :annotation: :dict
+
+      
+
+   .. attribute:: ropsten
+      :annotation: :dict
+
+      
+
+   .. attribute:: rinkeby
+      :annotation: :dict
+
+      
+
+   .. attribute:: kovan
+      :annotation: :dict
+
+      
+
+   .. attribute:: goerli
+      :annotation: :dict
+
+      
+
+   .. attribute:: development
+      :annotation: :dict
+
+      
+
+
+
+
+.. py:class:: NetworkConfig
+
+   Bases: :py:obj:`ape.api.config.ConfigItem`
+
+   Each plugin must inherit from this Config base class
+
+   .. attribute:: ethereum
+      :annotation: :EthereumNetworkConfig
+
+      
+
+
+
+
+.. py:class:: EthereumProvider
+
+   Bases: :py:obj:`ape.api.ProviderAPI`
+
+   A Provider must work with a particular Network in a particular Ecosystem
+
+   .. attribute:: _web3
+      :annotation: :web3.Web3
+
+      
+
+   .. py:method:: uri(self) -> str
+      :property:
+
+
+   .. py:method:: connect(self)
+
+
+   .. py:method:: disconnect(self)
+
+
+   .. py:method:: update_settings(self, new_settings: dict)
+
+
+   .. py:method:: estimate_gas_cost(self, txn: ape.api.TransactionAPI) -> int
+
+
+   .. py:method:: chain_id(self) -> int
+      :property:
+
+
+   .. py:method:: gas_price(self)
+      :property:
+
+
+   .. py:method:: get_nonce(self, address: str) -> int
+
+
+   .. py:method:: get_balance(self, address: str) -> int
+
+
+   .. py:method:: get_code(self, address: str) -> bytes
+
+
+   .. py:method:: send_call(self, txn: ape.api.TransactionAPI) -> bytes
+
+
+   .. py:method:: get_transaction(self, txn_hash: str) -> ape.api.ReceiptAPI
+
+
+   .. py:method:: send_transaction(self, txn: ape.api.TransactionAPI) -> ape.api.ReceiptAPI
+
+
+   .. py:method:: get_events(self, **filter_params) -> Iterator[dict]
+
+
+
+

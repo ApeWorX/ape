@@ -1,0 +1,49 @@
+:mod:`ape_compile._cli`
+=======================
+
+.. py:module:: ape_compile._cli
+
+
+
+
+.. raw:: html
+
+   <h3>Module Contents</h3>
+
+
+**Functions**:
+
+.. autoapisummary::
+
+   ape_compile._cli.cli
+
+
+
+**Attributes**:
+
+.. autoapisummary::
+
+   ape_compile._cli.flatten
+
+
+
+-----------
+
+
+.. data:: flatten
+   
+
+   
+
+
+
+.. py:function:: cli(filepaths, use_cache, display_size)
+
+   Compiles the manifest for this project and saves the results
+   back to the manifest.
+
+   Note that ape automatically recompiles any changed contracts each time
+   a project is loaded. You do not have to manually trigger a recompile.
+
+
+
