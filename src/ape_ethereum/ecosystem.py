@@ -8,7 +8,7 @@ from eth_account._utils.legacy_transactions import (  # type: ignore
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import keccak, to_bytes  # type: ignore
+from eth_utils import keccak, to_bytes, to_int  # type: ignore
 from hexbytes import HexBytes
 
 from ape.api import ContractLog, EcosystemAPI, ReceiptAPI, TransactionAPI, TransactionStatusEnum
@@ -54,7 +54,7 @@ class Transaction(TransactionAPI):
 
         txn_data = self.as_dict()
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
-        signature = (self.signature.v, self.signature.r, self.signature.s)
+        signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
 
         signed_txn = encode_transaction(unsigned_txn, signature)
 
