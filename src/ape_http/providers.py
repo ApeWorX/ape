@@ -30,7 +30,7 @@ class EthereumProvider(ProviderAPI):
 
     @property
     def uri(self) -> str:
-        return self.config[self.network.ecosystem.name][self.network.name]["uri"]
+        return getattr(self.config, self.network.ecosystem.name)[self.network.name]["uri"]
 
     def connect(self):
         self._web3 = Web3(HTTPProvider(self.uri))
