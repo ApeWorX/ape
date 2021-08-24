@@ -35,7 +35,7 @@ class ConfigItem:
         if attrname in self.__slots__:
             return getattr(self, attrname)
 
-        raise KeyError(f"''{attrname}'")
+        raise KeyError(f"{attrname!r}")
 
 
 class ConfigDict(ConfigItem):
