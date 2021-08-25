@@ -31,3 +31,6 @@ known_third_party = ["IPython", "click", "dataclassy", "eth_abi", "eth_account",
 known_first_party = ["ape", "ape_accounts", "ape_console", "ape_ethereum", "ape_geth", "ape_plugins", "ape_test"]
 multi_line_output = 3
 use_parentheses = true
+
+[tool.mypy]
+plugins = "pydantic.mypy"
