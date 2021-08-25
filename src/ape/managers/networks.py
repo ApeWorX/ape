@@ -2,10 +2,10 @@ from typing import Dict, Iterator, Optional
 
 import yaml
 from dataclassy import dataclass
-from pluggy import PluginManager  # type: ignore
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.exceptions import NetworkError
+from ape.plugins import PluginManager
 from ape.utils import cached_property
 
 from .config import ConfigManager
@@ -33,7 +33,7 @@ class NetworkManager:
                 data_folder=self.config.DATA_FOLDER / plugin_name,
                 request_header=self.config.REQUEST_HEADER,
             )
-            for plugin_name, ecosystem_class in self.plugin_manager.ecosystems
+            for plugin_name, (ecosystem_class,) in self.plugin_manager.ecosystems
         }
 
     def __iter__(self) -> Iterator[str]:

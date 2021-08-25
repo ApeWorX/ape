@@ -1,9 +1,9 @@
 from typing import Dict, Iterator, List, Type
 
 from dataclassy import dataclass
-from pluggy import PluginManager  # type: ignore
 
-from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
+from ape.api import AccountAPI, AccountContainerAPI, TestAccountAPI
+from ape.plugins import PluginManager
 from ape.types import AddressType
 from ape.utils import cached_property, singledispatchmethod
 

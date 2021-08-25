@@ -14,6 +14,7 @@ from .config import PluginConfig
 if TYPE_CHECKING:
     from ape.managers.config import ConfigManager
     from ape.managers.networks import NetworkManager
+    from ape.plugins import PluginManager
 
     from .contracts import ContractLog
     from .explorers import ExplorerAPI
@@ -28,7 +29,7 @@ class EcosystemAPI(API):
     name: str  # Set as plugin name
     network_manager: "NetworkManager"
     config_manager: "ConfigManager"
-    plugin_manager: PluginManager
+    plugin_manager: "PluginManager"
     data_folder: Path
     request_header: str
 
@@ -193,7 +194,7 @@ class NetworkAPI(API):
     name: str  # Name given when registered in ecosystem
     ecosystem: EcosystemAPI
     config_manager: "ConfigManager"
-    plugin_manager: PluginManager
+    plugin_manager: "PluginManager"
     data_folder: Path  # For caching any data that might need caching
     request_header: str
     _default_provider: str = ""
