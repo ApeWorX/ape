@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Collection, Dict, List, Optional, Union
 
 import requests
-from dataclassy import dataclass
+from pydantic import BaseModel
 
 from ape.api.contracts import ContractContainer
 from ape.exceptions import ProjectError
@@ -27,8 +27,7 @@ def _create_source_dict(contracts_paths: Collection[Path]) -> Dict[str, Source]:
     }
 
 
-@dataclass
-class ProjectManager:
+class ProjectManager(BaseModel):
     path: Path
     config: ConfigManager
     compilers: CompilerManager

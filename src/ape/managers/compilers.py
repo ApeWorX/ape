@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Set
 
-from dataclassy import dataclass
+from pydantic import BaseModel
 
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
@@ -13,8 +13,7 @@ from ape.utils import cached_property
 from .config import ConfigManager
 
 
-@dataclass
-class CompilerManager:
+class CompilerManager(BaseModel):
     config: ConfigManager
     plugin_manager: PluginManager
 

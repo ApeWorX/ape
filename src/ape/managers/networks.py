@@ -1,7 +1,7 @@
 from typing import Dict, Iterator, Optional
 
 import yaml
-from dataclassy import dataclass
+from pydantic import BaseModel
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.exceptions import NetworkError
@@ -11,8 +11,7 @@ from ape.utils import cached_property
 from .config import ConfigManager
 
 
-@dataclass
-class NetworkManager:
+class NetworkManager(BaseModel):
     """
     The set of all blockchain network ecosystems that Ape has registered through its plugin system.
     """

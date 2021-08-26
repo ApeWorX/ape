@@ -3,6 +3,8 @@ import importlib
 import pkgutil
 from typing import Any, Callable, Iterator, Tuple, Type, cast
 
+from pydantic import BaseModel
+
 from ape.logging import logger
 
 from .account import AccountPlugin
@@ -83,7 +85,7 @@ def valid_impl(api_class: Any) -> bool:
         return len(api_class.__abstractmethods__) == 0
 
 
-class PluginManager:
+class PluginManager(BaseModel):
     def __init__(self):
         # NOTE: This actually loads the plugins, and should only be done once
         for _, name, ispkg in pkgutil.iter_modules():

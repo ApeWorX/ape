@@ -1,6 +1,6 @@
 from typing import Dict, Iterator, List, Type
 
-from dataclassy import dataclass
+from pydantic import BaseModel
 
 from ape.api import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.plugins import PluginManager
@@ -12,8 +12,7 @@ from .converters import ConversionManager
 from .networks import NetworkManager
 
 
-@dataclass
-class AccountManager:
+class AccountManager(BaseModel):
     """
     Accounts is a container of containers for AccountAPI objects
     All containers must subclass AccountContainerAPI, and are treated as singletons

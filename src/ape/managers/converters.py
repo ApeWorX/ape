@@ -1,8 +1,8 @@
 from typing import Any, Dict, List, Type
 
-from dataclassy import dataclass
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
 from hexbytes import HexBytes
+from pydantic import BaseModel
 
 from ape.api import AddressAPI, ConverterAPI
 from ape.exceptions import ConversionError
@@ -50,8 +50,7 @@ class HexAddressConverter(ConverterAPI):
 hex_address_converter = HexAddressConverter(None, None)  # type: ignore
 
 
-@dataclass
-class ConversionManager:
+class ConversionManager(BaseModel):
     config: ConfigManager
     plugin_manager: PluginManager
     networks: NetworkManager
