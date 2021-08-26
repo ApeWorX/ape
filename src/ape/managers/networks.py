@@ -36,9 +36,6 @@ class NetworkManager:
             for plugin_name, (ecosystem_class,) in self.plugin_manager.ecosystems
         }
 
-    def __iter__(self) -> Iterator[str]:
-        yield from self.ecosystems
-
     def __getitem__(self, ecosystem_name: str) -> EcosystemAPI:
         if ecosystem_name not in self.ecosystems:
             raise NetworkError(f"Unknown ecosystem '{ecosystem_name}'.")
@@ -142,13 +139,13 @@ class NetworkManager:
 
         # If explicit default is not set, use first registered ecosystem
         elif len(self.ecosystems) == 1:
-            return self.ecosystems[list(self.__iter__())[0]]
+            return self.ecosystems[list(self.ecosystems.keys())[0]]
 
         else:
             raise NetworkError("No ecosystems installed.")
 
     def set_default_ecosystem(self, ecosystem_name: str):
-        if ecosystem_name in self.__iter__():
+        if ecosystem_name in self.ecosystems:
             self._default = ecosystem_name
 
         else:

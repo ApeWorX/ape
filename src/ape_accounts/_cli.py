@@ -25,7 +25,7 @@ def cli():
 @click.option("--all", help="Output accounts from all plugins", is_flag=True)
 @ape_cli_context()
 def _list(cli_ctx, all):
-    accounts_to_output = accounts if all else accounts.containers.get("accounts", [])
+    accounts_to_output = accounts.iter() if all else accounts.containers.get("accounts", [])
     if len(accounts_to_output) == 0:
         cli_ctx.logger.warning("No accounts found.")
         return

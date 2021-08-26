@@ -58,14 +58,14 @@ class AccountManager:
     def __len__(self) -> int:
         return sum(len(container) for container in self.containers.values())
 
-    def __iter__(self) -> Iterator[AccountAPI]:
+    def iter(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
             for account in container:
                 self._inject_provider(account)
                 yield account
 
     def __repr__(self) -> str:
-        return "[" + ", ".join(repr(a) for a in self) + "]"
+        return "[" + ", ".join(repr(a) for a in self.iter()) + "]"
 
     @cached_property
     def test_accounts(self) -> List[TestAccountAPI]:
@@ -89,7 +89,7 @@ class AccountManager:
         if alias == "":
             raise ValueError("Cannot use empty string as alias!")
 
-        for account in self:
+        for account in self.iter():
             if account.alias and account.alias == alias:
                 self._inject_provider(account)
                 return account
@@ -102,7 +102,7 @@ class AccountManager:
 
     @__getitem__.register
     def __getitem_int(self, account_id: int) -> AccountAPI:
-        for idx, account in enumerate(self.__iter__()):
+        for idx, account in enumerate(self.iter()):
             if account_id == idx:
                 self._inject_provider(account)
                 return account
