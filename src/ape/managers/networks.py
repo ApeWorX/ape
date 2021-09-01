@@ -35,8 +35,7 @@ class NetworkManager:
         }
 
     def __iter__(self) -> Iterator[str]:
-        for ecosystem_name in self.ecosystems:
-            yield ecosystem_name
+        yield from self.ecosystems
 
     def __getitem__(self, ecosystem_name: str) -> EcosystemAPI:
         if ecosystem_name not in self.ecosystems:

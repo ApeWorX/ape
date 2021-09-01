@@ -71,8 +71,7 @@ class EcosystemAPI:
         """
         Provides the set of all valid Network names in the ecosystem
         """
-        for name in self.networks:
-            yield name
+        yield from self.networks
 
     def __getitem__(self, network_name: str) -> "NetworkAPI":
         if network_name in self.networks:
