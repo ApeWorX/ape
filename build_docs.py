@@ -2,8 +2,6 @@
 Used with the `docs` Github action to make versioned docs directories in the
 gh-pages branch.
 """
-
-
 import argparse
 import os
 import re

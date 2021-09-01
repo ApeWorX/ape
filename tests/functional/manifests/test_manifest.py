@@ -1,6 +1,6 @@
 import pytest  # type: ignore
 import requests
-from hypothesis import HealthCheck, given, settings  # type: ignore
+from hypothesis import HealthCheck, given, settings
 from hypothesis_jsonschema import from_schema  # type: ignore
 
 from ape.types.manifest import PackageManifest

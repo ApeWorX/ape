@@ -39,8 +39,7 @@ class AccountManager:
     @property
     def aliases(self) -> Iterator[str]:
         for container in self.containers.values():
-            for alias in container.aliases:
-                yield alias
+            yield from container.aliases
 
     def __len__(self) -> int:
         return sum(len(container) for container in self.containers.values())

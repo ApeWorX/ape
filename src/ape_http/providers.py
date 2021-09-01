@@ -1,6 +1,6 @@
 from typing import Iterator
 
-from web3 import HTTPProvider, Web3  # type: ignore
+from web3 import HTTPProvider, Web3
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 

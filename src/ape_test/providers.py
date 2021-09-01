@@ -1,6 +1,6 @@
 from typing import Iterator
 
-from web3 import EthereumTesterProvider, Web3  # type: ignore
+from web3 import EthereumTesterProvider, Web3
 
 from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
 
