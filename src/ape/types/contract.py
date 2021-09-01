@@ -72,6 +72,14 @@ class ABIType(SerializableType):
     type: Union[str, "ABIType"]
     internalType: Optional[str] = None
 
+    @property
+    def canonical_type(self) -> str:
+        if isinstance(self.type, str):
+            return self.type
+
+        else:
+            return self.type.canonical_type
+
 
 class ABI(SerializableType):
     name: str = ""
@@ -84,12 +92,54 @@ class ABI(SerializableType):
     anonymous: Optional[bool] = None
     # TODO: Handle events and functions separately (maybe also default and constructor)
     #       Would parse based on value of type here, so some indirection required
-    #       Might make most sense to add to `ContractType` as a serde extension
+    #       Might make most sense to add to ``ContractType`` as a serde extension
     type: str
+
+    @property
+    def signature(self) -> str:
+        """
+        String representing the function/event signature, which includes the arg names and types,
+        and output names (if any) and type(s)
+        """
+        name = self.name if (self.type == "function" or self.type == "event") else self.type
+
+        def encode_arg(arg: ABIType) -> str:
+            encoded_arg = arg.canonical_type
+            # For events (handles both None and False conditions)
+            if arg.indexed:
+                encoded_arg += " indexed"
+            if arg.name:
+                encoded_arg += f" {arg.name}"
+            return encoded_arg
+
+        input_args = ", ".join(map(encode_arg, self.inputs))
+        output_args = ""
+
+        if self.outputs:
+            output_args = " -> "
+            if len(self.outputs) > 1:
+                output_args += "(" + ", ".join(map(encode_arg, self.outputs)) + ")"
+            else:
+                output_args += encode_arg(self.outputs[0])
+
+        return f"{name}({input_args}){output_args}"
+
+    @property
+    def selector(self) -> str:
+        """
+        String representing the function selector, used to compute ``method_id`` and ``event_id``.
+        """
+        name = self.name if (self.type == "function" or self.type == "event") else self.type
+        input_names = ", ".join(i.canonical_type for i in self.inputs)
+        return f"{name}({input_names})"
 
     @property
     def is_event(self) -> bool:
         return self.anonymous is not None
+
+    @property
+    def is_payable(self) -> bool:
+        return self.stateMutability == "payable"
 
     @property
     def is_stateful(self) -> bool:
@@ -155,11 +205,11 @@ class ContractType(FileMixin, SerializableType):
 
     @property
     def calls(self) -> List[ABI]:
-        return [abi for abi in self.abi if abi.type == "function" and abi.is_stateful]
+        return [abi for abi in self.abi if abi.type == "function" and not abi.is_stateful]
 
     @property
     def transactions(self) -> List[ABI]:
-        return [abi for abi in self.abi if abi.type == "function" and not abi.is_stateful]
+        return [abi for abi in self.abi if abi.type == "function" and abi.is_stateful]
 
     @classmethod
     def from_dict(cls, params: Dict):
@@ -187,7 +237,7 @@ class Source(SerializableType):
     license: Optional[str] = None
 
     def load_content(self):
-        """loads resource at `urls` into `content`"""
+        """Loads resource at ``urls`` into ``content``."""
         if len(self.urls) == 0:
             return
 
@@ -196,8 +246,8 @@ class Source(SerializableType):
 
     def compute_checksum(self, algorithm: str = "md5", force: bool = False):
         """
-        Compute the checksum if `content` exists but `checksum` doesn't
-        exist yet. Or compute the checksum regardless if `force` is `True`.
+        Compute the checksum if ``content`` exists but ``checksum`` doesn't
+        exist yet. Or compute the checksum regardless if ``force`` is ``True``.
         """
         if self.checksum and not force:
             return  # skip recalculating

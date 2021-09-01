@@ -10,7 +10,7 @@ write_to = "src/ape/version.py"
 # character.
 [tool.black]
 line-length = 100
-target-version = ['py36', 'py37', 'py38']
+target-version = ['py37', 'py38']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
@@ -22,7 +22,7 @@ markers = "fuzzing: Run Hypothesis fuzz test suite"
 line_length = 100
 force_grid_wrap = 0
 include_trailing_comma = true
-known_third_party = ["IPython", "ape_compile", "ape_console", "ape_networks", "ape_plugins", "click", "dataclassy", "eth_account", "eth_utils", "github", "hypothesis", "hypothesis_jsonschema", "importlib_metadata", "pluggy", "pytest", "requests", "setuptools", "web3", "yaml"]
-known_first_party = ["ape_accounts", "ape"]
+known_third_party = ["IPython", "ape_ethereum", "click", "dataclassy", "eth_abi", "eth_account", "eth_typing", "eth_utils", "github", "hexbytes", "hypothesis", "hypothesis_jsonschema", "importlib_metadata", "pluggy", "pytest", "requests", "setuptools", "web3", "yaml"]
+known_first_party = ["ape_accounts", "ape_console", "ape"]
 multi_line_output = 3
 use_parentheses = true

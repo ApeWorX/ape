@@ -116,3 +116,6 @@ dmypy.json
 
 # setuptools-scm
 version.py
+
+# Ape stuff
+.build/

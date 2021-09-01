@@ -4,18 +4,22 @@ from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Type
 
 from pluggy import PluginManager  # type: ignore
 
+from ape.types import ABI, AddressType
 from ape.utils import cached_property
 
 from .base import abstractdataclass, abstractmethod, dataclass
+from .config import ConfigItem
 
 if TYPE_CHECKING:
+    from ape.managers.config import ConfigManager
     from ape.managers.networks import NetworkManager
 
+    from .contracts import ContractLog
     from .explorers import ExplorerAPI
-    from .providers import ProviderAPI
+    from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
 
 
-@dataclass
+@abstractdataclass
 class EcosystemAPI:
     """
     An Ecosystem is a set of related Networks
@@ -23,11 +27,19 @@ class EcosystemAPI:
 
     name: str  # Set as plugin name
     network_manager: "NetworkManager"
+    config_manager: "ConfigManager"
     plugin_manager: PluginManager
     data_folder: Path
     request_header: str
 
+    transaction_class: Type["TransactionAPI"]
+    receipt_class: Type["ReceiptAPI"]
+
     _default_network: str = "development"
+
+    @cached_property
+    def config(self) -> ConfigItem:
+        return self.config_manager.get_config(self.name)
 
     @cached_property
     def networks(self) -> Dict[str, "NetworkAPI"]:
@@ -39,6 +51,7 @@ class EcosystemAPI:
                 networks[network_name] = network_class(
                     name=network_name,
                     ecosystem=self,
+                    config_manager=self.config_manager,
                     plugin_manager=self.plugin_manager,
                     data_folder=network_folder,
                     request_header=self.request_header,
@@ -94,6 +107,22 @@ class EcosystemAPI:
         else:
             raise Exception("Not a valid network for ecosystem `self.name`")
 
+    @abstractmethod
+    def encode_deployment(
+        self, deployment_bytecode: bytes, abi: Optional[ABI], *args, **kwargs
+    ) -> "TransactionAPI":
+        ...
+
+    @abstractmethod
+    def encode_transaction(
+        self, address: AddressType, abi: ABI, *args, **kwargs
+    ) -> "TransactionAPI":
+        ...
+
+    @abstractmethod
+    def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
+        ...
+
 
 class ProviderContextManager:
     # NOTE: Class variable, so it will manage stack across instances of this object
@@ -127,29 +156,41 @@ class ProviderContextManager:
             self.network_manager.active_provider = self._connected_providers[-1]
 
 
-@abstractdataclass
+@dataclass
 class NetworkAPI:
     """
-    A Network is a wrapper around a Provider for a specific Ecosystem
+    A Network is a wrapper around a Provider for a specific Ecosystem.
     """
 
     name: str  # Name given when regsitered in ecosystem
     ecosystem: EcosystemAPI
+    config_manager: "ConfigManager"
     plugin_manager: PluginManager
     data_folder: Path  # For caching any data that might need caching
     request_header: str
 
     _default_provider: str = ""
 
-    @property
-    @abstractmethod
-    def chain_id(self) -> int:
-        ...
+    @cached_property
+    def config(self) -> ConfigItem:
+        return self.config_manager.get_config(self.ecosystem.name)
 
     @property
-    @abstractmethod
+    def chain_id(self) -> int:
+        # NOTE: Unless overriden, returns same as `provider.chain_id`
+        provider = self.ecosystem.network_manager.active_provider
+
+        if not provider:
+            raise Exception(
+                "Cannot determine `chain_id`, please make sure you are connected to a provider"
+            )
+
+        return provider.chain_id
+
+    @property
     def network_id(self) -> int:
-        ...
+        # NOTE: Unless overriden, returns same as chain_id
+        return self.chain_id
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:
@@ -178,6 +219,7 @@ class NetworkAPI:
                 providers[plugin_name] = partial(
                     provider_class,
                     name=plugin_name,
+                    config=self.config_manager.get_config(plugin_name),
                     network=self,
                     # NOTE: No need to have separate folder, caching should be interoperable
                     data_folder=self.data_folder,
@@ -206,7 +248,7 @@ class NetworkAPI:
         if provider_name in self.providers:
             return ProviderContextManager(
                 self.ecosystem.network_manager,
-                self.providers[provider_name](config=provider_settings),
+                self.providers[provider_name](provider_settings=provider_settings),
             )
 
         else:
@@ -229,13 +271,15 @@ class NetworkAPI:
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
     """
-    Helper function that allows creating a `NetworkAPI` subclass easily
+    Helper function that allows creating a :class:`NetworkAPI` subclass easily.
     """
 
     class network_def(NetworkAPI):
+        @property
         def chain_id(self) -> int:
             return chain_id
 
+        @property
         def network_id(self) -> int:
             return network_id
 

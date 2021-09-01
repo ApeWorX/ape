@@ -27,6 +27,39 @@ def get_distributions():
     return packages_distributions()
 
 
+def is_relative_to(path: Path, target: Path) -> bool:
+    if hasattr(path, "is_relative_to"):
+        # NOTE: Only available ``>=3.9``
+        return target.is_relative_to(path)  # type: ignore
+
+    else:
+        try:
+            return target.relative_to(path) is not None
+        except ValueError:
+            return False
+
+
+def get_relative_path(target: Path, anchor: Path) -> Path:
+    """
+    Compute the relative path of ``target`` relative to ``anchor``,
+    which may or may not share a common ancestor.
+    NOTE: Both paths must be absolute
+    """
+    assert anchor.is_absolute()
+    assert target.is_absolute()
+
+    anchor_copy = Path(str(anchor))
+    levels_deep = 0
+    while not is_relative_to(anchor_copy, target):
+        levels_deep += 1
+        assert anchor_copy != anchor_copy.parent
+        anchor_copy = anchor_copy.parent
+
+    return Path("/".join(".." for _ in range(levels_deep))).joinpath(
+        str(target.relative_to(anchor_copy))
+    )
+
+
 def get_package_version(obj: Any) -> str:
     # If value is already cached/static
     if hasattr(obj, "__version__"):
@@ -37,14 +70,15 @@ def get_package_version(obj: Any) -> str:
         obj = obj.__name__
 
     # Reduce module string to base package
-    # NOTE: Assumed that string input is module name e.g. `__name__`
+    # NOTE: Assumed that string input is module name e.g. ``__name__``
     pkg_name = obj.split(".")[0]
 
     # NOTE: In case the distribution and package name differ
     dists = get_distributions()
     if pkg_name in dists:
         # NOTE: Shouldn't really be more than 1, but never know
-        assert len(dists[pkg_name]) == 1
+        if len(dists[pkg_name]) != 1:
+            notify("WARNING", f"duplicate pkg_name '{pkg_name}'")
         pkg_name = dists[pkg_name][0]
 
     try:
@@ -72,7 +106,7 @@ class Abort(click.ClickException):
     """Wrapper around a CLI exception"""
 
     def show(self, file=None):
-        """Override default `show` to print CLI errors in red text."""
+        """Override default ``show`` to print CLI errors in red text."""
         click.secho(f"Error: {self.format_message()}", err=True, fg="bright_red")
 
 

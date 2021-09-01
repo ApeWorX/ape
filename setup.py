@@ -14,12 +14,16 @@ extras_require = {
         "black>=20.8b1,<21.0",  # auto-formatter and linter
         "mypy>=0.800,<0.900",  # Static type analyzer
         "flake8>=3.8.3,<4.0",  # Style linter
+        "flake8-breakpoint>=1.1.0,<2.0.0",  # detect breakpoints left in code
+        "flake8-print>=4.0.0,<5.0.0",  # detect print statements left in code
         "isort>=5.7.0,<6.0",  # Import sorting linter
     ],
     "doc": [
         "Sphinx>=3.4.3,<4",  # Documentation generator
         "sphinx_rtd_theme>=0.1.9,<1",  # Readthedocs.org theme
         "towncrier>=19.2.0, <20",  # Generate release notes
+        "sphinx-multiversion>=0.2.4,<0.3.0",  # build multiple versions of docs from tags & branches
+        "sphinx-autoapi<=1.9.0",  # for better generation of docs beyond the built-in `autogen`
     ],
     "release": [  # `release` GitHub Action job uses this
         "setuptools",  # Installation tool
@@ -62,20 +66,19 @@ setup(
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.0.0",
         "dataclassy>=0.10.3,<1.0",
-        "eth-account>=0.5.2,<0.6.0",
+        "eth-account>=0.5.5,<0.6.0",
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
         "pyyaml>=0.2.5",
         "importlib-metadata",
         "singledispatchmethod ; python_version<'3.8'",
-        "IPython==7.16",  # Pinned for py3.6
-        "jedi==0.17.2",  # Pinned for IPython 7.16 incompatibility
+        "IPython>=7.25",
         "web3[tester]>=5.18.0,<6.0.0",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
     },
-    python_requires=">=3.6,<3.10",
+    python_requires=">=3.7,<3.10",
     extras_require=extras_require,
     py_modules=[
         "ape",
@@ -83,10 +86,10 @@ setup(
         "ape_compile",
         "ape_console",
         "ape_ethereum",
-        "ape_etherscan",
-        "ape_infura",
+        "ape_http",
         "ape_networks",
         "ape_plugins",
+        "ape_run",
         "ape_test",
         "ape_pm",
     ],
@@ -100,8 +103,8 @@ setup(
         "ape_accounts": ["py.typed"],
         "ape_compile": ["py.typed"],
         "ape_ethereum": ["py.typed"],
-        "ape_etherscan": ["py.typed"],
-        "ape_infura": ["py.typed"],
+        "ape_http": ["py.typed"],
+        "ape_run": ["py.typed"],
         "ape_test": ["py.typed"],
         "ape_pm": ["py.typed"],
     },
@@ -113,7 +116,6 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: POSIX",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",

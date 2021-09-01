@@ -4,12 +4,10 @@ from typing import Iterator, Optional
 
 import click
 from eth_account import Account as EthAccount  # type: ignore
-from eth_account.datastructures import SignedMessage  # type: ignore
-from eth_account.datastructures import SignedTransaction
-from eth_account.messages import SignableMessage  # type: ignore
 
-from ape.api.accounts import AccountAPI, AccountContainerAPI
+from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.convert import to_address
+from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 
 
 class AccountContainer(AccountContainerAPI):
@@ -47,7 +45,7 @@ class KeyfileAccount(AccountAPI):
         return json.loads(self._keyfile.read_text())
 
     @property
-    def address(self) -> str:
+    def address(self) -> AddressType:
         return to_address(self.keyfile["address"])
 
     @property
@@ -65,7 +63,11 @@ class KeyfileAccount(AccountAPI):
             default="",  # Just in case there's no passphrase
         )
 
-        key = EthAccount.decrypt(self.keyfile, passphrase)
+        try:
+            key = EthAccount.decrypt(self.keyfile, passphrase)
+
+        except ValueError as e:
+            raise Exception("Invalid password") from e
 
         if click.confirm(f"Leave '{self.alias}' unlocked?"):
             self.locked = False
@@ -79,7 +81,11 @@ class KeyfileAccount(AccountAPI):
             hide_input=True,
         )
 
-        self.__cached_key = EthAccount.decrypt(self.keyfile, passphrase)
+        try:
+            self.__cached_key = EthAccount.decrypt(self.keyfile, passphrase)
+
+        except ValueError as e:
+            raise Exception("Invalid password") from e
 
     def lock(self):
         self.locked = True
@@ -107,14 +113,16 @@ class KeyfileAccount(AccountAPI):
 
         self._keyfile.unlink()
 
-    def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
-        if self.locked and not click.confirm(f"Sign: {msg}"):
+    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
+        if self.locked and not click.confirm(f"{msg}\n\nSign: "):
             return None
 
-        return EthAccount.sign_message(msg, self.__key)
+        signed_msg = EthAccount.sign_message(msg, self.__key)
+        return MessageSignature(v=signed_msg.v, r=signed_msg.r, s=signed_msg.s)  # type: ignore
 
-    def sign_transaction(self, txn: dict) -> Optional[SignedTransaction]:
-        if self.locked and not click.confirm(f"Sign: {txn}"):
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
+        if self.locked and not click.confirm(f"{txn}\n\nSign: "):
             return None
 
-        return EthAccount.sign_transaction(txn, self.__key)
+        signed_txn = EthAccount.sign_transaction(txn.as_dict(), self.__key)
+        return TransactionSignature(v=signed_txn.v, r=signed_txn.r, s=signed_txn.s)  # type: ignore

@@ -1,0 +1,56 @@
+name: Docs
+
+on:
+    push:
+        branches: [main]
+    release:
+        types: [released]
+    pull_request:
+        types: [opened, synchronize]
+
+jobs:
+    docs:
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: actions/checkout@v2
+
+        - name: Setup Python
+          uses: actions/setup-python@v2
+          with:
+              python-version: 3.8
+
+        - name: Install Dependencies
+          run: pip install .[doc]
+
+        - name: Build HTML artifact
+          run: python build_docs.py
+
+        - name: Upload HTML artifact
+          uses: actions/upload-artifact@v1
+          with:
+              name: DocumentationHTML
+              path: docs/_build/
+
+        - name: Commit and publish documentation changes to gh-pages branch
+          run: |
+              git clone https://github.com/${GITHUB_REPOSITORY} --branch gh-pages --single-branch gh-pages
+              cp -r docs/_build/* gh-pages/
+              cd gh-pages
+              touch .nojekyll
+              git config --local user.email "action@github.com"
+              git config --local user.name "GitHub Action"
+              git add .
+              if [[ "${GITHUB_EVENT_NAME}" =~ "pull_request" ]]; then
+                echo "skipping 'git commit' step for PR"
+              else
+                git commit -m "Update documentation" -a || true
+              fi
+              # The above command will fail if no changes were present, so we use "|| true" to ignore that
+        - name: Push changes
+          uses: ad-m/github-push-action@master
+          if: ${{ github.event_name != 'pull_request' }}
+          with:
+              branch: gh-pages
+              directory: gh-pages
+              github_token: ${{ secrets.GITHUB_TOKEN }}

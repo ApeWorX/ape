@@ -4,7 +4,7 @@ Ape is a framework for Web3 Python applications and smart contracts, with advanc
 
 ## Dependencies
 
-* [python3](https://www.python.org/downloads) version 3.6 or greater, python3-dev
+* [python3](https://www.python.org/downloads) version 3.7 or greater, python3-dev
 
 ## Installation
 
@@ -74,6 +74,15 @@ assert c.MyEvent[-1].caller == a  # Search through Web3 events
 This project is in early development and should be considered an alpha.
 Things might not work, breaking changes are likely.
 Comments, questions, criticisms and pull requests are welcomed.
+
+## Documentation
+
+To build docs:
+
+```bash
+python build_docs.py  # build docs in docs/_build
+python build_docs.py --rsync=/tmp/ape  # for serving up docs in development
+```
 
 ## License
 

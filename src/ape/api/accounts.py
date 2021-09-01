@@ -1,66 +1,35 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, Optional, Type
+from typing import Callable, Iterator, List, Optional, Type, Union
 
-from eth_account.datastructures import SignedMessage  # type: ignore
-from eth_account.datastructures import SignedTransaction
-from eth_account.messages import SignableMessage  # type: ignore
+from ape.types import (
+    AddressType,
+    ContractType,
+    MessageSignature,
+    SignableMessage,
+    TransactionSignature,
+)
+from ape.utils import cached_property
 
+from .address import AddressAPI
 from .base import abstractdataclass, abstractmethod
-
-if TYPE_CHECKING:
-    from ape.managers.networks import NetworkManager
-
-
-@abstractdataclass
-class AddressAPI:
-    network_manager: Optional["NetworkManager"] = None
-
-    @property
-    def _provider(self):
-        if not self.network_manager:
-            raise Exception("Not wired correctly")
-
-        if not self.network_manager.active_provider:
-            raise Exception("Not connected to any network!")
-
-        return self.network_manager.active_provider
-
-    @property
-    @abstractmethod
-    def address(self) -> str:
-        ...
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.address}>"
-
-    def __str__(self) -> str:
-        return self.address
-
-    @property
-    def nonce(self) -> int:
-        return self._provider.get_nonce(self.address)
-
-    @property
-    def balance(self) -> int:
-        return self._provider.get_balance(self.address)
-
-    @property
-    def code(self) -> bytes:
-        # TODO: Explore caching this (based on `self.provider.network` and examining code)
-        return self._provider.get_code(self.address)
-
-    @property
-    def codesize(self) -> int:
-        return len(self.code)
-
-    @property
-    def is_contract(self) -> bool:
-        return len(self.code) > 0
+from .contracts import ContractContainer, ContractInstance
+from .providers import ReceiptAPI, TransactionAPI
 
 
 # NOTE: AddressAPI is a dataclass already
 class AccountAPI(AddressAPI):
     container: "AccountContainerAPI"
+
+    def __dir__(self) -> List[str]:
+        # This displays methods to IPython on `a.[TAB]` tab completion
+        return list(super(AddressAPI, self).__dir__()) + [
+            "alias",
+            "sign_message",
+            "sign_transaction",
+            "call",
+            "transfer",
+            "deploy",
+        ]
 
     @property
     def alias(self) -> Optional[str]:
@@ -70,12 +39,93 @@ class AccountAPI(AddressAPI):
         return None
 
     @abstractmethod
-    def sign_message(self, msg: SignableMessage) -> Optional[SignedMessage]:
+    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         ...
 
     @abstractmethod
-    def sign_transaction(self, txn: dict) -> Optional[SignedTransaction]:
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         ...
+
+    def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
+        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
+        txn.chain_id = self.provider.network.chain_id
+
+        # NOTE: Allow overriding nonce, assume user understand what this does
+        if txn.nonce is None:
+            txn.nonce = self.nonce
+        elif txn.nonce < self.nonce:
+            raise Exception("Invalid nonce, will not publish!")
+
+        # TODO: Add `GasEstimationAPI`
+        if txn.gas_price is None:
+            txn.gas_price = self.provider.gas_price
+        # else: assume user specified a correct price, or will take too much time to confirm
+
+        # NOTE: Allow overriding gas limit
+        if txn.gas_limit is None:
+            txn.gas_limit = 0  # NOTE: Need a starting estimate
+            txn.gas_limit = self.provider.estimate_gas_cost(txn)
+        # else: assume user specified the correct amount or txn will fail and waste gas
+
+        if send_everything:
+            txn.value = self.balance - txn.gas_limit * txn.gas_price
+
+        if txn.gas_limit * txn.gas_price + txn.value > self.balance:
+            raise Exception("Transfer value meets or exceeds account balance")
+
+        txn.signature = self.sign_transaction(txn)
+
+        if not txn.signature:
+            raise Exception("User didn't sign!")
+
+        return self.provider.send_transaction(txn)
+
+    @cached_property
+    def _convert(self) -> Callable:
+        # NOTE: Need to differ loading this property
+        from ape import convert
+
+        return convert
+
+    def transfer(
+        self,
+        account: Union[str, AddressType, "AddressAPI"],
+        value: Union[str, int, None] = None,
+        data: Union[bytes, str, None] = None,
+        **kwargs,
+    ) -> ReceiptAPI:
+        txn = self._transaction_class(  # type: ignore
+            sender=self.address,
+            receiver=self._convert(account, AddressType),
+            **kwargs,
+        )
+
+        if data:
+            txn.data = self._convert(data, bytes)
+
+        if value:
+            txn.value = self._convert(value, int)
+
+        return self.call(txn, send_everything=value is None)
+
+    def deploy(self, contract_type: ContractType, *args, **kwargs) -> ContractInstance:
+        c = ContractContainer(  # type: ignore
+            _provider=self.provider,
+            _contract_type=contract_type,
+        )
+
+        txn = c(*args, **kwargs)
+        txn.sender = self.address
+        receipt = self.call(txn)
+
+        if not receipt.contract_address:
+            raise Exception(f"{receipt.txn_hash} did not create a contract")
+
+        return ContractInstance(  # type: ignore
+            _provider=self.provider,
+            _address=receipt.contract_address,
+            _contract_type=contract_type,
+        )
 
 
 @abstractdataclass
@@ -96,7 +146,7 @@ class AccountContainerAPI:
     def __iter__(self) -> Iterator[AccountAPI]:
         ...
 
-    def __getitem__(self, address: str) -> AccountAPI:
+    def __getitem__(self, address: AddressType) -> AccountAPI:
         for account in self.__iter__():
             if account.address == address:
                 return account
@@ -115,7 +165,7 @@ class AccountContainerAPI:
 
         self.__setitem__(account.address, account)
 
-    def __setitem__(self, address: str, account: AccountAPI):
+    def __setitem__(self, address: AddressType, account: AccountAPI):
         raise NotImplementedError("Must define this method to use `container.append(acct)`")
 
     def remove(self, account: AccountAPI):
@@ -130,10 +180,10 @@ class AccountContainerAPI:
 
         self.__delitem__(account.address)
 
-    def __delitem__(self, address: str):
+    def __delitem__(self, address: AddressType):
         raise NotImplementedError("Must define this method to use `container.remove(acct)`")
 
-    def __contains__(self, address: str) -> bool:
+    def __contains__(self, address: AddressType) -> bool:
         try:
             self.__getitem__(address)
             return True

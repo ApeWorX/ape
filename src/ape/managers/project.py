@@ -82,9 +82,9 @@ class ProjectManager:
         cached_sources = manifest.sources or {}
         cached_contract_types = manifest.contractTypes or {}
 
-        # If a file is deleted from `self.sources` but is in `cached_sources`,
-        # remove its corresponding `contract_types` by using
-        # `ContractType.sourceId` and `ContractType.sourcePath`
+        # If a file is deleted from ``self.sources`` but is in
+        # ``cached_sources``, remove its corresponding ``contract_types`` by
+        # using ``ContractType.sourceId`` and ``ContractType.sourcePath``
         deleted_sources = cached_sources.keys() - set(map(str, self.sources))
         contract_types = {}
         for name, ct in cached_contract_types.items():
@@ -129,7 +129,7 @@ class ProjectManager:
         }
         manifest.sources = cached_sources
 
-        # NOTE: Cache the updated manifest to disk (so `self.cached_manifest` reads next time)
+        # NOTE: Cache the updated manifest to disk (so ``self.cached_manifest`` reads next time)
         self.manifest_cachefile.write_text(json.dumps(manifest.to_dict()))
 
         return contract_types

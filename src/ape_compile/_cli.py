@@ -67,7 +67,8 @@ def cli(filepaths, use_cache, display_size):
         else:
             selected_paths = str(project.path / "contracts")
 
-        notify("WARNING", f"No project files detected in '{selected_paths}'")
+        extensions = ", ".join(set(f.suffix for f in selected_paths))
+        notify("WARNING", f"No compilers detected for the following extensions: {extensions}")
         return
 
     # TODO: only compile selected contracts
