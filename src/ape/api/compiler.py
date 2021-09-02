@@ -15,7 +15,9 @@ class CompilerAPI:
 
     @abstractmethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:
-        ...
+        """
+        Retrieve available compiler versions
+        """
 
     @abstractmethod
     def compile(self, contract_filepaths: List[Path]) -> List[ContractType]:

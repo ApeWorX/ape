@@ -7,6 +7,7 @@ Welcome to Ape's documentation!
    :maxdepth: 2
 
    quickstart
+   plugins
 
 .. toctree::
    :caption: User API Reference
