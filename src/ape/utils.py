@@ -144,7 +144,7 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
         return config or {}
 
     elif must_exist:
-        raise IOError(f"{path} does not exist!")
+        raise OSError(f"{path} does not exist!")
 
     else:
         return {}
