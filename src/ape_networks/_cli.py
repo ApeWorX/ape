@@ -2,6 +2,8 @@ import click
 
 from ape import networks
 
+_PREFIX_SPACING = "    "
+
 
 @click.group(short_help="Manage networks")
 def cli():
@@ -13,33 +15,38 @@ def cli():
 @cli.command(name="list", short_help="List registered networks")
 def _list():
     click.echo("ecosystems:")
-    default_ecosystem = networks.default_ecosystem.name
     for ecosystem_name in networks:
-        if ecosystem_name == default_ecosystem:
-            click.echo(f"- name: {ecosystem_name}  # Default")
-        else:
-            click.echo(f"- name: {ecosystem_name}")
+        _echo_ecosystem(ecosystem_name)
 
-        ecosystem = networks[ecosystem_name]
 
-        default_network = ecosystem.default_network
-        for network_name in getattr(networks, ecosystem_name):
+def _echo_ecosystem(name):
+    _echo_output(name, networks.default_ecosystem.name)
+    ecosystem = networks[name]
 
-            if network_name == default_network:
-                click.echo(f"  - name: {network_name}  # Default")
-            else:
-                click.echo(f"  - name: {network_name}")
+    for network_name in getattr(networks, name):
+        _echo_network(ecosystem, network_name)
 
-            network = ecosystem[network_name]
 
-            if network.explorer:
-                click.echo(f"    explorer: {network.explorer.name}")
+def _echo_network(ecosystem, name):
+    _echo_output(name, ecosystem.default_network)
+    network = ecosystem[name]
 
-            click.echo("    providers:")
+    if network.explorer:
+        click.echo(f"{_PREFIX_SPACING}explorer: {network.explorer.name}")
 
-            default_provider = network.default_provider
-            for provider_name in network.providers:
-                if provider_name == default_provider:
-                    click.echo(f"    - {provider_name}  # Default")
-                else:
-                    click.echo(f"    - {provider_name}")
+    click.echo(f"{_PREFIX_SPACING}providers:")
+
+    for provider_name in network.providers:
+        _echo_output(provider_name, network.default_provider)
+
+
+def _echo_output(name, default_name):
+    output = _create_output_line(name)
+    if name == default_name:
+        output = f"{output}  # Default"
+
+    click.echo(output)
+
+
+def _create_output_line(output):
+    return f"{_PREFIX_SPACING}- {output}"

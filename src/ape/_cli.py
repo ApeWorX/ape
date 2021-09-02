@@ -1,15 +1,15 @@
 from typing import Dict
 
-try:
-    from importlib import metadata  # type: ignore
-except ImportError:
-    import importlib_metadata as metadata  # type: ignore
-
 import click
 import yaml
 
 from ape.plugins import clean_plugin_name
 from ape.utils import notify
+
+try:
+    from importlib import metadata  # type: ignore
+except ImportError:
+    import importlib_metadata as metadata  # type: ignore
 
 
 def display_config(ctx, param, value):
