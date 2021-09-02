@@ -22,7 +22,7 @@
   </script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="ape_http" href="../../ape_http/index.html" />
+    <link rel="next" title="ape_ethereum" href="../../ape_ethereum/index.html" />
     <link rel="prev" title="ape_networks" href="../index.html" /> 
 </head>
 
@@ -65,24 +65,29 @@
 <p class="caption"><span class="caption-text">Full API Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../ape_pm/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_pm</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_test/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_console/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_console</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_http/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_http</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_accounts/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_accounts</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_plugins/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_plugins</span></code></a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_networks</span></code></a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_networks._cli</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._PREFIX_SPACING">_PREFIX_SPACING</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli.cli">cli</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._list">_list</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._echo_ecosystem">_echo_ecosystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._echo_network">_echo_network</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._echo_output">_echo_output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._create_output_line">_create_output_line</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_http/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_http</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_test/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_pm/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_pm</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_plugins/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_plugins</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_console/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_console</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_run/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_run</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../ape/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_accounts/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_accounts</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../ape_ethereum/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_ethereum</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../ape_compile/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_compile</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_run/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_run</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -161,9 +166,38 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape_networks._cli._list" title="ape_networks._cli._list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_list</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_networks._cli._echo_ecosystem" title="ape_networks._cli._echo_ecosystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_echo_ecosystem</span></code></a>(name)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_networks._cli._echo_network" title="ape_networks._cli._echo_network"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_echo_network</span></code></a>(ecosystem, name)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_networks._cli._echo_output" title="ape_networks._cli._echo_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_echo_output</span></code></a>(name, default_name)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_networks._cli._create_output_line" title="ape_networks._cli._create_output_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_output_line</span></code></a>(output)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Attributes</strong>:</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_networks._cli._PREFIX_SPACING" title="ape_networks._cli._PREFIX_SPACING"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_PREFIX_SPACING</span></code></a></p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 <hr class="docutils" />
+<dl class="py data">
+<dt id="ape_networks._cli._PREFIX_SPACING">
+<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_PREFIX_SPACING</span></code><em class="property"> <span class="pre">=</span></em><a class="headerlink" href="#ape_networks._cli._PREFIX_SPACING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py function">
 <dt id="ape_networks._cli.cli">
 <code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">cli</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli.cli" title="Permalink to this definition">¶</a></dt>
@@ -175,6 +209,26 @@
 <code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_list</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py function">
+<dt id="ape_networks._cli._echo_ecosystem">
+<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_echo_ecosystem</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._echo_ecosystem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape_networks._cli._echo_network">
+<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_echo_network</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecosystem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._echo_network" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape_networks._cli._echo_output">
+<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_echo_output</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._echo_output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape_networks._cli._create_output_line">
+<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_create_output_line</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._create_output_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 
 
@@ -182,7 +236,7 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../../ape_http/index.html" class="btn btn-neutral float-right" title="ape_http" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../../ape_ethereum/index.html" class="btn btn-neutral float-right" title="ape_ethereum" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="../index.html" class="btn btn-neutral float-left" title="ape_networks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
