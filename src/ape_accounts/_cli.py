@@ -6,7 +6,7 @@ from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
 
 from ape import accounts
-from ape.utils import notify
+from ape.utils import Abort, notify
 
 # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
 container = accounts.containers["accounts"]
@@ -57,8 +57,7 @@ def _list():
 @click.argument("alias")
 def generate(alias):
     if alias in accounts.aliases:
-        notify("ERROR", f"Account with alias '{alias}' already exists")
-        return
+        raise Abort(f"Account with alias '{alias}' is already in use")
 
     path = container.data_folder.joinpath(f"{alias}.json")
     extra_entropy = click.prompt(
@@ -81,16 +80,14 @@ def generate(alias):
 @click.argument("alias")
 def _import(alias):
     if alias in accounts.aliases:
-        notify("ERROR", f"Account with alias '{alias}' already exists")
-        return
+        raise Abort(f"Account with alias '{alias}' is already in use")
 
     path = container.data_folder.joinpath(f"{alias}.json")
     key = click.prompt("Enter Private Key", hide_input=True)
     try:
         account = EthAccount.from_key(to_bytes(hexstr=key))
     except Exception as error:
-        notify("ERROR", f"Key can't be imported {error}")
-        return
+        raise Abort(f"Key can't be imported: {error}")
     passphrase = click.prompt(
         "Create Passphrase",
         hide_input=True,

@@ -99,7 +99,7 @@ NOTIFY_COLORS = {
 
 def notify(type_, msg):
     """Prepends a message with a colored tag and outputs it to the console."""
-    click.echo(f"{click.style(type_, fg=NOTIFY_COLORS[type_])}: {msg}")
+    click.echo(f"{click.style(type_, fg=NOTIFY_COLORS[type_])}: {msg}", err=type_ == "ERROR")
 
 
 class Abort(click.ClickException):
@@ -107,7 +107,7 @@ class Abort(click.ClickException):
 
     def show(self, file=None):
         """Override default ``show`` to print CLI errors in red text."""
-        click.secho(f"Error: {self.format_message()}", err=True, fg="bright_red")
+        notify("ERROR", self.format_message())
 
 
 def deep_merge(dict1, dict2):
