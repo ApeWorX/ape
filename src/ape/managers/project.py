@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Collection, Dict, List, Optional, Union
 
 import requests
-from pydantic import BaseModel
 
 from ape.api.contracts import ContractContainer
 from ape.exceptions import ProjectError
@@ -11,6 +10,7 @@ from ape.managers.networks import NetworkManager
 from ape.types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ape.utils import compute_checksum, get_all_files_in_directory, github_client
 
+from .base import BaseManager
 from .compilers import CompilerManager
 from .config import ConfigManager
 
@@ -27,7 +27,7 @@ def _create_source_dict(contracts_paths: Collection[Path]) -> Dict[str, Source]:
     }
 
 
-class ProjectManager(BaseModel):
+class ProjectManager(BaseManager):
     path: Path
     config: ConfigManager
     compilers: CompilerManager
@@ -115,7 +115,7 @@ class ProjectManager(BaseModel):
             if "manifest" not in manifest_json:
                 raise ProjectError("Corrupted manifest.")
 
-            return PackageManifest.from_dict(manifest_json)
+            return PackageManifest.parse_obj(manifest_json)
 
         else:
             return None
@@ -247,7 +247,7 @@ class ProjectManager(BaseModel):
         manifest.sources = _create_source_dict(sources)
 
         # NOTE: Cache the updated manifest to disk (so ``self.cached_manifest`` reads next time)
-        self.manifest_cachefile.write_text(json.dumps(manifest.to_dict()))
+        self.manifest_cachefile.write_text(json.dumps(manifest.dict()))
 
         return contract_types
 
@@ -300,7 +300,7 @@ class ProjectManager(BaseModel):
     #     return PackageMeta(**self.config.get_config("ethpm").serialize())
 
     # def publish_manifest(self):
-    #     manifest = self.manifest.to_dict()  # noqa: F841
+    #     manifest = self.manifest.dict()  # noqa: F841
     #     if not manifest["name"]:
     #         raise ProjectError("Need name to release manifest")
     #     if not manifest["version"]:

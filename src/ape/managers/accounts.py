@@ -7,12 +7,13 @@ from ape.plugins import PluginManager
 from ape.types import AddressType
 from ape.utils import cached_property, singledispatchmethod
 
+from .base import BaseManager
 from .config import ConfigManager
 from .converters import ConversionManager
 from .networks import NetworkManager
 
 
-class AccountManager(BaseModel):
+class AccountManager(BaseManager):
     """
     Accounts is a container of containers for AccountAPI objects
     All containers must subclass AccountContainerAPI, and are treated as singletons
@@ -36,7 +37,10 @@ class AccountManager(BaseModel):
 
             accounts_folder = data_folder / plugin_name
             accounts_folder.mkdir(exist_ok=True)
-            containers[plugin_name] = container_type(accounts_folder, account_type, self.config)
+            containers[plugin_name] = container_type(
+                data_folder=accounts_folder,
+                account_type=account_type,
+            )
 
         return containers
 

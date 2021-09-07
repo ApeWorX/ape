@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
 
 from .base import API, apimethod
 from .config import PluginConfig
@@ -11,10 +11,14 @@ ConvertedType = TypeVar("ConvertedType")
 
 class ConverterAPI(API, Generic[ConvertedType]):
     # NOTE: In case we need to store info e.g. tokenlists
-    config: PluginConfig
+    config: Optional[PluginConfig] = None
 
     # NOTE: In case we need access to a network e.g. ENS
-    networks: "NetworkManager"
+    networks: Optional["NetworkManager"] = None
+
+    # HACK: These fields are actually not Optional, however
+    #       `ape.managers.converters.[HexConverter,AddressAPIConverter] can't get these values
+    #       prior to loading the module (and don't need actually them)
 
     @apimethod
     def is_convertible(self, value: Any) -> bool:

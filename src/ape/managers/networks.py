@@ -8,10 +8,11 @@ from ape.exceptions import NetworkError
 from ape.plugins import PluginManager
 from ape.utils import cached_property
 
+from .base import BaseManager
 from .config import ConfigManager
 
 
-class NetworkManager(BaseModel):
+class NetworkManager(BaseManager):
     """
     The set of all blockchain network ecosystems that Ape has registered through its plugin system.
     """
@@ -20,6 +21,9 @@ class NetworkManager(BaseModel):
     plugin_manager: PluginManager
     active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
+
+    class Config:
+        keep_untouched = (cached_property,)  # https://github.com/samuelcolvin/pydantic/issues/1241
 
     @cached_property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:

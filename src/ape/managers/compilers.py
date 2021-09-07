@@ -1,19 +1,18 @@
 from pathlib import Path
 from typing import Dict, List, Set
 
-from pydantic import BaseModel
-
-from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
+from ape.api.compiler import CompilerAPI
 from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.types import ContractType
 from ape.utils import cached_property
 
+from .base import BaseManager
 from .config import ConfigManager
 
 
-class CompilerManager(BaseModel):
+class CompilerManager(BaseManager):
     config: ConfigManager
     plugin_manager: PluginManager
 

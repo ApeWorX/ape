@@ -38,7 +38,6 @@ class AccountContainer(AccountContainerAPI):
             yield KeyfileAccount(self, keyfile)  # type: ignore
 
 
-# NOTE: `AccountAPI` is a dataclass
 class KeyfileAccount(AccountAPI):
     _keyfile: Path
 

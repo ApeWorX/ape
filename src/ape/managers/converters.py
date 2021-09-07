@@ -2,7 +2,6 @@ from typing import Any, Dict, List, Type
 
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
 from hexbytes import HexBytes
-from pydantic import BaseModel
 
 from ape.api import AddressAPI, ConverterAPI
 from ape.exceptions import ConversionError
@@ -11,6 +10,7 @@ from ape.plugins import PluginManager
 from ape.types import AddressType
 from ape.utils import cached_property
 
+from .base import BaseManager
 from .config import ConfigManager
 from .networks import NetworkManager
 
@@ -24,7 +24,7 @@ class HexConverter(ConverterAPI):
         return HexBytes(value)
 
 
-hex_converter = HexConverter(None, None)  # type: ignore
+hex_converter = HexConverter()
 
 
 class AddressAPIConverter(ConverterAPI):
@@ -35,7 +35,7 @@ class AddressAPIConverter(ConverterAPI):
         return value.address
 
 
-address_api_converter = AddressAPIConverter(None, None)  # type: ignore
+address_api_converter = AddressAPIConverter()
 
 
 class HexAddressConverter(ConverterAPI):
@@ -47,10 +47,10 @@ class HexAddressConverter(ConverterAPI):
         return to_checksum_address(value)
 
 
-hex_address_converter = HexAddressConverter(None, None)  # type: ignore
+hex_address_converter = HexAddressConverter()
 
 
-class ConversionManager(BaseModel):
+class ConversionManager(BaseManager):
     config: ConfigManager
     plugin_manager: PluginManager
     networks: NetworkManager

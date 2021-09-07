@@ -26,7 +26,7 @@ def display_config(ctx, param, value):
     from ape import project
 
     click.echo("# Current configuration")
-    click.echo(yaml.dump(project.config.serialize()))
+    click.echo(yaml.dump(project.config.dict()))
 
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 
