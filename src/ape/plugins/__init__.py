@@ -4,6 +4,7 @@ import pkgutil
 from typing import Any, Callable, Iterator, Tuple, Type, cast
 
 from pydantic import BaseModel
+from pydantic.main import ModelMetaclass
 
 from ape.logging import logger
 
@@ -96,6 +97,9 @@ class PluginManager(BaseModel):
                     logger.warn_from_exception(err, f"Error loading plugin package '{name}'.")
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
+        if attr_name == "__fields_set__":
+            return set()
+
         if not hasattr(plugin_manager.hook, attr_name):
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
@@ -108,10 +112,12 @@ class PluginManager(BaseModel):
 
         for plugin_name, results in map(get_plugin_name_and_hookfn, hookimpls):
             # NOTE: Some plugins return a tuple and some return iterators
-            if not isinstance(results, tuple) and hasattr(results, "__iter__"):
+            if not isinstance(results, (tuple, ModelMetaclass)) and hasattr(results, "__iter__"):
                 # Only if it's an iterator, provider results as a series
                 for result in results:
                     if valid_impl(result):
+                        if not isinstance(result, tuple):
+                            result = (result,)
                         yield clean_plugin_name(plugin_name), result
 
                     else:
@@ -122,6 +128,8 @@ class PluginManager(BaseModel):
 
             elif valid_impl(results):
                 # Otherwise, provide results directly
+                if not isinstance(results, tuple):
+                    results = (results,)
                 yield clean_plugin_name(plugin_name), results
 
             else:
