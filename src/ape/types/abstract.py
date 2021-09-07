@@ -3,7 +3,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, Optional, Set, Union
 
-import dataclassy as dc
+from pydantic import BaseModel
 
 
 def update_params(params, param_name, param_type):
@@ -53,15 +53,14 @@ def to_dict(v: Any) -> Optional[Union[list, dict, str, int, bool]]:
         raise ValueError(f"Unhandled type '{type(v)}'.")
 
 
-@dc.dataclass(slots=True, kwargs=True, repr=True)
-class SerializableType:
+class SerializableType(BaseModel):
     _keep_fields_: Set[str] = set()
     _skip_fields_: Set[str] = set()
 
     def to_dict(self) -> Dict:
         data = {
             k: to_dict(v)
-            for k, v in dc.values(self).items()
+            for k, v in iter(self)
             if not (k.startswith("_") or k in self._skip_fields_)
         }
         return remove_empty_fields(data, keep_fields=self._keep_fields_)

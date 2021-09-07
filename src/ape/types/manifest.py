@@ -1,17 +1,11 @@
-from copy import deepcopy
 from typing import Dict, List, Optional
 
-from .abstract import (
-    FileMixin,
-    SerializableType,
-    update_dict_params,
-    update_list_params,
-    update_params,
-)
+from pydantic import BaseModel
+
 from .contract import Compiler, ContractInstance, ContractType, Source
 
 
-class PackageMeta(SerializableType):
+class PackageMeta(BaseModel):
     authors: Optional[List[str]] = None
     license: Optional[str] = None
     description: Optional[str] = None
@@ -19,7 +13,7 @@ class PackageMeta(SerializableType):
     links: Optional[Dict[str, str]] = None
 
 
-class PackageManifest(FileMixin, SerializableType):
+class PackageManifest(BaseModel):
     # NOTE: Must not override this key
     manifest: str = "ethpm/3"
     # NOTE: ``name`` and ``version`` should appear together

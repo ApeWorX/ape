@@ -1,27 +1,26 @@
 import urllib.request
-from copy import deepcopy
-from typing import Dict, List, Optional, Set, Union
+from typing import List, Optional, Set, Union
+
+from pydantic import BaseModel
 
 from ape.utils import compute_checksum
-
-from .abstract import FileMixin, SerializableType, update_list_params, update_params
 
 
 # TODO link references & link values are for solidity, not used with Vyper
 # Offsets are for dynamic links, e.g. EIP1167 proxy forwarder
-class LinkDependency(SerializableType):
+class LinkDependency(BaseModel):
     offsets: List[int]
     type: str
     value: str
 
 
-class LinkReference(SerializableType):
+class LinkReference(BaseModel):
     offsets: List[int]
     length: int
     name: Optional[str] = None
 
 
-class Bytecode(SerializableType):
+class Bytecode(BaseModel):
     bytecode: Optional[str] = None
     linkReferences: Optional[List[LinkReference]] = None
     linkDependencies: Optional[List[LinkDependency]] = None
@@ -37,36 +36,23 @@ class Bytecode(SerializableType):
 
         return self_str
 
-    @classmethod
-    def from_dict(cls, params: Dict):
-        params = deepcopy(params)
-        update_list_params(params, "linkReferences", LinkReference)
-        update_list_params(params, "linkDependencies", LinkDependency)
-        return cls(**params)  # type: ignore
 
-
-class ContractInstance(SerializableType):
+class ContractInstance(BaseModel):
     contractType: str
     address: str
     transaction: Optional[str] = None
     block: Optional[str] = None
     runtimeBytecode: Optional[Bytecode] = None
 
-    @classmethod
-    def from_dict(cls, params: Dict):
-        params = deepcopy(params)
-        update_params(params, "runtimeBytecode", Bytecode)
-        return cls(**params)  # type: ignore
 
-
-class Compiler(SerializableType):
+class Compiler(BaseModel):
     name: str
     version: str
     settings: Optional[str] = None
     contractTypes: Optional[List[str]] = None
 
 
-class ABIType(SerializableType):
+class ABIType(BaseModel):
     name: str = ""  # NOTE: Tuples don't have names by default
     indexed: Optional[bool] = None
     type: Union[str, "ABIType"]
@@ -81,7 +67,7 @@ class ABIType(SerializableType):
             return self.type.canonical_type
 
 
-class ABI(SerializableType):
+class ABI(BaseModel):
     name: str = ""
     inputs: List[ABIType] = []
     outputs: List[ABIType] = []
@@ -145,33 +131,8 @@ class ABI(SerializableType):
     def is_stateful(self) -> bool:
         return self.stateMutability not in ("view", "pure")
 
-    @classmethod
-    def from_dict(cls, params: Dict):
-        params = deepcopy(params)
 
-        # Handle ABI v1 fields (convert to ABI v2)
-        if "anonymous" not in params and "stateMutability" not in params:
-            if params.get("constant", False):
-                params["stateMutability"] = "view"
-
-            elif params.get("payable", False):
-                params["stateMutability"] = "payable"
-
-            else:
-                params["stateMutability"] = "nonpayable"
-
-            if "constant" in params:
-                params.pop("constant")
-
-            elif "payable" in params:
-                params.pop("payable")
-
-        update_list_params(params, "inputs", ABIType)
-        update_list_params(params, "outputs", ABIType)
-        return cls(**params)  # type: ignore
-
-
-class ContractType(FileMixin, SerializableType):
+class ContractType(BaseModel):
     _keep_fields_: Set[str] = {"abi"}
     _skip_fields_: Set[str] = {"contractName"}
     contractName: str
@@ -211,21 +172,13 @@ class ContractType(FileMixin, SerializableType):
     def transactions(self) -> List[ABI]:
         return [abi for abi in self.abi if abi.type == "function" and abi.is_stateful]
 
-    @classmethod
-    def from_dict(cls, params: Dict):
-        params = deepcopy(params)
-        update_list_params(params, "abi", ABI)
-        update_params(params, "deploymentBytecode", Bytecode)
-        update_params(params, "runtimeBytecode", Bytecode)
-        return cls(**params)  # type: ignore
 
-
-class Checksum(SerializableType):
+class Checksum(BaseModel):
     algorithm: str
     hash: str
 
 
-class Source(SerializableType):
+class Source(BaseModel):
     checksum: Optional[Checksum] = None
     urls: List[str] = []
     content: Optional[str] = None
@@ -259,9 +212,3 @@ class Source(SerializableType):
             hash=compute_checksum(self.content.encode("utf8"), algorithm=algorithm),
             algorithm=algorithm,
         )
-
-    @classmethod
-    def from_dict(cls, params: Dict):
-        params = deepcopy(params)
-        update_params(params, "checksum", Checksum)
-        return cls(**params)  # type: ignore
