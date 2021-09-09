@@ -58,7 +58,6 @@ def _list():
 @click.argument("alias")
 def generate(alias):
     if alias in accounts.aliases:
-
         raise AliasAlreadyInUseError(alias)
 
     path = container.data_folder.joinpath(f"{alias}.json")
