@@ -1,3 +1,5 @@
+import difflib
+import re
 from typing import Dict
 
 import click
@@ -10,6 +12,9 @@ try:
     from importlib import metadata  # type: ignore
 except ImportError:
     import importlib_metadata as metadata  # type: ignore
+
+
+_DIFFLIB_CUT_OFF = 0.6
 
 
 def display_config(ctx, param, value):
@@ -27,6 +32,32 @@ def display_config(ctx, param, value):
 
 class ApeCLI(click.MultiCommand):
     _commands = None
+
+    def invoke(self, ctx):
+        try:
+            return super().invoke(ctx)
+        except click.UsageError as err:
+            self._suggest_cmd(err)
+
+    @staticmethod
+    def _suggest_cmd(usage_error):
+        if usage_error.message is None:
+            raise usage_error
+
+        match = re.match("No such command '(.*)'.", usage_error.message)
+        if not match:
+            raise usage_error
+
+        bad_arg = match.groups()[0]
+        suggested_commands = difflib.get_close_matches(
+            bad_arg, list(usage_error.ctx.command.commands.keys()), cutoff=_DIFFLIB_CUT_OFF
+        )
+        if suggested_commands:
+            usage_error.message = (
+                f"No such command '{bad_arg}'. Did you mean {' or '.join(suggested_commands)}?"
+            )
+
+        raise usage_error
 
     @property
     def commands(self) -> Dict:
