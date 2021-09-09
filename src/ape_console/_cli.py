@@ -5,7 +5,7 @@ import IPython  # type: ignore
 
 from ape import networks
 from ape import project as default_project
-from ape.click_ext import network_option, verbose_option
+from ape.options import network_option, verbose_option
 from ape.version import version as ape_version  # type: ignore
 
 
