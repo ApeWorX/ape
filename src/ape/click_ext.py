@@ -21,3 +21,13 @@ network_option = click.option(
     show_default=True,
     show_choices=False,
 )
+
+
+def verbose_option(help=""):
+    return click.option(
+        "-v",
+        "--verbose",
+        is_flag=True,
+        default=False,
+        help=help,
+    )

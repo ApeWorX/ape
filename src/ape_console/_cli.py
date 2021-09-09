@@ -5,12 +5,12 @@ import IPython  # type: ignore
 
 from ape import networks
 from ape import project as default_project
-from ape.click_ext import network_option
+from ape.click_ext import network_option, verbose_option
 from ape.version import version as ape_version  # type: ignore
 
 
 @click.command(short_help="Load the console", context_settings=dict(ignore_unknown_options=True))
-@click.option("--verbose", is_flag=True, flag_value=True, default=False)
+@verbose_option(help="Display more information in the console")
 @network_option
 def cli(verbose, network):
     """

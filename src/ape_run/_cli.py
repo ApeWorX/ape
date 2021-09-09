@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 
 from ape import config, networks
-from ape.click_ext import network_option
+from ape.click_ext import network_option, verbose_option
 from ape.utils import Abort, get_relative_path
 from ape_console._cli import console
 
@@ -55,13 +55,7 @@ def _run_script(script_path, interactive=False, verbose=False):
 
 @click.command(short_help="Run scripts from the `scripts` folder")
 @click.argument("scripts", nargs=-1)
-@click.option(
-    "-v",
-    "--verbose",
-    is_flag=True,
-    default=False,
-    help="Display errors from scripts",
-)
+@verbose_option(help="Display errors from scripts")
 @click.option(
     "-i",
     "--interactive",
