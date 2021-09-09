@@ -17,7 +17,7 @@ class API(ABC, BaseModel):
     #           TypeError: cannot pickle '_thread.RLock' object
 
     def __dir__(self) -> List[str]:
-        # Filter out private members
+        # Filter out protected/private members
         return [member for member in super().__dir__() if not member.startswith("_")]
 
 
