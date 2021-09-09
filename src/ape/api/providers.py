@@ -7,6 +7,7 @@ from dataclassy import as_dict
 from ape.types import TransactionSignature
 from ape.utils import notify
 
+from ..exceptions import ProviderError
 from . import networks
 from .base import abstractdataclass, abstractmethod
 from .config import ConfigItem
@@ -27,7 +28,7 @@ class TransactionAPI:
 
     def __post_init__(self):
         if not self.is_valid:
-            raise Exception("Transaction is not valid!")
+            raise ProviderError("Transaction is not valid")
 
     @property
     @abstractmethod
