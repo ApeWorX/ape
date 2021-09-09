@@ -27,8 +27,22 @@
 
 
 
+**Attributes**:
+
+.. autoapisummary::
+
+   ape._cli._DIFFLIB_CUT_OFF
+
+
 
 -----------
+
+
+.. data:: _DIFFLIB_CUT_OFF
+   :annotation: = 0.6
+
+   
+
 
 
 .. py:function:: display_config(ctx, param, value)
@@ -67,6 +81,16 @@
       
 
       
+
+   .. py:method:: invoke(self, ctx)
+
+      Given a context, this invokes the attached callback (if it exists)
+      in the right way.
+
+
+   .. py:method:: _suggest_cmd(usage_error)
+      :staticmethod:
+
 
    .. py:method:: commands(self) -> Dict
       :property:

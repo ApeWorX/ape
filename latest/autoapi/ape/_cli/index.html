@@ -64,9 +64,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../plugins/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.plugins</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../types/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.types</span></code></a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape._cli</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape._cli._DIFFLIB_CUT_OFF">_DIFFLIB_CUT_OFF</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape._cli.display_config">display_config</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape._cli.ApeCLI">ApeCLI</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape._cli.ApeCLI._commands">_commands</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape._cli.ApeCLI.invoke">invoke</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape._cli.ApeCLI._suggest_cmd">_suggest_cmd</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape._cli.ApeCLI.commands">commands</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape._cli.ApeCLI.list_commands">list_commands</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape._cli.ApeCLI.get_command">get_command</a></li>
@@ -181,7 +184,24 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Attributes</strong>:</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape._cli._DIFFLIB_CUT_OFF" title="ape._cli._DIFFLIB_CUT_OFF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_DIFFLIB_CUT_OFF</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
 <hr class="docutils" />
+<dl class="py data">
+<dt id="ape._cli._DIFFLIB_CUT_OFF">
+<code class="sig-prename descclassname"><span class="pre">ape._cli.</span></code><code class="sig-name descname"><span class="pre">_DIFFLIB_CUT_OFF</span></code><em class="property"> <span class="pre">=</span> <span class="pre">0.6</span></em><a class="headerlink" href="#ape._cli._DIFFLIB_CUT_OFF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py function">
 <dt id="ape._cli.display_config">
 <code class="sig-prename descclassname"><span class="pre">ape._cli.</span></code><code class="sig-name descname"><span class="pre">display_config</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape._cli.display_config" title="Permalink to this definition">¶</a></dt>
@@ -221,6 +241,18 @@ command. This can be set or changed later with the
 <dl class="py attribute">
 <dt id="ape._cli.ApeCLI._commands">
 <code class="sig-name descname"><span class="pre">_commands</span></code><a class="headerlink" href="#ape._cli.ApeCLI._commands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape._cli.ApeCLI.invoke">
+<code class="sig-name descname"><span class="pre">invoke</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape._cli.ApeCLI.invoke" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a context, this invokes the attached callback (if it exists)
+in the right way.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape._cli.ApeCLI._suggest_cmd">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">_suggest_cmd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usage_error</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape._cli.ApeCLI._suggest_cmd" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
