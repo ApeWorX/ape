@@ -5,8 +5,9 @@ from pathlib import Path
 import click
 
 from ape import config, networks
+from ape.click_ext import network_option
 from ape.utils import Abort, get_relative_path
-from ape_console._cli import NetworkChoice, console
+from ape_console._cli import console
 
 # TODO: Migrate this to a CLI toolkit under ``ape``
 
@@ -68,14 +69,7 @@ def _run_script(script_path, interactive=False, verbose=False):
     default=False,
     help="Drop into interactive console session after running",
 )
-@click.option(
-    "--network",
-    type=NetworkChoice(case_sensitive=False),
-    default=networks.default_ecosystem.name,
-    help="Override the default network and provider. (see `ape networks list` for options)",
-    show_default=True,
-    show_choices=False,
-)
+@network_option
 def cli(scripts, verbose, interactive, network):
     """
     NAME - Path or script name (from ``scripts/`` folder)
