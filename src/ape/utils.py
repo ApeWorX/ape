@@ -45,14 +45,15 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     which may or may not share a common ancestor.
     NOTE: Both paths must be absolute
     """
-    assert anchor.is_absolute()
-    assert target.is_absolute()
+    if not target.is_absolute():
+        raise ValueError("'target' must be an absolute path")
+    if not anchor.is_absolute():
+        raise ValueError("'anchor' must be an absolute path")
 
     anchor_copy = Path(str(anchor))
     levels_deep = 0
     while not is_relative_to(anchor_copy, target):
         levels_deep += 1
-        assert anchor_copy != anchor_copy.parent
         anchor_copy = anchor_copy.parent
 
     return Path("/".join(".." for _ in range(levels_deep))).joinpath(
