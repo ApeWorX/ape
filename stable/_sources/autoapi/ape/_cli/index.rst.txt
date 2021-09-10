@@ -82,7 +82,7 @@
 
       
 
-   .. py:method:: invoke(self, ctx)
+   .. py:method:: invoke(self, ctx) -> Any
 
       Given a context, this invokes the attached callback (if it exists)
       in the right way.

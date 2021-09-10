@@ -111,5 +111,11 @@
    .. py:method:: __contains__(self, address: ape.types.AddressType) -> bool
 
 
+   .. py:method:: _verify_account_type(self, account)
+
+
+   .. py:method:: _verify_unused_alias(self, account)
+
+
 
 

@@ -30,6 +30,7 @@
 
 .. autoapisummary::
 
+   ape.api.contracts._select_abi
    ape.api.contracts._Contract
 
 
@@ -127,6 +128,11 @@
 
    .. py:method:: __call__(self, *args, **kwargs) -> Any
 
+
+
+
+
+.. py:function:: _select_abi(abis, args)
 
 
 

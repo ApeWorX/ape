@@ -41,5 +41,11 @@
    .. py:method:: compile(self, contract_filepaths: List[pathlib.Path]) -> Dict[str, ape.types.ContractType]
 
 
+   .. py:method:: _get_contract_extensions(self, contract_filepaths: List[pathlib.Path]) -> Set[str]
+
+
+   .. py:method:: _get_contract_path(self, path: pathlib.Path)
+
+
 
 

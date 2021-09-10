@@ -92,6 +92,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.contracts.ContractCallHandler.__call__">__call__</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.contracts._select_abi">_select_abi</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.contracts.ContractTransaction">ContractTransaction</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.contracts.ContractTransaction.abi">abi</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.contracts.ContractTransaction.address">address</a></li>
@@ -276,7 +277,10 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.contracts._Contract" title="ape.api.contracts._Contract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_Contract</span></code></a>(address: Union[str, ape.api.address.AddressAPI, ape.types.AddressType], networks: ape.managers.networks.NetworkManager, converters: ape.managers.converters.ConversionManager, contract_type: Optional[ape.types.ContractType] = None) → ape.api.address.AddressAPI</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.contracts._select_abi" title="ape.api.contracts._select_abi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_select_abi</span></code></a>(abis, args)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.contracts._Contract" title="ape.api.contracts._Contract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_Contract</span></code></a>(address: Union[str, ape.api.address.AddressAPI, ape.types.AddressType], networks: ape.managers.networks.NetworkManager, converters: ape.managers.converters.ConversionManager, contract_type: Optional[ape.types.ContractType] = None) → ape.api.address.AddressAPI</p></td>
 <td><p>Function used to triage whether we have a contract type available for</p></td>
 </tr>
 </tbody>
@@ -389,6 +393,11 @@
 <dd></dd></dl>
 
 </dd></dl>
+
+<dl class="py function">
+<dt id="ape.api.contracts._select_abi">
+<code class="sig-prename descclassname"><span class="pre">ape.api.contracts.</span></code><code class="sig-name descname"><span class="pre">_select_abi</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.contracts._select_abi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py class">
 <dt id="ape.api.contracts.ContractTransaction">

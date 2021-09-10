@@ -1,0 +1,148 @@
+:mod:`ape.exceptions`
+=====================
+
+.. py:module:: ape.exceptions
+
+
+
+
+.. raw:: html
+
+   <h3>Module Contents</h3>
+
+
+-----------
+
+
+.. py:exception:: ApeException
+
+   Bases: :py:obj:`Exception`
+
+   An exception raised by ape.
+
+
+
+
+.. py:exception:: AccountsError
+
+   Bases: :py:obj:`ApeException`
+
+   Raised when a problem occurs when using accounts.
+
+
+
+
+.. py:exception:: AliasAlreadyInUseError(alias: str)
+
+   Bases: :py:obj:`AccountsError`
+
+   Raised when attempting to add an account using an alias
+   that already maps to another account.
+
+   .. py:method:: __init__(self, alias: str)
+
+      Initialize self.  See help(type(self)) for accurate signature.
+
+
+
+
+
+.. py:exception:: ContractCallError(message=None)
+
+   Bases: :py:obj:`ApeException`
+
+   Raised when a problem occurs when calling a contract.
+
+   .. py:method:: __init__(self, message=None)
+
+      Initialize self.  See help(type(self)) for accurate signature.
+
+
+
+
+
+.. py:exception:: ContractDeployError
+
+   Bases: :py:obj:`ApeException`
+
+   Raised when a problem occurs when deploying a contract.
+
+
+
+
+.. py:exception:: NetworkError
+
+   Bases: :py:obj:`ApeException`
+
+   Raised when a problem occurs when using blockchain networks.
+
+
+
+
+.. py:exception:: NetworkNotFoundError(network: str)
+
+   Bases: :py:obj:`NetworkError`
+
+   Raised when the network with the given name was not found.
+
+   .. py:method:: __init__(self, network: str)
+
+      Initialize self.  See help(type(self)) for accurate signature.
+
+
+
+
+
+.. py:exception:: CompilerError
+
+   Bases: :py:obj:`ApeException`
+
+   Raised when unable to compile.
+
+
+
+
+.. py:exception:: ProjectError
+
+   Bases: :py:obj:`ApeException`
+
+   Raised when problems occur in a project.
+
+
+
+
+.. py:exception:: ConversionError
+
+   Bases: :py:obj:`ApeException`
+
+   Raised when unable to convert a value.
+
+
+
+
+.. py:exception:: ProviderError
+
+   Bases: :py:obj:`ApeException`
+
+   Raised when a problem occurs when using providers.
+
+
+
+
+.. py:exception:: ConfigError
+
+   Bases: :py:obj:`ApeException`
+
+   Raised when a problem occurs from the configuration file.
+
+
+
+
+.. py:exception:: AddressError
+
+   Bases: :py:obj:`ApeException`
+
+   Raised when a problem occurs regarding an address.
+
+
+

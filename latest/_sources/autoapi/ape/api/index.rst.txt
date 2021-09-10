@@ -151,6 +151,12 @@
    .. py:method:: __contains__(self, address: ape.types.AddressType) -> bool
 
 
+   .. py:method:: _verify_account_type(self, account)
+
+
+   .. py:method:: _verify_unused_alias(self, account)
+
+
 
 
 
@@ -418,6 +424,9 @@
 
    .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.providers.ReceiptAPI) -> ape.api.contracts.ContractLog
       :abstractmethod:
+
+
+   .. py:method:: _try_get_network(self, network_name)
 
 
 

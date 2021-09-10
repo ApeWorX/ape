@@ -26,7 +26,7 @@
 -----------
 
 
-.. py:function:: notify(type_, msg)
+.. py:function:: notify(type_, msg, file=None)
 
    Prepends a message with a colored tag and outputs it to the console.
 
