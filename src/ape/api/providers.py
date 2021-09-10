@@ -4,8 +4,8 @@ from typing import Iterator, List, Optional
 
 from dataclassy import as_dict
 
+from ape.cli.utils import notify
 from ape.types import TransactionSignature
-from ape.utils import notify
 
 from ..exceptions import ProviderError
 from . import networks

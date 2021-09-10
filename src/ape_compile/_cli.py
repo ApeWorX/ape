@@ -3,7 +3,7 @@ from pathlib import Path
 
 import click
 
-from ape.utils import notify
+from ape.cli.utils import notify
 
 flatten = chain.from_iterable
 

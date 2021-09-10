@@ -5,10 +5,11 @@ from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_a
 from hexbytes import HexBytes
 
 from ape.api import AddressAPI, ConverterAPI
+from ape.cli.utils import notify
 from ape.exceptions import ConversionError
 from ape.plugins import PluginManager
 from ape.types import AddressType
-from ape.utils import cached_property, notify
+from ape.utils import cached_property
 
 from .config import ConfigManager
 from .networks import NetworkManager

@@ -5,9 +5,9 @@ from typing import Any, Dict
 import click
 import yaml
 
+from ape.cli.utils import Abort, notify
 from ape.exceptions import ApeException
 from ape.plugins import clean_plugin_name
-from ape.utils import Abort, notify
 
 try:
     from importlib import metadata  # type: ignore

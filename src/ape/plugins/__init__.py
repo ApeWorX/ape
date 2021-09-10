@@ -3,7 +3,7 @@ import importlib
 import pkgutil
 from typing import Any, Callable, Iterator, Tuple, Type, cast
 
-from ape.utils import notify
+from ape.cli.utils import notify
 
 from .account import AccountPlugin
 from .compiler import CompilerPlugin

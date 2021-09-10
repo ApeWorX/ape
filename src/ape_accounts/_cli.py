@@ -6,8 +6,9 @@ from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
 
 from ape import accounts
+from ape.cli.utils import Abort
 from ape.exceptions import AliasAlreadyInUseError
-from ape.utils import Abort, notify
+from ape.utils import notify
 
 # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
 container = accounts.containers["accounts"]

@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from eth_utils import to_bytes
 
+from ape.cli.utils import notify
 from ape.types import ABI, AddressType, ContractType
-from ape.utils import notify
 
 from ..exceptions import ContractCallError, ContractDeployError
 from .address import Address, AddressAPI

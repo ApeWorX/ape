@@ -7,9 +7,10 @@ from hashlib import md5
 from pathlib import Path
 from typing import Any, Dict
 
-import click
 import yaml
 from importlib_metadata import PackageNotFoundError, packages_distributions, version
+
+from ape.cli.utils import notify
 
 try:
     from functools import cached_property
@@ -89,29 +90,6 @@ def get_package_version(obj: Any) -> str:
         return ""
 
 
-NOTIFY_COLORS = {
-    "WARNING": "bright_red",
-    "ERROR": "bright_red",
-    "SUCCESS": "bright_green",
-    "INFO": "blue",
-}
-
-
-def notify(type_, msg, file=None):
-    """Prepends a message with a colored tag and outputs it to the console."""
-    click.echo(
-        f"{click.style(type_, fg=NOTIFY_COLORS[type_])}: {msg}", file=file, err=type_ == "ERROR"
-    )
-
-
-class Abort(click.ClickException):
-    """Wrapper around a CLI exception"""
-
-    def show(self, file=None):
-        """Override default ``show`` to print CLI errors in red text."""
-        notify("ERROR", self.format_message(), file=file)
-
-
 def deep_merge(dict1, dict2):
     """Return a new dictionary by merging two dictionaries recursively."""
 
@@ -166,6 +144,5 @@ __all__ = [
     "deep_merge",
     "expand_environment_variables",
     "load_config",
-    "notify",
     "singledispatchmethod",
 ]

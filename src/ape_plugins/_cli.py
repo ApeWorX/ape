@@ -8,8 +8,9 @@ import click
 from github import Github
 
 from ape import config
+from ape.cli.utils import Abort, notify
 from ape.plugins import clean_plugin_name, plugin_manager
-from ape.utils import Abort, get_package_version, notify
+from ape.utils import get_package_version
 
 # Plugins included with ape core
 FIRST_CLASS_PLUGINS: Set[str] = {
