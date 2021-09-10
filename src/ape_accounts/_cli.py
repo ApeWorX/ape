@@ -6,6 +6,7 @@ from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
 
 from ape import accounts
+from ape.exceptions import AliasAlreadyInUseError
 from ape.utils import Abort, notify
 
 # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
@@ -57,7 +58,7 @@ def _list():
 @click.argument("alias")
 def generate(alias):
     if alias in accounts.aliases:
-        raise Abort(f"Account with alias '{alias}' is already in use")
+        raise AliasAlreadyInUseError(alias)
 
     path = container.data_folder.joinpath(f"{alias}.json")
     extra_entropy = click.prompt(
@@ -80,7 +81,7 @@ def generate(alias):
 @click.argument("alias")
 def _import(alias):
     if alias in accounts.aliases:
-        raise Abort(f"Account with alias '{alias}' is already in use")
+        raise AliasAlreadyInUseError(alias)
 
     path = container.data_folder.joinpath(f"{alias}.json")
     key = click.prompt("Enter Private Key", hide_input=True)

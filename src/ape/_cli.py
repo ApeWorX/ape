@@ -1,12 +1,13 @@
 import difflib
 import re
-from typing import Dict
+from typing import Any, Dict
 
 import click
 import yaml
 
+from ape.exceptions import ApeException
 from ape.plugins import clean_plugin_name
-from ape.utils import notify
+from ape.utils import Abort, notify
 
 try:
     from importlib import metadata  # type: ignore
@@ -33,11 +34,13 @@ def display_config(ctx, param, value):
 class ApeCLI(click.MultiCommand):
     _commands = None
 
-    def invoke(self, ctx):
+    def invoke(self, ctx) -> Any:
         try:
             return super().invoke(ctx)
         except click.UsageError as err:
             self._suggest_cmd(err)
+        except ApeException as err:
+            raise Abort(str(err)) from err
 
     @staticmethod
     def _suggest_cmd(usage_error):
@@ -65,7 +68,7 @@ class ApeCLI(click.MultiCommand):
             entry_points = metadata.entry_points()
 
             if "ape_cli_subcommands" not in entry_points:
-                raise Exception("Missing registered cli subcommands")
+                raise Abort("Missing registered cli subcommands")
 
             self._commands = {
                 clean_plugin_name(entry_point.name): entry_point.load
@@ -81,8 +84,11 @@ class ApeCLI(click.MultiCommand):
         if name in self.commands:
             try:
                 return self.commands[name]()
-            except Exception:
-                notify("WARNING", f"Error loading cli endpoint for plugin 'ape_{name}'")
+            except Exception as err:
+                notify(
+                    "WARNING",
+                    f"Unable to load CLI endpoint for plugin 'ape_{name}'.\n\t{err}",
+                )
 
         # NOTE: don't return anything so Click displays proper error
 
