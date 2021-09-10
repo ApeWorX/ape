@@ -1,0 +1,67 @@
+:mod:`ape.options`
+==================
+
+.. py:module:: ape.options
+
+
+
+
+.. raw:: html
+
+   <h3>Module Contents</h3>
+
+**Classes**:
+
+.. autoapisummary::
+
+   ape.options.NetworkChoice
+
+
+
+**Functions**:
+
+.. autoapisummary::
+
+   ape.options.verbose_option
+
+
+
+**Attributes**:
+
+.. autoapisummary::
+
+   ape.options.network_option
+
+
+
+-----------
+
+
+.. py:class:: NetworkChoice(case_sensitive=True)
+
+   Bases: :py:obj:`click.Choice`
+
+   Wraps ``click.Choice`` to provide network choice defaults for the active project.
+
+   .. py:method:: __init__(self, case_sensitive=True)
+
+
+   .. py:method:: get_metavar(self, param)
+
+      Returns the metavar default for this param if it provides one.
+
+
+
+
+
+.. data:: network_option
+   
+
+   
+
+
+
+.. py:function:: verbose_option(help='')
+
+
+

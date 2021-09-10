@@ -15,6 +15,7 @@
 
 .. autoapisummary::
 
+   ape_plugins._cli.yes_option
    ape_plugins._cli.is_plugin_installed
    ape_plugins._cli.cli
    ape_plugins._cli._list
@@ -55,6 +56,11 @@
    
 
    
+
+
+
+.. py:function:: yes_option(help='')
+
 
 
 

@@ -31,6 +31,7 @@
 
    _cli/index.rst
    exceptions/index.rst
+   options/index.rst
    utils/index.rst
 
 

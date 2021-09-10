@@ -10,13 +10,6 @@
 
    <h3>Module Contents</h3>
 
-**Classes**:
-
-.. autoapisummary::
-
-   ape_console._cli.NetworkChoice
-
-
 
 **Functions**:
 
@@ -29,23 +22,6 @@
 
 
 -----------
-
-
-.. py:class:: NetworkChoice(case_sensitive=True)
-
-   Bases: :py:obj:`click.Choice`
-
-   Wraps ``click.Choice`` to provide network choice defaults for the active project.
-
-   .. py:method:: __init__(self, case_sensitive=True)
-
-
-   .. py:method:: get_metavar(self, param)
-
-      Returns the metavar default for this param if it provides one.
-
-
-
 
 
 .. py:function:: cli(verbose, network)
