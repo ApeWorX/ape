@@ -97,9 +97,11 @@ NOTIFY_COLORS = {
 }
 
 
-def notify(type_, msg):
+def notify(type_, msg, file=None):
     """Prepends a message with a colored tag and outputs it to the console."""
-    click.echo(f"{click.style(type_, fg=NOTIFY_COLORS[type_])}: {msg}", err=type_ == "ERROR")
+    click.echo(
+        f"{click.style(type_, fg=NOTIFY_COLORS[type_])}: {msg}", file=file, err=type_ == "ERROR"
+    )
 
 
 class Abort(click.ClickException):
@@ -107,7 +109,7 @@ class Abort(click.ClickException):
 
     def show(self, file=None):
         """Override default ``show`` to print CLI errors in red text."""
-        notify("ERROR", self.format_message())
+        notify("ERROR", self.format_message(), file=file)
 
 
 def deep_merge(dict1, dict2):
@@ -154,7 +156,7 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
     if algorithm == "md5":
         hasher = md5
     else:
-        raise Exception("Unknown algorithm")
+        raise ValueError(f"Unknown algorithm `{algorithm}`")
 
     return hasher(source).hexdigest()
 

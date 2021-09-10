@@ -8,6 +8,7 @@ from dataclassy import dataclass
 from ape.types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ape.utils import compute_checksum
 
+from ..exceptions import ProjectError
 from .compilers import CompilerManager
 from .config import ConfigManager
 
@@ -33,7 +34,8 @@ class ProjectManager:
         manifest_dict = requests.get(manifest_uri).json()
         # TODO: Handle non-manifest URLs e.g. Ape/Brownie projects, Hardhat/Truffle projects, etc.
         if "name" not in manifest_dict:
-            raise Exception("Dependencies must have a name!")
+            raise ProjectError("Dependencies must have a name")
+
         return PackageManifest.from_dict(manifest_dict)
 
     def __str__(self) -> str:
@@ -57,7 +59,8 @@ class ProjectManager:
         if manifest_file.exists():
             manifest_json = json.loads(manifest_file.read_text())
             if "manifest" not in manifest_json:
-                raise Exception("Corrupted Manifest")
+                raise ProjectError("Corrupted manifest")
+
             return PackageManifest.from_dict(manifest_json)
 
         else:
@@ -179,9 +182,9 @@ class ProjectManager:
     # def publish_manifest(self):
     #     manifest = self.manifest.to_dict()  # noqa: F841
     #     if not manifest["name"]:
-    #         raise Exception("Need name to release manifest")
+    #         raise ProjectError("Need name to release manifest")
     #     if not manifest["version"]:
-    #         raise Exception("Need version to release manifest")
+    #         raise ProjectError("Need version to release manifest")
     #     # TODO: Clean up manifest and minify it
     #     # TODO: Publish sources to IPFS and replace with CIDs
     #     # TODO: Publish to IPFS

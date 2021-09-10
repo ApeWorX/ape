@@ -10,6 +10,7 @@ from ape.types import (
 )
 from ape.utils import cached_property
 
+from ..exceptions import AccountsError, AliasAlreadyInUseError
 from .address import AddressAPI
 from .base import abstractdataclass, abstractmethod
 from .contracts import ContractContainer, ContractInstance
@@ -54,7 +55,7 @@ class AccountAPI(AddressAPI):
         if txn.nonce is None:
             txn.nonce = self.nonce
         elif txn.nonce < self.nonce:
-            raise Exception("Invalid nonce, will not publish!")
+            raise AccountsError("Invalid nonce, will not publish")
 
         # TODO: Add `GasEstimationAPI`
         if txn.gas_price is None:
@@ -71,12 +72,12 @@ class AccountAPI(AddressAPI):
             txn.value = self.balance - txn.gas_limit * txn.gas_price
 
         if txn.gas_limit * txn.gas_price + txn.value > self.balance:
-            raise Exception("Transfer value meets or exceeds account balance")
+            raise AccountsError("Transfer value meets or exceeds account balance")
 
         txn.signature = self.sign_transaction(txn)
 
         if not txn.signature:
-            raise Exception("User didn't sign!")
+            raise AccountsError("The transaction was not signed")
 
         return self.provider.send_transaction(txn)
 
@@ -119,7 +120,7 @@ class AccountAPI(AddressAPI):
         receipt = self.call(txn)
 
         if not receipt.contract_address:
-            raise Exception(f"{receipt.txn_hash} did not create a contract")
+            raise AccountsError(f"'{receipt.txn_hash}' did not create a contract")
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,
@@ -154,14 +155,12 @@ class AccountContainerAPI:
         raise IndexError(f"No local account {address}.")
 
     def append(self, account: AccountAPI):
-        if not isinstance(account, self.account_type):
-            raise Exception("Not the right type for this container")
+        self._verify_account_type(account)
 
         if account.address in self:
-            raise Exception("Account already in container")
+            raise AccountsError(f"Account '{account.address}' already in container")
 
-        if account.alias and account.alias in self.aliases:
-            raise Exception("Alias already in use")
+        self._verify_unused_alias(account)
 
         self.__setitem__(account.address, account)
 
@@ -169,14 +168,10 @@ class AccountContainerAPI:
         raise NotImplementedError("Must define this method to use `container.append(acct)`")
 
     def remove(self, account: AccountAPI):
-        if not isinstance(account, self.account_type):
-            raise Exception("Not the right type for this container")
+        self._verify_account_type(account)
 
         if account.address not in self:
-            raise Exception("Account not in container")
-
-        if account.alias and account.alias in self.aliases:
-            raise Exception("Alias already in use")
+            raise AccountsError(f"Account '{account.address}' not known")
 
         self.__delitem__(account.address)
 
@@ -190,3 +185,15 @@ class AccountContainerAPI:
 
         except IndexError:
             return False
+
+    def _verify_account_type(self, account):
+        if not isinstance(account, self.account_type):
+            message = (
+                f"Container '{type(account).__name__}' is an incorrect "
+                f"type for container '{type(self.account_type).__name__}'"
+            )
+            raise AccountsError(message)
+
+    def _verify_unused_alias(self, account):
+        if account.alias and account.alias in self.aliases:
+            raise AliasAlreadyInUseError(account.alias)

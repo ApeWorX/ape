@@ -37,7 +37,7 @@ def test_keyparams():
     }
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def test_keyfile_path(config):
     test_keyfile_path = Path(config.DATA_FOLDER / "accounts" / f"{ALIAS}.json")
 
@@ -80,7 +80,7 @@ def test_import_alias_already_in_use(ape_cli, runner, test_account, test_keyfile
     result = invoke_import()
     assert result.exit_code == 0
     result = invoke_import()
-    assert_failure(result, f"Account with alias '{ALIAS}' is already in use")
+    assert_failure(result, f"Account with alias '{ALIAS}' already in use")
 
 
 def test_import_account_instantiation_failure(
@@ -108,7 +108,7 @@ def test_generate_alias_already_in_use(ape_cli, runner, test_account, test_keyfi
     result = invoke_generate()
     assert result.exit_code == 0
     result = invoke_generate()
-    assert_failure(result, f"Account with alias '{ALIAS}' is already in use")
+    assert_failure(result, f"Account with alias '{ALIAS}' already in use")
 
 
 def test_list(ape_cli, runner, test_keyfile):

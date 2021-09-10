@@ -2,6 +2,7 @@ from typing import List, Optional, Type
 
 from ape.types import AddressType
 
+from ..exceptions import AddressError
 from .base import abstractdataclass, abstractmethod
 from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
 
@@ -13,7 +14,9 @@ class AddressAPI:
     @property
     def provider(self) -> ProviderAPI:
         if not self._provider:
-            raise Exception("Wired incorrectly")
+            raise AddressError(
+                f"Incorrectly implemented provider API for class {type(self).__name__}"
+            )
 
         return self._provider
 
