@@ -32,6 +32,17 @@ else:
     notify("WARNING", "$GITHUB_ACCESS_TOKEN not set, skipping 2nd class plugins")
 
 
+def yes_option(help=""):
+    return click.option(
+        "-y",
+        "--yes",
+        "skip_confirmation",
+        default=False,
+        is_flag=True,
+        help=help,
+    )
+
+
 def is_plugin_installed(plugin: str) -> bool:
     try:
         __import__(plugin)
@@ -83,14 +94,7 @@ def _list(display_all):
 @cli.command(short_help="Install an ape plugin")
 @click.argument("plugin")
 @click.option("-v", "--version", help="Specify version (Default is latest)")
-@click.option(
-    "-y",
-    "--yes",
-    "skip_confirmation",
-    default=False,
-    is_flag=True,
-    help="Don't ask for confirmation to remove plugin",
-)
+@yes_option(help="Don't ask for confirmation to add the plugin")
 def add(plugin, version, skip_confirmation):
     if plugin.startswith("ape"):
         raise Abort(f"Namespace 'ape' in '{plugin}' is not required")
@@ -120,14 +124,7 @@ def add(plugin, version, skip_confirmation):
 
 
 @cli.command(short_help="Install all plugins in the local config file")
-@click.option(
-    "-y",
-    "--yes",
-    "skip_confirmation",
-    default=False,
-    is_flag=True,
-    help="Don't ask for confirmation to remove plugin",
-)
+@yes_option("Don't ask for confirmation to install the plugins")
 def install(skip_confirmation):
     for plugin, version in config.get_config("plugins").items():
         if not plugin.startswith("ape-"):
@@ -149,14 +146,7 @@ def install(skip_confirmation):
 
 @cli.command(short_help="Uninstall an ape plugin")
 @click.argument("plugin")
-@click.option(
-    "-y",
-    "--yes",
-    "skip_confirmation",
-    default=False,
-    is_flag=True,
-    help="Don't ask for confirmation to remove plugin",
-)
+@yes_option("Don't ask for confirmation to remove the plugin")
 def remove(plugin, skip_confirmation):
     if plugin.startswith("ape"):
         raise Abort(f"Namespace 'ape' in '{plugin}' is not required")
