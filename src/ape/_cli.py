@@ -1,6 +1,6 @@
 import difflib
 import re
-from typing import Any, Dict
+from typing import Dict
 
 import click
 import yaml
