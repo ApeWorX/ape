@@ -1,6 +1,6 @@
 import difflib
 import re
-from typing import Dict
+from typing import Any, Dict
 
 import click
 import yaml
@@ -34,7 +34,7 @@ def display_config(ctx, param, value):
 class ApeCLI(click.MultiCommand):
     _commands = None
 
-    def invoke(self, ctx):
+    def invoke(self, ctx) -> Any:
         try:
             return super().invoke(ctx)
         except click.UsageError as err:
