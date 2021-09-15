@@ -29,7 +29,7 @@ class EcosystemAPI(API):
     config_manager: "ConfigManager"
     plugin_manager: "PluginManager"
     data_folder: Path
-    request_header: str
+    request_header: Dict
 
     transaction_types: Dict["TransactionType", Type["TransactionAPI"]]
     receipt_class: Type["ReceiptAPI"]
