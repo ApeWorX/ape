@@ -5,12 +5,12 @@ import pytest
 from ape.utils import get_relative_path
 
 _TEST_DIRECTORY_PATH = Path("/This/is/a/test/")
-_TEST_FILE_PATH = _TEST_DIRECTORY_PATH / "scripts" / "deploy.py"
+_TEST_FILE_PATH = _TEST_DIRECTORY_PATH / "scripts" / "script.py"
 
 
 def test_get_relative_path_from_project():
     actual = get_relative_path(_TEST_FILE_PATH, _TEST_DIRECTORY_PATH)
-    expected = Path("scripts/deploy.py")
+    expected = Path("scripts/script.py")
     assert actual == expected
 
 
@@ -21,7 +21,7 @@ def test_get_relative_path_given_relative_path():
 
     assert str(err.value) == "'target' must be an absolute path"
 
-    relative_project_path = Path("../ApeProjects/koko-token")
+    relative_project_path = Path("../This/is/a/test")
 
     with pytest.raises(ValueError) as err:
         get_relative_path(_TEST_FILE_PATH, relative_project_path)
