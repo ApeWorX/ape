@@ -56,9 +56,10 @@ class ApeCLI(click.MultiCommand):
             bad_arg, list(usage_error.ctx.command.commands.keys()), cutoff=_DIFFLIB_CUT_OFF
         )
         if suggested_commands:
-            usage_error.message = (
-                f"No such command '{bad_arg}'. Did you mean {' or '.join(suggested_commands)}?"
-            )
+            if bad_arg not in suggested_commands:
+                usage_error.message = (
+                    f"No such command '{bad_arg}'. Did you mean {' or '.join(suggested_commands)}?"
+                )
 
         raise usage_error
 
