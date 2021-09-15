@@ -124,9 +124,15 @@ class PluginManager:
                 yield clean_plugin_name(plugin_name), results
 
             else:
-                notify(
-                    "WARNING", f"'{results.__name__}' from '{plugin_name}' is not fully implemented"
-                )
+                _warn_not_fully_implemented_error(results, plugin_name)
+
+
+def _warn_not_fully_implemented_error(results, plugin_name):
+    if isinstance(results, (tuple, list)):
+        class_names = ", ".join((r.__name__ for r in results))
+    else:
+        class_names = results.__name__
+    notify("WARNING", f"'{class_names}' from '{plugin_name}' is not fully implemented")
 
 
 __all__ = [
