@@ -16,7 +16,7 @@ from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.types import NodeInfo
 
-from ape.api import ConfigItem, ReceiptAPI, TransactionAPI, UpstreamProvider, Web3Provider
+from ape.api import PluginConfig, ReceiptAPI, TransactionAPI, UpstreamProvider, Web3Provider
 from ape.exceptions import ContractLogicError, ProviderError, TransactionError, VirtualMachineError
 from ape.logging import logger
 from ape.utils import extract_nested_value, gas_estimation_error_message, generate_dev_accounts
@@ -107,7 +107,7 @@ class EphemeralGeth(LoggingMixin, BaseGethProcess):
             shutil.rmtree(self.data_dir)
 
 
-class GethNetworkConfig(ConfigItem):
+class GethNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
     mainnet: dict = DEFAULT_SETTINGS.copy()
     ropsten: dict = DEFAULT_SETTINGS.copy()
@@ -118,7 +118,7 @@ class GethNetworkConfig(ConfigItem):
     development: dict = DEFAULT_SETTINGS.copy()
 
 
-class NetworkConfig(ConfigItem):
+class NetworkConfig(PluginConfig):
     ethereum: GethNetworkConfig = GethNetworkConfig()
 
 

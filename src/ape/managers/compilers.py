@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Dict, List, Set
 
-from ape.exceptions import CompilerError
 from ape.api.compiler import CompilerAPI
+from ape.exceptions import CompilerError
 from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.types import ContractType

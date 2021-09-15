@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from pydantic import BaseSettings
 
@@ -71,7 +71,7 @@ class ConfigManager(BaseSettings):
             return UnprocessedConfig()  # Empty config for this plugin
 
     def dict(self, *args, **kwargs) -> Dict:
-        project_config = {
+        project_config: Dict[str, Any] = {
             "name": self.name,
             "version": self.version,
             "dependencies": self.dependencies,

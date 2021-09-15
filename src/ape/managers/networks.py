@@ -1,7 +1,6 @@
 from typing import Dict, Iterator, Optional
 
 import yaml
-from pydantic import BaseModel
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.exceptions import NetworkError

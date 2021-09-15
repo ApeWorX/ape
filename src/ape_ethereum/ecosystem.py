@@ -16,10 +16,10 @@ from ape.api import (
     BlockAPI,
     BlockConsensusAPI,
     BlockGasAPI,
-    ConfigItem,
     ContractLog,
     EcosystemAPI,
     ReceiptAPI,
+    PluginConfig,
     TransactionAPI,
     TransactionStatusEnum,
     TransactionType,
@@ -37,11 +37,11 @@ NETWORKS = {
 }
 
 
-class NetworkConfig(ConfigItem):
+class NetworkConfig(PluginConfig):
     required_confirmations: int = 0
 
 
-class EthereumConfig(ConfigItem):
+class EthereumConfig(PluginConfig):
     mainnet: NetworkConfig = NetworkConfig(required_confirmations=7)  # type: ignore
     ropsten: NetworkConfig = NetworkConfig(required_confirmations=12)  # type: ignore
     kovan: NetworkConfig = NetworkConfig(required_confirmations=3)  # type: ignore

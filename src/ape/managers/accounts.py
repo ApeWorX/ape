@@ -1,7 +1,5 @@
 from typing import Dict, Iterator, List, Type
 
-from pydantic import BaseModel
-
 from ape.api import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.plugins import PluginManager
 from ape.types import AddressType
@@ -50,7 +48,7 @@ class AccountManager(BaseManager):
             yield from container.aliases
 
     def get_accounts_by_type(self, type_: Type[AccountAPI]) -> List[AccountAPI]:
-        accounts_with_type = []
+        accounts_with_type: List[AccountAPI] = []
         for account in self:
             if isinstance(account, type_):
                 self._inject_provider(account)

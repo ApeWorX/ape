@@ -1,7 +1,9 @@
+from copy import deepcopy
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
+from .abstract import update_dict_params, update_list_params, update_params
 from .contract import Compiler, ContractInstance, ContractType, Source
 
 
