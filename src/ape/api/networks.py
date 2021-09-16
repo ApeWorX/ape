@@ -147,7 +147,9 @@ class ProviderContextManager:
     def __exit__(self, *args, **kwargs):
         # Put our providers back the way it was
         provider = self._connected_providers.pop()
-        assert self.provider == provider
+        if self.provider != provider:
+            raise ValueError("Previous provider value unknown")
+
         provider.disconnect()
 
         if self._connected_providers:

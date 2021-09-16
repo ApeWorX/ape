@@ -105,6 +105,7 @@ class ProjectManager:
             # Recalculate checksum if it doesn't exist yet
             cached = cached_sources[path]
             cached.compute_checksum(algorithm="md5")
+
             assert cached.checksum  # to tell mypy this can't be None
 
             # File contents changed in source code folder?
