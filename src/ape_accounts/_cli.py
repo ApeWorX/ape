@@ -37,7 +37,7 @@ def cli():
 
 
 # Different name because `list` is a keyword
-@cli.command(name="list", short_help="List available accounts")
+@cli.command(name="list", short_help="List available local accounts")
 def _list():
     key_file_accounts = accounts.containers.get("accounts", [])
     if len(key_file_accounts) == 0:
