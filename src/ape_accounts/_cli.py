@@ -39,17 +39,18 @@ def cli():
 # Different name because `list` is a keyword
 @cli.command(name="list", short_help="List available accounts")
 def _list():
-    if len(accounts) == 0:
+    key_file_accounts = accounts.containers.get("accounts", [])
+    if len(key_file_accounts) == 0:
         notify("WARNING", "No accounts found.")
         return
 
-    elif len(accounts) > 1:
+    elif len(key_file_accounts) > 1:
         click.echo(f"Found {len(accounts)} accounts:")
 
     else:
         click.echo("Found 1 account:")
 
-    for account in accounts:
+    for account in key_file_accounts:
         alias_display = f" (alias: '{account.alias}')" if account.alias else ""
         click.echo(f"  {account.address}{alias_display}")
 

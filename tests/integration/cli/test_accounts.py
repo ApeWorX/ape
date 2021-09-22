@@ -4,6 +4,8 @@ from pathlib import Path
 import pytest  # type: ignore
 from eth_account import Account  # type: ignore
 
+from ape.api import AccountAPI
+
 from .conftest import assert_failure
 
 ALIAS = "test"
@@ -116,6 +118,29 @@ def test_list(ape_cli, runner, test_keyfile):
     assert test_keyfile.exists()
     result = runner.invoke(ape_cli, ["accounts", "list"])
     assert ALIAS in result.output
+
+
+def test_list_excludes_external_accounts(mocker, ape_cli, runner):
+    account_manager_patch = mocker.patch("ape_accounts._cli.accounts")
+
+    mock_account = mocker.MagicMock(spec=AccountAPI)
+    mock_account.alias = "test_local_alias"
+    mock_account.address = "test_local_address"
+
+    mock_3rd_party_account = mocker.MagicMock(spec=AccountAPI)
+    mock_3rd_party_account.alias = "test_external_alias"
+    mock_3rd_party_account.address = "test_external_address"
+
+    containers = {"accounts": [mock_account], "test-wallet": [mock_3rd_party_account]}
+    account_manager_patch.containers = containers
+
+    result = runner.invoke(ape_cli, ["accounts", "list"])
+
+    assert result.exit_code == 0, result.output
+    assert "test_local_alias" in result.output
+    assert "test_local_address" in result.output
+    assert "test_external_alias" not in result.output
+    assert "test_external_address" not in result.output
 
 
 def test_change_password(ape_cli, runner, test_keyfile):
