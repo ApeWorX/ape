@@ -3,10 +3,10 @@ import sys
 from typing import IO
 
 import click
-# Slightly higher than INFO
-# Thus, when the default is INFO, you still get SUCCESS.
 from click_logging import ClickHandler  # type: ignore
 
+# Slightly higher than INFO
+# Thus, when the default is INFO, you still get SUCCESS.
 SUCCESS_LOG_LEVEL = logging.INFO + 1
 logging.addLevelName(logging.INFO + 1, "SUCCESS")
 logging.SUCCESS = SUCCESS_LOG_LEVEL  # type: ignore
