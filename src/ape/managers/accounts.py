@@ -1,4 +1,4 @@
-from typing import Dict, Iterator
+from typing import Dict, Iterator, Type
 
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
@@ -40,6 +40,9 @@ class AccountManager:
     def aliases(self) -> Iterator[str]:
         for container in self.containers.values():
             yield from container.aliases
+
+    def get_typed_aliases(self, type_: Type[AccountAPI]) -> Iterator[str]:
+        return [a.alias for a in self if isinstance(a, type_)]
 
     def __len__(self) -> int:
         return sum(len(container) for container in self.containers.values())

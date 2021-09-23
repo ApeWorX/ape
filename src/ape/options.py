@@ -1,8 +1,10 @@
 import click
-from typing import List
+from typing import List, Type
 
 from ape import accounts, networks
+from ape.api.accounts import AccountAPI
 from ape.exceptions import AliasAlreadyInUseError
+from ape_accounts import KeyfileAccount
 
 
 class NetworkChoice(click.Choice):
@@ -40,18 +42,19 @@ class Alias(click.Choice):
 
     name = "alias"
 
-    def __init__(self):
+    def __init__(self, account_type: Type[AccountAPI] = KeyfileAccount):
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False
+        self._account_type = account_type
 
     @property
     def choices(self) -> List[str]:  # type: ignore
         # NOTE: This is a hack to lazy-load the aliases so CLI invocation works properly
-        return list(accounts.aliases)
+        return accounts.get_typed_aliases(self._account_type)
 
 
-def _require_non_existing_alias(arg):
-    if arg in accounts.aliases:
+def _require_non_existing_alias(arg, type_: Type[AccountAPI] = KeyfileAccount):
+    if arg in accounts.get_typed_aliases(type_):
         raise AliasAlreadyInUseError(arg)
     return arg
 
