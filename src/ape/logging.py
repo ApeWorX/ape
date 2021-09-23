@@ -3,7 +3,6 @@ import sys
 from typing import IO
 
 import click
-
 # Slightly higher than INFO
 # Thus, when the default is INFO, you still get SUCCESS.
 from click_logging import ClickHandler  # type: ignore
