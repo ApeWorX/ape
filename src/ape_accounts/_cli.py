@@ -23,19 +23,20 @@ def cli():
 
 # Different name because `list` is a keyword
 @cli.command(name="list", short_help="List available local accounts")
-def _list():
-    key_file_accounts = accounts.containers.get("accounts", [])
-    if len(key_file_accounts) == 0:
+@click.option("--all", help="Output accounts from all plugins", is_flag=True)
+def _list(all):
+    accounts_to_output = accounts if all else accounts.containers.get("accounts", [])
+    if len(accounts_to_output) == 0:
         notify("WARNING", "No accounts found.")
         return
 
-    elif len(key_file_accounts) > 1:
+    elif len(accounts_to_output) > 1:
         click.echo(f"Found {len(accounts)} accounts:")
 
     else:
         click.echo("Found 1 account:")
 
-    for account in key_file_accounts:
+    for account in accounts_to_output:
         alias_display = f" (alias: '{account.alias}')" if account.alias else ""
         click.echo(f"  {account.address}{alias_display}")
 

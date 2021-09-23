@@ -13,6 +13,10 @@ PASSWORD = "a"
 PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
 IMPORT_VALID_INPUT = "\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD])
 GENERATE_VALID_INPUT = "\n".join(["random entropy", PASSWORD, PASSWORD])
+MOCK_LOCAL_ALIAS = "test_local_alias"
+MOCK_LOCAL_ADDRESS = "test_local_address"
+MOCK_EXTERNAL_ALIAS = "test_external_alias"
+MOCK_EXTERNAL_ADDRESS = "test_external_address"
 
 
 @pytest.fixture
@@ -63,6 +67,30 @@ def test_keyfile(test_keyfile_path, test_keyparams):
 @pytest.fixture
 def test_account():
     return Account.from_key(bytes.fromhex(PRIVATE_KEY))
+
+
+@pytest.fixture
+def mock_local_account(mocker):
+    mock_account = mocker.MagicMock(spec=AccountAPI)
+    mock_account.alias = MOCK_LOCAL_ALIAS
+    mock_account.address = MOCK_LOCAL_ADDRESS
+    return mock_account
+
+
+@pytest.fixture
+def mock_third_party_account(mocker):
+    mock_account = mocker.MagicMock(spec=AccountAPI)
+    mock_account.alias = MOCK_EXTERNAL_ALIAS
+    mock_account.address = MOCK_EXTERNAL_ADDRESS
+    return mock_account
+
+
+@pytest.fixture
+def mock_account_manager(mocker, mock_local_account, mock_third_party_account):
+    mock = mocker.patch("ape_accounts._cli.accounts")
+    containers = {"accounts": [mock_local_account], "test-wallet": [mock_third_party_account]}
+    mock.containers = containers
+    return mock
 
 
 def test_import(ape_cli, runner, test_account, test_keyfile_path):
@@ -120,22 +148,8 @@ def test_list(ape_cli, runner, test_keyfile):
     assert ALIAS in result.output
 
 
-def test_list_excludes_external_accounts(mocker, ape_cli, runner):
-    account_manager_patch = mocker.patch("ape_accounts._cli.accounts")
-
-    mock_account = mocker.MagicMock(spec=AccountAPI)
-    mock_account.alias = "test_local_alias"
-    mock_account.address = "test_local_address"
-
-    mock_3rd_party_account = mocker.MagicMock(spec=AccountAPI)
-    mock_3rd_party_account.alias = "test_external_alias"
-    mock_3rd_party_account.address = "test_external_address"
-
-    containers = {"accounts": [mock_account], "test-wallet": [mock_3rd_party_account]}
-    account_manager_patch.containers = containers
-
+def test_list_excludes_external_accounts(ape_cli, runner, mock_account_manager):
     result = runner.invoke(ape_cli, ["accounts", "list"])
-
     assert result.exit_code == 0, result.output
     assert "test_local_alias" in result.output
     assert "test_local_address" in result.output
