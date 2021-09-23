@@ -2,7 +2,7 @@ def test_compile(ape_cli, runner, project):
     if not (project.path / "contracts").exists():
         result = runner.invoke(ape_cli, ["compile"])
         assert result.exit_code == 0
-        assert "warning" in result.output.lower()
+        assert "WARNING" in result.output
         assert "No 'contracts/' directory detected" in result.output
         return  # Nothing else to test for this project
 
