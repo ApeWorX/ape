@@ -50,7 +50,6 @@ class Alias(click.Choice):
 
     @property
     def choices(self) -> List[str]:  # type: ignore
-        # NOTE: This is a hack to lazy-load the aliases so CLI invocation works properly
         return [
             a.alias
             for a in accounts.get_accounts_by_type(self._account_type)
