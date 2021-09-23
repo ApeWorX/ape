@@ -69,7 +69,7 @@ def test_import(ape_cli, runner, test_account, test_keyfile_path):
     assert not test_keyfile_path.exists()
     # Add account from private keys
     result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert test_account.address in result.output
     assert ALIAS in result.output
     assert test_keyfile_path.exists()
@@ -80,7 +80,7 @@ def test_import_alias_already_in_use(ape_cli, runner, test_account, test_keyfile
         return runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
 
     result = invoke_import()
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     result = invoke_import()
     assert_failure(result, f"Account with alias '{ALIAS}' already in use")
 
@@ -98,7 +98,7 @@ def test_generate(ape_cli, runner, test_keyfile_path):
     assert not test_keyfile_path.exists()
     # Generate new private key
     result = runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert ALIAS in result.output
     assert test_keyfile_path.exists()
 
@@ -108,7 +108,7 @@ def test_generate_alias_already_in_use(ape_cli, runner, test_account, test_keyfi
         return runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
 
     result = invoke_generate()
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     result = invoke_generate()
     assert_failure(result, f"Account with alias '{ALIAS}' already in use")
 
