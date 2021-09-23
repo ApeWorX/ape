@@ -7,7 +7,7 @@ from eth_utils import to_bytes
 
 from ape import accounts
 from ape.exceptions import AliasAlreadyInUseError
-from ape.utils import Abort, notify
+from ape.options import plugin_helper
 
 # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
 container = accounts.containers["accounts"]
@@ -38,9 +38,10 @@ def cli():
 
 # Different name because `list` is a keyword
 @cli.command(name="list", short_help="List available accounts")
-def _list():
+@plugin_helper()
+def _list(helper):
     if len(accounts) == 0:
-        notify("WARNING", "No accounts found.")
+        helper.log_warning("No accounts found.")
         return
 
     elif len(accounts) > 1:
@@ -56,7 +57,8 @@ def _list():
 
 @cli.command(short_help="Create a new keyfile account with a random private key")
 @click.argument("alias")
-def generate(alias):
+@plugin_helper()
+def generate(helper, alias):
     if alias in accounts.aliases:
         raise AliasAlreadyInUseError(alias)
 
@@ -72,14 +74,14 @@ def generate(alias):
         confirmation_prompt=True,
     )
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
-
-    notify("SUCCESS", f"A new account '{account.address}' has been added with the id '{alias}'")
+    helper.log_success(f"A new account '{account.address}' has been added with the id '{alias}'")
 
 
 # Different name because `import` is a keyword
 @cli.command(name="import", short_help="Add a new keyfile account by entering a private key")
 @click.argument("alias")
-def _import(alias):
+@plugin_helper()
+def _import(helper, alias):
     if alias in accounts.aliases:
         raise AliasAlreadyInUseError(alias)
 
@@ -88,28 +90,29 @@ def _import(alias):
     try:
         account = EthAccount.from_key(to_bytes(hexstr=key))
     except Exception as error:
-        raise Abort(f"Key can't be imported: {error}")
+        helper.abort(f"Key can't be imported: {error}")
     passphrase = click.prompt(
         "Create Passphrase",
         hide_input=True,
         confirmation_prompt=True,
     )
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
-
-    notify("SUCCESS", f"A new account '{account.address}' has been added with the id '{alias}'")
+    helper.log_success(f"A new account '{account.address}' has been added with the id '{alias}'")
 
 
 @cli.command(short_help="Change the password of an existing account")
 @click.argument("alias", type=Alias())
-def change_password(alias):
+@plugin_helper()
+def change_password(helper, alias):
     account = accounts.load(alias)
     account.change_password()
-    notify("SUCCESS", f"Password has been changed for account '{alias}'")
+    helper.log_success(f"Password has been changed for account '{alias}'")
 
 
 @cli.command(short_help="Delete an existing account")
 @click.argument("alias", type=Alias())
-def delete(alias):
+@plugin_helper()
+def delete(helper, alias):
     account = accounts.load(alias)
     account.delete()
-    notify("SUCCESS", f"Account '{alias}' has been deleted")
+    helper.log_success(f"Account '{alias}' has been deleted")

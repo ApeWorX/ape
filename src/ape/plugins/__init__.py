@@ -3,7 +3,7 @@ import importlib
 import pkgutil
 from typing import Any, Callable, Iterator, Tuple, Type, cast
 
-from ape.utils import notify
+from ape.logging import logger
 
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
@@ -91,8 +91,7 @@ class PluginManager:
                 try:
                     plugin_manager.register(importlib.import_module(name))
                 except Exception:
-                    notify("WARNING", f"Error loading plugin package '{name}'")
-                    # notify("DEBUG", str(e))
+                    logger.warning(f"Error loading plugin package '{name}'")
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
         if not hasattr(plugin_manager.hook, attr_name):
@@ -114,9 +113,8 @@ class PluginManager:
                         yield clean_plugin_name(plugin_name), result
 
                     else:
-                        notify(
-                            "WARNING",
-                            f"'{result.__name__}' from '{plugin_name}' is not fully implemented",
+                        logger.warning(
+                            f"'{result.__name__}' from '{plugin_name}' is not fully implemented"
                         )
 
             elif valid_impl(results):
@@ -132,7 +130,7 @@ def _warn_not_fully_implemented_error(results, plugin_name):
         class_names = ", ".join((r.__name__ for r in results))
     else:
         class_names = results.__name__
-    notify("WARNING", f"'{class_names}' from '{plugin_name}' is not fully implemented")
+    logger.warning(f"'{class_names}' from '{plugin_name}' is not fully implemented")
 
 
 __all__ = [

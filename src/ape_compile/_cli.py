@@ -3,7 +3,7 @@ from pathlib import Path
 
 import click
 
-from ape.utils import notify
+from ape.options import plugin_helper
 
 flatten = chain.from_iterable
 
@@ -31,7 +31,8 @@ flatten = chain.from_iterable
     is_flag=True,
     help="Show deployment bytecode size for all contracts",
 )
-def cli(filepaths, use_cache, display_size):
+@plugin_helper()
+def cli(helper, filepaths, use_cache, display_size):
     """
     Compiles the manifest for this project and saves the results
     back to the manifest.
@@ -45,7 +46,7 @@ def cli(filepaths, use_cache, display_size):
     # Expand source tree based on selection
     if not filepaths:
         if not (project.path / "contracts").exists():
-            notify("WARNING", "No 'contracts/' directory detected")
+            helper.log_warning("No 'contracts/' directory detected")
             return
 
         # If no paths are specified, use all local project sources
@@ -68,7 +69,7 @@ def cli(filepaths, use_cache, display_size):
             selected_paths = str(project.path / "contracts")
 
         extensions = ", ".join(set(f.suffix for f in selected_paths))
-        notify("WARNING", f"No compilers detected for the following extensions: {extensions}")
+        helper.log_warning(f"No compilers detected for the following extensions: {extensions}")
         return
 
     # TODO: only compile selected contracts
@@ -87,7 +88,7 @@ def cli(filepaths, use_cache, display_size):
                 codesize.append((contract.contractName, len(bytecode) // 2))
 
         if not codesize:
-            notify("INFO", "No contracts with bytecode to display")
+            helper.log_info("No contracts with bytecode to display")
             return
 
         click.echo()
