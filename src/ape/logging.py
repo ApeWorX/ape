@@ -33,6 +33,15 @@ CLICK_STYLE_KWARGS = {
     "DEBUG": dict(fg="blue"),
     "SUCCESS": dict(fg="bright_green"),
 }
+CLICK_ECHO_KWARGS = {
+    "EXCEPTION": dict(err=True),
+    "CRITICAL": dict(err=True),
+    "ERROR": dict(err=True),
+    "WARNING": dict(err=True),
+    "INFO": dict(),
+    "DEBUG": dict(),
+    "SUCCESS": dict(),
+}
 
 
 # Borrowed from `click._compat`.
@@ -60,7 +69,7 @@ class ApeColorFormatter(logging.Formatter):
 def _get_logger(name) -> logging.Logger:
     """Get a logger with the given ``name`` and configure it for usage with Click."""
     _logger = logging.getLogger(name)
-    handler = ClickHandler(echo_kwargs=CLICK_STYLE_KWARGS)
+    handler = ClickHandler(echo_kwargs=CLICK_ECHO_KWARGS)
     handler.setFormatter(ApeColorFormatter())
     _logger.handlers = [handler]
     return _logger
