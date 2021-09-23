@@ -150,12 +150,12 @@ def test_change_password(ape_cli, runner, test_keyfile):
     result = runner.invoke(
         ape_cli, ["accounts", "change-password", ALIAS], input="\n".join(valid_input) + "\n"
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
 
 
 def test_delete(ape_cli, runner, test_keyfile):
     assert test_keyfile.exists()
     # Delete Account
     result = runner.invoke(ape_cli, ["accounts", "delete", ALIAS], input=PASSWORD + "\n")
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert not test_keyfile.exists()

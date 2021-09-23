@@ -20,6 +20,10 @@ class AddressAPI:
 
         return self._provider
 
+    @provider.setter
+    def provider(self, value: ProviderAPI):
+        self._provider = value
+
     @property
     def _receipt_class(self) -> Type[ReceiptAPI]:
         return self.provider.network.ecosystem.receipt_class

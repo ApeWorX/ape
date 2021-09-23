@@ -1,5 +1,6 @@
-import click
 from typing import List, Type
+
+import click
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
@@ -50,11 +51,15 @@ class Alias(click.Choice):
     @property
     def choices(self) -> List[str]:  # type: ignore
         # NOTE: This is a hack to lazy-load the aliases so CLI invocation works properly
-        return accounts.get_typed_aliases(self._account_type)
+        return [
+            a.alias
+            for a in accounts.get_accounts_by_type(self._account_type)
+            if a.alias is not None
+        ]
 
 
-def _require_non_existing_alias(arg, type_: Type[AccountAPI] = KeyfileAccount):
-    if arg in accounts.get_typed_aliases(type_):
+def _require_non_existing_alias(arg):
+    if arg in accounts.aliases:
         raise AliasAlreadyInUseError(arg)
     return arg
 
