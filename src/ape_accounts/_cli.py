@@ -7,9 +7,9 @@ from eth_utils import to_bytes
 from ape import accounts
 from ape.options import existing_alias_argument, non_existing_alias_argument
 from ape.utils import Abort, notify
+from ape_accounts import KeyfileAccount
 
 # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
-
 container = accounts.containers["accounts"]
 
 
@@ -81,7 +81,7 @@ def _import(alias):
 
 
 @cli.command(short_help="Change the password of an existing account")
-@existing_alias_argument
+@existing_alias_argument(account_type=KeyfileAccount)
 def change_password(alias):
     account = accounts.load(alias)
     account.change_password()
@@ -89,7 +89,7 @@ def change_password(alias):
 
 
 @cli.command(short_help="Delete an existing account")
-@existing_alias_argument
+@existing_alias_argument(account_type=KeyfileAccount)
 def delete(alias):
     account = accounts.load(alias)
     account.delete()
