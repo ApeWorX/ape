@@ -1,31 +1,16 @@
 import json
-from typing import List
 
 import click
 from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
 
 from ape import accounts
-from ape.exceptions import AliasAlreadyInUseError
+from ape.options import existing_alias_argument, non_existing_alias_argument
 from ape.utils import Abort, notify
+from ape_accounts import KeyfileAccount
 
 # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
 container = accounts.containers["accounts"]
-
-
-class Alias(click.Choice):
-    """Wraps ``click.Choice`` to load account aliases for the active project at runtime."""
-
-    name = "alias"
-
-    def __init__(self):
-        # NOTE: we purposely skip the constructor of `Choice`
-        self.case_sensitive = False
-
-    @property
-    def choices(self) -> List[str]:  # type: ignore
-        # NOTE: This is a hack to lazy-load the aliases so CLI invocation works properly
-        return list(accounts.aliases)
 
 
 @click.group(short_help="Manage local accounts")
@@ -37,29 +22,28 @@ def cli():
 
 
 # Different name because `list` is a keyword
-@cli.command(name="list", short_help="List available accounts")
-def _list():
-    if len(accounts) == 0:
+@cli.command(name="list", short_help="List available local accounts")
+@click.option("--all", help="Output accounts from all plugins", is_flag=True)
+def _list(all):
+    accounts_to_output = accounts if all else accounts.containers.get("accounts", [])
+    if len(accounts_to_output) == 0:
         notify("WARNING", "No accounts found.")
         return
 
-    elif len(accounts) > 1:
+    elif len(accounts_to_output) > 1:
         click.echo(f"Found {len(accounts)} accounts:")
 
     else:
         click.echo("Found 1 account:")
 
-    for account in accounts:
+    for account in accounts_to_output:
         alias_display = f" (alias: '{account.alias}')" if account.alias else ""
         click.echo(f"  {account.address}{alias_display}")
 
 
 @cli.command(short_help="Create a new keyfile account with a random private key")
-@click.argument("alias")
+@non_existing_alias_argument
 def generate(alias):
-    if alias in accounts.aliases:
-        raise AliasAlreadyInUseError(alias)
-
     path = container.data_folder.joinpath(f"{alias}.json")
     extra_entropy = click.prompt(
         "Add extra entropy for key generation...",
@@ -78,11 +62,8 @@ def generate(alias):
 
 # Different name because `import` is a keyword
 @cli.command(name="import", short_help="Add a new keyfile account by entering a private key")
-@click.argument("alias")
+@non_existing_alias_argument
 def _import(alias):
-    if alias in accounts.aliases:
-        raise AliasAlreadyInUseError(alias)
-
     path = container.data_folder.joinpath(f"{alias}.json")
     key = click.prompt("Enter Private Key", hide_input=True)
     try:
@@ -100,7 +81,7 @@ def _import(alias):
 
 
 @cli.command(short_help="Change the password of an existing account")
-@click.argument("alias", type=Alias())
+@existing_alias_argument(account_type=KeyfileAccount)
 def change_password(alias):
     account = accounts.load(alias)
     account.change_password()
@@ -108,7 +89,7 @@ def change_password(alias):
 
 
 @cli.command(short_help="Delete an existing account")
-@click.argument("alias", type=Alias())
+@existing_alias_argument(account_type=KeyfileAccount)
 def delete(alias):
     account = accounts.load(alias)
     account.delete()

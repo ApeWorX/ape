@@ -1,4 +1,4 @@
-from typing import Dict, Iterator
+from typing import Dict, Iterator, List, Type
 
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
@@ -41,14 +41,22 @@ class AccountManager:
         for container in self.containers.values():
             yield from container.aliases
 
+    def get_accounts_by_type(self, type_: Type[AccountAPI]) -> List[AccountAPI]:
+        accounts_with_type = []
+        for account in self:
+            if isinstance(account, type_):
+                self._inject_provider(account)
+                accounts_with_type.append(account)
+
+        return accounts_with_type
+
     def __len__(self) -> int:
         return sum(len(container) for container in self.containers.values())
 
     def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
             for account in container:
-                # NOTE: Inject provider
-                account._provider = self.network_manager.active_provider
+                self._inject_provider(account)
                 yield account
 
     def __repr__(self) -> str:
@@ -60,8 +68,7 @@ class AccountManager:
 
         for account in self:
             if account.alias and account.alias == alias:
-                # NOTE: Inject provider
-                account._provider = self.network_manager.active_provider
+                self._inject_provider(account)
                 return account
 
         raise IndexError(f"No account with alias `{alias}`.")
@@ -74,8 +81,7 @@ class AccountManager:
     def __getitem_int(self, account_id: int) -> AccountAPI:
         for idx, account in enumerate(self.__iter__()):
             if account_id == idx:
-                # NOTE: Inject provider
-                account._provider = self.network_manager.active_provider
+                self._inject_provider(account)
                 return account
 
         raise IndexError(f"No account at index `{account_id}`.")
@@ -87,11 +93,14 @@ class AccountManager:
         for container in self.containers.values():
             if account_id in container:
                 account = container[account_id]
-                # NOTE: Inject provider
-                account._provider = self.network_manager.active_provider
+                self._inject_provider(account)
                 return account
 
         raise IndexError(f"No account with address `{account_id}`.")
 
     def __contains__(self, address: AddressType) -> bool:
         return any(address in container for container in self.containers.values())
+
+    def _inject_provider(self, account: AccountAPI):
+        if self.network_manager.active_provider is not None:
+            account.provider = self.network_manager.active_provider
