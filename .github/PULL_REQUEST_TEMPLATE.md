@@ -1,6 +1,6 @@
 ### What I did
 
-Related issue: #
+fixes: #
 
 ### How I did it
 
