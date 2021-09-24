@@ -55,6 +55,9 @@
       :property:
 
 
+   .. py:method:: get_accounts_by_type(self, type_: Type[ape.api.accounts.AccountAPI]) -> List[ape.api.accounts.AccountAPI]
+
+
    .. py:method:: __len__(self) -> int
 
 
@@ -80,6 +83,9 @@
 
 
    .. py:method:: __contains__(self, address: ape.types.AddressType) -> bool
+
+
+   .. py:method:: _inject_provider(self, account: ape.api.accounts.AccountAPI)
 
 
 

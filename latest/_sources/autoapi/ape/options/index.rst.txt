@@ -15,6 +15,7 @@
 .. autoapisummary::
 
    ape.options.NetworkChoice
+   ape.options.Alias
 
 
 
@@ -23,6 +24,8 @@
 .. autoapisummary::
 
    ape.options.verbose_option
+   ape.options._require_non_existing_alias
+   ape.options.existing_alias_argument
 
 
 
@@ -31,6 +34,7 @@
 .. autoapisummary::
 
    ape.options.network_option
+   ape.options.non_existing_alias_argument
 
 
 
@@ -63,5 +67,46 @@
 
 .. py:function:: verbose_option(help='')
 
+
+
+
+.. py:class:: Alias(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
+
+   Bases: :py:obj:`click.Choice`
+
+   Wraps ``click.Choice`` to load account aliases for the active project at runtime.
+
+   Provide an ``account_type`` to limit the type of account to choose from.
+   Defaults to all account types in ``choices()``.
+
+   .. attribute:: name
+      :annotation: = alias
+
+      
+
+   .. py:method:: __init__(self, account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
+
+
+   .. py:method:: choices(self) -> List[str]
+      :property:
+
+
+
+
+
+.. py:function:: _require_non_existing_alias(arg)
+
+
+
+
+.. py:function:: existing_alias_argument(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
+
+
+
+
+.. data:: non_existing_alias_argument
+   
+
+   
 
 

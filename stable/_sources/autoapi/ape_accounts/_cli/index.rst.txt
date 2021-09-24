@@ -10,13 +10,6 @@
 
    <h3>Module Contents</h3>
 
-**Classes**:
-
-.. autoapisummary::
-
-   ape_accounts._cli.Alias
-
-
 
 **Functions**:
 
@@ -49,27 +42,6 @@
 
 
 
-.. py:class:: Alias
-
-   Bases: :py:obj:`click.Choice`
-
-   Wraps ``click.Choice`` to load account aliases for the active project at runtime.
-
-   .. attribute:: name
-      :annotation: = alias
-
-      
-
-   .. py:method:: __init__(self)
-
-
-   .. py:method:: choices(self) -> List[str]
-      :property:
-
-
-
-
-
 .. py:function:: cli()
 
    Command-line helper for managing local accounts. You can unlock local accounts from
@@ -78,7 +50,7 @@
 
 
 
-.. py:function:: _list()
+.. py:function:: _list(all)
 
 
 

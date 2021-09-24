@@ -73,6 +73,15 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.options.network_option">network_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.options.verbose_option">verbose_option</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.options.Alias">Alias</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.options.Alias.name">name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.options.Alias.__init__">__init__</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.options.Alias.choices">choices</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.options._require_non_existing_alias">_require_non_existing_alias</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.options.existing_alias_argument">existing_alias_argument</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.options.non_existing_alias_argument">non_existing_alias_argument</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.utils</span></code></a></li>
@@ -164,6 +173,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.options.NetworkChoice" title="ape.options.NetworkChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkChoice</span></code></a></p></td>
 <td><p>Wraps <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to provide network choice defaults for the active project.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.options.Alias" title="ape.options.Alias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Alias</span></code></a></p></td>
+<td><p>Wraps <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to load account aliases for the active project at runtime.</p></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Functions</strong>:</p>
@@ -176,6 +188,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.options.verbose_option" title="ape.options.verbose_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">verbose_option</span></code></a>(help='')</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.options._require_non_existing_alias" title="ape.options._require_non_existing_alias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_require_non_existing_alias</span></code></a>(arg)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.options.existing_alias_argument" title="ape.options.existing_alias_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">existing_alias_argument</span></code></a>(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)</p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Attributes</strong>:</p>
@@ -186,6 +204,9 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.options.network_option" title="ape.options.network_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">network_option</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.options.non_existing_alias_argument" title="ape.options.non_existing_alias_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">non_existing_alias_argument</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -217,6 +238,45 @@
 <dl class="py function">
 <dt id="ape.options.verbose_option">
 <code class="sig-prename descclassname"><span class="pre">ape.options.</span></code><code class="sig-name descname"><span class="pre">verbose_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.options.verbose_option" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="ape.options.Alias">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.options.</span></code><code class="sig-name descname"><span class="pre">Alias</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.options.Alias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">click.Choice</span></code></p>
+<p>Wraps <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to load account aliases for the active project at runtime.</p>
+<p>Provide an <code class="docutils literal notranslate"><span class="pre">account_type</span></code> to limit the type of account to choose from.
+Defaults to all account types in <code class="docutils literal notranslate"><span class="pre">choices()</span></code>.</p>
+<dl class="py attribute">
+<dt id="ape.options.Alias.name">
+<code class="sig-name descname"><span class="pre">name</span></code><em class="property"> <span class="pre">=</span> <span class="pre">alias</span></em><a class="headerlink" href="#ape.options.Alias.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.options.Alias.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.options.Alias.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.options.Alias.choices">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">choices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.options.Alias.choices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.options._require_non_existing_alias">
+<code class="sig-prename descclassname"><span class="pre">ape.options.</span></code><code class="sig-name descname"><span class="pre">_require_non_existing_alias</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.options._require_non_existing_alias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape.options.existing_alias_argument">
+<code class="sig-prename descclassname"><span class="pre">ape.options.</span></code><code class="sig-name descname"><span class="pre">existing_alias_argument</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.options.existing_alias_argument" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt id="ape.options.non_existing_alias_argument">
+<code class="sig-prename descclassname"><span class="pre">ape.options.</span></code><code class="sig-name descname"><span class="pre">non_existing_alias_argument</span></code><a class="headerlink" href="#ape.options.non_existing_alias_argument" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
