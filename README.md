@@ -26,6 +26,10 @@ cd ape
 python3 setup.py install
 ```
 
+### via `docker`
+
+Please visit our [Dockerhub](https://hub.docker.com/repository/docker/apeworx/ape) for more details on using Ape with Docker.
+
 ## Quick Usage
 
 Ape is primarily meant to be used as a command line tool. Here are some things you can use ape to do:
