@@ -19,8 +19,7 @@
    ape_networks._cli._list
    ape_networks._cli._echo_ecosystem
    ape_networks._cli._echo_network
-   ape_networks._cli._echo_output
-   ape_networks._cli._create_output_line
+   ape_networks._cli._output_line
 
 
 
@@ -28,15 +27,15 @@
 
 .. autoapisummary::
 
-   ape_networks._cli._PREFIX_SPACING
+   ape_networks._cli._SPACED_TAB
 
 
 
 -----------
 
 
-.. data:: _PREFIX_SPACING
-   :annotation: =     
+.. data:: _SPACED_TAB
+   :annotation: =   
 
    
 
@@ -54,22 +53,17 @@
 
 
 
-.. py:function:: _echo_ecosystem(name)
+.. py:function:: _echo_ecosystem(name: str)
 
 
 
 
-.. py:function:: _echo_network(ecosystem, name)
+.. py:function:: _echo_network(ecosystem: ape.api.EcosystemAPI, name: str)
 
 
 
 
-.. py:function:: _echo_output(name, default_name)
-
-
-
-
-.. py:function:: _create_output_line(output)
+.. py:function:: _output_line(value: str, num_of_tabs: int = 0, default_value: str = None, key: Optional[str] = 'name')
 
 
 

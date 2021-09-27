@@ -69,13 +69,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../../ape_test/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test</span></code></a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_networks</span></code></a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_networks._cli</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._PREFIX_SPACING">_PREFIX_SPACING</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._SPACED_TAB">_SPACED_TAB</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli.cli">cli</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._list">_list</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._echo_ecosystem">_echo_ecosystem</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._echo_network">_echo_network</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._echo_output">_echo_output</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._create_output_line">_create_output_line</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_networks._cli._output_line">_output_line</a></li>
 </ul>
 </li>
 </ul>
@@ -166,16 +165,13 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape_networks._cli._list" title="ape_networks._cli._list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_list</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_networks._cli._echo_ecosystem" title="ape_networks._cli._echo_ecosystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_echo_ecosystem</span></code></a>(name)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_networks._cli._echo_ecosystem" title="ape_networks._cli._echo_ecosystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_echo_ecosystem</span></code></a>(name: str)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape_networks._cli._echo_network" title="ape_networks._cli._echo_network"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_echo_network</span></code></a>(ecosystem, name)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_networks._cli._echo_network" title="ape_networks._cli._echo_network"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_echo_network</span></code></a>(ecosystem: ape.api.EcosystemAPI, name: str)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_networks._cli._echo_output" title="ape_networks._cli._echo_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_echo_output</span></code></a>(name, default_name)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape_networks._cli._create_output_line" title="ape_networks._cli._create_output_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_output_line</span></code></a>(output)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_networks._cli._output_line" title="ape_networks._cli._output_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_output_line</span></code></a>(value: str, num_of_tabs: int = 0, default_value: str = None, key: Optional[str] = 'name')</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -187,15 +183,15 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_networks._cli._PREFIX_SPACING" title="ape_networks._cli._PREFIX_SPACING"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_PREFIX_SPACING</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_networks._cli._SPACED_TAB" title="ape_networks._cli._SPACED_TAB"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_SPACED_TAB</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 <hr class="docutils" />
 <dl class="py data">
-<dt id="ape_networks._cli._PREFIX_SPACING">
-<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_PREFIX_SPACING</span></code><em class="property"> <span class="pre">=</span></em><a class="headerlink" href="#ape_networks._cli._PREFIX_SPACING" title="Permalink to this definition">¶</a></dt>
+<dt id="ape_networks._cli._SPACED_TAB">
+<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_SPACED_TAB</span></code><em class="property"> <span class="pre">=</span></em><a class="headerlink" href="#ape_networks._cli._SPACED_TAB" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -211,22 +207,17 @@
 
 <dl class="py function">
 <dt id="ape_networks._cli._echo_ecosystem">
-<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_echo_ecosystem</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._echo_ecosystem" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_echo_ecosystem</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._echo_ecosystem" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_networks._cli._echo_network">
-<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_echo_network</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecosystem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._echo_network" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_echo_network</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecosystem</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../ape/api/index.html#ape.api.EcosystemAPI" title="ape.api.EcosystemAPI"><span class="pre">ape.api.EcosystemAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._echo_network" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt id="ape_networks._cli._echo_output">
-<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_echo_output</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._echo_output" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="ape_networks._cli._create_output_line">
-<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_create_output_line</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._create_output_line" title="Permalink to this definition">¶</a></dt>
+<dt id="ape_networks._cli._output_line">
+<code class="sig-prename descclassname"><span class="pre">ape_networks._cli.</span></code><code class="sig-name descname"><span class="pre">_output_line</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_of_tabs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_networks._cli._output_line" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
