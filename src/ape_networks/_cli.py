@@ -1,8 +1,11 @@
+from typing import Optional
+
 import click
 
 from ape import networks
+from ape.api import EcosystemAPI
 
-_PREFIX_SPACING = "    "
+_SPACED_TAB = "  "
 
 
 @click.group(short_help="Manage networks")
@@ -19,34 +22,31 @@ def _list():
         _echo_ecosystem(ecosystem_name)
 
 
-def _echo_ecosystem(name):
-    _echo_output(name, networks.default_ecosystem.name)
+def _echo_ecosystem(name: str):
+    _output_line(name, default_value=networks.default_ecosystem.name)
     ecosystem = networks[name]
 
     for network_name in getattr(networks, name):
         _echo_network(ecosystem, network_name)
 
 
-def _echo_network(ecosystem, name):
-    _echo_output(name, ecosystem.default_network)
+def _echo_network(ecosystem: EcosystemAPI, name: str):
+    _output_line(name, num_of_tabs=1, default_value=ecosystem.default_network)
     network = ecosystem[name]
 
     if network.explorer:
-        click.echo(f"{_PREFIX_SPACING}explorer: {network.explorer.name}")
+        click.echo(f"{_SPACED_TAB * 2}explorer: {network.explorer.name}")
 
-    click.echo(f"{_PREFIX_SPACING}providers:")
+    click.echo(f"{_SPACED_TAB * 2}providers:")
 
     for provider_name in network.providers:
-        _echo_output(provider_name, network.default_provider)
+        _output_line(provider_name, num_of_tabs=2, default_value=network.default_provider, key=None)
 
 
-def _echo_output(name, default_name):
-    output = _create_output_line(name)
-    if name == default_name:
-        output = f"{output}  # Default"
-
+def _output_line(
+    value: str, num_of_tabs: int = 0, default_value: str = None, key: Optional[str] = "name"
+):
+    key = f"{key}: " if key else ""
+    comment = "  # Default" if value == default_value else ""
+    output = f"{_SPACED_TAB * num_of_tabs}- {key}{value}{comment}"
     click.echo(output)
-
-
-def _create_output_line(output):
-    return f"{_PREFIX_SPACING}- {output}"
