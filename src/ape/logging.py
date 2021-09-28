@@ -7,39 +7,39 @@ from typing import IO
 import click
 
 
-class Level(Enum):
+class LogLevel(Enum):
     ERROR = logging.ERROR
     WARNING = logging.WARNING
     INFO = logging.INFO
     SUCCESS = logging.INFO + 1
 
 
-logging.addLevelName(Level.SUCCESS.value, Level.SUCCESS.name)
-logging.SUCCESS = Level.SUCCESS.value  # type: ignore
+logging.addLevelName(LogLevel.SUCCESS.value, LogLevel.SUCCESS.name)
+logging.SUCCESS = LogLevel.SUCCESS.value  # type: ignore
 
 
 def success(self, message, *args, **kws):
     """This method gets injecting into python's `logging` module
     to handle logging at this level."""
-    if self.isEnabledFor(Level.SUCCESS.value):
+    if self.isEnabledFor(LogLevel.SUCCESS.value):
         # Yes, logger takes its '*args' as 'args'.
-        self._log(Level.SUCCESS.value, message, args, **kws)
+        self._log(LogLevel.SUCCESS.value, message, args, **kws)
 
 
 logging.Logger.success = success  # type: ignore
 
 
 CLICK_STYLE_KWARGS = {
-    Level.ERROR: dict(fg="bright_red"),
-    Level.WARNING: dict(fg="bright_red"),
-    Level.INFO: dict(fg="blue"),
-    Level.SUCCESS: dict(fg="bright_green"),
+    LogLevel.ERROR: dict(fg="bright_red"),
+    LogLevel.WARNING: dict(fg="bright_red"),
+    LogLevel.INFO: dict(fg="blue"),
+    LogLevel.SUCCESS: dict(fg="bright_green"),
 }
 CLICK_ECHO_KWARGS = {
-    Level.ERROR: dict(err=True),
-    Level.WARNING: dict(err=True),
-    Level.INFO: dict(),
-    Level.SUCCESS: dict(),
+    LogLevel.ERROR: dict(err=True),
+    LogLevel.WARNING: dict(err=True),
+    LogLevel.INFO: dict(),
+    LogLevel.SUCCESS: dict(),
 }
 
 
@@ -61,7 +61,7 @@ class ApeColorFormatter(logging.Formatter):
     def format(self, record):
         if _isatty(sys.stdout) and _isatty(sys.stderr):
             # only color log messages when sys.stdout and sys.stderr are sent to the terminal
-            level = Level(record.levelno)
+            level = LogLevel(record.levelno)
             styles = CLICK_STYLE_KWARGS.get(level, {})
             record.levelname = click.style(record.levelname, **styles)
 

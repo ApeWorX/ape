@@ -5,7 +5,7 @@ from typing import Any, Dict
 import click
 import yaml
 
-from ape.cli.options import plugin_helper
+from ape.cli import plugin_helper
 from ape.exceptions import ApeException
 from ape.logging import logger
 from ape.plugins import clean_plugin_name

@@ -5,7 +5,7 @@ from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
 
 from ape import accounts
-from ape.cli.options import existing_alias_argument, non_existing_alias_argument, plugin_helper
+from ape.cli import existing_alias_argument, non_existing_alias_argument, plugin_helper
 from ape_accounts import KeyfileAccount
 
 # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`

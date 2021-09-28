@@ -2,7 +2,7 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from ape.cli.options import plugin_helper
+from ape.cli import plugin_helper
 
 
 @pytest.fixture

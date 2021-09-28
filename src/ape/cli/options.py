@@ -5,7 +5,7 @@ import click
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AliasAlreadyInUseError
-from ape.logging import Level, logger
+from ape.logging import LogLevel, logger
 from ape.utils import Abort
 
 
@@ -15,16 +15,7 @@ class PluginHelper:
     messages to the user or abort execution."""
 
     def __init__(self):
-        self._logger = logger
-
-    def log_info(self, msg: str):
-        self._logger.info(msg)
-
-    def log_warning(self, msg: str):
-        self._logger.warning(msg)
-
-    def log_success(self, msg: str):
-        self._logger.success(msg)  # type: ignore
+        self.logger = logger
 
     @staticmethod
     def abort(msg: str, base_error: Exception = None):
@@ -39,12 +30,12 @@ def verbosity_option(cli_logger):
     command.
     """
 
-    level_names = [lvl.name for lvl in Level]
+    level_names = [lvl.name for lvl in LogLevel]
     names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
 
     def decorator(f):
         def _set_level(ctx, param, value):
-            log_level = getattr(Level, value.upper(), None)
+            log_level = getattr(LogLevel, value.upper(), None)
             if log_level is None:
                 raise click.BadParameter(f"Must be one of {names_str}, not {value}")
 
@@ -54,7 +45,7 @@ def verbosity_option(cli_logger):
             "--verbosity",
             "-v",
             callback=_set_level,
-            default=Level.INFO.name,
+            default=LogLevel.INFO.name,
             metavar="LVL",
             expose_value=False,
             help=f"One of {names_str}",
