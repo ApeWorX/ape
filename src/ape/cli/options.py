@@ -9,7 +9,7 @@ from ape.logging import LogLevel, logger
 from ape.utils import Abort
 
 
-class PluginHelper:
+class ApeCliContext:
     """A class that can be auto-imported into a plugin ``click.command()``
     via ``@plugin_helper()``. It can help do common CLI tasks such as log
     messages to the user or abort execution."""
@@ -58,7 +58,7 @@ def verbosity_option(cli_logger):
 def plugin_helper():
     def decorator(f):
         f = verbosity_option(logger)(f)
-        f = click.make_pass_decorator(PluginHelper, ensure=True)(f)
+        f = click.make_pass_decorator(ApeCliContext, ensure=True)(f)
         return f
 
     return decorator
