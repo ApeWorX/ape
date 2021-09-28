@@ -1,3 +1,4 @@
+# Inspired / borrowed from the `click-logging` python package.
 import logging
 import sys
 from typing import IO
