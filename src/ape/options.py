@@ -36,7 +36,7 @@ class PluginHelper:
 def plugin_helper():
     def decorator(f):
         f = click_logging.simple_verbosity_option(
-            logger, help="Either CRITICAL, ERROR, WARNING, INFO or DEBUG"
+            logger, help="Either ERROR, WARNING, INFO, or SUCCESS"
         )(f)
         f = click.make_pass_decorator(PluginHelper, ensure=True)(f)
         return f
