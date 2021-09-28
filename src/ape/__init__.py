@@ -1,7 +1,4 @@
 import signal
-
-signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
-
 import sys as _sys
 from functools import partial as _partial
 from pathlib import Path as _Path
@@ -15,6 +12,9 @@ from .managers.networks import NetworkManager as _NetworkManager
 from .managers.project import ProjectManager as _ProjectManager
 from .plugins import PluginManager as _PluginManager
 from .utils import get_package_version
+
+signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
+
 
 __version__ = get_package_version(__name__)
 

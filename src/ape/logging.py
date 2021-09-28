@@ -3,13 +3,23 @@ import sys
 from typing import IO
 
 import click
-from click_logging import ClickHandler  # type: ignore
 
 # Slightly higher than INFO
 # Thus, when the default is INFO, you still get SUCCESS.
 SUCCESS_LOG_LEVEL = logging.INFO + 1
 logging.addLevelName(logging.INFO + 1, "SUCCESS")
 logging.SUCCESS = SUCCESS_LOG_LEVEL  # type: ignore
+
+
+class Levels:
+    ERROR = "ERROR"
+    WARNING = "WARNING"
+    INFO = "INFO"
+    SUCCESS = "SUCCESS"
+
+    @classmethod
+    def all(cls):
+        return [cls.ERROR, cls.WARNING, cls.INFO, cls.SUCCESS]
 
 
 def success(self, message, *args, **kws):
@@ -24,16 +34,16 @@ logging.Logger.success = success  # type: ignore
 
 
 CLICK_STYLE_KWARGS = {
-    "ERROR": dict(fg="bright_red"),
-    "WARNING": dict(fg="bright_red"),
-    "INFO": dict(fg="blue"),
-    "SUCCESS": dict(fg="bright_green"),
+    Levels.ERROR: dict(fg="bright_red"),
+    Levels.WARNING: dict(fg="bright_red"),
+    Levels.INFO: dict(fg="blue"),
+    Levels.SUCCESS: dict(fg="bright_green"),
 }
 CLICK_ECHO_KWARGS = {
-    "ERROR": dict(err=True),
-    "WARNING": dict(err=True),
-    "INFO": dict(),
-    "SUCCESS": dict(),
+    Levels.ERROR: dict(err=True),
+    Levels.WARNING: dict(err=True),
+    Levels.INFO: dict(),
+    Levels.SUCCESS: dict(),
 }
 
 
@@ -59,6 +69,23 @@ class ApeColorFormatter(logging.Formatter):
             record.levelname = click.style(record.levelname, **styles)
 
         return super().format(record)
+
+
+class ClickHandler(logging.Handler):
+    def __init__(self, echo_kwargs):
+        super().__init__()
+        self.echo_kwargs = echo_kwargs
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            level = record.levelname.lower()
+            if self.echo_kwargs.get(level):
+                click.echo(msg, **self.echo_kwargs[level])
+            else:
+                click.echo(msg)
+        except Exception:
+            self.handleError(record)
 
 
 def _get_logger(name) -> logging.Logger:

@@ -32,7 +32,7 @@ def test_info_level_higher(simple_runner):
     def cmd(helper):
         helper.log_info("this is a test")
 
-    result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARN"])
+    result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARNING"])
 
     # You don't get INFO log when log level is higher
     assert "INFO" not in result.output
@@ -81,6 +81,6 @@ def test_success_level_higher(simple_runner):
     def cmd(helper):
         helper.log_success("this is a test")
 
-    result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARN"])
+    result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARNING"])
     assert "SUCCESS" not in result.output
     assert "this is a test" not in result.output

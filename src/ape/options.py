@@ -1,12 +1,11 @@
 from typing import List, Optional, Type
 
 import click
-import click_logging  # type: ignore
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AliasAlreadyInUseError
-from ape.logging import logger as logger
+from ape.logging import Levels, logger
 from ape.utils import Abort
 
 
@@ -15,7 +14,8 @@ class PluginHelper:
     via ``@plugin_helper()``. It can help do common CLI tasks such as log
     messages to the user or abort execution."""
 
-    _logger = logger
+    def __init__(self):
+        self._logger = logger
 
     def log_info(self, msg: str):
         self._logger.info(msg)
@@ -33,11 +33,35 @@ class PluginHelper:
         raise Abort(msg)
 
 
+def verbosity_option(cli_logger):
+    """A decorator that adds a `--verbosity, -v` option to the decorated
+    command.
+    """
+
+    def decorator(f):
+        def _set_level(ctx, param, value):
+            log_level = getattr(Levels, value.upper(), None)
+            if log_level is None:
+                raise click.BadParameter(f"Must be one of {Levels.all()}, not {value}")
+            cli_logger.setLevel(log_level)
+
+        return click.option(
+            "--verbosity",
+            "-v",
+            callback=_set_level,
+            default=Levels.INFO,
+            metavar="LVL",
+            expose_value=False,
+            help=", ".join(Levels.all()),
+            is_eager=True,
+        )(f)
+
+    return decorator
+
+
 def plugin_helper():
     def decorator(f):
-        f = click_logging.simple_verbosity_option(
-            logger, help="Either ERROR, WARNING, INFO, or SUCCESS"
-        )(f)
+        f = verbosity_option(logger)(f)
         f = click.make_pass_decorator(PluginHelper, ensure=True)(f)
         return f
 
