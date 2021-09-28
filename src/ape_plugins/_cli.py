@@ -91,7 +91,7 @@ def _list(helper, display_all):
         click.echo("  " + "\n  ".join(plugins))
 
     else:
-        helper.log_info("No plugins installed")
+        helper.logger.info("No plugins installed")
 
 
 @cli.command(short_help="Install an ape plugin")
@@ -120,7 +120,7 @@ def add(helper, plugin, version, skip_confirmation):
         or skip_confirmation
         or click.confirm(f"Install unknown 3rd party plugin '{plugin}'?")
     ):
-        helper.log_info(f"Installing {plugin}...")
+        helper.logger.info(f"Installing {plugin}...")
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
@@ -140,7 +140,7 @@ def install(helper, skip_confirmation):
             or skip_confirmation
             or click.confirm(f"Install unknown 3rd party plugin '{plugin}'?")
         ):
-            helper.log_info(f"Installing {plugin}...")
+            helper.logger.info(f"Installing {plugin}...")
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*

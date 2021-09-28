@@ -19,7 +19,7 @@ def test_info(simple_runner):
     @group_for_testing.command()
     @plugin_helper()
     def cmd(helper):
-        helper.log_info("this is a test")
+        helper.logger.info("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd"])
     assert "INFO" in result.output
@@ -30,7 +30,7 @@ def test_info_level_higher(simple_runner):
     @group_for_testing.command()
     @plugin_helper()
     def cmd(helper):
-        helper.log_info("this is a test")
+        helper.logger.info("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARNING"])
 
@@ -43,7 +43,7 @@ def test_warning(simple_runner):
     @group_for_testing.command()
     @plugin_helper()
     def cmd(helper):
-        helper.log_warning("this is a test")
+        helper.logger.warning("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd"])
     assert "WARNING" in result.output
@@ -54,7 +54,7 @@ def test_warning_level_higher(simple_runner):
     @group_for_testing.command()
     @plugin_helper()
     def cmd(helper):
-        helper.log_warning("this is a test")
+        helper.logger.warning("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "ERROR"])
     assert "WARNING" not in result.output
@@ -68,7 +68,7 @@ def test_success(simple_runner):
     @group_for_testing.command()
     @plugin_helper()
     def cmd(helper):
-        helper.log_success("this is a test")
+        helper.logger.success("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd"])
     assert "SUCCESS" in result.output
@@ -79,7 +79,7 @@ def test_success_level_higher(simple_runner):
     @group_for_testing.command()
     @plugin_helper()
     def cmd(helper):
-        helper.log_success("this is a test")
+        helper.logger.success("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARNING"])
     assert "SUCCESS" not in result.output

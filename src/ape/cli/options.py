@@ -29,6 +29,7 @@ class PluginHelper:
     @staticmethod
     def abort(msg: str, base_error: Exception = None):
         if base_error:
+            logger.error(msg)
             raise Abort(msg) from base_error
         raise Abort(msg)
 

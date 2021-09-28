@@ -27,7 +27,7 @@ def cli():
 def _list(helper, all):
     accounts_to_output = accounts if all else accounts.containers.get("accounts", [])
     if len(accounts_to_output) == 0:
-        helper.log_warning("No accounts found.")
+        helper.logger.warning("No accounts found.")
         return
 
     elif len(accounts_to_output) > 1:
@@ -57,7 +57,7 @@ def generate(helper, alias):
         confirmation_prompt=True,
     )
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
-    helper.log_success(f"A new account '{account.address}' has been added with the id '{alias}'")
+    helper.logger.success(f"A new account '{account.address}' has been added with the id '{alias}'")
 
 
 # Different name because `import` is a keyword
@@ -79,7 +79,7 @@ def _import(helper, alias):
         confirmation_prompt=True,
     )
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
-    helper.log_success(f"A new account '{account.address}' has been added with the id '{alias}'")
+    helper.logger.success(f"A new account '{account.address}' has been added with the id '{alias}'")
 
 
 @cli.command(short_help="Change the password of an existing account")
@@ -88,7 +88,7 @@ def _import(helper, alias):
 def change_password(helper, alias):
     account = accounts.load(alias)
     account.change_password()
-    helper.log_success(f"Password has been changed for account '{alias}'")
+    helper.logger.success(f"Password has been changed for account '{alias}'")
 
 
 @cli.command(short_help="Delete an existing account")
@@ -97,4 +97,4 @@ def change_password(helper, alias):
 def delete(helper, alias):
     account = accounts.load(alias)
     account.delete()
-    helper.log_success(f"Account '{alias}' has been deleted")
+    helper.logger.success(f"Account '{alias}' has been deleted")

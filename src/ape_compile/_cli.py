@@ -76,7 +76,7 @@ def cli(helper, filepaths, use_cache, display_size):
     source = _ContractsSource(use_cache)
     missing_source = not source.root.exists() or not source.root.iterdir()
     if not filepaths and missing_source:
-        helper.log_warning("No 'contracts/' directory detected")
+        helper.logger.warning("No 'contracts/' directory detected")
         return
 
     selected_file_paths = source.select_paths(filepaths)
@@ -108,7 +108,7 @@ def _warn_for_missing_extensions(helper, registered_sources: List[Path], all_sou
     else:
         message = "Nothing to compile"
 
-    helper.log_warning(message)
+    helper.logger.warning(message)
 
 
 def _display_byte_code_sizes(helper, contract_types: Dict[str, ContractType]):
@@ -124,7 +124,7 @@ def _display_byte_code_sizes(helper, contract_types: Dict[str, ContractType]):
             code_size.append((contract.contractName, len(bytecode) // 2))
 
     if not code_size:
-        helper.log_info("No contracts with bytecode to display")
+        helper.logger.info("No contracts with bytecode to display")
         return
 
     click.echo()
