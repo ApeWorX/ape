@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 import click
 
-from ape.options import plugin_helper
+from ape.cli.options import plugin_helper
 from ape.types import ContractType
 
 flatten = chain.from_iterable

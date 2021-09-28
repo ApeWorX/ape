@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 
 from ape import config, networks
-from ape.options import network_option, plugin_helper, verbose_option
+from ape.cli.options import network_option, plugin_helper, verbose_option
 from ape.utils import get_relative_path
 from ape_console._cli import console
 

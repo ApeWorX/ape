@@ -8,8 +8,8 @@ import click
 from github import Github
 
 from ape import config
+from ape.cli.options import plugin_helper
 from ape.logging import logger
-from ape.options import plugin_helper
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import get_package_version
 
