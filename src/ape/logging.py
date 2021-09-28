@@ -5,12 +5,6 @@ from typing import IO
 
 import click
 
-# Slightly higher than INFO
-# Thus, when the default is INFO, you still get SUCCESS.
-SUCCESS_LOG_LEVEL = logging.INFO + 1
-logging.addLevelName(logging.INFO + 1, "SUCCESS")
-logging.SUCCESS = SUCCESS_LOG_LEVEL  # type: ignore
-
 
 class Levels:
     ERROR = "ERROR"
@@ -21,6 +15,13 @@ class Levels:
     @classmethod
     def all(cls):
         return [cls.ERROR, cls.WARNING, cls.INFO, cls.SUCCESS]
+
+
+# Slightly higher than INFO
+# Thus, when the default is INFO, you still get SUCCESS.
+SUCCESS_LOG_LEVEL = logging.INFO + 1
+logging.addLevelName(logging.INFO + 1, Levels.SUCCESS)
+logging.SUCCESS = SUCCESS_LOG_LEVEL  # type: ignore
 
 
 def success(self, message, *args, **kws):
