@@ -5,7 +5,6 @@ from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
 
 from ape import accounts
-from ape.exceptions import AliasAlreadyInUseError
 from ape.options import existing_alias_argument, non_existing_alias_argument, plugin_helper
 from ape_accounts import KeyfileAccount
 
@@ -46,9 +45,6 @@ def _list(helper, all):
 @non_existing_alias_argument
 @plugin_helper()
 def generate(helper, alias):
-    if alias in accounts.aliases:
-        raise AliasAlreadyInUseError(alias)
-
     path = container.data_folder.joinpath(f"{alias}.json")
     extra_entropy = click.prompt(
         "Add extra entropy for key generation...",
@@ -69,9 +65,6 @@ def generate(helper, alias):
 @non_existing_alias_argument
 @plugin_helper()
 def _import(helper, alias):
-    if alias in accounts.aliases:
-        raise AliasAlreadyInUseError(alias)
-
     path = container.data_folder.joinpath(f"{alias}.json")
     key = click.prompt("Enter Private Key", hide_input=True)
     try:
