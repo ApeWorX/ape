@@ -1,51 +1,45 @@
 # Inspired / borrowed from the `click-logging` python package.
 import logging
 import sys
+from enum import Enum
 from typing import IO
 
 import click
 
 
-class Levels:
-    ERROR = "ERROR"
-    WARNING = "WARNING"
-    INFO = "INFO"
-    SUCCESS = "SUCCESS"
-
-    @classmethod
-    def all(cls):
-        return [cls.ERROR, cls.WARNING, cls.INFO, cls.SUCCESS]
+class Level(Enum):
+    ERROR = logging.ERROR
+    WARNING = logging.WARNING
+    INFO = logging.INFO
+    SUCCESS = logging.INFO + 1
 
 
-# Slightly higher than INFO
-# Thus, when the default is INFO, you still get SUCCESS.
-SUCCESS_LOG_LEVEL = logging.INFO + 1
-logging.addLevelName(logging.INFO + 1, Levels.SUCCESS)
-logging.SUCCESS = SUCCESS_LOG_LEVEL  # type: ignore
+logging.addLevelName(Level.SUCCESS.value, Level.SUCCESS.name)
+logging.SUCCESS = Level.SUCCESS.value  # type: ignore
 
 
 def success(self, message, *args, **kws):
     """This method gets injecting into python's `logging` module
     to handle logging at this level."""
-    if self.isEnabledFor(SUCCESS_LOG_LEVEL):
+    if self.isEnabledFor(Level.SUCCESS.value):
         # Yes, logger takes its '*args' as 'args'.
-        self._log(SUCCESS_LOG_LEVEL, message, args, **kws)
+        self._log(Level.SUCCESS.value, message, args, **kws)
 
 
 logging.Logger.success = success  # type: ignore
 
 
 CLICK_STYLE_KWARGS = {
-    Levels.ERROR: dict(fg="bright_red"),
-    Levels.WARNING: dict(fg="bright_red"),
-    Levels.INFO: dict(fg="blue"),
-    Levels.SUCCESS: dict(fg="bright_green"),
+    Level.ERROR: dict(fg="bright_red"),
+    Level.WARNING: dict(fg="bright_red"),
+    Level.INFO: dict(fg="blue"),
+    Level.SUCCESS: dict(fg="bright_green"),
 }
 CLICK_ECHO_KWARGS = {
-    Levels.ERROR: dict(err=True),
-    Levels.WARNING: dict(err=True),
-    Levels.INFO: dict(),
-    Levels.SUCCESS: dict(),
+    Level.ERROR: dict(err=True),
+    Level.WARNING: dict(err=True),
+    Level.INFO: dict(),
+    Level.SUCCESS: dict(),
 }
 
 
@@ -67,7 +61,8 @@ class ApeColorFormatter(logging.Formatter):
     def format(self, record):
         if _isatty(sys.stdout) and _isatty(sys.stderr):
             # only color log messages when sys.stdout and sys.stderr are sent to the terminal
-            styles = CLICK_STYLE_KWARGS.get(record.levelname, {})
+            level = Level(record.levelno)
+            styles = CLICK_STYLE_KWARGS.get(level, {})
             record.levelname = click.style(record.levelname, **styles)
 
         return super().format(record)

@@ -14,12 +14,12 @@ from importlib_metadata import PackageNotFoundError, packages_distributions, ver
 from ape.logging import logger
 
 try:
-    from functools import cached_property
+    from functools import cached_property  # type: ignore
 except ImportError:
     from backports.cached_property import cached_property  # type: ignore
 
 try:
-    from functools import singledispatchmethod
+    from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 

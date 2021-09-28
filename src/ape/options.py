@@ -5,7 +5,7 @@ import click
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AliasAlreadyInUseError
-from ape.logging import Levels, logger
+from ape.logging import Level, logger
 from ape.utils import Abort
 
 
@@ -38,21 +38,25 @@ def verbosity_option(cli_logger):
     command.
     """
 
+    level_names = [lvl.name for lvl in Level]
+    names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
+
     def decorator(f):
         def _set_level(ctx, param, value):
-            log_level = getattr(Levels, value.upper(), None)
+            log_level = getattr(Level, value.upper(), None)
             if log_level is None:
-                raise click.BadParameter(f"Must be one of {Levels.all()}, not {value}")
-            cli_logger.setLevel(log_level)
+                raise click.BadParameter(f"Must be one of {names_str}, not {value}")
+
+            cli_logger.setLevel(log_level.name)
 
         return click.option(
             "--verbosity",
             "-v",
             callback=_set_level,
-            default=Levels.INFO,
+            default=Level.INFO.name,
             metavar="LVL",
             expose_value=False,
-            help=", ".join(Levels.all()),
+            help=f"One of {names_str}",
             is_eager=True,
         )(f)
 

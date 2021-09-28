@@ -68,7 +68,7 @@ class ApeCLI(click.MultiCommand):
     @property
     def commands(self) -> Dict:
         if not self._commands:
-            entry_points = metadata.entry_points()
+            entry_points = metadata.entry_points()  # type: ignore
 
             if "ape_cli_subcommands" not in entry_points:
                 raise Abort("Missing registered cli subcommands")
