@@ -73,6 +73,9 @@ class ProjectManager:
 
     @property
     def sources(self) -> List[Path]:
+        """All the source files in the project.
+        Excludes files with extensions that don't have a registered compiler.
+        """
         files: List[Path] = []
         for extension in self.compilers.registered_compilers:
             files.extend(self._contracts_folder.rglob("*" + extension))
