@@ -2,7 +2,7 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from ape.cli import plugin_helper
+from ape.cli import ape_cli_context
 
 
 @pytest.fixture
@@ -17,9 +17,9 @@ def group_for_testing():
 
 def test_info(simple_runner):
     @group_for_testing.command()
-    @plugin_helper()
-    def cmd(helper):
-        helper.logger.info("this is a test")
+    @ape_cli_context()
+    def cmd(cli_ctx):
+        cli_ctx.logger.info("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd"])
     assert "INFO" in result.output
@@ -28,9 +28,9 @@ def test_info(simple_runner):
 
 def test_info_level_higher(simple_runner):
     @group_for_testing.command()
-    @plugin_helper()
-    def cmd(helper):
-        helper.logger.info("this is a test")
+    @ape_cli_context()
+    def cmd(cli_ctx):
+        cli_ctx.logger.info("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARNING"])
 
@@ -41,9 +41,9 @@ def test_info_level_higher(simple_runner):
 
 def test_warning(simple_runner):
     @group_for_testing.command()
-    @plugin_helper()
-    def cmd(helper):
-        helper.logger.warning("this is a test")
+    @ape_cli_context()
+    def cmd(cli_ctx):
+        cli_ctx.logger.warning("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd"])
     assert "WARNING" in result.output
@@ -52,9 +52,9 @@ def test_warning(simple_runner):
 
 def test_warning_level_higher(simple_runner):
     @group_for_testing.command()
-    @plugin_helper()
-    def cmd(helper):
-        helper.logger.warning("this is a test")
+    @ape_cli_context()
+    def cmd(cli_ctx):
+        cli_ctx.logger.warning("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "ERROR"])
     assert "WARNING" not in result.output
@@ -66,9 +66,9 @@ def test_success(simple_runner):
     # this test also ensures that we get SUCCESS logs
     # without having to specify verbosity
     @group_for_testing.command()
-    @plugin_helper()
-    def cmd(helper):
-        helper.logger.success("this is a test")
+    @ape_cli_context()
+    def cmd(cli_ctx):
+        cli_ctx.logger.success("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd"])
     assert "SUCCESS" in result.output
@@ -77,9 +77,9 @@ def test_success(simple_runner):
 
 def test_success_level_higher(simple_runner):
     @group_for_testing.command()
-    @plugin_helper()
-    def cmd(helper):
-        helper.logger.success("this is a test")
+    @ape_cli_context()
+    def cmd(cli_ctx):
+        cli_ctx.logger.success("this is a test")
 
     result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARNING"])
     assert "SUCCESS" not in result.output

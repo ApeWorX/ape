@@ -5,7 +5,7 @@ from typing import Any, Dict
 import click
 import yaml
 
-from ape.cli import plugin_helper
+from ape.cli import ape_cli_context
 from ape.exceptions import ApeException
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
@@ -94,7 +94,7 @@ class ApeCLI(click.MultiCommand):
 
 
 @click.command(cls=ApeCLI, context_settings=dict(help_option_names=["-h", "--help"]))
-@plugin_helper()
+@ape_cli_context()
 @click.version_option(message="%(version)s", package_name="eth-ape")
 @click.option(
     "--config",

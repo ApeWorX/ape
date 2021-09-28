@@ -55,7 +55,7 @@ def verbosity_option(cli_logger):
     return decorator
 
 
-def plugin_helper():
+def ape_cli_context():
     def decorator(f):
         f = verbosity_option(logger)(f)
         f = click.make_pass_decorator(ApeCliContextObject, ensure=True)(f)
