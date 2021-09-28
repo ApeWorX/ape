@@ -71,7 +71,10 @@
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_compile</span></code></a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_compile._cli</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape_compile._cli.flatten">flatten</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_compile._cli._ContractsSource">_ContractsSource</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_compile._cli.cli">cli</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_compile._cli._warn_for_missing_extensions">_warn_for_missing_extensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_compile._cli._display_byte_code_sizes">_display_byte_code_sizes</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_compile.EvmVersion">EvmVersion</a></li>
@@ -151,7 +154,19 @@
              
   <div class="section" id="module-ape_compile._cli">
 <span id="ape-compile-cli"></span><h1><a class="reference internal" href="#module-ape_compile._cli" title="ape_compile._cli"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_compile._cli</span></code></a><a class="headerlink" href="#module-ape_compile._cli" title="Permalink to this headline">¶</a></h1>
-<h3>Module Contents</h3><p><strong>Functions</strong>:</p>
+<h3>Module Contents</h3><p><strong>Classes</strong>:</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_compile._cli._ContractsSource" title="ape_compile._cli._ContractsSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_ContractsSource</span></code></a></p></td>
+<td><p>A helper class that is able to figure out which source files to</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Functions</strong>:</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -160,6 +175,12 @@
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape_compile._cli.cli" title="ape_compile._cli.cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cli</span></code></a>(filepaths, use_cache, display_size)</p></td>
 <td><p>Compiles the manifest for this project and saves the results</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_compile._cli._warn_for_missing_extensions" title="ape_compile._cli._warn_for_missing_extensions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_warn_for_missing_extensions</span></code></a>(registered_sources: List[pathlib.Path], all_sources: List[pathlib.Path])</p></td>
+<td><p>Figures out what extensions are missing from registered compilers and warns</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_compile._cli._display_byte_code_sizes" title="ape_compile._cli._display_byte_code_sizes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_display_byte_code_sizes</span></code></a>(contract_types: Dict[str, ape.types.ContractType])</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -181,6 +202,33 @@
 <code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">flatten</span></code><a class="headerlink" href="#ape_compile._cli.flatten" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py class">
+<dt id="ape_compile._cli._ContractsSource">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">_ContractsSource</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli._ContractsSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper class that is able to figure out which source files to
+compile.</p>
+<dl class="py method">
+<dt id="ape_compile._cli._ContractsSource.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli._ContractsSource.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape_compile._cli._ContractsSource.root">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">root</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape_compile._cli._ContractsSource.root" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape_compile._cli._ContractsSource.select_paths">
+<code class="sig-name descname"><span class="pre">select_paths</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_paths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli._ContractsSource.select_paths" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape_compile._cli._ContractsSource.compile">
+<code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="../../ape/types/index.html#ape.types.ContractType" title="ape.types.ContractType"><span class="pre">ape.types.ContractType</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape_compile._cli._ContractsSource.compile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt id="ape_compile._cli.cli">
 <code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">cli</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepaths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli.cli" title="Permalink to this definition">¶</a></dt>
@@ -189,6 +237,18 @@ back to the manifest.</p>
 <p>Note that ape automatically recompiles any changed contracts each time
 a project is loaded. You do not have to manually trigger a recompile.</p>
 </dd></dl>
+
+<dl class="py function">
+<dt id="ape_compile._cli._warn_for_missing_extensions">
+<code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">_warn_for_missing_extensions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">registered_sources</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_sources</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli._warn_for_missing_extensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Figures out what extensions are missing from registered compilers and warns
+the user about them.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape_compile._cli._display_byte_code_sizes">
+<code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">_display_byte_code_sizes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_types</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="../../ape/types/index.html#ape.types.ContractType" title="ape.types.ContractType"><span class="pre">ape.types.ContractType</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli._display_byte_code_sizes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 
