@@ -16,7 +16,6 @@
 
    ape.cli.options.ApeCliContextObject
    ape.cli.options.NetworkChoice
-   ape.cli.options.Alias
 
 
 
@@ -29,6 +28,7 @@
    ape.cli.options.verbose_option
    ape.cli.options._require_non_existing_alias
    ape.cli.options.existing_alias_argument
+   ape.cli.options.skip_confirmation_option
 
 
 
@@ -102,30 +102,6 @@
 
 
 
-.. py:class:: Alias(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
-
-   Bases: :py:obj:`click.Choice`
-
-   Wraps ``click.Choice`` to load account aliases for the active project at runtime.
-
-   Provide an ``account_type`` to limit the type of account to choose from.
-   Defaults to all account types in ``choices()``.
-
-   .. attribute:: name
-      :annotation: = alias
-
-      
-
-   .. py:method:: __init__(self, account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
-
-
-   .. py:method:: choices(self) -> List[str]
-      :property:
-
-
-
-
-
 .. py:function:: _require_non_existing_alias(arg)
 
 
@@ -140,5 +116,10 @@
    
 
    
+
+
+
+.. py:function:: skip_confirmation_option(help='')
+
 
 
