@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Set
 
 from ape.api.compiler import CompilerAPI
+from ape.exceptions import CompilerError
 from ape.types import ContractType
 
 
@@ -23,7 +24,7 @@ class InterfaceCompiler(CompilerAPI):
                 data = json.load(f)
 
             if not isinstance(data, list):
-                raise Exception("Not a valid ABI interface JSON file")
+                raise CompilerError("Not a valid ABI interface JSON file")
 
             else:
                 contract_types.append(

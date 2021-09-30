@@ -88,3 +88,9 @@ class AddressError(ApeException):
     """
     Raised when a problem occurs regarding an address.
     """
+
+
+class TransactionError(ApeException):
+    """
+    Raised when a problem occurs regarding transactions.
+    """
