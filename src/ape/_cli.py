@@ -5,11 +5,10 @@ from typing import Any, Dict
 import click
 import yaml
 
-from ape.cli import ape_cli_context
+from ape.cli import Abort, ape_cli_context
 from ape.exceptions import ApeException
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
-from ape.utils import Abort
 
 try:
     from importlib import metadata  # type: ignore

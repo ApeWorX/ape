@@ -8,7 +8,7 @@ import click
 from github import Github
 
 from ape import config
-from ape.cli import ape_cli_context
+from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.logging import logger
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import get_package_version
@@ -32,17 +32,6 @@ if "GITHUB_ACCESS_TOKEN" in os.environ:
 
 else:
     logger.warning("$GITHUB_ACCESS_TOKEN not set, skipping 2nd class plugins")
-
-
-def yes_option(help=""):
-    return click.option(
-        "-y",
-        "--yes",
-        "skip_confirmation",
-        default=False,
-        is_flag=True,
-        help=help,
-    )
 
 
 def is_plugin_installed(plugin: str) -> bool:
@@ -97,7 +86,7 @@ def _list(cli_ctx, display_all):
 @cli.command(short_help="Install an ape plugin")
 @click.argument("plugin")
 @click.option("-v", "--version", help="Specify version (Default is latest)")
-@yes_option(help="Don't ask for confirmation to add the plugin")
+@skip_confirmation_option(help="Don't ask for confirmation to add the plugin")
 @ape_cli_context()
 def add(cli_ctx, plugin, version, skip_confirmation):
     if plugin.startswith("ape"):
@@ -128,7 +117,7 @@ def add(cli_ctx, plugin, version, skip_confirmation):
 
 
 @cli.command(short_help="Install all plugins in the local config file")
-@yes_option("Don't ask for confirmation to install the plugins")
+@skip_confirmation_option("Don't ask for confirmation to install the plugins")
 @ape_cli_context()
 def install(cli_ctx, skip_confirmation):
     for plugin, version in config.get_config("plugins").items():
@@ -151,7 +140,7 @@ def install(cli_ctx, skip_confirmation):
 
 @cli.command(short_help="Uninstall an ape plugin")
 @click.argument("plugin")
-@yes_option("Don't ask for confirmation to remove the plugin")
+@skip_confirmation_option("Don't ask for confirmation to remove the plugin")
 @ape_cli_context()
 def remove(cli_ctx, plugin, skip_confirmation):
     if plugin.startswith("ape"):

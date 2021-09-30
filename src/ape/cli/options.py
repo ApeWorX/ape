@@ -1,12 +1,13 @@
-from typing import List, Optional, Type
+from typing import Optional, Type
 
 import click
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
+from ape.cli.choices import Alias
+from ape.cli.utils import Abort
 from ape.exceptions import AliasAlreadyInUseError
 from ape.logging import LogLevel, logger
-from ape.utils import Abort
 
 
 class ApeCliContextObject:
@@ -94,30 +95,6 @@ def verbose_option(help=""):
     )
 
 
-class Alias(click.Choice):
-    """Wraps ``click.Choice`` to load account aliases for the active project at runtime.
-
-    Provide an ``account_type`` to limit the type of account to choose from.
-    Defaults to all account types in ``choices()``.
-    """
-
-    name = "alias"
-
-    def __init__(self, account_type: Optional[Type[AccountAPI]] = None):
-        # NOTE: we purposely skip the constructor of `Choice`
-        self.case_sensitive = False
-        self._account_type = account_type
-
-    @property
-    def choices(self) -> List[str]:  # type: ignore
-        options = (
-            list(accounts)
-            if not self._account_type
-            else accounts.get_accounts_by_type(self._account_type)
-        )
-        return [a.alias for a in options if a.alias is not None]
-
-
 def _require_non_existing_alias(arg):
     if arg in accounts.aliases:
         raise AliasAlreadyInUseError(arg)
@@ -131,3 +108,14 @@ def existing_alias_argument(account_type: Optional[Type[AccountAPI]] = None):
 non_existing_alias_argument = click.argument(
     "alias", callback=lambda ctx, param, arg: _require_non_existing_alias(arg)
 )
+
+
+def skip_confirmation_option(help=""):
+    return click.option(
+        "-y",
+        "--yes",
+        "skip_confirmation",
+        default=False,
+        is_flag=True,
+        help=help,
+    )
