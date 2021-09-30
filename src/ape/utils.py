@@ -7,7 +7,6 @@ from hashlib import md5
 from pathlib import Path
 from typing import Any, Dict
 
-import click
 import yaml
 from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
@@ -90,14 +89,6 @@ def get_package_version(obj: Any) -> str:
     except PackageNotFoundError:
         # NOTE: Must handle empty string result here
         return ""
-
-
-class Abort(click.ClickException):
-    """Wrapper around a CLI exception"""
-
-    def show(self, file=None):
-        """Override default ``show`` to print CLI errors in red text."""
-        logger.error(self.format_message())
 
 
 def deep_merge(dict1, dict2):
