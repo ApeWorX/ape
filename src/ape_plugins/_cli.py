@@ -8,8 +8,7 @@ import click
 from github import Github
 
 from ape import config
-from ape.cli import ape_cli_context
-from ape.cli.options import skip_confirmation_option
+from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.logging import logger
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import get_package_version

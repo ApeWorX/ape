@@ -4,7 +4,7 @@ import click
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
-from ape.cli import Alias
+from ape.cli.choices import Alias
 from ape.cli.utils import Abort
 from ape.exceptions import AliasAlreadyInUseError
 from ape.logging import LogLevel, logger

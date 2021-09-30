@@ -4,6 +4,7 @@ from ape.cli.options import (
     existing_alias_argument,
     network_option,
     non_existing_alias_argument,
+    skip_confirmation_option,
     verbose_option,
 )
 from ape.cli.utils import Abort
@@ -16,5 +17,6 @@ __all__ = [
     "network_option",
     "non_existing_alias_argument",
     "PromptChoice",
+    "skip_confirmation_option",
     "verbose_option",
 ]
