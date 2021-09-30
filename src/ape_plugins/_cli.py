@@ -2,13 +2,14 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Set
+from typing import Dict, Set, Tuple
 
 import click
 from github import Github
 
 from ape import config
 from ape.cli import ape_cli_context, skip_confirmation_option
+from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import get_package_version
@@ -116,26 +117,54 @@ def add(cli_ctx, plugin, version, skip_confirmation):
         subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", plugin])
 
 
-@cli.command(short_help="Install all plugins in the local config file")
-@skip_confirmation_option("Don't ask for confirmation to install the plugins")
-@ape_cli_context()
-def install(cli_ctx, skip_confirmation):
-    for plugin, version in config.get_config("plugins").items():
-        if not plugin.startswith("ape-"):
-            cli_ctx.abort(f"Namespace 'ape' required in config item '{plugin}'")
+def _get_config_error() -> ConfigError:
+    expected_format = "plugins:\n  - <plugin-name>:\n      version: <plugin-version>  # optional"
+    return ConfigError(f"Config item mis-configured. Expected format:\n\n{expected_format}\n")
 
-        if not is_plugin_installed(plugin.replace("-", "_")) and (
-            plugin.replace("-", "_") in SECOND_CLASS_PLUGINS
+
+def _get_plugin_names(item: Dict) -> Tuple[str, str]:
+    """
+    Extracts the module name and package name from the configured
+    plugin. The package name includes `==<version>` if the version is
+    specified in the config.
+    """
+
+    try:
+        if len(item.keys()) != 1:
+            raise _get_config_error()
+
+        name = list(item.keys())[0]
+        module_name = f"ape_{name.replace('-', '_')}"
+        package_name = f"ape-{name}"
+        properties = item[name] or {}
+        version = properties.get("version")
+
+        if version:
+            package_name = f"{package_name}=={version}"
+
+        return module_name, package_name
+
+    except Exception as err:
+        raise _get_config_error() from err
+
+
+@cli.command(short_help="Install all plugins in the local config file")
+@ape_cli_context()
+@skip_confirmation_option("Don't ask for confirmation to install the plugins")
+def install(cli_ctx, skip_confirmation):
+    plugins = config.get_config("plugins") or []
+    for plugin in plugins:
+        module_name, package_name = _get_plugin_names(plugin)
+        if not is_plugin_installed(module_name) and (
+            module_name in SECOND_CLASS_PLUGINS
             or skip_confirmation
-            or click.confirm(f"Install unknown 3rd party plugin '{plugin}'?")
+            or click.confirm(f"Install unknown 3rd party plugin '{package_name}'?")
         ):
-            cli_ctx.logger.info(f"Installing {plugin}...")
+            cli_ctx.logger.info(f"Installing {package_name}...")
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
-            subprocess.call(
-                [sys.executable, "-m", "pip", "install", "--quiet", f"{plugin}=={version}"]
-            )
+            subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", f"{package_name}"])
 
 
 @cli.command(short_help="Uninstall an ape plugin")
