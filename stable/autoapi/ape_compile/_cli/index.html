@@ -173,13 +173,13 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_compile._cli.cli" title="ape_compile._cli.cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cli</span></code></a>(filepaths, use_cache, display_size)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_compile._cli.cli" title="ape_compile._cli.cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cli</span></code></a>(cli_ctx, filepaths, use_cache, display_size)</p></td>
 <td><p>Compiles the manifest for this project and saves the results</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape_compile._cli._warn_for_missing_extensions" title="ape_compile._cli._warn_for_missing_extensions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_warn_for_missing_extensions</span></code></a>(registered_sources: List[pathlib.Path], all_sources: List[pathlib.Path])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_compile._cli._warn_for_missing_extensions" title="ape_compile._cli._warn_for_missing_extensions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_warn_for_missing_extensions</span></code></a>(cli_ctx, registered_sources: List[pathlib.Path], all_sources: List[pathlib.Path])</p></td>
 <td><p>Figures out what extensions are missing from registered compilers and warns</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_compile._cli._display_byte_code_sizes" title="ape_compile._cli._display_byte_code_sizes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_display_byte_code_sizes</span></code></a>(contract_types: Dict[str, ape.types.ContractType])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_compile._cli._display_byte_code_sizes" title="ape_compile._cli._display_byte_code_sizes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_display_byte_code_sizes</span></code></a>(cli_ctx, contract_types: Dict[str, ape.types.ContractType])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -231,7 +231,7 @@ compile.</p>
 
 <dl class="py function">
 <dt id="ape_compile._cli.cli">
-<code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">cli</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepaths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli.cli" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">cli</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepaths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli.cli" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compiles the manifest for this project and saves the results
 back to the manifest.</p>
 <p>Note that ape automatically recompiles any changed contracts each time
@@ -240,14 +240,14 @@ a project is loaded. You do not have to manually trigger a recompile.</p>
 
 <dl class="py function">
 <dt id="ape_compile._cli._warn_for_missing_extensions">
-<code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">_warn_for_missing_extensions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">registered_sources</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_sources</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli._warn_for_missing_extensions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">_warn_for_missing_extensions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">registered_sources</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_sources</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli._warn_for_missing_extensions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Figures out what extensions are missing from registered compilers and warns
 the user about them.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ape_compile._cli._display_byte_code_sizes">
-<code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">_display_byte_code_sizes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_types</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="../../ape/types/index.html#ape.types.ContractType" title="ape.types.ContractType"><span class="pre">ape.types.ContractType</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli._display_byte_code_sizes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_compile._cli.</span></code><code class="sig-name descname"><span class="pre">_display_byte_code_sizes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_types</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="../../ape/types/index.html#ape.types.ContractType" title="ape.types.ContractType"><span class="pre">ape.types.ContractType</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile._cli._display_byte_code_sizes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

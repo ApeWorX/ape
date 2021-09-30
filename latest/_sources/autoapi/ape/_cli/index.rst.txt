@@ -111,7 +111,7 @@
 
 
 
-.. py:function:: cli()
+.. py:function:: cli(context)
 
 
 

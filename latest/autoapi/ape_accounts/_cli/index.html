@@ -167,19 +167,19 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape_accounts._cli.cli" title="ape_accounts._cli.cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cli</span></code></a>()</p></td>
 <td><p>Command-line helper for managing local accounts. You can unlock local accounts from</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape_accounts._cli._list" title="ape_accounts._cli._list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_list</span></code></a>(all)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_accounts._cli._list" title="ape_accounts._cli._list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_list</span></code></a>(cli_ctx, all)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_accounts._cli.generate" title="ape_accounts._cli.generate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate</span></code></a>(alias)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_accounts._cli.generate" title="ape_accounts._cli.generate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate</span></code></a>(cli_ctx, alias)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape_accounts._cli._import" title="ape_accounts._cli._import"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_import</span></code></a>(alias)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_accounts._cli._import" title="ape_accounts._cli._import"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_import</span></code></a>(cli_ctx, alias)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_accounts._cli.change_password" title="ape_accounts._cli.change_password"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_password</span></code></a>(alias)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_accounts._cli.change_password" title="ape_accounts._cli.change_password"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_password</span></code></a>(cli_ctx, alias)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape_accounts._cli.delete" title="ape_accounts._cli.delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete</span></code></a>(alias)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_accounts._cli.delete" title="ape_accounts._cli.delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete</span></code></a>(cli_ctx, alias)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -211,27 +211,27 @@ scripts or the console using the accounts.load() method.</p>
 
 <dl class="py function">
 <dt id="ape_accounts._cli._list">
-<code class="sig-prename descclassname"><span class="pre">ape_accounts._cli.</span></code><code class="sig-name descname"><span class="pre">_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts._cli._list" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_accounts._cli.</span></code><code class="sig-name descname"><span class="pre">_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts._cli._list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_accounts._cli.generate">
-<code class="sig-prename descclassname"><span class="pre">ape_accounts._cli.</span></code><code class="sig-name descname"><span class="pre">generate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts._cli.generate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_accounts._cli.</span></code><code class="sig-name descname"><span class="pre">generate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts._cli.generate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_accounts._cli._import">
-<code class="sig-prename descclassname"><span class="pre">ape_accounts._cli.</span></code><code class="sig-name descname"><span class="pre">_import</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts._cli._import" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_accounts._cli.</span></code><code class="sig-name descname"><span class="pre">_import</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts._cli._import" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_accounts._cli.change_password">
-<code class="sig-prename descclassname"><span class="pre">ape_accounts._cli.</span></code><code class="sig-name descname"><span class="pre">change_password</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts._cli.change_password" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_accounts._cli.</span></code><code class="sig-name descname"><span class="pre">change_password</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts._cli.change_password" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_accounts._cli.delete">
-<code class="sig-prename descclassname"><span class="pre">ape_accounts._cli.</span></code><code class="sig-name descname"><span class="pre">delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts._cli.delete" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_accounts._cli.</span></code><code class="sig-name descname"><span class="pre">delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts._cli.delete" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

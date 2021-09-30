@@ -50,27 +50,27 @@
 
 
 
-.. py:function:: _list(all)
+.. py:function:: _list(cli_ctx, all)
 
 
 
 
-.. py:function:: generate(alias)
+.. py:function:: generate(cli_ctx, alias)
 
 
 
 
-.. py:function:: _import(alias)
+.. py:function:: _import(cli_ctx, alias)
 
 
 
 
-.. py:function:: change_password(alias)
+.. py:function:: change_password(cli_ctx, alias)
 
 
 
 
-.. py:function:: delete(alias)
+.. py:function:: delete(cli_ctx, alias)
 
 
 

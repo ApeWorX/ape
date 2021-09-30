@@ -15,7 +15,6 @@
 
 .. autoapisummary::
 
-   ape.utils.notify
    ape.utils.deep_merge
    ape.utils.expand_environment_variables
    ape.utils.load_config
@@ -24,13 +23,6 @@
 
 
 -----------
-
-
-.. py:function:: notify(type_, msg, file=None)
-
-   Prepends a message with a colored tag and outputs it to the console.
-
-
 
 
 .. py:function:: deep_merge(dict1, dict2)

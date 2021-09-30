@@ -173,16 +173,16 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape_plugins._cli.cli" title="ape_plugins._cli.cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cli</span></code></a>()</p></td>
 <td><p>Command-line helper for managing installed plugins.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape_plugins._cli._list" title="ape_plugins._cli._list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_list</span></code></a>(display_all)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_plugins._cli._list" title="ape_plugins._cli._list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_list</span></code></a>(cli_ctx, display_all)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_plugins._cli.add" title="ape_plugins._cli.add"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add</span></code></a>(plugin, version, skip_confirmation)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_plugins._cli.add" title="ape_plugins._cli.add"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add</span></code></a>(cli_ctx, plugin, version, skip_confirmation)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape_plugins._cli.install" title="ape_plugins._cli.install"><code class="xref py py-obj docutils literal notranslate"><span class="pre">install</span></code></a>(skip_confirmation)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_plugins._cli.install" title="ape_plugins._cli.install"><code class="xref py py-obj docutils literal notranslate"><span class="pre">install</span></code></a>(cli_ctx, skip_confirmation)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_plugins._cli.remove" title="ape_plugins._cli.remove"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove</span></code></a>(plugin, skip_confirmation)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_plugins._cli.remove" title="ape_plugins._cli.remove"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove</span></code></a>(cli_ctx, plugin, skip_confirmation)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -239,22 +239,22 @@
 
 <dl class="py function">
 <dt id="ape_plugins._cli._list">
-<code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">display_all</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_plugins._cli._list" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_all</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_plugins._cli._list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_plugins._cli.add">
-<code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">add</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_confirmation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_plugins._cli.add" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">add</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_confirmation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_plugins._cli.add" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_plugins._cli.install">
-<code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">skip_confirmation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_plugins._cli.install" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_confirmation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_plugins._cli.install" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_plugins._cli.remove">
-<code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">remove</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_confirmation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_plugins._cli.remove" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">remove</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_confirmation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_plugins._cli.remove" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

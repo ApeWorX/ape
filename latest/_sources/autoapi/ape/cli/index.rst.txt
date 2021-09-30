@@ -1,0 +1,75 @@
+:mod:`ape.cli`
+==============
+
+.. py:module:: ape.cli
+
+
+
+.. raw:: html
+
+   <h3>Submodules</h3>
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   options/index.rst
+
+
+
+
+.. raw:: html
+
+   <h3>Package Contents</h3>
+
+
+**Functions**:
+
+.. autoapisummary::
+
+   ape.cli.ape_cli_context
+   ape.cli.existing_alias_argument
+   ape.cli.verbose_option
+
+
+
+**Attributes**:
+
+.. autoapisummary::
+
+   ape.cli.network_option
+   ape.cli.non_existing_alias_argument
+
+
+
+-----------
+
+
+.. py:function:: ape_cli_context()
+
+
+
+
+.. py:function:: existing_alias_argument(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
+
+
+
+
+.. data:: network_option
+   
+
+   
+
+
+
+.. data:: non_existing_alias_argument
+   
+
+   
+
+
+
+.. py:function:: verbose_option(help='')
+
+
+

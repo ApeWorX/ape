@@ -155,10 +155,10 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_run._cli._run_script" title="ape_run._cli._run_script"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_run_script</span></code></a>(script_path, interactive=False, verbose=False)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_run._cli._run_script" title="ape_run._cli._run_script"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_run_script</span></code></a>(cli_ctx, script_path, interactive=False, verbose=False)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape_run._cli.cli" title="ape_run._cli.cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cli</span></code></a>(scripts, verbose, interactive, network)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_run._cli.cli" title="ape_run._cli.cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cli</span></code></a>(cli_ctx, scripts, verbose, interactive, network)</p></td>
 <td><p>NAME - Path or script name (from <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> folder)</p></td>
 </tr>
 </tbody>
@@ -166,12 +166,12 @@
 <hr class="docutils" />
 <dl class="py function">
 <dt id="ape_run._cli._run_script">
-<code class="sig-prename descclassname"><span class="pre">ape_run._cli.</span></code><code class="sig-name descname"><span class="pre">_run_script</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_run._cli._run_script" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_run._cli.</span></code><code class="sig-name descname"><span class="pre">_run_script</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">script_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_run._cli._run_script" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_run._cli.cli">
-<code class="sig-prename descclassname"><span class="pre">ape_run._cli.</span></code><code class="sig-name descname"><span class="pre">cli</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scripts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_run._cli.cli" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ape_run._cli.</span></code><code class="sig-name descname"><span class="pre">cli</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scripts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_run._cli.cli" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME - Path or script name (from <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> folder)</p>
 <p>Run scripts from the <code class="docutils literal notranslate"><span class="pre">scripts</span></code> folder. A script must either define a <code class="docutils literal notranslate"><span class="pre">main()</span></code> method,
 or define an import named <code class="docutils literal notranslate"><span class="pre">cli</span></code> that is a <code class="docutils literal notranslate"><span class="pre">click.Command</span></code> or <code class="docutils literal notranslate"><span class="pre">click.Group</span></code> object.

@@ -76,22 +76,22 @@
 
 
 
-.. py:function:: _list(display_all)
+.. py:function:: _list(cli_ctx, display_all)
 
 
 
 
-.. py:function:: add(plugin, version, skip_confirmation)
+.. py:function:: add(cli_ctx, plugin, version, skip_confirmation)
 
 
 
 
-.. py:function:: install(skip_confirmation)
+.. py:function:: install(cli_ctx, skip_confirmation)
 
 
 
 
-.. py:function:: remove(plugin, skip_confirmation)
+.. py:function:: remove(cli_ctx, plugin, skip_confirmation)
 
 
 
