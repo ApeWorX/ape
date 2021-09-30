@@ -23,36 +23,35 @@ class AliasAlreadyInUseError(AccountsError):
 
 class ContractError(ApeException):
     """
-    Raised when issues occurs from interacting with a contract
+    Raised when issues occur when interacting with a contract
     (calls or transactions).
     """
 
 
-class TransactionError(ContractError):
-    """
-    Raised when a problem occurs while making transactions
-    on a contract.
-    """
-
-
-class DecodingError(ContractError):
-    """
-    Raised when errors occurs while decoding data from
-    a contract call or transaction.
-    """
-
-    def __init__(self):
-        super().__init__("Output corrupted")
-
-
 class ContractCallError(ContractError):
     """
-    Raised when a problem occurs when calling a contract.
+    Raised when issues occur when making a contract call.
     """
 
     def __init__(self, message=None):
         message = message or "Number of args does not match"
         super().__init__(message)
+
+
+class TransactionError(ContractError):
+    """
+    Raised when issues occur while making contract transactions.
+    """
+
+
+class DecodingError(ContractError):
+    """
+    Raised when issues occur while decoding data from
+    a contract call or transaction.
+    """
+
+    def __init__(self):
+        super().__init__("Output corrupted")
 
 
 class ContractDeployError(ApeException):
