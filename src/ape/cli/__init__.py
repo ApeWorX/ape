@@ -6,8 +6,10 @@ from ape.cli.options import (
     non_existing_alias_argument,
     verbose_option,
 )
+from ape.cli.utils import Abort
 
 __all__ = [
+    "Abort",
     "Alias",
     "ape_cli_context",
     "existing_alias_argument",

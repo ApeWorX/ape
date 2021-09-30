@@ -5,8 +5,7 @@ from typing import Any, Dict
 import click
 import yaml
 
-from ape.cli import ape_cli_context
-from ape.cli.utils import Abort
+from ape.cli import Abort, ape_cli_context
 from ape.exceptions import ApeException
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
