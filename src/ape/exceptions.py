@@ -21,7 +21,31 @@ class AliasAlreadyInUseError(AccountsError):
         super().__init__(f"Account with alias '{alias}' already in use")
 
 
-class ContractCallError(ApeException):
+class ContractError(ApeException):
+    """
+    Raised when issues occurs from interacting with a contract
+    (calls or transactions).
+    """
+
+
+class TransactionError(ContractError):
+    """
+    Raised when a problem occurs while making transactions
+    on a contract.
+    """
+
+
+class DecodingError(ContractError):
+    """
+    Raised when errors occurs while decoding data from
+    a contract call or transaction.
+    """
+
+    def __init__(self):
+        super().__init__("Output corrupted")
+
+
+class ContractCallError(ContractError):
     """
     Raised when a problem occurs when calling a contract.
     """
@@ -87,10 +111,4 @@ class ConfigError(ApeException):
 class AddressError(ApeException):
     """
     Raised when a problem occurs regarding an address.
-    """
-
-
-class TransactionError(ApeException):
-    """
-    Raised when a problem occurs regarding transactions.
     """

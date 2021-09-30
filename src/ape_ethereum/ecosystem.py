@@ -12,7 +12,7 @@ from eth_utils import keccak, to_bytes, to_int
 from hexbytes import HexBytes
 
 from ape.api import ContractLog, EcosystemAPI, ReceiptAPI, TransactionAPI, TransactionStatusEnum
-from ape.exceptions import ContractCallError, TransactionError
+from ape.exceptions import DecodingError, TransactionError
 from ape.types import ABI, AddressType
 
 NETWORKS = {
@@ -97,7 +97,7 @@ class Ethereum(EcosystemAPI):
             return abi_decode(output_types, raw_data)
 
         except InsufficientDataBytes as err:
-            raise ContractCallError("Output corrupted") from err
+            raise DecodingError() from err
 
     def encode_deployment(
         self, deployment_bytecode: bytes, abi: Optional[ABI], *args, **kwargs
