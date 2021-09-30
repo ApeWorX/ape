@@ -5,19 +5,19 @@ from pathlib import Path
 import click
 
 from ape import config, networks
-from ape.options import network_option, verbose_option
-from ape.utils import Abort, get_relative_path
+from ape.cli import ape_cli_context, network_option, verbose_option
+from ape.utils import get_relative_path
 from ape_console._cli import console
 
 # TODO: Migrate this to a CLI toolkit under ``ape``
 
 
-def _run_script(script_path, interactive=False, verbose=False):
+def _run_script(cli_ctx, script_path, interactive=False, verbose=False):
     script_path = get_relative_path(script_path, Path.cwd())
     script_parts = script_path.parts[:-1]
 
     if any(p == ".." for p in script_parts):
-        raise Abort("Cannot execute script from outside current directory")
+        cli_ctx.abort("Cannot execute script from outside current directory")
 
     # Add to Python path so we can search for the given script to import
     sys.path.append(str(script_path.parent.resolve()))
@@ -26,12 +26,12 @@ def _run_script(script_path, interactive=False, verbose=False):
     try:
         py_module = import_module(script_path.stem)
 
-    except Exception as e:
+    except Exception as err:
         if verbose:
-            raise e
+            raise err
 
         else:
-            raise Abort(f"Exception while executing script: {script_path}") from e
+            cli_ctx.abort(f"Exception while executing script: {script_path}", base_error=err)
 
     finally:
         # Undo adding the path to make sure it's not permanent
@@ -47,7 +47,7 @@ def _run_script(script_path, interactive=False, verbose=False):
         py_module.main()
 
     else:
-        raise Abort("No `main` or `cli` method detected")
+        cli_ctx.abort("No `main` or `cli` method detected")
 
     if interactive:
         return console()
@@ -64,7 +64,8 @@ def _run_script(script_path, interactive=False, verbose=False):
     help="Drop into interactive console session after running",
 )
 @network_option
-def cli(scripts, verbose, interactive, network):
+@ape_cli_context()
+def cli(cli_ctx, scripts, verbose, interactive, network):
     """
     NAME - Path or script name (from ``scripts/`` folder)
 
@@ -75,7 +76,7 @@ def cli(scripts, verbose, interactive, network):
     the exports from the ``ape`` top-level package (similar to how the console works)
     """
     if not scripts:
-        raise Abort("Must provide at least one script name or path")
+        cli_ctx.abort("Must provide at least one script name or path")
 
     scripts_folder = config.PROJECT_FOLDER / "scripts"
 
@@ -89,12 +90,12 @@ def cli(scripts, verbose, interactive, network):
                 script_file = Path(name).resolve()
 
             elif not scripts_folder.exists():
-                raise Abort("No `scripts/` directory detected to run script")
+                cli_ctx.abort("No `scripts/` directory detected to run script")
 
             elif name not in available_scripts:
-                raise Abort(f"No script named '{name}' detected in scripts folder")
+                cli_ctx.abort(f"No script named '{name}' detected in scripts folder")
 
             else:
                 script_file = available_scripts[name]
 
-            _run_script(script_file, interactive, verbose)
+            _run_script(cli_ctx, script_file, interactive, verbose)

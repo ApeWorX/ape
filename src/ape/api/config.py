@@ -25,7 +25,9 @@ class ConfigItem:
             elif isinstance(value, (int, str, dict)):
                 data[name] = value
             else:
-                raise TypeError("Received unknown type when serializing a config item")
+                raise TypeError(
+                    f"Received unknown type '{type(data[name])}' when serializing a config item"
+                )
         return data
 
     def validate_config(self):

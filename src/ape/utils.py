@@ -11,13 +11,15 @@ import click
 import yaml
 from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
+from ape.logging import logger
+
 try:
-    from functools import cached_property
+    from functools import cached_property  # type: ignore
 except ImportError:
     from backports.cached_property import cached_property  # type: ignore
 
 try:
-    from functools import singledispatchmethod
+    from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
@@ -79,7 +81,7 @@ def get_package_version(obj: Any) -> str:
     if pkg_name in dists:
         # NOTE: Shouldn't really be more than 1, but never know
         if len(dists[pkg_name]) != 1:
-            notify("WARNING", f"duplicate pkg_name '{pkg_name}'")
+            logger.warning(f"duplicate pkg_name '{pkg_name}'")
         pkg_name = dists[pkg_name][0]
 
     try:
@@ -90,27 +92,12 @@ def get_package_version(obj: Any) -> str:
         return ""
 
 
-NOTIFY_COLORS = {
-    "WARNING": "bright_red",
-    "ERROR": "bright_red",
-    "SUCCESS": "bright_green",
-    "INFO": "blue",
-}
-
-
-def notify(type_, msg, file=None):
-    """Prepends a message with a colored tag and outputs it to the console."""
-    click.echo(
-        f"{click.style(type_, fg=NOTIFY_COLORS[type_])}: {msg}", file=file, err=type_ == "ERROR"
-    )
-
-
 class Abort(click.ClickException):
     """Wrapper around a CLI exception"""
 
     def show(self, file=None):
         """Override default ``show`` to print CLI errors in red text."""
-        notify("ERROR", self.format_message(), file=file)
+        logger.error(self.format_message())
 
 
 def deep_merge(dict1, dict2):
@@ -167,6 +154,5 @@ __all__ = [
     "deep_merge",
     "expand_environment_variables",
     "load_config",
-    "notify",
     "singledispatchmethod",
 ]

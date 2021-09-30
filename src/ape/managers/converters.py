@@ -6,9 +6,10 @@ from hexbytes import HexBytes
 
 from ape.api import AddressAPI, ConverterAPI
 from ape.exceptions import ConversionError
+from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.types import AddressType
-from ape.utils import cached_property, notify
+from ape.utils import cached_property
 
 from .config import ConfigManager
 from .networks import NetworkManager
@@ -42,7 +43,7 @@ class HexAddressConverter(ConverterAPI):
         return isinstance(value, str) and is_hex_address(value) and not is_checksum_address(value)
 
     def convert(self, value: str) -> AddressType:
-        notify("WARNING", f"'{value}' is not in checksummed form")
+        logger.warning(f"'{value}' is not in checksummed form")
         return to_checksum_address(value)
 
 

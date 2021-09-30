@@ -49,4 +49,6 @@ def ape_cli():
 
 def assert_failure(result, expected_output):
     assert result.exit_code == 1
-    assert f"ERROR: {expected_output}" in result.output
+    assert result.exception is not None
+    assert "ERROR" in result.output
+    assert expected_output in result.output

@@ -4,8 +4,8 @@ from typing import Dict, List, Optional
 
 import click
 
+from ape.cli import ape_cli_context
 from ape.types import ContractType
-from ape.utils import notify
 
 flatten = chain.from_iterable
 
@@ -64,7 +64,8 @@ class _ContractsSource:
     is_flag=True,
     help="Show deployment bytecode size for all contracts",
 )
-def cli(filepaths, use_cache, display_size):
+@ape_cli_context()
+def cli(cli_ctx, filepaths, use_cache, display_size):
     """
     Compiles the manifest for this project and saves the results
     back to the manifest.
@@ -75,7 +76,7 @@ def cli(filepaths, use_cache, display_size):
     source = _ContractsSource(use_cache)
     missing_source = not source.root.exists() or not source.root.iterdir()
     if not filepaths and missing_source:
-        notify("WARNING", "No 'contracts/' directory detected")
+        cli_ctx.logger.warning("No 'contracts/' directory detected")
         return
 
     selected_file_paths = source.select_paths(filepaths)
@@ -83,15 +84,15 @@ def cli(filepaths, use_cache, display_size):
     unable_to_select_all = len(source_file_paths) > len(selected_file_paths)
 
     if not selected_file_paths or unable_to_select_all:
-        _warn_for_missing_extensions(selected_file_paths, source_file_paths)
+        _warn_for_missing_extensions(cli_ctx, selected_file_paths, source_file_paths)
 
     contract_types = source.compile()
 
     if display_size:
-        _display_byte_code_sizes(contract_types)
+        _display_byte_code_sizes(cli_ctx, contract_types)
 
 
-def _warn_for_missing_extensions(registered_sources: List[Path], all_sources: List[Path]):
+def _warn_for_missing_extensions(cli_ctx, registered_sources: List[Path], all_sources: List[Path]):
     """
     Figures out what extensions are missing from registered compilers and warns
     the user about them.
@@ -107,10 +108,10 @@ def _warn_for_missing_extensions(registered_sources: List[Path], all_sources: Li
     else:
         message = "Nothing to compile"
 
-    notify("WARNING", message)
+    cli_ctx.logger.warning(message)
 
 
-def _display_byte_code_sizes(contract_types: Dict[str, ContractType]):
+def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
     # Display bytecode size for *all* contract types (not just ones we compiled)
     code_size = []
     for contract in contract_types.values():
@@ -123,7 +124,7 @@ def _display_byte_code_sizes(contract_types: Dict[str, ContractType]):
             code_size.append((contract.contractName, len(bytecode) // 2))
 
     if not code_size:
-        notify("INFO", "No contracts with bytecode to display")
+        cli_ctx.logger.info("No contracts with bytecode to display")
         return
 
     click.echo()
