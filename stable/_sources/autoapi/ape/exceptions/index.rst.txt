@@ -47,13 +47,47 @@
 
 
 
-.. py:exception:: ContractCallError(message=None)
+.. py:exception:: ContractError
 
    Bases: :py:obj:`ApeException`
 
-   Raised when a problem occurs when calling a contract.
+   Raised when issues occur when interacting with a contract
+   (calls or transactions).
+
+
+
+
+.. py:exception:: ContractCallError(message=None)
+
+   Bases: :py:obj:`ContractError`
+
+   Raised when issues occur when making a contract call.
 
    .. py:method:: __init__(self, message=None)
+
+      Initialize self.  See help(type(self)) for accurate signature.
+
+
+
+
+
+.. py:exception:: TransactionError
+
+   Bases: :py:obj:`ContractError`
+
+   Raised when issues occur while making contract transactions.
+
+
+
+
+.. py:exception:: DecodingError
+
+   Bases: :py:obj:`ContractError`
+
+   Raised when issues occur while decoding data from
+   a contract call or transaction.
+
+   .. py:method:: __init__(self)
 
       Initialize self.  See help(type(self)) for accurate signature.
 

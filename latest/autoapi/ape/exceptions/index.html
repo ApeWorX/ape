@@ -72,8 +72,14 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.exceptions.AliasAlreadyInUseError.__init__">__init__</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.exceptions.ContractError">ContractError</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.exceptions.ContractCallError">ContractCallError</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.exceptions.ContractCallError.__init__">__init__</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.exceptions.TransactionError">TransactionError</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.exceptions.DecodingError">DecodingError</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.exceptions.DecodingError.__init__">__init__</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.exceptions.ContractDeployError">ContractDeployError</a></li>
@@ -200,13 +206,42 @@ that already maps to another account.</p>
 </dd></dl>
 
 <dl class="py exception">
+<dt id="ape.exceptions.ContractError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">ContractError</span></code><a class="headerlink" href="#ape.exceptions.ContractError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ApeException" title="ape.exceptions.ApeException"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ApeException</span></code></a></p>
+<p>Raised when issues occur when interacting with a contract
+(calls or transactions).</p>
+</dd></dl>
+
+<dl class="py exception">
 <dt id="ape.exceptions.ContractCallError">
 <em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">ContractCallError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.ContractCallError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ApeException" title="ape.exceptions.ApeException"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ApeException</span></code></a></p>
-<p>Raised when a problem occurs when calling a contract.</p>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ContractError" title="ape.exceptions.ContractError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractError</span></code></a></p>
+<p>Raised when issues occur when making a contract call.</p>
 <dl class="py method">
 <dt id="ape.exceptions.ContractCallError.__init__">
 <code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.ContractCallError.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt id="ape.exceptions.TransactionError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">TransactionError</span></code><a class="headerlink" href="#ape.exceptions.TransactionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ContractError" title="ape.exceptions.ContractError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractError</span></code></a></p>
+<p>Raised when issues occur while making contract transactions.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="ape.exceptions.DecodingError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">DecodingError</span></code><a class="headerlink" href="#ape.exceptions.DecodingError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ContractError" title="ape.exceptions.ContractError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractError</span></code></a></p>
+<p>Raised when issues occur while decoding data from
+a contract call or transaction.</p>
+<dl class="py method">
+<dt id="ape.exceptions.DecodingError.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.DecodingError.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 

@@ -24,6 +24,20 @@
 -----------
 
 
+.. py:exception:: InvalidPasswordError
+
+   Bases: :py:obj:`ape.exceptions.AccountsError`
+
+   Raised when password to unlock an account is incorrect.
+
+   .. py:method:: __init__(self)
+
+      Initialize self.  See help(type(self)) for accurate signature.
+
+
+
+
+
 .. py:class:: AccountContainer
 
    Bases: :py:obj:`ape.api.AccountContainerAPI`
