@@ -11,7 +11,7 @@ from ape.utils import Abort
 
 class ApeCliContextObject:
     """A class that can be auto-imported into a plugin ``click.command()``
-    via ``@plugin_helper()``. It can help do common CLI tasks such as log
+    via ``@ape_cli_context()``. It can help do common CLI tasks such as log
     messages to the user or abort execution."""
 
     def __init__(self):

@@ -104,5 +104,5 @@ class ApeCLI(click.MultiCommand):
     callback=display_config,
     help="Show configuration options (using `ape-config.yaml`)",
 )
-def cli(helper):
-    _ = helper
+def cli(context):
+    _ = context
