@@ -118,7 +118,7 @@ def add(cli_ctx, plugin, version, skip_confirmation):
 
 
 def _get_config_error() -> ConfigError:
-    expected_format = "plugins:\n  - <plugin-name>:\n      version: <plugin-version>  # optional"
+    expected_format = "plugins:\n  - name: <plugin-name>\n    version: <plugin-version>  # optional"
     return ConfigError(f"Config item mis-configured. Expected format:\n\n{expected_format}\n")
 
 
@@ -128,16 +128,11 @@ def _get_plugin_names(item: Dict) -> Tuple[str, str]:
     plugin. The package name includes `==<version>` if the version is
     specified in the config.
     """
-
     try:
-        if len(item.keys()) != 1:
-            raise _get_config_error()
-
-        name = list(item.keys())[0]
+        name = item["name"]
         module_name = f"ape_{name.replace('-', '_')}"
         package_name = f"ape-{name}"
-        properties = item[name] or {}
-        version = properties.get("version")
+        version = item.get("version")
 
         if version:
             package_name = f"{package_name}=={version}"
