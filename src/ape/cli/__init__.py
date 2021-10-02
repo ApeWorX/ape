@@ -1,4 +1,6 @@
 from ape.cli.choices import Alias, PromptChoice
+from ape.cli.commands import network_bound_command
+from ape.cli.groups import ape_group
 from ape.cli.options import (
     ape_cli_context,
     existing_alias_argument,
@@ -12,8 +14,10 @@ from ape.cli.utils import Abort
 __all__ = [
     "Abort",
     "Alias",
+    "ape_group",
     "ape_cli_context",
     "existing_alias_argument",
+    "network_bound_command",
     "network_option",
     "non_existing_alias_argument",
     "PromptChoice",
