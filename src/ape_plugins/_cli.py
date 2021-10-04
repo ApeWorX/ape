@@ -1,46 +1,18 @@
-import os
 import subprocess
 import sys
-from pathlib import Path
-from typing import Dict, Set, Tuple
 
 import click
-from github import Github
+from ape_plugins.utils import (
+    FIRST_CLASS_PLUGINS,
+    SECOND_CLASS_PLUGINS,
+    extract_module_and_package_install_names,
+    is_plugin_installed,
+)
 
 from ape import config
 from ape.cli import ape_cli_context, skip_confirmation_option
-from ape.exceptions import ConfigError
-from ape.logging import logger
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import get_package_version
-
-# Plugins included with ape core
-FIRST_CLASS_PLUGINS: Set[str] = {
-    d.name for d in Path(__file__).parent.parent.iterdir() if d.is_dir and d.name.startswith("ape_")
-}
-
-# Plugins maintained OSS by ApeWorX (and trusted)
-SECOND_CLASS_PLUGINS: Set[str] = set()
-
-# TODO: Should the github client be in core?
-# TODO: Handle failures with connecting to github (potentially cached on disk?)
-if "GITHUB_ACCESS_TOKEN" in os.environ:
-    author = Github(os.environ["GITHUB_ACCESS_TOKEN"]).get_organization("ApeWorX")
-
-    SECOND_CLASS_PLUGINS = {
-        repo.name.replace("-", "_") for repo in author.get_repos() if repo.name.startswith("ape-")
-    }
-
-else:
-    logger.warning("$GITHUB_ACCESS_TOKEN not set, skipping 2nd class plugins")
-
-
-def is_plugin_installed(plugin: str) -> bool:
-    try:
-        __import__(plugin)
-        return True
-    except ImportError:
-        return False
 
 
 @click.group(short_help="Manage ape plugins")
@@ -117,39 +89,13 @@ def add(cli_ctx, plugin, version, skip_confirmation):
         subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", plugin])
 
 
-def _get_config_error() -> ConfigError:
-    expected_format = "plugins:\n  - name: <plugin-name>\n    version: <plugin-version>  # optional"
-    return ConfigError(f"Config item mis-configured. Expected format:\n\n{expected_format}\n")
-
-
-def _get_plugin_names(item: Dict) -> Tuple[str, str]:
-    """
-    Extracts the module name and package name from the configured
-    plugin. The package name includes `==<version>` if the version is
-    specified in the config.
-    """
-    try:
-        name = item["name"]
-        module_name = f"ape_{name.replace('-', '_')}"
-        package_name = f"ape-{name}"
-        version = item.get("version")
-
-        if version:
-            package_name = f"{package_name}=={version}"
-
-        return module_name, package_name
-
-    except Exception as err:
-        raise _get_config_error() from err
-
-
 @cli.command(short_help="Install all plugins in the local config file")
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 def install(cli_ctx, skip_confirmation):
     plugins = config.get_config("plugins") or []
     for plugin in plugins:
-        module_name, package_name = _get_plugin_names(plugin)
+        module_name, package_name = extract_module_and_package_install_names(plugin)
         if not is_plugin_installed(module_name) and (
             module_name in SECOND_CLASS_PLUGINS
             or skip_confirmation
