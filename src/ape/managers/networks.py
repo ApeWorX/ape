@@ -1,5 +1,6 @@
 from typing import Dict, Iterator, Optional
 
+import yaml
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
@@ -137,3 +138,38 @@ class NetworkManager:
 
         else:
             raise NetworkError("Not a registered ecosystem")
+
+    @property
+    def network_data(self) -> Dict:
+        """
+        Creates a dictionary of data about networks in the ecosystem.
+
+        Note: The keys are added in an opinionated order for nicely
+        translating into yaml.
+        """
+        data: Dict = {"ecosystems": []}
+
+        for ecosystem_name in self:
+            ecosystem_data = self._get_ecosystem_data(ecosystem_name)
+            data["ecosystems"].append(ecosystem_data)
+
+        return data
+
+    def _get_ecosystem_data(self, ecosystem_name) -> Dict:
+        ecosystem = self[ecosystem_name]
+        ecosystem_data = {"name": ecosystem_name}
+
+        # Only add isDefault key when True
+        if ecosystem_name == self.default_ecosystem.name:
+            ecosystem_data["isDefault"] = True
+
+        ecosystem_data["networks"] = []
+        for network_name in getattr(self, ecosystem_name):
+            network_data = ecosystem.get_network_data(network_name)
+            ecosystem_data["networks"].append(network_data)
+
+        return ecosystem_data
+
+    @property
+    def networks_yaml(self) -> str:
+        return yaml.dump(self.network_data, sort_keys=False)
