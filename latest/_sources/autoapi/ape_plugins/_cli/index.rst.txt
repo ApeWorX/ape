@@ -15,7 +15,6 @@
 
 .. autoapisummary::
 
-   ape_plugins._cli.is_plugin_installed
    ape_plugins._cli.cli
    ape_plugins._cli._list
    ape_plugins._cli.add
@@ -24,43 +23,8 @@
 
 
 
-**Attributes**:
-
-.. autoapisummary::
-
-   ape_plugins._cli.FIRST_CLASS_PLUGINS
-   ape_plugins._cli.SECOND_CLASS_PLUGINS
-   ape_plugins._cli.author
-
-
 
 -----------
-
-
-.. data:: FIRST_CLASS_PLUGINS
-   :annotation: :Set[str]
-
-   
-
-
-
-.. data:: SECOND_CLASS_PLUGINS
-   :annotation: :Set[str]
-
-   
-
-
-
-.. data:: author
-   
-
-   
-
-
-
-.. py:function:: is_plugin_installed(plugin: str) -> bool
-
-
 
 
 .. py:function:: cli()
