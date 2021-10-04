@@ -429,6 +429,14 @@
    .. py:method:: _try_get_network(self, network_name)
 
 
+   .. py:method:: get_network_data(self, network_name) -> Dict
+
+      Creates a dictionary of data about providers in the network.
+
+      Note: The keys are added in an opinionated order for nicely
+      translating into yaml.
+
+
 
 
 

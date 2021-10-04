@@ -161,6 +161,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI.encode_transaction">encode_transaction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI.decode_event">decode_event</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI._try_get_network">_try_get_network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI.get_network_data">get_network_data</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.api.NetworkAPI">NetworkAPI</a><ul>
@@ -816,6 +817,14 @@ For example, a generic mapping type might be defined as:</p>
 <dt id="ape.api.EcosystemAPI._try_get_network">
 <code class="sig-name descname"><span class="pre">_try_get_network</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.EcosystemAPI._try_get_network" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.EcosystemAPI.get_network_data">
+<code class="sig-name descname"><span class="pre">get_network_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_name</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><a class="headerlink" href="#ape.api.EcosystemAPI.get_network_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary of data about providers in the network.</p>
+<p>Note: The keys are added in an opinionated order for nicely
+translating into yaml.</p>
+</dd></dl>
 
 </dd></dl>
 

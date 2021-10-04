@@ -76,5 +76,21 @@
    .. py:method:: set_default_ecosystem(self, ecosystem_name: str)
 
 
+   .. py:method:: network_data(self) -> Dict
+      :property:
+
+      Creates a dictionary of data about networks in the ecosystem.
+
+      Note: The keys are added in an opinionated order for nicely
+      translating into yaml.
+
+
+   .. py:method:: _get_ecosystem_data(self, ecosystem_name) -> Dict
+
+
+   .. py:method:: networks_yaml(self) -> str
+      :property:
+
+
 
 
