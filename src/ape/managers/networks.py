@@ -141,6 +141,12 @@ class NetworkManager:
 
     @property
     def network_data(self) -> Dict:
+        """
+        Creates a dictionary of data about networks in the ecosystem.
+
+        Note: The keys are added in an opinionated order for nicely
+        translating into yaml.
+        """
         data: Dict = {"ecosystems": []}
 
         for ecosystem_name in self:
@@ -150,12 +156,6 @@ class NetworkManager:
         return data
 
     def _get_ecosystem_data(self, ecosystem_name) -> Dict:
-        """
-        Creates a dictionary of data about networks in the ecosystem.
-
-        Note: The keys are added in an opinionated order for nicely
-        translating into yaml.
-        """
         ecosystem = self[ecosystem_name]
         ecosystem_data = {"name": ecosystem_name}
 
