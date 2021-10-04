@@ -3,7 +3,7 @@ import faulthandler
 import IPython  # type: ignore
 
 from ape import project as default_project
-from ape.cli import network_bound_command, network_option, verbose_option
+from ape.cli import network_bound_command, verbose_option
 from ape.version import version as ape_version  # type: ignore
 
 
@@ -12,7 +12,6 @@ from ape.version import version as ape_version  # type: ignore
     context_settings=dict(ignore_unknown_options=True),
 )
 @verbose_option(help="Display more information in the console")
-@network_option
 def cli(verbose, network):
     """
     Opens a console for the local project."""

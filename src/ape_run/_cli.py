@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 
 from ape import config
-from ape.cli import ape_cli_context, network_bound_command, network_option, verbose_option
+from ape.cli import ape_cli_context, network_bound_command, verbose_option
 from ape.utils import get_relative_path
 from ape_console._cli import console
 
@@ -63,7 +63,6 @@ def _run_script(cli_ctx, script_path, interactive=False, verbose=False):
     default=False,
     help="Drop into interactive console session after running",
 )
-@network_option
 @ape_cli_context()
 def cli(cli_ctx, scripts, verbose, interactive, network):
     """
