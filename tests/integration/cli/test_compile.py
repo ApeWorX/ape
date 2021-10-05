@@ -12,6 +12,13 @@ def test_compile(ape_cli, runner, project):
         assert (
             "WARNING: No compilers detected for the " "following extensions: .test, .foobar"
         ) in result.output
+
+        result = runner.invoke(ape_cli, ["compile", "contracts/Contract.test"])
+        assert result.exit_code == 0
+        assert (
+            "WARNING: No compilers detected for the " "following extensions: .test"
+        ) in result.output
+
         return  # Nothing else to test for this project
 
     result = runner.invoke(ape_cli, ["compile"])
