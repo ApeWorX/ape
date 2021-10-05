@@ -41,8 +41,8 @@ CLICK_STYLE_KWARGS = {
 CLICK_ECHO_KWARGS = {
     LogLevel.ERROR: dict(err=True),
     LogLevel.WARNING: dict(err=True),
-    LogLevel.INFO: dict(),
     LogLevel.SUCCESS: dict(),
+    LogLevel.INFO: dict(),
     LogLevel.DEBUG: dict(),
 }
 
