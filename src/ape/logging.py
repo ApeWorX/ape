@@ -1,6 +1,7 @@
 # Inspired / borrowed from the `click-logging` python package.
 import logging
 import sys
+import traceback
 from enum import Enum
 from typing import IO
 
@@ -10,8 +11,9 @@ import click
 class LogLevel(Enum):
     ERROR = logging.ERROR
     WARNING = logging.WARNING
-    INFO = logging.INFO
     SUCCESS = logging.INFO + 1
+    INFO = logging.INFO
+    DEBUG = logging.DEBUG
 
 
 logging.addLevelName(LogLevel.SUCCESS.value, LogLevel.SUCCESS.name)
@@ -32,14 +34,16 @@ logging.Logger.success = success  # type: ignore
 CLICK_STYLE_KWARGS = {
     LogLevel.ERROR: dict(fg="bright_red"),
     LogLevel.WARNING: dict(fg="bright_red"),
-    LogLevel.INFO: dict(fg="blue"),
     LogLevel.SUCCESS: dict(fg="bright_green"),
+    LogLevel.INFO: dict(fg="blue"),
+    LogLevel.DEBUG: dict(fg="blue"),
 }
 CLICK_ECHO_KWARGS = {
     LogLevel.ERROR: dict(err=True),
     LogLevel.WARNING: dict(err=True),
     LogLevel.INFO: dict(),
     LogLevel.SUCCESS: dict(),
+    LogLevel.DEBUG: dict(),
 }
 
 
@@ -95,6 +99,10 @@ def _get_logger(name) -> logging.Logger:
 
 
 logger = _get_logger("ape")
+
+
+def get_stack_trace() -> str:
+    return traceback.format_exc()
 
 
 __all__ = ["logger"]
