@@ -4,8 +4,8 @@ from pathlib import Path
 
 import click
 
-from ape import config, networks
-from ape.cli import ape_cli_context, network_option, verbose_option
+from ape import config
+from ape.cli import NetworkBoundCommand, ape_cli_context, network_option, verbose_option
 from ape.utils import get_relative_path
 from ape_console._cli import console
 
@@ -53,7 +53,7 @@ def _run_script(cli_ctx, script_path, interactive=False, verbose=False):
         return console()
 
 
-@click.command(short_help="Run scripts from the `scripts` folder")
+@click.command(cls=NetworkBoundCommand, short_help="Run scripts from the `scripts` folder")
 @click.argument("scripts", nargs=-1)
 @verbose_option(help="Display errors from scripts")
 @click.option(
@@ -63,8 +63,8 @@ def _run_script(cli_ctx, script_path, interactive=False, verbose=False):
     default=False,
     help="Drop into interactive console session after running",
 )
-@network_option
 @ape_cli_context()
+@network_option
 def cli(cli_ctx, scripts, verbose, interactive, network):
     """
     NAME - Path or script name (from ``scripts/`` folder)
@@ -84,18 +84,18 @@ def cli(cli_ctx, scripts, verbose, interactive, network):
     # NOTE: If folder does not exist, this will be empty (same as if there are no files)
     available_scripts = {p.stem: p.resolve() for p in scripts_folder.glob("*.py")}
 
-    with networks.parse_network_choice(network):
-        for name in scripts:
-            if Path(name).exists():
-                script_file = Path(name).resolve()
+    for name in scripts:
+        if Path(name).exists():
+            script_file = Path(name).resolve()
 
-            elif not scripts_folder.exists():
-                cli_ctx.abort("No `scripts/` directory detected to run script")
+        elif not scripts_folder.exists():
+            cli_ctx.abort("No `scripts/` directory detected to run script")
 
-            elif name not in available_scripts:
-                cli_ctx.abort(f"No script named '{name}' detected in scripts folder")
+        elif name not in available_scripts:
+            cli_ctx.abort(f"No script named '{name}' detected in scripts folder")
 
-            else:
-                script_file = available_scripts[name]
+        else:
+            script_file = available_scripts[name]
 
-            _run_script(cli_ctx, script_file, interactive, verbose)
+        # noinspection PyUnboundLocalVariable
+        _run_script(cli_ctx, script_file, interactive, verbose)

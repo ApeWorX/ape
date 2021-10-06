@@ -15,7 +15,6 @@ try:
 except ImportError:
     import importlib_metadata as metadata  # type: ignore
 
-
 _DIFFLIB_CUT_OFF = 0.6
 
 
