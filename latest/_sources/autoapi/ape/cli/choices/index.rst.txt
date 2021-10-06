@@ -16,6 +16,7 @@
 
    ape.cli.choices.Alias
    ape.cli.choices.PromptChoice
+   ape.cli.choices.NetworkChoice
 
 
 
@@ -80,6 +81,23 @@
           its value. May be ``None``.
       :param ctx: The current context that arrived at this value. May
           be ``None``.
+
+
+
+
+
+.. py:class:: NetworkChoice(case_sensitive=True)
+
+   Bases: :py:obj:`click.Choice`
+
+   Wraps ``click.Choice`` to provide network choice defaults for the active project.
+
+   .. py:method:: __init__(self, case_sensitive=True)
+
+
+   .. py:method:: get_metavar(self, param)
+
+      Returns the metavar default for this param if it provides one.
 
 
 

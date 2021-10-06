@@ -15,7 +15,6 @@
 .. autoapisummary::
 
    ape.cli.options.ApeCliContextObject
-   ape.cli.options.NetworkChoice
 
 
 
@@ -26,8 +25,6 @@
    ape.cli.options.verbosity_option
    ape.cli.options.ape_cli_context
    ape.cli.options.verbose_option
-   ape.cli.options._require_non_existing_alias
-   ape.cli.options.existing_alias_argument
    ape.cli.options.skip_confirmation_option
 
 
@@ -37,7 +34,6 @@
 .. autoapisummary::
 
    ape.cli.options.network_option
-   ape.cli.options.non_existing_alias_argument
 
 
 
@@ -73,23 +69,6 @@
 
 
 
-.. py:class:: NetworkChoice(case_sensitive=True)
-
-   Bases: :py:obj:`click.Choice`
-
-   Wraps ``click.Choice`` to provide network choice defaults for the active project.
-
-   .. py:method:: __init__(self, case_sensitive=True)
-
-
-   .. py:method:: get_metavar(self, param)
-
-      Returns the metavar default for this param if it provides one.
-
-
-
-
-
 .. data:: network_option
    
 
@@ -99,23 +78,6 @@
 
 .. py:function:: verbose_option(help='')
 
-
-
-
-.. py:function:: _require_non_existing_alias(arg)
-
-
-
-
-.. py:function:: existing_alias_argument(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
-
-
-
-
-.. data:: non_existing_alias_argument
-   
-
-   
 
 
 

@@ -68,7 +68,7 @@
       :property:
 
 
-   .. py:method:: _contracts_folder(self) -> pathlib.Path
+   .. py:method:: contracts_folder(self) -> pathlib.Path
       :property:
 
 
@@ -77,6 +77,17 @@
 
       All the source files in the project.
       Excludes files with extensions that don't have a registered compiler.
+
+
+   .. py:method:: sources_missing(self) -> bool
+      :property:
+
+
+   .. py:method:: extensions_with_missing_compilers(self) -> List[str]
+      :property:
+
+      All file extensions in the `contracts/` directory (recursively)
+      that do not correspond to a registered compiler.
 
 
    .. py:method:: load_contracts(self, use_cache: bool = True) -> Dict[str, ape.types.ContractType]
@@ -89,15 +100,15 @@
    .. py:method:: __getattr__(self, attr_name: str)
 
 
-   .. py:method:: _interfaces_folder(self) -> pathlib.Path
+   .. py:method:: interfaces_folder(self) -> pathlib.Path
       :property:
 
 
-   .. py:method:: _scripts_folder(self) -> pathlib.Path
+   .. py:method:: scripts_folder(self) -> pathlib.Path
       :property:
 
 
-   .. py:method:: _tests_folder(self) -> pathlib.Path
+   .. py:method:: tests_folder(self) -> pathlib.Path
       :property:
 
 

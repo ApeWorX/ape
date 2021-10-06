@@ -227,8 +227,8 @@
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="ape.managers.project.ProjectManager._contracts_folder">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">_contracts_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape.managers.project.ProjectManager._contracts_folder" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.managers.project.ProjectManager.contracts_folder">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">contracts_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape.managers.project.ProjectManager.contracts_folder" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -236,6 +236,18 @@
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">sources</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.project.ProjectManager.sources" title="Permalink to this definition">¶</a></dt>
 <dd><p>All the source files in the project.
 Excludes files with extensions that don’t have a registered compiler.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.project.ProjectManager.sources_missing">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">sources_missing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.managers.project.ProjectManager.sources_missing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.project.ProjectManager.extensions_with_missing_compilers">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">extensions_with_missing_compilers</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.project.ProjectManager.extensions_with_missing_compilers" title="Permalink to this definition">¶</a></dt>
+<dd><p>All file extensions in the <cite>contracts/</cite> directory (recursively)
+that do not correspond to a registered compiler.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -254,18 +266,18 @@ Excludes files with extensions that don’t have a registered compiler.</p>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="ape.managers.project.ProjectManager._interfaces_folder">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">_interfaces_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape.managers.project.ProjectManager._interfaces_folder" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.managers.project.ProjectManager.interfaces_folder">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">interfaces_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape.managers.project.ProjectManager.interfaces_folder" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="ape.managers.project.ProjectManager._scripts_folder">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">_scripts_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape.managers.project.ProjectManager._scripts_folder" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.managers.project.ProjectManager.scripts_folder">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">scripts_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape.managers.project.ProjectManager.scripts_folder" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="ape.managers.project.ProjectManager._tests_folder">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">_tests_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape.managers.project.ProjectManager._tests_folder" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.managers.project.ProjectManager.tests_folder">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">tests_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape.managers.project.ProjectManager.tests_folder" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

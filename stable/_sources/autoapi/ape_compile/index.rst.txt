@@ -58,8 +58,8 @@
    encoding defaults to sys.getdefaultencoding().
    errors defaults to 'strict'.
 
-   .. attribute:: constaninople
-      :annotation: = constaninople
+   .. attribute:: constantinople
+      :annotation: = constantinople
 
       
 

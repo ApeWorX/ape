@@ -13,8 +13,10 @@
    :titlesonly:
    :maxdepth: 1
 
+   arguments/index.rst
    choices/index.rst
    options/index.rst
+   paramtype/index.rst
    utils/index.rst
 
 
@@ -37,8 +39,8 @@
 
 .. autoapisummary::
 
-   ape.cli.ape_cli_context
    ape.cli.existing_alias_argument
+   ape.cli.ape_cli_context
    ape.cli.skip_confirmation_option
    ape.cli.verbose_option
 
@@ -48,12 +50,24 @@
 
 .. autoapisummary::
 
-   ape.cli.network_option
    ape.cli.non_existing_alias_argument
+   ape.cli.network_option
 
 
 
 -----------
+
+
+.. py:function:: existing_alias_argument(account_type: Optional[Type[ape.api.AccountAPI]] = None)
+
+
+
+
+.. data:: non_existing_alias_argument
+   
+
+   
+
 
 
 .. py:class:: Alias(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
@@ -122,19 +136,7 @@
 
 
 
-.. py:function:: existing_alias_argument(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
-
-
-
-
 .. data:: network_option
-   
-
-   
-
-
-
-.. data:: non_existing_alias_argument
    
 
    
