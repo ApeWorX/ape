@@ -63,7 +63,6 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
         message = f"No compilers detected for the following extensions: {extensions_str}"
         cli_ctx.logger.warning(message)
 
-    project.load_contracts(use_cache)
     contract_types = project.load_contracts(use_cache)
 
     if display_size:
