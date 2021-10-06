@@ -89,6 +89,40 @@ class ClickHandler(logging.Handler):
             self.handleError(record)
 
 
+class CliLogger:
+    _mentioned_verbosity_option = False
+
+    def __init__(self):
+        _logger = _get_logger("ape")
+        self.error = _logger.error
+        self.warning = _logger.warning
+        self.success = _logger.success  # type: ignore
+        self.info = _logger.info
+        self.debug = _logger.debug
+        self._logger = _logger
+
+    def set_level(self, level_name: str):
+        self._logger.setLevel(level_name)
+
+    def log_error(self, err: Exception):
+        """
+        Avoids logging empty messages.
+        """
+        message = str(err)
+        if message:
+            self._logger.error(message)
+
+    def log_verbose_error(self, err: Exception, message: str):
+        err_output = f"{type(err).__name__}: {err}"
+        message = f"{message}\n\t{err_output}"
+        if not self._mentioned_verbosity_option:
+            message += "\n\t(Use `--verbosity DEBUG` to see full stack-trace)"
+            self._mentioned_verbosity_option = True
+        self._logger.warning(message)
+        stack_trace = traceback.format_exc()
+        self._logger.debug(stack_trace)
+
+
 def _get_logger(name) -> logging.Logger:
     """Get a logger with the given ``name`` and configure it for usage with Click."""
     cli_logger = logging.getLogger(name)
@@ -98,12 +132,7 @@ def _get_logger(name) -> logging.Logger:
     return cli_logger
 
 
-logger = _get_logger("ape")
-
-
-def log_stack_trace():
-    stack_trace = traceback.format_exc()
-    logger.debug(stack_trace)
+logger = CliLogger()
 
 
 __all__ = ["logger"]

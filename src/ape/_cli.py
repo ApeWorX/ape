@@ -7,7 +7,7 @@ import yaml
 
 from ape.cli import Abort, ape_cli_context
 from ape.exceptions import ApeException
-from ape.logging import log_stack_trace, logger
+from ape.logging import logger
 from ape.plugins import clean_plugin_name
 
 try:
@@ -41,7 +41,6 @@ class ApeCLI(click.MultiCommand):
         except click.UsageError as err:
             self._suggest_cmd(err)
         except ApeException as err:
-            log_stack_trace()
             raise Abort(str(err)) from err
 
     @staticmethod
@@ -88,11 +87,9 @@ class ApeCLI(click.MultiCommand):
             try:
                 return self.commands[name]()
             except Exception as err:
-                err_output = f"{type(err).__name__}: {err}"
-                logger.warning(
-                    f"Unable to load CLI endpoint for plugin 'ape_{name}'.\n\t{err_output}"
+                logger.log_verbose_error(
+                    err, f"Unable to load CLI endpoint for plugin 'ape_{name}'"
                 )
-                log_stack_trace()
 
         # NOTE: don't return anything so Click displays proper error
 
