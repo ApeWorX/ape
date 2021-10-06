@@ -7,3 +7,4 @@ RUN ape plugins add etherscan --yes
 RUN ape plugins add infura --yes
 RUN ape plugins add solidity --yes
 RUN ape plugins add vyper --yes
+ENTRYPOINT ["ape"]
