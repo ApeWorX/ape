@@ -3,7 +3,7 @@ from ape.api.config import ConfigEnum, ConfigItem
 
 
 class EvmVersion(ConfigEnum):
-    constaninople = "constaninople"
+    constantinople = "constantinople"
     istanbul = "istanbul"
 
 
