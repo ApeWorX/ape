@@ -62,6 +62,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="arguments/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.arguments</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="choices/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.choices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.commands</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="options/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="paramtype/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.paramtype</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.utils</span></code></a></li>
@@ -77,6 +78,10 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.PromptChoice.__init__">__init__</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.PromptChoice.print_choices">print_choices</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.PromptChoice.convert">convert</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.cli.NetworkBoundCommand">NetworkBoundCommand</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.NetworkBoundCommand.invoke">invoke</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.ape_cli_context">ape_cli_context</a></li>
@@ -179,6 +184,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="arguments/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.arguments</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="choices/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.choices</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="commands/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.commands</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="options/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.options</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="paramtype/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.paramtype</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.utils</span></code></a></li>
@@ -196,6 +202,9 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.PromptChoice" title="ape.cli.PromptChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PromptChoice</span></code></a></p></td>
 <td><p>A choice option or argument from user selection.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.NetworkBoundCommand" title="ape.cli.NetworkBoundCommand"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkBoundCommand</span></code></a></p></td>
+<td><p>A command that uses the network option.</p></td>
 </tr>
 </tbody>
 </table>
@@ -308,6 +317,21 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.cli.NetworkBoundCommand">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">NetworkBoundCommand</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epilog</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">short_help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options_metavar</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'[OPTIONS]'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_help_option</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_args_is_help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deprecated</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.NetworkBoundCommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">click.Command</span></code></p>
+<p>A command that uses the network option.
+It will automatically set the network for the duration of the command execution.</p>
+<dl class="py method">
+<dt id="ape.cli.NetworkBoundCommand.invoke">
+<code class="sig-name descname"><span class="pre">invoke</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">click.Context</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Any</span><a class="headerlink" href="#ape.cli.NetworkBoundCommand.invoke" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a context, this invokes the attached callback (if it exists)
+in the right way.</p>
 </dd></dl>
 
 </dd></dl>
