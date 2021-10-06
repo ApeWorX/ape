@@ -112,7 +112,12 @@ class CliLogger:
         if message:
             self._logger.error(message)
 
-    def log_verbose_error(self, err: Exception, message: str):
+    def verbosely_warn_from_error(self, err: Exception, message: str):
+        """
+        Warn the user with the given message,
+        log the stack-trace of the error at the DEBUG level, and
+        mention how to enable DEBUG logging (only once).
+        """
         err_output = f"{type(err).__name__}: {err}"
         message = f"{message}\n\t{err_output}"
         if not self._mentioned_verbosity_option:
