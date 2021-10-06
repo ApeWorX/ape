@@ -3,7 +3,7 @@ from typing import Any, List, Optional, Type
 import click
 from click import Context, Parameter
 
-from ape import accounts
+from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 
 
@@ -16,6 +16,7 @@ class Alias(click.Choice):
 
     name = "alias"
 
+    # noinspection PyMissingConstructor
     def __init__(self, account_type: Optional[Type[AccountAPI]] = None):
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False
@@ -59,3 +60,13 @@ class PromptChoice(click.ParamType):
             return choice
         except Exception:
             self.fail("Invalid choice", param=param)
+
+
+class NetworkChoice(click.Choice):
+    """Wraps ``click.Choice`` to provide network choice defaults for the active project."""
+
+    def __init__(self, case_sensitive=True):
+        super().__init__(list(networks.network_choices), case_sensitive)
+
+    def get_metavar(self, param):
+        return "[ecosystem-name][:[network-name][:[provider-name]]]"

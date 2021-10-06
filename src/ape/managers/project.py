@@ -68,7 +68,7 @@ class ProjectManager:
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
     @property
-    def _contracts_folder(self) -> Path:
+    def contracts_folder(self) -> Path:
         return self.path / "contracts"
 
     @property
@@ -78,9 +78,33 @@ class ProjectManager:
         """
         files: List[Path] = []
         for extension in self.compilers.registered_compilers:
-            files.extend(self._contracts_folder.rglob("*" + extension))
+            files.extend(self.contracts_folder.rglob("*" + extension))
 
         return files
+
+    @property
+    def sources_missing(self) -> bool:
+        return not self.contracts_folder.exists() or not self.contracts_folder.iterdir()
+
+    @property
+    def extensions_with_missing_compilers(self) -> List[str]:
+        """All file extensions in the `contracts/` directory (recursively)
+        that do not correspond to a registered compiler."""
+        extensions = []
+
+        def _append_extensions_in_dir(directory: Path):
+            for file in directory.iterdir():
+                if file.is_dir():
+                    _append_extensions_in_dir(file)
+                elif (
+                    file.suffix
+                    and file.suffix not in extensions
+                    and file.suffix not in self.compilers.registered_compilers
+                ):
+                    extensions.append(file.suffix)
+
+        _append_extensions_in_dir(self.contracts_folder)
+        return extensions
 
     def load_contracts(self, use_cache: bool = True) -> Dict[str, ContractType]:
         # Load a cached or clean manifest (to use for caching)
@@ -155,15 +179,15 @@ class ProjectManager:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
 
     @property
-    def _interfaces_folder(self) -> Path:
+    def interfaces_folder(self) -> Path:
         return self.path / "interfaces"
 
     @property
-    def _scripts_folder(self) -> Path:
+    def scripts_folder(self) -> Path:
         return self.path / "scripts"
 
     @property
-    def _tests_folder(self) -> Path:
+    def tests_folder(self) -> Path:
         return self.path / "tests"
 
     # TODO: Make this work for generating and caching the manifest file
