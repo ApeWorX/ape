@@ -3,7 +3,7 @@ import importlib
 import pkgutil
 from typing import Any, Callable, Iterator, Tuple, Type, cast
 
-from ape.logging import logger
+from ape.logging import get_stack_trace, logger
 
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
@@ -92,6 +92,7 @@ class PluginManager:
                     plugin_manager.register(importlib.import_module(name))
                 except Exception:
                     logger.warning(f"Error loading plugin package '{name}'")
+                    logger.debug(get_stack_trace())
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
         if not hasattr(plugin_manager.hook, attr_name):
