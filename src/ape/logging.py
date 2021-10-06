@@ -1,6 +1,7 @@
 # Inspired / borrowed from the `click-logging` python package.
 import logging
 import sys
+import traceback
 from enum import Enum
 from typing import IO
 
@@ -10,8 +11,9 @@ import click
 class LogLevel(Enum):
     ERROR = logging.ERROR
     WARNING = logging.WARNING
-    INFO = logging.INFO
     SUCCESS = logging.INFO + 1
+    INFO = logging.INFO
+    DEBUG = logging.DEBUG
 
 
 logging.addLevelName(LogLevel.SUCCESS.value, LogLevel.SUCCESS.name)
@@ -32,14 +34,16 @@ logging.Logger.success = success  # type: ignore
 CLICK_STYLE_KWARGS = {
     LogLevel.ERROR: dict(fg="bright_red"),
     LogLevel.WARNING: dict(fg="bright_red"),
-    LogLevel.INFO: dict(fg="blue"),
     LogLevel.SUCCESS: dict(fg="bright_green"),
+    LogLevel.INFO: dict(fg="blue"),
+    LogLevel.DEBUG: dict(fg="blue"),
 }
 CLICK_ECHO_KWARGS = {
     LogLevel.ERROR: dict(err=True),
     LogLevel.WARNING: dict(err=True),
-    LogLevel.INFO: dict(),
     LogLevel.SUCCESS: dict(),
+    LogLevel.INFO: dict(),
+    LogLevel.DEBUG: dict(),
 }
 
 
@@ -85,6 +89,45 @@ class ClickHandler(logging.Handler):
             self.handleError(record)
 
 
+class CliLogger:
+    _mentioned_verbosity_option = False
+
+    def __init__(self):
+        _logger = _get_logger("ape")
+        self.error = _logger.error
+        self.warning = _logger.warning
+        self.success = _logger.success  # type: ignore
+        self.info = _logger.info
+        self.debug = _logger.debug
+        self._logger = _logger
+
+    def set_level(self, level_name: str):
+        self._logger.setLevel(level_name)
+
+    def log_error(self, err: Exception):
+        """
+        Avoids logging empty messages.
+        """
+        message = str(err)
+        if message:
+            self._logger.error(message)
+
+    def verbosely_warn_from_error(self, err: Exception, message: str):
+        """
+        Warn the user with the given message,
+        log the stack-trace of the error at the DEBUG level, and
+        mention how to enable DEBUG logging (only once).
+        """
+        err_output = f"{type(err).__name__}: {err}"
+        message = f"{message}\n\t{err_output}"
+        if not self._mentioned_verbosity_option:
+            message += "\n\t(Use `--verbosity DEBUG` to see full stack-trace)"
+            self._mentioned_verbosity_option = True
+        self._logger.warning(message)
+        stack_trace = traceback.format_exc()
+        self._logger.debug(stack_trace)
+
+
 def _get_logger(name) -> logging.Logger:
     """Get a logger with the given ``name`` and configure it for usage with Click."""
     cli_logger = logging.getLogger(name)
@@ -94,7 +137,7 @@ def _get_logger(name) -> logging.Logger:
     return cli_logger
 
 
-logger = _get_logger("ape")
+logger = CliLogger()
 
 
 __all__ = ["logger"]

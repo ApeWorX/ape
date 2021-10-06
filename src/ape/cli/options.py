@@ -36,7 +36,7 @@ def verbosity_option(cli_logger):
             if log_level is None:
                 raise click.BadParameter(f"Must be one of {names_str}, not {value}")
 
-            cli_logger.setLevel(log_level.name)
+            cli_logger.set_level(log_level.name)
 
         return click.option(
             "--verbosity",

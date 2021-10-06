@@ -90,8 +90,8 @@ class PluginManager:
             if name.startswith("ape_") and ispkg:
                 try:
                     plugin_manager.register(importlib.import_module(name))
-                except Exception:
-                    logger.warning(f"Error loading plugin package '{name}'")
+                except Exception as err:
+                    logger.verbosely_warn_from_error(err, f"Error loading plugin package '{name}'.")
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
         if not hasattr(plugin_manager.hook, attr_name):
