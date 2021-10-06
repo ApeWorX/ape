@@ -6,6 +6,21 @@ def test_compile(ape_cli, runner, project):
         assert "No 'contracts/' directory detected" in result.output
         return  # Nothing else to test for this project
 
+    if ".test" in project.extensions_with_missing_compilers:
+        result = runner.invoke(ape_cli, ["compile"])
+        assert result.exit_code == 0
+        assert (
+            "WARNING: No compilers detected for the " "following extensions: .test, .foobar"
+        ) in result.output
+
+        result = runner.invoke(ape_cli, ["compile", "contracts/Contract.test"])
+        assert result.exit_code == 0
+        assert (
+            "WARNING: No compilers detected for the " "following extensions: .test"
+        ) in result.output
+
+        return  # Nothing else to test for this project
+
     result = runner.invoke(ape_cli, ["compile"])
     assert result.exit_code == 0
     # First time it compiles, it compiles fully

@@ -1,12 +1,8 @@
-from typing import Optional, Type
-
 import click
 
-from ape import accounts, networks
-from ape.api.accounts import AccountAPI
-from ape.cli.choices import Alias, NetworkChoice
+from ape import networks
+from ape.cli.choices import NetworkChoice
 from ape.cli.utils import Abort
-from ape.exceptions import AliasAlreadyInUseError
 from ape.logging import LogLevel, logger
 
 
@@ -83,21 +79,6 @@ def verbose_option(help=""):
         default=False,
         help=help,
     )
-
-
-def _require_non_existing_alias(arg):
-    if arg in accounts.aliases:
-        raise AliasAlreadyInUseError(arg)
-    return arg
-
-
-def existing_alias_argument(account_type: Optional[Type[AccountAPI]] = None):
-    return click.argument("alias", type=Alias(account_type=account_type))
-
-
-non_existing_alias_argument = click.argument(
-    "alias", callback=lambda ctx, param, arg: _require_non_existing_alias(arg)
-)
 
 
 def skip_confirmation_option(help=""):

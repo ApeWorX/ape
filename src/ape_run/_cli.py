@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 
 from ape import config
-from ape.cli import ape_cli_context, network_bound_command, verbose_option
+from ape.cli import NetworkBoundCommand, ape_cli_context, network_option, verbose_option
 from ape.utils import get_relative_path
 from ape_console._cli import console
 
@@ -53,7 +53,7 @@ def _run_script(cli_ctx, script_path, interactive=False, verbose=False):
         return console()
 
 
-@network_bound_command(short_help="Run scripts from the `scripts` folder")
+@click.command(cls=NetworkBoundCommand, short_help="Run scripts from the `scripts` folder")
 @click.argument("scripts", nargs=-1)
 @verbose_option(help="Display errors from scripts")
 @click.option(
@@ -64,6 +64,7 @@ def _run_script(cli_ctx, script_path, interactive=False, verbose=False):
     help="Drop into interactive console session after running",
 )
 @ape_cli_context()
+@network_option
 def cli(cli_ctx, scripts, verbose, interactive, network):
     """
     NAME - Path or script name (from ``scripts/`` folder)

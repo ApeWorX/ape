@@ -1,17 +1,20 @@
 import faulthandler
 
+import click
 import IPython  # type: ignore
 
 from ape import project as default_project
-from ape.cli import network_bound_command, verbose_option
+from ape.cli import NetworkBoundCommand, network_option, verbose_option
 from ape.version import version as ape_version  # type: ignore
 
 
-@network_bound_command(
+@click.command(
+    cls=NetworkBoundCommand,
     short_help="Load the console",
     context_settings=dict(ignore_unknown_options=True),
 )
 @verbose_option(help="Display more information in the console")
+@network_option
 def cli(verbose, network):
     """
     Opens a console for the local project."""

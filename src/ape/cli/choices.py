@@ -16,6 +16,7 @@ class Alias(click.Choice):
 
     name = "alias"
 
+    # noinspection PyMissingConstructor
     def __init__(self, account_type: Optional[Type[AccountAPI]] = None):
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False

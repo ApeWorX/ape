@@ -122,6 +122,35 @@ class EcosystemAPI:
         else:
             raise NetworkNotFoundError(network_name)
 
+    def get_network_data(self, network_name) -> Dict:
+        """
+        Creates a dictionary of data about providers in the network.
+
+        Note: The keys are added in an opinionated order for nicely
+        translating into yaml.
+        """
+        data = {"name": network_name}
+
+        # Only add isDefault key when True
+        if network_name == self.default_network:
+            data["isDefault"] = True
+
+        data["providers"] = []
+        network = self[network_name]
+        if network.explorer:
+            data["explorer"] = network.explorer.name
+
+        for provider_name in network.providers:
+            provider_data = {"name": provider_name}
+
+            # Only add isDefault key when True
+            if provider_name == network.default_provider:
+                provider_data["isDefault"] = True
+
+            data["providers"].append(provider_data)
+
+        return data
+
 
 class ProviderContextManager:
     # NOTE: Class variable, so it will manage stack across instances of this object

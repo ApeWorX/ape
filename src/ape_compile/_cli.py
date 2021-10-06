@@ -1,51 +1,22 @@
 from itertools import chain
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict
 
 import click
 
 from ape.cli import ape_cli_context
+from ape.cli.paramtype import AllFilePaths
 from ape.types import ContractType
 
-flatten = chain.from_iterable
-
-
-class _ContractsSource:
-    """
-    A helper class that is able to figure out which source files to
-    compile.
-    """
-
-    def __init__(self, use_cache: bool):
-        # NOTE: Lazy load so that testing works properly
-        from ape import project
-
-        self._project = project
-        self._use_cache = use_cache
-
-    @property
-    def root(self) -> Path:
-        return self._project.path / "contracts"
-
-    def select_paths(self, file_paths: Optional[List[Path]]):
-        # If not given sources, assume user wants to compile all source files.
-        # Excludes files without registered compilers.
-        if not file_paths:
-            return self._project.sources
-
-        expanded_file_paths = flatten([d.rglob("*.*") if d.is_dir() else [d] for d in file_paths])
-        return [c.resolve() for c in expanded_file_paths if c.resolve() in self._project.sources]
-
-    def compile(self) -> Dict[str, ContractType]:
-        # TODO: only compile selected contracts
-        return self._project.load_contracts(self._use_cache)
+_flatten = chain.from_iterable
 
 
 @click.command(short_help="Compile select contract source files")
 @click.argument(
-    "filepaths",
+    "file_paths",
     nargs=-1,
-    type=click.Path(exists=True, path_type=Path),
+    type=AllFilePaths(exists=True, path_type=Path, resolve_path=True),
+    callback=lambda ctx, param, value: set([p.resolve() for p in _flatten(value) if p]),
 )
 @click.option(
     "-f",
@@ -65,7 +36,7 @@ class _ContractsSource:
     help="Show deployment bytecode size for all contracts",
 )
 @ape_cli_context()
-def cli(cli_ctx, filepaths, use_cache, display_size):
+def cli(cli_ctx, file_paths, use_cache, display_size):
     """
     Compiles the manifest for this project and saves the results
     back to the manifest.
@@ -73,42 +44,29 @@ def cli(cli_ctx, filepaths, use_cache, display_size):
     Note that ape automatically recompiles any changed contracts each time
     a project is loaded. You do not have to manually trigger a recompile.
     """
-    source = _ContractsSource(use_cache)
-    missing_source = not source.root.exists() or not source.root.iterdir()
-    if not filepaths and missing_source:
+    # NOTE: Lazy load so that testing works properly
+    from ape import project
+
+    if not file_paths and project.sources_missing:
         cli_ctx.logger.warning("No 'contracts/' directory detected")
         return
 
-    selected_file_paths = source.select_paths(filepaths)
-    source_file_paths = list(source.root.iterdir())
-    unable_to_select_all = len(source_file_paths) > len(selected_file_paths)
+    ext_with_missing_compilers = project.extensions_with_missing_compilers
+    ext_given = [p.suffix for p in file_paths]
+    if ext_with_missing_compilers:
+        extensions = (
+            [e for e in ext_given if e in ext_with_missing_compilers]
+            if ext_given
+            else ext_with_missing_compilers
+        )
+        extensions_str = ", ".join(extensions)
+        message = f"No compilers detected for the following extensions: {extensions_str}"
+        cli_ctx.logger.warning(message)
 
-    if not selected_file_paths or unable_to_select_all:
-        _warn_for_missing_extensions(cli_ctx, selected_file_paths, source_file_paths)
-
-    contract_types = source.compile()
+    contract_types = project.load_contracts(use_cache)
 
     if display_size:
         _display_byte_code_sizes(cli_ctx, contract_types)
-
-
-def _warn_for_missing_extensions(cli_ctx, registered_sources: List[Path], all_sources: List[Path]):
-    """
-    Figures out what extensions are missing from registered compilers and warns
-    the user about them.
-    """
-    extensions_unable_to_compile = set()
-    for path in all_sources:
-        if path not in registered_sources:
-            extensions_unable_to_compile.add(path.suffix)
-
-    if extensions_unable_to_compile:
-        extensions_str = ", ".join(extensions_unable_to_compile)
-        message = f"No compilers detected for the following extensions: {extensions_str}"
-    else:
-        message = "Nothing to compile"
-
-    cli_ctx.logger.warning(message)
 
 
 def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
