@@ -101,8 +101,9 @@ def _get_logger(name) -> logging.Logger:
 logger = _get_logger("ape")
 
 
-def get_stack_trace() -> str:
-    return traceback.format_exc()
+def log_stack_trace():
+    stack_trace = traceback.format_exc()
+    logger.debug(stack_trace)
 
 
 __all__ = ["logger"]
