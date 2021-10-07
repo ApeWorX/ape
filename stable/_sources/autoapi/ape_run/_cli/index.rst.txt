@@ -24,12 +24,12 @@
 -----------
 
 
-.. py:function:: _run_script(cli_ctx, script_path, interactive=False, verbose=False)
+.. py:function:: _run_script(cli_ctx, script_path, interactive=False)
 
 
 
 
-.. py:function:: cli(cli_ctx, scripts, verbose, interactive, network)
+.. py:function:: cli(cli_ctx, scripts, interactive, network)
 
    NAME - Path or script name (from ``scripts/`` folder)
 

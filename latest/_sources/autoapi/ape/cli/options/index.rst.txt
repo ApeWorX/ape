@@ -24,7 +24,6 @@
 
    ape.cli.options.verbosity_option
    ape.cli.options.ape_cli_context
-   ape.cli.options.verbose_option
    ape.cli.options.skip_confirmation_option
 
 
@@ -73,11 +72,6 @@
    
 
    
-
-
-
-.. py:function:: verbose_option(help='')
-
 
 
 

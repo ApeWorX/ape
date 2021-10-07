@@ -24,14 +24,14 @@
 -----------
 
 
-.. py:function:: cli(verbose, network)
+.. py:function:: cli(cli_ctx, network)
 
    Opens a console for the local project.
 
 
 
 
-.. py:function:: console(project=None, verbose=False, extra_locals=None)
+.. py:function:: console(project=None, verbose=None, extra_locals=None)
 
 
 

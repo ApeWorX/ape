@@ -44,7 +44,6 @@
    ape.cli.existing_alias_argument
    ape.cli.ape_cli_context
    ape.cli.skip_confirmation_option
-   ape.cli.verbose_option
 
 
 
@@ -162,11 +161,6 @@
 
 
 .. py:function:: skip_confirmation_option(help='')
-
-
-
-
-.. py:function:: verbose_option(help='')
 
 
 
