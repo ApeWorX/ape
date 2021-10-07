@@ -101,6 +101,10 @@ class CliLogger:
         self.debug = _logger.debug
         self._logger = _logger
 
+    @property
+    def level(self) -> int:
+        return self._logger.level
+
     def set_level(self, level_name: str):
         self._logger.setLevel(level_name)
 
@@ -112,18 +116,36 @@ class CliLogger:
         if message:
             self._logger.error(message)
 
-    def verbosely_warn_from_error(self, err: Exception, message: str):
+    def warn_from_exception(self, err: Exception, message: str):
         """
         Warn the user with the given message,
         log the stack-trace of the error at the DEBUG level, and
         mention how to enable DEBUG logging (only once).
         """
+        message = self._create_message_from_error(err, message)
+        self._logger.warning(message)
+        self._log_debug_stack_trace()
+
+    def error_from_exception(self, err: Exception, message: str):
+        """
+        Log an error to the user with the given message,
+        log the stack-trace of the error at the DEBUG level, and
+        mention how to enable DEBUG logging (only once).
+        """
+        message = self._create_message_from_error(err, message)
+        self._logger.error(message)
+        self._log_debug_stack_trace()
+
+    def _create_message_from_error(self, err: Exception, message: str):
         err_output = f"{type(err).__name__}: {err}"
         message = f"{message}\n\t{err_output}"
         if not self._mentioned_verbosity_option:
             message += "\n\t(Use `--verbosity DEBUG` to see full stack-trace)"
             self._mentioned_verbosity_option = True
-        self._logger.warning(message)
+
+        return message
+
+    def _log_debug_stack_trace(self):
         stack_trace = traceback.format_exc()
         self._logger.debug(stack_trace)
 

@@ -71,16 +71,6 @@ network_option = click.option(
 )
 
 
-def verbose_option(help=""):
-    return click.option(
-        "-v",
-        "--verbose",
-        is_flag=True,
-        default=False,
-        help=help,
-    )
-
-
 def skip_confirmation_option(help=""):
     return click.option(
         "-y",

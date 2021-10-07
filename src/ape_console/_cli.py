@@ -1,10 +1,11 @@
 import faulthandler
+import logging
 
 import click
 import IPython  # type: ignore
 
 from ape import project as default_project
-from ape.cli import NetworkBoundCommand, network_option, verbose_option
+from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 from ape.version import version as ape_version  # type: ignore
 
 
@@ -13,16 +14,15 @@ from ape.version import version as ape_version  # type: ignore
     short_help="Load the console",
     context_settings=dict(ignore_unknown_options=True),
 )
-@verbose_option(help="Display more information in the console")
 @network_option
-def cli(verbose, network):
-    """
-    Opens a console for the local project."""
-
+@ape_cli_context()
+def cli(cli_ctx, network):
+    """Opens a console for the local project."""
+    verbose = cli_ctx.logger.level == logging.DEBUG
     return console(verbose=verbose)
 
 
-def console(project=None, verbose=False, extra_locals=None):
+def console(project=None, verbose=None, extra_locals=None):
     import ape
 
     if not project:
@@ -30,7 +30,6 @@ def console(project=None, verbose=False, extra_locals=None):
         project = default_project
 
     banner = ""
-
     if verbose:
         banner = """
    Python:  {python_version}
