@@ -91,7 +91,7 @@ class PluginManager:
                 try:
                     plugin_manager.register(importlib.import_module(name))
                 except Exception as err:
-                    logger.verbosely_warn_from_error(err, f"Error loading plugin package '{name}'.")
+                    logger.warn_from_exception(err, f"Error loading plugin package '{name}'.")
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
         if not hasattr(plugin_manager.hook, attr_name):

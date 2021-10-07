@@ -5,14 +5,14 @@ from pathlib import Path
 import click
 
 from ape import config
-from ape.cli import NetworkBoundCommand, ape_cli_context, network_option, verbose_option
+from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 from ape.utils import get_relative_path
 from ape_console._cli import console
 
 # TODO: Migrate this to a CLI toolkit under ``ape``
 
 
-def _run_script(cli_ctx, script_path, interactive=False, verbose=False):
+def _run_script(cli_ctx, script_path, interactive=False):
     script_path = get_relative_path(script_path, Path.cwd())
     script_parts = script_path.parts[:-1]
 
@@ -25,13 +25,9 @@ def _run_script(cli_ctx, script_path, interactive=False, verbose=False):
     # Load the python module to find our hook functions
     try:
         py_module = import_module(script_path.stem)
-
     except Exception as err:
-        if verbose:
-            raise err
-
-        else:
-            cli_ctx.abort(f"Exception while executing script: {script_path}", base_error=err)
+        cli_ctx.logger.error_from_exception(err, f"Exception while executing script: {script_path}")
+        sys.exit(1)
 
     finally:
         # Undo adding the path to make sure it's not permanent
@@ -55,7 +51,6 @@ def _run_script(cli_ctx, script_path, interactive=False, verbose=False):
 
 @click.command(cls=NetworkBoundCommand, short_help="Run scripts from the `scripts` folder")
 @click.argument("scripts", nargs=-1)
-@verbose_option(help="Display errors from scripts")
 @click.option(
     "-i",
     "--interactive",
@@ -65,7 +60,7 @@ def _run_script(cli_ctx, script_path, interactive=False, verbose=False):
 )
 @ape_cli_context()
 @network_option
-def cli(cli_ctx, scripts, verbose, interactive, network):
+def cli(cli_ctx, scripts, interactive, network):
     """
     NAME - Path or script name (from ``scripts/`` folder)
 
@@ -98,4 +93,4 @@ def cli(cli_ctx, scripts, verbose, interactive, network):
             script_file = available_scripts[name]
 
         # noinspection PyUnboundLocalVariable
-        _run_script(cli_ctx, script_file, interactive, verbose)
+        _run_script(cli_ctx, script_file, interactive)
