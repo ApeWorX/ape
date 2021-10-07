@@ -27,7 +27,7 @@ def _run_script(cli_ctx, script_path, interactive=False):
         py_module = import_module(script_path.stem)
     except Exception as err:
         cli_ctx.logger.error_from_exception(err, f"Exception while executing script: {script_path}")
-        return
+        sys.exit(1)
 
     finally:
         # Undo adding the path to make sure it's not permanent
