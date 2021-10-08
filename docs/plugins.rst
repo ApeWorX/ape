@@ -68,5 +68,8 @@ Argument conversion process flow
 
 Writing CLI plugins
 *******************
+    CLI plugins will use the plugin registration process defined above. 
+    The CLI plugins should use the `click` library in order to be able to supply arguments from the CLI. 
+
     
 
