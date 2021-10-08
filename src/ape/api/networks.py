@@ -7,6 +7,7 @@ from pluggy import PluginManager  # type: ignore
 from ape.types import ABI, AddressType
 from ape.utils import cached_property
 
+from ..exceptions import NetworkError, NetworkNotFoundError
 from .base import abstractdataclass, abstractmethod, dataclass
 from .config import ConfigItem
 
@@ -61,11 +62,11 @@ class EcosystemAPI:
             return networks
 
         else:
-            raise Exception("No networks found!")
+            raise NetworkError("No networks found")
 
     def __post_init__(self):
         if len(self.networks) == 0:
-            raise Exception("Must define at least one network in ecosystem")
+            raise NetworkError("Must define at least one network in ecosystem")
 
     def __iter__(self) -> Iterator[str]:
         """
@@ -74,25 +75,17 @@ class EcosystemAPI:
         yield from self.networks
 
     def __getitem__(self, network_name: str) -> "NetworkAPI":
-        if network_name in self.networks:
-            return self.networks[network_name]
-
-        else:
-            raise Exception("No network with name")
+        return self._try_get_network(network_name)
 
     def __getattr__(self, network_name: str) -> "NetworkAPI":
-        if network_name in self.networks:
-            return self.networks[network_name]
-
-        else:
-            raise Exception("No network with name")
+        return self._try_get_network(network_name)
 
     def add_network(self, network_name: str, network: "NetworkAPI"):
         """
         Used to attach new networks to an ecosystem (e.g. L2 networks like Optimism)
         """
         if network_name in self.networks:
-            raise Exception("Can't overwrite an existing network!")
+            raise NetworkError(f"Unable to overwrite existing network '{network_name}'")
         else:
             self.networks[network_name] = network
 
@@ -104,7 +97,8 @@ class EcosystemAPI:
         if network_name in self.networks:
             self._default_network = network_name
         else:
-            raise Exception("Not a valid network for ecosystem `self.name`")
+            message = f"'{network_name}' is not a valid network for ecosystem '{self.name}'"
+            raise NetworkError(message)
 
     @abstractmethod
     def encode_deployment(
@@ -121,6 +115,41 @@ class EcosystemAPI:
     @abstractmethod
     def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
         ...
+
+    def _try_get_network(self, network_name):
+        if network_name in self.networks:
+            return self.networks[network_name]
+        else:
+            raise NetworkNotFoundError(network_name)
+
+    def get_network_data(self, network_name) -> Dict:
+        """
+        Creates a dictionary of data about providers in the network.
+
+        Note: The keys are added in an opinionated order for nicely
+        translating into yaml.
+        """
+        data = {"name": network_name}
+
+        # Only add isDefault key when True
+        if network_name == self.default_network:
+            data["isDefault"] = True
+
+        data["providers"] = []
+        network = self[network_name]
+        if network.explorer:
+            data["explorer"] = network.explorer.name
+
+        for provider_name in network.providers:
+            provider_data = {"name": provider_name}
+
+            # Only add isDefault key when True
+            if provider_name == network.default_provider:
+                provider_data["isDefault"] = True
+
+            data["providers"].append(provider_data)
+
+        return data
 
 
 class ProviderContextManager:
@@ -147,7 +176,9 @@ class ProviderContextManager:
     def __exit__(self, *args, **kwargs):
         # Put our providers back the way it was
         provider = self._connected_providers.pop()
-        assert self.provider == provider
+        if self.provider != provider:
+            raise ValueError("Previous provider value unknown")
+
         provider.disconnect()
 
         if self._connected_providers:
@@ -161,7 +192,7 @@ class NetworkAPI:
     A Network is a wrapper around a Provider for a specific Ecosystem.
     """
 
-    name: str  # Name given when regsitered in ecosystem
+    name: str  # Name given when registered in ecosystem
     ecosystem: EcosystemAPI
     config_manager: "ConfigManager"
     plugin_manager: PluginManager
@@ -176,19 +207,20 @@ class NetworkAPI:
 
     @property
     def chain_id(self) -> int:
-        # NOTE: Unless overriden, returns same as `provider.chain_id`
+        # NOTE: Unless overridden, returns same as `provider.chain_id`
         provider = self.ecosystem.network_manager.active_provider
 
         if not provider:
-            raise Exception(
+            message = (
                 "Cannot determine `chain_id`, please make sure you are connected to a provider"
             )
+            raise NetworkError(message)
 
         return provider.chain_id
 
     @property
     def network_id(self) -> int:
-        # NOTE: Unless overriden, returns same as chain_id
+        # NOTE: Unless overridden, returns same as chain_id
         return self.chain_id
 
     @cached_property
@@ -229,7 +261,7 @@ class NetworkAPI:
             return providers
 
         else:
-            raise Exception("No providers found")
+            raise NetworkError("No network providers found")
 
     def use_provider(
         self,
@@ -251,7 +283,10 @@ class NetworkAPI:
             )
 
         else:
-            raise Exception("Not a registered provider name")
+            message = (
+                f"'{provider_name}' is not a valid network for ecosystem '{self.ecosystem.name}'"
+            )
+            raise NetworkError(message)
 
     @property
     def default_provider(self) -> str:
@@ -261,7 +296,7 @@ class NetworkAPI:
         if provider_name in self.providers:
             self._default_provider = provider_name
         else:
-            raise Exception("Not a valid provider for network `self.name`")
+            raise NetworkError(f"No providers found for network '{self.name}'")
 
     def use_default_provider(self) -> ProviderContextManager:
         # NOTE: If multiple providers, use whatever is "first" registered

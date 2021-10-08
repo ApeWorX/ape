@@ -1,3 +1,7 @@
+import signal
+
+signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
+
 import sys as _sys
 from functools import partial as _partial
 from pathlib import Path as _Path

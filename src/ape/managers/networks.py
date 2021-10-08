@@ -1,9 +1,11 @@
 from typing import Dict, Iterator, Optional
 
+import yaml
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
+from ape.exceptions import NetworkError
 from ape.utils import cached_property
 
 from .config import ConfigManager
@@ -39,7 +41,7 @@ class NetworkManager:
 
     def __getitem__(self, ecosystem_name: str) -> EcosystemAPI:
         if ecosystem_name not in self.ecosystems:
-            raise Exception(f"Unknown ecosystem {ecosystem_name}")
+            raise NetworkError(f"Unknown ecosystem '{ecosystem_name}'")
 
         return self.ecosystems[ecosystem_name]
 
@@ -116,7 +118,7 @@ class NetworkManager:
 
         else:
             # NOTE: Might be unreachable
-            raise Exception("Invalid selection")
+            raise NetworkError("Invalid network selection")
 
     @property
     def default_ecosystem(self) -> EcosystemAPI:
@@ -128,11 +130,46 @@ class NetworkManager:
             return self.ecosystems[list(self.__iter__())[0]]
 
         else:
-            raise Exception("No ecosystems installed")
+            raise NetworkError("No ecosystems installed")
 
     def set_default_ecosystem(self, ecosystem_name: str):
         if ecosystem_name in self.__iter__():
             self._default = ecosystem_name
 
         else:
-            raise Exception("Not a registered ecosystem")
+            raise NetworkError("Not a registered ecosystem")
+
+    @property
+    def network_data(self) -> Dict:
+        """
+        Creates a dictionary of data about networks in the ecosystem.
+
+        Note: The keys are added in an opinionated order for nicely
+        translating into yaml.
+        """
+        data: Dict = {"ecosystems": []}
+
+        for ecosystem_name in self:
+            ecosystem_data = self._get_ecosystem_data(ecosystem_name)
+            data["ecosystems"].append(ecosystem_data)
+
+        return data
+
+    def _get_ecosystem_data(self, ecosystem_name) -> Dict:
+        ecosystem = self[ecosystem_name]
+        ecosystem_data = {"name": ecosystem_name}
+
+        # Only add isDefault key when True
+        if ecosystem_name == self.default_ecosystem.name:
+            ecosystem_data["isDefault"] = True
+
+        ecosystem_data["networks"] = []
+        for network_name in getattr(self, ecosystem_name):
+            network_data = ecosystem.get_network_data(network_name)
+            ecosystem_data["networks"].append(network_data)
+
+        return ecosystem_data
+
+    @property
+    def networks_yaml(self) -> str:
+        return yaml.dump(self.network_data, sort_keys=False)

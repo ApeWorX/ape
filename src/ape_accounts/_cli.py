@@ -1,30 +1,15 @@
 import json
-from typing import List
 
 import click
 from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
 
 from ape import accounts
-from ape.utils import notify
+from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
+from ape_accounts import KeyfileAccount
 
 # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
 container = accounts.containers["accounts"]
-
-
-class Alias(click.Choice):
-    """Wraps ``click.Choice`` to load account aliases for the active project at runtime."""
-
-    name = "alias"
-
-    def __init__(self):
-        # NOTE: we purposely skip the constructor of `Choice`
-        self.case_sensitive = False
-
-    @property
-    def choices(self) -> List[str]:  # type: ignore
-        # NOTE: This is a hack to lazy-load the aliases so CLI invocation works properly
-        return list(accounts.aliases)
 
 
 @click.group(short_help="Manage local accounts")
@@ -36,30 +21,30 @@ def cli():
 
 
 # Different name because `list` is a keyword
-@cli.command(name="list", short_help="List available accounts")
-def _list():
-    if len(accounts) == 0:
-        notify("WARNING", "No accounts found.")
+@cli.command(name="list", short_help="List available local accounts")
+@click.option("--all", help="Output accounts from all plugins", is_flag=True)
+@ape_cli_context()
+def _list(cli_ctx, all):
+    accounts_to_output = accounts if all else accounts.containers.get("accounts", [])
+    if len(accounts_to_output) == 0:
+        cli_ctx.logger.warning("No accounts found.")
         return
 
-    elif len(accounts) > 1:
+    elif len(accounts_to_output) > 1:
         click.echo(f"Found {len(accounts)} accounts:")
 
     else:
         click.echo("Found 1 account:")
 
-    for account in accounts:
+    for account in accounts_to_output:
         alias_display = f" (alias: '{account.alias}')" if account.alias else ""
         click.echo(f"  {account.address}{alias_display}")
 
 
 @cli.command(short_help="Create a new keyfile account with a random private key")
-@click.argument("alias")
-def generate(alias):
-    if alias in accounts.aliases:
-        notify("ERROR", f"Account with alias '{alias}' already exists")
-        return
-
+@non_existing_alias_argument
+@ape_cli_context()
+def generate(cli_ctx, alias):
     path = container.data_folder.joinpath(f"{alias}.json")
     extra_entropy = click.prompt(
         "Add extra entropy for key generation...",
@@ -72,46 +57,48 @@ def generate(alias):
         confirmation_prompt=True,
     )
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
-
-    notify("SUCCESS", f"A new account '{account.address}' has been added with the id '{alias}'")
+    cli_ctx.logger.success(
+        f"A new account '{account.address}' has been added with the id '{alias}'"
+    )
 
 
 # Different name because `import` is a keyword
 @cli.command(name="import", short_help="Add a new keyfile account by entering a private key")
-@click.argument("alias")
-def _import(alias):
-    if alias in accounts.aliases:
-        notify("ERROR", f"Account with alias '{alias}' already exists")
-        return
-
+@non_existing_alias_argument
+@ape_cli_context()
+def _import(cli_ctx, alias):
     path = container.data_folder.joinpath(f"{alias}.json")
     key = click.prompt("Enter Private Key", hide_input=True)
     try:
         account = EthAccount.from_key(to_bytes(hexstr=key))
     except Exception as error:
-        notify("ERROR", f"Key can't be imported {error}")
+        cli_ctx.abort(f"Key can't be imported: {error}")
         return
+
     passphrase = click.prompt(
         "Create Passphrase",
         hide_input=True,
         confirmation_prompt=True,
     )
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
-
-    notify("SUCCESS", f"A new account '{account.address}' has been added with the id '{alias}'")
+    cli_ctx.logger.success(
+        f"A new account '{account.address}' has been added with the id '{alias}'"
+    )
 
 
 @cli.command(short_help="Change the password of an existing account")
-@click.argument("alias", type=Alias())
-def change_password(alias):
+@existing_alias_argument(account_type=KeyfileAccount)
+@ape_cli_context()
+def change_password(cli_ctx, alias):
     account = accounts.load(alias)
     account.change_password()
-    notify("SUCCESS", f"Password has been changed for account '{alias}'")
+    cli_ctx.logger.success(f"Password has been changed for account '{alias}'")
 
 
 @cli.command(short_help="Delete an existing account")
-@click.argument("alias", type=Alias())
-def delete(alias):
+@existing_alias_argument(account_type=KeyfileAccount)
+@ape_cli_context()
+def delete(cli_ctx, alias):
     account = accounts.load(alias)
     account.delete()
-    notify("SUCCESS", f"Account '{alias}' has been deleted")
+    cli_ctx.logger.success(f"Account '{alias}' has been deleted")

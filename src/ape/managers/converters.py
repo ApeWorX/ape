@@ -5,9 +5,11 @@ from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_a
 from hexbytes import HexBytes
 
 from ape.api import AddressAPI, ConverterAPI
+from ape.exceptions import ConversionError
+from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.types import AddressType
-from ape.utils import cached_property, notify
+from ape.utils import cached_property
 
 from .config import ConfigManager
 from .networks import NetworkManager
@@ -41,7 +43,7 @@ class HexAddressConverter(ConverterAPI):
         return isinstance(value, str) and is_hex_address(value) and not is_checksum_address(value)
 
     def convert(self, value: str) -> AddressType:
-        notify("WARNING", f"'{value}' is not in checksummed form")
+        logger.warning(f"'{value}' is not in checksummed form")
         return to_checksum_address(value)
 
 
@@ -66,7 +68,8 @@ class ConversionManager:
             converter = converter_class(self.config.get_config(plugin_name), self.networks)
 
             if conversion_type not in converters:
-                raise Exception(f"Cannot support converters that convert to {conversion_type}")
+                options = ", ".join([t.__name__ for t in converters])
+                raise ConversionError(f"Type '{conversion_type}' must be one of [{options}]")
 
             converters[conversion_type].append(converter)
 
@@ -81,8 +84,8 @@ class ConversionManager:
 
     def convert(self, value: Any, type: Type) -> Any:
         if type not in self._converters:
-            converter_types = ", ".join(map(lambda t: t.__name__, self._converters))
-            raise Exception(f"ABI Type '{type}' must be one of [{converter_types}]")
+            options = ", ".join([t.__name__ for t in self._converters])
+            raise ConversionError(f"Type '{type}' must be one of [{options}]")
 
         if self.is_type(value, type):
             return value
@@ -91,4 +94,4 @@ class ConversionManager:
             if converter.is_convertible(value):
                 return converter.convert(value)
 
-        raise Exception(f"No conversion found for '{value}'")
+        raise ConversionError(f"No conversion registered to handle '{value}'")

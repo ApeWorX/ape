@@ -1,13 +1,15 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Set
 
 from dataclassy import dataclass
 
 from ape.api.compiler import CompilerAPI
+from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.types import ContractType
-from ape.utils import cached_property, notify
+from ape.utils import cached_property
 
+from ..exceptions import CompilerError
 from .config import ConfigManager
 
 
@@ -27,30 +29,41 @@ class CompilerManager:
             for extension in extensions:
 
                 if extension in registered_compilers:
-                    raise Exception("Extension already registered!")
+                    raise CompilerError(f"Compiler for '{extension}' is already registered")
 
                 registered_compilers[extension] = compiler
 
         return registered_compilers
 
     def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
-        extensions = set(path.suffix for path in contract_filepaths)
-        if extensions > set(self.registered_compilers):
-            raise Exception("No compiler found for extension")
+        extensions = self._get_contract_extensions(contract_filepaths)
 
         contract_types = {}
         for extension in extensions:
             paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
             for path in paths_to_compile:
-                try:
-                    notify("INFO", f"Compiling '{path.relative_to(self.config.PROJECT_FOLDER)}'")
-                except ValueError:
-                    notify("INFO", f"Compiling '{path}'")
+                logger.info(f"Compiling '{self._get_contract_path(path)}'")
+
             for contract_type in self.registered_compilers[extension].compile(paths_to_compile):
 
                 if contract_type.contractName in contract_types:
-                    raise Exception("ContractType collision across compiler plugins")
+                    raise CompilerError("ContractType collision across compiler plugins")
 
                 contract_types[contract_type.contractName] = contract_type
 
         return contract_types
+
+    def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
+        extensions = set(path.suffix for path in contract_filepaths)
+        unhandled_extensions = extensions - set(self.registered_compilers)
+        if len(unhandled_extensions) > 0:
+            unhandled_extensions_str = ", ".join(unhandled_extensions)
+            raise CompilerError(f"No compiler found for extensions [{unhandled_extensions_str}]")
+
+        return extensions
+
+    def _get_contract_path(self, path: Path):
+        try:
+            return path.relative_to(self.config.PROJECT_FOLDER)
+        except ValueError:
+            return path

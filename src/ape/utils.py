@@ -7,17 +7,18 @@ from hashlib import md5
 from pathlib import Path
 from typing import Any, Dict
 
-import click
 import yaml
 from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
+from ape.logging import logger
+
 try:
-    from functools import cached_property
+    from functools import cached_property  # type: ignore
 except ImportError:
     from backports.cached_property import cached_property  # type: ignore
 
 try:
-    from functools import singledispatchmethod
+    from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
@@ -45,14 +46,15 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     which may or may not share a common ancestor.
     NOTE: Both paths must be absolute
     """
-    assert anchor.is_absolute()
-    assert target.is_absolute()
+    if not target.is_absolute():
+        raise ValueError("'target' must be an absolute path")
+    if not anchor.is_absolute():
+        raise ValueError("'anchor' must be an absolute path")
 
     anchor_copy = Path(str(anchor))
     levels_deep = 0
     while not is_relative_to(anchor_copy, target):
         levels_deep += 1
-        assert anchor_copy != anchor_copy.parent
         anchor_copy = anchor_copy.parent
 
     return Path("/".join(".." for _ in range(levels_deep))).joinpath(
@@ -78,7 +80,7 @@ def get_package_version(obj: Any) -> str:
     if pkg_name in dists:
         # NOTE: Shouldn't really be more than 1, but never know
         if len(dists[pkg_name]) != 1:
-            notify("WARNING", f"duplicate pkg_name '{pkg_name}'")
+            logger.warning(f"duplicate pkg_name '{pkg_name}'")
         pkg_name = dists[pkg_name][0]
 
     try:
@@ -87,27 +89,6 @@ def get_package_version(obj: Any) -> str:
     except PackageNotFoundError:
         # NOTE: Must handle empty string result here
         return ""
-
-
-NOTIFY_COLORS = {
-    "WARNING": "bright_red",
-    "ERROR": "bright_red",
-    "SUCCESS": "bright_green",
-    "INFO": "blue",
-}
-
-
-def notify(type_, msg):
-    """Prepends a message with a colored tag and outputs it to the console."""
-    click.echo(f"{click.style(type_, fg=NOTIFY_COLORS[type_])}: {msg}")
-
-
-class Abort(click.ClickException):
-    """Wrapper around a CLI exception"""
-
-    def show(self, file=None):
-        """Override default ``show`` to print CLI errors in red text."""
-        click.secho(f"Error: {self.format_message()}", err=True, fg="bright_red")
 
 
 def deep_merge(dict1, dict2):
@@ -154,7 +135,7 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
     if algorithm == "md5":
         hasher = md5
     else:
-        raise Exception("Unknown algorithm")
+        raise ValueError(f"Unknown algorithm `{algorithm}`")
 
     return hasher(source).hexdigest()
 
@@ -164,6 +145,5 @@ __all__ = [
     "deep_merge",
     "expand_environment_variables",
     "load_config",
-    "notify",
     "singledispatchmethod",
 ]

@@ -4,9 +4,10 @@ from typing import Iterator, List, Optional
 
 from dataclassy import as_dict
 
+from ape.logging import logger
 from ape.types import TransactionSignature
-from ape.utils import notify
 
+from ..exceptions import ProviderError
 from . import networks
 from .base import abstractdataclass, abstractmethod
 from .config import ConfigItem
@@ -27,7 +28,7 @@ class TransactionAPI:
 
     def __post_init__(self):
         if not self.is_valid:
-            raise Exception("Transaction is not valid!")
+            raise ProviderError("Transaction is not valid")
 
     @property
     @abstractmethod
@@ -76,7 +77,7 @@ class ReceiptAPI:
     contract_address: Optional[str] = None
 
     def __post_init__(self):
-        notify("INFO", f"Submitted {self.txn_hash.hex()}")
+        logger.info(f"Submitted {self.txn_hash.hex()}")
 
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"

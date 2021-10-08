@@ -1,25 +1,34 @@
 _DEFAULT_NETWORKS_LIST = """
 ecosystems:
-    - ethereum  # Default
-    - mainnet
+- name: ethereum
+  isDefault: true
+  networks:
+  - name: mainnet
     providers:
-    - http  # Default
-    - ropsten
+    - name: http
+      isDefault: true
+  - name: ropsten
     providers:
-    - http  # Default
-    - kovan
+    - name: http
+      isDefault: true
+  - name: kovan
     providers:
-    - http  # Default
-    - rinkeby
+    - name: http
+      isDefault: true
+  - name: rinkeby
     providers:
-    - http  # Default
-    - goerli
+    - name: http
+      isDefault: true
+  - name: goerli
     providers:
-    - http  # Default
-    - development  # Default
+    - name: http
+      isDefault: true
+  - name: development
+    isDefault: true
     providers:
-    - http  # Default
-    - test
+    - name: http
+      isDefault: true
+    - name: test
 """
 
 

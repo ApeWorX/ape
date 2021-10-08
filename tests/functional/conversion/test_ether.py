@@ -5,6 +5,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from ape import convert
+from ape.exceptions import ConversionError
 
 
 @pytest.mark.fuzzing
@@ -18,14 +19,21 @@ from ape import convert
     unit=st.sampled_from(list(ETHER_UNITS.keys())),
 )
 def test_ether_conversions(value, unit):
-    assert convert(value=f"{value} {unit}", type=int) == int(value * ETHER_UNITS[unit])
+    actual = convert(value=f"{value} {unit}", type=int)
+    expected = int(value * ETHER_UNITS[unit])
+    assert actual == expected
 
 
 def test_bad_type():
-    with pytest.raises(Exception):
+    with pytest.raises(ConversionError) as err:
         convert(value="something", type=float)
+
+    expected = "Type '<class 'float'>' must be one of [ChecksumAddress, bytes, int]"
+    assert str(err.value) == expected
 
 
 def test_no_registered_converter():
-    with pytest.raises(Exception):
+    with pytest.raises(ConversionError) as err:
         convert(value="something", type=ChecksumAddress)
+
+    assert str(err.value) == "No conversion registered to handle 'something'"

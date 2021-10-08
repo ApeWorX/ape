@@ -2,9 +2,10 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from eth_utils import to_bytes
 
+from ape.logging import logger
 from ape.types import ABI, AddressType, ContractType
-from ape.utils import notify
 
+from ..exceptions import ContractCallError, ContractDeployError
 from .address import Address, AddressAPI
 from .base import dataclass
 from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
@@ -22,7 +23,7 @@ class ContractConstructor:
 
     def __post_init__(self):
         if len(self.deployment_bytecode) == 0:
-            raise Exception("No bytecode to deploy")
+            raise ContractDeployError("No bytecode to deploy")
 
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
@@ -91,19 +92,24 @@ class ContractCallHandler:
         return abis[-1].signature
 
     def __call__(self, *args, **kwargs) -> Any:
-        selected_abi = None
-        for abi in self.abis:
-            if len(args) == len(abi.inputs):
-                selected_abi = abi
-
+        selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
-            raise Exception("Number of args does not match")
+            raise ContractCallError()
 
         return ContractCall(  # type: ignore
             abi=selected_abi,
             address=self.address,
             provider=self.provider,
         )(*args, **kwargs)
+
+
+def _select_abi(abis, args):
+    selected_abi = None
+    for abi in abis:
+        if len(args) == len(abi.inputs):
+            selected_abi = abi
+
+    return selected_abi
 
 
 @dataclass
@@ -130,7 +136,7 @@ class ContractTransaction:
             return sender.call(txn)
 
         else:
-            raise Exception("Must specify a `sender`")
+            raise ContractCallError("Must specify a `sender`")
 
 
 @dataclass
@@ -144,13 +150,9 @@ class ContractTransactionHandler:
         return abis[-1].signature
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
-        selected_abi = None
-        for abi in self.abis:
-            if len(args) == len(abi.inputs):
-                selected_abi = abi
-
+        selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
-            raise Exception("Number of args does not match")
+            raise ContractCallError()
 
         return ContractTransaction(  # type: ignore
             abi=selected_abi,
@@ -310,7 +312,7 @@ def _Contract(
 
     else:
         # We don't have a contract type from any source, provide raw address instead
-        notify("WARNING", f"No contract type found for {address}")
+        logger.warning(f"No contract type found for {address}")
         return Address(  # type: ignore
             _address=converters.convert(address, AddressType),
             _provider=networks.active_provider,

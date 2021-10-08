@@ -1,42 +1,28 @@
 import faulthandler
+import logging
 
 import click
 import IPython  # type: ignore
 
-from ape import networks
 from ape import project as default_project
+from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 from ape.version import version as ape_version  # type: ignore
 
 
-class NetworkChoice(click.Choice):
-    """Wraps ``click.Choice`` to provide network choice defaults for the active project."""
-
-    def __init__(self, case_sensitive=True):
-        super().__init__(list(networks.network_choices), case_sensitive)
-
-    def get_metavar(self, param):
-        return "[ecosystem-name][:[network-name][:[provider-name]]]"
-
-
-@click.command(short_help="Load the console", context_settings=dict(ignore_unknown_options=True))
-@click.option("--verbose", is_flag=True, flag_value=True, default=False)
-@click.option(
-    "--network",
-    type=NetworkChoice(case_sensitive=False),
-    default=networks.default_ecosystem.name,
-    help="Override the default network and provider. (see ``ape networks list`` for options)",
-    show_default=True,
-    show_choices=False,
+@click.command(
+    cls=NetworkBoundCommand,
+    short_help="Load the console",
+    context_settings=dict(ignore_unknown_options=True),
 )
-def cli(verbose, network):
-    """
-    Opens a console for the local project."""
+@network_option
+@ape_cli_context()
+def cli(cli_ctx, network):
+    """Opens a console for the local project."""
+    verbose = cli_ctx.logger.level == logging.DEBUG
+    return console(verbose=verbose)
 
-    with networks.parse_network_choice(network):
-        return console(verbose=verbose)
 
-
-def console(project=None, verbose=False, extra_locals=None):
+def console(project=None, verbose=None, extra_locals=None):
     import ape
 
     if not project:
@@ -44,7 +30,6 @@ def console(project=None, verbose=False, extra_locals=None):
         project = default_project
 
     banner = ""
-
     if verbose:
         banner = """
    Python:  {python_version}

@@ -5,6 +5,7 @@ from typing import Dict, List
 from dataclassy import dataclass
 
 from ape.api.config import ConfigDict, ConfigItem
+from ape.exceptions import ConfigError
 from ape.plugins import PluginManager
 from ape.utils import load_config
 
@@ -53,7 +54,7 @@ class ConfigManager:
             self._plugin_configs[plugin_name] = config
 
         if len(user_config.keys()) > 0:
-            raise Exception("Unprocessed config items")
+            raise ConfigError("Unprocessed config items")
 
     def get_config(self, plugin_name: str) -> ConfigItem:
         if plugin_name not in self._plugin_configs:
