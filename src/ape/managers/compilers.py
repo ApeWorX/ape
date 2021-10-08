@@ -4,9 +4,10 @@ from typing import Dict, List, Set
 from dataclassy import dataclass
 
 from ape.api.compiler import CompilerAPI
+from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.types import ContractType
-from ape.utils import cached_property, notify
+from ape.utils import cached_property
 
 from ..exceptions import CompilerError
 from .config import ConfigManager
@@ -41,7 +42,7 @@ class CompilerManager:
         for extension in extensions:
             paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
             for path in paths_to_compile:
-                notify("INFO", f"Compiling '{self._get_contract_path(path)}'")
+                logger.info(f"Compiling '{self._get_contract_path(path)}'")
 
             for contract_type in self.registered_compilers[extension].compile(paths_to_compile):
 

@@ -1,54 +1,18 @@
-import os
 import subprocess
 import sys
-from pathlib import Path
-from typing import Set
 
 import click
-from github import Github
+from ape_plugins.utils import (
+    FIRST_CLASS_PLUGINS,
+    SECOND_CLASS_PLUGINS,
+    extract_module_and_package_install_names,
+    is_plugin_installed,
+)
 
 from ape import config
+from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.plugins import clean_plugin_name, plugin_manager
-from ape.utils import Abort, get_package_version, notify
-
-# Plugins included with ape core
-FIRST_CLASS_PLUGINS: Set[str] = {
-    d.name for d in Path(__file__).parent.parent.iterdir() if d.is_dir and d.name.startswith("ape_")
-}
-
-# Plugins maintained OSS by ApeWorX (and trusted)
-SECOND_CLASS_PLUGINS: Set[str] = set()
-
-# TODO: Should the github client be in core?
-# TODO: Handle failures with connecting to github (potentially cached on disk?)
-if "GITHUB_ACCESS_TOKEN" in os.environ:
-    author = Github(os.environ["GITHUB_ACCESS_TOKEN"]).get_organization("ApeWorX")
-
-    SECOND_CLASS_PLUGINS = {
-        repo.name.replace("-", "_") for repo in author.get_repos() if repo.name.startswith("ape-")
-    }
-
-else:
-    notify("WARNING", "$GITHUB_ACCESS_TOKEN not set, skipping 2nd class plugins")
-
-
-def yes_option(help=""):
-    return click.option(
-        "-y",
-        "--yes",
-        "skip_confirmation",
-        default=False,
-        is_flag=True,
-        help=help,
-    )
-
-
-def is_plugin_installed(plugin: str) -> bool:
-    try:
-        __import__(plugin)
-        return True
-    except ImportError:
-        return False
+from ape.utils import get_package_version
 
 
 @click.group(short_help="Manage ape plugins")
@@ -67,7 +31,8 @@ def cli():
     is_flag=True,
     help="Display all plugins (including Core)",
 )
-def _list(display_all):
+@ape_cli_context()
+def _list(cli_ctx, display_all):
     plugins = []
     for name, plugin in plugin_manager.list_name_plugin():
         version_str = ""
@@ -88,16 +53,17 @@ def _list(display_all):
         click.echo("  " + "\n  ".join(plugins))
 
     else:
-        notify("INFO", "No plugins installed")
+        cli_ctx.logger.info("No plugins installed")
 
 
 @cli.command(short_help="Install an ape plugin")
 @click.argument("plugin")
 @click.option("-v", "--version", help="Specify version (Default is latest)")
-@yes_option(help="Don't ask for confirmation to add the plugin")
-def add(plugin, version, skip_confirmation):
+@skip_confirmation_option(help="Don't ask for confirmation to add the plugin")
+@ape_cli_context()
+def add(cli_ctx, plugin, version, skip_confirmation):
     if plugin.startswith("ape"):
-        raise Abort(f"Namespace 'ape' in '{plugin}' is not required")
+        cli_ctx.abort(f"Namespace 'ape' in '{plugin}' is not required")
 
     # NOTE: Add namespace prefix (prevents arbitrary installs)
     plugin = f"ape_{clean_plugin_name(plugin)}"
@@ -106,17 +72,17 @@ def add(plugin, version, skip_confirmation):
         plugin = f"{plugin}=={version}"
 
     if plugin in FIRST_CLASS_PLUGINS:
-        raise Abort(f"Cannot add 1st class plugin '{plugin}'")
+        cli_ctx.abort(f"Cannot add 1st class plugin '{plugin}'")
 
     elif is_plugin_installed(plugin):
-        raise Abort(f"Plugin '{plugin}' already installed")
+        cli_ctx.abort(f"Plugin '{plugin}' already installed")
 
     elif (
         plugin in SECOND_CLASS_PLUGINS
         or skip_confirmation
         or click.confirm(f"Install unknown 3rd party plugin '{plugin}'?")
     ):
-        notify("INFO", f"Installing {plugin}...")
+        cli_ctx.logger.info(f"Installing {plugin}...")
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
@@ -124,41 +90,40 @@ def add(plugin, version, skip_confirmation):
 
 
 @cli.command(short_help="Install all plugins in the local config file")
-@yes_option("Don't ask for confirmation to install the plugins")
-def install(skip_confirmation):
-    for plugin, version in config.get_config("plugins").items():
-        if not plugin.startswith("ape-"):
-            raise Abort(f"Namespace 'ape' required in config item '{plugin}'")
-
-        if not is_plugin_installed(plugin.replace("-", "_")) and (
-            plugin.replace("-", "_") in SECOND_CLASS_PLUGINS
+@ape_cli_context()
+@skip_confirmation_option("Don't ask for confirmation to install the plugins")
+def install(cli_ctx, skip_confirmation):
+    plugins = config.get_config("plugins") or []
+    for plugin in plugins:
+        module_name, package_name = extract_module_and_package_install_names(plugin)
+        if not is_plugin_installed(module_name) and (
+            module_name in SECOND_CLASS_PLUGINS
             or skip_confirmation
-            or click.confirm(f"Install unknown 3rd party plugin '{plugin}'?")
+            or click.confirm(f"Install unknown 3rd party plugin '{package_name}'?")
         ):
-            notify("INFO", f"Installing {plugin}...")
+            cli_ctx.logger.info(f"Installing {package_name}...")
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
-            subprocess.call(
-                [sys.executable, "-m", "pip", "install", "--quiet", f"{plugin}=={version}"]
-            )
+            subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", f"{package_name}"])
 
 
 @cli.command(short_help="Uninstall an ape plugin")
 @click.argument("plugin")
-@yes_option("Don't ask for confirmation to remove the plugin")
-def remove(plugin, skip_confirmation):
+@skip_confirmation_option("Don't ask for confirmation to remove the plugin")
+@ape_cli_context()
+def remove(cli_ctx, plugin, skip_confirmation):
     if plugin.startswith("ape"):
-        raise Abort(f"Namespace 'ape' in '{plugin}' is not required")
+        cli_ctx.abort(f"Namespace 'ape' in '{plugin}' is not required")
 
     # NOTE: Add namespace prefix (match behavior of ``install``)
     plugin = f"ape_{clean_plugin_name(plugin)}"
 
     if not is_plugin_installed(plugin):
-        raise Abort(f"Plugin '{plugin}' is not installed")
+        cli_ctx.abort(f"Plugin '{plugin}' is not installed")
 
     elif plugin in FIRST_CLASS_PLUGINS:
-        raise Abort(f"Cannot remove 1st class plugin '{plugin}'")
+        cli_ctx.abort(f"Cannot remove 1st class plugin '{plugin}'")
 
     elif skip_confirmation or click.confirm(
         f"Remove plugin '{plugin} ({get_package_version(plugin)})'"

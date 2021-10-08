@@ -5,15 +5,15 @@ from typing import Any, Dict
 import click
 import yaml
 
+from ape.cli import Abort, ape_cli_context
 from ape.exceptions import ApeException
+from ape.logging import logger
 from ape.plugins import clean_plugin_name
-from ape.utils import Abort, notify
 
 try:
     from importlib import metadata  # type: ignore
 except ImportError:
     import importlib_metadata as metadata  # type: ignore
-
 
 _DIFFLIB_CUT_OFF = 0.6
 
@@ -66,7 +66,7 @@ class ApeCLI(click.MultiCommand):
     @property
     def commands(self) -> Dict:
         if not self._commands:
-            entry_points = metadata.entry_points()
+            entry_points = metadata.entry_points()  # type: ignore
 
             if "ape_cli_subcommands" not in entry_points:
                 raise Abort("Missing registered cli subcommands")
@@ -86,15 +86,15 @@ class ApeCLI(click.MultiCommand):
             try:
                 return self.commands[name]()
             except Exception as err:
-                notify(
-                    "WARNING",
-                    f"Unable to load CLI endpoint for plugin 'ape_{name}'.\n\t{err}",
+                logger.warn_from_exception(
+                    err, f"Unable to load CLI endpoint for plugin 'ape_{name}'"
                 )
 
         # NOTE: don't return anything so Click displays proper error
 
 
 @click.command(cls=ApeCLI, context_settings=dict(help_option_names=["-h", "--help"]))
+@ape_cli_context()
 @click.version_option(message="%(version)s", package_name="eth-ape")
 @click.option(
     "--config",
@@ -104,5 +104,5 @@ class ApeCLI(click.MultiCommand):
     callback=display_config,
     help="Show configuration options (using `ape-config.yaml`)",
 )
-def cli():
-    pass
+def cli(context):
+    _ = context

@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from eth_utils import to_bytes
 
+from ape.logging import logger
 from ape.types import ABI, AddressType, ContractType
-from ape.utils import notify
 
 from ..exceptions import ContractCallError, ContractDeployError
 from .address import Address, AddressAPI
@@ -312,7 +312,7 @@ def _Contract(
 
     else:
         # We don't have a contract type from any source, provide raw address instead
-        notify("WARNING", f"No contract type found for {address}")
+        logger.warning(f"No contract type found for {address}")
         return Address(  # type: ignore
             _address=converters.convert(address, AddressType),
             _provider=networks.active_provider,

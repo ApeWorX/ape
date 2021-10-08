@@ -6,6 +6,7 @@ from web3.middleware import geth_poa_middleware
 
 from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.api.config import ConfigItem
+from ape.exceptions import ProviderError
 
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
 
@@ -40,7 +41,7 @@ class EthereumProvider(ProviderAPI):
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         if self.network.name != "development" and self.network.chain_id != self.chain_id:
-            raise Exception(
+            raise ProviderError(
                 "HTTP Connection does not match expected chain ID. "
                 f"Are you connected to '{self.network.name}'?"
             )

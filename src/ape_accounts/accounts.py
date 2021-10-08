@@ -7,7 +7,17 @@ from eth_account import Account as EthAccount  # type: ignore
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.convert import to_address
+from ape.exceptions import AccountsError
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
+
+
+class InvalidPasswordError(AccountsError):
+    """
+    Raised when password to unlock an account is incorrect.
+    """
+
+    def __init__(self):
+        super().__init__("Invalid password")
 
 
 class AccountContainer(AccountContainerAPI):
@@ -66,8 +76,8 @@ class KeyfileAccount(AccountAPI):
         try:
             key = EthAccount.decrypt(self.keyfile, passphrase)
 
-        except ValueError as e:
-            raise Exception("Invalid password") from e
+        except ValueError as err:
+            raise InvalidPasswordError() from err
 
         if click.confirm(f"Leave '{self.alias}' unlocked?"):
             self.locked = False
@@ -84,8 +94,8 @@ class KeyfileAccount(AccountAPI):
         try:
             self.__cached_key = EthAccount.decrypt(self.keyfile, passphrase)
 
-        except ValueError as e:
-            raise Exception("Invalid password") from e
+        except ValueError as err:
+            raise InvalidPasswordError() from err
 
     def lock(self):
         self.locked = True
