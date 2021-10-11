@@ -154,7 +154,7 @@ class CliLogger:
         self._logger.debug(stack_trace)
 
 
-def _get_logger(name) -> logging.Logger:
+def _get_logger(name: str) -> logging.Logger:
     """Get a logger with the given ``name`` and configure it for usage with Click."""
     cli_logger = logging.getLogger(name)
     handler = ClickHandler(echo_kwargs=CLICK_ECHO_KWARGS)
