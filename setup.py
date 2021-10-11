@@ -67,7 +67,7 @@ setup(
     install_requires=[
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.0.0",
-        "dataclassy>=0.10.3,<1.0",
+        "dataclassy==0.10.4",  # NOTE: Pinned due to issue with `Type[<nothing>]`
         "eth-account>=0.5.5,<0.6.0",
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
