@@ -100,6 +100,8 @@ class CliLogger:
         self.info = _logger.info
         self.debug = _logger.debug
         self._logger = _logger
+        self._web3_request_manager_logger = _get_logger("web3.RequestManager")
+        self._web3_http_provider_logger = _get_logger("web3.providers.HTTPProvider")
 
     @property
     def level(self) -> int:
@@ -107,6 +109,8 @@ class CliLogger:
 
     def set_level(self, level_name: str):
         self._logger.setLevel(level_name)
+        self._web3_request_manager_logger.setLevel(level_name)
+        self._web3_http_provider_logger.setLevel(level_name)
 
     def log_error(self, err: Exception):
         """
