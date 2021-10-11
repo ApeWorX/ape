@@ -10,12 +10,12 @@ repos:
     -   id: seed-isort-config
 
 -   repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.8.0
+    rev: v5.9.3
     hooks:
       - id: isort
 
 -   repo: https://github.com/psf/black
-    rev: 21.5b1
+    rev: 21.9b0
     hooks:
       - id: black
         name: black
@@ -26,7 +26,7 @@ repos:
     -   id: flake8
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.812
+    rev: v0.910-1
     hooks:
     -   id: mypy
         # NOTE: Until mypy drops typeshed for Click, it will still try v7.x by default
