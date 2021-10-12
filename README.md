@@ -26,15 +26,12 @@ cd ape
 python3 setup.py install
 ```
 
-<<<<<<< Updated upstream
-=======
 ### via `docker`
 
 Please visit our [Dockerhub](https://hub.docker.com/repository/docker/apeworx/ape) for more details on using Ape with Docker.
 
 example command:  `docker run --volume $HOME/.ape:/root/ape --volume $HOME/.vvm:/root/.vvm --volume $HOME/.solcx:/root/.solcx --volume $PWD:/root/project --workdir /root/project apeworx/ape compile`
 
->>>>>>> Stashed changes
 ## Quick Usage
 
 Ape is primarily meant to be used as a command line tool. Here are some things you can use ape to do:
