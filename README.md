@@ -30,7 +30,9 @@ python3 setup.py install
 
 Please visit our [Dockerhub](https://hub.docker.com/repository/docker/apeworx/ape) for more details on using Ape with Docker.
 
-example command:  
+example commands:  
+
+compiling:
 ```
 docker run \
 --volume $HOME/.ape:/root/.ape \
@@ -39,6 +41,17 @@ docker run \
 --volume $PWD:/root/project \
 --workdir /root/project \
 apeworx/ape compile
+```
+
+running the ape console:
+```
+docker run -it \
+--volume $HOME/.ape:/root/.ape \
+--volume $HOME/.vvm:/root/.vvm \
+--volume $HOME/.solcx:/root/.solcx \
+--volume $PWD:/root/project \
+--workdir /root/project \
+apeworx/ape console
 ```
 
 ## Quick Usage
