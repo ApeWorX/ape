@@ -29,9 +29,7 @@ repos:
     rev: v0.910-1
     hooks:
     -   id: mypy
-        # NOTE: Until mypy drops typeshed for Click, it will still try v7.x by default
-        # HACK: Until mypy 0.900 is released and typeshed is opt-in
-        additional_dependencies: [Click>=8.0.0]
+        additional_dependencies: [types-PyYAML, types-requests]
 
 
 default_language_version:
