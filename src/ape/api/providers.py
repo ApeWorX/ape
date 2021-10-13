@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Iterator, List, Optional
 
 from dataclassy import as_dict
+from hexbytes import HexBytes
 
 from ape.logging import logger
 from ape.types import TransactionSignature
@@ -77,7 +78,8 @@ class ReceiptAPI:
     contract_address: Optional[str] = None
 
     def __post_init__(self):
-        logger.info(f"Submitted {self.txn_hash.hex()}")
+        txn_hash = self.txn_hash.hex() if isinstance(self.txn_hash, HexBytes) else self.txn_hash
+        logger.info(f"Submitted {txn_hash} (gas_used={self.gas_used})")
 
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
