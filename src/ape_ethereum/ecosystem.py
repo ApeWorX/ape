@@ -47,7 +47,7 @@ class Transaction(TransactionAPI):
         data.pop("signature")
         data.pop("sender")
 
-        return data
+        return {key: value for key, value in data.items() if value is not None}
 
     def encode(self) -> bytes:
         if not self.signature:
