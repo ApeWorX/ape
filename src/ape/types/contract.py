@@ -130,7 +130,7 @@ class ABI(SerializableType):
         String representing the function selector, used to compute ``method_id`` and ``event_id``.
         """
         name = self.name if (self.type == "function" or self.type == "event") else self.type
-        input_names = ", ".join(i.canonical_type for i in self.inputs)
+        input_names = ",".join(i.canonical_type for i in self.inputs)
         return f"{name}({input_names})"
 
     @property
