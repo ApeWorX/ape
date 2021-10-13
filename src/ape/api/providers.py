@@ -45,12 +45,12 @@ class TransactionAPI:
         return as_dict(self)
 
     def __repr__(self) -> str:
-        data = as_dict(self)  # NOTE: `as_dict` could be overriden
+        data = as_dict(self)  # NOTE: `as_dict` could be overridden
         params = ", ".join(f"{k}={v}" for k, v in data.items())
         return f"<{self.__class__.__name__} {params}>"
 
     def __str__(self) -> str:
-        data = as_dict(self)  # NOTE: `as_dict` could be overriden
+        data = as_dict(self)  # NOTE: `as_dict` could be overridden
         if len(data["data"]) > 9:
             data["data"] = (
                 "0x" + bytes(data["data"][:3]).hex() + "..." + bytes(data["data"][-3:]).hex()
