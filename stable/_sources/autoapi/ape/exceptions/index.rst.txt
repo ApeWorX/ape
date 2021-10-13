@@ -73,7 +73,7 @@
 
 .. py:exception:: TransactionError
 
-   Bases: :py:obj:`ContractError`
+   Bases: :py:obj:`AccountsError`, :py:obj:`ContractError`
 
    Raised when issues occur while making contract transactions.
 

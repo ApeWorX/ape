@@ -98,6 +98,9 @@
    .. py:method:: _convert(self) -> Callable
 
 
+   .. py:method:: _estimate_gas(self, txn: ape.api.providers.TransactionAPI) -> int
+
+
    .. py:method:: transfer(self, account: Union[str, ape.types.AddressType, ape.api.address.AddressAPI], value: Union[str, int, None] = None, data: Union[bytes, str, None] = None, **kwargs) -> ape.api.providers.ReceiptAPI
 
 

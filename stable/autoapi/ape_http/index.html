@@ -284,52 +284,67 @@
 <dl class="py method">
 <dt id="ape_http.EthereumProvider.estimate_gas_cost">
 <code class="sig-name descname"><span class="pre">estimate_gas_cost</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../ape/api/index.html#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><span class="pre">ape.api.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape_http.EthereumProvider.estimate_gas_cost" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generates and returns an estimate of how much gas is necessary
+to allow the transaction to complete.
+The transaction will not be added to the blockchain.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_http.EthereumProvider.chain_id">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">chain_id</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape_http.EthereumProvider.chain_id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the currently configured chain ID,
+a value used in replay-protected transaction signing as introduced by EIP-155.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_http.EthereumProvider.gas_price">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">gas_price</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_http.EthereumProvider.gas_price" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the current price per gas in wei.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_http.EthereumProvider.get_nonce">
 <code class="sig-name descname"><span class="pre">get_nonce</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape_http.EthereumProvider.get_nonce" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the number of transactions sent from an address.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_http.EthereumProvider.get_balance">
 <code class="sig-name descname"><span class="pre">get_balance</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape_http.EthereumProvider.get_balance" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the balance of the account of a given address.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_http.EthereumProvider.get_code">
 <code class="sig-name descname"><span class="pre">get_code</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bytes</span><a class="headerlink" href="#ape_http.EthereumProvider.get_code" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns code at a given address.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_http.EthereumProvider.send_call">
 <code class="sig-name descname"><span class="pre">send_call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../ape/api/index.html#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><span class="pre">ape.api.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bytes</span><a class="headerlink" href="#ape_http.EthereumProvider.send_call" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Executes a new message call immediately without creating a
+transaction on the block chain.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_http.EthereumProvider.get_transaction">
 <code class="sig-name descname"><span class="pre">get_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../ape/api/index.html#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><span class="pre">ape.api.ReceiptAPI</span></a><a class="headerlink" href="#ape_http.EthereumProvider.get_transaction" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the information about a transaction requested by transaction hash.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_http.EthereumProvider.send_transaction">
 <code class="sig-name descname"><span class="pre">send_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../ape/api/index.html#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><span class="pre">ape.api.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../ape/api/index.html#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><span class="pre">ape.api.ReceiptAPI</span></a><a class="headerlink" href="#ape_http.EthereumProvider.send_transaction" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Creates a new message call transaction or a contract creation
+for signed transactions.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_http.EthereumProvider.get_events">
 <code class="sig-name descname"><span class="pre">get_events</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">filter_params</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape_http.EthereumProvider.get_events" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns an array of all logs matching a given set of filter parameters.</p>
+</dd></dl>
 
 </dd></dl>
 
