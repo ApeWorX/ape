@@ -10,7 +10,7 @@ from ape.types import (
 )
 from ape.utils import cached_property
 
-from ..exceptions import AccountsError, AliasAlreadyInUseError
+from ..exceptions import AccountsError, AliasAlreadyInUseError, TransactionError
 from .address import AddressAPI
 from .base import abstractdataclass, abstractmethod
 from .contracts import ContractContainer, ContractInstance
@@ -64,8 +64,7 @@ class AccountAPI(AddressAPI):
 
         # NOTE: Allow overriding gas limit
         if txn.gas_limit is None:
-            txn.gas_limit = 0  # NOTE: Need a starting estimate
-            txn.gas_limit = self.provider.estimate_gas_cost(txn)
+            txn.gas_limit = self._estimate_gas(txn)
         # else: assume user specified the correct amount or txn will fail and waste gas
 
         if send_everything:
@@ -87,6 +86,16 @@ class AccountAPI(AddressAPI):
         from ape import convert
 
         return convert
+
+    def _estimate_gas(self, txn: TransactionAPI) -> int:
+        try:
+            return self.provider.estimate_gas_cost(txn)
+        except ValueError as err:
+            message = (
+                f"Gas estimation failed: '{err}'. This transaction will likely revert. "
+                "If you wish to broadcast, you must set the gas limit manually."
+            )
+            raise TransactionError(message) from err
 
     def transfer(
         self,

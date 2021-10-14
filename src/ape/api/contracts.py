@@ -62,6 +62,7 @@ class ContractCall:
 
     def __call__(self, *args, **kwargs) -> Any:
         txn = self.encode(*args, **kwargs)
+        txn.chain_id = self.provider.network.chain_id
 
         if "sender" in kwargs and not isinstance(kwargs["sender"], str):
             txn.sender = kwargs["sender"].address

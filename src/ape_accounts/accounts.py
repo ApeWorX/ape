@@ -93,7 +93,7 @@ class KeyfileAccount(AccountAPI):
 
         try:
             self.__cached_key = EthAccount.decrypt(self.keyfile, passphrase)
-
+            self.locked = False
         except ValueError as err:
             raise InvalidPasswordError() from err
 

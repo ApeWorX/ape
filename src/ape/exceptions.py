@@ -38,7 +38,7 @@ class ContractCallError(ContractError):
         super().__init__(message)
 
 
-class TransactionError(ContractError):
+class TransactionError(AccountsError, ContractError):
     """
     Raised when issues occur while making contract transactions.
     """
