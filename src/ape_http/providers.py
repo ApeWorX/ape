@@ -100,8 +100,7 @@ class EthereumProvider(ProviderAPI):
         Executes a new message call immediately without creating a
         transaction on the block chain.
         """
-        data = txn.encode()
-        return self._web3.eth.call(data)
+        return self._web3.eth.call(txn.as_dict())
 
     def get_transaction(self, txn_hash: str) -> ReceiptAPI:
         """
