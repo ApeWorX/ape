@@ -23,11 +23,11 @@ Compilation process flow
     `contracts/` folder
     The project manager contains all the items in the projects folder, including the contracts folder. 
     The `contracts/` folder is where the compiler looks for contracts to compile.
-    The file extension of files within the `contracts/` folder is used to determine which compiler extension should be used.
+    File extensions found within the `contracts/` directory determine which compiler plugin ape uses.
     The pragma spec of the compilable files within the folder is checked and then used to decide if a new compiler needs to be 
     downloaded or if the version matches one of the currently installed compiler versions. 
     The contracts are then grouped by compiler type and version and fed into the corresponding compiler to compile them. 
-    These are then outputted as a json file which is placed in the `.builds` folder. They can then be deployed on the chain from the console.
+    These are then output as a JSON file to the `.builds` directory. They can then be deployed on the chain from the console or a script.
 
     
     Source type
