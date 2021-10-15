@@ -7,7 +7,7 @@ Overall architecture flow
 Plugin Registration process flow
 ================================
     Ape uses pluggy for plugin management. The plugins.register decorator hooks into ape core. 
-    The plugin process looks for all locall installed site packages that start with ape_. This doesn't use pip directly but you can think of it like pip. 
+    The plugin process looks for all locall installed site packages that start with ``ape_``. This doesn't use pip directly but you can think of it like pip. 
     The plugin process will loop through potential plugins and see which ones that have made a plugin type registration.
     If the plugin type registration is found, then ape Core know that it's a plugin, and attempts to process the plugin according to registration interface. 
 	Then we have a set of registered plugins that the registration process defines it needs - @hookspec decorator - describes how plugins work. 
