@@ -20,14 +20,14 @@ Plugin Registration process flow
 
 Compilation process flow
 ========================
-    `contracts/` folder
+    ``contracts/`` folder
     The project manager contains all the items in the projects folder, including the contracts folder. 
-    The `contracts/` folder is where the compiler looks for contracts to compile.
+    The ``contracts/`` folder is where the compiler looks for contracts to compile.
     File extensions found within the `contracts/` directory determine which compiler plugin ape uses.
     The pragma spec of the compilable files within the folder is checked and then used to decide if a new compiler needs to be 
     downloaded or if the version matches one of the currently installed compiler versions. 
     The contracts are then grouped by compiler type and version and fed into the corresponding compiler to compile them. 
-    These are then output as a JSON file to the `.builds` directory. They can then be deployed on the chain from the console or a script.
+    These are then output as a JSON file to the ``.builds`` directory. They can then be deployed on the chain from the console or a script.
 
     
     Source type
@@ -41,8 +41,7 @@ Compilation process flow
 
     ContractType type
         The compilation produces - .build
-        :doc:`<autoapi/ape/types/contract/index.html#ape.types.contract.ContractType>`
-    Project manager
+        :doc:`ContractType <autoapi/ape/types/contract/index.html#ape.types.contract.ContractType>`
 
 
 Account registration process flow
