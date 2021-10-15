@@ -21,7 +21,7 @@ Plugin Registration process flow
 Compilation process flow
 ========================
     `contracts/` folder
-    Project manager contains all the items in the projects folder, including the contracts folder. 
+    The project manager contains all the items in the projects folder, including the contracts folder. 
     The `contracts/` folder is where the compiler will be looking for your contracts in order to compile them.
     The file extension of files within the `contracts/` folder is used to determine which compiler extension should be used.
     The pragma spec of the compilable files within the folder is checked and then used to decide if a new compiler needs to be 
