@@ -2,7 +2,7 @@ import os
 from distutils.dir_util import copy_tree
 from pathlib import Path
 
-import pytest  # type: ignore
+import pytest
 from click.testing import CliRunner
 
 import ape

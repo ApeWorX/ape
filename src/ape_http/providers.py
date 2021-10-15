@@ -27,7 +27,7 @@ class NetworkConfig(ConfigItem):
 
 
 class EthereumProvider(ProviderAPI):
-    _web3: Web3 = None  # type: ignore
+    _web3: Web3 = None
 
     @property
     def uri(self) -> str:
@@ -60,7 +60,7 @@ class EthereumProvider(ProviderAPI):
         to allow the transaction to complete.
         The transaction will not be added to the blockchain.
         """
-        return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
+        return self._web3.eth.estimate_gas(txn.as_dict())
 
     @property
     def chain_id(self) -> int:
@@ -81,19 +81,19 @@ class EthereumProvider(ProviderAPI):
         """
         Returns the number of transactions sent from an address.
         """
-        return self._web3.eth.getTransactionCount(address)  # type: ignore
+        return self._web3.eth.getTransactionCount(address)
 
     def get_balance(self, address: str) -> int:
         """
         Returns the balance of the account of a given address.
         """
-        return self._web3.eth.getBalance(address)  # type: ignore
+        return self._web3.eth.getBalance(address)
 
     def get_code(self, address: str) -> bytes:
         """
         Returns code at a given address.
         """
-        return self._web3.eth.getCode(address)  # type: ignore
+        return self._web3.eth.getCode(address)
 
     def send_call(self, txn: TransactionAPI) -> bytes:
         """
@@ -107,8 +107,8 @@ class EthereumProvider(ProviderAPI):
         Returns the information about a transaction requested by transaction hash.
         """
         # TODO: Work on API that let's you work with ReceiptAPI and re-send transactions
-        receipt = self._web3.eth.wait_for_transaction_receipt(txn_hash)  # type: ignore
-        txn = self._web3.eth.get_transaction(txn_hash)  # type: ignore
+        receipt = self._web3.eth.wait_for_transaction_receipt(txn_hash)
+        txn = self._web3.eth.get_transaction(txn_hash)
         return self.network.ecosystem.receipt_class.decode({**txn, **receipt})
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
@@ -123,4 +123,4 @@ class EthereumProvider(ProviderAPI):
         """
         Returns an array of all logs matching a given set of filter parameters.
         """
-        return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
+        return iter(self._web3.eth.get_logs(filter_params))

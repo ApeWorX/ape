@@ -11,7 +11,7 @@ from ape.logging import logger
 from ape.plugins import clean_plugin_name
 
 try:
-    from importlib import metadata  # type: ignore
+    from importlib import metadata
 except ImportError:
     import importlib_metadata as metadata  # type: ignore
 
@@ -66,7 +66,7 @@ class ApeCLI(click.MultiCommand):
     @property
     def commands(self) -> Dict:
         if not self._commands:
-            entry_points = metadata.entry_points()  # type: ignore
+            entry_points = metadata.entry_points()
 
             if "ape_cli_subcommands" not in entry_points:
                 raise Abort("Missing registered cli subcommands")

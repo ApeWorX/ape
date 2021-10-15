@@ -1,7 +1,7 @@
 from typing import Dict, Iterator, List, Type
 
 from dataclassy import dataclass
-from pluggy import PluginManager  # type: ignore
+from pluggy import PluginManager
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.types import AddressType

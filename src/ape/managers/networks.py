@@ -2,7 +2,7 @@ from typing import Dict, Iterator, Optional
 
 import yaml
 from dataclassy import dataclass
-from pluggy import PluginManager  # type: ignore
+from pluggy import PluginManager
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.exceptions import NetworkError

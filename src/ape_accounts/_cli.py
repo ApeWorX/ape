@@ -1,7 +1,7 @@
 import json
 
 import click
-from eth_account import Account as EthAccount  # type: ignore
+from eth_account import Account as EthAccount
 from eth_utils import to_bytes
 
 from ape import accounts

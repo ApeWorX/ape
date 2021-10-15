@@ -23,7 +23,7 @@ class Alias(click.Choice):
         self._account_type = account_type
 
     @property
-    def choices(self) -> List[str]:  # type: ignore
+    def choices(self) -> List[str]:
         options = (
             list(accounts)
             if not self._account_type
@@ -59,7 +59,7 @@ class PromptChoice(click.ParamType):
             choice = self.choices[self.choice_index]
             return choice
         except Exception:
-            self.fail("Invalid choice", param=param)
+            return self.fail("Invalid choice", param=param)
 
 
 class NetworkChoice(click.Choice):

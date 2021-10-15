@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-import pytest  # type: ignore
-from eth_account import Account  # type: ignore
+import pytest
+from eth_account import Account
 
 from ape.api import AccountAPI
 

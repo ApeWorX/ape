@@ -2,7 +2,7 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Type
 
-from pluggy import PluginManager  # type: ignore
+from pluggy import PluginManager
 
 from ape.types import ABI, AddressType
 from ape.utils import cached_property

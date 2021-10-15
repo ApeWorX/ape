@@ -2,11 +2,11 @@ import faulthandler
 import logging
 
 import click
-import IPython  # type: ignore
+import IPython
 
 from ape import project as default_project
 from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
-from ape.version import version as ape_version  # type: ignore
+from ape.version import version as ape_version
 
 
 @click.command(

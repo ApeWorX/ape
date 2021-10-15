@@ -1,4 +1,4 @@
-import pytest  # type: ignore
+import pytest
 from ape_ethereum.converters import ETHER_UNITS
 from eth_typing import ChecksumAddress
 from hypothesis import given

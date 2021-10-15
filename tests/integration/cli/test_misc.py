@@ -1,4 +1,4 @@
-import pytest  # type: ignore
+import pytest
 
 
 # NOTE: test all the things without a direct test elsewhere

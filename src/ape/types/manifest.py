@@ -63,7 +63,7 @@ class PackageManifest(FileMixin, SerializableType):
         # NOTE: Special 1-level dict with key in type as arg
         if "contractTypes" in params and params["contractTypes"]:
             for name in params["contractTypes"]:
-                params["contractTypes"][name] = ContractType.from_dict(  # type: ignore
+                params["contractTypes"][name] = ContractType.from_dict(
                     {
                         # NOTE: We inject this parameter ourselves, remove it when serializing
                         "contractName": name,

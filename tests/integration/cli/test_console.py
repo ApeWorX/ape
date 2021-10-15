@@ -1,4 +1,4 @@
-import pytest  # type: ignore
+import pytest
 
 from ape import __all__
 

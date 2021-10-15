@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-import pytest  # type: ignore
+import pytest
 
 
 @pytest.fixture(

@@ -41,7 +41,7 @@ def to_dict(v: Any) -> Optional[Union[list, dict, str, int, bool]]:
         return v.to_dict()
 
     elif isinstance(v, list):
-        return [to_dict(i) for i in v]  # type: ignore
+        return [to_dict(i) for i in v]
 
     elif isinstance(v, dict):
         return {k: to_dict(i) for k, i in v.items()}

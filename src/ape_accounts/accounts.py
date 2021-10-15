@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Iterator, Optional
 
 import click
-from eth_account import Account as EthAccount  # type: ignore
+from eth_account import Account as EthAccount
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.convert import to_address
