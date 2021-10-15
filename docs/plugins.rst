@@ -22,7 +22,7 @@ Compilation process flow
 ========================
     `contracts/` folder
     The project manager contains all the items in the projects folder, including the contracts folder. 
-    The `contracts/` folder is where the compiler will be looking for your contracts in order to compile them.
+    The `contracts/` folder is where the compiler looks for contracts to compile.
     The file extension of files within the `contracts/` folder is used to determine which compiler extension should be used.
     The pragma spec of the compilable files within the folder is checked and then used to decide if a new compiler needs to be 
     downloaded or if the version matches one of the currently installed compiler versions. 
