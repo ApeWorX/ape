@@ -32,8 +32,10 @@ Please visit our `Dockerhub <https://hub.docker.com/repository/docker/apeworx/ap
 example commands:  
 
 compiling:
+
 .. code-block:: bash
-    docker run \
+
+    $ docker run \
     --volume $HOME/.ape:/root/.ape \
     --volume $HOME/.vvm:/root/.vvm \
     --volume $HOME/.solcx:/root/.solcx \
@@ -42,9 +44,10 @@ compiling:
     apeworx/ape compile
 
 running the ape console:
+
 .. code-block:: bash
 
-    docker run -it \
+    $ docker run -it \
     --volume $HOME/.ape:/root/.ape \
     --volume $HOME/.vvm:/root/.vvm \
     --volume $HOME/.solcx:/root/.solcx \
