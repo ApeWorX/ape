@@ -34,7 +34,7 @@ def verbosity_option(cli_logger):
         def _set_level(ctx, param, value):
             log_level = getattr(LogLevel, value.upper(), None)
             if log_level is None:
-                raise click.BadParameter(f"Must be one of {names_str}, not {value}")
+                raise click.BadParameter(f"Must be one of {names_str}, not {value}.")
 
             cli_logger.set_level(log_level.name)
 

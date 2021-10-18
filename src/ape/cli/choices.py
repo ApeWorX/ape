@@ -59,7 +59,7 @@ class PromptChoice(click.ParamType):
             choice = self.choices[self.choice_index]
             return choice
         except Exception:
-            self.fail("Invalid choice", param=param)
+            return self.fail("Invalid choice", param=param)
 
 
 class NetworkChoice(click.Choice):

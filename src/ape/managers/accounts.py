@@ -75,7 +75,7 @@ class AccountManager:
 
     @singledispatchmethod
     def __getitem__(self, account_id) -> AccountAPI:
-        raise NotImplementedError("Cannot use " + type(account_id) + " as account id")
+        raise NotImplementedError(f"Cannot use {type(account_id)} as account ID.")
 
     @__getitem__.register
     def __getitem_int(self, account_id: int) -> AccountAPI:

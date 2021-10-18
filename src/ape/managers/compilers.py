@@ -29,7 +29,7 @@ class CompilerManager:
             for extension in extensions:
 
                 if extension in registered_compilers:
-                    raise CompilerError(f"Compiler for '{extension}' is already registered")
+                    raise CompilerError(f"Compiler for '{extension}' is already registered.")
 
                 registered_compilers[extension] = compiler
 
@@ -47,7 +47,7 @@ class CompilerManager:
             for contract_type in self.registered_compilers[extension].compile(paths_to_compile):
 
                 if contract_type.contractName in contract_types:
-                    raise CompilerError("ContractType collision across compiler plugins")
+                    raise CompilerError("ContractType collision across compiler plugins.")
 
                 contract_types[contract_type.contractName] = contract_type
 
@@ -58,7 +58,7 @@ class CompilerManager:
         unhandled_extensions = extensions - set(self.registered_compilers)
         if len(unhandled_extensions) > 0:
             unhandled_extensions_str = ", ".join(unhandled_extensions)
-            raise CompilerError(f"No compiler found for extensions [{unhandled_extensions_str}]")
+            raise CompilerError(f"No compiler found for extensions [{unhandled_extensions_str}].")
 
         return extensions
 

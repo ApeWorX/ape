@@ -51,7 +51,7 @@ def register(plugin_type: Type[PluginType], **hookimpl_kwargs) -> Callable:
     # NOTE: we are basically checking that `plugin_type`
     #       is one of the parent classes of `Plugins`
     if not issubclass(AllPluginHooks, plugin_type):
-        raise PluginError("Not a valid plugin type to register")
+        raise PluginError("Not a valid plugin type to register.")
 
     def check_hook(plugin_type, hookimpl_kwargs, fn):
         fn = hookimpl(fn, **hookimpl_kwargs)
@@ -62,7 +62,7 @@ def register(plugin_type: Type[PluginType], **hookimpl_kwargs) -> Callable:
             raise PluginError(
                 f"Registered function `{fn.__name__}` is not"
                 f" a valid hook for {plugin_type.__name__}, must be one of:"
-                f" {hooks}"
+                f" {hooks}."
             )
 
         return fn
@@ -95,7 +95,7 @@ class PluginManager:
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
         if not hasattr(plugin_manager.hook, attr_name):
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
         # Do this to get access to the package name
         hook_fn = getattr(plugin_manager.hook, attr_name)

@@ -41,13 +41,13 @@ class NetworkManager:
 
     def __getitem__(self, ecosystem_name: str) -> EcosystemAPI:
         if ecosystem_name not in self.ecosystems:
-            raise NetworkError(f"Unknown ecosystem '{ecosystem_name}'")
+            raise NetworkError(f"Unknown ecosystem '{ecosystem_name}'.")
 
         return self.ecosystems[ecosystem_name]
 
     def __getattr__(self, attr_name: str) -> EcosystemAPI:
         if attr_name not in self.ecosystems:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
         return self.ecosystems[attr_name]
 
@@ -118,7 +118,7 @@ class NetworkManager:
 
         else:
             # NOTE: Might be unreachable
-            raise NetworkError("Invalid network selection")
+            raise NetworkError("Invalid network selection.")
 
     @property
     def default_ecosystem(self) -> EcosystemAPI:
@@ -130,14 +130,14 @@ class NetworkManager:
             return self.ecosystems[list(self.__iter__())[0]]
 
         else:
-            raise NetworkError("No ecosystems installed")
+            raise NetworkError("No ecosystems installed.")
 
     def set_default_ecosystem(self, ecosystem_name: str):
         if ecosystem_name in self.__iter__():
             self._default = ecosystem_name
 
         else:
-            raise NetworkError("Not a registered ecosystem")
+            raise NetworkError("Not a registered ecosystem.")
 
     @property
     def network_data(self) -> Dict:

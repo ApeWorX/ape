@@ -29,7 +29,17 @@ class TransactionAPI:
 
     def __post_init__(self):
         if not self.is_valid:
-            raise ProviderError("Transaction is not valid")
+            raise ProviderError("Transaction is not valid.")
+
+    @property
+    def total_transfer_value(self) -> int:
+        """
+        The total amount of WEI that a transaction could use.
+        Useful for determining if an account balance can afford
+        to submit the transaction.
+        """
+        # TODO Support EIP-1559
+        return (self.gas_limit or 0) * (self.gas_price or 0) + self.value
 
     @property
     @abstractmethod
@@ -63,8 +73,8 @@ class TransactionAPI:
 
 
 class TransactionStatusEnum(IntEnum):
-    failing = 0
-    no_error = 1
+    FAILING = 0
+    NO_ERROR = 1
 
 
 @abstractdataclass
