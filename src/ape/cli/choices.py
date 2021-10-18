@@ -5,6 +5,7 @@ from click import Context, Parameter
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
+from ape.exceptions import AccountsError
 
 
 def _get_account_by_type(account_type: Optional[Type[AccountAPI]] = None) -> List[AccountAPI]:
@@ -60,7 +61,7 @@ class PromptChoice(click.ParamType):
             return choice
 
         except Exception:
-            return self.fail("Invalid choice", param=param)
+            return self.fail("Invalid choice. Type the number of the option above.", param=param)
 
 
 class AccountAliasPromptChoice(PromptChoice):
@@ -77,6 +78,9 @@ class AccountAliasPromptChoice(PromptChoice):
         """
         Returns the selected account.
         """
+        if not self.choices:
+            raise AccountsError("There are no accounts.")
+
         self.print_choices()
         selected_alias = click.prompt("Select an account", type=self)
         return accounts.load(selected_alias)
