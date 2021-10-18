@@ -79,7 +79,9 @@ class AccountAliasPromptChoice(PromptChoice):
         Returns the selected account.
         """
         if not self.choices:
-            raise AccountsError("There are no accounts.")
+            raise AccountsError("No accounts found.")
+        elif len(self.choices) == 1:
+            return accounts.load(self.choices[0])
 
         self.print_choices()
         selected_alias = click.prompt("Select an account", type=self)
