@@ -34,7 +34,7 @@ class ProjectManager:
         manifest_dict = requests.get(manifest_uri).json()
         # TODO: Handle non-manifest URLs e.g. Ape/Brownie projects, Hardhat/Truffle projects, etc.
         if "name" not in manifest_dict:
-            raise ProjectError("Dependencies must have a name")
+            raise ProjectError("Dependencies must have a name.")
 
         return PackageManifest.from_dict(manifest_dict)
 
@@ -59,7 +59,7 @@ class ProjectManager:
         if manifest_file.exists():
             manifest_json = json.loads(manifest_file.read_text())
             if "manifest" not in manifest_json:
-                raise ProjectError("Corrupted manifest")
+                raise ProjectError("Corrupted manifest.")
 
             return PackageManifest.from_dict(manifest_json)
 
@@ -176,7 +176,7 @@ class ProjectManager:
         elif attr_name in self.dependencies:
             return self.dependencies[attr_name]
         else:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
     @property
     def interfaces_folder(self) -> Path:

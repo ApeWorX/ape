@@ -6,7 +6,8 @@ from web3.middleware import geth_poa_middleware
 
 from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.api.config import ConfigItem
-from ape.exceptions import ProviderError
+from ape.exceptions import ProviderError, TransactionError, VirtualMachineError
+from ape.utils import get_tx_error_from_web3_value_error
 
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
 
@@ -47,7 +48,7 @@ class EthereumProvider(ProviderAPI):
             )
 
     def disconnect(self):
-        self._web3 = None
+        self._web3 = None  # type: ignore
 
     def update_settings(self, new_settings: dict):
         self.disconnect()
@@ -60,7 +61,21 @@ class EthereumProvider(ProviderAPI):
         to allow the transaction to complete.
         The transaction will not be added to the blockchain.
         """
-        return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
+        try:
+            return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
+        except ValueError as err:
+            tx_error = get_tx_error_from_web3_value_error(err)
+
+            # If this is the cause of a would-be revert,
+            # raise the VirtualMachineError so that we can confirm tx-reverts.
+            if isinstance(tx_error, VirtualMachineError):
+                raise tx_error from err
+
+            message = (
+                f"Gas estimation failed: '{tx_error}'. This transaction will likely revert. "
+                "If you wish to broadcast, you must set the gas limit manually."
+            )
+            raise TransactionError(base_err=tx_error, message=message) from err
 
     @property
     def chain_id(self) -> int:
@@ -81,19 +96,19 @@ class EthereumProvider(ProviderAPI):
         """
         Returns the number of transactions sent from an address.
         """
-        return self._web3.eth.getTransactionCount(address)  # type: ignore
+        return self._web3.eth.get_transaction_count(address)  # type: ignore
 
     def get_balance(self, address: str) -> int:
         """
         Returns the balance of the account of a given address.
         """
-        return self._web3.eth.getBalance(address)  # type: ignore
+        return self._web3.eth.get_balance(address)  # type: ignore
 
     def get_code(self, address: str) -> bytes:
         """
         Returns code at a given address.
         """
-        return self._web3.eth.getCode(address)  # type: ignore
+        return self._web3.eth.get_code(address)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
         """
@@ -116,7 +131,11 @@ class EthereumProvider(ProviderAPI):
         Creates a new message call transaction or a contract creation
         for signed transactions.
         """
-        txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
+        try:
+            txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
+        except ValueError as err:
+            raise get_tx_error_from_web3_value_error(err) from err
+
         return self.get_transaction(txn_hash.hex())
 
     def get_events(self, **filter_params) -> Iterator[dict]:

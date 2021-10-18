@@ -88,7 +88,10 @@ def mock_third_party_account(mocker):
 @pytest.fixture
 def mock_account_manager(mocker, mock_local_account, mock_third_party_account):
     mock = mocker.patch("ape_accounts._cli.accounts")
-    containers = {"accounts": [mock_local_account], "test-wallet": [mock_third_party_account]}
+    containers = {
+        "accounts": [mock_local_account],
+        "test-wallet": [mock_third_party_account],
+    }
     mock.containers = containers
     return mock
 
@@ -162,7 +165,9 @@ def test_change_password(ape_cli, runner, test_keyfile):
     # Delete Account (`N` for "Leave unlocked?")
     valid_input = [PASSWORD, "N", "b", "b"]
     result = runner.invoke(
-        ape_cli, ["accounts", "change-password", ALIAS], input="\n".join(valid_input) + "\n"
+        ape_cli,
+        ["accounts", "change-password", ALIAS],
+        input="\n".join(valid_input) + "\n",
     )
     assert result.exit_code == 0, result.output
 

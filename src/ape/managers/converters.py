@@ -69,7 +69,7 @@ class ConversionManager:
 
             if conversion_type not in converters:
                 options = ", ".join([t.__name__ for t in converters])
-                raise ConversionError(f"Type '{conversion_type}' must be one of [{options}]")
+                raise ConversionError(f"Type '{conversion_type}' must be one of [{options}].")
 
             converters[conversion_type].append(converter)
 
@@ -85,7 +85,7 @@ class ConversionManager:
     def convert(self, value: Any, type: Type) -> Any:
         if type not in self._converters:
             options = ", ".join([t.__name__ for t in self._converters])
-            raise ConversionError(f"Type '{type}' must be one of [{options}]")
+            raise ConversionError(f"Type '{type}' must be one of [{options}].")
 
         if self.is_type(value, type):
             return value
@@ -94,4 +94,4 @@ class ConversionManager:
             if converter.is_convertible(value):
                 return converter.convert(value)
 
-        raise ConversionError(f"No conversion registered to handle '{value}'")
+        raise ConversionError(f"No conversion registered to handle '{value}'.")

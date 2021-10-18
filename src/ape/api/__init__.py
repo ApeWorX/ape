@@ -1,6 +1,6 @@
 from .accounts import AccountAPI, AccountContainerAPI
 from .address import Address, AddressAPI
-from .contracts import ContractLog
+from .contracts import ContractInstance, ContractLog
 from .convert import ConverterAPI
 from .explorers import ExplorerAPI
 from .networks import EcosystemAPI, NetworkAPI, ProviderContextManager, create_network_type
