@@ -69,7 +69,7 @@ class EthereumProvider(ProviderAPI):
 
             # If this is the cause of a would-be revert,
             # raise the VirtualMachineError so that we can confirm tx-reverts.
-            if isinstance(txn, VirtualMachineError):
+            if isinstance(tx_error, VirtualMachineError):
                 raise tx_error from err
 
             message = (
