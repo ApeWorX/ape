@@ -40,7 +40,6 @@ class PromptChoice(click.ParamType):
 
     def __init__(self, choices):
         self.choices = choices
-        self.choice_index = None
 
     def print_choices(self):
         choices = dict(enumerate(self.choices, 1))
@@ -50,18 +49,20 @@ class PromptChoice(click.ParamType):
 
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
-    ) -> Optional[str]:
+    ) -> Optional[Any]:
         # noinspection PyBroadException
         try:
-            self.choice_index = int(value) - 1
-            if self.choice_index < 0:
+            choice_index = int(value) - 1
+            if choice_index < 0:
                 self.fail("Invalid choice", param=param)
 
-            choice = self.choices[self.choice_index]
-            return choice
+            return self.choices[choice_index]
 
         except Exception:
-            return self.fail("Invalid choice. Type the number of the option above.", param=param)
+            return self.fail_from_invalid_choice(param)
+
+    def fail_from_invalid_choice(self, param):
+        return self.fail("Invalid choice.", param=param)
 
 
 class AccountAliasPromptChoice(PromptChoice):
@@ -74,7 +75,17 @@ class AccountAliasPromptChoice(PromptChoice):
     def __init__(self, account_type: Optional[Type[AccountAPI]] = None):
         # NOTE: we purposely skip the constructor of `PromptChoice`
         self._account_type = account_type
-        self.choice_index = None
+
+    # type: ignore
+    def convert(
+        self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
+    ) -> Optional[AccountAPI]:
+        if value and value in accounts.aliases:
+            return accounts.load(value)
+
+        # Prompt the user if they didn't provide a value.
+        alias = super().convert(value, param, ctx)
+        return accounts.load(alias) if alias else None
 
     @property
     def choices(self) -> List[str]:
@@ -94,8 +105,10 @@ class AccountAliasPromptChoice(PromptChoice):
             return accounts.load(self.choices[0])
 
         self.print_choices()
-        selected_alias = click.prompt("Select an account", type=self)
-        return accounts.load(selected_alias)
+        return click.prompt("Select an account", type=self)
+
+    def fail_from_invalid_choice(self, param):
+        return self.fail("Invalid choice. Type the number or the alias.", param=param)
 
 
 class NetworkChoice(click.Choice):
