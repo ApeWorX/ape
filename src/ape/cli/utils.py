@@ -20,6 +20,10 @@ def get_user_selected_account(account_type: Optional[Type[AccountAPI]] = None) -
     Prompts the user to pick from their accounts
     and returns that account. Optionally filter the accounts
     by type.
+
+    Use this method if you want to prompt users to select
+    accounts _outside_ of CLI options. For CLI options,
+    use :meth:`ape.cli.options.account_option_that_prompts_when_not_given`.
     """
     prompt = AccountAliasPromptChoice(account_type=account_type)
     return prompt.get_user_selected_account()
