@@ -90,7 +90,7 @@ def _account_callback(ctx, param, value):
 
 def account_option_that_prompts_when_not_given():
     """
-    Accepts either the account alias or the account index.
+    Accepts either the account alias or the account number.
     If not given anything, it will prompt the user to select an account.
     """
     return click.option(
