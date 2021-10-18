@@ -48,8 +48,7 @@ class EthereumProvider(ProviderAPI):
             )
 
     def disconnect(self):
-        # noinspection PyTypeChecker
-        self._web3 = None
+        self._web3 = None  # type: ignore
 
     def update_settings(self, new_settings: dict):
         self.disconnect()
