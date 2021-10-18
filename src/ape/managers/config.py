@@ -54,7 +54,7 @@ class ConfigManager:
             self._plugin_configs[plugin_name] = config
 
         if len(user_config.keys()) > 0:
-            raise ConfigError("Unprocessed config items")
+            raise ConfigError("Unprocessed config items.")
 
     def get_config(self, plugin_name: str) -> ConfigItem:
         if plugin_name not in self._plugin_configs:

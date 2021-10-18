@@ -12,7 +12,7 @@ from eth_utils import keccak, to_bytes, to_int
 from hexbytes import HexBytes
 
 from ape.api import ContractLog, EcosystemAPI, ReceiptAPI, TransactionAPI, TransactionStatusEnum
-from ape.exceptions import DecodingError, TransactionError
+from ape.exceptions import DecodingError, SignatureError
 from ape.types import ABI, AddressType
 
 NETWORKS = {
@@ -51,7 +51,7 @@ class Transaction(TransactionAPI):
 
     def encode(self) -> bytes:
         if not self.signature:
-            raise TransactionError("Transaction is not signed!")
+            raise SignatureError("The transaction is not signed.")
 
         txn_data = self.as_dict()
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
@@ -60,7 +60,7 @@ class Transaction(TransactionAPI):
         signed_txn = encode_transaction(unsigned_txn, signature)
 
         if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
-            raise TransactionError("Recovered Signer doesn't match sender!")
+            raise SignatureError("Recovered Signer doesn't match sender!")
 
         return signed_txn
 

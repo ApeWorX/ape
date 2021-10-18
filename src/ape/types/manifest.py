@@ -52,7 +52,7 @@ class PackageManifest(FileMixin, SerializableType):
             return self.contractTypes[attr_name]
 
         else:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
     @classmethod
     def from_dict(cls, params: Dict):

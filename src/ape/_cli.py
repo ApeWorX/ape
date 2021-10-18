@@ -40,7 +40,7 @@ class ApeCLI(click.MultiCommand):
         except click.UsageError as err:
             self._suggest_cmd(err)
         except ApeException as err:
-            raise Abort(str(err)) from err
+            raise Abort(f"({type(err).__name__}) {err}") from err
 
     @staticmethod
     def _suggest_cmd(usage_error):
