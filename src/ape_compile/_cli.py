@@ -4,8 +4,7 @@ from typing import Dict
 
 import click
 
-from ape.cli import ape_cli_context
-from ape.cli.paramtype import AllFilePaths
+from ape.cli import AllFilePaths, ape_cli_context
 from ape.types import ContractType
 
 _flatten = chain.from_iterable

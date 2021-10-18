@@ -7,6 +7,10 @@ from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 
 
+def _get_account_by_type(account_type: Optional[Type[AccountAPI]] = None) -> List[AccountAPI]:
+    return list(accounts) if not account_type else accounts.get_accounts_by_type(account_type)
+
+
 class Alias(click.Choice):
     """Wraps ``click.Choice`` to load account aliases for the active project at runtime.
 
@@ -24,11 +28,7 @@ class Alias(click.Choice):
 
     @property
     def choices(self) -> List[str]:  # type: ignore
-        options = (
-            list(accounts)
-            if not self._account_type
-            else accounts.get_accounts_by_type(self._account_type)
-        )
+        options = _get_account_by_type(self._account_type)
         return [a.alias for a in options if a.alias is not None]
 
 
@@ -58,8 +58,28 @@ class PromptChoice(click.ParamType):
 
             choice = self.choices[self.choice_index]
             return choice
+
         except Exception:
-            self.fail("Invalid choice", param=param)
+            return self.fail("Invalid choice", param=param)
+
+
+class AccountAliasPromptChoice(PromptChoice):
+    """
+    Prompts the user to select an alias from their accounts.
+    Useful for adhoc scripts to lessen the need to hard-code aliases.
+    """
+
+    def __init__(self, account_type: Optional[Type[AccountAPI]] = None):
+        options = [a.alias for a in _get_account_by_type(account_type)]
+        super().__init__(options)
+
+    def get_user_selected_account(self) -> AccountAPI:
+        """
+        Returns the selected account.
+        """
+        self.print_choices()
+        selected_alias = click.prompt("Select an account", type=self)
+        return accounts.load(selected_alias)
 
 
 class NetworkChoice(click.Choice):
