@@ -39,6 +39,7 @@
    ape.api.AccountContainerAPI
    ape.api.Address
    ape.api.AddressAPI
+   ape.api.ContractInstance
    ape.api.ContractLog
    ape.api.ConverterAPI
    ape.api.ExplorerAPI
@@ -96,9 +97,6 @@
 
 
    .. py:method:: _convert(self) -> Callable
-
-
-   .. py:method:: _estimate_gas(self, txn: ape.api.providers.TransactionAPI) -> int
 
 
    .. py:method:: transfer(self, account: Union[str, ape.types.AddressType, ape.api.address.AddressAPI], value: Union[str, int, None] = None, data: Union[bytes, str, None] = None, **kwargs) -> ape.api.providers.ReceiptAPI
@@ -235,6 +233,40 @@
 
    .. py:method:: is_contract(self) -> bool
       :property:
+
+
+
+
+
+.. py:class:: ContractInstance
+
+   Bases: :py:obj:`ape.api.address.AddressAPI`
+
+   .. attribute:: _address
+      :annotation: :ape.types.AddressType
+
+      
+
+   .. attribute:: _contract_type
+      :annotation: :ape.types.ContractType
+
+      
+
+   .. py:method:: __repr__(self) -> str
+
+      Return repr(self).
+
+
+   .. py:method:: address(self) -> ape.types.AddressType
+      :property:
+
+
+   .. py:method:: __dir__(self) -> List[str]
+
+      Default dir() implementation.
+
+
+   .. py:method:: __getattr__(self, attr_name: str) -> Any
 
 
 
@@ -733,6 +765,14 @@
    .. py:method:: __post_init__(self)
 
 
+   .. py:method:: total_transfer_value(self) -> int
+      :property:
+
+      The total amount of WEI that a transaction could use.
+      Useful for determining if an account balance can afford
+      to submit the transaction.
+
+
    .. py:method:: is_valid(self)
       :property:
 
@@ -765,12 +805,12 @@
 
    Enum where members are also (and must be) ints
 
-   .. attribute:: failing
+   .. attribute:: FAILING
       :annotation: = 0
 
       
 
-   .. attribute:: no_error
+   .. attribute:: NO_ERROR
       :annotation: = 1
 
       

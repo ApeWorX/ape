@@ -76,6 +76,14 @@
    .. py:method:: __post_init__(self)
 
 
+   .. py:method:: total_transfer_value(self) -> int
+      :property:
+
+      The total amount of WEI that a transaction could use.
+      Useful for determining if an account balance can afford
+      to submit the transaction.
+
+
    .. py:method:: is_valid(self)
       :property:
 
@@ -108,12 +116,12 @@
 
    Enum where members are also (and must be) ints
 
-   .. attribute:: failing
+   .. attribute:: FAILING
       :annotation: = 0
 
       
 
-   .. attribute:: no_error
+   .. attribute:: NO_ERROR
       :annotation: = 1
 
       

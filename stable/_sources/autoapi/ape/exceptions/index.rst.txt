@@ -14,16 +14,21 @@
 -----------
 
 
-.. py:exception:: ApeException
+.. py:exception:: ApeException(message)
 
    Bases: :py:obj:`Exception`
 
    An exception raised by ape.
 
+   .. py:method:: __init__(self, message)
+
+      Initialize self.  See help(type(self)) for accurate signature.
 
 
 
-.. py:exception:: AccountsError
+
+
+.. py:exception:: AccountsError(message)
 
    Bases: :py:obj:`ApeException`
 
@@ -47,7 +52,16 @@
 
 
 
-.. py:exception:: ContractError
+.. py:exception:: SignatureError(message)
+
+   Bases: :py:obj:`AccountsError`
+
+   Raised when there are issues with signing.
+
+
+
+
+.. py:exception:: ContractError(message)
 
    Bases: :py:obj:`ApeException`
 
@@ -57,25 +71,16 @@
 
 
 
-.. py:exception:: ContractCallError(message=None)
+.. py:exception:: ArgumentsLengthError
 
    Bases: :py:obj:`ContractError`
 
-   Raised when issues occur when making a contract call.
+   Raised when calling a contract method with the wrong number of arguments.
 
-   .. py:method:: __init__(self, message=None)
+   .. py:method:: __init__(self)
 
       Initialize self.  See help(type(self)) for accurate signature.
 
-
-
-
-
-.. py:exception:: TransactionError
-
-   Bases: :py:obj:`AccountsError`, :py:obj:`ContractError`
-
-   Raised when issues occur while making contract transactions.
 
 
 
@@ -95,16 +100,74 @@
 
 
 
-.. py:exception:: ContractDeployError
+.. py:exception:: TransactionError(base_err: Optional[Exception] = None, message: Optional[str] = None, code: Optional[int] = None)
 
-   Bases: :py:obj:`ApeException`
+   Bases: :py:obj:`ContractError`
+
+   Raised when issues occur related to transactions.
+
+   .. py:method:: __init__(self, base_err: Optional[Exception] = None, message: Optional[str] = None, code: Optional[int] = None)
+
+      Initialize self.  See help(type(self)) for accurate signature.
+
+
+
+
+
+.. py:exception:: VirtualMachineError(revert_message: str)
+
+   Bases: :py:obj:`TransactionError`
+
+   Raised when there is either an internal fault in a virtual machine
+   or a contract-defined revert, such as from an assert/require statement.
+
+   .. py:method:: __init__(self, revert_message: str)
+
+      Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:method:: revert_message(self)
+      :property:
+
+
+   .. py:method:: from_error(cls, err: Exception)
+      :classmethod:
+
+      Creates this class from the error message of the given
+      error.
+
+      This should be overridden whenever possible to handle
+      provider-specific use-cases for raising this error.
+
+
+
+
+
+.. py:exception:: OutOfGasError(code: Optional[int] = None)
+
+   Bases: :py:obj:`TransactionError`
+
+   Raised when detecting a transaction failed because it ran
+   out of gas.
+
+   .. py:method:: __init__(self, code: Optional[int] = None)
+
+      Initialize self.  See help(type(self)) for accurate signature.
+
+
+
+
+
+.. py:exception:: ContractDeployError(base_err: Optional[Exception] = None, message: Optional[str] = None, code: Optional[int] = None)
+
+   Bases: :py:obj:`TransactionError`
 
    Raised when a problem occurs when deploying a contract.
 
 
 
 
-.. py:exception:: NetworkError
+.. py:exception:: NetworkError(message)
 
    Bases: :py:obj:`ApeException`
 
@@ -127,7 +190,7 @@
 
 
 
-.. py:exception:: CompilerError
+.. py:exception:: CompilerError(message)
 
    Bases: :py:obj:`ApeException`
 
@@ -136,7 +199,7 @@
 
 
 
-.. py:exception:: ProjectError
+.. py:exception:: ProjectError(message)
 
    Bases: :py:obj:`ApeException`
 
@@ -145,7 +208,7 @@
 
 
 
-.. py:exception:: ConversionError
+.. py:exception:: ConversionError(message)
 
    Bases: :py:obj:`ApeException`
 
@@ -154,7 +217,7 @@
 
 
 
-.. py:exception:: ProviderError
+.. py:exception:: ProviderError(message)
 
    Bases: :py:obj:`ApeException`
 
@@ -163,7 +226,7 @@
 
 
 
-.. py:exception:: ConfigError
+.. py:exception:: ConfigError(message)
 
    Bases: :py:obj:`ApeException`
 
@@ -172,7 +235,7 @@
 
 
 
-.. py:exception:: AddressError
+.. py:exception:: AddressError(message)
 
    Bases: :py:obj:`ApeException`
 

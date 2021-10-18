@@ -77,7 +77,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AccountAPI.sign_transaction">sign_transaction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AccountAPI.call">call</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AccountAPI._convert">_convert</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.AccountAPI._estimate_gas">_estimate_gas</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AccountAPI.transfer">transfer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AccountAPI.deploy">deploy</a></li>
 </ul>
@@ -117,6 +116,15 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI.code">code</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI.codesize">codesize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI.is_contract">is_contract</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.api.ContractInstance">ContractInstance</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ContractInstance._address">_address</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ContractInstance._contract_type">_contract_type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ContractInstance.__repr__">__repr__</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ContractInstance.address">address</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ContractInstance.__dir__">__dir__</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ContractInstance.__getattr__">__getattr__</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.api.ContractLog">ContractLog</a><ul>
@@ -238,6 +246,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.data">data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.signature">signature</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.__post_init__">__post_init__</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.total_transfer_value">total_transfer_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.is_valid">is_valid</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.encode">encode</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.as_dict">as_dict</a></li>
@@ -246,8 +255,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.api.TransactionStatusEnum">TransactionStatusEnum</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionStatusEnum.failing">failing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionStatusEnum.no_error">no_error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionStatusEnum.FAILING">FAILING</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionStatusEnum.NO_ERROR">NO_ERROR</a></li>
 </ul>
 </li>
 </ul>
@@ -352,34 +361,37 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.api.AddressAPI" title="ape.api.AddressAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AddressAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ContractLog" title="ape.api.ContractLog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractLog</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ContractInstance" title="ape.api.ContractInstance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractInstance</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ConverterAPI" title="ape.api.ConverterAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConverterAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ContractLog" title="ape.api.ContractLog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractLog</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ConverterAPI" title="ape.api.ConverterAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConverterAPI</span></code></a></p></td>
 <td><p>Abstract base class for generic types.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ExplorerAPI" title="ape.api.ExplorerAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplorerAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ExplorerAPI" title="ape.api.ExplorerAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplorerAPI</span></code></a></p></td>
 <td><p>An Explorer must work with a particular Network in a particular Ecosystem</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.EcosystemAPI" title="ape.api.EcosystemAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EcosystemAPI</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.EcosystemAPI" title="ape.api.EcosystemAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EcosystemAPI</span></code></a></p></td>
 <td><p>An Ecosystem is a set of related Networks</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.NetworkAPI" title="ape.api.NetworkAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.NetworkAPI" title="ape.api.NetworkAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p></td>
 <td><p>A Network is a wrapper around a Provider for a specific Ecosystem.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ProviderContextManager" title="ape.api.ProviderContextManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ProviderContextManager" title="ape.api.ProviderContextManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ProviderAPI" title="ape.api.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ProviderAPI" title="ape.api.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p></td>
 <td><p>A Provider must work with a particular Network in a particular Ecosystem</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TransactionStatusEnum" title="ape.api.TransactionStatusEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionStatusEnum</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.TransactionStatusEnum" title="ape.api.TransactionStatusEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionStatusEnum</span></code></a></p></td>
 <td><p>Enum where members are also (and must be) ints</p></td>
 </tr>
 </tbody>
@@ -436,11 +448,6 @@
 <dl class="py method">
 <dt id="ape.api.AccountAPI._convert">
 <code class="sig-name descname"><span class="pre">_convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#ape.api.AccountAPI._convert" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="ape.api.AccountAPI._estimate_gas">
-<code class="sig-name descname"><span class="pre">_estimate_gas</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="providers/index.html#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.AccountAPI._estimate_gas" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -610,6 +617,44 @@
 <dl class="py method">
 <dt id="ape.api.AddressAPI.is_contract">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_contract</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.api.AddressAPI.is_contract" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.ContractInstance">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.</span></code><code class="sig-name descname"><span class="pre">ContractInstance</span></code><a class="headerlink" href="#ape.api.ContractInstance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="address/index.html#ape.api.address.AddressAPI" title="ape.api.address.AddressAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.address.AddressAPI</span></code></a></p>
+<dl class="py attribute">
+<dt id="ape.api.ContractInstance._address">
+<code class="sig-name descname"><span class="pre">_address</span></code><em class="property"> <span class="pre">:ape.types.AddressType</span></em><a class="headerlink" href="#ape.api.ContractInstance._address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.ContractInstance._contract_type">
+<code class="sig-name descname"><span class="pre">_contract_type</span></code><em class="property"> <span class="pre">:ape.types.ContractType</span></em><a class="headerlink" href="#ape.api.ContractInstance._contract_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.ContractInstance.__repr__">
+<code class="sig-name descname"><span class="pre">__repr__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape.api.ContractInstance.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.ContractInstance.address">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">address</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ape.types.AddressType</span><a class="headerlink" href="#ape.api.ContractInstance.address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.ContractInstance.__dir__">
+<code class="sig-name descname"><span class="pre">__dir__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.ContractInstance.__dir__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default dir() implementation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.ContractInstance.__getattr__">
+<code class="sig-name descname"><span class="pre">__getattr__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Any</span><a class="headerlink" href="#ape.api.ContractInstance.__getattr__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1162,6 +1207,14 @@ translating into yaml.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="ape.api.TransactionAPI.total_transfer_value">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">total_transfer_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.TransactionAPI.total_transfer_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>The total amount of WEI that a transaction could use.
+Useful for determining if an account balance can afford
+to submit the transaction.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.TransactionAPI.is_valid">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_valid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.TransactionAPI.is_valid" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1197,13 +1250,13 @@ translating into yaml.</p>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
 <p>Enum where members are also (and must be) ints</p>
 <dl class="py attribute">
-<dt id="ape.api.TransactionStatusEnum.failing">
-<code class="sig-name descname"><span class="pre">failing</span></code><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#ape.api.TransactionStatusEnum.failing" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.api.TransactionStatusEnum.FAILING">
+<code class="sig-name descname"><span class="pre">FAILING</span></code><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#ape.api.TransactionStatusEnum.FAILING" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="ape.api.TransactionStatusEnum.no_error">
-<code class="sig-name descname"><span class="pre">no_error</span></code><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#ape.api.TransactionStatusEnum.no_error" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.api.TransactionStatusEnum.NO_ERROR">
+<code class="sig-name descname"><span class="pre">NO_ERROR</span></code><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#ape.api.TransactionStatusEnum.NO_ERROR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
