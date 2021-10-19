@@ -9,21 +9,19 @@ Overall architecture flow
 
 Plugin Registration process flow
 ================================
-    Ape uses pluggy for plugin management. The @plugins.register decorator hooks into ape core. 
-    The plugin process looks for all local installed site packages that start with ``ape_``. This doesn't use ``pip`` directly but you can think of it like ``pip``. 
+    Ape uses ``pluggy`` for plugin management. The ``@plugins.register`` decorator hooks into ape core. 
+    The plugin process looks for all local installed site packages that start with ``ape_``.
     The plugin process will loop through these potential ape plugins and see which ones have created a plugin type registration.
     If the plugin type registration is found, then ``ape`` knows that this package is a plugin and attempts to process it according to registration interface. 
-	Then we have a set of registered plugins that the registration process defines it needs. The @hookspec decorator describes how the plugin works. 
-    API Object registration
+	Then we have a set of registered plugins that the registration process defines it needs. The ``@hookspec`` decorator describes how the plugin works. 
     CLI registration
 
 
 Compilation process flow
 ========================
-    ``contracts/`` folder
-    The project manager contains all the items in the projects folder, including the contracts folder. 
+    The project manager object is a representation of your current project, which should contain all the files the user's project will use, including ``contracts/`` folder (where contract source code is stored).
     The ``contracts/`` folder is where the compiler looks for contracts to compile.
-    File extensions found within the `contracts/` directory determine which compiler plugin ape uses.
+    File extensions found within the ``contracts/`` directory determine which compiler plugin ape uses.
     The pragma spec of the compilable files within the folder is checked and then used to decide if a new compiler needs to be 
     downloaded or if the version matches one of the currently installed compiler versions. 
     The contracts are then grouped by compiler type and version and fed into the corresponding compiler to compile them. 
