@@ -150,12 +150,22 @@ def get_tx_error_from_web3_value_error(web3_value_error: ValueError) -> Transact
         # Not known from provider
         return TransactionError(base_err=web3_value_error)
 
-    err_data = web3_value_error.args[0]
-    if not isinstance(err_data, dict):
-        return TransactionError(base_err=web3_value_error)
+    def _extract_revert_message(msg: str, _prefix: str) -> str:
+        return msg.split(_prefix)[-1].strip("'\" ") if _prefix in msg else msg
 
-    message = err_data.get("message", json.dumps(err_data))
-    code = err_data.get("code")
+    err_data = web3_value_error.args[0]
+    if isinstance(err_data, dict):
+        # hardhat node
+        code = err_data.get("code")
+        message = err_data.get("message", json.dumps(err_data))
+        message = _extract_revert_message(message, "reverted with reason string")
+    elif isinstance(err_data, str) and err_data.lower().startswith("execution reverted: "):
+        # ganache-cli
+        code = None
+        prefix = "VM Exception while processing transaction: revert"
+        message = _extract_revert_message(err_data, prefix)
+    else:
+        return TransactionError(base_err=web3_value_error)
 
     if re.match(r"(.*)out of gas(.*)", message.lower()):
         return OutOfGasError(code=code)
@@ -163,14 +173,16 @@ def get_tx_error_from_web3_value_error(web3_value_error: ValueError) -> Transact
     # Try not to raise ``VirtualMachineError`` for any gas-related
     # issues. This is to keep the ``VirtualMachineError`` more focused
     # on contract-application specific faults.
-    other_gas_error_patterns = (
+    regular_txn_error_patterns = (
         r"(.*)exceeds \w*?[ ]?gas limit(.*)",
         r"(.*)requires at least \d* gas(.*)",
+        r"(.*)insufficient funds for transfer(.*)",
     )
-    for pattern in other_gas_error_patterns:
+    for pattern in regular_txn_error_patterns:
         if re.match(pattern, message.lower()):
             return TransactionError(base_err=web3_value_error, message=message, code=code)
 
+    logger.debug(f"Transaction revert message: {message}")
     return VirtualMachineError(message)
 
 
