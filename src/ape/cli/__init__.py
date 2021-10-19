@@ -1,5 +1,5 @@
 from ape.cli.arguments import existing_alias_argument, non_existing_alias_argument
-from ape.cli.choices import AccountAliasPromptChoice, Alias, PromptChoice
+from ape.cli.choices import AccountAliasPromptChoice, Alias, PromptChoice, get_user_selected_account
 from ape.cli.commands import NetworkBoundCommand
 from ape.cli.options import (
     account_option_that_prompts_when_not_given,
@@ -8,7 +8,7 @@ from ape.cli.options import (
     skip_confirmation_option,
 )
 from ape.cli.paramtype import AllFilePaths, Path
-from ape.cli.utils import Abort, get_user_selected_account
+from ape.cli.utils import Abort
 
 __all__ = [
     "Abort",
