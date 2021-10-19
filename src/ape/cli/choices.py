@@ -77,7 +77,9 @@ class PromptChoice(ParamType):
         return self.fail("Invalid choice.", param=param)
 
 
-def get_user_selected_account(account_type: Optional[Type[AccountAPI]] = None) -> AccountAPI:
+def get_user_selected_account(
+    account_type: Optional[Type[AccountAPI]] = None, prompt_message: Optional[str] = None
+) -> AccountAPI:
     """
     Prompts the user to pick from their accounts
     and returns that account. Optionally filter the accounts
@@ -87,7 +89,7 @@ def get_user_selected_account(account_type: Optional[Type[AccountAPI]] = None) -
     accounts _outside_ of CLI options. For CLI options,
     use :meth:`ape.cli.options.account_option_that_prompts_when_not_given`.
     """
-    prompt = AccountAliasPromptChoice(account_type=account_type)
+    prompt = AccountAliasPromptChoice(account_type=account_type, prompt_message=prompt_message)
     return prompt.get_user_selected_account()
 
 
@@ -98,9 +100,10 @@ class AccountAliasPromptChoice(PromptChoice):
     """
 
     # noinspection PyMissingConstructor
-    def __init__(self, account_type: Optional[Type[AccountAPI]] = None):
+    def __init__(self, account_type: Optional[Type[AccountAPI]] = None, prompt_message: str = None):
         # NOTE: we purposely skip the constructor of `PromptChoice`
         self._account_type = account_type
+        self._prompt_message = prompt_message or "Select an account"
 
     # type: ignore
     def convert(
@@ -131,7 +134,7 @@ class AccountAliasPromptChoice(PromptChoice):
             return accounts.load(self.choices[0])
 
         self.print_choices()
-        return click.prompt("Select an account", type=self)
+        return click.prompt(self._prompt_message, type=self)
 
     def fail_from_invalid_choice(self, param):
         return self.fail("Invalid choice. Type the number or the alias.", param=param)
