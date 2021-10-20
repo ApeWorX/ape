@@ -4,18 +4,6 @@ from typing import Any, List, Optional
 import click
 from click import Context, Parameter
 
-from ape.cli.utils import Abort
-
-
-class ParamType(click.ParamType):
-    def fail(
-        self,
-        message: str,
-        param: Optional["Parameter"] = None,
-        ctx: Optional["Context"] = None,
-    ):
-        raise Abort(message)
-
 
 class Path(click.Path):
     """

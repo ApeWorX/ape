@@ -5,8 +5,6 @@ from click import Context, Parameter
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
-from ape.cli.paramtype import ParamType
-from ape.cli.utils import Abort
 from ape.exceptions import AccountsError
 
 
@@ -14,17 +12,7 @@ def _get_account_by_type(account_type: Optional[Type[AccountAPI]] = None) -> Lis
     return list(accounts) if not account_type else accounts.get_accounts_by_type(account_type)
 
 
-class Choice(click.Choice):
-    def fail(
-        self,
-        message: str,
-        param: Optional["Parameter"] = None,
-        ctx: Optional["Context"] = None,
-    ):
-        raise Abort(message)
-
-
-class Alias(Choice):
+class Alias(click.Choice):
     """Wraps ``click.Choice`` to load account aliases for the active project at runtime.
 
     Provide an ``account_type`` to limit the type of account to choose from.
@@ -45,7 +33,7 @@ class Alias(Choice):
         return [a.alias for a in options if a.alias is not None]
 
 
-class PromptChoice(ParamType):
+class PromptChoice(click.ParamType):
     """
     A choice option or argument from user selection.
     """
@@ -140,7 +128,7 @@ class AccountAliasPromptChoice(PromptChoice):
         return self.fail("Invalid choice. Type the number or the alias.", param=param)
 
 
-class NetworkChoice(Choice):
+class NetworkChoice(click.Choice):
     """Wraps ``click.Choice`` to provide network choice defaults for the active project."""
 
     def __init__(self, case_sensitive=True):
