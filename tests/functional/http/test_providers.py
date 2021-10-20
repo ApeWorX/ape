@@ -2,9 +2,46 @@ from pathlib import Path
 
 import pytest
 from ape_http import EthereumProvider
+from ape_http.providers import _SpecialFailReason, get_tx_error_from_web3_value_error
+from web3.exceptions import ContractLogicError
 
 from ape.api import ReceiptAPI, TransactionStatusEnum
 from ape.exceptions import VirtualMachineError
+
+_TEST_REVERT_REASON = "TEST REVERT REASON"
+
+
+@pytest.mark.parametrize(
+    "error_dict",
+    (
+        {"reason": _SpecialFailReason.GAS_OUT_OF_BOUNDS.value, "code": -32000},
+        {"reason": _SpecialFailReason.OUT_OF_GAS.value, "code": -32603},
+        {"reason": _SpecialFailReason.INSUFFICIENT_FUNDS.value, "code": -32603},
+    ),
+)
+def test_get_tx_error_from_web3_value_error_gas_related(error_dict):
+    test_err = ValueError(error_dict)
+    actual = get_tx_error_from_web3_value_error(test_err)
+    assert type(actual) != VirtualMachineError
+
+
+def test_get_tx_error_from_web3_value_error_hardhat():
+    err_data = {
+        "reason": (
+            "Error: VM Exception while processing transaction: "
+            f"reverted with reason string '{_TEST_REVERT_REASON}'"
+        )
+    }
+    test_err = ValueError(err_data)
+    actual = get_tx_error_from_web3_value_error(test_err)
+    assert type(actual) == VirtualMachineError
+
+
+def test_get_tx_error_from_web3_value_error_ganache():
+    test_err = ContractLogicError(f"execution reverted: {_TEST_REVERT_REASON}")
+    actual = get_tx_error_from_web3_value_error(test_err)
+    assert isinstance(actual, VirtualMachineError)
+    assert actual.revert_message == _TEST_REVERT_REASON
 
 
 class TestEthereumProvider:

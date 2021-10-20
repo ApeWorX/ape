@@ -90,8 +90,8 @@ class VirtualMachineError(TransactionError):
     or a contract-defined revert, such as from an assert/require statement.
     """
 
-    def __init__(self, revert_message: str):
-        super().__init__(message=revert_message)
+    def __init__(self, revert_message: str, code: Optional[int] = None):
+        super().__init__(message=revert_message, code=code)
 
     @property
     def revert_message(self):

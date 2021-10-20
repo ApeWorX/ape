@@ -1,7 +1,6 @@
 import collections
 import json
 import os
-import re
 from copy import deepcopy
 from functools import lru_cache
 from hashlib import md5
@@ -11,7 +10,6 @@ from typing import Any, Dict
 import yaml
 from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
-from ape.exceptions import OutOfGasError, TransactionError, VirtualMachineError
 from ape.logging import logger
 
 try:
@@ -140,50 +138,6 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
         raise ValueError(f"Unknown algorithm `{algorithm}`.")
 
     return hasher(source).hexdigest()
-
-
-def get_tx_error_from_web3_value_error(web3_value_error: ValueError) -> TransactionError:
-    """
-    Returns a custom error from ``ValueError`` from web3.py.
-    """
-    if not hasattr(web3_value_error, "args") or len(web3_value_error.args) < 1:
-        # Not known from provider
-        return TransactionError(base_err=web3_value_error)
-
-    def _extract_revert_message(msg: str, _prefix: str) -> str:
-        return msg.split(_prefix)[-1].strip("'\" ") if _prefix in msg else msg
-
-    err_data = web3_value_error.args[0]
-    if isinstance(err_data, dict):
-        # hardhat node
-        code = err_data.get("code")
-        message = err_data.get("message", json.dumps(err_data))
-        message = _extract_revert_message(message, "reverted with reason string")
-    elif isinstance(err_data, str) and err_data.lower().startswith("execution reverted: "):
-        # ganache-cli
-        code = None
-        prefix = "VM Exception while processing transaction: revert"
-        message = _extract_revert_message(err_data, prefix)
-    else:
-        return TransactionError(base_err=web3_value_error)
-
-    if re.match(r"(.*)out of gas(.*)", message.lower()):
-        return OutOfGasError(code=code)
-
-    # Try not to raise ``VirtualMachineError`` for any gas-related
-    # issues. This is to keep the ``VirtualMachineError`` more focused
-    # on contract-application specific faults.
-    regular_txn_error_patterns = (
-        r"(.*)exceeds \w*?[ ]?gas limit(.*)",
-        r"(.*)requires at least \d* gas(.*)",
-        r"(.*)insufficient funds for transfer(.*)",
-    )
-    for pattern in regular_txn_error_patterns:
-        if re.match(pattern, message.lower()):
-            return TransactionError(base_err=web3_value_error, message=message, code=code)
-
-    logger.debug(f"Transaction revert message: {message}")
-    return VirtualMachineError(message)
 
 
 __all__ = [
