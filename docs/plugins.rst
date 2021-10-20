@@ -70,6 +70,15 @@ Argument conversion process flow
 ================================
     CLI arguments are decoded and passed in to the application with ``click``.
 
+Plugin Quickstart
+=================
+
+Use this project template https://github.com/ApeWorX/project-template as a reference for developing a plugin. Note: this template is designed for 2nd class plugins so not everything may apply. The template may be good to follow if you want to keep your plugin of similar quality to plugins developed by ApeWorx.
+
+Plugin Heirarchy
+================
+    TBD...
+
 
 Writing CLI plugins
 *******************
