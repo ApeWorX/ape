@@ -1,11 +1,21 @@
 Writing Plugins
 ###############
 
+
+Plugin Writing Quickstart
+*************************
+Use this project template https://github.com/ApeWorX/project-template as a reference for developing a plugin. 
+Note: this template is designed for 2nd class plugins so not everything may apply. 
+The template may be good to follow if you want to keep your plugin of similar quality to plugins developed by ApeWorx.
+Here is an example compiler plugin: https://github.com/apeworx/ape-solidity
+
+
 Overall architecture flow
 *************************
     In order to create a plugin which will work with ape, you will need to 
         * define a class that subclasses the abstract methods within the ``ape`` api.
         * implement all the methods in order for it to work
+
 
 Plugin Registration process flow
 ================================
@@ -69,11 +79,6 @@ Test process flow
 Argument conversion process flow
 ================================
     CLI arguments are decoded and passed in to the application with ``click``.
-
-Plugin Quickstart
-=================
-
-Use this project template https://github.com/ApeWorX/project-template as a reference for developing a plugin. Note: this template is designed for 2nd class plugins so not everything may apply. The template may be good to follow if you want to keep your plugin of similar quality to plugins developed by ApeWorx.
 
 Plugin Heirarchy
 ================

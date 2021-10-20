@@ -41,11 +41,15 @@ class AccountAPI(AddressAPI):
 
     @abstractmethod
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
-        ...
+        """
+        Signs message `msg` 
+        """
 
     @abstractmethod
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
-        ...
+        """
+        Signs transaction `txn`
+        """
 
     def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
