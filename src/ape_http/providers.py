@@ -79,8 +79,7 @@ class ErrorHandlingMiddleware:
                 reason = _extract_revert_message(reason, prefix)
                 break
 
-        result_data = {"reason": reason, "rawMessage": reason, "code": code}
-        result["error"]["data"] = result_data
+        result["error"]["data"] = {"reason": reason, "code": code}
         result["error"]["message"] = reason
         return result
 
