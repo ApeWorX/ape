@@ -16,6 +16,13 @@ Overall architecture flow
         * define a class that subclasses the abstract methods within the ``ape`` api.
         * implement all the methods in order for it to work
 
+Types of plugins
+================
+	* 1st - These are plugins that are bundled with ape core. They are built in, don't have a version, and can't be uninstallled.
+	* 2nd - These plugins are maintained by ape team. They are trusted. Users and developers can pin different versions but should be aware of api changes when doing so.
+	* 3rd - These are community developed plugins. These will ask if you want to install a 3rd party plugin (at your own risk). These can also be pinned like in 2nd order plugins.
+	... TBD could be referenced in the user documentation or possibly live in the user documentation
+
 
 Plugin Registration process flow
 ================================
