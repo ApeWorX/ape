@@ -24,6 +24,37 @@ You can clone the repository and use `setuptools <https://github.com/pypa/setupt
     cd ape
     python3 setup.py install
 
+via ``docker``
+==============
+
+Please visit our `Dockerhub <https://hub.docker.com/repository/docker/apeworx/ape>`_ for more details on using Ape with Docker.
+
+example commands:  
+
+compiling:
+
+.. code-block:: bash
+
+    $ docker run \
+    --volume $HOME/.ape:/root/.ape \
+    --volume $HOME/.vvm:/root/.vvm \
+    --volume $HOME/.solcx:/root/.solcx \
+    --volume $PWD:/root/project \
+    --workdir /root/project \
+    apeworx/ape compile
+
+running the ape console:
+
+.. code-block:: bash
+
+    $ docker run -it \
+    --volume $HOME/.ape:/root/.ape \
+    --volume $HOME/.vvm:/root/.vvm \
+    --volume $HOME/.solcx:/root/.solcx \
+    --volume $PWD:/root/project \
+    --workdir /root/project \
+    apeworx/ape console
+
 Quick Usage
 ***********
 
