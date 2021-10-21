@@ -66,7 +66,8 @@ class NetworkChoice(click.Choice):
     """Wraps ``click.Choice`` to provide network choice defaults for the active project."""
 
     def __init__(self, case_sensitive=True):
-        super().__init__(list(networks.network_choices), case_sensitive)
+        choices = list(networks.network_choices) + ["false"]
+        super().__init__(choices, case_sensitive)
 
     def get_metavar(self, param):
-        return "[ecosystem-name][:[network-name][:[provider-name]]]"
+        return "[ecosystem-name][:[network-name][:[provider-name]] or 'false']"

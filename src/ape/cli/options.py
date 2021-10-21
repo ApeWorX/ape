@@ -65,7 +65,11 @@ network_option = click.option(
     "--network",
     type=NetworkChoice(case_sensitive=False),
     default=networks.default_ecosystem.name,
-    help="Override the default network and provider. (see ``ape networks list`` for options)",
+    help=(
+        "Override the default network and provider. "
+        "(see ``ape networks list`` for options). "
+        "Set to 'false' to not use a network."
+    ),
     show_default=True,
     show_choices=False,
 )

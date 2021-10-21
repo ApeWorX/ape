@@ -1,4 +1,5 @@
-from typing import Dict, Iterator, Optional
+from contextlib import nullcontext
+from typing import Dict, Iterator, Optional, Union
 
 import yaml
 from dataclassy import dataclass
@@ -83,7 +84,10 @@ class NetworkManager:
     def parse_network_choice(
         self,
         network_choice: Optional[str] = None,
-    ) -> ProviderContextManager:
+    ) -> Union[ProviderContextManager, nullcontext]:  # type: ignore
+        if network_choice == "false":
+            return nullcontext()
+
         if network_choice is None:
             return self.default["development"].use_default_provider()
 
