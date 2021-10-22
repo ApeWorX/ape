@@ -31,9 +31,12 @@
 
 .. autoapisummary::
 
+   ape.cli.AccountAliasPromptChoice
    ape.cli.Alias
    ape.cli.PromptChoice
    ape.cli.NetworkBoundCommand
+   ape.cli.AllFilePaths
+   ape.cli.Path
 
 
 
@@ -42,6 +45,8 @@
 .. autoapisummary::
 
    ape.cli.existing_alias_argument
+   ape.cli.get_user_selected_account
+   ape.cli.account_option_that_prompts_when_not_given
    ape.cli.ape_cli_context
    ape.cli.skip_confirmation_option
 
@@ -68,6 +73,53 @@
    
 
    
+
+
+
+.. py:class:: AccountAliasPromptChoice(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: str = None)
+
+   Bases: :py:obj:`PromptChoice`
+
+   Prompts the user to select an alias from their accounts.
+   Useful for adhoc scripts to lessen the need to hard-code aliases.
+
+   .. py:method:: __init__(self, account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: str = None)
+
+
+   .. py:method:: convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Optional[ape.api.accounts.AccountAPI]
+
+      Convert the value to the correct type. This is not called if
+      the value is ``None`` (the missing value).
+
+      This must accept string values from the command line, as well as
+      values that are already the correct type. It may also convert
+      other compatible types.
+
+      The ``param`` and ``ctx`` arguments may be ``None`` in certain
+      situations, such as when converting prompt input.
+
+      If the value cannot be converted, call :meth:`fail` with a
+      descriptive message.
+
+      :param value: The value to convert.
+      :param param: The parameter that is using this type to convert
+          its value. May be ``None``.
+      :param ctx: The current context that arrived at this value. May
+          be ``None``.
+
+
+   .. py:method:: choices(self) -> List[str]
+      :property:
+
+
+   .. py:method:: get_user_selected_account(self) -> ape.api.accounts.AccountAPI
+
+      Returns the selected account.
+
+
+   .. py:method:: fail_from_invalid_choice(self, param)
+
+
 
 
 
@@ -107,7 +159,96 @@
    .. py:method:: print_choices(self)
 
 
-   .. py:method:: convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Optional[str]
+   .. py:method:: convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Optional[Any]
+
+      Convert the value to the correct type. This is not called if
+      the value is ``None`` (the missing value).
+
+      This must accept string values from the command line, as well as
+      values that are already the correct type. It may also convert
+      other compatible types.
+
+      The ``param`` and ``ctx`` arguments may be ``None`` in certain
+      situations, such as when converting prompt input.
+
+      If the value cannot be converted, call :meth:`fail` with a
+      descriptive message.
+
+      :param value: The value to convert.
+      :param param: The parameter that is using this type to convert
+          its value. May be ``None``.
+      :param ctx: The current context that arrived at this value. May
+          be ``None``.
+
+
+   .. py:method:: fail_from_invalid_choice(self, param)
+
+
+
+
+
+.. py:function:: get_user_selected_account(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: Optional[str] = None) -> ape.api.accounts.AccountAPI
+
+   Prompts the user to pick from their accounts
+   and returns that account. Optionally filter the accounts
+   by type.
+
+   Use this method if you want to prompt users to select
+   accounts _outside_ of CLI options. For CLI options,
+   use :meth:`ape.cli.options.account_option_that_prompts_when_not_given`.
+
+
+
+
+.. py:class:: NetworkBoundCommand(name: Optional[str], context_settings: Optional[Dict[str, Any]] = None, callback: Optional[Callable[Ellipsis, Any]] = None, params: Optional[List[Parameter]] = None, help: Optional[str] = None, epilog: Optional[str] = None, short_help: Optional[str] = None, options_metavar: Optional[str] = '[OPTIONS]', add_help_option: bool = True, no_args_is_help: bool = False, hidden: bool = False, deprecated: bool = False)
+
+   Bases: :py:obj:`click.Command`
+
+   A command that uses the network option.
+   It will automatically set the network for the duration of the command execution.
+
+   .. py:method:: invoke(self, ctx: click.Context) -> Any
+
+      Given a context, this invokes the attached callback (if it exists)
+      in the right way.
+
+
+
+
+
+.. py:function:: account_option_that_prompts_when_not_given()
+
+   Accepts either the account alias or the account number.
+   If not given anything, it will prompt the user to select an account.
+
+
+
+
+.. py:function:: ape_cli_context()
+
+
+
+
+.. data:: network_option
+   
+
+   
+
+
+
+.. py:function:: skip_confirmation_option(help='')
+
+
+
+
+.. py:class:: AllFilePaths(*args, **kwargs)
+
+   Bases: :py:obj:`Path`
+
+   Either all the file paths in the given directory,
+   or a list containing only the given file.
+
+   .. py:method:: convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> List[pathlib.Path]
 
       Convert the value to the correct type. This is not called if
       the value is ``None`` (the missing value).
@@ -132,35 +273,15 @@
 
 
 
-.. py:class:: NetworkBoundCommand(name: Optional[str], context_settings: Optional[Dict[str, Any]] = None, callback: Optional[Callable[Ellipsis, Any]] = None, params: Optional[List[Parameter]] = None, help: Optional[str] = None, epilog: Optional[str] = None, short_help: Optional[str] = None, options_metavar: Optional[str] = '[OPTIONS]', add_help_option: bool = True, no_args_is_help: bool = False, hidden: bool = False, deprecated: bool = False)
+.. py:class:: Path(*args, **kwargs)
 
-   Bases: :py:obj:`click.Command`
+   Bases: :py:obj:`click.Path`
 
-   A command that uses the network option.
-   It will automatically set the network for the duration of the command execution.
+   This class exists to encourage the consistent usage
+   of ``pathlib.Path`` for path_type.
 
-   .. py:method:: invoke(self, ctx: click.Context) -> Any
+   .. py:method:: __init__(self, *args, **kwargs)
 
-      Given a context, this invokes the attached callback (if it exists)
-      in the right way.
-
-
-
-
-
-.. py:function:: ape_cli_context()
-
-
-
-
-.. data:: network_option
-   
-
-   
-
-
-
-.. py:function:: skip_confirmation_option(help='')
 
 
 

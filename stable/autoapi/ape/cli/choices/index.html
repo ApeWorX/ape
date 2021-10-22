@@ -62,8 +62,11 @@
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli</span></code></a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../arguments/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.arguments</span></code></a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.choices</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices._get_account_by_type">_get_account_by_type</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.Alias">Alias</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.PromptChoice">PromptChoice</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.get_user_selected_account">get_user_selected_account</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice">AccountAliasPromptChoice</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.NetworkChoice">NetworkChoice</a></li>
 </ul>
 </li>
@@ -73,12 +76,17 @@
 <li class="toctree-l3"><a class="reference internal" href="../utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.utils</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.existing_alias_argument">existing_alias_argument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.non_existing_alias_argument">non_existing_alias_argument</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.AccountAliasPromptChoice">AccountAliasPromptChoice</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.Alias">Alias</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.PromptChoice">PromptChoice</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.get_user_selected_account">get_user_selected_account</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.NetworkBoundCommand">NetworkBoundCommand</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.account_option_that_prompts_when_not_given">account_option_that_prompts_when_not_given</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.ape_cli_context">ape_cli_context</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.network_option">network_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.skip_confirmation_option">skip_confirmation_option</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.AllFilePaths">AllFilePaths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.Path">Path</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.Abort">Abort</a></li>
 </ul>
 </li>
@@ -183,12 +191,35 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.choices.PromptChoice" title="ape.cli.choices.PromptChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PromptChoice</span></code></a></p></td>
 <td><p>A choice option or argument from user selection.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.choices.NetworkChoice" title="ape.cli.choices.NetworkChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkChoice</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice" title="ape.cli.choices.AccountAliasPromptChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AccountAliasPromptChoice</span></code></a></p></td>
+<td><p>Prompts the user to select an alias from their accounts.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.choices.NetworkChoice" title="ape.cli.choices.NetworkChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkChoice</span></code></a></p></td>
 <td><p>Wraps <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to provide network choice defaults for the active project.</p></td>
 </tr>
 </tbody>
 </table>
+<p><strong>Functions</strong>:</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.choices._get_account_by_type" title="ape.cli.choices._get_account_by_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_account_by_type</span></code></a>(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None) → List[ape.api.accounts.AccountAPI]</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.choices.get_user_selected_account" title="ape.cli.choices.get_user_selected_account"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_user_selected_account</span></code></a>(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: Optional[str] = None) → ape.api.accounts.AccountAPI</p></td>
+<td><p>Prompts the user to pick from their accounts</p></td>
+</tr>
+</tbody>
+</table>
 <hr class="docutils" />
+<dl class="py function">
+<dt id="ape.cli.choices._get_account_by_type">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">_get_account_by_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.choices._get_account_by_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py class">
 <dt id="ape.cli.choices.Alias">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">Alias</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.Alias" title="Permalink to this definition">¶</a></dt>
@@ -230,7 +261,7 @@ Defaults to all account types in <code class="docutils literal notranslate"><spa
 
 <dl class="py method">
 <dt id="ape.cli.choices.PromptChoice.convert">
-<code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.Context</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.choices.PromptChoice.convert" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.Context</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.choices.PromptChoice.convert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the value to the correct type. This is not called if
 the value is <code class="docutils literal notranslate"><span class="pre">None</span></code> (the missing value).</p>
 <p>This must accept string values from the command line, as well as
@@ -252,6 +283,76 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py method">
+<dt id="ape.cli.choices.PromptChoice.fail_from_invalid_choice">
+<code class="sig-name descname"><span class="pre">fail_from_invalid_choice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.PromptChoice.fail_from_invalid_choice" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.choices.get_user_selected_account">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">get_user_selected_account</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.cli.choices.get_user_selected_account" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prompts the user to pick from their accounts
+and returns that account. Optionally filter the accounts
+by type.</p>
+<p>Use this method if you want to prompt users to select
+accounts _outside_ of CLI options. For CLI options,
+use <a class="reference internal" href="../options/index.html#ape.cli.options.account_option_that_prompts_when_not_given" title="ape.cli.options.account_option_that_prompts_when_not_given"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.cli.options.account_option_that_prompts_when_not_given()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.cli.choices.AccountAliasPromptChoice">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">AccountAliasPromptChoice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.cli.choices.PromptChoice" title="ape.cli.choices.PromptChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PromptChoice</span></code></a></p>
+<p>Prompts the user to select an alias from their accounts.
+Useful for adhoc scripts to lessen the need to hard-code aliases.</p>
+<dl class="py method">
+<dt id="ape.cli.choices.AccountAliasPromptChoice.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.cli.choices.AccountAliasPromptChoice.convert">
+<code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.Context</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the value to the correct type. This is not called if
+the value is <code class="docutils literal notranslate"><span class="pre">None</span></code> (the missing value).</p>
+<p>This must accept string values from the command line, as well as
+values that are already the correct type. It may also convert
+other compatible types.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">param</span></code> and <code class="docutils literal notranslate"><span class="pre">ctx</span></code> arguments may be <code class="docutils literal notranslate"><span class="pre">None</span></code> in certain
+situations, such as when converting prompt input.</p>
+<p>If the value cannot be converted, call <code class="xref py py-meth docutils literal notranslate"><span class="pre">fail()</span></code> with a
+descriptive message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – The value to convert.</p></li>
+<li><p><strong>param</strong> – The parameter that is using this type to convert
+its value. May be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>ctx</strong> – The current context that arrived at this value. May
+be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.cli.choices.AccountAliasPromptChoice.choices">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">choices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.choices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account">
+<code class="sig-name descname"><span class="pre">get_user_selected_account</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the selected account.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.cli.choices.AccountAliasPromptChoice.fail_from_invalid_choice">
+<code class="sig-name descname"><span class="pre">fail_from_invalid_choice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.fail_from_invalid_choice" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 

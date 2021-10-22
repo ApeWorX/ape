@@ -25,6 +25,8 @@
    ape.cli.options.verbosity_option
    ape.cli.options.ape_cli_context
    ape.cli.options.skip_confirmation_option
+   ape.cli.options._account_callback
+   ape.cli.options.account_option_that_prompts_when_not_given
 
 
 
@@ -76,6 +78,19 @@
 
 
 .. py:function:: skip_confirmation_option(help='')
+
+
+
+
+.. py:function:: _account_callback(ctx, param, value)
+
+
+
+
+.. py:function:: account_option_that_prompts_when_not_given()
+
+   Accepts either the account alias or the account number.
+   If not given anything, it will prompt the user to select an account.
 
 
 
