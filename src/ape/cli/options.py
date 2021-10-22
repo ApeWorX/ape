@@ -1,7 +1,7 @@
 import click
 
 from ape import networks
-from ape.cli.choices import NetworkChoice
+from ape.cli.choices import AccountAliasPromptChoice, NetworkChoice
 from ape.cli.utils import Abort
 from ape.logging import LogLevel, logger
 
@@ -79,4 +79,22 @@ def skip_confirmation_option(help=""):
         default=False,
         is_flag=True,
         help=help,
+    )
+
+
+def _account_callback(ctx, param, value):
+    if param and not value:
+        return param.type.get_user_selected_account()
+    return value
+
+
+def account_option_that_prompts_when_not_given():
+    """
+    Accepts either the account alias or the account number.
+    If not given anything, it will prompt the user to select an account.
+    """
+    return click.option(
+        "--account",
+        type=AccountAliasPromptChoice(),
+        callback=_account_callback,
     )
