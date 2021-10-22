@@ -1,6 +1,9 @@
 [build-system]
 requires = ["setuptools>=51.1.1", "wheel", "setuptools_scm[toml]>=5.0"]
 
+[tool.mypy]
+exclude = "build/"
+
 [tool.setuptools_scm]
 write_to = "src/ape/version.py"
 
