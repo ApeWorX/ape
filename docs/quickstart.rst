@@ -5,14 +5,12 @@ Prerequisite
 ************
 
 In the latest release, Ape requires: 
-* Linux to run.
+
+* Linux.
 * Python 3.7.X or later.
 
-* Item 1.
-* Item 2.
-* Item 3.
-
 If you are running Windows, you can install Windows Subsystem Linux `(WSL) <https://docs.microsoft.com/en-us/windows/wsl/install>`_ 
+
 * Ubuntu 20.04.
 * Any other Linux Distribution with Python 3.7.X or later.
 
