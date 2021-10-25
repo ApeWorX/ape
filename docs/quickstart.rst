@@ -5,7 +5,7 @@ Prerequisite
 ************
 
 In the latest release, Ape requires Linux to run. If you are running Windows, you can install Windows Subsystem Linux (WSL)
-`WSL <https://docs.microsoft.com/en-us/windows/wsl/install>` Make sure it is Ubuntu 20.04 or has Python 3.7.X or later.
+`WSL <https://docs.microsoft.com/en-us/windows/wsl/install>`_ When choosing the Linux Distrobution in the Microsoft App Store. Make sure it is Ubuntu 20.04 or a Distrobution with Python 3.7.X or later.
 
 Please make sure you are using Python 3.7.X or later.
 .. code-block:: bash
@@ -24,11 +24,11 @@ You may skip this step if you don't require a virtual enviorment.
 
 via ``virtualenv``
 ==================
-`virtualenv <https://pypi.org/project/virtualenv/>` or 
+`virtualenv <https://pypi.org/project/virtualenv/>`_
 
 via ``venv``
 ============
-`venv <https://docs.python.org/3/library/venv.html>`
+`venv <https://docs.python.org/3/library/venv.html>`_
 
 .. code-block:: bash
     # Create your virtual enviorment folder
@@ -68,7 +68,7 @@ You can clone the repository and use `setuptools <https://github.com/pypa/setupt
 via ``docker``
 ==============
 
-Please visit our `Dockerhub <https://hub.docker.com/repository/docker/apeworx/ape>` for more details on using Ape with Docker.
+Please visit our `Dockerhub <https://hub.docker.com/repository/docker/apeworx/ape>`_ for more details on using Ape with Docker.
 
 .. code-block:: bash
 
