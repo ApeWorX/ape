@@ -4,8 +4,13 @@ Quickstart guide
 Prerequisite
 ************
 
-In the latest release, Ape requires Linux to run. If you are running Windows, you can install Windows Subsystem Linux (WSL)
-`WSL <https://docs.microsoft.com/en-us/windows/wsl/install>`_ When choosing the Linux Distrobution in the Microsoft App Store. Make sure it is Ubuntu 20.04 or a Distrobution with Python 3.7.X or later.
+In the latest release, Ape requires: 
+* Linux to run
+* Python 3.7.X or later 
+
+If you are running Windows, you can install Windows Subsystem Linux `(WSL) <https://docs.microsoft.com/en-us/windows/wsl/install>`_ 
+    *Ubuntu 20.04
+    *Any other Linux Distribution with Python 3.7.X or later
 
 Please make sure you are using Python 3.7.X or later.
 .. code-block:: bash
@@ -22,15 +27,15 @@ You should install ape in the isolated virtual enviorment to try for yourself!
 
 You may skip this step if you don't require a virtual enviorment.
 
-via ``virtualenv``
-==================
-`virtualenv <https://pypi.org/project/virtualenv/>`_
+via ``virtualenv`` `virtualenv <https://pypi.org/project/virtualenv/>`_
 
-via ``venv``
+==================
+via ``venv`` `venv <https://docs.python.org/3/library/venv.html>`_
+
 ============
-`venv <https://docs.python.org/3/library/venv.html>`_
 
 .. code-block:: bash
+
     # Create your virtual enviorment folder
     $ python3 -m venv /path/to/new/enivorment
     $ source <venv_folder>/bin/activate
