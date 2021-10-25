@@ -5,11 +5,11 @@ Prerequisite
 ************
 
 In the latest release, Ape requires Linux to run. If you are running Windows, you can install Windows Subsystem Linux (WSL)
-`WSL https://docs.microsoft.com/en-us/windows/wsl/install` Make sure it is Ubuntu 20.04 or has Python 3.7.X or later.
+`WSL <https://docs.microsoft.com/en-us/windows/wsl/install>` Make sure it is Ubuntu 20.04 or has Python 3.7.X or later.
 
 Please make sure you are using Python 3.7.X or later.
 .. code-block:: bash
-    #check your python version
+    # check your python version
     $ python3 --version
 
 
@@ -17,9 +17,18 @@ Please make sure you are using Python 3.7.X or later.
 
 Installation
 ************
-Suggestion: Create a virtual enviorment and then install ape in the isolated virtual enviorment to try for yourself!
-If you are not looking to create a virtual enviorment. You may skip this step.
-`virtualenv https://pypi.org/project/virtualenv/` or `venv https://docs.python.org/3/library/venv.html`
+Suggestion: Create a virtual enviorment vua virtualenv or venv. After creation and acativating a virtual env.
+You should install ape in the isolated virtual enviorment to try for yourself!
+
+You may skip this step if you don't require a virtual enviorment.
+
+via ``virtualenv``
+==================
+`virtualenv <https://pypi.org/project/virtualenv/>` or 
+
+via ``venv``
+============
+`venv <https://docs.python.org/3/library/venv.html>`
 
 .. code-block:: bash
     # Create your virtual enviorment folder
@@ -59,11 +68,7 @@ You can clone the repository and use `setuptools <https://github.com/pypa/setupt
 via ``docker``
 ==============
 
-Please visit our `Dockerhub <https://hub.docker.com/repository/docker/apeworx/ape>`_ for more details on using Ape with Docker.
-
-example commands:  
-
-compiling:
+Please visit our `Dockerhub <https://hub.docker.com/repository/docker/apeworx/ape>` for more details on using Ape with Docker.
 
 .. code-block:: bash
 
@@ -76,25 +81,21 @@ compiling:
     apeworx/ape compile
 
 
-Some bugs to note and have been resolved: Python 3.6.X will have issues with installation with setup.py (blake2.py) Intel Processor x86
+Some bugs to note: Python 3.6.X will have issues with installation with setup.py (blake2.py) Intel Processor x86
 
 Docker uninstall process needs to 
 Either Solution:
 1.chmod + chown
 2. sudo rm -rf ~/.solcx, sudo rm -rf ~/.vvm
 
-    Should we include an uninstall process down below?
-    keep the .ape folder so we don't delete the keys 
 
 
 
 Once ape is installed you can test some of the features! Here is a guide on some of the popular
 commands!
 
-
 Quick Usage
 ***********
-
 
 Ape is primarily meant to be used as a command line tool. Ape will allow you to manage an account.
 
@@ -111,7 +112,7 @@ Here are some things you do with the ``ape`` command:
     # List existing accounts
     $ ape accounts list
 
-
+.. code-block:: bash
     # You can interact and compile contracts
     # Here is an example of a project with a contract you interact with: 
     $ git clone https://github.com/brownie-mix/vyper-token-mix.git
@@ -119,23 +120,26 @@ Here are some things you do with the ``ape`` command:
     # You can compile contracts in the contracts folder of your project
     $ ape compile --size
 
+    # Issue 202
     # A know issue is unable to read extension .vy or .sol
     # run the command ape plugins add vyper
     # We show an error but not a suggested command to fix
 
-    
-    
+    .. code-block:: bash
     # Should we include a way to list available plugins to install?
     # Add new plugins to ape
     $ ape plugins add plugin-name
 
+.. code-block:: bash
     # Not part of ape -h, what does -k mean, ape test does not work
     # Run your tests with pytest
     $ ape test -k test_only_one_thing --coverage --gas
 
+.. code-block:: bash
     # Connect an IPython session through your favorite provider
     $ ape console --network ethereum:mainnet:infura
 
+.. code-block:: bash
     # What does this do?
     $ ape run
     # ape runs a script from the script folder? Example? Do we need to show an example?
@@ -168,4 +172,7 @@ Ape also works as a package. You can use the same networks, accounts, and projec
 
 Uninstall guide
 ***************
-# Should we have this?
+
+Should we include an uninstall process down below?
+keep the .ape folder so we don't delete the keys 
+
