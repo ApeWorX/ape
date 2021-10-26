@@ -25,10 +25,10 @@ Please make sure you are using Python 3.7.X or later.
 
 Installation
 ************
-**Suggestion**: Create a virtual enviorment vua virtualenv or venv. After creation and acativating a virtual env.
-You should install ape in the isolated virtual enviorment to try for yourself!
+**Suggestion**: Create a virtual environment via virtualenv or venv. After creation and activating a virtual env.
+You should install ape in the isolated virtual environment to try for yourself!
 
-You may skip this creating a virtual enviorment if you don't require a one.
+You may skip this creating a virtual environment if you know you don't require one for your use case. 
 
 via ``virtualenv`` `virtualenv <https://pypi.org/project/virtualenv/>`_
 
@@ -39,18 +39,18 @@ via ``venv <https://docs.python.org/3/library/venv.html>``_
 
 .. code-block:: bash
 
-    # Create your virtual enviorment folder
-    $ python3 -m venv /path/to/new/enivorment
+    # Create your virtual environment folder
+    $ python3 -m venv /path/to/new/environment
     $ source <venv_folder>/bin/activate
     # you should see (name_of_venv) DESKTOP_NAME:~/path:$ 
 
-    # deactivate virtual enviroment
+    # deactivate virtual environment
     $ deactivate
 
 
 
-Once your python version is later than 3.7.X and you have created a virtual enviroment.
-Let's install Ape! There are 3 ways to install ape pip, git clone setup.py, or Docker.
+Now that your Python version is later than 3.7.X and you have created a virtual environment.
+Let's install Ape! There are 3 ways to install ape: pip, setuptools, or Docker.
 
 via ``pip``
 ===========
@@ -88,7 +88,7 @@ Please visit our `Dockerhub <https://hub.docker.com/repository/docker/apeworx/ap
     apeworx/ape compile
 
 
-Some bugs to note: Python 3.6.X will have issues with installation with setup.py (blake2.py) Intel Processor x86
+Troubleshooting: Python 3.6.X will have issues with installation with setup.py (blake2.py) Intel Processor x86
 
 Docker uninstall process needs to 
 Either Solution:
@@ -104,8 +104,7 @@ commands!
 Quick Usage
 ***********
 
-Ape is primarily meant to be used as a command line tool. Ape will allow you to manage an account.
-Here are some things you do with the ``ape`` command:
+Ape is primarily meant to be used as a command line tool. Here are some things you do with the ``ape`` command:
 
 
 .. code-block:: bash
@@ -113,7 +112,6 @@ Here are some things you do with the ``ape`` command:
     # List the ape commands
     $ ape -h
     
-    # You can interact with accounts
     # Generate a new test account
     $ ape accounts generate acc1
 
@@ -163,7 +161,7 @@ Here are some things you do with the ``ape`` command:
     # ape runs a script from the script folder? Example? Do we need to show an example?
 
 
-How does Ape as a package work and why is it useful?
+Ape as a package works both in ``ape run`` scripts and it also can be used in other python programs via import. 
 Ape also works as a package. You can use the same networks, accounts, and projects from the ape package as you can in the cli:
 
 .. code-block:: python
