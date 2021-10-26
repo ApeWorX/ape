@@ -6,7 +6,7 @@ Prerequisite
 
 In the latest release, Ape requires: 
 
-* Linux
+**Linux**
 * Python 3.7.X or later
 
 **Windows**: 
