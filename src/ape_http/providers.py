@@ -132,7 +132,6 @@ class EthereumProvider(ProviderAPI):
         for signed transactions.
         """
         try:
-            txn.sender = None  # type: ignore
             txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
         except ValueError as err:
             raise get_tx_error_from_web3_value_error(err) from err

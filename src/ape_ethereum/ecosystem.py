@@ -49,7 +49,7 @@ class Transaction(TransactionAPI):
         data["gas"] = data.pop("gas_limit")
         data["gasPrice"] = data.pop("gas_price")
 
-        # NOTE: Don't publish signature
+        # NOTE: Don't include signature
         data.pop("signature")
 
         return {key: value for key, value in data.items() if value is not None}
@@ -59,6 +59,11 @@ class Transaction(TransactionAPI):
             raise SignatureError("The transaction is not signed.")
 
         txn_data = self.as_dict()
+
+        # Don't publish from
+        if "from" in txn_data:
+            del txn_data["from"]
+
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
 
