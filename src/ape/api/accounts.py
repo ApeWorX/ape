@@ -42,7 +42,7 @@ class AccountAPI(AddressAPI):
     @abstractmethod
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         """
-        Signs message `msg` 
+        Signs message `msg`
         """
 
     @abstractmethod
