@@ -40,12 +40,17 @@ class Transaction(TransactionAPI):
         if receiver:
             data["to"] = receiver
 
+        # NOTE: sender is needed sometimes for estimating gas
+        # but is it no needed during publish (and may error if included).
+        sender = data.pop("sender")
+        if sender:
+            data["from"] = sender
+
         data["gas"] = data.pop("gas_limit")
         data["gasPrice"] = data.pop("gas_price")
 
-        # NOTE: Don't publish signature or sender
+        # NOTE: Don't publish signature
         data.pop("signature")
-        data.pop("sender")
 
         return {key: value for key, value in data.items() if value is not None}
 
