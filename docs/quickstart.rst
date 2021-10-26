@@ -163,7 +163,7 @@ Here are some things you do with the ``ape`` command:
     # ape runs a script from the script folder? Example? Do we need to show an example?
 
 
-How does Ape as a package work and why is it useful?
+Ape as a package works both in ``ape run`` scripts and it also can be used in other python programs via import. 
 Ape also works as a package. You can use the same networks, accounts, and projects from the ape package as you can in the cli:
 
 .. code-block:: python
