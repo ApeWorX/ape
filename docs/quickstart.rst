@@ -46,7 +46,6 @@ via ``venv <https://docs.python.org/3/library/venv.html>``_
 
     # deactivate virtual enviroment
     $ deactivate
-    # you should see DESKTOP_NAME:~/path:$
 
 
 
@@ -106,10 +105,11 @@ Quick Usage
 ***********
 
 Ape is primarily meant to be used as a command line tool. Ape will allow you to manage an account.
-
 Here are some things you do with the ``ape`` command:
 
+
 .. code-block:: bash
+
     # List the ape commands
     $ ape -h
     
@@ -122,6 +122,7 @@ Here are some things you do with the ``ape`` command:
 
 
 .. code-block:: bash
+
     # You can interact and compile contracts
     # Here is an example of a project with a contract you interact with: 
     $ git clone https://github.com/brownie-mix/vyper-token-mix.git
@@ -135,29 +136,33 @@ Here are some things you do with the ``ape`` command:
     # We show an error but not a suggested command to fix
 
 
-    .. code-block:: bash
+.. code-block:: bash
+
     # Should we include a way to list available plugins to install?
     # Add new plugins to ape
     $ ape plugins add plugin-name
 
 
 .. code-block:: bash
+
     # Not part of ape -h, what does -k mean, ape test does not work
     # Run your tests with pytest
     $ ape test -k test_only_one_thing --coverage --gas
 
 
 .. code-block:: bash
+
     # Connect an IPython session through your favorite provider
     $ ape console --network ethereum:mainnet:infura
 
 
 .. code-block:: bash
+
     # What does this do?
     $ ape run
     # ape runs a script from the script folder? Example? Do we need to show an example?
 
-    
+
 How does Ape as a package work and why is it useful?
 Ape also works as a package. You can use the same networks, accounts, and projects from the ape package as you can in the cli:
 
