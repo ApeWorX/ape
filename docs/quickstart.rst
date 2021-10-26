@@ -49,7 +49,7 @@ via ``venv <https://docs.python.org/3/library/venv.html>``_
 
 
 
-Once your python version is later than 3.7.X and you have created a virtual enviroment.
+Now that your Python version is later than 3.7.X and you have created a virtual environment.
 Let's install Ape! There are 3 ways to install ape pip, git clone setup.py, or Docker.
 
 via ``pip``
