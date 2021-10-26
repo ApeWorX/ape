@@ -1,4 +1,4 @@
-Quickstart guide
+Quickstart Guide
 ################
 
 Prerequisite
@@ -6,15 +6,16 @@ Prerequisite
 
 In the latest release, Ape requires: 
 
-* Linux.
-* Python 3.7.X or later.
+* Linux
+* Python 3.7.X or later
 
-If you are running Windows, you can install Windows Subsystem Linux `(WSL) <https://docs.microsoft.com/en-us/windows/wsl/install>`_ 
+**Windows**: 
 
-* Ubuntu 20.04.
-* Any other Linux Distribution with Python 3.7.X or later.
+#. Install Windows Subsystem Linux `(WSL) <https://docs.microsoft.com/en-us/windows/wsl/install>`_ 
+#. Choose Ubuntu 20.04 OR Any other Linux Distribution with Python 3.7.X or later
 
 Please make sure you are using Python 3.7.X or later.
+
 .. code-block:: bash
     # check your python version
     $ python3 --version
@@ -32,9 +33,9 @@ You may skip this step if you don't require a virtual enviorment.
 via ``virtualenv`` `virtualenv <https://pypi.org/project/virtualenv/>`_
 
 ==================
-via ``venv`` `venv <https://docs.python.org/3/library/venv.html>`_
+via ``venv <https://docs.python.org/3/library/venv.html>``_
 
-============
+============================================================
 
 .. code-block:: bash
 
