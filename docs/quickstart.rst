@@ -25,7 +25,7 @@ Please make sure you are using Python 3.7.X or later.
 
 Installation
 ************
-**Suggestion**: Create a virtual enviorment vua virtualenv or venv. After creation and acativating a virtual env.
+**Suggestion**: Create a virtual environment via virtualenv or venv. After creation and activating a virtual env.
 You should install ape in the isolated virtual enviorment to try for yourself!
 
 You may skip this creating a virtual enviorment if you don't require a one.
