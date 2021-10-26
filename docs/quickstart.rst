@@ -104,7 +104,7 @@ commands!
 Quick Usage
 ***********
 
-Ape is primarily meant to be used as a command line tool. Ape will allow you to manage an account.
+Ape is primarily meant to be used as a command line tool. Here are some things you do with the ``ape`` command:
 Here are some things you do with the ``ape`` command:
 
 
