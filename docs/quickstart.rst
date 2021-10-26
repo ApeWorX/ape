@@ -40,7 +40,7 @@ via ``venv <https://docs.python.org/3/library/venv.html>``_
 .. code-block:: bash
 
     # Create your virtual environment folder
-    $ python3 -m venv /path/to/new/enivorment
+    $ python3 -m venv /path/to/new/environment
     $ source <venv_folder>/bin/activate
     # you should see (name_of_venv) DESKTOP_NAME:~/path:$ 
 
