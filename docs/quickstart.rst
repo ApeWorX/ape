@@ -44,7 +44,7 @@ via ``venv <https://docs.python.org/3/library/venv.html>``_
     $ source <venv_folder>/bin/activate
     # you should see (name_of_venv) DESKTOP_NAME:~/path:$ 
 
-    # deactivate virtual enviroment
+    # deactivate virtual environment
     $ deactivate
 
 
