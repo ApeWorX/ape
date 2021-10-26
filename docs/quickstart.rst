@@ -112,7 +112,6 @@ Ape is primarily meant to be used as a command line tool. Here are some things y
     # List the ape commands
     $ ape -h
     
-    # You can interact with accounts
     # Generate a new test account
     $ ape accounts generate acc1
 
