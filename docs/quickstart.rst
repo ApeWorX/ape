@@ -28,7 +28,7 @@ Installation
 **Suggestion**: Create a virtual environment via virtualenv or venv. After creation and activating a virtual env.
 You should install ape in the isolated virtual environment to try for yourself!
 
-You may skip this creating a virtual enviorment if you don't require a one.
+You may skip this creating a virtual environment if you know you don't require one for your use case. 
 
 via ``virtualenv`` `virtualenv <https://pypi.org/project/virtualenv/>`_
 
