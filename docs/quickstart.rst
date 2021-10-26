@@ -25,10 +25,10 @@ Please make sure you are using Python 3.7.X or later.
 
 Installation
 ************
-Suggestion: Create a virtual enviorment vua virtualenv or venv. After creation and acativating a virtual env.
+**Suggestion**: Create a virtual enviorment vua virtualenv or venv. After creation and acativating a virtual env.
 You should install ape in the isolated virtual enviorment to try for yourself!
 
-You may skip this step if you don't require a virtual enviorment.
+You may skip this creating a virtual enviorment if you don't require a one.
 
 via ``virtualenv`` `virtualenv <https://pypi.org/project/virtualenv/>`_
 
@@ -44,8 +44,8 @@ via ``venv <https://docs.python.org/3/library/venv.html>``_
     $ source <venv_folder>/bin/activate
     # you should see (name_of_venv) DESKTOP_NAME:~/path:$ 
 
-    #deactivate virtual enviroment
-    $deactivate
+    # deactivate virtual enviroment
+    $ deactivate
     # you should see DESKTOP_NAME:~/path:$
 
 
@@ -60,7 +60,7 @@ You can install the latest release via `pip <https://pypi.org/project/pip/>`_:
 
 .. code-block:: bash
 
-    pip install eth-ape
+    $ pip install eth-ape
 
 via ``setuptools``
 ==================
@@ -69,9 +69,9 @@ You can clone the repository and use `setuptools <https://github.com/pypa/setupt
 
 .. code-block:: bash
 
-    git clone https://github.com/ApeWorX/ape.git
-    cd ape
-    python3 setup.py install
+    $ git clone https://github.com/ApeWorX/ape.git
+    $ cd ape
+    $ python3 setup.py install
 
 via ``docker``
 ==============
@@ -120,6 +120,7 @@ Here are some things you do with the ``ape`` command:
     # List existing accounts
     $ ape accounts list
 
+
 .. code-block:: bash
     # You can interact and compile contracts
     # Here is an example of a project with a contract you interact with: 
@@ -133,19 +134,23 @@ Here are some things you do with the ``ape`` command:
     # run the command ape plugins add vyper
     # We show an error but not a suggested command to fix
 
+
     .. code-block:: bash
     # Should we include a way to list available plugins to install?
     # Add new plugins to ape
     $ ape plugins add plugin-name
+
 
 .. code-block:: bash
     # Not part of ape -h, what does -k mean, ape test does not work
     # Run your tests with pytest
     $ ape test -k test_only_one_thing --coverage --gas
 
+
 .. code-block:: bash
     # Connect an IPython session through your favorite provider
     $ ape console --network ethereum:mainnet:infura
+
 
 .. code-block:: bash
     # What does this do?
