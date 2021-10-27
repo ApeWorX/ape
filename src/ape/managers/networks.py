@@ -80,12 +80,13 @@ class NetworkManager:
 
                     yield f"{ecosystem_name}:{network_name}:{provider}"
 
-    def parse_network_choice(
+    def get_provider_from_choice(
         self,
         network_choice: Optional[str] = None,
-    ) -> ProviderContextManager:
+        provider_settings: Optional[Dict] = None,
+    ) -> ProviderAPI:
         if network_choice is None:
-            return self.default["development"].use_default_provider()
+            return self.default["development"].get_provider(provider_settings=provider_settings)
 
         selections = network_choice.split(":")
 
@@ -99,14 +100,14 @@ class NetworkManager:
             ecosystem = self.__getattr__(selections[0] or self.default_ecosystem.name)
             # By default, the "development" network should be specified for
             # any ecosystem (this should not correspond to a production chain)
-            return ecosystem["development"].use_default_provider()
+            return ecosystem["development"].get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 2:
             # Only ecosystem and network were specified, not provider
             ecosystem_name, network_name = selections
             ecosystem = self.__getattr__(ecosystem_name or self.default_ecosystem.name)
             network = ecosystem[network_name or ecosystem.default_network]
-            return network.use_default_provider()
+            return network.get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 3:
             # Everything is specified, use specified provider for ecosystem
@@ -114,11 +115,23 @@ class NetworkManager:
             ecosystem_name, network_name, provider_name = selections
             ecosystem = self.__getattr__(ecosystem_name or self.default_ecosystem.name)
             network = ecosystem[network_name or ecosystem.default_network]
-            return network.use_provider(provider_name)
+            return network.get_provider(
+                provider_name=provider_name, provider_settings=provider_settings
+            )
 
         else:
             # NOTE: Might be unreachable
             raise NetworkError("Invalid network selection.")
+
+    def parse_network_choice(
+        self,
+        network_choice: Optional[str] = None,
+        provider_settings: Optional[Dict] = None,
+    ) -> ProviderContextManager:
+        provider = self.get_provider_from_choice(
+            network_choice, provider_settings=provider_settings
+        )
+        return ProviderContextManager(self, provider)
 
     @property
     def default_ecosystem(self) -> EcosystemAPI:
