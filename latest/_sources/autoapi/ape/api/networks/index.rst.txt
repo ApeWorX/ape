@@ -214,6 +214,9 @@
    .. py:method:: providers(self)
 
 
+   .. py:method:: get_provider(self, provider_name: Optional[str] = None, provider_settings: dict = None)
+
+
    .. py:method:: use_provider(self, provider_name: str, provider_settings: dict = None) -> ProviderContextManager
 
 
@@ -224,7 +227,7 @@
    .. py:method:: set_default_provider(self, provider_name: str)
 
 
-   .. py:method:: use_default_provider(self) -> ProviderContextManager
+   .. py:method:: use_default_provider(self, provider_settings: Optional[Dict]) -> ProviderContextManager
 
 
 

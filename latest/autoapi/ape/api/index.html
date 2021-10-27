@@ -186,6 +186,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.network_id">network_id</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.explorer">explorer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.providers">providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.get_provider">get_provider</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.use_provider">use_provider</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.default_provider">default_provider</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.set_default_provider">set_default_provider</a></li>
@@ -944,6 +945,11 @@ translating into yaml.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="ape.api.NetworkAPI.get_provider">
+<code class="sig-name descname"><span class="pre">get_provider</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.NetworkAPI.get_provider" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.NetworkAPI.use_provider">
 <code class="sig-name descname"><span class="pre">use_provider</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.ProviderContextManager" title="ape.api.ProviderContextManager"><span class="pre">ProviderContextManager</span></a><a class="headerlink" href="#ape.api.NetworkAPI.use_provider" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -960,7 +966,7 @@ translating into yaml.</p>
 
 <dl class="py method">
 <dt id="ape.api.NetworkAPI.use_default_provider">
-<code class="sig-name descname"><span class="pre">use_default_provider</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.ProviderContextManager" title="ape.api.ProviderContextManager"><span class="pre">ProviderContextManager</span></a><a class="headerlink" href="#ape.api.NetworkAPI.use_default_provider" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">use_default_provider</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.ProviderContextManager" title="ape.api.ProviderContextManager"><span class="pre">ProviderContextManager</span></a><a class="headerlink" href="#ape.api.NetworkAPI.use_default_provider" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
