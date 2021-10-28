@@ -44,6 +44,9 @@ via ``venv <https://docs.python.org/3/library/venv.html>``_
     $ source <venv_folder>/bin/activate
     # you should see (name_of_venv) DESKTOP_NAME:~/path:$ 
 
+
+.. code-block:: bash
+
     # deactivate virtual environment
     $ deactivate
 
@@ -183,12 +186,4 @@ Ape also works as a package. You can use the same networks, accounts, and projec
     c.viewThis()  # Make Web3 calls
     c.doThat({"from": a})  # Make Web3 transactions
     assert c.MyEvent[-1].caller == a  # Search through Web3 events
-
-
-
-Uninstall guide
-***************
-
-Should we include an uninstall process down below?
-keep the .ape folder so we don't delete the keys 
 
