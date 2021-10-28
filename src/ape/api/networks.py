@@ -166,7 +166,6 @@ class ProviderContextManager:
         if self._connected_providers:
             self._connected_providers[-1].disconnect()
 
-        # Connect to our provider
         self.provider.connect()
         self.network_manager.active_provider = self.provider
         self._connected_providers.append(self.provider)

@@ -2,8 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from ape.exceptions import VirtualMachineError
-from ape.utils import get_relative_path, get_tx_error_from_web3_value_error
+from ape.utils import get_relative_path
 
 _TEST_DIRECTORY_PATH = Path("/This/is/a/test/")
 _TEST_FILE_PATH = _TEST_DIRECTORY_PATH / "scripts" / "script.py"
@@ -39,24 +38,3 @@ def test_get_relative_path_roots():
     root = Path("/")
     actual = get_relative_path(root, root)
     assert actual == Path()
-
-
-@pytest.mark.parametrize(
-    "error_dict",
-    (
-        {"message": "The transaction ran out of gas", "code": -32000},
-        {"message": "Base limit exceeds gas limit", "code": -32603},
-        {"message": "Exceeds block gas limit", "code": -32603},
-        {"message": "Transaction requires at least 12345 gas"},
-    ),
-)
-def test_get_tx_error_from_web3_value_error_gas_related(error_dict):
-    test_err = ValueError(error_dict)
-    actual = get_tx_error_from_web3_value_error(test_err)
-    assert type(actual) != VirtualMachineError
-
-
-def test_get_tx_error_from_web3_value_error():
-    test_err = ValueError({"message": "Test Action Reverted!"})
-    actual = get_tx_error_from_web3_value_error(test_err)
-    assert type(actual) == VirtualMachineError

@@ -84,7 +84,7 @@ def cli(cli_ctx, scripts, interactive, network):
             script_file = Path(name).resolve()
 
         elif not scripts_folder.exists():
-            cli_ctx.abort("No `scripts/` directory detected to run script")
+            cli_ctx.abort("No `scripts/` directory detected to run script.")
 
         elif name not in available_scripts:
             cli_ctx.abort(f"No script named '{name}' detected in scripts folder")

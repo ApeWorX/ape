@@ -3,7 +3,7 @@ from typing import Dict, Iterator, List, Type
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
-from ape.api.accounts import AccountAPI, AccountContainerAPI
+from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.types import AddressType
 from ape.utils import cached_property, singledispatchmethod
 
@@ -24,12 +24,34 @@ class AccountManager:
     plugin_manager: PluginManager
     network_manager: NetworkManager
 
+    @property
+    def test_accounts(self) -> List[TestAccountAPI]:
+        """
+        Accounts for testing.
+        """
+        accounts = []
+        for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
+            if not issubclass(account_type, TestAccountAPI):
+                continue
+
+            container = container_type(None, account_type)
+            for account in container:
+                self._inject_provider(account)
+                accounts.append(account)
+
+        return accounts
+
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
-        containers = dict()
+        containers = {}
         data_folder = self.config.DATA_FOLDER
         data_folder.mkdir(exist_ok=True)
         for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
+
+            # Ignore containers that contain test accounts.
+            if issubclass(account_type, TestAccountAPI):
+                continue
+
             accounts_folder = data_folder / plugin_name
             accounts_folder.mkdir(exist_ok=True)
             containers[plugin_name] = container_type(accounts_folder, account_type)

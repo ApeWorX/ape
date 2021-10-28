@@ -2,17 +2,17 @@ import subprocess
 import sys
 
 import click
+
+from ape import config
+from ape.cli import ape_cli_context, skip_confirmation_option
+from ape.plugins import clean_plugin_name, plugin_manager
+from ape.utils import get_package_version
 from ape_plugins.utils import (
     FIRST_CLASS_PLUGINS,
     SECOND_CLASS_PLUGINS,
     extract_module_and_package_install_names,
     is_plugin_installed,
 )
-
-from ape import config
-from ape.cli import ape_cli_context, skip_confirmation_option
-from ape.plugins import clean_plugin_name, plugin_manager
-from ape.utils import get_package_version
 
 
 @click.group(short_help="Manage ape plugins")
