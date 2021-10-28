@@ -125,14 +125,15 @@ Ape is primarily meant to be used as a command line tool. Here are some things y
     # Here is an example of a project with a contract you interact with: 
     $ git clone https://github.com/brownie-mix/vyper-token-mix.git
     $ cd vyper-token-mix/
+
+    # There is a possible compliation issue such as unable to read file extension .sol
+    # you should check the plugins list to see if you have the right plugins to read all the relevant files
+    $ ape plugins list -a
+    $ ape plguins add solidity
+    
     # You can compile contracts in the contracts folder of your project
     $ ape compile --size
-
-    # Issue 202
-    # A know issue is unable to read extension .vy or .sol
-    # run the command ape plugins add vyper
-    # We show an error but not a suggested command to fix
-
+    
 
 .. code-block:: bash
 
