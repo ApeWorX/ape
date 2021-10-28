@@ -33,27 +33,60 @@ def cli():
 )
 @ape_cli_context()
 def _list(cli_ctx, display_all):
-    plugins = []
+    installed_second = set()
+    installed_first = set()
+    installed_third = set()
     for name, plugin in plugin_manager.list_name_plugin():
         version_str = ""
         version = get_package_version(name)
 
         if name in FIRST_CLASS_PLUGINS:
             if not display_all:
+
                 continue  # NOTE: Skip 1st class plugins unless specified
-            version_str = " (core)"
-
-        elif version:
+            #version_str = " (core)"
             version_str = f" ({version})"
+            installed_first.add(f"{name}")
 
-        plugins.append(f"{name}{version_str}")
+        elif name in SECOND_CLASS_PLUGINS:
+            if not display_all:
+                continue
+            #version_str = "( second)"
+            version_str = f" ({version})"
+            installed_second.add(f"{name}")
 
-    if plugins:
-        click.echo("Installed plugins:")
-        click.echo("  " + "\n  ".join(plugins))
+        elif name not in FIRST_CLASS_PLUGINS or name not in SECOND_CLASS_PLUGINS:
+            #version_str = "( third)"
+            version_str = f" ({version})"
+            installed_third.add(f"{name}    ({version})")
+        else:
+            print(name + "is not 1st, 2nd, or 3rd party plugin")
 
+    uninstalled_first = (FIRST_CLASS_PLUGINS - installed_first)
+    uninstalled_second = (SECOND_CLASS_PLUGINS - installed_second)
+
+    if installed_first:
+        click.echo("(CORE) Installed First Class Plugins:")
+        click.echo("  " + "\n  ".join(installed_first))
     else:
-        cli_ctx.logger.info("No plugins installed")
+        cli_ctx.logger.info("No First Class plugins installed")
+
+    if installed_second:
+        click.echo("\n"+ "(2nd) Installed Second Class Plugins:")
+        click.echo("  " + "\n  ".join(installed_second))
+    else:
+        cli_ctx.logger.info("No Second Class Plugins installed")
+
+
+    if uninstalled_first:
+        click.echo("\n"+ "You are missing these CORE First Class Plugins:")
+        click.echo("  " + "\n  ".join(uninstalled_first))
+    
+    if uninstalled_second:
+        click.echo("\n"+ "(2nd) UNINSTALLED Second Class Plugins:")
+        click.echo("  " + "\n  ".join(uninstalled_second))
+    else:
+        cli_ctx.logger.info("You have installed all the Second Class Plugins")
 
 
 @cli.command(short_help="Install an ape plugin")
