@@ -4,10 +4,10 @@ Writing Plugins
 
 Plugin Writing Quickstart
 *************************
-Use this project template https://github.com/ApeWorX/project-template as a reference for developing a plugin. 
+Use this `project template <https://github.com/ApeWorX/project-template>`_ as a reference for developing a plugin. 
 Note: this template is designed for 2nd class plugins so not everything may apply. 
-The template may be good to follow if you want to keep your plugin of similar quality to plugins developed by ApeWorx.
-Here is an example compiler plugin: https://github.com/apeworx/ape-solidity
+The template may be good to follow if you want to keep your plugin of similar quality to plugins developed by ApeWorX.
+See `the Solidity plugin <https://github.com/apeworx/ape-solidity>`_ as an example of a compiler implementations.
 
 
 Overall architecture flow
@@ -19,8 +19,8 @@ In order to create a plugin which will work with ape, you will need to
 Types of plugins
 ================
 * 1st - These are plugins that are bundled with ape core. They are built in, don't have a version, and can't be uninstallled.
-* 2nd - These plugins are maintained by ape team. They are trusted. Users and developers can pin different versions but should be aware of api changes when doing so.
-* 3rd - These are community developed plugins. These will ask if you want to install a 3rd party plugin (at your own risk). These can also be pinned like in 2nd order plugins.
+* 2nd - These plugins are maintained by ApeWorX. They are trusted. Users and developers can pin different versions but should be aware of api changes when doing so.
+* 3rd - These are plugins developed outside the ApeWorX organization. These should be installed at your own risk. These can also be pinned like in 2nd order plugins.
 ... TBD could be referenced in the user documentation or possibly live in the user documentation
 
 
@@ -42,7 +42,7 @@ File extensions found within the ``contracts/`` directory determine which compil
 The pragma spec of the compilable files within the folder is checked and then used to decide if a new compiler needs to be 
 downloaded or if the version matches one of the currently installed compiler versions. 
 The contracts are then grouped by compiler type and version and fed into the corresponding compiler to compile them. 
-These are then output as a JSON file to the ``.builds`` directory. They can then be deployed on the chain from the console or a script.
+These are then output as a JSON file to the ``.build`` directory. They can then be deployed on the chain from the console or a script.
 
 
 Source type

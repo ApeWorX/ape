@@ -25,8 +25,7 @@ Please make sure you are using Python 3.7.X or later.
 
 Installation
 ************
-**Suggestion**: Create a virtual environment via virtualenv or venv. After creation and activating a virtual env.
-You should install ape in the isolated virtual environment to try for yourself!
+**Suggestion**: Create a virtual environment via ``virtualenv`` or ``venv`` .
 
 You may skip this creating a virtual environment if you know you don't require one for your use case. 
 
@@ -52,8 +51,8 @@ via ``venv <https://docs.python.org/3/library/venv.html>``_
 
 
 
-Now that your Python version is later than 3.7.X and you have created a virtual environment.
-Let's install Ape! There are 3 ways to install ape: pip, setuptools, or Docker.
+Now that your Python version is later than 3.7.X and you have created a virtual environment, let's install ape!
+There are 3 ways to install ape: pip, setuptools, or Docker.
 
 via ``pip``
 ===========
@@ -102,7 +101,7 @@ Either Solution:
 
 
 Once ape is installed you can test some of the features! Here is a guide on some of the popular
-commands!
+commands.
 
 Quick Usage
 ***********
