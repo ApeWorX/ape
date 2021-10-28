@@ -1,17 +1,18 @@
 import collections
 import json
 import os
-import re
 from copy import deepcopy
 from functools import lru_cache
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import yaml
+from eth_account import Account
+from eth_account.hdaccount import HDPath, seed_from_mnemonic
+from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
-from ape.exceptions import OutOfGasError, TransactionError, VirtualMachineError
 from ape.logging import logger
 
 try:
@@ -23,6 +24,9 @@ try:
     from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
+
+# TODO: Replace this with steve's work / mnemonic from config
+_DEVELOPMENT_MNEMONIC = "test test test test test test test test test test test junk"
 
 
 @lru_cache(maxsize=None)
@@ -142,42 +146,43 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
     return hasher(source).hexdigest()
 
 
-def get_tx_error_from_web3_value_error(web3_value_error: ValueError) -> TransactionError:
+def generate_dev_accounts(
+    mnemonic: str = _DEVELOPMENT_MNEMONIC,
+    number_of_accounts: int = 10,
+    hd_path_format="m/44'/60'/0'/{}",
+) -> List:
     """
-    Returns a custom error from ``ValueError`` from web3.py.
+    Creates account for using in chain genesis.
     """
-    if not hasattr(web3_value_error, "args") or len(web3_value_error.args) < 1:
-        # Not known from provider
-        return TransactionError(base_err=web3_value_error)
+    seed = seed_from_mnemonic(mnemonic, "")
+    accounts = []
 
-    err_data = web3_value_error.args[0]
-    if not isinstance(err_data, dict):
-        return TransactionError(base_err=web3_value_error)
+    for i in range(0, number_of_accounts):
+        hd_path = HDPath(hd_path_format.format(i))
+        private_key = HexBytes(hd_path.derive(seed)).hex()
+        address = Account.from_key(private_key).address
+        accounts.append({"address": address, "private_key": private_key})
 
-    message = err_data.get("message", json.dumps(err_data))
-    code = err_data.get("code")
+    return accounts
 
-    if re.match(r"(.*)out of gas(.*)", message.lower()):
-        return OutOfGasError(code=code)
 
-    # Try not to raise ``VirtualMachineError`` for any gas-related
-    # issues. This is to keep the ``VirtualMachineError`` more focused
-    # on contract-application specific faults.
-    other_gas_error_patterns = (
-        r"(.*)exceeds \w*?[ ]?gas limit(.*)",
-        r"(.*)requires at least \d* gas(.*)",
+def get_gas_estimation_revert_error_message(tx_error: Exception) -> str:
+    """
+    Use this method in ``ProviderAPI`` implementations when error handling
+    transaction errors. This is to have a consistent experience across providers.
+    """
+    return (
+        f"Gas estimation failed: '{tx_error}'. This transaction will likely revert. "
+        "If you wish to broadcast, you must set the gas limit manually."
     )
-    for pattern in other_gas_error_patterns:
-        if re.match(pattern, message.lower()):
-            return TransactionError(base_err=web3_value_error, message=message, code=code)
-
-    return VirtualMachineError(message)
 
 
 __all__ = [
     "cached_property",
     "deep_merge",
     "expand_environment_variables",
+    "generate_dev_accounts",
+    "get_gas_estimation_revert_error_message",
     "load_config",
     "singledispatchmethod",
 ]

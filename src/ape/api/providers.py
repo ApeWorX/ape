@@ -166,3 +166,17 @@ class ProviderAPI:
     @abstractmethod
     def get_events(self, **filter_params) -> Iterator[dict]:
         ...
+
+
+class TestProviderAPI(ProviderAPI):
+    @abstractmethod
+    def snapshot(self) -> int:
+        ...
+
+    @abstractmethod
+    def revert(self, snapshot_id: int):
+        ...
+
+    @abstractmethod
+    def set_head(self, block_number: str):
+        ...
