@@ -16,7 +16,6 @@ def test_run(ape_cli, runner, project):
 
     for script_file in (project.path / "scripts").glob("*.py"):
         result = runner.invoke(
-            ape_cli, ["run", script_file.stem, "--network", "ethereum:development:http"]
+            ape_cli, ["run", script_file.stem, "--network", "ethereum:development:test"]
         )
-        breakpoint()
         assert result.exit_code == 0, result.output
