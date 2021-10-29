@@ -4,7 +4,13 @@ from .contracts import ContractInstance, ContractLog
 from .convert import ConverterAPI
 from .explorers import ExplorerAPI
 from .networks import EcosystemAPI, NetworkAPI, ProviderContextManager, create_network_type
-from .providers import ProviderAPI, ReceiptAPI, TransactionAPI, TransactionStatusEnum
+from .providers import (
+    ProviderAPI,
+    ReceiptAPI,
+    TestProviderAPI,
+    TransactionAPI,
+    TransactionStatusEnum,
+)
 
 __all__ = [
     "AccountAPI",
@@ -20,6 +26,7 @@ __all__ = [
     "ProviderContextManager",
     "NetworkAPI",
     "ReceiptAPI",
+    "TestProviderAPI",
     "TransactionAPI",
     "TransactionStatusEnum",
     "create_network_type",
