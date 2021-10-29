@@ -285,10 +285,10 @@ class EthereumProvider(TestProviderAPI):
         """
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
 
-    def snapshot(self) -> int:
+    def snapshot(self) -> Dict:
         raise NotImplementedError()
 
-    def revert(self, snapshot_id: int):
+    def revert(self, snapshot_id: Dict):
         raise NotImplementedError()
 
     def set_head(self, block_number: str):
