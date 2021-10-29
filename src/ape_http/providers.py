@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, Union
 from urllib.parse import urlparse
 
 from eth_typing import HexStr
@@ -42,7 +42,7 @@ class EphemeralGeth(LoggingMixin, DevGethProcess):
         hostname: str,
         port: int,
         chain_id: int = 1337,
-        initial_balance: str = "10000000000000000000000",
+        initial_balance: Union[str, int] = "10000000000000000000000",
         accounts: List = None,
     ):
         self.data_dir = base_directory / chain_name
@@ -68,7 +68,7 @@ class EphemeralGeth(LoggingMixin, DevGethProcess):
                 "londonBlock": 0,
                 "ethash": {},
             },
-            "alloc": {a["address"]: {"balance": initial_balance} for a in accounts},
+            "alloc": {a["address"]: {"balance": str(initial_balance)} for a in accounts},
         }
         geth_cmd_args = {
             "rpc_addr": hostname,
