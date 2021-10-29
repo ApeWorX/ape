@@ -15,11 +15,11 @@ class TestEVMBackend(PyEVMBackend):
     An EVM backend populated with accounts using the test mnemonic.
     """
 
-    def __init__(self, initial_balance: str = "10000000000000000000000"):
+    def __init__(self, initial_balance: int = 10000000000000000000000):
         dev_accounts = generate_dev_accounts()
         account_data = {
             HexBytes(a["address"]): {
-                "balance": int(initial_balance),
+                "balance": initial_balance,
                 "nonce": 0,
                 "code": b"",
                 "storage": {},
