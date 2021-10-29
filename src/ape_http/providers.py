@@ -35,14 +35,21 @@ class EphemeralGeth(LoggingMixin, DevGethProcess):
     A developer-configured geth that only exists until disconnected.
     """
 
-    def __init__(self, chain_name, base_directory: Path, hostname: str, port: int):
+    def __init__(
+        self,
+        chain_name,
+        base_directory: Path,
+        hostname: str,
+        port: int,
+        chain_id: int = 1337,
+        initial_balance: str = "10000000000000000000000",
+        accounts: List = None,
+    ):
         self.data_dir = base_directory / chain_name
         self._hostname = hostname
         self._port = port
 
-        chain_id = 1337
-        initial_balance = "10000000000000000000000"  # 10,000 ETH
-        dev_accounts = generate_dev_accounts()
+        accounts = accounts or generate_dev_accounts()
         genesis_data: Dict = {
             "coinbase": "0x0000000000000000000000000000000000000000",
             "config": {
@@ -61,7 +68,7 @@ class EphemeralGeth(LoggingMixin, DevGethProcess):
                 "londonBlock": 0,
                 "ethash": {},
             },
-            "alloc": {a["address"]: {"balance": initial_balance} for a in dev_accounts},
+            "alloc": {a["address"]: {"balance": initial_balance} for a in accounts},
         }
         geth_cmd_args = {
             "rpc_addr": hostname,
