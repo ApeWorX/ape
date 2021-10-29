@@ -84,10 +84,16 @@ class TransactionError(ContractError):
         super().__init__(ex_message)
 
 
-class ContractLogicError(TransactionError):
+class VirtualMachineError(TransactionError):
     """
-    Raised when there is either an internal fault in a virtual machine
-    or a contract-defined revert, such as from an assert/require statement.
+    Raised when a transaction error occurs in a virtual machine.
+    """
+
+
+class ContractLogicError(VirtualMachineError):
+    """
+    Raised when there is a contract-defined revert,
+    such as from an assert/require statement.
     """
 
     def __init__(self, revert_message: str):

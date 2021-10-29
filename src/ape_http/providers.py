@@ -22,6 +22,7 @@ from ape.exceptions import (
     ProviderError,
     RPCError,
     TransactionError,
+    VirtualMachineError,
 )
 from ape.logging import logger
 from ape.utils import generate_dev_accounts, get_gas_estimation_revert_error_message
@@ -203,7 +204,7 @@ class EthereumProvider(TestProviderAPI):
             txn_dict = txn.as_dict()
             return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
         except ValueError as err:
-            tx_error = _get_tx_error(err)
+            tx_error = _get_vm_error(err)
 
             # If this is the cause of a would-be revert,
             # raise ContractLogicError so that we can confirm tx-reverts.
@@ -270,7 +271,7 @@ class EthereumProvider(TestProviderAPI):
         try:
             txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
         except ValueError as err:
-            raise _get_tx_error(err) from err
+            raise _get_vm_error(err) from err
 
         receipt = self.get_transaction(txn_hash.hex())
 
@@ -316,7 +317,7 @@ class EthereumProvider(TestProviderAPI):
         return response.get("result")
 
 
-def _get_tx_error(web3_value_error: ValueError) -> TransactionError:
+def _get_vm_error(web3_value_error: ValueError) -> TransactionError:
     """
     Returns a custom error from ``ValueError`` from web3.py.
     """
@@ -326,14 +327,14 @@ def _get_tx_error(web3_value_error: ValueError) -> TransactionError:
         return ContractLogicError(message)
 
     if not len(web3_value_error.args):
-        return TransactionError(web3_value_error)
+        return VirtualMachineError(web3_value_error)
 
     err_data = web3_value_error.args[0]
     if not isinstance(err_data, dict):
-        return TransactionError(web3_value_error)
+        return VirtualMachineError(web3_value_error)
 
     message = str(err_data.get("message"))
     if not message:
-        return TransactionError(web3_value_error)
+        return VirtualMachineError(web3_value_error)
 
-    return TransactionError(message=message, code=err_data.get("code"))
+    return VirtualMachineError(message=message, code=err_data.get("code"))
