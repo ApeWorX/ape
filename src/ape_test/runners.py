@@ -54,9 +54,7 @@ class PytestApeRunner:
             pass
 
         yield
-
-        if snapshot_id and snapshot_id >= 0:
-            self._provider.revert(snapshot_id)
+        self._provider.revert(snapshot_id)
 
     def pytest_sessionstart(self):
         """

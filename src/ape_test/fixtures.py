@@ -17,7 +17,8 @@ class PytestApeFixtures:
 
     @pytest.fixture
     def accounts(self, provider) -> List[TestAccountAPI]:
-        return self._accounts.test_accounts
+        accounts = self._accounts.test_accounts
+        return accounts
 
     @pytest.fixture
     def provider(self) -> ProviderAPI:
