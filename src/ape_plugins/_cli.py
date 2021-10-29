@@ -31,6 +31,11 @@ def cli():
     is_flag=True,
     help="Display all plugins (including Core)",
 )
+
+@ape_cli_context()
+def _remove_prefix(text, prefix):
+    return text[text.startswith(prefix) and len(prefix):]
+
 @ape_cli_context()
 def _list(cli_ctx, display_all):
     installed_second = set()
@@ -42,7 +47,7 @@ def _list(cli_ctx, display_all):
 
         if name in FIRST_CLASS_PLUGINS:
             if not display_all:
-
+            
                 continue  # NOTE: Skip 1st class plugins unless specified
             #version_str = " (core)"
             version_str = f" ({version})"
@@ -60,16 +65,25 @@ def _list(cli_ctx, display_all):
             version_str = f" ({version})"
             installed_third.add(f"{name}    ({version})")
         else:
-            print(name + "is not 1st, 2nd, or 3rd party plugin")
+            print(name + "is not a plugin")
 
-    uninstalled_first = (FIRST_CLASS_PLUGINS - installed_first)
-    uninstalled_second = (SECOND_CLASS_PLUGINS - installed_second)
+    available_first = list (FIRST_CLASS_PLUGINS - installed_first)
+    available_second = list (SECOND_CLASS_PLUGINS - installed_second)
 
+    available_first_print = set()
+
+        for i in available_first:
+        text = _remove_prefix(i, "ape_")
+        available_first_print.add(text)
+        #available_first_print.add(f"{text}    ({version})")
+    
+    print(available_first_print)
+    
     if installed_first:
-        click.echo("(CORE) Installed First Class Plugins:")
+        click.echo("Installed CORE Plugins:")
         click.echo("  " + "\n  ".join(installed_first))
     else:
-        cli_ctx.logger.info("No First Class plugins installed")
+        cli_ctx.logger.info("No CORE plugins installed")
 
     if installed_second:
         click.echo("\n"+ "(2nd) Installed Second Class Plugins:")
@@ -78,13 +92,13 @@ def _list(cli_ctx, display_all):
         cli_ctx.logger.info("No Second Class Plugins installed")
 
 
-    if uninstalled_first:
-        click.echo("\n"+ "You are missing these CORE First Class Plugins:")
-        click.echo("  " + "\n  ".join(uninstalled_first))
+    if available_first:
+        click.echo("\n"+ "You are missing these CORE First Class:")
+        click.echo("  " + "\n  ".join(available_first))
     
-    if uninstalled_second:
-        click.echo("\n"+ "(2nd) UNINSTALLED Second Class Plugins:")
-        click.echo("  " + "\n  ".join(uninstalled_second))
+    if available_second:
+        click.echo("\n"+ "(2nd) Available Second Class Plugins:")
+        click.echo("  " + "\n  ".join(available_second))
     else:
         cli_ctx.logger.info("You have installed all the Second Class Plugins")
 
