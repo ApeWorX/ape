@@ -68,7 +68,7 @@ class EphemeralGeth(LoggingMixin, DevGethProcess):
                 "londonBlock": 0,
                 "ethash": {},
             },
-            "alloc": {a["address"]: {"balance": str(initial_balance)} for a in accounts},
+            "alloc": {a.address: {"balance": str(initial_balance)} for a in accounts},
         }
         geth_cmd_args = {
             "rpc_addr": hostname,

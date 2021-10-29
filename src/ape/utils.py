@@ -146,11 +146,14 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
     return hasher(source).hexdigest()
 
 
+GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", "private_key"))
+
+
 def generate_dev_accounts(
     mnemonic: str = _DEVELOPMENT_MNEMONIC,
     number_of_accounts: int = 10,
     hd_path_format="m/44'/60'/0'/{}",
-) -> List:
+) -> List[GeneratedDevAccount]:
     """
     Creates account for using in chain genesis.
     """
@@ -161,7 +164,7 @@ def generate_dev_accounts(
         hd_path = HDPath(hd_path_format.format(i))
         private_key = HexBytes(hd_path.derive(seed)).hex()
         address = Account.from_key(private_key).address
-        accounts.append({"address": address, "private_key": private_key})
+        accounts.append(GeneratedDevAccount(address, private_key))
 
     return accounts
 
