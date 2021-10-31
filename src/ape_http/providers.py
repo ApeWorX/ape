@@ -174,7 +174,7 @@ class EthereumProvider(TestProviderAPI):
 
             if not self._web3.isConnected():
                 self._geth.disconnect()
-                raise ConnectionError("Unable to connect web3 to geth.")
+                raise ConnectionError("Unable to connect to locally running geth.")
 
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
