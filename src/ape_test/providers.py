@@ -2,12 +2,12 @@ from typing import Any, Iterator
 
 from eth_tester.backends import PyEVMBackend
 from eth_tester.exceptions import TransactionFailed
-from hexbytes import HexBytes
+from eth_utils import to_wei
 from web3 import EthereumTesterProvider, Web3
 
 from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.exceptions import ContractLogicError
-from ape.utils import DEVELOPMENT_MNEMONIC, generate_dev_accounts
+from ape.utils import DEVELOPMENT_MNEMONIC
 
 
 class TestEVMBackend(PyEVMBackend):
@@ -15,18 +15,13 @@ class TestEVMBackend(PyEVMBackend):
     An EVM backend populated with accounts using the test mnemonic.
     """
 
-    def __init__(self, initial_balance: int = 10000000000000000000000):
-        dev_accounts = generate_dev_accounts()
-        account_data = {
-            HexBytes(a["address"]): {
-                "balance": initial_balance,
-                "nonce": 0,
-                "code": b"",
-                "storage": {},
-            }
-            for a in dev_accounts
-        }
-        super().__init__(genesis_state=account_data, mnemonic=DEVELOPMENT_MNEMONIC)
+    def __init__(self, initial_ether: int = 10000):
+        genesis_state = PyEVMBackend.generate_genesis_state(
+            overrides={"balance": to_wei(initial_ether, "ether")},
+            mnemonic=DEVELOPMENT_MNEMONIC,
+            num_accounts=10,
+        )
+        super().__init__(genesis_state=genesis_state, mnemonic=DEVELOPMENT_MNEMONIC)
 
 
 class LocalNetwork(ProviderAPI):
@@ -95,7 +90,9 @@ class LocalNetwork(ProviderAPI):
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
 
     def snapshot(self) -> Any:
-        return self._backend.take_snapshot()
+        return None
+        # return self._backend.take_snapshot()
 
     def revert(self, snapshot_id: Any):
-        return self._backend.revert_to_snapshot(snapshot_id)
+        if snapshot_id:
+            return self._backend.revert_to_snapshot(snapshot_id)
