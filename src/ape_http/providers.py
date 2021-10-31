@@ -178,15 +178,14 @@ class EthereumProvider(TestProviderAPI):
 
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
+        if self.network.name not in ("mainnet", "ropsten"):
+            self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
         if self.network.name != "development" and self.network.chain_id != self.chain_id:
             raise ProviderError(
                 "HTTP Connection does not match expected chain ID. "
                 f"Are you connected to '{self.network.name}'?"
             )
-
-        # Add/Inject Middlewares
-        if self.network.name not in ("mainnet", "ropsten"):
-            self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     def disconnect(self):
         if self._geth is not None:
