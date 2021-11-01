@@ -178,7 +178,13 @@ class EthereumProvider(TestProviderAPI):
 
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
-        if self.network.name not in ("mainnet", "ropsten"):
+        # Try to detect if chain used clique (PoA).
+        node_info = self._web3.geth.admin.node_info
+        chain_config = node_info.get("protocols", {}).get("eth", {}).get("config")
+        is_poa_chain = "clique" in chain_config
+
+        # If network is rinkeby, goerli, or kovan (PoA test-nets)
+        if self.network.chain_id in (4, 5, 42) or is_poa_chain:
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         if self.network.name != "development" and self.network.chain_id != self.chain_id:
