@@ -33,10 +33,11 @@ If the plugin type registration is found, then ``ape`` knows that this package i
 Then we have a set of registered plugins that the registration process defines it needs. The ``@hookspec`` decorator describes how the plugin works. 
 Find out more about ``@hookspec`` in the `Pluggy documentation <https://pluggy.readthedocs.io/en/stable/index.html#specifications>`_.
 
+CLI Registration
+================
+CLI registration uses ``entrypoints`` which is a built-in python registry of items declared in ``setup.py``. 
 Also note that typically, ``_cli.py`` is used instead of ``__init__.py`` for the location of the Click CLI group, because it is logically separate from the Python module loading process. 
 If you try to define them together and use ape as a library as well, there is a race condition in the loading process that will prevent the cli plugin from working.
-
-CLI registration
 
 
 Compilation process flow
@@ -63,7 +64,7 @@ CompilerAPI plugins
 
 ContractType type
 ==================
-The compilation produces - .build
+The compilation produces the __.build
 `ContractType <autoapi/ape/types/contract/index.html#ape.types.contract.ContractType>`_
 
 
