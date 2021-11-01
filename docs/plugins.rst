@@ -31,8 +31,10 @@ The plugin process looks for all local installed site packages that start with `
 The plugin process will loop through these potential ape plugins and see which ones have created a plugin type registration.
 If the plugin type registration is found, then ``ape`` knows that this package is a plugin and attempts to process it according to registration interface. 
 Then we have a set of registered plugins that the registration process defines it needs. The ``@hookspec`` decorator describes how the plugin works. 
-:ref:`Find out more about pluggy specifications here: <https://pluggy.readthedocs.io/en/stable/index.html#specifications>`
+Find out more about ``@hookspec`` in the `Pluggy documentation <https://pluggy.readthedocs.io/en/stable/index.html#specifications>`_.
 
+Also note that typically, ``_cli.py`` is used instead of ``__init__.py`` for the location of the Click CLI group, because it is logically separate from the Python module loading process. 
+If you try to define them together and use ape as a library as well, there is a race condition in the loading process that will prevent the cli plugin from working.
 
 CLI registration
 
@@ -53,8 +55,8 @@ Source type
 
 Compiler manager
     The compiler manager contains all the registered compilers. 
-    Compiler plugins must subclass the :doc:`CompilerAPI <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI>` object and implement all ``abstractmethod``s.
-Implement :doc:`get_versions <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI.get_versions>` in compile.
+    Compiler plugins must subclass the :doc:`CompilerAPI <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI>`_ object and implement all ``abstractmethod``.
+Implement `get_versions <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI.get_versions>`_ in compile.
 CompilerAPI plugins
 
 ContractType type
