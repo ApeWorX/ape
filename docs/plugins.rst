@@ -50,7 +50,7 @@ Source type
 
 Compiler manager
     The compiler manager contains all the registered compilers. 
-    Compilers subclass the compiler API object, implementing the CompilerAPI methods.
+    Compiler plugins must subclass the :doc:`CompilerAPI <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI>` object and implement all ``abstractmethod``s.
 Implement :doc:`get_versions <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI.get_versions>` in compile.
 CompilerAPI plugins
 
