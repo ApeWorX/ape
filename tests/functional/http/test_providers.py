@@ -1,10 +1,10 @@
 from pathlib import Path
 
 import pytest
-from ape_http import EthereumProvider
 
 from ape.api import ReceiptAPI, TransactionStatusEnum
 from ape.exceptions import VirtualMachineError
+from ape_http import EthereumProvider
 
 
 class TestEthereumProvider:

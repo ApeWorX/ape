@@ -19,6 +19,7 @@ class ApeCliContextObject:
         if base_error:
             logger.error(msg)
             raise Abort(msg) from base_error
+
         raise Abort(msg)
 
 

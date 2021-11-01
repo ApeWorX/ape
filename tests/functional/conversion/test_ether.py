@@ -1,11 +1,11 @@
 import pytest  # type: ignore
-from ape_ethereum.converters import ETHER_UNITS
 from eth_typing import ChecksumAddress
 from hypothesis import given
 from hypothesis import strategies as st
 
 from ape import convert
 from ape.exceptions import ConversionError
+from ape_ethereum.converters import ETHER_UNITS
 
 
 @pytest.mark.fuzzing

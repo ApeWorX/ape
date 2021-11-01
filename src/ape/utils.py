@@ -6,9 +6,12 @@ from copy import deepcopy
 from functools import lru_cache
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import yaml
+from eth_account import Account
+from eth_account.hdaccount import HDPath, seed_from_mnemonic
+from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
 from ape.exceptions import OutOfGasError, TransactionError, VirtualMachineError
@@ -23,6 +26,9 @@ try:
     from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
+
+# TODO: Replace this with steve's work / mnemonic from config
+_DEVELOPMENT_MNEMONIC = "test test test test test test test test test test test junk"
 
 
 @lru_cache(maxsize=None)
@@ -142,6 +148,40 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
     return hasher(source).hexdigest()
 
 
+GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", "private_key"))
+
+
+def generate_dev_accounts(
+    mnemonic: str = _DEVELOPMENT_MNEMONIC,
+    number_of_accounts: int = 10,
+    hd_path_format="m/44'/60'/0'/{}",
+) -> List[GeneratedDevAccount]:
+    """
+    Creates account for using in chain genesis.
+    """
+    seed = seed_from_mnemonic(mnemonic, "")
+    accounts = []
+
+    for i in range(0, number_of_accounts):
+        hd_path = HDPath(hd_path_format.format(i))
+        private_key = HexBytes(hd_path.derive(seed)).hex()
+        address = Account.from_key(private_key).address
+        accounts.append(GeneratedDevAccount(address, private_key))
+
+    return accounts
+
+
+def get_gas_estimation_revert_error_message(tx_error: Exception) -> str:
+    """
+    Use this method in ``ProviderAPI`` implementations when error handling
+    transaction errors. This is to have a consistent experience across providers.
+    """
+    return (
+        f"Gas estimation failed: '{tx_error}'. This transaction will likely revert. "
+        "If you wish to broadcast, you must set the gas limit manually."
+    )
+
+
 def get_tx_error_from_web3_value_error(web3_value_error: ValueError) -> TransactionError:
     """
     Returns a custom error from ``ValueError`` from web3.py.
@@ -178,6 +218,8 @@ __all__ = [
     "cached_property",
     "deep_merge",
     "expand_environment_variables",
+    "generate_dev_accounts",
+    "get_gas_estimation_revert_error_message",
     "load_config",
     "singledispatchmethod",
 ]

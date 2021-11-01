@@ -72,7 +72,8 @@ class AccountAPI(AddressAPI):
 
         if txn.total_transfer_value > self.balance:
             raise AccountsError(
-                "Transfer value meets or exceeds account balance. "
+                "Transfer value meets or exceeds account balance.\n"
+                "Are you using the correct provider/account combination?\n"
                 f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
             )
 
@@ -198,3 +199,23 @@ class AccountContainerAPI:
     def _verify_unused_alias(self, account):
         if account.alias and account.alias in self.aliases:
             raise AliasAlreadyInUseError(account.alias)
+
+
+class TestAccountContainerAPI(AccountContainerAPI):
+    """
+    Test account containers for ``ape test`` should implement
+    this API instead of ``AccountContainerAPI`` directly. This
+    is how they show up in the ``accounts`` test fixture.
+    Account containers that inherit from this class are not
+    accessible outside of tests (unless imported manually).
+    """
+
+
+class TestAccountAPI(AccountAPI):
+    """
+    Test accounts for ``ape test`` should implement this API
+    instead of ``AccountAPI`` directly. This is how they show
+    up in the ``accounts`` test fixture.
+    Accounts that inherit from this class are not accessible
+    outside of tests (unless imported manually).
+    """
