@@ -2,14 +2,14 @@ BAD_COMMAND = "not-a-name"
 
 
 def test_run(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["run"])
+    result = runner.invoke(ape_cli, ["run", "--network", "ethereum:development:test"])
     assert result.exit_code == 1
     assert "Must provide at least one script name or path" in result.output
 
-    result = runner.invoke(ape_cli, ["run", BAD_COMMAND])
+    result = runner.invoke(ape_cli, ["run", BAD_COMMAND, "--network", "ethereum:development:test"])
     assert result.exit_code == 1
     if not (project.path / "scripts").exists():
-        assert "No `scripts/` directory detected to run script" in result.output
+        assert "No 'scripts/' directory detected to run script" in result.output
 
     else:
         assert f"No script named '{BAD_COMMAND}' detected in scripts folder" in result.output
@@ -18,4 +18,4 @@ def test_run(ape_cli, runner, project):
         result = runner.invoke(
             ape_cli, ["run", script_file.stem, "--network", "ethereum:development:test"]
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output

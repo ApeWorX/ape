@@ -6,14 +6,14 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from ape.api import ReceiptAPI, TransactionStatusEnum
 from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError
 from ape_http import EthereumProvider
-from ape_http.providers import _get_tx_error
+from ape_http.providers import _get_vm_error
 
 _TEST_REVERT_REASON = "TEST REVERT REASON"
 
 
 def test_get_tx_error_from_web3_value_error_when_web3_contract_logic_error():
     test_err = Web3ContractLogicError(f"execution reverted: {_TEST_REVERT_REASON}")
-    actual = _get_tx_error(test_err)
+    actual = _get_vm_error(test_err)
     assert isinstance(actual, ContractLogicError)
     assert actual.revert_message == _TEST_REVERT_REASON
 

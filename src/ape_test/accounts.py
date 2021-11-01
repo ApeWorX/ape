@@ -24,7 +24,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         for index in range(0, len(self)):
             account = self._dev_accounts[index]
             yield TestAccount(
-                self, _index=index, _address=account["address"], _private_key=account["private_key"]
+                self, _index=index, _address=account.address, _private_key=account.private_key
             )  # type: ignore
 
 

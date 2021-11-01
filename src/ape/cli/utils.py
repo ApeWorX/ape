@@ -9,6 +9,7 @@ class Abort(click.ClickException):
     def __init__(self, message):
         if not message.endswith("."):
             message = f"{message}."
+
         super().__init__(message)
 
     def show(self, file=None):

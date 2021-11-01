@@ -26,7 +26,7 @@ except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
 # TODO: Replace this with steve's work / mnemonic from config
-DEVELOPMENT_MNEMONIC = "test test test test test test test test test test test junk"
+_DEVELOPMENT_MNEMONIC = "test test test test test test test test test test test junk"
 
 
 @lru_cache(maxsize=None)
@@ -146,22 +146,25 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
     return hasher(source).hexdigest()
 
 
-def generate_dev_accounts(number_of_accounts: int = 10) -> List:
-    """
-    Creates accounts:
+GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", "private_key"))
 
-    Account 0.
-    address: 0x1e59ce931B4CFea3fe4B875411e280e173cB7A9C
-    private__key: 0xdd23ca549a97cb330b011aebb674730df8b14acaee42d211ab45692699ab8ba5
+
+def generate_dev_accounts(
+    mnemonic: str = _DEVELOPMENT_MNEMONIC,
+    number_of_accounts: int = 10,
+    hd_path_format="m/44'/60'/0'/{}",
+) -> List[GeneratedDevAccount]:
     """
-    seed = seed_from_mnemonic(DEVELOPMENT_MNEMONIC, "")
+    Creates account for using in chain genesis.
+    """
+    seed = seed_from_mnemonic(mnemonic, "")
     accounts = []
 
     for i in range(0, number_of_accounts):
-        hd_path = HDPath(f"m/44'/60'/0'/{i}")
+        hd_path = HDPath(hd_path_format.format(i))
         private_key = HexBytes(hd_path.derive(seed)).hex()
         address = Account.from_key(private_key).address
-        accounts.append({"address": address, "private_key": private_key})
+        accounts.append(GeneratedDevAccount(address, private_key))
 
     return accounts
 

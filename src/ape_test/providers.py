@@ -7,7 +7,7 @@ from web3 import EthereumTesterProvider, Web3
 
 from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.exceptions import ContractLogicError
-from ape.utils import DEVELOPMENT_MNEMONIC
+from ape.utils import _DEVELOPMENT_MNEMONIC
 
 
 class TestEVMBackend(PyEVMBackend):
@@ -18,10 +18,10 @@ class TestEVMBackend(PyEVMBackend):
     def __init__(self, initial_ether: int = 10000):
         genesis_state = PyEVMBackend.generate_genesis_state(
             overrides={"balance": to_wei(initial_ether, "ether")},
-            mnemonic=DEVELOPMENT_MNEMONIC,
+            mnemonic=_DEVELOPMENT_MNEMONIC,
             num_accounts=10,
         )
-        super().__init__(genesis_state=genesis_state, mnemonic=DEVELOPMENT_MNEMONIC)
+        super().__init__(genesis_state=genesis_state, mnemonic=_DEVELOPMENT_MNEMONIC)
 
 
 class LocalNetwork(ProviderAPI):

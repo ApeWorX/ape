@@ -1,6 +1,6 @@
 from enum import IntEnum
 from pathlib import Path
-from typing import Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 from dataclassy import as_dict
 from hexbytes import HexBytes
@@ -170,11 +170,11 @@ class ProviderAPI:
 
 class TestProviderAPI(ProviderAPI):
     @abstractmethod
-    def snapshot(self) -> int:
+    def snapshot(self) -> Dict:
         ...
 
     @abstractmethod
-    def revert(self, snapshot_id: int):
+    def revert(self, snapshot: Dict):
         ...
 
     @abstractmethod

@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, Union
 from urllib.parse import urlparse
 
 from eth_typing import HexStr
@@ -16,17 +16,18 @@ from web3.types import RPCEndpoint
 from ape.api import ReceiptAPI, TransactionAPI, TransactionStatusEnum
 from ape.api.config import ConfigItem
 from ape.api.providers import TestProviderAPI
-from ape.exceptions import ContractLogicError, OutOfGasError, ProviderError, TransactionError
+from ape.exceptions import (
+    ContractLogicError,
+    OutOfGasError,
+    ProviderError,
+    RPCError,
+    TransactionError,
+    VirtualMachineError,
+)
 from ape.logging import logger
 from ape.utils import generate_dev_accounts, get_gas_estimation_revert_error_message
 
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545", "chain_name": "devchain"}
-
-
-class RPCError(ProviderError):
-    """
-    An error from RPC calls.
-    """
 
 
 class EphemeralGeth(LoggingMixin, DevGethProcess):
@@ -34,14 +35,21 @@ class EphemeralGeth(LoggingMixin, DevGethProcess):
     A developer-configured geth that only exists until disconnected.
     """
 
-    def __init__(self, chain_name, base_directory: Path, hostname: str, port: int):
+    def __init__(
+        self,
+        chain_name,
+        base_directory: Path,
+        hostname: str,
+        port: int,
+        chain_id: int = 1337,
+        initial_balance: Union[str, int] = "10000000000000000000000",
+        accounts: List = None,
+    ):
         self.data_dir = base_directory / chain_name
         self._hostname = hostname
         self._port = port
 
-        chain_id = 1337
-        initial_balance = "10000000000000000000000"  # 10,000 ETH
-        dev_accounts = generate_dev_accounts()
+        accounts = accounts or generate_dev_accounts()
         genesis_data: Dict = {
             "coinbase": "0x0000000000000000000000000000000000000000",
             "config": {
@@ -60,7 +68,7 @@ class EphemeralGeth(LoggingMixin, DevGethProcess):
                 "londonBlock": 0,
                 "ethash": {},
             },
-            "alloc": {a["address"]: {"balance": initial_balance} for a in dev_accounts},
+            "alloc": {a.address: {"balance": str(initial_balance)} for a in accounts},
         }
         geth_cmd_args = {
             "rpc_addr": hostname,
@@ -115,6 +123,20 @@ class NetworkConfig(ConfigItem):
     ethereum: EthereumNetworkConfig = EthereumNetworkConfig()
 
 
+class GethNotInstalledError(ConnectionError):
+    def __init__(self):
+        super().__init__(
+            "geth is not installed and there is no local provider running.\n"
+            "Your options are:\n"
+            "\t1. Install geth and try again\n"
+            "\t2. use a different ape provider plugin\n"
+            "\t3. run a local blockchain separately\n\n"
+            "Also make sure you to configure the URI in `ape-config.yaml` "
+            "if it is not standard.\n"
+            "Also note that the HTTP provider is only meant to support geth."
+        )
+
+
 class EthereumProvider(TestProviderAPI):
     _web3: Web3 = None  # type: ignore
     _geth: Optional[EphemeralGeth] = None
@@ -134,12 +156,16 @@ class EthereumProvider(TestProviderAPI):
 
     def connect(self):
         self._web3 = Web3(HTTPProvider(self.uri))
+
+        # Try to start an ephemeral geth process if no provider is running.
         if not self._web3.isConnected():
             parsed_uri = urlparse(self.uri)
 
-            # If not connecting to localhost, raise original error.
             if parsed_uri.hostname not in ("localhost", "127.0.0.1"):
                 raise ConnectionError(f"Unable to connect web3 to {parsed_uri.hostname}")
+
+            if not shutil.which("geth"):
+                raise GethNotInstalledError()
 
             self._geth = EphemeralGeth(
                 self._chain_name, self.data_folder, parsed_uri.hostname, parsed_uri.port
@@ -148,9 +174,18 @@ class EthereumProvider(TestProviderAPI):
 
             if not self._web3.isConnected():
                 self._geth.disconnect()
-                raise ConnectionError("Unable to connect web3 to geth.")
+                raise ConnectionError("Unable to connect to locally running geth.")
 
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
+
+        # Try to detect if chain used clique (PoA).
+        node_info = self._web3.geth.admin.node_info
+        chain_config = node_info.get("protocols", {}).get("eth", {}).get("config")
+        is_poa_chain = "clique" in chain_config
+
+        # If network is rinkeby, goerli, or kovan (PoA test-nets)
+        if self.network.chain_id in (4, 5, 42) or is_poa_chain:
+            self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         if self.network.name != "development" and self.network.chain_id != self.chain_id:
             raise ProviderError(
@@ -185,7 +220,7 @@ class EthereumProvider(TestProviderAPI):
             txn_dict = txn.as_dict()
             return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
         except ValueError as err:
-            tx_error = _get_tx_error(err)
+            tx_error = _get_vm_error(err)
 
             # If this is the cause of a would-be revert,
             # raise ContractLogicError so that we can confirm tx-reverts.
@@ -252,7 +287,7 @@ class EthereumProvider(TestProviderAPI):
         try:
             txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
         except ValueError as err:
-            raise _get_tx_error(err) from err
+            raise _get_vm_error(err) from err
 
         receipt = self.get_transaction(txn_hash.hex())
 
@@ -267,10 +302,10 @@ class EthereumProvider(TestProviderAPI):
         """
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
 
-    def snapshot(self) -> int:
+    def snapshot(self) -> Dict:
         raise NotImplementedError()
 
-    def revert(self, snapshot_id: int):
+    def revert(self, snapshot_id: Dict):
         raise NotImplementedError()
 
     def set_head(self, block_number: str):
@@ -286,14 +321,19 @@ class EthereumProvider(TestProviderAPI):
         if not response:
             raise RPCError(f"Unable to make request {method}")
 
-        error_message = response.get("error", {}).get("message")
-        if error_message:
+        error_data = response.get("error")
+        if error_data:
+            error_message = (
+                error_data.get("message", error_data)
+                if isinstance(error_data, dict)
+                else error_data
+            )
             raise RPCError(error_message)
 
         return response.get("result")
 
 
-def _get_tx_error(web3_value_error: ValueError) -> TransactionError:
+def _get_vm_error(web3_value_error: ValueError) -> TransactionError:
     """
     Returns a custom error from ``ValueError`` from web3.py.
     """
@@ -303,14 +343,14 @@ def _get_tx_error(web3_value_error: ValueError) -> TransactionError:
         return ContractLogicError(message)
 
     if not len(web3_value_error.args):
-        return TransactionError(web3_value_error)
+        return VirtualMachineError(web3_value_error)
 
     err_data = web3_value_error.args[0]
     if not isinstance(err_data, dict):
-        return TransactionError(web3_value_error)
+        return VirtualMachineError(web3_value_error)
 
     message = str(err_data.get("message"))
     if not message:
-        return TransactionError(web3_value_error)
+        return VirtualMachineError(web3_value_error)
 
-    return TransactionError(message=message, code=err_data.get("code"))
+    return VirtualMachineError(message=message, code=err_data.get("code"))
