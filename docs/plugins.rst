@@ -51,17 +51,20 @@ These are then output as a JSON file to the ``.build`` directory. They can then 
 
 
 Source type
-    Types from types module :doc:`source types <autoapi/ape/types/contract/index.html#ape.types.contract.Source>`
+===========
+Types from types module :doc:`source types <autoapi/ape/types/contract/index.html#ape.types.contract.Source>`
 
 Compiler manager
-    The compiler manager contains all the registered compilers. 
-    Compiler plugins must subclass the :doc:`CompilerAPI <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI>`_ object and implement all ``abstractmethod``.
+================
+The compiler manager contains all the registered compilers. 
+Compiler plugins must subclass the `CompilerAPI <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI>`_ object and implement all ``abstractmethod``.
 Implement `get_versions <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI.get_versions>`_ in compile.
 CompilerAPI plugins
 
 ContractType type
-    The compilation produces - .build
-    :doc:`ContractType <autoapi/ape/types/contract/index.html#ape.types.contract.ContractType>`
+==================
+The compilation produces - .build
+`ContractType <autoapi/ape/types/contract/index.html#ape.types.contract.ContractType>`_
 
 
 Account registration process flow
