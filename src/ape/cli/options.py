@@ -62,14 +62,15 @@ def ape_cli_context():
     return decorator
 
 
-network_option = click.option(
-    "--network",
-    type=NetworkChoice(case_sensitive=False),
-    default=networks.default_ecosystem.name,
-    help="Override the default network and provider. (see ``ape networks list`` for options)",
-    show_default=True,
-    show_choices=False,
-)
+def network_option(default: str = networks.default_ecosystem.name):
+    return click.option(
+        "--network",
+        type=NetworkChoice(case_sensitive=False),
+        default=default,
+        help="Override the default network and provider. (see ``ape networks list`` for options)",
+        show_default=True,
+        show_choices=False,
+    )
 
 
 def skip_confirmation_option(help=""):
