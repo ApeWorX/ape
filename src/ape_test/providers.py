@@ -13,7 +13,7 @@ from eth_utils.toolz import assoc
 from hexbytes import HexBytes
 from web3 import EthereumTesterProvider, Web3
 
-from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI, TransactionStatusEnum
+from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.exceptions import ContractLogicError, OutOfGasError, VirtualMachineError
 from ape.utils import generate_dev_accounts
 
@@ -154,8 +154,7 @@ class LocalNetwork(ProviderAPI):
             raise ContractLogicError(err_message) from err
 
         receipt = self.get_transaction(txn_hash.hex())
-
-        if receipt.status == TransactionStatusEnum.FAILING and receipt.gas_used == txn.gas_limit:
+        if txn.gas_limit is not None and receipt.ran_out_of_gas(txn.gas_limit):
             raise OutOfGasError()
 
         return receipt
