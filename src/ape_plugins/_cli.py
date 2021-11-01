@@ -21,6 +21,17 @@ def cli():
     Command-line helper for managing installed plugins.
     """
 
+def _remove_prefix_add_version(set_convert,_prefix, version = None):
+    set_print= set()
+    for i in set_convert:
+        if i.startswith(_prefix):
+            text = i[len(_prefix):]
+        if version:
+            set_print.add(f"{text}    ({version})")
+        else:
+            set_print.add(text)
+
+    return set_print
 
 @cli.command(name="list", short_help="List installed plugins")
 @click.option(
@@ -32,9 +43,7 @@ def cli():
     help="Display all plugins (including Core)",
 )
 
-@ape_cli_context()
-def _remove_prefix(text, prefix):
-    return text[text.startswith(prefix) and len(prefix):]
+
 
 @ape_cli_context()
 def _list(cli_ctx, display_all):
@@ -42,63 +51,54 @@ def _list(cli_ctx, display_all):
     installed_first = set()
     installed_third = set()
     for name, plugin in plugin_manager.list_name_plugin():
-        version_str = ""
         version = get_package_version(name)
 
         if name in FIRST_CLASS_PLUGINS:
             if not display_all:
             
                 continue  # NOTE: Skip 1st class plugins unless specified
-            #version_str = " (core)"
-            version_str = f" ({version})"
             installed_first.add(f"{name}")
 
         elif name in SECOND_CLASS_PLUGINS:
             if not display_all:
                 continue
-            #version_str = "( second)"
-            version_str = f" ({version})"
             installed_second.add(f"{name}")
 
         elif name not in FIRST_CLASS_PLUGINS or name not in SECOND_CLASS_PLUGINS:
-            #version_str = "( third)"
-            version_str = f" ({version})"
             installed_third.add(f"{name}    ({version})")
         else:
             print(name + "is not a plugin")
 
+    #This will most likely be empty
     available_first = list (FIRST_CLASS_PLUGINS - installed_first)
+    
     available_second = list (SECOND_CLASS_PLUGINS - installed_second)
+    _prefix = "ape_"
 
-    available_first_print = set()
+    installed_first_print = _remove_prefix_add_version(installed_first, _prefix)
+    available_second_print = _remove_prefix_add_version(available_second, _prefix, version)
+    installed_second_print = _remove_prefix_add_version(installed_second, _prefix, version)
 
-        for i in available_first:
-        text = _remove_prefix(i, "ape_")
-        available_first_print.add(text)
-        #available_first_print.add(f"{text}    ({version})")
-    
-    print(available_first_print)
-    
     if installed_first:
         click.echo("Installed CORE Plugins:")
-        click.echo("  " + "\n  ".join(installed_first))
+        click.echo("  " + "\n  ".join(installed_first_print))
     else:
         cli_ctx.logger.info("No CORE plugins installed")
 
     if installed_second:
         click.echo("\n"+ "(2nd) Installed Second Class Plugins:")
-        click.echo("  " + "\n  ".join(installed_second))
+        click.echo("  " + "\n  ".join(installed_second_print))
     else:
         cli_ctx.logger.info("No Second Class Plugins installed")
 
 
     if available_first:
         click.echo("\n"+ "You are missing these CORE First Class:")
-        click.echo("  " + "\n  ".join(available_first))
+        click.echo("  " + "\n  ".join(available_first_print))
     
-    if available_second:
+    if available_second_print:
         click.echo("\n"+ "(2nd) Available Second Class Plugins:")
-        click.echo("  " + "\n  ".join(available_second))
+        click.echo("  " + "\n  ".join(available_second_print))
     else:
         cli_ctx.logger.info("You have installed all the Second Class Plugins")
 
