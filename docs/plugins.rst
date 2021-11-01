@@ -31,6 +31,9 @@ The plugin process looks for all local installed site packages that start with `
 The plugin process will loop through these potential ape plugins and see which ones have created a plugin type registration.
 If the plugin type registration is found, then ``ape`` knows that this package is a plugin and attempts to process it according to registration interface. 
 Then we have a set of registered plugins that the registration process defines it needs. The ``@hookspec`` decorator describes how the plugin works. 
+:ref:`Find out more about pluggy specifications here: <https://pluggy.readthedocs.io/en/stable/index.html#specifications>`
+
+
 CLI registration
 
 
