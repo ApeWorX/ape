@@ -127,14 +127,12 @@ Ape is primarily meant to be used as a command line tool. Here are some things y
     # Here is an example of a project with a contract you interact with: 
     $ git clone https://github.com/brownie-mix/vyper-token-mix.git
     $ cd vyper-token-mix/
-    # You can compile contracts in the contracts folder of your project
+    # You will need a compiler plugin in order to compile Vyper code
+    $ ape plugins add vyper
+    # Now you can compile Vyper contracts in the contracts folder of your project
     $ ape compile --size
-
-    # Issue 202
-    # A know issue is unable to read extension .vy or .sol
-    # run the command ape plugins add vyper
-    # We show an error but not a suggested command to fix
-
+    # Now you should see inside the .build directory your compiled json file
+    $ ls .build
 
 .. code-block:: bash
 
