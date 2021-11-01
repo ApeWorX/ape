@@ -140,14 +140,6 @@ Ape is primarily meant to be used as a command line tool. Here are some things y
     # Add new plugins to ape
     $ ape plugins add plugin-name
 
-
-.. code-block:: bash
-
-    # Not part of ape -h, what does -k mean, ape test does not work
-    # Run your tests with pytest
-    $ ape test -k test_only_one_thing --coverage --gas
-
-
 .. code-block:: bash
 
     # Connect an IPython session through your favorite provider
@@ -183,4 +175,10 @@ Ape also works as a package. You can use the same networks, accounts, and projec
     c.viewThis()  # Make Web3 calls
     c.doThat({"from": a})  # Make Web3 transactions
     assert c.MyEvent[-1].caller == a  # Search through Web3 events
+
+.. code-block:: bash
+
+    # Not part of ape -h, what does -k mean, ape test does not work
+    # Run your tests with pytest
+    $ ape test -k test_only_one_thing --coverage --gas
 
