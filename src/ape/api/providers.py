@@ -1,6 +1,6 @@
 from enum import IntEnum
 from pathlib import Path
-from typing import Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 from dataclassy import as_dict
 from hexbytes import HexBytes
@@ -94,6 +94,9 @@ class ReceiptAPI:
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
+    def ran_out_of_gas(self, gas_limit: int) -> bool:
+        return self.status == TransactionStatusEnum.FAILING and self.gas_used == gas_limit
+
     @classmethod
     @abstractmethod
     def decode(cls, data: dict) -> "ReceiptAPI":
@@ -165,4 +168,18 @@ class ProviderAPI:
 
     @abstractmethod
     def get_events(self, **filter_params) -> Iterator[dict]:
+        ...
+
+
+class TestProviderAPI(ProviderAPI):
+    @abstractmethod
+    def snapshot(self) -> Dict:
+        ...
+
+    @abstractmethod
+    def revert(self, snapshot: Dict):
+        ...
+
+    @abstractmethod
+    def set_head(self, block_number: str):
         ...
