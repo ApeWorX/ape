@@ -11,7 +11,7 @@ from ape.cli import network_option
     short_help="Launches pytest and runs the tests for a project",
     context_settings=dict(ignore_unknown_options=True),
 )
-@network_option(default="ethereum:development:test")
+@network_option()
 @click.argument("pytest_args", nargs=-1, type=click.UNPROCESSED)
 def cli(network, pytest_args):
     if "--network" not in pytest_args:

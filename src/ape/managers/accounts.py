@@ -24,23 +24,6 @@ class AccountManager:
     plugin_manager: PluginManager
     network_manager: NetworkManager
 
-    @property
-    def test_accounts(self) -> List[TestAccountAPI]:
-        """
-        Accounts for testing.
-        """
-        accounts = []
-        for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
-            if not issubclass(account_type, TestAccountAPI):
-                continue
-
-            container = container_type(None, account_type, self.config)
-            for account in container:
-                self._inject_provider(account)
-                accounts.append(account)
-
-        return accounts
-
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
         containers = {}
@@ -54,7 +37,7 @@ class AccountManager:
 
             accounts_folder = data_folder / plugin_name
             accounts_folder.mkdir(exist_ok=True)
-            containers[plugin_name] = container_type(accounts_folder, account_type)
+            containers[plugin_name] = container_type(accounts_folder, account_type, self.config)
 
         return containers
 
@@ -73,16 +56,41 @@ class AccountManager:
         return accounts_with_type
 
     def __len__(self) -> int:
-        return sum(len(container) for container in self.containers.values())
+        return (
+            len(self.test_accounts)
+            if self._is_test_mode
+            else sum(len(container) for container in self.containers.values())
+        )
 
     def __iter__(self) -> Iterator[AccountAPI]:
-        for container in self.containers.values():
-            for account in container:
-                self._inject_provider(account)
-                yield account
+        if self._is_test_mode:
+            yield from self.test_accounts
+        else:
+            for container in self.containers.values():
+                for account in container:
+                    self._inject_provider(account)
+                    yield account
 
     def __repr__(self) -> str:
         return "[" + ", ".join(repr(a) for a in self) + "]"
+
+    @property
+    def _is_test_mode(self):
+        return self.network_manager.active_provider.name == "test"
+
+    @cached_property
+    def test_accounts(self) -> List[TestAccountAPI]:
+        accounts = []
+        for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
+            if not issubclass(account_type, TestAccountAPI):
+                continue
+
+            container = container_type(None, account_type, self.config)
+            for account in container:
+                self._inject_provider(account)
+                accounts.append(account)
+
+        return accounts
 
     def load(self, alias: str) -> AccountAPI:
         if alias == "":
