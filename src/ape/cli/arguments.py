@@ -18,6 +18,7 @@ def existing_alias_argument(account_type: Optional[Type[AccountAPI]] = None):
     return click.argument("alias", type=Alias(account_type=account_type))
 
 
-non_existing_alias_argument = click.argument(
-    "alias", callback=lambda ctx, param, value: _require_non_existing_alias(value)
-)
+def non_existing_alias_argument():
+    return click.argument(
+        "alias", callback=lambda ctx, param, value: _require_non_existing_alias(value)
+    )

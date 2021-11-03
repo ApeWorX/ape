@@ -14,7 +14,7 @@ from ape.version import version as ape_version  # type: ignore
     short_help="Load the console",
     context_settings=dict(ignore_unknown_options=True),
 )
-@network_option
+@network_option()
 @ape_cli_context()
 def cli(cli_ctx, network):
     """Opens a console for the local project."""
