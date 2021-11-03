@@ -45,19 +45,13 @@
 .. autoapisummary::
 
    ape.cli.existing_alias_argument
+   ape.cli.non_existing_alias_argument
    ape.cli.get_user_selected_account
    ape.cli.account_option_that_prompts_when_not_given
    ape.cli.ape_cli_context
+   ape.cli.network_option
    ape.cli.skip_confirmation_option
 
-
-
-**Attributes**:
-
-.. autoapisummary::
-
-   ape.cli.non_existing_alias_argument
-   ape.cli.network_option
 
 
 
@@ -69,10 +63,8 @@
 
 
 
-.. data:: non_existing_alias_argument
-   
+.. py:function:: non_existing_alias_argument()
 
-   
 
 
 
@@ -229,10 +221,8 @@
 
 
 
-.. data:: network_option
-   
+.. py:function:: network_option()
 
-   
 
 
 

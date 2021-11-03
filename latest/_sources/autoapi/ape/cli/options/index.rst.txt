@@ -24,17 +24,11 @@
 
    ape.cli.options.verbosity_option
    ape.cli.options.ape_cli_context
+   ape.cli.options.network_option
    ape.cli.options.skip_confirmation_option
    ape.cli.options._account_callback
    ape.cli.options.account_option_that_prompts_when_not_given
 
-
-
-**Attributes**:
-
-.. autoapisummary::
-
-   ape.cli.options.network_option
 
 
 
@@ -70,10 +64,8 @@
 
 
 
-.. data:: network_option
-   
+.. py:function:: network_option()
 
-   
 
 
 
