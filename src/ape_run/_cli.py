@@ -59,7 +59,7 @@ def _run_script(cli_ctx, script_path, interactive=False):
     help="Drop into interactive console session after running",
 )
 @ape_cli_context()
-@network_option
+@network_option()
 def cli(cli_ctx, scripts, interactive, network):
     """
     NAME - Path or script name (from ``scripts/`` folder)
