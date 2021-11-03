@@ -42,7 +42,7 @@ def _list(cli_ctx, all):
 
 
 @cli.command(short_help="Create a new keyfile account with a random private key")
-@non_existing_alias_argument
+@non_existing_alias_argument()
 @ape_cli_context()
 def generate(cli_ctx, alias):
     path = container.data_folder.joinpath(f"{alias}.json")
@@ -64,7 +64,7 @@ def generate(cli_ctx, alias):
 
 # Different name because `import` is a keyword
 @cli.command(name="import", short_help="Add a new keyfile account by entering a private key")
-@non_existing_alias_argument
+@non_existing_alias_argument()
 @ape_cli_context()
 def _import(cli_ctx, alias):
     path = container.data_folder.joinpath(f"{alias}.json")
