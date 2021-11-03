@@ -94,6 +94,13 @@ class ReceiptAPI:
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
+    def ran_out_of_gas(self, gas_limit: int) -> bool:
+        """
+        Returns ``True`` when the transaction failed and used the
+        same amount of gas as the given ``gas_limit``.
+        """
+        return self.status == TransactionStatusEnum.FAILING and self.gas_used == gas_limit
+
     @classmethod
     @abstractmethod
     def decode(cls, data: dict) -> "ReceiptAPI":
