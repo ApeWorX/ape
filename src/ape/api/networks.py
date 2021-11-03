@@ -199,7 +199,7 @@ class NetworkAPI:
     data_folder: Path  # For caching any data that might need caching
     request_header: str
 
-    _default_provider: str = ""
+    _default_provider: str = "test"
 
     @cached_property
     def config(self) -> ConfigItem:
