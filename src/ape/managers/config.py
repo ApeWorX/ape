@@ -56,6 +56,10 @@ class ConfigManager:
         if len(user_config.keys()) > 0:
             raise ConfigError("Unprocessed config items.")
 
+    @property
+    def test_config(self) -> ConfigItem:
+        return self.get_config("test")
+
     def get_config(self, plugin_name: str) -> ConfigItem:
         if plugin_name not in self._plugin_configs:
             # plugin has no registered config class, so return empty config

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Iterator, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
 
 from ape.types import (
     AddressType,
@@ -15,6 +15,9 @@ from .address import AddressAPI
 from .base import abstractdataclass, abstractmethod
 from .contracts import ContractContainer, ContractInstance
 from .providers import ReceiptAPI, TransactionAPI
+
+if TYPE_CHECKING:
+    from ape.managers.config import ConfigManager
 
 
 # NOTE: AddressAPI is a dataclass already
@@ -135,6 +138,7 @@ class AccountAPI(AddressAPI):
 class AccountContainerAPI:
     data_folder: Path
     account_type: Type[AccountAPI]
+    config_manager: "ConfigManager"
 
     @property
     @abstractmethod
@@ -202,6 +206,7 @@ class AccountContainerAPI:
 
 
 class TestAccountContainerAPI(AccountContainerAPI):
+
     """
     Test account containers for ``ape test`` should implement
     this API instead of ``AccountContainerAPI`` directly. This

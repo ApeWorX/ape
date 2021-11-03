@@ -34,7 +34,7 @@ class AccountManager:
             if not issubclass(account_type, TestAccountAPI):
                 continue
 
-            container = container_type(None, account_type)
+            container = container_type(None, account_type, self.config)
             for account in container:
                 self._inject_provider(account)
                 accounts.append(account)

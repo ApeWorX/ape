@@ -27,9 +27,6 @@ try:
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
-# TODO: Replace this with steve's work / mnemonic from config
-_DEVELOPMENT_MNEMONIC = "test test test test test test test test test test test junk"
-
 
 @lru_cache(maxsize=None)
 def get_distributions():
@@ -152,7 +149,7 @@ GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", 
 
 
 def generate_dev_accounts(
-    mnemonic: str = _DEVELOPMENT_MNEMONIC,
+    mnemonic,
     number_of_accounts: int = 10,
     hd_path_format="m/44'/60'/0'/{}",
 ) -> List[GeneratedDevAccount]:
