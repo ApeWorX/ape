@@ -32,7 +32,7 @@ class AccountManager:
         for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
             accounts_folder = data_folder / plugin_name
             accounts_folder.mkdir(exist_ok=True)
-            containers[plugin_name] = container_type(accounts_folder, account_type)
+            containers[plugin_name] = container_type(accounts_folder, account_type, self.config)
 
         return containers
 
