@@ -92,6 +92,12 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape_test.LocalNetwork.get_events">get_events</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_test.Config">Config</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape_test.Config.mnemonic">mnemonic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_test.Config.number_of_accounts">number_of_accounts</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_test.config_class">config_class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_test.providers">providers</a></li>
 </ul>
 </li>
@@ -176,6 +182,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape_test.LocalNetwork" title="ape_test.LocalNetwork"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LocalNetwork</span></code></a></p></td>
 <td><p>A Provider must work with a particular Network in a particular Ecosystem</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_test.Config" title="ape_test.Config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Config</span></code></a></p></td>
+<td><p>Each plugin must inherit from this Config base class</p></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Functions</strong>:</p>
@@ -185,7 +194,10 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="providers/index.html#module-ape_test.providers" title="ape_test.providers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">providers</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_test.config_class" title="ape_test.config_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">config_class</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="providers/index.html#module-ape_test.providers" title="ape_test.providers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">providers</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -272,6 +284,28 @@
 <dd></dd></dl>
 
 </dd></dl>
+
+<dl class="py class">
+<dt id="ape_test.Config">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_test.</span></code><code class="sig-name descname"><span class="pre">Config</span></code><a class="headerlink" href="#ape_test.Config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../ape/api/config/index.html#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.config.ConfigItem</span></code></a></p>
+<p>Each plugin must inherit from this Config base class</p>
+<dl class="py attribute">
+<dt id="ape_test.Config.mnemonic">
+<code class="sig-name descname"><span class="pre">mnemonic</span></code><em class="property"> <span class="pre">:str</span> <span class="pre">=</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">junk</span></em><a class="headerlink" href="#ape_test.Config.mnemonic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape_test.Config.number_of_accounts">
+<code class="sig-name descname"><span class="pre">number_of_accounts</span></code><em class="property"> <span class="pre">:int</span> <span class="pre">=</span> <span class="pre">10</span></em><a class="headerlink" href="#ape_test.Config.number_of_accounts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape_test.config_class">
+<code class="sig-prename descclassname"><span class="pre">ape_test.</span></code><code class="sig-name descname"><span class="pre">config_class</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape_test.config_class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_test.providers">

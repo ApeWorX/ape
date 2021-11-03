@@ -27,6 +27,7 @@
 .. autoapisummary::
 
    ape_test.LocalNetwork
+   ape_test.Config
 
 
 
@@ -34,6 +35,7 @@
 
 .. autoapisummary::
 
+   ape_test.config_class
    ape_test.providers
 
 
@@ -96,6 +98,30 @@
 
    .. py:method:: get_events(self, **filter_params) -> Iterator[dict]
 
+
+
+
+
+.. py:class:: Config
+
+   Bases: :py:obj:`ape.api.config.ConfigItem`
+
+   Each plugin must inherit from this Config base class
+
+   .. attribute:: mnemonic
+      :annotation: :str = test test test test test test test test test test test junk
+
+      
+
+   .. attribute:: number_of_accounts
+      :annotation: :int = 10
+
+      
+
+
+
+
+.. py:function:: config_class()
 
 
 

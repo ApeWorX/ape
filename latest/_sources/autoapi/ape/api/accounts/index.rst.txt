@@ -79,6 +79,11 @@
 
       
 
+   .. attribute:: config_manager
+      :annotation: :ape.managers.config.ConfigManager
+
+      
+
    .. py:method:: aliases(self) -> Iterator[str]
       :property:
 
