@@ -65,7 +65,9 @@ class TestAccountAPI:
             test_account_api_can_sign.call(mock_transaction)
 
         expected = (
-            "Transfer value meets or exceeds account balance. (transfer_value=1000000, balance=0)."
+            "Transfer value meets or exceeds account balance.\n"
+            "Are you using the correct provider/account combination?\n"
+            "(transfer_value=1000000, balance=0)."
         )
         assert str(err.value) == expected
 
