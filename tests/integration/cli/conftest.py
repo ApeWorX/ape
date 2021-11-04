@@ -31,11 +31,17 @@ def project(project_folder):
     ape.project = previous_project
 
 
+class ApeCliRunner(CliRunner):
+    def invoke_using_test_network(self, cli, args, input=None):
+        args.extend(("--network", "::test"))
+        return self.invoke(cli, args, input=input)
+
+
 @pytest.fixture
 def runner(project_folder):
     previous_cwd = str(Path.cwd())
     os.chdir(str(project_folder))
-    runner = CliRunner()
+    runner = ApeCliRunner()
     yield runner
     os.chdir(previous_cwd)
 
