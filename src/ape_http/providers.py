@@ -251,10 +251,11 @@ class EthereumProvider(TestProviderAPI):
         try:
             return self._web3.geth.admin.node_info()
         except ValueError:
+            # Unsupported API in user's geth.
             return None
 
     def get_nonce(self, address: str) -> int:
-        """
+        """q
         Returns the number of transactions sent from an address.
         """
         return self._web3.eth.get_transaction_count(address)  # type: ignore
