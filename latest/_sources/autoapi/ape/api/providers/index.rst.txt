@@ -18,6 +18,7 @@
    ape.api.providers.TransactionStatusEnum
    ape.api.providers.ReceiptAPI
    ape.api.providers.ProviderAPI
+   ape.api.providers.TestProviderAPI
 
 
 
@@ -174,6 +175,12 @@
       Return str(self).
 
 
+   .. py:method:: ran_out_of_gas(self, gas_limit: int) -> bool
+
+      Returns ``True`` when the transaction failed and used the
+      same amount of gas as the given ``gas_limit``.
+
+
    .. py:method:: decode(cls, data: dict) -> ReceiptAPI
       :classmethod:
       :abstractmethod:
@@ -265,6 +272,23 @@
 
 
    .. py:method:: get_events(self, **filter_params) -> Iterator[dict]
+      :abstractmethod:
+
+
+
+
+
+.. py:class:: TestProviderAPI
+
+   Bases: :py:obj:`ProviderAPI`
+
+   An API for providers that have development functionality, such as snapshotting.
+
+   .. py:method:: snapshot(self) -> str
+      :abstractmethod:
+
+
+   .. py:method:: revert(self, snapshot_id: str)
       :abstractmethod:
 
 

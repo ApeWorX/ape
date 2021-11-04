@@ -69,6 +69,12 @@
       Return repr(self).
 
 
+   .. py:method:: test_accounts(self) -> List[ape.api.accounts.TestAccountAPI]
+
+      Accounts generated from the configured test mnemonic.
+      Use these accounts when testing.
+
+
    .. py:method:: load(self, alias: str) -> ape.api.accounts.AccountAPI
 
 

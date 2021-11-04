@@ -276,11 +276,16 @@
 
 
 
-.. py:exception:: Abort(message: str)
+.. py:exception:: Abort(message)
 
    Bases: :py:obj:`click.ClickException`
 
    Wrapper around a CLI exception
+
+   .. py:method:: __init__(self, message)
+
+      Initialize self.  See help(type(self)) for accurate signature.
+
 
    .. py:method:: show(self, file=None)
 

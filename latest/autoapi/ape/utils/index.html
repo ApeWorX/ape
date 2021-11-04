@@ -64,6 +64,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.deep_merge">deep_merge</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.expand_environment_variables">expand_environment_variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.load_config">load_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.GeneratedDevAccount">GeneratedDevAccount</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.generate_dev_accounts">generate_dev_accounts</a></li>
 </ul>
 </li>
 </ul>
@@ -147,6 +149,21 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.utils.load_config" title="ape.utils.load_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_config</span></code></a>(path: pathlib.Path, expand_envars=True, must_exist=False) → Dict</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.utils.generate_dev_accounts" title="ape.utils.generate_dev_accounts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_dev_accounts</span></code></a>(mnemonic, number_of_accounts: int = 10, hd_path_format=&quot;m/44'/60'/0'/{}&quot;) → List[GeneratedDevAccount]</p></td>
+<td><p>Creates accounts from the configured test mnemonic.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Attributes</strong>:</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.utils.GeneratedDevAccount" title="ape.utils.GeneratedDevAccount"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeneratedDevAccount</span></code></a></p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 <hr class="docutils" />
@@ -165,6 +182,19 @@
 <dt id="ape.utils.load_config">
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">load_config</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_envars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">must_exist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><a class="headerlink" href="#ape.utils.load_config" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py data">
+<dt id="ape.utils.GeneratedDevAccount">
+<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">GeneratedDevAccount</span></code><a class="headerlink" href="#ape.utils.GeneratedDevAccount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape.utils.generate_dev_accounts">
+<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">generate_dev_accounts</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mnemonic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_accounts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hd_path_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&quot;m/44'/60'/0'/{}&quot;</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.utils.GeneratedDevAccount" title="ape.utils.GeneratedDevAccount"><span class="pre">GeneratedDevAccount</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.utils.generate_dev_accounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates accounts from the configured test mnemonic.
+Use these accounts (or the mnemonic) in chain-genesis
+for testing providers.</p>
+</dd></dl>
 
 </div>
 

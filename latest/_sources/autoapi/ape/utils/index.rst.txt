@@ -18,7 +18,15 @@
    ape.utils.deep_merge
    ape.utils.expand_environment_variables
    ape.utils.load_config
+   ape.utils.generate_dev_accounts
 
+
+
+**Attributes**:
+
+.. autoapisummary::
+
+   ape.utils.GeneratedDevAccount
 
 
 
@@ -38,6 +46,22 @@
 
 
 .. py:function:: load_config(path: pathlib.Path, expand_envars=True, must_exist=False) -> Dict
+
+
+
+
+.. data:: GeneratedDevAccount
+   
+
+   
+
+
+
+.. py:function:: generate_dev_accounts(mnemonic, number_of_accounts: int = 10, hd_path_format="m/44'/60'/0'/{}") -> List[GeneratedDevAccount]
+
+   Creates accounts from the configured test mnemonic.
+   Use these accounts (or the mnemonic) in chain-genesis
+   for testing providers.
 
 
 

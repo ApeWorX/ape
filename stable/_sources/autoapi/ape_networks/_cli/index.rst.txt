@@ -31,7 +31,7 @@
 
 
 
-.. py:function:: _list()
+.. py:function:: _list(cli_ctx)
 
 
 

@@ -37,6 +37,8 @@
 
    ape.api.AccountAPI
    ape.api.AccountContainerAPI
+   ape.api.TestAccountAPI
+   ape.api.TestAccountContainerAPI
    ape.api.Address
    ape.api.AddressAPI
    ape.api.ContractInstance
@@ -48,6 +50,7 @@
    ape.api.ProviderContextManager
    ape.api.ProviderAPI
    ape.api.ReceiptAPI
+   ape.api.TestProviderAPI
    ape.api.TransactionAPI
    ape.api.TransactionStatusEnum
 
@@ -162,6 +165,28 @@
 
    .. py:method:: _verify_unused_alias(self, account)
 
+
+
+
+
+.. py:class:: TestAccountAPI
+
+   Bases: :py:obj:`AccountAPI`
+
+   Test accounts for ``ape test`` should implement this API
+   instead of ``AccountAPI`` directly. This is how they show
+   up in the ``accounts`` test fixture.
+
+
+
+
+.. py:class:: TestAccountContainerAPI
+
+   Bases: :py:obj:`AccountContainerAPI`
+
+   Test account containers for ``ape test`` should implement
+   this API instead of ``AccountContainerAPI`` directly. This
+   is how they show up in the ``accounts`` test fixture.
 
 
 
@@ -715,8 +740,31 @@
       Return str(self).
 
 
+   .. py:method:: ran_out_of_gas(self, gas_limit: int) -> bool
+
+      Returns ``True`` when the transaction failed and used the
+      same amount of gas as the given ``gas_limit``.
+
+
    .. py:method:: decode(cls, data: dict) -> ReceiptAPI
       :classmethod:
+      :abstractmethod:
+
+
+
+
+
+.. py:class:: TestProviderAPI
+
+   Bases: :py:obj:`ProviderAPI`
+
+   An API for providers that have development functionality, such as snapshotting.
+
+   .. py:method:: snapshot(self) -> str
+      :abstractmethod:
+
+
+   .. py:method:: revert(self, snapshot_id: str)
       :abstractmethod:
 
 

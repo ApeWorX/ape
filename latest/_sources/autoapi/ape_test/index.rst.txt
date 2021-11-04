@@ -13,6 +13,7 @@
    :titlesonly:
    :maxdepth: 1
 
+   accounts/index.rst
    providers/index.rst
 
 
@@ -26,6 +27,8 @@
 
 .. autoapisummary::
 
+   ape_test.TestAccount
+   ape_test.TestAccountContainer
    ape_test.LocalNetwork
    ape_test.Config
 
@@ -36,6 +39,7 @@
 .. autoapisummary::
 
    ape_test.config_class
+   ape_test.account_types
    ape_test.providers
 
 
@@ -44,11 +48,81 @@
 -----------
 
 
+.. py:class:: TestAccount
+
+   Bases: :py:obj:`ape.api.TestAccountAPI`
+
+   Test accounts for ``ape test`` should implement this API
+   instead of ``AccountAPI`` directly. This is how they show
+   up in the ``accounts`` test fixture.
+
+   .. attribute:: _index
+      :annotation: :int
+
+      
+
+   .. attribute:: _address
+      :annotation: :str
+
+      
+
+   .. attribute:: _private_key
+      :annotation: :str
+
+      
+
+   .. py:method:: alias(self) -> str
+      :property:
+
+      Override with whatever alias might want to use, if applicable
+
+
+   .. py:method:: address(self) -> ape.types.AddressType
+      :property:
+
+
+   .. py:method:: sign_message(self, msg: eth_account.messages.SignableMessage) -> Optional[ape.types.MessageSignature]
+
+
+   .. py:method:: sign_transaction(self, txn: ape.api.TransactionAPI) -> Optional[ape.types.TransactionSignature]
+
+
+
+
+
+.. py:class:: TestAccountContainer
+
+   Bases: :py:obj:`ape.api.TestAccountContainerAPI`
+
+   Test account containers for ``ape test`` should implement
+   this API instead of ``AccountContainerAPI`` directly. This
+   is how they show up in the ``accounts`` test fixture.
+
+   .. py:method:: config(self)
+      :property:
+
+
+   .. py:method:: _dev_accounts(self) -> List[ape.utils.GeneratedDevAccount]
+
+
+   .. py:method:: aliases(self) -> Iterator[str]
+      :property:
+
+
+   .. py:method:: __len__(self) -> int
+
+
+   .. py:method:: __iter__(self) -> Iterator[ape.api.TestAccountAPI]
+
+
+
+
+
 .. py:class:: LocalNetwork
 
-   Bases: :py:obj:`ape.api.ProviderAPI`
+   Bases: :py:obj:`ape.api.TestProviderAPI`
 
-   A Provider must work with a particular Network in a particular Ecosystem
+   An API for providers that have development functionality, such as snapshotting.
 
    .. attribute:: _web3
       :annotation: :web3.Web3
@@ -99,6 +173,12 @@
    .. py:method:: get_events(self, **filter_params) -> Iterator[dict]
 
 
+   .. py:method:: snapshot(self) -> str
+
+
+   .. py:method:: revert(self, snapshot_id: str)
+
+
 
 
 
@@ -122,6 +202,11 @@
 
 
 .. py:function:: config_class()
+
+
+
+
+.. py:function:: account_types()
 
 
 

@@ -98,6 +98,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AccountContainerAPI._verify_unused_alias">_verify_unused_alias</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.api.TestAccountAPI">TestAccountAPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.api.TestAccountContainerAPI">TestAccountContainerAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.api.Address">Address</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.Address._address">_address</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.Address.address">address</a></li>
@@ -234,7 +236,13 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.contract_address">contract_address</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.__post_init__">__post_init__</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.__str__">__str__</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.ran_out_of_gas">ran_out_of_gas</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.decode">decode</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.api.TestProviderAPI">TestProviderAPI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.TestProviderAPI.snapshot">snapshot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.TestProviderAPI.revert">revert</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.api.TransactionAPI">TransactionAPI</a><ul>
@@ -357,6 +365,12 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.api.AccountContainerAPI" title="ape.api.AccountContainerAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.TestAccountAPI" title="ape.api.TestAccountAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestAccountAPI</span></code></a></p></td>
+<td><p>Test accounts for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> should implement this API</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TestAccountContainerAPI" title="ape.api.TestAccountContainerAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestAccountContainerAPI</span></code></a></p></td>
+<td><p>Test account containers for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> should implement</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.Address" title="ape.api.Address"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Address</span></code></a></p></td>
 <td><p></p></td>
 </tr>
@@ -390,10 +404,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TestProviderAPI" title="ape.api.TestProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a></p></td>
+<td><p>An API for providers that have development functionality, such as snapshotting.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.TransactionStatusEnum" title="ape.api.TransactionStatusEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionStatusEnum</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TransactionStatusEnum" title="ape.api.TransactionStatusEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionStatusEnum</span></code></a></p></td>
 <td><p>Enum where members are also (and must be) ints</p></td>
 </tr>
 </tbody>
@@ -537,6 +554,24 @@
 <code class="sig-name descname"><span class="pre">_verify_unused_alias</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.AccountContainerAPI._verify_unused_alias" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.TestAccountAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.</span></code><code class="sig-name descname"><span class="pre">TestAccountAPI</span></code><a class="headerlink" href="#ape.api.TestAccountAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.AccountAPI" title="ape.api.AccountAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
+<p>Test accounts for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> should implement this API
+instead of <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code> directly. This is how they show
+up in the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> test fixture.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.TestAccountContainerAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.</span></code><code class="sig-name descname"><span class="pre">TestAccountContainerAPI</span></code><a class="headerlink" href="#ape.api.TestAccountContainerAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.AccountContainerAPI" title="ape.api.AccountContainerAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code></a></p>
+<p>Test account containers for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> should implement
+this API instead of <code class="docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code> directly. This
+is how they show up in the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> test fixture.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -1159,8 +1194,32 @@ translating into yaml.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="ape.api.ReceiptAPI.ran_out_of_gas">
+<code class="sig-name descname"><span class="pre">ran_out_of_gas</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_limit</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.api.ReceiptAPI.ran_out_of_gas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> when the transaction failed and used the
+same amount of gas as the given <code class="docutils literal notranslate"><span class="pre">gas_limit</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.ReceiptAPI.decode">
 <em class="property"><span class="pre">abstract</span> <span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.ReceiptAPI.decode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.TestProviderAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.</span></code><code class="sig-name descname"><span class="pre">TestProviderAPI</span></code><a class="headerlink" href="#ape.api.TestProviderAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.ProviderAPI" title="ape.api.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
+<p>An API for providers that have development functionality, such as snapshotting.</p>
+<dl class="py method">
+<dt id="ape.api.TestProviderAPI.snapshot">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">snapshot</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape.api.TestProviderAPI.snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.TestProviderAPI.revert">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">revert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snapshot_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.TestProviderAPI.revert" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

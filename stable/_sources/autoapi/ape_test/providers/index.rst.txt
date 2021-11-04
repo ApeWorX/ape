@@ -25,9 +25,9 @@
 
 .. py:class:: LocalNetwork
 
-   Bases: :py:obj:`ape.api.ProviderAPI`
+   Bases: :py:obj:`ape.api.TestProviderAPI`
 
-   A Provider must work with a particular Network in a particular Ecosystem
+   An API for providers that have development functionality, such as snapshotting.
 
    .. attribute:: _web3
       :annotation: :web3.Web3
@@ -76,6 +76,12 @@
 
 
    .. py:method:: get_events(self, **filter_params) -> Iterator[dict]
+
+
+   .. py:method:: snapshot(self) -> str
+
+
+   .. py:method:: revert(self, snapshot_id: str)
 
 
 

@@ -103,6 +103,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.contract_address">contract_address</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.__post_init__">__post_init__</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.__str__">__str__</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.ran_out_of_gas">ran_out_of_gas</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.decode">decode</a></li>
 </ul>
 </li>
@@ -128,10 +129,17 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.get_events">get_events</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.TestProviderAPI">TestProviderAPI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.snapshot">snapshot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.revert">revert</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.AccountAPI">AccountAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.AccountContainerAPI">AccountContainerAPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TestAccountAPI">TestAccountAPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TestAccountContainerAPI">TestAccountContainerAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.Address">Address</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.AddressAPI">AddressAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.ContractInstance">ContractInstance</a></li>
@@ -144,6 +152,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.create_network_type">create_network_type</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.ProviderAPI">ProviderAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.ReceiptAPI">ReceiptAPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TestProviderAPI">TestProviderAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TransactionAPI">TransactionAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TransactionStatusEnum">TransactionStatusEnum</a></li>
 </ul>
@@ -235,6 +244,9 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p></td>
 <td><p>A Provider must work with a particular Network in a particular Ecosystem</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.TestProviderAPI" title="ape.api.providers.TestProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a></p></td>
+<td><p>An API for providers that have development functionality, such as snapshotting.</p></td>
 </tr>
 </tbody>
 </table>
@@ -397,6 +409,13 @@ to submit the transaction.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="ape.api.providers.ReceiptAPI.ran_out_of_gas">
+<code class="sig-name descname"><span class="pre">ran_out_of_gas</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_limit</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.api.providers.ReceiptAPI.ran_out_of_gas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> when the transaction failed and used the
+same amount of gas as the given <code class="docutils literal notranslate"><span class="pre">gas_limit</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.providers.ReceiptAPI.decode">
 <em class="property"><span class="pre">abstract</span> <span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.providers.ReceiptAPI.decode" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -500,6 +519,23 @@ to submit the transaction.</p>
 <dl class="py method">
 <dt id="ape.api.providers.ProviderAPI.get_events">
 <em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_events</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">filter_params</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.get_events" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.providers.TestProviderAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">TestProviderAPI</span></code><a class="headerlink" href="#ape.api.providers.TestProviderAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
+<p>An API for providers that have development functionality, such as snapshotting.</p>
+<dl class="py method">
+<dt id="ape.api.providers.TestProviderAPI.snapshot">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">snapshot</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.TestProviderAPI.revert">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">revert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snapshot_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.revert" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

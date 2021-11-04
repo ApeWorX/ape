@@ -16,6 +16,8 @@
 
    ape.api.accounts.AccountAPI
    ape.api.accounts.AccountContainerAPI
+   ape.api.accounts.TestAccountContainerAPI
+   ape.api.accounts.TestAccountAPI
 
 
 
@@ -121,6 +123,28 @@
 
    .. py:method:: _verify_unused_alias(self, account)
 
+
+
+
+
+.. py:class:: TestAccountContainerAPI
+
+   Bases: :py:obj:`AccountContainerAPI`
+
+   Test account containers for ``ape test`` should implement
+   this API instead of ``AccountContainerAPI`` directly. This
+   is how they show up in the ``accounts`` test fixture.
+
+
+
+
+.. py:class:: TestAccountAPI
+
+   Bases: :py:obj:`AccountAPI`
+
+   Test accounts for ``ape test`` should implement this API
+   instead of ``AccountAPI`` directly. This is how they show
+   up in the ``accounts`` test fixture.
 
 
 

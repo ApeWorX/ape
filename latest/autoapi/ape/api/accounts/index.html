@@ -89,6 +89,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI._verify_unused_alias">_verify_unused_alias</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.accounts.TestAccountContainerAPI">TestAccountContainerAPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.accounts.TestAccountAPI">TestAccountAPI</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../address/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.api.address</span></code></a></li>
@@ -102,6 +104,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../providers/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.api.providers</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.AccountAPI">AccountAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.AccountContainerAPI">AccountContainerAPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TestAccountAPI">TestAccountAPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TestAccountContainerAPI">TestAccountContainerAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.Address">Address</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.AddressAPI">AddressAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.ContractInstance">ContractInstance</a></li>
@@ -114,6 +118,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.create_network_type">create_network_type</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.ProviderAPI">ProviderAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.ReceiptAPI">ReceiptAPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TestProviderAPI">TestProviderAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TransactionAPI">TransactionAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TransactionStatusEnum">TransactionStatusEnum</a></li>
 </ul>
@@ -199,6 +204,12 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code></a></p></td>
 <td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.accounts.TestAccountContainerAPI" title="ape.api.accounts.TestAccountContainerAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestAccountContainerAPI</span></code></a></p></td>
+<td><p>Test account containers for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> should implement</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.accounts.TestAccountAPI" title="ape.api.accounts.TestAccountAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestAccountAPI</span></code></a></p></td>
+<td><p>Test accounts for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> should implement this API</p></td>
 </tr>
 </tbody>
 </table>
@@ -329,6 +340,24 @@
 <code class="sig-name descname"><span class="pre">_verify_unused_alias</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI._verify_unused_alias" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.accounts.TestAccountContainerAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.accounts.</span></code><code class="sig-name descname"><span class="pre">TestAccountContainerAPI</span></code><a class="headerlink" href="#ape.api.accounts.TestAccountContainerAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code></a></p>
+<p>Test account containers for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> should implement
+this API instead of <code class="docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code> directly. This
+is how they show up in the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> test fixture.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.accounts.TestAccountAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.accounts.</span></code><code class="sig-name descname"><span class="pre">TestAccountAPI</span></code><a class="headerlink" href="#ape.api.accounts.TestAccountAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
+<p>Test accounts for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> should implement this API
+instead of <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code> directly. This is how they show
+up in the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> test fixture.</p>
 </dd></dl>
 
 </div>

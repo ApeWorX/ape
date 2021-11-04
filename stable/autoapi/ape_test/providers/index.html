@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="ape_plugins" href="../../ape_plugins/index.html" />
-    <link rel="prev" title="ape_test" href="../index.html" /> 
+    <link rel="prev" title="ape_test.accounts" href="../accounts/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -73,13 +73,17 @@
 <li class="toctree-l2"><a class="reference internal" href="../../ape_ethereum/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_ethereum</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../ape_pm/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_pm</span></code></a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test</span></code></a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../accounts/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test.accounts</span></code></a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test.providers</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape_test.providers.LocalNetwork">LocalNetwork</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape_test.TestAccount">TestAccount</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape_test.TestAccountContainer">TestAccountContainer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_test.LocalNetwork">LocalNetwork</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_test.Config">Config</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_test.config_class">config_class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape_test.account_types">account_types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_test.providers">providers</a></li>
 </ul>
 </li>
@@ -159,7 +163,7 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape_test.providers.LocalNetwork" title="ape_test.providers.LocalNetwork"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LocalNetwork</span></code></a></p></td>
-<td><p>A Provider must work with a particular Network in a particular Ecosystem</p></td>
+<td><p>An API for providers that have development functionality, such as snapshotting.</p></td>
 </tr>
 </tbody>
 </table>
@@ -167,8 +171,8 @@
 <dl class="py class">
 <dt id="ape_test.providers.LocalNetwork">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_test.providers.</span></code><code class="sig-name descname"><span class="pre">LocalNetwork</span></code><a class="headerlink" href="#ape_test.providers.LocalNetwork" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="../../ape/api/index.html#ape.api.ProviderAPI" title="ape.api.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.ProviderAPI</span></code></a></p>
-<p>A Provider must work with a particular Network in a particular Ecosystem</p>
+<dd><p>Bases: <a class="reference internal" href="../../ape/api/index.html#ape.api.TestProviderAPI" title="ape.api.TestProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.TestProviderAPI</span></code></a></p>
+<p>An API for providers that have development functionality, such as snapshotting.</p>
 <dl class="py attribute">
 <dt id="ape_test.providers.LocalNetwork._web3">
 <code class="sig-name descname"><span class="pre">_web3</span></code><em class="property"> <span class="pre">:web3.Web3</span></em><a class="headerlink" href="#ape_test.providers.LocalNetwork._web3" title="Permalink to this definition">¶</a></dt>
@@ -244,6 +248,16 @@
 <code class="sig-name descname"><span class="pre">get_events</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">filter_params</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape_test.providers.LocalNetwork.get_events" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt id="ape_test.providers.LocalNetwork.snapshot">
+<code class="sig-name descname"><span class="pre">snapshot</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape_test.providers.LocalNetwork.snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape_test.providers.LocalNetwork.revert">
+<code class="sig-name descname"><span class="pre">revert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snapshot_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_test.providers.LocalNetwork.revert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>
@@ -254,7 +268,7 @@
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="../../ape_plugins/index.html" class="btn btn-neutral float-right" title="ape_plugins" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="../index.html" class="btn btn-neutral float-left" title="ape_test" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../accounts/index.html" class="btn btn-neutral float-left" title="ape_test.accounts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
