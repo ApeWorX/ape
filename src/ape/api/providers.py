@@ -94,6 +94,13 @@ class ReceiptAPI:
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
+    def ran_out_of_gas(self, gas_limit: int) -> bool:
+        """
+        Returns ``True`` when the transaction failed and used the
+        same amount of gas as the given ``gas_limit``.
+        """
+        return self.status == TransactionStatusEnum.FAILING and self.gas_used == gas_limit
+
     @classmethod
     @abstractmethod
     def decode(cls, data: dict) -> "ReceiptAPI":
@@ -165,4 +172,18 @@ class ProviderAPI:
 
     @abstractmethod
     def get_events(self, **filter_params) -> Iterator[dict]:
+        ...
+
+
+class TestProviderAPI(ProviderAPI):
+    """
+    An API for providers that have development functionality, such as snapshotting.
+    """
+
+    @abstractmethod
+    def snapshot(self) -> str:
+        ...
+
+    @abstractmethod
+    def revert(self, snapshot_id: str):
         ...
