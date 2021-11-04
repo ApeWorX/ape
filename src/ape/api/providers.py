@@ -173,3 +173,17 @@ class ProviderAPI:
     @abstractmethod
     def get_events(self, **filter_params) -> Iterator[dict]:
         ...
+
+
+class TestProviderAPI(ProviderAPI):
+    """
+    An API for providers that have development functionality, such as snapshotting.
+    """
+
+    @abstractmethod
+    def snapshot(self) -> str:
+        ...
+
+    @abstractmethod
+    def revert(self, snapshot_id: str):
+        ...

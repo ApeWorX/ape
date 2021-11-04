@@ -5,9 +5,12 @@ from copy import deepcopy
 from functools import lru_cache
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import yaml
+from eth_account import Account
+from eth_account.hdaccount import HDPath, seed_from_mnemonic
+from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
 from ape.logging import logger
@@ -140,6 +143,31 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
     return hasher(source).hexdigest()
 
 
+GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", "private_key"))
+
+
+def generate_dev_accounts(
+    mnemonic,
+    number_of_accounts: int = 10,
+    hd_path_format="m/44'/60'/0'/{}",
+) -> List[GeneratedDevAccount]:
+    """
+    Creates accounts from the configured test mnemonic.
+    Use these accounts (or the mnemonic) in chain-genesis
+    for testing providers.
+    """
+    seed = seed_from_mnemonic(mnemonic, "")
+    accounts = []
+
+    for i in range(0, number_of_accounts):
+        hd_path = HDPath(hd_path_format.format(i))
+        private_key = HexBytes(hd_path.derive(seed)).hex()
+        address = Account.from_key(private_key).address
+        accounts.append(GeneratedDevAccount(address, private_key))
+
+    return accounts
+
+
 def get_gas_estimation_revert_error_message(tx_error: Exception) -> str:
     """
     Use this method in ``ProviderAPI`` implementations when error handling
@@ -173,6 +201,8 @@ __all__ = [
     "extract_nested_value",
     "get_relative_path",
     "get_gas_estimation_revert_error_message",
+    "GeneratedDevAccount",
+    "generate_dev_accounts",
     "load_config",
     "singledispatchmethod",
 ]

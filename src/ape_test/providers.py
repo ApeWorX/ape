@@ -1,11 +1,12 @@
+import json
 from typing import Iterator
 
 from web3 import EthereumTesterProvider, Web3
 
-from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
+from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI
 
 
-class LocalNetwork(ProviderAPI):
+class LocalNetwork(TestProviderAPI):
     _web3: Web3 = None  # type: ignore
 
     def connect(self):
@@ -18,7 +19,9 @@ class LocalNetwork(ProviderAPI):
         pass
 
     def __post_init__(self):
-        self._web3 = Web3(EthereumTesterProvider())
+        test_provider = EthereumTesterProvider()
+        self._web3 = Web3(test_provider)
+        self._tester = test_provider.ethereum_tester
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
@@ -59,3 +62,12 @@ class LocalNetwork(ProviderAPI):
 
     def get_events(self, **filter_params) -> Iterator[dict]:
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
+
+    def snapshot(self) -> str:
+        blocks_dict = self._tester.ethereum_tester.take_snapshot()
+        return json.dumps(blocks_dict)
+
+    def revert(self, snapshot_id: str):
+        if snapshot_id:
+            blocks_dict = json.loads(snapshot_id)
+            return self._tester.revert_to_snapshot(blocks_dict)

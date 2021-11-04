@@ -71,7 +71,7 @@ def cli(cli_ctx, scripts, interactive, network):
     the exports from the ``ape`` top-level package (similar to how the console works)
     """
     if not scripts:
-        cli_ctx.abort("Must provide at least one script name or path")
+        cli_ctx.abort("Must provide at least one script name or path.")
 
     scripts_folder = config.PROJECT_FOLDER / "scripts"
 
