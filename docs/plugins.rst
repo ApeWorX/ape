@@ -60,11 +60,27 @@ Compiler manager
 The compiler manager contains all the registered compilers. 
 Compiler plugins must subclass the `CompilerAPI <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI>`_ object and implement all ``abstractmethod``.
 Implement `get_versions <autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI.get_versions>`_ in compile.
+``get_versions`` gets a set of all the files and tell it all the versions that are needed. 
+It needs to get that information to create the manifest so it can record the compilers which are required. 
+From the contract types you can then initialize or deploy a contract using the contract types.
+data structure source is how to get the source file from the manifest
+This method should always return the same value and doesn't cache.
+Compiler Manager uses the compiler api and has a list of all the compiler api subclasses. 
+The compiler manager has the set of all the registered compiler plugins. 
+Those compiler plugins subclass the compiler api, 
+and so that's how it can call out to the plugins in order to compile files 
+which are detected inside the contracts folder.
+
 CompilerAPI plugins
 
 ContractType type
 ==================
 The compilation produces the __.build
+The manifest is a file that describes the package. 
+It describes everything that is within the package. 
+The package manifest contains links to source code on ipfs, 
+a heirarchy of which compilers and which versions of those compilers are used to compile files, 
+contract types which come from the compiled files that you might want to use in the package.
 `ContractType <autoapi/ape/types/contract/index.html#ape.types.contract.ContractType>`_
 
 
