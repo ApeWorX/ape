@@ -1,10 +1,28 @@
 from pathlib import Path
 
 import pytest
+from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api import ReceiptAPI, TransactionStatusEnum
-from ape.exceptions import VirtualMachineError
+from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError
 from ape_http import EthereumProvider
+
+_TEST_REVERT_REASON = "TEST REVERT REASON."
+
+
+def _create_mock_receipt(status=TransactionStatusEnum.NO_ERROR, gas_used=0):
+    class MockReceipt(ReceiptAPI):
+        @classmethod
+        def decode(cls, data: dict) -> "ReceiptAPI":
+            return MockReceipt(
+                txn_hash="test-hash",  # type: ignore
+                status=status,  # type: ignore
+                gas_used=gas_used,  # type: ignore
+                gas_price="60000000000",  # type: ignore
+                block_number=0,  # type: ignore
+            )
+
+    return MockReceipt
 
 
 class TestEthereumProvider:
@@ -21,24 +39,55 @@ class TestEthereumProvider:
         )
         provider._web3 = mock_web3
 
-        class MockReceipt(ReceiptAPI):
-            @classmethod
-            def decode(cls, data: dict) -> "ReceiptAPI":
-                return MockReceipt(
-                    txn_hash="test-hash",  # type: ignore
-                    status=TransactionStatusEnum.NO_ERROR,  # type: ignore
-                    gas_used=0,  # type: ignore
-                    gas_price="60000000000",  # type: ignore
-                    block_number=0,  # type: ignore
-                )
-
-        mock_network_api.ecosystem.receipt_class = MockReceipt
+        mock_network_api.ecosystem.receipt_class = _create_mock_receipt()
         web3_error_data = {
             "code": -32000,
-            "message": "Unable to perform actual",
+            "message": "Test Error Message",
         }
         mock_web3.eth.send_raw_transaction.side_effect = ValueError(web3_error_data)
-        with pytest.raises(VirtualMachineError) as err:
+        with pytest.raises(TransactionError) as err:
             provider.send_transaction(mock_transaction)
 
         assert web3_error_data["message"] in str(err.value)
+
+    def test_send_transaction_out_of_gas_error(
+        self, mock_web3, mock_network_api, mock_config_item, mock_transaction
+    ):
+        provider = EthereumProvider(
+            name="test",
+            network=mock_network_api,
+            config=mock_config_item,
+            provider_settings={},
+            data_folder=Path("."),
+            request_header="",
+        )
+        provider._web3 = mock_web3
+
+        gas_limit = 30000
+        mock_transaction.gas_limit = gas_limit
+        mock_network_api.ecosystem.receipt_class = _create_mock_receipt(
+            TransactionStatusEnum.FAILING, gas_used=gas_limit
+        )
+        with pytest.raises(OutOfGasError):
+            provider.send_transaction(mock_transaction)
+
+    def test_send_transaction_reverts_from_contract_logic(
+        self, mock_web3, mock_network_api, mock_config_item, mock_transaction
+    ):
+        provider = EthereumProvider(
+            name="test",
+            network=mock_network_api,
+            config=mock_config_item,
+            provider_settings={},
+            data_folder=Path("."),
+            request_header="",
+        )
+        provider._web3 = mock_web3
+        mock_network_api.ecosystem.receipt_class = _create_mock_receipt()
+        test_err = Web3ContractLogicError(f"execution reverted: {_TEST_REVERT_REASON}")
+        mock_web3.eth.send_raw_transaction.side_effect = test_err
+
+        with pytest.raises(ContractLogicError) as err:
+            provider.send_transaction(mock_transaction)
+
+        assert str(err.value) == _TEST_REVERT_REASON
