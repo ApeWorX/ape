@@ -50,7 +50,7 @@ class TestEthereumProvider:
 
         assert web3_error_data["message"] in str(err.value)
 
-    def test_send_transactions_failing_and_used_all_gas_raises_out_of_gas_error(
+    def test_send_transaction_out_of_gas_error(
         self, mock_web3, mock_network_api, mock_config_item, mock_transaction
     ):
         provider = EthereumProvider(

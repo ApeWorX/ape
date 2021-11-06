@@ -15,7 +15,7 @@ from ape.exceptions import (
     TransactionError,
     VirtualMachineError,
 )
-from ape.utils import extract_nested_value, get_gas_estimation_revert_error_message
+from ape.utils import extract_nested_value, gas_estimation_error_message
 
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545", "chain_name": "devchain"}
 
@@ -86,7 +86,7 @@ class EthereumProvider(ProviderAPI):
             if isinstance(tx_error, ContractLogicError):
                 raise tx_error from err
 
-            message = get_gas_estimation_revert_error_message(tx_error)
+            message = gas_estimation_error_message(tx_error)
             raise TransactionError(base_err=tx_error, message=message) from err
 
     @property

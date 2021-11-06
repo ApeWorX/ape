@@ -168,7 +168,7 @@ def generate_dev_accounts(
     return accounts
 
 
-def get_gas_estimation_revert_error_message(tx_error: Exception) -> str:
+def gas_estimation_error_message(tx_error: Exception) -> str:
     """
     Use this method in ``ProviderAPI`` implementations when error handling
     transaction errors. This is to have a consistent experience across providers.
@@ -200,7 +200,7 @@ __all__ = [
     "expand_environment_variables",
     "extract_nested_value",
     "get_relative_path",
-    "get_gas_estimation_revert_error_message",
+    "gas_estimation_error_message",
     "GeneratedDevAccount",
     "generate_dev_accounts",
     "load_config",
