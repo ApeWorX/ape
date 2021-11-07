@@ -20,6 +20,13 @@
 
 
 
+**Functions**:
+
+.. autoapisummary::
+
+   ape_http.providers._get_vm_error
+
+
 
 **Attributes**:
 
@@ -136,8 +143,13 @@
       Returns the current price per gas in wei.
 
 
+   .. py:method:: _node_info(self) -> Optional[web3.types.NodeInfo]
+      :property:
+
+
    .. py:method:: get_nonce(self, address: str) -> int
 
+      q
       Returns the number of transactions sent from an address.
 
 
@@ -172,6 +184,13 @@
 
       Returns an array of all logs matching a given set of filter parameters.
 
+
+
+
+
+.. py:function:: _get_vm_error(web3_value_error: ValueError) -> ape.exceptions.TransactionError
+
+   Returns a custom error from ``ValueError`` from web3.py.
 
 
 

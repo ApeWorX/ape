@@ -89,10 +89,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.exceptions.TransactionError.__init__">__init__</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.exceptions.VirtualMachineError">VirtualMachineError</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.exceptions.VirtualMachineError.__init__">__init__</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.exceptions.VirtualMachineError.revert_message">revert_message</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.exceptions.VirtualMachineError.from_error">from_error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.exceptions.VirtualMachineError">VirtualMachineError</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.exceptions.ContractLogicError">ContractLogicError</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.exceptions.ContractLogicError.__init__">__init__</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.exceptions.ContractLogicError.revert_message">revert_message</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.exceptions.ContractLogicError.from_error">from_error</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.exceptions.OutOfGasError">OutOfGasError</a><ul>
@@ -285,24 +286,31 @@ a contract call or transaction.</p>
 
 <dl class="py exception">
 <dt id="ape.exceptions.VirtualMachineError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">VirtualMachineError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">revert_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.VirtualMachineError" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">VirtualMachineError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_err</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.VirtualMachineError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.exceptions.TransactionError" title="ape.exceptions.TransactionError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionError</span></code></a></p>
-<p>Raised when there is either an internal fault in a virtual machine
-or a contract-defined revert, such as from an assert/require statement.</p>
+<p>Raised when a transaction error occurs in a virtual machine.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="ape.exceptions.ContractLogicError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">ContractLogicError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">revert_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.ContractLogicError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.VirtualMachineError" title="ape.exceptions.VirtualMachineError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VirtualMachineError</span></code></a></p>
+<p>Raised when there is a contract-defined revert,
+such as from an assert/require statement.</p>
 <dl class="py method">
-<dt id="ape.exceptions.VirtualMachineError.__init__">
-<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">revert_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.VirtualMachineError.__init__" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.exceptions.ContractLogicError.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">revert_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.ContractLogicError.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="ape.exceptions.VirtualMachineError.revert_message">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">revert_message</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.VirtualMachineError.revert_message" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.exceptions.ContractLogicError.revert_message">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">revert_message</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.ContractLogicError.revert_message" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="ape.exceptions.VirtualMachineError.from_error">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">from_error</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.VirtualMachineError.from_error" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.exceptions.ContractLogicError.from_error">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">from_error</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.ContractLogicError.from_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates this class from the error message of the given
 error.</p>
 <p>This should be overridden whenever possible to handle

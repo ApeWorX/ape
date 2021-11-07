@@ -61,11 +61,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../api/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.api</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../types/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.types</span></code></a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.utils</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.get_relative_path">get_relative_path</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.deep_merge">deep_merge</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.expand_environment_variables">expand_environment_variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.load_config">load_config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.GeneratedDevAccount">GeneratedDevAccount</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.generate_dev_accounts">generate_dev_accounts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.gas_estimation_error_message">gas_estimation_error_message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.extract_nested_value">extract_nested_value</a></li>
 </ul>
 </li>
 </ul>
@@ -140,17 +143,26 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.utils.deep_merge" title="ape.utils.deep_merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deep_merge</span></code></a>(dict1, dict2)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.utils.get_relative_path" title="ape.utils.get_relative_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_relative_path</span></code></a>(target: pathlib.Path, anchor: pathlib.Path) → pathlib.Path</p></td>
+<td><p>Compute the relative path of <code class="docutils literal notranslate"><span class="pre">target</span></code> relative to <code class="docutils literal notranslate"><span class="pre">anchor</span></code>,</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.utils.deep_merge" title="ape.utils.deep_merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deep_merge</span></code></a>(dict1, dict2)</p></td>
 <td><p>Return a new dictionary by merging two dictionaries recursively.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.utils.expand_environment_variables" title="ape.utils.expand_environment_variables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">expand_environment_variables</span></code></a>(contents: str) → str</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.utils.expand_environment_variables" title="ape.utils.expand_environment_variables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">expand_environment_variables</span></code></a>(contents: str) → str</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.utils.load_config" title="ape.utils.load_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_config</span></code></a>(path: pathlib.Path, expand_envars=True, must_exist=False) → Dict</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.utils.load_config" title="ape.utils.load_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_config</span></code></a>(path: pathlib.Path, expand_envars=True, must_exist=False) → Dict</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.utils.generate_dev_accounts" title="ape.utils.generate_dev_accounts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_dev_accounts</span></code></a>(mnemonic, number_of_accounts: int = 10, hd_path_format=&quot;m/44'/60'/0'/{}&quot;) → List[GeneratedDevAccount]</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.utils.generate_dev_accounts" title="ape.utils.generate_dev_accounts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_dev_accounts</span></code></a>(mnemonic, number_of_accounts: int = 10, hd_path_format=&quot;m/44'/60'/0'/{}&quot;) → List[GeneratedDevAccount]</p></td>
 <td><p>Creates accounts from the configured test mnemonic.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.utils.gas_estimation_error_message" title="ape.utils.gas_estimation_error_message"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gas_estimation_error_message</span></code></a>(tx_error: Exception) → str</p></td>
+<td><p>Use this method in <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code> implementations when error handling</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.utils.extract_nested_value" title="ape.utils.extract_nested_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_nested_value</span></code></a>(root: Dict, *args: str) → Optional[Dict]</p></td>
+<td><p>Dig through a nested <code class="docutils literal notranslate"><span class="pre">Dict</span></code> gives the keys to use in order as arguments.</p></td>
 </tr>
 </tbody>
 </table>
@@ -167,6 +179,14 @@
 </tbody>
 </table>
 <hr class="docutils" />
+<dl class="py function">
+<dt id="ape.utils.get_relative_path">
+<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">get_relative_path</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape.utils.get_relative_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the relative path of <code class="docutils literal notranslate"><span class="pre">target</span></code> relative to <code class="docutils literal notranslate"><span class="pre">anchor</span></code>,
+which may or may not share a common ancestor.
+NOTE: Both paths must be absolute</p>
+</dd></dl>
+
 <dl class="py function">
 <dt id="ape.utils.deep_merge">
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">deep_merge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.deep_merge" title="Permalink to this definition">¶</a></dt>
@@ -194,6 +214,20 @@
 <dd><p>Creates accounts from the configured test mnemonic.
 Use these accounts (or the mnemonic) in chain-genesis
 for testing providers.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.utils.gas_estimation_error_message">
+<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">gas_estimation_error_message</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tx_error</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Exception</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape.utils.gas_estimation_error_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this method in <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code> implementations when error handling
+transaction errors. This is to have a consistent experience across providers.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.utils.extract_nested_value">
+<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">extract_nested_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.utils.extract_nested_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dig through a nested <code class="docutils literal notranslate"><span class="pre">Dict</span></code> gives the keys to use in order as arguments.
+Returns the final value if it exists else <cite>None</cite> if the tree ends at any point.</p>
 </dd></dl>
 
 </div>

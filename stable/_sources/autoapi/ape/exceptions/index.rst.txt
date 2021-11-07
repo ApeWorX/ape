@@ -114,12 +114,21 @@
 
 
 
-.. py:exception:: VirtualMachineError(revert_message: str)
+.. py:exception:: VirtualMachineError(base_err: Optional[Exception] = None, message: Optional[str] = None, code: Optional[int] = None)
 
    Bases: :py:obj:`TransactionError`
 
-   Raised when there is either an internal fault in a virtual machine
-   or a contract-defined revert, such as from an assert/require statement.
+   Raised when a transaction error occurs in a virtual machine.
+
+
+
+
+.. py:exception:: ContractLogicError(revert_message: str)
+
+   Bases: :py:obj:`VirtualMachineError`
+
+   Raised when there is a contract-defined revert,
+   such as from an assert/require statement.
 
    .. py:method:: __init__(self, revert_message: str)
 

@@ -80,6 +80,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape_http.providers.EthereumNetworkConfig">EthereumNetworkConfig</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_http.providers.NetworkConfig">NetworkConfig</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_http.providers.EthereumProvider">EthereumProvider</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_http.providers._get_vm_error">_get_vm_error</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_http.EthereumNetworkConfig">EthereumNetworkConfig</a></li>
@@ -169,6 +170,18 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape_http.providers.EthereumProvider" title="ape_http.providers.EthereumProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EthereumProvider</span></code></a></p></td>
 <td><p>A Provider must work with a particular Network in a particular Ecosystem</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Functions</strong>:</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_http.providers._get_vm_error" title="ape_http.providers._get_vm_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_vm_error</span></code></a>(web3_value_error: ValueError) → ape.exceptions.TransactionError</p></td>
+<td><p>Returns a custom error from <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> from web3.py.</p></td>
 </tr>
 </tbody>
 </table>
@@ -291,9 +304,15 @@ a value used in replay-protected transaction signing as introduced by EIP-155.</
 </dd></dl>
 
 <dl class="py method">
+<dt id="ape_http.providers.EthereumProvider._node_info">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">_node_info</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">web3.types.NodeInfo</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape_http.providers.EthereumProvider._node_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt id="ape_http.providers.EthereumProvider.get_nonce">
 <code class="sig-name descname"><span class="pre">get_nonce</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape_http.providers.EthereumProvider.get_nonce" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the number of transactions sent from an address.</p>
+<dd><p>q
+Returns the number of transactions sent from an address.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -334,6 +353,12 @@ for signed transactions.</p>
 <dd><p>Returns an array of all logs matching a given set of filter parameters.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape_http.providers._get_vm_error">
+<code class="sig-prename descclassname"><span class="pre">ape_http.providers.</span></code><code class="sig-name descname"><span class="pre">_get_vm_error</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">web3_value_error</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ValueError</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../ape/exceptions/index.html#ape.exceptions.TransactionError" title="ape.exceptions.TransactionError"><span class="pre">ape.exceptions.TransactionError</span></a><a class="headerlink" href="#ape_http.providers._get_vm_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a custom error from <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> from web3.py.</p>
 </dd></dl>
 
 </div>

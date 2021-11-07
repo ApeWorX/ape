@@ -128,8 +128,13 @@
       Returns the current price per gas in wei.
 
 
+   .. py:method:: _node_info(self) -> Optional[web3.types.NodeInfo]
+      :property:
+
+
    .. py:method:: get_nonce(self, address: str) -> int
 
+      q
       Returns the number of transactions sent from an address.
 
 
