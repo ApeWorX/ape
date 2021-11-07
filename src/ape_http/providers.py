@@ -156,7 +156,7 @@ class EthereumProvider(ProviderAPI):
             parsed_uri = urlparse(self.uri)
 
             if parsed_uri.hostname not in ("localhost", "127.0.0.1"):
-                raise ConnectionError(f"Unable to connect web3 to {parsed_uri.hostname}")
+                raise ConnectionError(f"Unable to connect web3 to {parsed_uri.hostname}.")
 
             if not shutil.which("geth"):
                 raise GethNotInstalledError()
