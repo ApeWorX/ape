@@ -72,6 +72,8 @@ setup(
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
         "pyyaml>=0.2.5",
+        "py-geth>=3.6.0",
+        "requests>=2.25.1,<3.0",
         "importlib-metadata",
         "singledispatchmethod ; python_version<'3.8'",
         "IPython>=7.25",

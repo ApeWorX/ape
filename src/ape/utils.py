@@ -147,7 +147,7 @@ GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", 
 
 
 def generate_dev_accounts(
-    mnemonic,
+    mnemonic: str,
     number_of_accounts: int = 10,
     hd_path_format="m/44'/60'/0'/{}",
 ) -> List[GeneratedDevAccount]:
