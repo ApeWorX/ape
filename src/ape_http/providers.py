@@ -5,10 +5,10 @@ from urllib.parse import urlparse
 
 from eth_utils import to_wei
 from geth import LoggingMixin  # type: ignore
-from geth.accounts import ensure_account_exists
-from geth.chain import initialize_chain
-from geth.process import BaseGethProcess
-from geth.wrapper import construct_test_chain_kwargs
+from geth.accounts import ensure_account_exists  # type: ignore
+from geth.chain import initialize_chain  # type: ignore
+from geth.process import BaseGethProcess  # type: ignore
+from geth.wrapper import construct_test_chain_kwargs  # type: ignore
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
