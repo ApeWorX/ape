@@ -135,8 +135,8 @@ class GethNotInstalledError(ConnectionError):
             "geth is not installed and there is no local provider running.\n"
             "Things you can do:\n"
             "\t1. Install geth and try again\n"
-            "\t2. Run geth separately and try again\n\n"
-            "\t3. Use a different ape provider plugin\n"
+            "\t2. Run geth separately and try again\n"
+            "\t3. Use a different ape provider plugin"
         )
 
 
