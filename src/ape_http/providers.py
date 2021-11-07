@@ -200,7 +200,7 @@ class EthereumProvider(ProviderAPI):
             self._geth.disconnect()
             self._geth = None
 
-        # This must happen after geth.disconnect()
+        # Must happen after geth.disconnect()
         self._web3 = None  # type: ignore
 
     def update_settings(self, new_settings: dict):
