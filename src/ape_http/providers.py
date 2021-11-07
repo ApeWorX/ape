@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Dict, Iterator, Optional, Union
+from typing import Dict, Iterator, Mapping, Optional, Union
 from urllib.parse import urlparse
 
 from eth_utils import to_wei
@@ -181,7 +181,7 @@ class EthereumProvider(ProviderAPI):
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
         def is_poa() -> bool:
-            node_info = self._node_info or {}
+            node_info: Mapping = self._node_info or {}
             chain_config = extract_nested_value(node_info, "protocols", "eth", "config")
             return chain_config is not None and "clique" in chain_config
 
