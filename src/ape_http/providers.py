@@ -180,13 +180,13 @@ class EthereumProvider(ProviderAPI):
 
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
-        # Try to detect if chain used clique (PoA).
-        node_info = self._node_info or {}
-        chain_config = extract_nested_value(node_info, "protocols", "eth", "config")
-        is_poa_chain = chain_config is not None and "clique" in chain_config
+        def is_poa() -> bool:
+            node_info = self._node_info or {}
+            chain_config = extract_nested_value(node_info, "protocols", "eth", "config")
+            return chain_config is not None and "clique" in chain_config
 
         # If network is rinkeby, goerli, or kovan (PoA test-nets)
-        if self._web3.eth.chain_id in (4, 5, 42) or is_poa_chain:
+        if self._web3.eth.chain_id in (4, 5, 42) or is_poa():
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         if self.network.name != "development" and self.network.chain_id != self.chain_id:
