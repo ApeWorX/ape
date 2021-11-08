@@ -1,13 +1,24 @@
-from typing import Iterator, Optional
+import shutil
+from pathlib import Path
+from typing import Dict, Iterator, Mapping, Optional, Union
+from urllib.parse import urlparse
 
+from eth_utils import to_wei
+from geth import LoggingMixin  # type: ignore
+from geth.accounts import ensure_account_exists  # type: ignore
+from geth.chain import initialize_chain  # type: ignore
+from geth.process import BaseGethProcess  # type: ignore
+from geth.wrapper import construct_test_chain_kwargs  # type: ignore
+from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.types import NodeInfo
 
-from ape.api import ProviderAPI, ReceiptAPI, TransactionAPI
+from ape.api import ReceiptAPI, TransactionAPI
 from ape.api.config import ConfigItem
+from ape.api.providers import ProviderAPI
 from ape.exceptions import (
     ContractLogicError,
     OutOfGasError,
@@ -15,9 +26,92 @@ from ape.exceptions import (
     TransactionError,
     VirtualMachineError,
 )
-from ape.utils import extract_nested_value, gas_estimation_error_message
+from ape.logging import logger
+from ape.utils import extract_nested_value, gas_estimation_error_message, generate_dev_accounts
 
-DEFAULT_SETTINGS = {"uri": "http://localhost:8545", "chain_name": "devchain"}
+DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
+
+
+class EphemeralGeth(LoggingMixin, BaseGethProcess):
+    """
+    A developer-configured geth that only exists until disconnected.
+    """
+
+    def __init__(
+        self,
+        base_directory: Path,
+        hostname: str,
+        port: int,
+        mnemonic: str,
+        chain_id: int = 1337,
+        initial_balance: Union[str, int] = to_wei(10000, "ether"),
+    ):
+        self.data_dir = base_directory / "dev"
+        self._hostname = hostname
+        self._port = port
+        geth_kwargs = construct_test_chain_kwargs(
+            data_dir=self.data_dir,
+            rpc_addr=hostname,
+            rpc_port=port,
+            network_id=chain_id,
+        )
+
+        # Ensure a clean data-dir.
+        self._clean()
+
+        sealer = ensure_account_exists(**geth_kwargs).decode().replace("0x", "")
+        accounts = generate_dev_accounts(mnemonic)
+        genesis_data: Dict = {
+            "overwrite": True,
+            "coinbase": "0x0000000000000000000000000000000000000000",
+            "difficulty": "0x0",
+            "extraData": f"0x{'0' * 64}{sealer}{'0' * 130}",
+            "config": {
+                "chainId": chain_id,
+                "gasLimit": 0,
+                "homesteadBlock": 0,
+                "difficulty": "0x0",
+                "eip150Block": 0,
+                "eip155Block": 0,
+                "eip158Block": 0,
+                "byzantiumBlock": 0,
+                "constantinopleBlock": 0,
+                "petersburgBlock": 0,
+                "istanbulBlock": 0,
+                "berlinBlock": 0,
+                "londonBlock": 0,
+                "clique": {"period": 0, "epoch": 30000},
+            },
+            "alloc": {a.address: {"balance": str(initial_balance)} for a in accounts},
+        }
+
+        def make_logs_paths(stream_name: str):
+            path = base_directory / "geth-logs" / f"{stream_name}_{self._port}"
+            path.parent.mkdir(exist_ok=True, parents=True)
+            return path
+
+        initialize_chain(genesis_data, **geth_kwargs)
+
+        super().__init__(
+            geth_kwargs,
+            stdout_logfile_path=make_logs_paths("stdout"),
+            stderr_logfile_path=make_logs_paths("stderr"),
+        )
+
+    def connect(self):
+        logger.info(f"Starting geth with RPC address '{self._hostname}:{self._port}'.")
+        self.start()
+        self.wait_for_rpc(timeout=60)
+
+    def disconnect(self):
+        if self.is_running:
+            self.stop()
+
+        self._clean()
+
+    def _clean(self):
+        if self.data_dir.exists():
+            shutil.rmtree(self.data_dir)
 
 
 class EthereumNetworkConfig(ConfigItem):
@@ -35,8 +129,20 @@ class NetworkConfig(ConfigItem):
     ethereum: EthereumNetworkConfig = EthereumNetworkConfig()
 
 
-class EthereumProvider(ProviderAPI):
+class GethNotInstalledError(ConnectionError):
+    def __init__(self):
+        super().__init__(
+            "geth is not installed and there is no local provider running.\n"
+            "Things you can do:\n"
+            "\t1. Install geth and try again\n"
+            "\t2. Run geth separately and try again\n"
+            "\t3. Use a different ape provider plugin"
+        )
+
+
+class GethProvider(ProviderAPI):
     _web3: Web3 = None  # type: ignore
+    _geth: Optional[EphemeralGeth] = None
 
     @property
     def uri(self) -> str:
@@ -44,15 +150,43 @@ class EthereumProvider(ProviderAPI):
 
     def connect(self):
         self._web3 = Web3(HTTPProvider(self.uri))
+
+        # Try to start an ephemeral geth process if no provider is running.
+        if not self._web3.isConnected():
+            parsed_uri = urlparse(self.uri)
+
+            if parsed_uri.hostname not in ("localhost", "127.0.0.1"):
+                raise ConnectionError(f"Unable to connect web3 to {parsed_uri.hostname}.")
+
+            if not shutil.which("geth"):
+                raise GethNotInstalledError()
+
+            # Use mnemonic from test config
+            config_manager = self.network.config_manager
+            test_config = config_manager.get_config("test")
+            mnemonic = test_config["mnemonic"]
+
+            self._geth = EphemeralGeth(
+                self.data_folder,
+                parsed_uri.hostname,
+                parsed_uri.port,
+                mnemonic,
+            )
+            self._geth.connect()
+
+            if not self._web3.isConnected():
+                self._geth.disconnect()
+                raise ConnectionError("Unable to connect to locally running geth.")
+
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
-        # Try to detect if chain used clique (PoA).
-        node_info = self._node_info or {}
-        chain_config = extract_nested_value(node_info, "protocols", "eth", "config")
-        is_poa_chain = chain_config is not None and "clique" in chain_config
+        def is_poa() -> bool:
+            node_info: Mapping = self._node_info or {}
+            chain_config = extract_nested_value(node_info, "protocols", "eth", "config")
+            return chain_config is not None and "clique" in chain_config
 
         # If network is rinkeby, goerli, or kovan (PoA test-nets)
-        if self._web3.eth.chain_id in (4, 5, 42) or is_poa_chain:
+        if self._web3.eth.chain_id in (4, 5, 42) or is_poa():
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         if self.network.name != "development" and self.network.chain_id != self.chain_id:
@@ -62,6 +196,11 @@ class EthereumProvider(ProviderAPI):
             )
 
     def disconnect(self):
+        if self._geth is not None:
+            self._geth.disconnect()
+            self._geth = None
+
+        # Must happen after geth.disconnect()
         self._web3 = None  # type: ignore
 
     def update_settings(self, new_settings: dict):

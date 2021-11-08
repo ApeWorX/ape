@@ -5,7 +5,7 @@ from copy import deepcopy
 from functools import lru_cache
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import yaml
 from eth_account import Account
@@ -147,7 +147,7 @@ GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", 
 
 
 def generate_dev_accounts(
-    mnemonic,
+    mnemonic: str,
     number_of_accounts: int = 10,
     hd_path_format="m/44'/60'/0'/{}",
 ) -> List[GeneratedDevAccount]:
@@ -179,7 +179,7 @@ def gas_estimation_error_message(tx_error: Exception) -> str:
     )
 
 
-def extract_nested_value(root: Dict, *args: str) -> Optional[Dict]:
+def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
     """
     Dig through a nested ``Dict`` gives the keys to use in order as arguments.
     Returns the final value if it exists else `None` if the tree ends at any point.
