@@ -12,10 +12,12 @@ def pytest_addoption(parser):
     parser.addoption(
         "--showinternal",
         action="store_true",
-        default=networks.default_ecosystem.name,
+    )
+    parser.addoption(
+        "--network",
+        action="store",
         help="Override the default network and provider. (see ``ape networks list`` for options)",
     )
-    parser.addoption("--network", action="store", help="The network to run the tests on.")
     # NOTE: Other testing plugins should integrate with pytest separately
 
 
