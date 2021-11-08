@@ -13,7 +13,7 @@ write_to = "src/ape/version.py"
 # character.
 [tool.black]
 line-length = 100
-target-version = ['py37', 'py38']
+target-version = ['py37', 'py38', 'py39']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
