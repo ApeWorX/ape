@@ -86,7 +86,9 @@ class NetworkManager:
         provider_settings: Optional[Dict] = None,
     ) -> ProviderAPI:
         if network_choice is None:
-            return self.default["development"].get_provider(provider_settings=provider_settings)
+            return self.default_ecosystem["development"].get_provider(
+                provider_settings=provider_settings
+            )
 
         selections = network_choice.split(":")
 
