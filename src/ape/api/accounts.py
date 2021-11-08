@@ -42,7 +42,13 @@ class AccountAPI(AddressAPI):
     @abstractmethod
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         """
-        Signs message `msg`
+        Signs the given message.
+        
+        Args:
+          msg (:class:`~eth_account.messages.SignableMessage`): The message to sign.
+        
+        Returns:
+          :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
         """
 
     @abstractmethod
