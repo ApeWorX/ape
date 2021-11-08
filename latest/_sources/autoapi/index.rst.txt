@@ -16,6 +16,6 @@ This page contains auto-generated API reference documentation [#f1]_.
    /autoapi/ape_test/index
    /autoapi/ape_plugins/index
    /autoapi/ape_compile/index
-   /autoapi/ape_http/index
+   /autoapi/ape_geth/index
 
 .. [#f1] Created with `sphinx-autoapi <https://github.com/readthedocs/sphinx-autoapi>`_
