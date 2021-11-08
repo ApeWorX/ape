@@ -26,4 +26,6 @@ class RevertsContextManager:
                 f"'{self.expected_message}' not found in revert message '{actual}'."
             )
 
-        return True  # Assertion passes
+        # Returning True causes the expected exception not to get raised
+        # and the test to pass
+        return True
