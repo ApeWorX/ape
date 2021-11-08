@@ -5,28 +5,28 @@ ecosystems:
   networks:
   - name: mainnet
     providers:
-    - name: http
+    - name: geth
       isDefault: true
   - name: ropsten
     providers:
-    - name: http
+    - name: geth
       isDefault: true
   - name: kovan
     providers:
-    - name: http
+    - name: geth
       isDefault: true
   - name: rinkeby
     providers:
-    - name: http
+    - name: geth
       isDefault: true
   - name: goerli
     providers:
-    - name: http
+    - name: geth
       isDefault: true
   - name: development
     isDefault: true
     providers:
-    - name: http
+    - name: geth
       isDefault: true
     - name: test
 """

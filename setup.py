@@ -3,7 +3,6 @@ from setuptools import find_packages, setup  # type: ignore
 
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
-        "pytest>=6.0,<7.0",  # Core testing package
         "pytest-xdist",  # multi-process runner
         "pytest-cov",  # Coverage analyzer plugin
         "pytest-mock",  # For creating mocks
@@ -11,7 +10,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=21.9b0,<22.0",  # auto-formatter and linter
+        "black>=21.10b0,<22.0",  # auto-formatter and linter
         "mypy>=0.910,<1.0",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
@@ -77,10 +76,12 @@ setup(
         "importlib-metadata",
         "singledispatchmethod ; python_version<'3.8'",
         "IPython>=7.25",
+        "pytest>=6.0,<7.0",
         "web3[tester]>=5.18.0,<6.0.0",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
+        "pytest11": ["ape_test=ape_test.plugin"],
         "ape_cli_subcommands": [
             "ape_accounts=ape_accounts._cli:cli",
             "ape_compile=ape_compile._cli:cli",
@@ -88,6 +89,7 @@ setup(
             "ape_plugins=ape_plugins._cli:cli",
             "ape_run=ape_run._cli:cli",
             "ape_networks=ape_networks._cli:cli",
+            "ape_test=ape_test._cli:cli",
         ],
     },
     python_requires=">=3.7,<3.10",
@@ -98,7 +100,7 @@ setup(
         "ape_compile",
         "ape_console",
         "ape_ethereum",
-        "ape_http",
+        "ape_geth",
         "ape_networks",
         "ape_plugins",
         "ape_run",
@@ -115,7 +117,7 @@ setup(
         "ape_accounts": ["py.typed"],
         "ape_compile": ["py.typed"],
         "ape_ethereum": ["py.typed"],
-        "ape_http": ["py.typed"],
+        "ape_geth": ["py.typed"],
         "ape_run": ["py.typed"],
         "ape_test": ["py.typed"],
         "ape_pm": ["py.typed"],
