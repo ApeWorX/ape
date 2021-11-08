@@ -5,7 +5,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api import ReceiptAPI, TransactionStatusEnum
 from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError
-from ape_http import EthereumProvider
+from ape_http import GethProvider
 
 _TEST_REVERT_REASON = "TEST REVERT REASON."
 
@@ -29,7 +29,7 @@ class TestEthereumProvider:
     def test_send_when_web3_error_raises_transaction_error(
         self, mock_web3, mock_network_api, mock_config_item, mock_transaction
     ):
-        provider = EthereumProvider(
+        provider = GethProvider(
             name="test",
             network=mock_network_api,
             config=mock_config_item,
@@ -53,7 +53,7 @@ class TestEthereumProvider:
     def test_send_transaction_out_of_gas_error(
         self, mock_web3, mock_network_api, mock_config_item, mock_transaction
     ):
-        provider = EthereumProvider(
+        provider = GethProvider(
             name="test",
             network=mock_network_api,
             config=mock_config_item,
@@ -74,7 +74,7 @@ class TestEthereumProvider:
     def test_send_transaction_reverts_from_contract_logic(
         self, mock_web3, mock_network_api, mock_config_item, mock_transaction
     ):
-        provider = EthereumProvider(
+        provider = GethProvider(
             name="test",
             network=mock_network_api,
             config=mock_config_item,

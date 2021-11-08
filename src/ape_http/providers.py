@@ -140,7 +140,7 @@ class GethNotInstalledError(ConnectionError):
         )
 
 
-class EthereumProvider(ProviderAPI):
+class GethProvider(ProviderAPI):
     _web3: Web3 = None  # type: ignore
     _geth: Optional[EphemeralGeth] = None
 
