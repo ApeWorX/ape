@@ -123,8 +123,7 @@ Ape is primarily meant to be used as a command line tool. Here are some things y
 .. code-block:: bash
 
     # You can interact and compile contracts
-    # Here is an example of a project with a contract you interact with: 
-    $ git clone https://github.com/brownie-mix/vyper-token-mix.git
+    # cd in to a directory with a contracts folder containing a contract.
     $ cd vyper-token-mix/
     # You will need a compiler plugin in order to compile Vyper code
     $ ape plugins add vyper
