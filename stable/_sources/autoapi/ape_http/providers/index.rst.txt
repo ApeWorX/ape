@@ -14,9 +14,10 @@
 
 .. autoapisummary::
 
+   ape_http.providers.EphemeralGeth
    ape_http.providers.EthereumNetworkConfig
    ape_http.providers.NetworkConfig
-   ape_http.providers.EthereumProvider
+   ape_http.providers.GethProvider
 
 
 
@@ -43,6 +44,27 @@
    
 
    
+
+
+
+.. py:class:: EphemeralGeth(base_directory: pathlib.Path, hostname: str, port: int, mnemonic: str, chain_id: int = 1337, initial_balance: Union[str, int] = to_wei(10000, 'ether'))
+
+   Bases: :py:obj:`geth.LoggingMixin`, :py:obj:`geth.process.BaseGethProcess`
+
+   A developer-configured geth that only exists until disconnected.
+
+   .. py:method:: __init__(self, base_directory: pathlib.Path, hostname: str, port: int, mnemonic: str, chain_id: int = 1337, initial_balance: Union[str, int] = to_wei(10000, 'ether'))
+
+
+   .. py:method:: connect(self)
+
+
+   .. py:method:: disconnect(self)
+
+
+   .. py:method:: _clean(self)
+
+
 
 
 
@@ -99,14 +121,33 @@
 
 
 
-.. py:class:: EthereumProvider
+.. py:exception:: GethNotInstalledError
 
-   Bases: :py:obj:`ape.api.ProviderAPI`
+   Bases: :py:obj:`requests.exceptions.ConnectionError`
+
+   A Connection error occurred.
+
+   .. py:method:: __init__(self)
+
+      Initialize RequestException with `request` and `response` objects.
+
+
+
+
+
+.. py:class:: GethProvider
+
+   Bases: :py:obj:`ape.api.providers.ProviderAPI`
 
    A Provider must work with a particular Network in a particular Ecosystem
 
    .. attribute:: _web3
       :annotation: :web3.Web3
+
+      
+
+   .. attribute:: _geth
+      :annotation: :Optional[EphemeralGeth]
 
       
 

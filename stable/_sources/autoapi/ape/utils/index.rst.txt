@@ -69,7 +69,7 @@
 
 
 
-.. py:function:: generate_dev_accounts(mnemonic, number_of_accounts: int = 10, hd_path_format="m/44'/60'/0'/{}") -> List[GeneratedDevAccount]
+.. py:function:: generate_dev_accounts(mnemonic: str, number_of_accounts: int = 10, hd_path_format="m/44'/60'/0'/{}") -> List[GeneratedDevAccount]
 
    Creates accounts from the configured test mnemonic.
    Use these accounts (or the mnemonic) in chain-genesis
@@ -86,7 +86,7 @@
 
 
 
-.. py:function:: extract_nested_value(root: Dict, *args: str) -> Optional[Dict]
+.. py:function:: extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]
 
    Dig through a nested ``Dict`` gives the keys to use in order as arguments.
    Returns the final value if it exists else `None` if the tree ends at any point.

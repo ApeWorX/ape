@@ -27,7 +27,7 @@
 .. autoapisummary::
 
    ape_http.EthereumNetworkConfig
-   ape_http.EthereumProvider
+   ape_http.GethProvider
    ape_http.NetworkConfig
 
 
@@ -84,14 +84,19 @@
 
 
 
-.. py:class:: EthereumProvider
+.. py:class:: GethProvider
 
-   Bases: :py:obj:`ape.api.ProviderAPI`
+   Bases: :py:obj:`ape.api.providers.ProviderAPI`
 
    A Provider must work with a particular Network in a particular Ecosystem
 
    .. attribute:: _web3
       :annotation: :web3.Web3
+
+      
+
+   .. attribute:: _geth
+      :annotation: :Optional[EphemeralGeth]
 
       
 
