@@ -43,10 +43,10 @@ class AccountAPI(AddressAPI):
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         """
         Signs the given message.
-        
+
         Args:
           msg (:class:`~eth_account.messages.SignableMessage`): The message to sign.
-        
+
         Returns:
           :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
         """
@@ -55,10 +55,10 @@ class AccountAPI(AddressAPI):
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         """
         Signs the given transaction.
-        
+
         Args:
           txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to sign.
-        
+
         Returns:
           :class:`~ape.types.signatures.TransactionSignature` (optional): The signed transaction.
         """
