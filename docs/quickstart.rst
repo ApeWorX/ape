@@ -90,7 +90,6 @@ Please visit our `Dockerhub <https://hub.docker.com/repository/docker/apeworx/ap
     apeworx/ape compile
 
 
-Troubleshooting: Python 3.6.X will have issues with installation with setup.py (blake2.py) Intel Processor x86
 
 Docker uninstall process needs to 
 Either Solution:
