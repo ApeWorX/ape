@@ -1,6 +1,6 @@
 from ape import plugins
 
-from .providers import EthereumNetworkConfig, GethProvider, NetworkConfig
+from .providers import GethNetworkConfig, GethProvider, NetworkConfig
 
 
 @plugins.register(plugins.Config)
@@ -10,5 +10,5 @@ def config_class():
 
 @plugins.register(plugins.ProviderPlugin)
 def providers():
-    for network_name in EthereumNetworkConfig().serialize():
+    for network_name in GethNetworkConfig().serialize():
         yield "ethereum", network_name, GethProvider

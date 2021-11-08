@@ -114,7 +114,7 @@ class EphemeralGeth(LoggingMixin, BaseGethProcess):
             shutil.rmtree(self.data_dir)
 
 
-class EthereumNetworkConfig(ConfigItem):
+class GethNetworkConfig(ConfigItem):
     # Make sure you are running the right networks when you try for these
     mainnet: dict = DEFAULT_SETTINGS.copy()
     ropsten: dict = DEFAULT_SETTINGS.copy()
@@ -126,7 +126,7 @@ class EthereumNetworkConfig(ConfigItem):
 
 
 class NetworkConfig(ConfigItem):
-    ethereum: EthereumNetworkConfig = EthereumNetworkConfig()
+    ethereum: GethNetworkConfig = GethNetworkConfig()
 
 
 class GethNotInstalledError(ConnectionError):
