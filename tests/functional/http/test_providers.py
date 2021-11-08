@@ -5,7 +5,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api import ReceiptAPI, TransactionStatusEnum
 from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError
-from ape_http import GethProvider
+from ape_geth import GethProvider
 
 _TEST_REVERT_REASON = "TEST REVERT REASON."
 
