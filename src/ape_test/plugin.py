@@ -2,7 +2,6 @@ import sys
 from pathlib import Path
 
 import pytest
-from _pytest.config import Config
 
 from ape import accounts, networks, project
 from ape_test.fixtures import PytestApeFixtures
@@ -18,14 +17,6 @@ def pytest_addoption(parser):
     )
     parser.addoption("--network", action="store", help="The network to run the tests on.")
     # NOTE: Other testing plugins should integrate with pytest separately
-
-
-def _get_runner_class(config: Config):
-    has_xdist = "numprocesses" in config.option
-    if has_xdist and config.getoption("numprocesses"):
-        raise NotImplementedError("x-dist support has not been implemented.")
-
-    return PytestApeRunner
 
 
 def pytest_configure(config):
@@ -47,11 +38,9 @@ def pytest_configure(config):
     session = PytestApeRunner(config, project, networks)
     config.pluginmanager.register(session, "ape-test")
 
-    # Only inject fixtures if we're not configuring the x-dist master runner
-    has_xdist = "numprocesses" in config.option
-    if not has_xdist or not config.getoption("numprocesses"):
-        fixtures = PytestApeFixtures(accounts, networks, project)
-        config.pluginmanager.register(fixtures, "ape-fixtures")
+    # Inject fixtures
+    fixtures = PytestApeFixtures(accounts, networks, project)
+    config.pluginmanager.register(fixtures, "ape-fixtures")
 
 
 def pytest_load_initial_conftests(early_config):
