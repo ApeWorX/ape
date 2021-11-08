@@ -48,7 +48,13 @@ class AccountAPI(AddressAPI):
     @abstractmethod
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         """
-        Signs transaction `txn`
+        Signs the given transaction.
+        
+        Args:
+          txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to sign.
+        
+        Returns:
+          :class:`~ape.types.signatures.TransactionSignature` (optional): The signed transaction.
         """
 
     def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
