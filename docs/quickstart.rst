@@ -146,7 +146,6 @@ Ape is primarily meant to be used as a command line tool. Here are some things y
 
 .. code-block:: bash
 
-    # What does this do?
     $ ape run
 
 
