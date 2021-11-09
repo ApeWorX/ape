@@ -23,7 +23,7 @@ class RevertsContextManager:
 
         if self.expected_message is not None and self.expected_message != actual:
             raise AssertionError(
-                f"'{self.expected_message}' not found in revert message '{actual}'."
+                f"Expected revert message '{self.expected_message}' but got '{actual}'."
             )
 
         # Returning True causes the expected exception not to get raised
