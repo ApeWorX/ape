@@ -13,8 +13,13 @@
    :titlesonly:
    :maxdepth: 1
 
+   _cli/index.rst
    accounts/index.rst
+   contextmanagers/index.rst
+   fixtures/index.rst
+   plugin/index.rst
    providers/index.rst
+   runners/index.rst
 
 
 
