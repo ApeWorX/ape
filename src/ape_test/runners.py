@@ -27,7 +27,7 @@ class PytestApeRunner:
     @property
     def _provider(self) -> Optional[TestProviderAPI]:
         """
-        The active provider. This gets set lazily.
+        The active provider.
         """
         return self.networks.active_provider
 
