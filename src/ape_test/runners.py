@@ -47,7 +47,7 @@ class PytestApeRunner:
 
         yield
 
-        # Try to revert to the blockchain-state before the test began.
+        # Try to revert to the state before the test began.
         if snapshot_id:
             self._provider.revert(snapshot_id)
 
