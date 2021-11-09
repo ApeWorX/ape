@@ -148,7 +148,6 @@ Ape is primarily meant to be used as a command line tool. Here are some things y
 
     # What does this do?
     $ ape run
-    # ape runs a script from the script folder? Example? Do we need to show an example?
 
 
 Ape as a package works both in ``ape run`` scripts and it also can be used in other python programs via import. 
