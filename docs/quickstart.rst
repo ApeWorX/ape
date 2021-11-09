@@ -124,7 +124,7 @@ Ape is primarily meant to be used as a command line tool. Here are some things y
 
     # You can interact and compile contracts
     # cd in to a directory with a contracts folder containing a contract.
-    $ cd vyper-token-mix/
+    $ cd vyper-project/
     # You will need a compiler plugin in order to compile Vyper code
     $ ape plugins add vyper
     # Now you can compile Vyper contracts in the contracts folder of your project
