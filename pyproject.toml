@@ -17,6 +17,8 @@ target-version = ['py37', 'py38', 'py39']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
+norecursedirs = "data"
+addopts = "-p no:ape_test"  # NOTE: Prevents the ape plugin from activating on our tests
 python_files = "test_*.py"
 testpaths = "tests"
 markers = "fuzzing: Run Hypothesis fuzz test suite"
