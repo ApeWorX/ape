@@ -227,7 +227,7 @@ class Web3Provider(ProviderAPI):
         """
         Returns the current price per gas in wei.
         """
-        return self._web3.eth.generate_gas_price()
+        return self._web3.eth.generate_gas_price()  # type: ignore
 
     def get_nonce(self, address: str) -> int:
         """
