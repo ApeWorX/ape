@@ -108,16 +108,7 @@ setup(
     keywords="ethereum",
     packages=find_packages("src"),
     package_dir={"": "src"},
-    package_data={
-        "ape": ["py.typed"],
-        "ape_accounts": ["py.typed"],
-        "ape_compile": ["py.typed"],
-        "ape_ethereum": ["py.typed"],
-        "ape_geth": ["py.typed"],
-        "ape_run": ["py.typed"],
-        "ape_test": ["py.typed"],
-        "ape_pm": ["py.typed"],
-    },
+    package_data={p: ["py.typed"] for p in packages_data["__modules__"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
