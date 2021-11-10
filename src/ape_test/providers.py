@@ -31,7 +31,7 @@ class LocalNetwork(TestProviderAPI):
         return self._web3.eth.chain_id
 
     @property
-    def gas_price(self):
+    def gas_price(self) -> int:
         # NOTE: Test chain doesn't care about gas prices
         return 0
 
