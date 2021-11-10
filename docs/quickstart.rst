@@ -90,13 +90,10 @@ Please visit our `Dockerhub <https://hub.docker.com/repository/docker/apeworx/ap
     apeworx/ape compile
 
 
-
 Docker uninstall process needs to 
 Either Solution:
 1.chmod + chown
 2. sudo rm -rf ~/.solcx, sudo rm -rf ~/.vvm
-
-
 
 
 Once ape is installed you can test some of the features! Here is a guide on some of the popular
