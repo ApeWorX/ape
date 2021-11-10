@@ -1,5 +1,13 @@
 #!/usr/bin/env python
+from pathlib import Path
+from typing import Dict
+
 from setuptools import find_packages, setup  # type: ignore
+
+here = Path(__file__).parent.absolute()
+packages_data: Dict = {}
+with open(here / "src" / "ape" / "__modules__.py", encoding="utf8") as modules_file:
+    exec(modules_file.read(), packages_data)
 
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
@@ -94,19 +102,7 @@ setup(
     },
     python_requires=">=3.7,<3.10",
     extras_require=extras_require,
-    py_modules=[
-        "ape",
-        "ape_accounts",
-        "ape_compile",
-        "ape_console",
-        "ape_ethereum",
-        "ape_geth",
-        "ape_networks",
-        "ape_plugins",
-        "ape_run",
-        "ape_test",
-        "ape_pm",
-    ],
+    py_modules=packages_data["__modules__"],
     license="Apache-2.0",
     zip_safe=False,
     keywords="ethereum",
