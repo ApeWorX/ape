@@ -35,7 +35,7 @@
 
 
 .. data:: FIRST_CLASS_PLUGINS
-   :annotation: :Set[str]
+   
 
    
 

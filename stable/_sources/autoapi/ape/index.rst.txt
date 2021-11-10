@@ -30,6 +30,7 @@
    :titlesonly:
    :maxdepth: 1
 
+   __modules__/index.rst
    _cli/index.rst
    exceptions/index.rst
    logging/index.rst
