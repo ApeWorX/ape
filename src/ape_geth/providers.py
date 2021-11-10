@@ -149,7 +149,6 @@ class GethProvider(Web3Provider):
 
     def connect(self):
         self._web3 = Web3(HTTPProvider(self.uri))
-        self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
         # Try to start an ephemeral geth process if no provider is running.
         if not self._web3.isConnected():
@@ -178,6 +177,8 @@ class GethProvider(Web3Provider):
                 self._geth.disconnect()
                 raise ConnectionError("Unable to connect to locally running geth.")
 
+        self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
+
         def is_poa() -> bool:
             node_info: Mapping = self._node_info or {}
             chain_config = extract_nested_value(node_info, "protocols", "eth", "config")
@@ -198,7 +199,7 @@ class GethProvider(Web3Provider):
             self._geth.disconnect()
             self._geth = None
 
-        # Note: this must happen after geth.disconnect()
+        # Must happen after geth.disconnect()
         self._web3 = None  # type: ignore
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
