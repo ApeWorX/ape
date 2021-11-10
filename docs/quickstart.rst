@@ -29,10 +29,7 @@ Installation
 
 You may skip this creating a virtual environment if you know you don't require one for your use case. 
 
-via ``virtualenv`` `virtualenv <https://pypi.org/project/virtualenv/>`_
-
-==================
-via ``venv <https://docs.python.org/3/library/venv.html>``_
+via ``virtualenv`` `virtualenv <https://pypi.org/project/virtualenv/>`_ or via ``venv <https://docs.python.org/3/library/venv.html>``_
 
 ============================================================
 
