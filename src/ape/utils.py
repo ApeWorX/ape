@@ -70,7 +70,7 @@ def get_package_version(obj: Any) -> str:
     if hasattr(obj, "__version__"):
         return obj.__version__
 
-    # NOTE: In case were don't pass a module name
+    # NOTE: In case where don't pass a module name
     if not isinstance(obj, str):
         obj = obj.__name__
 
