@@ -112,10 +112,6 @@ Argument conversion process flow
 ================================
 CLI arguments are decoded and passed in to the application with ``click``.
 
-Plugin Heirarchy
-================
-TBD...
-
 
 Writing CLI plugins
 *******************
