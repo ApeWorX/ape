@@ -1,18 +1,15 @@
 import os
-from pathlib import Path
 from typing import Dict, Set, Tuple
 
 from github import Github
 
+from ape.__modules__ import __modules__
 from ape.exceptions import ConfigError
 from ape.logging import logger
 
-# Plugins included with ape core
-FIRST_CLASS_PLUGINS: Set[str] = {
-    d.name for d in Path(__file__).parent.parent.iterdir() if d.is_dir and d.name.startswith("ape_")
-}
-
 # Plugins maintained OSS by ApeWorX (and trusted)
+FIRST_CLASS_PLUGINS = set(__modules__)
+
 SECOND_CLASS_PLUGINS: Set[str] = set()
 
 # TODO: Should the github client be in core?
