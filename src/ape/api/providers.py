@@ -230,7 +230,7 @@ class Web3Provider(ProviderAPI):
         return self._web3.eth.generate_gas_price()
 
     def get_nonce(self, address: str) -> int:
-        """q
+        """
         Returns the number of transactions sent from an address.
         """
         return self._web3.eth.get_transaction_count(address)  # type: ignore
