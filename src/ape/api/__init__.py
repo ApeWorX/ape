@@ -10,6 +10,7 @@ from .providers import (
     TestProviderAPI,
     TransactionAPI,
     TransactionStatusEnum,
+    Web3Provider,
 )
 
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     "ContractInstance",
     "ContractLog",
     "ConverterAPI",
+    "create_network_type",
     "EcosystemAPI",
     "ExplorerAPI",
     "ProviderAPI",
@@ -31,5 +33,5 @@ __all__ = [
     "TestProviderAPI",
     "TransactionAPI",
     "TransactionStatusEnum",
-    "create_network_type",
+    "Web3Provider",
 ]
