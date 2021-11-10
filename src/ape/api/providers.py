@@ -192,7 +192,7 @@ class TestProviderAPI(ProviderAPI):
 
 class Web3Provider(ProviderAPI):
     """
-    A base provider that is web3 / RPC based.
+    A base provider that is web3 based.
     """
 
     _web3: Web3 = None  # type: ignore
