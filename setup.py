@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-from os import path
+from pathlib import Path
 from typing import Dict
 
 from setuptools import find_packages, setup  # type: ignore
 
-here = path.abspath(path.dirname(__file__))
+here = Path(__file__).parent.absolute()
 packages_data: Dict = {}
-with open(path.join(here, "src", "ape", "__modules__.py"), encoding="utf8") as modules_file:
+with open(here / "src" / "ape" / "__modules__.py", encoding="utf8") as modules_file:
     exec(modules_file.read(), packages_data)
 
 extras_require = {
