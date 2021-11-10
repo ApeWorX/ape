@@ -137,14 +137,9 @@
 
 .. py:class:: GethProvider
 
-   Bases: :py:obj:`ape.api.providers.ProviderAPI`
+   Bases: :py:obj:`ape.api.providers.Web3Provider`
 
-   A Provider must work with a particular Network in a particular Ecosystem
-
-   .. attribute:: _web3
-      :annotation: :web3.Web3
-
-      
+   A base provider that is web3 based.
 
    .. attribute:: _geth
       :annotation: :Optional[EphemeralGeth]
@@ -161,9 +156,6 @@
    .. py:method:: disconnect(self)
 
 
-   .. py:method:: update_settings(self, new_settings: dict)
-
-
    .. py:method:: estimate_gas_cost(self, txn: ape.api.TransactionAPI) -> int
 
       Generates and returns an estimate of how much gas is necessary
@@ -171,59 +163,14 @@
       The transaction will not be added to the blockchain.
 
 
-   .. py:method:: chain_id(self) -> int
-      :property:
-
-      Returns the currently configured chain ID,
-      a value used in replay-protected transaction signing as introduced by EIP-155.
-
-
-   .. py:method:: gas_price(self)
-      :property:
-
-      Returns the current price per gas in wei.
-
-
    .. py:method:: _node_info(self) -> Optional[web3.types.NodeInfo]
       :property:
-
-
-   .. py:method:: get_nonce(self, address: str) -> int
-
-      q
-      Returns the number of transactions sent from an address.
-
-
-   .. py:method:: get_balance(self, address: str) -> int
-
-      Returns the balance of the account of a given address.
-
-
-   .. py:method:: get_code(self, address: str) -> bytes
-
-      Returns code at a given address.
-
-
-   .. py:method:: send_call(self, txn: ape.api.TransactionAPI) -> bytes
-
-      Executes a new message call immediately without creating a
-      transaction on the block chain.
-
-
-   .. py:method:: get_transaction(self, txn_hash: str) -> ape.api.ReceiptAPI
-
-      Returns the information about a transaction requested by transaction hash.
 
 
    .. py:method:: send_transaction(self, txn: ape.api.TransactionAPI) -> ape.api.ReceiptAPI
 
       Creates a new message call transaction or a contract creation
       for signed transactions.
-
-
-   .. py:method:: get_events(self, **filter_params) -> Iterator[dict]
-
-      Returns an array of all logs matching a given set of filter parameters.
 
 
 

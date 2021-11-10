@@ -53,7 +53,7 @@
       :property:
 
 
-   .. py:method:: gas_price(self)
+   .. py:method:: gas_price(self) -> int
       :property:
 
 
