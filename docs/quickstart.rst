@@ -90,10 +90,10 @@ Please visit our `Dockerhub <https://hub.docker.com/repository/docker/apeworx/ap
     apeworx/ape compile
 
 
-Docker uninstall process needs to 
-Either Solution:
-1.chmod + chown
-2. sudo rm -rf ~/.solcx, sudo rm -rf ~/.vvm
+When switching back and forth between docker and normal ape you may have permissions issues. 
+To resolve these you can use either of the following solutions:
+1. ``chown ~/.solcx && chown ~/.solcx``
+2. ``sudo rm -rf ~/.solcx && sudo rm -rf ~/.vvm``
 
 
 Once ape is installed you can test some of the features! Here is a guide on some of the popular
