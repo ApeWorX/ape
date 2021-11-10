@@ -4,6 +4,7 @@ from typing import Iterator, List, Optional
 
 from dataclassy import as_dict
 from hexbytes import HexBytes
+from web3 import Web3
 
 from ape.logging import logger
 from ape.types import TransactionSignature
@@ -187,3 +188,88 @@ class TestProviderAPI(ProviderAPI):
     @abstractmethod
     def revert(self, snapshot_id: str):
         ...
+
+
+class Web3Provider(ProviderAPI):
+    """
+    A base provider that is web3 based.
+    """
+
+    _web3: Web3 = None  # type: ignore
+
+    def update_settings(self, new_settings: dict):
+        """
+        Update the provider settings and re-connect.
+        """
+        self.disconnect()
+        self.provider_settings.update(new_settings)
+        self.connect()
+
+    def estimate_gas_cost(self, txn: TransactionAPI) -> int:
+        """
+        Generates and returns an estimate of how much gas is necessary
+        to allow the transaction to complete.
+        The transaction will not be added to the blockchain.
+        """
+        txn_dict = txn.as_dict()
+        return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
+
+    @property
+    def chain_id(self) -> int:
+        """
+        Returns the currently configured chain ID,
+        a value used in replay-protected transaction signing as introduced by EIP-155.
+        """
+        return self._web3.eth.chain_id
+
+    @property
+    def gas_price(self) -> int:
+        """
+        Returns the current price per gas in wei.
+        """
+        return self._web3.eth.generate_gas_price()  # type: ignore
+
+    def get_nonce(self, address: str) -> int:
+        """
+        Returns the number of transactions sent from an address.
+        """
+        return self._web3.eth.get_transaction_count(address)  # type: ignore
+
+    def get_balance(self, address: str) -> int:
+        """
+        Returns the balance of the account of a given address.
+        """
+        return self._web3.eth.get_balance(address)  # type: ignore
+
+    def get_code(self, address: str) -> bytes:
+        """
+        Returns code at a given address.
+        """
+        return self._web3.eth.get_code(address)  # type: ignore
+
+    def send_call(self, txn: TransactionAPI) -> bytes:
+        """
+        Executes a new message call immediately without creating a
+        transaction on the block chain.
+        """
+        return self._web3.eth.call(txn.as_dict())
+
+    def get_transaction(self, txn_hash: str) -> ReceiptAPI:
+        """
+        Returns the information about a transaction requested by transaction hash.
+        """
+        # TODO: Work on API that let's you work with ReceiptAPI and re-send transactions
+        receipt = self._web3.eth.wait_for_transaction_receipt(txn_hash)  # type: ignore
+        txn = self._web3.eth.get_transaction(txn_hash)  # type: ignore
+        return self.network.ecosystem.receipt_class.decode({**txn, **receipt})
+
+    def get_events(self, **filter_params) -> Iterator[dict]:
+        """
+        Returns an array of all logs matching a given set of filter parameters.
+        """
+        return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
+
+    def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+        txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
+        receipt = self.get_transaction(txn_hash.hex())
+        return receipt
