@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 import requests
 from dataclassy import dataclass
@@ -168,6 +168,9 @@ class ProjectManager:
     @property
     def contracts(self) -> Dict[str, ContractType]:
         return self.load_contracts()
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.contracts)
 
     def __getattr__(self, attr_name: str):
         contracts = self.load_contracts()
