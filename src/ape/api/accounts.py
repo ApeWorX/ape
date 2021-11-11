@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Iterator, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
 
 from ape.types import (
     AddressType,
@@ -15,6 +15,9 @@ from .address import AddressAPI
 from .base import abstractdataclass, abstractmethod
 from .contracts import ContractContainer, ContractInstance
 from .providers import ReceiptAPI, TransactionAPI
+
+if TYPE_CHECKING:
+    from ape.managers.config import ConfigManager
 
 
 # NOTE: AddressAPI is a dataclass already
@@ -88,7 +91,8 @@ class AccountAPI(AddressAPI):
 
         if txn.total_transfer_value > self.balance:
             raise AccountsError(
-                "Transfer value meets or exceeds account balance. "
+                "Transfer value meets or exceeds account balance.\n"
+                "Are you using the correct provider/account combination?\n"
                 f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
             )
 
@@ -150,6 +154,7 @@ class AccountAPI(AddressAPI):
 class AccountContainerAPI:
     data_folder: Path
     account_type: Type[AccountAPI]
+    config_manager: "ConfigManager"
 
     @property
     @abstractmethod
@@ -214,3 +219,19 @@ class AccountContainerAPI:
     def _verify_unused_alias(self, account):
         if account.alias and account.alias in self.aliases:
             raise AliasAlreadyInUseError(account.alias)
+
+
+class TestAccountContainerAPI(AccountContainerAPI):
+    """
+    Test account containers for ``ape test`` should implement
+    this API instead of ``AccountContainerAPI`` directly. This
+    is how they show up in the ``accounts`` test fixture.
+    """
+
+
+class TestAccountAPI(AccountAPI):
+    """
+    Test accounts for ``ape test`` should implement this API
+    instead of ``AccountAPI`` directly. This is how they show
+    up in the ``accounts`` test fixture.
+    """

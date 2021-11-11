@@ -2,6 +2,8 @@
 
 Ape is a framework for Web3 Python applications and smart contracts, with advanced functionality for testing, deployment, and on-chain interactions.
 
+See [website](https://apeworx.io/) and [documentation](https://apeworx.io/ape/).
+
 ## Dependencies
 
 * [python3](https://www.python.org/downloads) version 3.7 or greater, python3-dev
