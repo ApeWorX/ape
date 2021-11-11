@@ -59,7 +59,7 @@ def _run_script(cli_ctx, script_path, interactive=False):
     help="Drop into interactive console session after running",
 )
 @ape_cli_context()
-@network_option
+@network_option()
 def cli(cli_ctx, scripts, interactive, network):
     """
     NAME - Path or script name (from ``scripts/`` folder)
@@ -71,7 +71,7 @@ def cli(cli_ctx, scripts, interactive, network):
     the exports from the ``ape`` top-level package (similar to how the console works)
     """
     if not scripts:
-        cli_ctx.abort("Must provide at least one script name or path")
+        cli_ctx.abort("Must provide at least one script name or path.")
 
     scripts_folder = config.PROJECT_FOLDER / "scripts"
 
@@ -84,10 +84,10 @@ def cli(cli_ctx, scripts, interactive, network):
             script_file = Path(name).resolve()
 
         elif not scripts_folder.exists():
-            cli_ctx.abort("No `scripts/` directory detected to run script")
+            cli_ctx.abort("No 'scripts/' directory detected to run script.")
 
         elif name not in available_scripts:
-            cli_ctx.abort(f"No script named '{name}' detected in scripts folder")
+            cli_ctx.abort(f"No script named '{name}' detected in scripts folder.")
 
         else:
             script_file = available_scripts[name]

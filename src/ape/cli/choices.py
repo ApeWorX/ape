@@ -42,7 +42,7 @@ class PromptChoice(click.ParamType):
         self.choices = choices
 
     def print_choices(self):
-        choices = dict(enumerate(self.choices, 1))
+        choices = dict(enumerate(self.choices, 0))
         for choice in choices:
             click.echo(f"{choice}. {choices[choice]}")
         click.echo()
@@ -52,7 +52,7 @@ class PromptChoice(click.ParamType):
     ) -> Optional[Any]:
         # noinspection PyBroadException
         try:
-            choice_index = int(value) - 1
+            choice_index = int(value)
             if choice_index < 0:
                 self.fail("Invalid choice", param=param)
 

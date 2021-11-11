@@ -263,13 +263,13 @@ class NetworkAPI:
         else:
             raise NetworkError("No network providers found")
 
-    def use_provider(
+    def get_provider(
         self,
-        provider_name: str,
+        provider_name: Optional[str] = None,
         provider_settings: dict = None,
-    ) -> ProviderContextManager:
-        if provider_settings is None:
-            provider_settings = {}
+    ):
+        provider_name = provider_name or self.default_provider
+        provider_settings = provider_settings or {}
 
         if ":" in provider_name:
             # NOTE: Shortcut that allows `--network ecosystem:network:http://...` to work
@@ -277,16 +277,23 @@ class NetworkAPI:
             provider_name = provider_name.split(":")[0]
 
         if provider_name in self.providers:
-            return ProviderContextManager(
-                self.ecosystem.network_manager,
-                self.providers[provider_name](provider_settings=provider_settings),
-            )
+            return self.providers[provider_name](provider_settings=provider_settings)
 
         else:
             message = (
                 f"'{provider_name}' is not a valid network for ecosystem '{self.ecosystem.name}'"
             )
             raise NetworkError(message)
+
+    def use_provider(
+        self,
+        provider_name: str,
+        provider_settings: dict = None,
+    ) -> ProviderContextManager:
+        return ProviderContextManager(
+            self.ecosystem.network_manager,
+            self.get_provider(provider_name=provider_name, provider_settings=provider_settings),
+        )
 
     @property
     def default_provider(self) -> str:
@@ -298,9 +305,9 @@ class NetworkAPI:
         else:
             raise NetworkError(f"No providers found for network '{self.name}'")
 
-    def use_default_provider(self) -> ProviderContextManager:
+    def use_default_provider(self, provider_settings: Optional[Dict]) -> ProviderContextManager:
         # NOTE: If multiple providers, use whatever is "first" registered
-        return self.use_provider(self.default_provider)
+        return self.use_provider(self.default_provider, provider_settings=provider_settings)
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:

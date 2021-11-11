@@ -113,8 +113,9 @@ class PluginManager:
                         yield clean_plugin_name(plugin_name), result
 
                     else:
+                        api_name = result.__name__ if hasattr(result, "__name__") else result
                         logger.warning(
-                            f"'{result.__name__}' from '{plugin_name}' is not fully implemented"
+                            f"'{api_name}' from '{plugin_name}' is not fully implemented."
                         )
 
             elif valid_impl(results):

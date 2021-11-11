@@ -10,7 +10,7 @@ from ape.api import (
     TransactionStatusEnum,
 )
 from ape.api.config import ConfigItem
-from ape.exceptions import VirtualMachineError
+from ape.exceptions import ContractLogicError
 
 TEST_ADDRESS = "0x0A78AAAAA2122100000b9046f0A085AB2E111113"
 
@@ -27,7 +27,7 @@ def mock_provider_api(mocker, mock_network_api):
     return mock
 
 
-class _MockVirtualMachineError(VirtualMachineError):
+class _ContractLogicError(ContractLogicError):
     pass
 
 
@@ -35,7 +35,7 @@ class _MockVirtualMachineError(VirtualMachineError):
 def mock_network_api(mocker):
     mock = mocker.MagicMock(spec=NetworkAPI)
     mock_ecosystem = mocker.MagicMock(spec=EcosystemAPI)
-    mock_ecosystem.virtual_machine_error_class = _MockVirtualMachineError
+    mock_ecosystem.virtual_machine_error_class = _ContractLogicError
     mock.ecosystem = mock_ecosystem
     return mock
 

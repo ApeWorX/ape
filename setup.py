@@ -1,9 +1,16 @@
 #!/usr/bin/env python
+from pathlib import Path
+from typing import Dict
+
 from setuptools import find_packages, setup  # type: ignore
+
+here = Path(__file__).parent.absolute()
+packages_data: Dict = {}
+with open(here / "src" / "ape" / "__modules__.py", encoding="utf8") as modules_file:
+    exec(modules_file.read(), packages_data)
 
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
-        "pytest>=6.0,<7.0",  # Core testing package
         "pytest-xdist",  # multi-process runner
         "pytest-cov",  # Coverage analyzer plugin
         "pytest-mock",  # For creating mocks
@@ -11,7 +18,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=21.9b0,<22.0",  # auto-formatter and linter
+        "black>=21.10b0,<22.0",  # auto-formatter and linter
         "mypy>=0.910,<1.0",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
@@ -72,13 +79,17 @@ setup(
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
         "pyyaml>=0.2.5",
+        "py-geth>=3.6.0",
+        "requests>=2.25.1,<3.0",
         "importlib-metadata",
         "singledispatchmethod ; python_version<'3.8'",
         "IPython>=7.25",
+        "pytest>=6.0,<7.0",
         "web3[tester]>=5.18.0,<6.0.0",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
+        "pytest11": ["ape_test=ape_test.plugin"],
         "ape_cli_subcommands": [
             "ape_accounts=ape_accounts._cli:cli",
             "ape_compile=ape_compile._cli:cli",
@@ -86,38 +97,18 @@ setup(
             "ape_plugins=ape_plugins._cli:cli",
             "ape_run=ape_run._cli:cli",
             "ape_networks=ape_networks._cli:cli",
+            "ape_test=ape_test._cli:cli",
         ],
     },
     python_requires=">=3.7,<3.10",
     extras_require=extras_require,
-    py_modules=[
-        "ape",
-        "ape_accounts",
-        "ape_compile",
-        "ape_console",
-        "ape_ethereum",
-        "ape_http",
-        "ape_networks",
-        "ape_plugins",
-        "ape_run",
-        "ape_test",
-        "ape_pm",
-    ],
+    py_modules=packages_data["__modules__"],
     license="Apache-2.0",
     zip_safe=False,
     keywords="ethereum",
     packages=find_packages("src"),
     package_dir={"": "src"},
-    package_data={
-        "ape": ["py.typed"],
-        "ape_accounts": ["py.typed"],
-        "ape_compile": ["py.typed"],
-        "ape_ethereum": ["py.typed"],
-        "ape_http": ["py.typed"],
-        "ape_run": ["py.typed"],
-        "ape_test": ["py.typed"],
-        "ape_pm": ["py.typed"],
-    },
+    package_data={p: ["py.typed"] for p in packages_data["__modules__"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
