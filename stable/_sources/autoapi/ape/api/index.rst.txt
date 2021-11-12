@@ -92,9 +92,25 @@
    .. py:method:: sign_message(self, msg: ape.types.SignableMessage) -> Optional[ape.types.MessageSignature]
       :abstractmethod:
 
+      Signs the given message.
+
+      Args:
+        msg (:class:`~eth_account.messages.SignableMessage`): The message to sign.
+
+      Returns:
+        :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
+
 
    .. py:method:: sign_transaction(self, txn: ape.api.providers.TransactionAPI) -> Optional[ape.types.TransactionSignature]
       :abstractmethod:
+
+      Signs the given transaction.
+
+      Args:
+        txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to sign.
+
+      Returns:
+        :class:`~ape.types.signatures.TransactionSignature` (optional): The signed transaction.
 
 
    .. py:method:: call(self, txn: ape.api.providers.TransactionAPI, send_everything: bool = False) -> ape.api.providers.ReceiptAPI

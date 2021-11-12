@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quickstart guide &mdash; ape  documentation</title>
+  <title>Quickstart Guide &mdash; ape  documentation</title>
   <link rel="stylesheet" href="/ape/latest/_static//css/theme.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static//custom.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static//pygments.css" type="text/css" />
@@ -22,7 +22,7 @@
   </script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="ape" href="autoapi/ape/index.html" />
+    <link rel="next" title="Writing Plugins" href="plugins.html" />
     <link rel="prev" title="Welcome to Ape’s documentation!" href="index.html" /> 
 </head>
 
@@ -53,15 +53,18 @@
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
               <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart guide</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisite">Prerequisite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#via-pip">via <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#via-setuptools">via <code class="docutils literal notranslate"><span class="pre">setuptools</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#via-docker">via <code class="docutils literal notranslate"><span class="pre">docker</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#quick-usage">Quick Usage</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing Plugins</a></li>
 </ul>
 <p class="caption"><span class="caption-text">User API Reference</span></p>
 <ul>
@@ -111,7 +114,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Quickstart guide</li>
+      <li>Quickstart Guide</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -131,46 +134,111 @@
            <div itemprop="articleBody">
              
   <div class="section" id="quickstart-guide">
-<h1>Quickstart guide<a class="headerlink" href="#quickstart-guide" title="Permalink to this headline">¶</a></h1>
+<h1>Quickstart Guide<a class="headerlink" href="#quickstart-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="prerequisite">
+<h2>Prerequisite<a class="headerlink" href="#prerequisite" title="Permalink to this headline">¶</a></h2>
+<p>In the latest release, Ape requires:</p>
+<p><strong>Linux or macOS</strong>
+* Python 3.7.X or later</p>
+<p><strong>Windows</strong>:</p>
+<ol class="arabic simple">
+<li><p>Install Windows Subsystem Linux <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/install">(WSL)</a></p></li>
+<li><p>Choose Ubuntu 20.04 OR Any other Linux Distribution with Python 3.7.X or later</p></li>
+</ol>
+<p>Please make sure you are using Python 3.7.X or later.</p>
+</div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p><strong>Suggestion</strong>: Create a virtual environment via <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> or <code class="docutils literal notranslate"><span class="pre">venv</span></code> .</p>
+<p>You may skip this creating a virtual environment if you know you don’t require one for your use case.</p>
+<p>via <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> <a class="reference external" href="https://pypi.org/project/virtualenv/">virtualenv</a> or via <a href="#id1"><span class="problematic" id="id2">``</span></a>venv &lt;<a class="reference external" href="https://docs.python.org/3/library/venv.html">https://docs.python.org/3/library/venv.html</a>&gt;``_</p>
+<hr class="docutils" />
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create your virtual environment folder</span>
+$ python3 -m venv /path/to/new/environment
+$ <span class="nb">source</span> &lt;venv_folder&gt;/bin/activate
+<span class="c1"># you should see (name_of_venv) DESKTOP_NAME:~/path:$</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># deactivate virtual environment</span>
+$ deactivate
+</pre></div>
+</div>
+<p>Now that your Python version is later than 3.7.X and you have created a virtual environment, let’s install ape!
+There are 3 ways to install ape: pip, setuptools, or Docker.</p>
 <div class="section" id="via-pip">
 <h3>via <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#via-pip" title="Permalink to this headline">¶</a></h3>
 <p>You can install the latest release via <a class="reference external" href="https://pypi.org/project/pip/">pip</a>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install eth-ape
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install eth-ape
 </pre></div>
 </div>
 </div>
 <div class="section" id="via-setuptools">
 <h3>via <code class="docutils literal notranslate"><span class="pre">setuptools</span></code><a class="headerlink" href="#via-setuptools" title="Permalink to this headline">¶</a></h3>
 <p>You can clone the repository and use <a class="reference external" href="https://github.com/pypa/setuptools">setuptools</a> for the most up-to-date version:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/ApeWorX/ape.git
-<span class="nb">cd</span> ape
-python3 setup.py install
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/ApeWorX/ape.git
+$ <span class="nb">cd</span> ape
+$ python3 setup.py install
 </pre></div>
 </div>
+</div>
+<div class="section" id="via-docker">
+<h3>via <code class="docutils literal notranslate"><span class="pre">docker</span></code><a class="headerlink" href="#via-docker" title="Permalink to this headline">¶</a></h3>
+<p>Please visit our <a class="reference external" href="https://hub.docker.com/repository/docker/apeworx/ape">Dockerhub</a> for more details on using Ape with Docker.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ docker run <span class="se">\</span>
+--volume <span class="nv">$HOME</span>/.ape:/root/.ape <span class="se">\</span>
+--volume <span class="nv">$HOME</span>/.vvm:/root/.vvm <span class="se">\</span>
+--volume <span class="nv">$HOME</span>/.solcx:/root/.solcx <span class="se">\</span>
+--volume <span class="nv">$PWD</span>:/root/project <span class="se">\</span>
+--workdir /root/project <span class="se">\</span>
+apeworx/ape compile
+</pre></div>
+</div>
+<p>When switching back and forth between docker and normal ape you may have permissions issues.
+To resolve these you can use either of the following solutions:
+1. <code class="docutils literal notranslate"><span class="pre">chown</span> <span class="pre">~/.solcx</span> <span class="pre">&amp;&amp;</span> <span class="pre">chown</span> <span class="pre">~/.solcx</span></code>
+2. <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">rm</span> <span class="pre">-rf</span> <span class="pre">~/.solcx</span> <span class="pre">&amp;&amp;</span> <span class="pre">sudo</span> <span class="pre">rm</span> <span class="pre">-rf</span> <span class="pre">~/.vvm</span></code></p>
+<p>Once ape is installed you can test some of the features! Here is a guide on some of the popular
+commands.</p>
 </div>
 </div>
 <div class="section" id="quick-usage">
 <h2>Quick Usage<a class="headerlink" href="#quick-usage" title="Permalink to this headline">¶</a></h2>
 <p>Ape is primarily meant to be used as a command line tool. Here are some things you do with the <code class="docutils literal notranslate"><span class="pre">ape</span></code> command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Work with your accounts</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># List the ape commands</span>
+$ ape -h
+
+<span class="c1"># Generate a new test account</span>
+$ ape accounts generate acc1
+
+<span class="c1"># List existing accounts</span>
 $ ape accounts list
-
-<span class="c1"># Compile your project&#39;s smart contracts</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># You can interact and compile contracts</span>
+<span class="c1"># cd in to a directory with a contracts folder containing a contract.</span>
+$ <span class="nb">cd</span> vyper-project/
+<span class="c1"># You will need a compiler plugin in order to compile Vyper code</span>
+$ ape plugins add vyper
+<span class="c1"># Now you can compile Vyper contracts in the contracts folder of your project</span>
 $ ape compile --size
-
-<span class="c1"># Run your tests with pytest</span>
-$ ape <span class="nb">test</span> -k test_only_one_thing --coverage --gas
-
-<span class="c1"># Connect an IPython session through your favorite provider</span>
-$ ape console --network ethereum:mainnet:infura
-
+<span class="c1"># Now you should see inside the .build directory your compiled json file</span>
+$ ls .build
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Should we include a way to list available plugins to install?</span>
 <span class="c1"># Add new plugins to ape</span>
 $ ape plugins add plugin-name
 </pre></div>
 </div>
-<p>Ape also works as a package. You can use the same networks, accounts, and projects from the ape package as you can in the cli:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Connect an IPython session through your favorite provider</span>
+$ ape console --network ethereum:mainnet:infura
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ape run
+</pre></div>
+</div>
+<p>Ape as a package works both in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> scripts and it also can be used in other python programs via import.
+Ape also works as a package. You can use the same networks, accounts, and projects from the ape package as you can in the cli:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Work with registered networks, providers, and blockchain ecosystems (like Ethereum)</span>
 <span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
 <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;infura&quot;</span><span class="p">):</span>
@@ -190,6 +258,11 @@ $ ape plugins add plugin-name
 <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">MyEvent</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">caller</span> <span class="o">==</span> <span class="n">a</span>  <span class="c1"># Search through Web3 events</span>
 </pre></div>
 </div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Not part of ape -h, what does -k mean, ape test does not work</span>
+<span class="c1"># Run your tests with pytest</span>
+$ ape <span class="nb">test</span> -k test_only_one_thing --coverage --gas
+</pre></div>
+</div>
 </div>
 </div>
 
@@ -198,7 +271,7 @@ $ ape plugins add plugin-name
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="autoapi/ape/index.html" class="btn btn-neutral float-right" title="ape" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="plugins.html" class="btn btn-neutral float-right" title="Writing Plugins" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Ape’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

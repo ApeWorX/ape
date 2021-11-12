@@ -53,7 +53,8 @@
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
               <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../quickstart.html">Quickstart guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../plugins.html">Writing Plugins</a></li>
 </ul>
 <p class="caption"><span class="caption-text">User API Reference</span></p>
 <ul class="current">
@@ -239,12 +240,26 @@
 <dl class="py method">
 <dt id="ape.api.accounts.AccountAPI.sign_message">
 <em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">sign_message</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ape.types.SignableMessage</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../types/index.html#ape.types.MessageSignature" title="ape.types.MessageSignature"><span class="pre">ape.types.MessageSignature</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_message" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Signs the given message.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>msg (<code class="xref py py-class docutils literal notranslate"><span class="pre">SignableMessage</span></code>): The message to sign.</p>
+</dd>
+<dt>Returns:</dt><dd><p><a class="reference internal" href="../../types/signatures/index.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a> (optional): The signed message.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.accounts.AccountAPI.sign_transaction">
 <em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">sign_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../providers/index.html#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../types/index.html#ape.types.TransactionSignature" title="ape.types.TransactionSignature"><span class="pre">ape.types.TransactionSignature</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_transaction" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Signs the given transaction.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>txn (<a class="reference internal" href="../providers/index.html#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>): The transaction to sign.</p>
+</dd>
+<dt>Returns:</dt><dd><p><a class="reference internal" href="../../types/signatures/index.html#ape.types.signatures.TransactionSignature" title="ape.types.signatures.TransactionSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionSignature</span></code></a> (optional): The signed transaction.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.accounts.AccountAPI.call">

@@ -32,6 +32,8 @@
    .. py:method:: get_versions(self, all_paths: List[pathlib.Path]) -> Set[str]
       :abstractmethod:
 
+      Retrieve set of available compiler versions for this plugin to compile `all_paths`
+
 
    .. py:method:: compile(self, contract_filepaths: List[pathlib.Path]) -> List[ape.types.ContractType]
       :abstractmethod:
