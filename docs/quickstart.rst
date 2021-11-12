@@ -184,4 +184,3 @@ Ape also works as a package. You can use the same networks, accounts, and projec
     c.viewThis()  # Make Web3 calls
     c.doThat({"from": a})  # Make Web3 transactions
     assert c.MyEvent[-1].caller == a  # Search through Web3 events
-
