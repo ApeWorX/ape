@@ -1,5 +1,6 @@
 import subprocess
 import sys
+from typing import List, Set
 
 import click
 
@@ -22,38 +23,82 @@ def cli():
     """
 
 
-@cli.command(name="list", short_help="List installed plugins")
+def _display_section(header: str, lines: List[Set[str]]):
+    click.echo(header)
+    for output in lines:
+        if output:
+            formatted_output = _format_output(output)
+            click.echo("  {}".format("\n  ".join(formatted_output)))
+
+
+def _format_output(plugins_list: Set[str]) -> Set:
+    output = set()
+    for i in plugins_list:
+        text = i.replace("ape_", "")
+        output.add(text)
+    return output
+
+
+@cli.command(name="list", short_help="Display plugins")
 @click.option(
     "-a",
     "--all",
     "display_all",
     default=False,
     is_flag=True,
-    help="Display all plugins (including Core)",
+    help="Display all plugins installed and available (including Core)",
 )
 @ape_cli_context()
 def _list(cli_ctx, display_all):
-    plugins = []
+    installed_first_class_plugins = set()
+    installed_second_class_plugins = set()
+    installed_second_class_plugins_no_version = set()
+    installed_third_class_plugins = set()
+
     for name, plugin in plugin_manager.list_name_plugin():
-        version_str = ""
         version = get_package_version(name)
 
         if name in FIRST_CLASS_PLUGINS:
             if not display_all:
+
                 continue  # NOTE: Skip 1st class plugins unless specified
-            version_str = " (core)"
+            installed_first_class_plugins.add(f"{name}")
 
-        elif version:
-            version_str = f" ({version})"
+        elif name in SECOND_CLASS_PLUGINS:
+            installed_second_class_plugins.add(f"{name}     {version}")
+            installed_second_class_plugins_no_version.add(f"{name}")
 
-        plugins.append(f"{name}{version_str}")
+        elif name not in FIRST_CLASS_PLUGINS or name not in SECOND_CLASS_PLUGINS:
+            installed_third_class_plugins.add(f"{name}      {version})")
+        else:
+            cli_ctx.logger.error(f"{name} is not a plugin.")
 
-    if plugins:
-        click.echo("Installed plugins:")
-        click.echo("  " + "\n  ".join(plugins))
+    # First Class Plugins
+    if display_all:
+        _display_section("Installed Core Plugins:", [installed_first_class_plugins])
+        click.echo()
 
-    else:
-        cli_ctx.logger.info("No plugins installed")
+    # Second and Third Class Plugins
+    available_second = list(SECOND_CLASS_PLUGINS - installed_second_class_plugins_no_version)
+
+    if installed_second_class_plugins:
+
+        _display_section(
+            "Installed Plugins:", [installed_second_class_plugins, installed_third_class_plugins]
+        )
+    elif not display_all:
+        if SECOND_CLASS_PLUGINS:
+            click.echo("No plugins installed")
+
+    if display_all:
+        click.echo()
+        available_second_output = _format_output(available_second)
+        if available_second_output:
+            click.echo()
+            _display_section("Available Plugins:", [available_second_output])
+        else:
+            if SECOND_CLASS_PLUGINS:
+                click.echo("You have installed all the available Plugins")
 
 
 @cli.command(short_help="Install an ape plugin")
