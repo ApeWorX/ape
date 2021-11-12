@@ -44,11 +44,27 @@ class AccountAPI(AddressAPI):
 
     @abstractmethod
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
-        ...
+        """
+        Signs the given message.
+
+        Args:
+          msg (:class:`~eth_account.messages.SignableMessage`): The message to sign.
+
+        Returns:
+          :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
+        """
 
     @abstractmethod
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
-        ...
+        """
+        Signs the given transaction.
+
+        Args:
+          txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to sign.
+
+        Returns:
+          :class:`~ape.types.signatures.TransactionSignature` (optional): The signed transaction.
+        """
 
     def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
