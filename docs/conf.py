@@ -58,6 +58,11 @@ def setup(sphinx):
     sphinx.connect("autoapi-skip-member", autoapi_skip_members)
 
 
+# -- AG CUSTOM CODE BABY
+def setup(app):
+    app.add_css_file('custom.css')
+
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -77,7 +82,7 @@ def fixpath(p):
     get away with having only one copy of the CSS and web fonts.
     """
     new = f"/{project}/latest/_static/" + p.split("_static")[1]
-    return new
+    return p
 
 
 html_context = {
