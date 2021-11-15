@@ -123,7 +123,7 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[Cont
     return [create_contract(c) for c in value] if is_multiple else create_contract(value)
 
 
-def contract_type_option(help=None, required=False, multiple=False):
+def contract_option(help=None, required=False, multiple=False):
     """
     Contract(s) from the current project.
     If you pass ``multiple=True``, you will get a list of contract types from the callback.

@@ -4,7 +4,7 @@ from ape.cli.commands import NetworkBoundCommand
 from ape.cli.options import (
     account_option_that_prompts_when_not_given,
     ape_cli_context,
-    contract_type_option,
+    contract_option,
     network_option,
     skip_confirmation_option,
 )
@@ -18,7 +18,7 @@ __all__ = [
     "Alias",
     "AllFilePaths",
     "ape_cli_context",
-    "contract_type_option",
+    "contract_option",
     "existing_alias_argument",
     "get_user_selected_account",
     "network_option",
