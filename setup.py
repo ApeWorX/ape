@@ -75,7 +75,7 @@ setup(
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.0.0",
         "dataclassy==0.10.4",  # NOTE: Pinned due to issue with `Type[<nothing>]`
-        "eth-account>=0.5.5,<0.6.0",
+        "eth-account>=0.5.6,<0.6.0",
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
         "pyyaml>=0.2.5",
@@ -85,7 +85,7 @@ setup(
         "singledispatchmethod ; python_version<'3.8'",
         "IPython>=7.25",
         "pytest>=6.0,<7.0",
-        "web3[tester]>=5.18.0,<6.0.0",
+        "web3[tester]>=5.24.0,<6.0.0",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

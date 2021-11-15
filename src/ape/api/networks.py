@@ -1,13 +1,13 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Type
+from typing import TYPE_CHECKING, Dict, Iterator, List, Mapping, Optional, Type
 
 from pluggy import PluginManager  # type: ignore
 
+from ape.exceptions import NetworkError, NetworkNotFoundError
 from ape.types import ABI, AddressType
 from ape.utils import cached_property
 
-from ..exceptions import NetworkError, NetworkNotFoundError
 from .base import abstractdataclass, abstractmethod, dataclass
 from .config import ConfigItem
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     from .contracts import ContractLog
     from .explorers import ExplorerAPI
-    from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
+    from .providers import ProviderAPI, ReceiptAPI, TransactionAPI, TransactionType
 
 
 @abstractdataclass
@@ -33,7 +33,7 @@ class EcosystemAPI:
     data_folder: Path
     request_header: str
 
-    transaction_class: Type["TransactionAPI"]
+    transaction_class_map: Mapping["TransactionType", Type["TransactionAPI"]]
     receipt_class: Type["ReceiptAPI"]
 
     _default_network: str = "development"

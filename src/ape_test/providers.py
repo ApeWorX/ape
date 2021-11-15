@@ -32,7 +32,16 @@ class LocalNetwork(TestProviderAPI):
 
     @property
     def gas_price(self) -> int:
-        # NOTE: Test chain doesn't care about gas prices
+        return self.base_fee  # no miner tip
+
+    @property
+    def priority_fee(self) -> int:
+        """Returns 0 because test chains do not care about priority fees."""
+        return 0
+
+    @property
+    def base_fee(self) -> int:
+        """Returns 0 because test chains do not care about base fees."""
         return 0
 
     def get_nonce(self, address: str) -> int:
