@@ -1,4 +1,4 @@
-import pytest  # type: ignore
+import pytest
 import requests
 from hypothesis import HealthCheck, given, settings
 from hypothesis_jsonschema import from_schema  # type: ignore
