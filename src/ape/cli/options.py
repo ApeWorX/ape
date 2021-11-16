@@ -112,6 +112,8 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[Cont
     if len(project.contracts) == 0:
         raise ContractError("Project has no contracts.")
 
+    # If the user passed in `multiple=True`, then `value` is a list,
+    # and therefore we should also return a list.
     is_multiple = isinstance(value, (tuple, list))
 
     def create_contract(contract_name: str) -> ContractType:
