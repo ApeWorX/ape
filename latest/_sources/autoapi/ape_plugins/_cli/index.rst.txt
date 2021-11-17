@@ -16,6 +16,8 @@
 .. autoapisummary::
 
    ape_plugins._cli.cli
+   ape_plugins._cli._display_section
+   ape_plugins._cli._format_output
    ape_plugins._cli._list
    ape_plugins._cli.add
    ape_plugins._cli.install
@@ -30,6 +32,16 @@
 .. py:function:: cli()
 
    Command-line helper for managing installed plugins.
+
+
+
+
+.. py:function:: _display_section(header: str, lines: List[Set[str]])
+
+
+
+
+.. py:function:: _format_output(plugins_list: Set[str]) -> Set
 
 
 

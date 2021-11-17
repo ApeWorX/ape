@@ -77,6 +77,8 @@
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_plugins</span></code></a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_plugins._cli</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape_plugins._cli.cli">cli</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_plugins._cli._display_section">_display_section</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_plugins._cli._format_output">_format_output</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_plugins._cli._list">_list</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_plugins._cli.add">add</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_plugins._cli.install">install</a></li>
@@ -164,6 +166,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape_plugins._cli.cli" title="ape_plugins._cli.cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cli</span></code></a>()</p></td>
 <td><p>Command-line helper for managing installed plugins.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_plugins._cli._display_section" title="ape_plugins._cli._display_section"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_display_section</span></code></a>(header: str, lines: List[Set[str]])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_plugins._cli._format_output" title="ape_plugins._cli._format_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_format_output</span></code></a>(plugins_list: Set[str]) → Set</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape_plugins._cli._list" title="ape_plugins._cli._list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_list</span></code></a>(cli_ctx, display_all)</p></td>
 <td><p></p></td>
 </tr>
@@ -184,6 +192,16 @@
 <code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">cli</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape_plugins._cli.cli" title="Permalink to this definition">¶</a></dt>
 <dd><p>Command-line helper for managing installed plugins.</p>
 </dd></dl>
+
+<dl class="py function">
+<dt id="ape_plugins._cli._display_section">
+<code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">_display_section</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_plugins._cli._display_section" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape_plugins._cli._format_output">
+<code class="sig-prename descclassname"><span class="pre">ape_plugins._cli.</span></code><code class="sig-name descname"><span class="pre">_format_output</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugins_list</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Set</span><a class="headerlink" href="#ape_plugins._cli._format_output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt id="ape_plugins._cli._list">
