@@ -67,13 +67,13 @@ def pytest_collection_modifyitems(session, config, items):
                 project_name = proj_name
                 break
 
-        if len(item_name_parts) != 2 or "integration.cli" not in module_full_name:
-            # Not a CLI integration test
-            modified_items.append(item)
-            continue
+        is_cli_integration_test = (
+            len(item_name_parts) == 2 and "integration.cli" in module_full_name
+        )
 
-        # Only include if the test didn't indicate to skip for the project.
-        if not project_skipper.do_skip(project_name, module_name, test_name):
+        if not is_cli_integration_test or not project_skipper.do_skip(
+            project_name, module_name, test_name
+        ):
             modified_items.append(item)
 
     items[:] = modified_items
