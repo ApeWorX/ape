@@ -17,7 +17,7 @@ from .config import ConfigItem
 
 class TransactionType(Enum):
     STATIC = "0x0"
-    DYNAMIC = "0x2"
+    DYNAMIC = "0x2"  # EIP-1559
 
 
 @abstractdataclass
