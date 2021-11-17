@@ -28,6 +28,8 @@
    ape.cli.options.skip_confirmation_option
    ape.cli.options._account_callback
    ape.cli.options.account_option_that_prompts_when_not_given
+   ape.cli.options._load_contracts
+   ape.cli.options.contract_option
 
 
 
@@ -83,6 +85,19 @@
 
    Accepts either the account alias or the account number.
    If not given anything, it will prompt the user to select an account.
+
+
+
+
+.. py:function:: _load_contracts(ctx, param, value) -> Optional[Union[ape.types.ContractType, List[ape.types.ContractType]]]
+
+
+
+
+.. py:function:: contract_option(help=None, required=False, multiple=False)
+
+   Contract(s) from the current project.
+   If you pass ``multiple=True``, you will get a list of contract types from the callback.
 
 
 

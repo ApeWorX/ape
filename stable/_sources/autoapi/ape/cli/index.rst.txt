@@ -49,6 +49,7 @@
    ape.cli.get_user_selected_account
    ape.cli.account_option_that_prompts_when_not_given
    ape.cli.ape_cli_context
+   ape.cli.contract_option
    ape.cli.network_option
    ape.cli.skip_confirmation_option
 
@@ -217,6 +218,14 @@
 
 
 .. py:function:: ape_cli_context()
+
+
+
+
+.. py:function:: contract_option(help=None, required=False, multiple=False)
+
+   Contract(s) from the current project.
+   If you pass ``multiple=True``, you will get a list of contract types from the callback.
 
 
 

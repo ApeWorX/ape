@@ -72,6 +72,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.options.skip_confirmation_option">skip_confirmation_option</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.options._account_callback">_account_callback</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.options.account_option_that_prompts_when_not_given">account_option_that_prompts_when_not_given</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.options._load_contracts">_load_contracts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.options.contract_option">contract_option</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../paramtype/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.paramtype</span></code></a></li>
@@ -85,6 +87,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.NetworkBoundCommand">NetworkBoundCommand</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.account_option_that_prompts_when_not_given">account_option_that_prompts_when_not_given</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.ape_cli_context">ape_cli_context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.contract_option">contract_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.network_option">network_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.skip_confirmation_option">skip_confirmation_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.AllFilePaths">AllFilePaths</a></li>
@@ -218,6 +221,12 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.options.account_option_that_prompts_when_not_given" title="ape.cli.options.account_option_that_prompts_when_not_given"><code class="xref py py-obj docutils literal notranslate"><span class="pre">account_option_that_prompts_when_not_given</span></code></a>()</p></td>
 <td><p>Accepts either the account alias or the account number.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.options._load_contracts" title="ape.cli.options._load_contracts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_load_contracts</span></code></a>(ctx, param, value) → Optional[Union[ape.types.ContractType, List[ape.types.ContractType]]]</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.options.contract_option" title="ape.cli.options.contract_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_option</span></code></a>(help=None, required=False, multiple=False)</p></td>
+<td><p>Contract(s) from the current project.</p></td>
+</tr>
 </tbody>
 </table>
 <hr class="docutils" />
@@ -271,6 +280,18 @@ command.</p>
 <code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">account_option_that_prompts_when_not_given</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.account_option_that_prompts_when_not_given" title="Permalink to this definition">¶</a></dt>
 <dd><p>Accepts either the account alias or the account number.
 If not given anything, it will prompt the user to select an account.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.options._load_contracts">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">_load_contracts</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../types/index.html#ape.types.ContractType" title="ape.types.ContractType"><span class="pre">ape.types.ContractType</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../types/index.html#ape.types.ContractType" title="ape.types.ContractType"><span class="pre">ape.types.ContractType</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.options._load_contracts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.options.contract_option">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">contract_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.contract_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contract(s) from the current project.
+If you pass <code class="docutils literal notranslate"><span class="pre">multiple=True</span></code>, you will get a list of contract types from the callback.</p>
 </dd></dl>
 
 </div>

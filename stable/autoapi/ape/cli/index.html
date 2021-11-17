@@ -97,6 +97,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.account_option_that_prompts_when_not_given">account_option_that_prompts_when_not_given</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.ape_cli_context">ape_cli_context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.cli.contract_option">contract_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.network_option">network_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.skip_confirmation_option">skip_confirmation_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.AllFilePaths">AllFilePaths</a><ul>
@@ -260,10 +261,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.ape_cli_context" title="ape.cli.ape_cli_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape_cli_context</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.network_option" title="ape.cli.network_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">network_option</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.contract_option" title="ape.cli.contract_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_option</span></code></a>(help=None, required=False, multiple=False)</p></td>
+<td><p>Contract(s) from the current project.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.network_option" title="ape.cli.network_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">network_option</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.skip_confirmation_option" title="ape.cli.skip_confirmation_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skip_confirmation_option</span></code></a>(help='')</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.skip_confirmation_option" title="ape.cli.skip_confirmation_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skip_confirmation_option</span></code></a>(help='')</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -441,6 +445,13 @@ If not given anything, it will prompt the user to select an account.</p>
 <dt id="ape.cli.ape_cli_context">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">ape_cli_context</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.ape_cli_context" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.contract_option">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">contract_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.contract_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contract(s) from the current project.
+If you pass <code class="docutils literal notranslate"><span class="pre">multiple=True</span></code>, you will get a list of contract types from the callback.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt id="ape.cli.network_option">
