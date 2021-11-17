@@ -23,10 +23,8 @@ def display_config(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
 
-    from ape import project
-
     click.echo("# Current configuration")
-    click.echo(yaml.dump(project.config.serialize()))
+    click.echo(yaml.dump(ctx.obj.project.config.serialize()))
 
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 
