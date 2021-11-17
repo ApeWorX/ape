@@ -1,9 +1,13 @@
+from typing import List, Optional, Union
+
 import click
 
-from ape import networks
+from ape import networks, project
 from ape.cli.choices import AccountAliasPromptChoice, NetworkChoice
 from ape.cli.utils import Abort
+from ape.exceptions import ContractError
 from ape.logging import LogLevel, logger
+from ape.types import ContractType
 
 
 class ApeCliContextObject:
@@ -98,4 +102,35 @@ def account_option_that_prompts_when_not_given():
         "--account",
         type=AccountAliasPromptChoice(),
         callback=_account_callback,
+    )
+
+
+def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[ContractType]]]:
+    if not value:
+        return None
+
+    if len(project.contracts) == 0:
+        raise ContractError("Project has no contracts.")
+
+    # If the user passed in `multiple=True`, then `value` is a list,
+    # and therefore we should also return a list.
+    is_multiple = isinstance(value, (tuple, list))
+
+    def create_contract(contract_name: str) -> ContractType:
+        if contract_name not in project.contracts:
+            raise ContractError(f"No contract named '{value}'")
+
+        return project.contracts[contract_name]
+
+    return [create_contract(c) for c in value] if is_multiple else create_contract(value)
+
+
+def contract_option(help=None, required=False, multiple=False):
+    """
+    Contract(s) from the current project.
+    If you pass ``multiple=True``, you will get a list of contract types from the callback.
+    """
+    help = help or "The name of a contract in the current project"
+    return click.option(
+        "--contract", help=help, required=required, callback=_load_contracts, multiple=multiple
     )
