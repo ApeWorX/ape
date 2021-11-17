@@ -1,19 +1,87 @@
 import os
 from distutils.dir_util import copy_tree
+from importlib import import_module
 from pathlib import Path
 
-import pytest  # type: ignore
+import pytest
 from click.testing import CliRunner
 
 import ape
 from ape import Project
 
-TEST_PROJECTS_FOLDER = Path(__file__).parent / "data" / "projects"
+from .utils import NodeId, project_names, project_skipper, projects_directory
 
 
-@pytest.fixture(params=[p for p in TEST_PROJECTS_FOLDER.iterdir() if p.is_dir()])
+class IntegrationTestModule:
+    """
+    A test module in 'tests.integration.cli'.
+    """
+
+    def __init__(self, path: Path):
+        self._path = path
+        module = import_module(f"tests.integration.cli.{path.stem}")
+        test_methods = [getattr(module, t) for t in dir(module) if t.startswith("test_")]
+        self.tests = [NodeId(t) for t in test_methods]
+
+    def __iter__(self):
+        return iter(self.tests)
+
+    @property
+    def name(self) -> str:
+        """
+        The name of the module.
+        """
+        return self._path.stem
+
+
+# Loads the actual test modules / methods
+integration_tests = [
+    IntegrationTestModule(p)
+    for p in Path(__file__).parent.iterdir()
+    if p.suffix == ".py" and p.name.startswith("test_")
+]
+
+
+@pytest.hookimpl(trylast=True)
+def pytest_collection_modifyitems(session, config, items):
+    """
+    Filter out tests marked to be skipped using ``skip_projects``
+    and the ``skip_projects_except`` decorators.
+    """
+    modified_items = []
+    for item in items:
+        item_name_parts = item.name.split("[")
+        item_name_parts = [p.strip("[]") for p in item_name_parts]
+
+        module_full_name = item.module.__name__
+        module_name = module_full_name.split(".")[-1]
+        test_name = item_name_parts[0]
+
+        # Handle if a parametrized test is on-top
+        # of the project's parametrization.
+        project_name = item_name_parts[-1]
+        for proj_name in project_skipper:
+
+            # Example: 'test_foo[project-name-fuzz-0]' matches 'project-name'
+            if project_name.startswith(proj_name):
+                project_name = proj_name
+                break
+
+        is_cli_integration_test = (
+            len(item_name_parts) == 2 and "integration.cli" in module_full_name
+        )
+
+        if not is_cli_integration_test or not project_skipper.do_skip(
+            project_name, module_name, test_name
+        ):
+            modified_items.append(item)
+
+    items[:] = modified_items
+
+
+@pytest.fixture(params=project_names)
 def project_folder(request, config):
-    project_source_dir = request.param
+    project_source_dir = projects_directory / request.param
     project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
     copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
     previous_project_folder = config.PROJECT_FOLDER
