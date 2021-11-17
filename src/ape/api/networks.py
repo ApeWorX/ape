@@ -33,7 +33,7 @@ class EcosystemAPI:
     data_folder: Path
     request_header: str
 
-    transaction_class_map: Mapping["TransactionType", Type["TransactionAPI"]]
+    transaction_types: Mapping["TransactionType", Type["TransactionAPI"]]
     receipt_class: Type["ReceiptAPI"]
 
     _default_network: str = "development"
