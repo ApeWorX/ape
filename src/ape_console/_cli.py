@@ -4,6 +4,7 @@ import logging
 import click
 import IPython  # type: ignore
 
+from ape import project as default_project
 from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 from ape.version import version as ape_version  # type: ignore
 
@@ -18,11 +19,15 @@ from ape.version import version as ape_version  # type: ignore
 def cli(cli_ctx, network):
     """Opens a console for the local project."""
     verbose = cli_ctx.logger.level == logging.DEBUG
-    return console(cli_ctx.project, verbose=verbose)
+    return console(verbose=verbose)
 
 
-def console(project, verbose=None, extra_locals=None):
+def console(project=None, verbose=None, extra_locals=None):
     import ape
+
+    if not project:
+        # Use default project
+        project = default_project
 
     banner = ""
     if verbose:
