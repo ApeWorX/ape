@@ -95,7 +95,7 @@ a = accounts.load("alias") # or load by alias
 from ape import project
 c = a.deploy(project.MyContract, ...)
 c.viewThis()  # Make Web3 calls
-c.doThat({"from": a})  # Make Web3 transactions
+c.doThat(sender=a)  # Make Web3 transactions
 assert c.MyEvent[-1].caller == a  # Search through Web3 events
 ```
 
