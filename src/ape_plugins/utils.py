@@ -22,7 +22,7 @@ if "GITHUB_ACCESS_TOKEN" in os.environ:
     }
 
 else:
-    logger.warning("$GITHUB_ACCESS_TOKEN not set, skipping 2nd class plugins")
+    logger.warning("$GITHUB_ACCESS_TOKEN not set, unable to list all plugins")
 
 
 def is_plugin_installed(plugin: str) -> bool:
