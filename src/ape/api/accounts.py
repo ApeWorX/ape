@@ -76,10 +76,6 @@ class AccountAPI(AddressAPI):
         elif txn.nonce < self.nonce:
             raise AccountsError("Invalid nonce, will not publish.")
 
-        if txn.gas_limit is None:
-            txn.gas_limit = self.provider.estimate_gas_cost(txn)
-        # else: Assume user specified the correct amount or txn will fail and waste gas
-
         txn_type = TransactionType(txn.type)
         if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
             txn.gas_price = self.provider.gas_price  # type: ignore
@@ -90,6 +86,10 @@ class AccountAPI(AddressAPI):
             if txn.max_fee is None:
                 txn.max_fee = self.provider.base_fee + txn.max_priority_fee
             # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        if txn.gas_limit is None:
+            txn.gas_limit = self.provider.estimate_gas_cost(txn)
+        # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if send_everything:
             txn.value = self.balance - txn.max_fee
