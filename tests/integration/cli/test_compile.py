@@ -52,6 +52,13 @@ def test_compile_specified_contracts(ape_cli, runner, project, contract_path, cl
     assert "Compiling 'contracts/HelloWorld.sol'" in result.output
 
 
+@skip_projects_except(["hello-world"])
+def test_compile_partial_extension_does_not_compile(ape_cli, runner, project, clean_cache):
+    result = runner.invoke(ape_cli, ["compile", "HelloWorld.so"])  # Missing `l` on `.sol`.
+    assert result.exit_code == 2, result.output
+    assert "Error: Contract 'HelloWorld.so' not found." in result.output
+
+
 @skip_projects_except([])
 def test_compile_contracts(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile", "--size"])

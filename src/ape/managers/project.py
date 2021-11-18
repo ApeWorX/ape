@@ -106,19 +106,28 @@ class ProjectManager:
         _append_extensions_in_dir(self.contracts_folder)
         return extensions
 
-    def lookup_path(self, source_file_name: str) -> Optional[Path]:
+    def lookup_path(self, key_contract_path: Path) -> Optional[Path]:
         """
-        Recursively scans the contracts folder for a file
-        with the given name and then returns its Path.
+        Figures out the full path of the contract from the given ``key_contract_path``.
+
+        For example, give it ``HelloWorld``, it returns
+        ``<absolute-project-path>/contracts/HelloWorld.sol``.
+
+        Another example is to give it ``contracts/HelloWorld.sol`` and it also
+        returns ``<absolute-project-path>/contracts/HelloWorld.sol``.
         """
+        ext = key_contract_path.suffix or None
 
         def find_in_dir(dir_path: Path) -> Optional[Path]:
             for file_path in dir_path.iterdir():
                 if file_path.is_dir():
                     return find_in_dir(file_path)
 
+                # If the user provided an extension, it has to match.
+                ext_okay = ext == file_path.suffix if ext is not None else True
+
                 # File found
-                if file_path.stem == source_file_name:
+                if file_path.stem == key_contract_path.stem and ext_okay:
                     return file_path
 
             return None

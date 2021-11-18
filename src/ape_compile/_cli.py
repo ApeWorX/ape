@@ -15,12 +15,16 @@ def _create_contracts_paths(ctx, param, value):
 
     contract_paths = _flatten(value)
 
+    def _raise_bad_arg(name):
+        raise click.BadArgumentUsage(f"Contract '{name}' not found.")
+
     resolved_contract_paths = set()
     for contract_path in contract_paths:
         # Adds missing absolute path as well as extension.
-        resolved_contract_path = project.lookup_path(contract_path.stem)
+        resolved_contract_path = project.lookup_path(contract_path)
+
         if not resolved_contract_path:
-            raise click.BadArgumentUsage(f"Contract '{contract_path.name}' not found.")
+            _raise_bad_arg(contract_path.name)
 
         resolved_contract_paths.add(resolved_contract_path)
 
