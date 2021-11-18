@@ -158,7 +158,7 @@ class Receipt(ReceiptAPI):
 
 
 class Ethereum(EcosystemAPI):
-    transaction_class_map = {
+    transaction_types = {
         TransactionType.STATIC: StaticFeeTransaction,
         TransactionType.DYNAMIC: DynamicFeeTransaction,
     }
@@ -219,7 +219,7 @@ class Ethereum(EcosystemAPI):
         else:
             version = TransactionType.DYNAMIC
 
-        return version, self.transaction_class_map[version]
+        return version, self.transaction_types[version]
 
     def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
         filter_id = keccak(to_bytes(text=abi.selector))
