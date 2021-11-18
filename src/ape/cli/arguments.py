@@ -29,8 +29,6 @@ def non_existing_alias_argument():
 
 
 def _create_contracts_paths(ctx, param, value):
-    from ape import project
-
     contract_paths = _flatten(value)
 
     def _raise_bad_arg(name):
@@ -39,7 +37,7 @@ def _create_contracts_paths(ctx, param, value):
     resolved_contract_paths = set()
     for contract_path in contract_paths:
         # Adds missing absolute path as well as extension.
-        resolved_contract_path = project.lookup_path(contract_path)
+        resolved_contract_path = ctx.obj.project.lookup_path(contract_path)
 
         if not resolved_contract_path:
             _raise_bad_arg(contract_path.name)

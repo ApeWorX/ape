@@ -34,14 +34,11 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
     Note that ape automatically recompiles any changed contracts each time
     a project is loaded. You do not have to manually trigger a recompile.
     """
-    # NOTE: Lazy load so that testing works properly
-    from ape import project
-
-    if not file_paths and project.sources_missing:
+    if not file_paths and cli_ctx.project.sources_missing:
         cli_ctx.logger.warning("No 'contracts/' directory detected")
         return
 
-    ext_with_missing_compilers = project.extensions_with_missing_compilers
+    ext_with_missing_compilers = cli_ctx.project.extensions_with_missing_compilers
     ext_given = [p.suffix for p in file_paths if p]
     if ext_with_missing_compilers:
         extensions = (
@@ -53,7 +50,7 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
         message = f"No compilers detected for the following extensions: {extensions_str}"
         cli_ctx.logger.warning(message)
 
-    contract_types = project.load_contracts(file_paths=file_paths, use_cache=use_cache)
+    contract_types = cli_ctx.project.load_contracts(file_paths=file_paths, use_cache=use_cache)
 
     if display_size:
         _display_byte_code_sizes(cli_ctx, contract_types)
