@@ -1,0 +1,181 @@
+:mod:`ape.cli.choices`
+======================
+
+.. py:module:: ape.cli.choices
+
+
+
+
+.. raw:: html
+
+   <h3>Module Contents</h3>
+
+**Classes**:
+
+.. autoapisummary::
+
+   ape.cli.choices.Alias
+   ape.cli.choices.PromptChoice
+   ape.cli.choices.AccountAliasPromptChoice
+   ape.cli.choices.NetworkChoice
+
+
+
+**Functions**:
+
+.. autoapisummary::
+
+   ape.cli.choices._get_account_by_type
+   ape.cli.choices.get_user_selected_account
+
+
+
+
+-----------
+
+
+.. py:function:: _get_account_by_type(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None) -> List[ape.api.accounts.AccountAPI]
+
+
+
+
+.. py:class:: Alias(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
+
+   Bases: :py:obj:`click.Choice`
+
+   Wraps ``click.Choice`` to load account aliases for the active project at runtime.
+
+   Provide an ``account_type`` to limit the type of account to choose from.
+   Defaults to all account types in ``choices()``.
+
+   .. attribute:: name
+      :annotation: = alias
+
+      
+
+   .. py:method:: __init__(self, account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None)
+
+
+   .. py:method:: choices(self) -> List[str]
+      :property:
+
+
+
+
+
+.. py:class:: PromptChoice(choices)
+
+   Bases: :py:obj:`click.ParamType`
+
+   A choice option or argument from user selection.
+
+   .. py:method:: __init__(self, choices)
+
+
+   .. py:method:: print_choices(self)
+
+
+   .. py:method:: convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Optional[Any]
+
+      Convert the value to the correct type. This is not called if
+      the value is ``None`` (the missing value).
+
+      This must accept string values from the command line, as well as
+      values that are already the correct type. It may also convert
+      other compatible types.
+
+      The ``param`` and ``ctx`` arguments may be ``None`` in certain
+      situations, such as when converting prompt input.
+
+      If the value cannot be converted, call :meth:`fail` with a
+      descriptive message.
+
+      :param value: The value to convert.
+      :param param: The parameter that is using this type to convert
+          its value. May be ``None``.
+      :param ctx: The current context that arrived at this value. May
+          be ``None``.
+
+
+   .. py:method:: fail_from_invalid_choice(self, param)
+
+
+
+
+
+.. py:function:: get_user_selected_account(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: Optional[str] = None) -> ape.api.accounts.AccountAPI
+
+   Prompts the user to pick from their accounts
+   and returns that account. Optionally filter the accounts
+   by type.
+
+   Use this method if you want to prompt users to select
+   accounts _outside_ of CLI options. For CLI options,
+   use :meth:`ape.cli.options.account_option_that_prompts_when_not_given`.
+
+
+
+
+.. py:class:: AccountAliasPromptChoice(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: str = None)
+
+   Bases: :py:obj:`PromptChoice`
+
+   Prompts the user to select an alias from their accounts.
+   Useful for adhoc scripts to lessen the need to hard-code aliases.
+
+   .. py:method:: __init__(self, account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: str = None)
+
+
+   .. py:method:: convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Optional[ape.api.accounts.AccountAPI]
+
+      Convert the value to the correct type. This is not called if
+      the value is ``None`` (the missing value).
+
+      This must accept string values from the command line, as well as
+      values that are already the correct type. It may also convert
+      other compatible types.
+
+      The ``param`` and ``ctx`` arguments may be ``None`` in certain
+      situations, such as when converting prompt input.
+
+      If the value cannot be converted, call :meth:`fail` with a
+      descriptive message.
+
+      :param value: The value to convert.
+      :param param: The parameter that is using this type to convert
+          its value. May be ``None``.
+      :param ctx: The current context that arrived at this value. May
+          be ``None``.
+
+
+   .. py:method:: choices(self) -> List[str]
+      :property:
+
+
+   .. py:method:: get_user_selected_account(self) -> ape.api.accounts.AccountAPI
+
+      Returns the selected account.
+
+
+   .. py:method:: fail_from_invalid_choice(self, param)
+
+
+
+
+
+.. py:class:: NetworkChoice(case_sensitive=True)
+
+   Bases: :py:obj:`click.Choice`
+
+   Wraps ``click.Choice`` to provide network choice defaults for the active project.
+
+   .. py:method:: __init__(self, case_sensitive=True)
+
+
+   .. py:method:: get_metavar(self, param)
+
+      Returns the metavar default for this param if it provides one.
+
+
+
+
