@@ -10,12 +10,29 @@ from ape.types import ContractType
 _flatten = chain.from_iterable
 
 
+def _create_contracts_paths(ctx, param, value):
+    from ape import project
+
+    contract_paths = _flatten(value)
+
+    resolved_contract_paths = set()
+    for contract_path in contract_paths:
+        # Adds missing absolute path as well as extension.
+        resolved_contract_path = project.lookup_path(contract_path.stem)
+        if not resolved_contract_path:
+            raise click.BadArgumentUsage(f"Contract '{contract_path.name}' not found.")
+
+        resolved_contract_paths.add(resolved_contract_path)
+
+    return resolved_contract_paths
+
+
 @click.command(short_help="Compile select contract source files")
 @click.argument(
     "file_paths",
     nargs=-1,
     type=AllFilePaths(exists=True, path_type=Path, resolve_path=True),
-    callback=lambda ctx, param, value: set([p.resolve() for p in _flatten(value) if p]),
+    callback=_create_contracts_paths,
 )
 @click.option(
     "-f",
@@ -51,7 +68,7 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
         return
 
     ext_with_missing_compilers = project.extensions_with_missing_compilers
-    ext_given = [p.suffix for p in file_paths]
+    ext_given = [p.suffix for p in file_paths if p]
     if ext_with_missing_compilers:
         extensions = (
             [e for e in ext_given if e in ext_with_missing_compilers]
@@ -62,7 +79,7 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
         message = f"No compilers detected for the following extensions: {extensions_str}"
         cli_ctx.logger.warning(message)
 
-    contract_types = project.load_contracts(use_cache)
+    contract_types = project.load_contracts(file_paths=file_paths, use_cache=use_cache)
 
     if display_size:
         _display_byte_code_sizes(cli_ctx, contract_types)

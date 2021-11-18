@@ -106,22 +106,43 @@ class ProjectManager:
         _append_extensions_in_dir(self.contracts_folder)
         return extensions
 
-    def load_contracts(self, use_cache: bool = True) -> Dict[str, ContractType]:
+    def lookup_path(self, source_file_name: str) -> Optional[Path]:
+        """
+        Recursively scans the contracts folder for a file
+        with the given name and then returns its Path.
+        """
+
+        def find_in_dir(dir_path: Path) -> Optional[Path]:
+            for file_path in dir_path.iterdir():
+                if file_path.is_dir():
+                    return find_in_dir(file_path)
+
+                # File found
+                if file_path.stem == source_file_name:
+                    return file_path
+
+            return None
+
+        return find_in_dir(self.contracts_folder)
+
+    def load_contracts(
+        self, file_paths: Optional[List[Path]] = None, use_cache: bool = True
+    ) -> Dict[str, ContractType]:
         # Load a cached or clean manifest (to use for caching)
         manifest = use_cache and self.cached_manifest or PackageManifest()
         cached_sources = manifest.sources or {}
         cached_contract_types = manifest.contractTypes or {}
+        sources = {s for s in self.sources if s in file_paths} if file_paths else self.sources
 
-        # If a file is deleted from ``self.sources`` but is in
+        # If a file is deleted from ``sources`` but is in
         # ``cached_sources``, remove its corresponding ``contract_types`` by
         # using ``ContractType.sourceId`` and ``ContractType.sourcePath``
-        deleted_sources = cached_sources.keys() - set(map(str, self.sources))
-        contract_types = {}
-        for name, ct in cached_contract_types.items():
-            if ct.sourceId in deleted_sources:
-                pass  # this contract's source code file was deleted
-            else:
-                contract_types[name] = ct
+        deleted_sources = cached_sources.keys() - set(map(str, sources))
+
+        # Filter out deleted sources
+        contract_types = {
+            n: ct for n, ct in cached_contract_types.items() if ct.sourceId not in deleted_sources
+        }
 
         def file_needs_compiling(source: Path) -> bool:
             path = str(source)
@@ -144,7 +165,7 @@ class ProjectManager:
 
         # NOTE: filter by checksum, etc., and compile what's needed
         #       to bring our cached manifest up-to-date
-        needs_compiling = filter(file_needs_compiling, self.sources)
+        needs_compiling = filter(file_needs_compiling, sources)
         contract_types.update(self.compilers.compile(list(needs_compiling)))
 
         # Update cached contract types & source code entries in cached manifest
@@ -156,7 +177,7 @@ class ProjectManager:
                 ),
                 urls=[],
             )
-            for source in self.sources
+            for source in sources
         }
         manifest.sources = cached_sources
 

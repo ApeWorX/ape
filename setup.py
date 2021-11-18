@@ -16,6 +16,7 @@ extras_require = {
         "pytest-mock",  # For creating mocks
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
+        "ape-solidity",  # Required for compiling test contracts
     ],
     "lint": [
         "black>=21.10b0,<22.0",  # auto-formatter and linter
@@ -75,7 +76,7 @@ setup(
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.0.0",
         "dataclassy==0.10.4",  # NOTE: Pinned due to issue with `Type[<nothing>]`
-        "eth-account>=0.5.5,<0.6.0",
+        "eth-account>=0.5.6,<0.6.0",
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
         "pyyaml>=0.2.5",
