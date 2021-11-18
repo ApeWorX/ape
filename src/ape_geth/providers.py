@@ -16,16 +16,9 @@ from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.types import NodeInfo
 
-from ape.api import ReceiptAPI, TransactionAPI
+from ape.api import ReceiptAPI, TransactionAPI, Web3Provider
 from ape.api.config import ConfigItem
-from ape.api.providers import Web3Provider
-from ape.exceptions import (
-    ContractLogicError,
-    OutOfGasError,
-    ProviderError,
-    TransactionError,
-    VirtualMachineError,
-)
+from ape.exceptions import ContractLogicError, ProviderError, TransactionError, VirtualMachineError
 from ape.logging import logger
 from ape.utils import extract_nested_value, gas_estimation_error_message, generate_dev_accounts
 
@@ -239,9 +232,7 @@ class GethProvider(Web3Provider):
         except ValueError as err:
             raise _get_vm_error(err) from err
 
-        if txn.gas_limit is not None and receipt.ran_out_of_gas(txn.gas_limit):
-            raise OutOfGasError()
-
+        receipt.raise_for_status(txn)
         return receipt
 
 

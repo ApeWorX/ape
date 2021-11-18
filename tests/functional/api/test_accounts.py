@@ -1,6 +1,6 @@
 import pytest
 
-from ape.api import TransactionAPI
+from ape.api import TransactionAPI, TransactionType
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AccountsError
 from ape.types import AddressType
@@ -37,7 +37,7 @@ def test_account_api_can_sign(mock_account_container_api, mock_provider_api):
 
 
 class TestAccountAPI:
-    def test_txn_nonce_less_than_accounts_raise_accounts_error(
+    def test_txn_nonce_less_than_accounts_raise_tx_error(
         self, mocker, mock_provider_api, test_account_api_can_sign
     ):
         mock_transaction = mocker.MagicMock(spec=TransactionAPI)
@@ -56,6 +56,8 @@ class TestAccountAPI:
     ):
         mock_transaction = mocker.MagicMock(spec=TransactionAPI)
         mock_provider_api.get_nonce.return_value = mock_transaction.nonce = 0
+        mock_transaction.type = TransactionType.STATIC
+        mock_transaction.gas_price = 0
 
         # Transaction costs are greater than balance
         mock_transaction.total_transfer_value = 1000000
@@ -77,6 +79,8 @@ class TestAccountAPI:
         mock_transaction = mocker.MagicMock(spec=TransactionAPI)
         mock_provider_api.get_nonce.return_value = mock_transaction.nonce = 0
         mock_transaction.total_transfer_value = mock_provider_api.get_balance.return_value = 1000000
+        mock_transaction.type = TransactionType.STATIC
+        mock_transaction.gas_price = 0
 
         with pytest.raises(AccountsError) as err:
             test_account_api_no_sign.call(mock_transaction)
@@ -87,6 +91,8 @@ class TestAccountAPI:
         self, mocker, mock_provider_api, test_account_api_can_sign
     ):
         mock_transaction = mocker.MagicMock(spec=TransactionAPI)
+        mock_transaction.type = TransactionType.STATIC
+        mock_transaction.gas_price = 0
         mock_transaction.gas_limit = None  # Causes estimate_gas_cost to get called
         mock_provider_api.get_nonce.return_value = mock_transaction.nonce = 0
         mock_transaction.total_transfer_value = mock_provider_api.get_balance.return_value = 1000000
