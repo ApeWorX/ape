@@ -1,4 +1,8 @@
-from ape.cli.arguments import existing_alias_argument, non_existing_alias_argument
+from ape.cli.arguments import (
+    contract_file_paths_argument,
+    existing_alias_argument,
+    non_existing_alias_argument,
+)
 from ape.cli.choices import AccountAliasPromptChoice, Alias, PromptChoice, get_user_selected_account
 from ape.cli.commands import NetworkBoundCommand
 from ape.cli.options import (
@@ -18,6 +22,7 @@ __all__ = [
     "Alias",
     "AllFilePaths",
     "ape_cli_context",
+    "contract_file_paths_argument",
     "contract_option",
     "existing_alias_argument",
     "get_user_selected_account",

@@ -1,43 +1,13 @@
-from itertools import chain
-from pathlib import Path
 from typing import Dict
 
 import click
 
-from ape.cli import AllFilePaths, ape_cli_context
+from ape.cli import ape_cli_context, contract_file_paths_argument
 from ape.types import ContractType
-
-_flatten = chain.from_iterable
-
-
-def _create_contracts_paths(ctx, param, value):
-    from ape import project
-
-    contract_paths = _flatten(value)
-
-    def _raise_bad_arg(name):
-        raise click.BadArgumentUsage(f"Contract '{name}' not found.")
-
-    resolved_contract_paths = set()
-    for contract_path in contract_paths:
-        # Adds missing absolute path as well as extension.
-        resolved_contract_path = project.lookup_path(contract_path)
-
-        if not resolved_contract_path:
-            _raise_bad_arg(contract_path.name)
-
-        resolved_contract_paths.add(resolved_contract_path)
-
-    return resolved_contract_paths
 
 
 @click.command(short_help="Compile select contract source files")
-@click.argument(
-    "file_paths",
-    nargs=-1,
-    type=AllFilePaths(exists=True, path_type=Path, resolve_path=True),
-    callback=_create_contracts_paths,
-)
+@contract_file_paths_argument()
 @click.option(
     "-f",
     "--force",
