@@ -35,14 +35,6 @@
       :property:
 
 
-   .. py:method:: _receipt_class(self) -> Type[ape.api.providers.ReceiptAPI]
-      :property:
-
-
-   .. py:method:: _transaction_class(self) -> Type[ape.api.providers.TransactionAPI]
-      :property:
-
-
    .. py:method:: address(self) -> ape.types.AddressType
       :property:
 

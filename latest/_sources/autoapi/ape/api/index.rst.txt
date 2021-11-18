@@ -53,6 +53,7 @@
    ape.api.TestProviderAPI
    ape.api.TransactionAPI
    ape.api.TransactionStatusEnum
+   ape.api.TransactionType
    ape.api.Web3Provider
 
 
@@ -232,14 +233,6 @@
       
 
    .. py:method:: provider(self) -> ape.api.providers.ProviderAPI
-      :property:
-
-
-   .. py:method:: _receipt_class(self) -> Type[ape.api.providers.ReceiptAPI]
-      :property:
-
-
-   .. py:method:: _transaction_class(self) -> Type[ape.api.providers.TransactionAPI]
       :property:
 
 
@@ -449,8 +442,8 @@
 
       
 
-   .. attribute:: transaction_class
-      :annotation: :Type[ape.api.providers.TransactionAPI]
+   .. attribute:: transaction_types
+      :annotation: :Dict[ape.api.providers.TransactionType, Type[ape.api.providers.TransactionAPI]]
 
       
 
@@ -693,6 +686,14 @@
       :property:
 
 
+   .. py:method:: priority_fee(self) -> int
+      :property:
+
+
+   .. py:method:: base_fee(self) -> int
+      :property:
+
+
    .. py:method:: send_call(self, txn: TransactionAPI) -> bytes
       :abstractmethod:
 
@@ -755,6 +756,12 @@
    .. py:method:: __str__(self) -> str
 
       Return str(self).
+
+
+   .. py:method:: raise_for_status(self, txn: TransactionAPI)
+
+      Handle provider-specific errors regarding a non-successful
+      :class:`~api.providers.TransactionStatusEnum`.
 
 
    .. py:method:: ran_out_of_gas(self, gas_limit: int) -> bool
@@ -820,13 +827,13 @@
 
       
 
-   .. attribute:: gas_price
-      :annotation: :Optional[int]
+   .. attribute:: data
+      :annotation: :bytes = b''
 
       
 
-   .. attribute:: data
-      :annotation: :bytes = b''
+   .. attribute:: type
+      :annotation: :TransactionType
 
       
 
@@ -836,6 +843,16 @@
       
 
    .. py:method:: __post_init__(self)
+
+
+   .. py:method:: max_fee(self) -> int
+      :property:
+
+      The total amount in fees willing to be spent on a transaction.
+      Override this property as needed, such as for EIP-1559 differences.
+
+      See :class:`~ape_ethereum.ecosystem.StaticFeeTransaction` and
+      :class`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
 
 
    .. py:method:: total_transfer_value(self) -> int
@@ -891,6 +908,27 @@
 
 
 
+.. py:class:: TransactionType
+
+   Bases: :py:obj:`enum.Enum`
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+   .. attribute:: STATIC
+      :annotation: = 0x0
+
+      
+
+   .. attribute:: DYNAMIC
+      :annotation: = 0x2
+
+      
+
+
+
+
 .. py:class:: Web3Provider
 
    Bases: :py:obj:`ProviderAPI`
@@ -925,6 +963,16 @@
       :property:
 
       Returns the current price per gas in wei.
+
+
+   .. py:method:: priority_fee(self) -> int
+      :property:
+
+      Returns the current max priority fee per gas in wei.
+
+
+   .. py:method:: base_fee(self) -> int
+      :property:
 
 
    .. py:method:: get_nonce(self, address: str) -> int

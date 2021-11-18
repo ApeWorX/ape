@@ -66,10 +66,11 @@
 <p class="caption"><span class="caption-text">Full API Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../ape_console/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_console</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape_networks/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_networks</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_test/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ape_run/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_run</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_geth/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_geth</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_console/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_console</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ape_accounts/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_accounts</span></code></a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_ethereum</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="converters/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_ethereum.converters</span></code></a></li>
@@ -81,12 +82,13 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.NETWORKS">NETWORKS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Ethereum">Ethereum</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.transaction_class">transaction_class</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.transaction_types">transaction_types</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.receipt_class">receipt_class</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.encode_calldata">encode_calldata</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.decode_calldata">decode_calldata</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.encode_deployment">encode_deployment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.encode_transaction">encode_transaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum._extract_transaction_type">_extract_transaction_type</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.decode_event">decode_event</a></li>
 </ul>
 </li>
@@ -96,10 +98,9 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../ape_pm/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_pm</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape_test/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ape_plugins/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_plugins</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ape_compile/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_compile</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape_geth/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_geth</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_networks/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_networks</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -191,7 +192,7 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_ethereum.converters" title="ape_ethereum.converters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">converters</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_ethereum.converters" title="ape_ethereum.converters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">converters</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape_ethereum.ecosystems" title="ape_ethereum.ecosystems"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ecosystems</span></code></a>()</p></td>
@@ -247,8 +248,8 @@
 <dd><p>Bases: <a class="reference internal" href="../ape/api/index.html#ape.api.EcosystemAPI" title="ape.api.EcosystemAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.EcosystemAPI</span></code></a></p>
 <p>An Ecosystem is a set of related Networks</p>
 <dl class="py attribute">
-<dt id="ape_ethereum.Ethereum.transaction_class">
-<code class="sig-name descname"><span class="pre">transaction_class</span></code><a class="headerlink" href="#ape_ethereum.Ethereum.transaction_class" title="Permalink to this definition">¶</a></dt>
+<dt id="ape_ethereum.Ethereum.transaction_types">
+<code class="sig-name descname"><span class="pre">transaction_types</span></code><a class="headerlink" href="#ape_ethereum.Ethereum.transaction_types" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -268,12 +269,17 @@
 
 <dl class="py method">
 <dt id="ape_ethereum.Ethereum.encode_deployment">
-<code class="sig-name descname"><span class="pre">encode_deployment</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deployment_bytecode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../ape/types/index.html#ape.types.ABI" title="ape.types.ABI"><span class="pre">ape.types.ABI</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Transaction</span><a class="headerlink" href="#ape_ethereum.Ethereum.encode_deployment" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">encode_deployment</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deployment_bytecode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../ape/types/index.html#ape.types.ABI" title="ape.types.ABI"><span class="pre">ape.types.ABI</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">BaseTransaction</span><a class="headerlink" href="#ape_ethereum.Ethereum.encode_deployment" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt id="ape_ethereum.Ethereum.encode_transaction">
-<code class="sig-name descname"><span class="pre">encode_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ape.types.AddressType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../ape/types/index.html#ape.types.ABI" title="ape.types.ABI"><span class="pre">ape.types.ABI</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Transaction</span><a class="headerlink" href="#ape_ethereum.Ethereum.encode_transaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">encode_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ape.types.AddressType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../ape/types/index.html#ape.types.ABI" title="ape.types.ABI"><span class="pre">ape.types.ABI</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">BaseTransaction</span><a class="headerlink" href="#ape_ethereum.Ethereum.encode_transaction" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape_ethereum.Ethereum._extract_transaction_type">
+<code class="sig-name descname"><span class="pre">_extract_transaction_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../ape/api/index.html#ape.api.TransactionType" title="ape.api.TransactionType"><span class="pre">ape.api.TransactionType</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../ape/api/index.html#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><span class="pre">ape.api.TransactionAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape_ethereum.Ethereum._extract_transaction_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

@@ -14,7 +14,9 @@
 
 .. autoapisummary::
 
-   ape_ethereum.ecosystem.Transaction
+   ape_ethereum.ecosystem.BaseTransaction
+   ape_ethereum.ecosystem.StaticFeeTransaction
+   ape_ethereum.ecosystem.DynamicFeeTransaction
    ape_ethereum.ecosystem.Receipt
    ape_ethereum.ecosystem.Ethereum
 
@@ -39,7 +41,7 @@
 
 
 
-.. py:class:: Transaction
+.. py:class:: BaseTransaction
 
    Bases: :py:obj:`ape.api.TransactionAPI`
 
@@ -57,9 +59,78 @@
 
 
 
+.. py:class:: StaticFeeTransaction
+
+   Bases: :py:obj:`BaseTransaction`
+
+   Transactions that are pre-EIP-1559 and use the ``gasPrice`` field.
+
+   .. attribute:: gas_price
+      :annotation: :int
+
+      
+
+   .. attribute:: type
+      :annotation: :ape.api.TransactionType
+
+      
+
+   .. py:method:: max_fee(self) -> int
+      :property:
+
+      The total amount in fees willing to be spent on a transaction.
+      Override this property as needed, such as for EIP-1559 differences.
+
+      See :class:`~ape_ethereum.ecosystem.StaticFeeTransaction` and
+      :class`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
+
+
+   .. py:method:: as_dict(self)
+
+
+
+
+
+.. py:class:: DynamicFeeTransaction
+
+   Bases: :py:obj:`BaseTransaction`
+
+   Transactions that are post-EIP-1559 and use the ``maxFeePerGas``
+   and ``maxPriorityFeePerGas`` fields.
+
+   .. attribute:: max_fee
+      :annotation: :int
+
+      
+
+   .. attribute:: max_priority_fee
+      :annotation: :int
+
+      
+
+   .. attribute:: type
+      :annotation: :ape.api.TransactionType
+
+      
+
+   .. py:method:: as_dict(self)
+
+
+
+
+
 .. py:class:: Receipt
 
    Bases: :py:obj:`ape.api.ReceiptAPI`
+
+   .. py:method:: raise_for_status(self, txn: ape.api.TransactionAPI)
+
+      Raises :class`~ape.exceptions.OutOfGasError` when the
+      transaction failed and consumed all the gas.
+
+      Raises :class:`~ape.exceptions.TransactionError`
+      when the transaction has a failing status otherwise.
+
 
    .. py:method:: decode(cls, data: dict) -> ape.api.ReceiptAPI
       :classmethod:
@@ -74,7 +145,7 @@
 
    An Ecosystem is a set of related Networks
 
-   .. attribute:: transaction_class
+   .. attribute:: transaction_types
       
 
       
@@ -90,10 +161,13 @@
    .. py:method:: decode_calldata(self, abi: ape.types.ABI, raw_data: bytes) -> Any
 
 
-   .. py:method:: encode_deployment(self, deployment_bytecode: bytes, abi: Optional[ape.types.ABI], *args, **kwargs) -> Transaction
+   .. py:method:: encode_deployment(self, deployment_bytecode: bytes, abi: Optional[ape.types.ABI], *args, **kwargs) -> BaseTransaction
 
 
-   .. py:method:: encode_transaction(self, address: ape.types.AddressType, abi: ape.types.ABI, *args, **kwargs) -> Transaction
+   .. py:method:: encode_transaction(self, address: ape.types.AddressType, abi: ape.types.ABI, *args, **kwargs) -> BaseTransaction
+
+
+   .. py:method:: _extract_transaction_type(self, **kwargs) -> Tuple[ape.api.TransactionType, Type[ape.api.TransactionAPI]]
 
 
    .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.ReceiptAPI) -> ape.api.ContractLog

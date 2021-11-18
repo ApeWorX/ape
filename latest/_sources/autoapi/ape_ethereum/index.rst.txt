@@ -88,7 +88,7 @@
 
    An Ecosystem is a set of related Networks
 
-   .. attribute:: transaction_class
+   .. attribute:: transaction_types
       
 
       
@@ -104,10 +104,13 @@
    .. py:method:: decode_calldata(self, abi: ape.types.ABI, raw_data: bytes) -> Any
 
 
-   .. py:method:: encode_deployment(self, deployment_bytecode: bytes, abi: Optional[ape.types.ABI], *args, **kwargs) -> Transaction
+   .. py:method:: encode_deployment(self, deployment_bytecode: bytes, abi: Optional[ape.types.ABI], *args, **kwargs) -> BaseTransaction
 
 
-   .. py:method:: encode_transaction(self, address: ape.types.AddressType, abi: ape.types.ABI, *args, **kwargs) -> Transaction
+   .. py:method:: encode_transaction(self, address: ape.types.AddressType, abi: ape.types.ABI, *args, **kwargs) -> BaseTransaction
+
+
+   .. py:method:: _extract_transaction_type(self, **kwargs) -> Tuple[ape.api.TransactionType, Type[ape.api.TransactionAPI]]
 
 
    .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.ReceiptAPI) -> ape.api.ContractLog

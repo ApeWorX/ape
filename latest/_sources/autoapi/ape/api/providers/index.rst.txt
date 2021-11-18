@@ -14,6 +14,7 @@
 
 .. autoapisummary::
 
+   ape.api.providers.TransactionType
    ape.api.providers.TransactionAPI
    ape.api.providers.TransactionStatusEnum
    ape.api.providers.ReceiptAPI
@@ -26,6 +27,27 @@
 
 
 -----------
+
+
+.. py:class:: TransactionType
+
+   Bases: :py:obj:`enum.Enum`
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+   .. attribute:: STATIC
+      :annotation: = 0x0
+
+      
+
+   .. attribute:: DYNAMIC
+      :annotation: = 0x2
+
+      
+
+
 
 
 .. py:class:: TransactionAPI
@@ -60,13 +82,13 @@
 
       
 
-   .. attribute:: gas_price
-      :annotation: :Optional[int]
+   .. attribute:: data
+      :annotation: :bytes = b''
 
       
 
-   .. attribute:: data
-      :annotation: :bytes = b''
+   .. attribute:: type
+      :annotation: :TransactionType
 
       
 
@@ -76,6 +98,16 @@
       
 
    .. py:method:: __post_init__(self)
+
+
+   .. py:method:: max_fee(self) -> int
+      :property:
+
+      The total amount in fees willing to be spent on a transaction.
+      Override this property as needed, such as for EIP-1559 differences.
+
+      See :class:`~ape_ethereum.ecosystem.StaticFeeTransaction` and
+      :class`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
 
 
    .. py:method:: total_transfer_value(self) -> int
@@ -176,6 +208,12 @@
       Return str(self).
 
 
+   .. py:method:: raise_for_status(self, txn: TransactionAPI)
+
+      Handle provider-specific errors regarding a non-successful
+      :class:`~api.providers.TransactionStatusEnum`.
+
+
    .. py:method:: ran_out_of_gas(self, gas_limit: int) -> bool
 
       Returns ``True`` when the transaction failed and used the
@@ -260,6 +298,14 @@
       :property:
 
 
+   .. py:method:: priority_fee(self) -> int
+      :property:
+
+
+   .. py:method:: base_fee(self) -> int
+      :property:
+
+
    .. py:method:: send_call(self, txn: TransactionAPI) -> bytes
       :abstractmethod:
 
@@ -330,6 +376,16 @@
       :property:
 
       Returns the current price per gas in wei.
+
+
+   .. py:method:: priority_fee(self) -> int
+      :property:
+
+      Returns the current max priority fee per gas in wei.
+
+
+   .. py:method:: base_fee(self) -> int
+      :property:
 
 
    .. py:method:: get_nonce(self, address: str) -> int

@@ -109,8 +109,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.api.AddressAPI">AddressAPI</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI._provider">_provider</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI.provider">provider</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI._receipt_class">_receipt_class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI._transaction_class">_transaction_class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI.address">address</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI.__dir__">__dir__</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI.__repr__">__repr__</a></li>
@@ -158,7 +156,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI.plugin_manager">plugin_manager</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI.data_folder">data_folder</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI.request_header">request_header</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI.transaction_class">transaction_class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI.transaction_types">transaction_types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI.receipt_class">receipt_class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI._default_network">_default_network</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.EcosystemAPI.config">config</a></li>
@@ -221,6 +219,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ProviderAPI.get_nonce">get_nonce</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ProviderAPI.estimate_gas_cost">estimate_gas_cost</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ProviderAPI.gas_price">gas_price</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ProviderAPI.priority_fee">priority_fee</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ProviderAPI.base_fee">base_fee</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ProviderAPI.send_call">send_call</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ProviderAPI.get_transaction">get_transaction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ProviderAPI.send_transaction">send_transaction</a></li>
@@ -237,6 +237,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.contract_address">contract_address</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.__post_init__">__post_init__</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.__str__">__str__</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.raise_for_status">raise_for_status</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.ran_out_of_gas">ran_out_of_gas</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.decode">decode</a></li>
 </ul>
@@ -253,10 +254,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.nonce">nonce</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.value">value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.gas_limit">gas_limit</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.gas_price">gas_price</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.data">data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.type">type</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.signature">signature</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.__post_init__">__post_init__</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.max_fee">max_fee</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.total_transfer_value">total_transfer_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.is_valid">is_valid</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.encode">encode</a></li>
@@ -270,12 +272,19 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionStatusEnum.NO_ERROR">NO_ERROR</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.api.TransactionType">TransactionType</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionType.STATIC">STATIC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionType.DYNAMIC">DYNAMIC</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.api.Web3Provider">Web3Provider</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.Web3Provider._web3">_web3</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.Web3Provider.update_settings">update_settings</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.Web3Provider.estimate_gas_cost">estimate_gas_cost</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.Web3Provider.chain_id">chain_id</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.Web3Provider.gas_price">gas_price</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.Web3Provider.priority_fee">priority_fee</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.Web3Provider.base_fee">base_fee</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.Web3Provider.get_nonce">get_nonce</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.Web3Provider.get_balance">get_balance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.Web3Provider.get_code">get_code</a></li>
@@ -429,7 +438,10 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TransactionStatusEnum" title="ape.api.TransactionStatusEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionStatusEnum</span></code></a></p></td>
 <td><p>Enum where members are also (and must be) ints</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.Web3Provider" title="ape.api.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Web3Provider</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.TransactionType" title="ape.api.TransactionType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionType</span></code></a></p></td>
+<td><p>Generic enumeration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.Web3Provider" title="ape.api.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Web3Provider</span></code></a></p></td>
 <td><p>A base provider that is web3 based.</p></td>
 </tr>
 </tbody>
@@ -634,16 +646,6 @@ is how they show up in the <code class="docutils literal notranslate"><span clas
 <dl class="py method">
 <dt id="ape.api.AddressAPI.provider">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">provider</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="providers/index.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ape.api.providers.ProviderAPI</span></a><a class="headerlink" href="#ape.api.AddressAPI.provider" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="ape.api.AddressAPI._receipt_class">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">_receipt_class</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="providers/index.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.AddressAPI._receipt_class" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="ape.api.AddressAPI._transaction_class">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">_transaction_class</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="providers/index.html#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.AddressAPI._transaction_class" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -863,8 +865,8 @@ For example, a generic mapping type might be defined as:</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="ape.api.EcosystemAPI.transaction_class">
-<code class="sig-name descname"><span class="pre">transaction_class</span></code><em class="property"> <span class="pre">:Type[ape.api.providers.TransactionAPI]</span></em><a class="headerlink" href="#ape.api.EcosystemAPI.transaction_class" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.api.EcosystemAPI.transaction_types">
+<code class="sig-name descname"><span class="pre">transaction_types</span></code><em class="property"> <span class="pre">:Dict[ape.api.providers.TransactionType,</span> <span class="pre">Type[ape.api.providers.TransactionAPI]]</span></em><a class="headerlink" href="#ape.api.EcosystemAPI.transaction_types" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1156,6 +1158,16 @@ translating into yaml.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="ape.api.ProviderAPI.priority_fee">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">priority_fee</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.ProviderAPI.priority_fee" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.ProviderAPI.base_fee">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">base_fee</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.ProviderAPI.base_fee" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.ProviderAPI.send_call">
 <em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">send_call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bytes</span><a class="headerlink" href="#ape.api.ProviderAPI.send_call" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1227,6 +1239,13 @@ translating into yaml.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="ape.api.ReceiptAPI.raise_for_status">
+<code class="sig-name descname"><span class="pre">raise_for_status</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.ReceiptAPI.raise_for_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle provider-specific errors regarding a non-successful
+<code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionStatusEnum</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.ReceiptAPI.ran_out_of_gas">
 <code class="sig-name descname"><span class="pre">ran_out_of_gas</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_limit</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.api.ReceiptAPI.ran_out_of_gas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> when the transaction failed and used the
@@ -1291,13 +1310,13 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="ape.api.TransactionAPI.gas_price">
-<code class="sig-name descname"><span class="pre">gas_price</span></code><em class="property"> <span class="pre">:Optional[int]</span></em><a class="headerlink" href="#ape.api.TransactionAPI.gas_price" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.api.TransactionAPI.data">
+<code class="sig-name descname"><span class="pre">data</span></code><em class="property"> <span class="pre">:bytes</span> <span class="pre">=</span> <span class="pre">b''</span></em><a class="headerlink" href="#ape.api.TransactionAPI.data" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="ape.api.TransactionAPI.data">
-<code class="sig-name descname"><span class="pre">data</span></code><em class="property"> <span class="pre">:bytes</span> <span class="pre">=</span> <span class="pre">b''</span></em><a class="headerlink" href="#ape.api.TransactionAPI.data" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.api.TransactionAPI.type">
+<code class="sig-name descname"><span class="pre">type</span></code><em class="property"> <span class="pre">:TransactionType</span></em><a class="headerlink" href="#ape.api.TransactionAPI.type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1309,6 +1328,15 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 <dt id="ape.api.TransactionAPI.__post_init__">
 <code class="sig-name descname"><span class="pre">__post_init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.TransactionAPI.__post_init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.TransactionAPI.max_fee">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">max_fee</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.TransactionAPI.max_fee" title="Permalink to this definition">¶</a></dt>
+<dd><p>The total amount in fees willing to be spent on a transaction.
+Override this property as needed, such as for EIP-1559 differences.</p>
+<p>See <a class="reference internal" href="../../ape_ethereum/ecosystem/index.html#ape_ethereum.ecosystem.StaticFeeTransaction" title="ape_ethereum.ecosystem.StaticFeeTransaction"><code class="xref py py-class docutils literal notranslate"><span class="pre">StaticFeeTransaction</span></code></a> and
+:class`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.TransactionAPI.total_transfer_value">
@@ -1366,6 +1394,24 @@ to submit the transaction.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt id="ape.api.TransactionType">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.</span></code><code class="sig-name descname"><span class="pre">TransactionType</span></code><a class="headerlink" href="#ape.api.TransactionType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Generic enumeration.</p>
+<p>Derive from this class to define new enumerations.</p>
+<dl class="py attribute">
+<dt id="ape.api.TransactionType.STATIC">
+<code class="sig-name descname"><span class="pre">STATIC</span></code><em class="property"> <span class="pre">=</span> <span class="pre">0x0</span></em><a class="headerlink" href="#ape.api.TransactionType.STATIC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.TransactionType.DYNAMIC">
+<code class="sig-name descname"><span class="pre">DYNAMIC</span></code><em class="property"> <span class="pre">=</span> <span class="pre">0x2</span></em><a class="headerlink" href="#ape.api.TransactionType.DYNAMIC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt id="ape.api.Web3Provider">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.</span></code><code class="sig-name descname"><span class="pre">Web3Provider</span></code><a class="headerlink" href="#ape.api.Web3Provider" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.ProviderAPI" title="ape.api.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
@@ -1401,6 +1447,17 @@ a value used in replay-protected transaction signing as introduced by EIP-155.</
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">gas_price</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.Web3Provider.gas_price" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the current price per gas in wei.</p>
 </dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.Web3Provider.priority_fee">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">priority_fee</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.Web3Provider.priority_fee" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current max priority fee per gas in wei.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.Web3Provider.base_fee">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">base_fee</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.Web3Provider.base_fee" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.Web3Provider.get_nonce">

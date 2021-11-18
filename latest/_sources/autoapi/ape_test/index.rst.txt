@@ -173,6 +173,18 @@
       :property:
 
 
+   .. py:method:: priority_fee(self) -> int
+      :property:
+
+      Returns 0 because test chains do not care about priority fees.
+
+
+   .. py:method:: base_fee(self) -> int
+      :property:
+
+      Returns 0 because test chains do not care about base fees.
+
+
    .. py:method:: get_nonce(self, address: str) -> int
 
 

@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="ape_test._cli" href="_cli/index.html" />
-    <link rel="prev" title="ape_pm.compiler" href="../ape_pm/compiler/index.html" /> 
+    <link rel="prev" title="API Reference" href="../index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -66,13 +66,6 @@
 <p class="caption"><span class="caption-text">Full API Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../ape_console/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_console</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape_networks/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_networks</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape_run/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_run</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape_accounts/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_accounts</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape_ethereum/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_ethereum</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape_pm/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_pm</span></code></a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="_cli/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test._cli</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="accounts/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test.accounts</span></code></a></li>
@@ -108,6 +101,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape_test.LocalNetwork.estimate_gas_cost">estimate_gas_cost</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_test.LocalNetwork.chain_id">chain_id</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_test.LocalNetwork.gas_price">gas_price</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_test.LocalNetwork.priority_fee">priority_fee</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_test.LocalNetwork.base_fee">base_fee</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_test.LocalNetwork.get_nonce">get_nonce</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_test.LocalNetwork.get_balance">get_balance</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_test.LocalNetwork.get_code">get_code</a></li>
@@ -129,9 +124,16 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape_test.providers">providers</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_run/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_run</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_geth/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_geth</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_console/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_console</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_accounts/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_accounts</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_ethereum/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_ethereum</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_pm/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_pm</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ape_plugins/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_plugins</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ape_compile/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_compile</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ape_geth/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_geth</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ape_networks/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_networks</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -240,7 +242,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape_test.account_types" title="ape_test.account_types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">account_types</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="providers/index.html#module-ape_test.providers" title="ape_test.providers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">providers</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="providers/index.html#module-ape_test.providers" title="ape_test.providers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">providers</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -385,6 +387,18 @@ is how they show up in the <code class="docutils literal notranslate"><span clas
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="ape_test.LocalNetwork.priority_fee">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">priority_fee</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape_test.LocalNetwork.priority_fee" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns 0 because test chains do not care about priority fees.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape_test.LocalNetwork.base_fee">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">base_fee</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape_test.LocalNetwork.base_fee" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns 0 because test chains do not care about base fees.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape_test.LocalNetwork.get_nonce">
 <code class="sig-name descname"><span class="pre">get_nonce</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape_test.LocalNetwork.get_nonce" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -471,7 +485,7 @@ is how they show up in the <code class="docutils literal notranslate"><span clas
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="_cli/index.html" class="btn btn-neutral float-right" title="ape_test._cli" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="../ape_pm/compiler/index.html" class="btn btn-neutral float-left" title="ape_pm.compiler" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../index.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

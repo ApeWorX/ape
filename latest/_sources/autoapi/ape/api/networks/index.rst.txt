@@ -66,8 +66,8 @@
 
       
 
-   .. attribute:: transaction_class
-      :annotation: :Type[ape.api.providers.TransactionAPI]
+   .. attribute:: transaction_types
+      :annotation: :Dict[ape.api.providers.TransactionType, Type[ape.api.providers.TransactionAPI]]
 
       
 
