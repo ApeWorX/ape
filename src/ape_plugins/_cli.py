@@ -73,32 +73,44 @@ def _list(cli_ctx, display_all):
         else:
             cli_ctx.logger.error(f"{name} is not a plugin.")
 
+    sections = {}
+
     # First Class Plugins
     if display_all:
-        _display_section("Installed Core Plugins:", [installed_first_class_plugins])
-        click.echo()
+        sections["Installed Core Plugins"] = [installed_first_class_plugins]
 
     # Second and Third Class Plugins
     available_second = list(SECOND_CLASS_PLUGINS - installed_second_class_plugins_no_version)
 
     if installed_second_class_plugins:
+        sections["Installed Plugins"] = [
+            installed_second_class_plugins,
+            installed_third_class_plugins,
+        ]
 
-        _display_section(
-            "Installed Plugins:", [installed_second_class_plugins, installed_third_class_plugins]
-        )
     elif not display_all:
-        if SECOND_CLASS_PLUGINS:
-            click.echo("No plugins installed")
+        # user has no plugins installed | cant verify installed plugins
+        if available_second:
+            click.echo("There are available plugins to install, use -a to list all plugins ")
 
     if display_all:
-        click.echo()
+
         available_second_output = _format_output(available_second)
         if available_second_output:
-            click.echo()
-            _display_section("Available Plugins:", [available_second_output])
+
+            sections["Available Plugins"] = [available_second_output]
+
         else:
             if SECOND_CLASS_PLUGINS:
-                click.echo("You have installed all the available Plugins")
+                click.echo("You have installed all the available Plugins\n")
+
+    for i in range(0, len(sections)):
+        header = list(sections.keys())[i]
+        output = sections[header]
+        _display_section(f"{header}:", output)
+
+        if i < (len(sections) - 1):
+            click.echo()
 
 
 @cli.command(short_help="Install an ape plugin")

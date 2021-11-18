@@ -1,7 +1,11 @@
+import re
 from os import environ
 
 from ape_plugins.utils import FIRST_CLASS_PLUGINS, SECOND_CLASS_PLUGINS
 
+INSTALLED_CORE_PLUGINS_HEADER = "Installed Core Plugins"
+INSTALLED_PLUGINS_HEADER = "Installed Plugins"
+AVAILABLE_PLUGINS_HEADER = "Available Plugins"
 # obtaining result limit assumption
 # first class is filled in
 # maybe it is not filled
@@ -10,24 +14,74 @@ from ape_plugins.utils import FIRST_CLASS_PLUGINS, SECOND_CLASS_PLUGINS
 # ape plugins test not required since it would be a click bug not us
 
 # test plugins list with github access token and no 2nd class or third class installed
-def test_plugins_list(ape_cli, runner):
+def test_plugins_list_nothing_installed(ape_cli, runner):
     result = runner.invoke(ape_cli, ["plugins", "list"])
-    print(result.output)
-    assert result.exit_code == 0  # no errors when it runs
+    assert result.exit_code == 0, result.output  # no errors when it runs
     assert "No plugins installed\n" == result.output
 
 
+def assert_plugins_in_output(plugins, output, header):
+    expected_plugins = [p.replace("ape_", "") for p in plugins if p != "ape"]
+    for plugin in expected_plugins:
+        assert_in_section(plugin, output, header)
+
+
+def assert_in_section(plugin, output, expected_section):
+    in_section = False
+    headers = [INSTALLED_CORE_PLUGINS_HEADER, INSTALLED_PLUGINS_HEADER, AVAILABLE_PLUGINS_HEADER]
+    last_index = len(headers)
+    for i in range(0, last_index):
+        section = headers[i]
+        if expected_section == section:
+            output_parts = output.split(expected_section)
+            assert len(output_parts) == 2, f"Section '{expected_section}' not in output"
+            assert plugin in output_parts[1]  # It should come after section
+
+            if i < last_index:
+                # Verify that the plugin is not actually in the next section
+                next_section_header = headers[i + 1]
+                next_section_parts = output.split(next_section_header)
+
+                if len(next_section_parts) == 2:
+                    next_section = next_section_parts[-1]
+                    assert plugin not in next_section
+
+                in_section = True
+    assert in_section, "Did not find plugin in section"
+
+
 # test plugins list -a with github access token and no 2nd class or third class installed
-def test_plugins_list_a(ape_cli, runner):
+def test_plugins_list_all(ape_cli, runner):
     result = runner.invoke(ape_cli, ["plugins", "list", "-a"])
-    print(result.output)
     assert result.exit_code == 0  # no errors when it runs
-    assert "Installed Core Plugins:" in result.output
-    assert "Available Plugins" in result.output
-    assert "Installed Plugins:" not in result.output
+    # breakpoint()
+
+    # re.search vs re.match
+    assert re.search(r"Installed Core Plugins:\n", result.output)
+    # assert re.search(r"Installed Plugins\n",result.output)
+    assert re.search(r"Available Plugins:\n", result.output)
+    # change re.search to in result.output
+
+    # list comprehension
+    assert_plugins_in_output(FIRST_CLASS_PLUGINS, result.output, INSTALLED_CORE_PLUGINS_HEADER)
+
+    # Assume that all second class is not installed and avialable
+    assert_plugins_in_output(SECOND_CLASS_PLUGINS, result.output, AVAILABLE_PLUGINS_HEADER)
+
+    # assert_plugins_in_output
+
+    # expected_second_class_plugins = []
+
     # all(...)  # every single item in the iterator is "truthy" truthy not none and not false
-    assert all(plugin in result.output for plugin in FIRST_CLASS_PLUGINS)
-    assert all(plugin in result.output for plugin in SECOND_CLASS_PLUGINS)
+    # assert all(plugin in result.output for plugin in FIRST_CLASS_PLUGINS)
+
+    # all list available accessible only if you have github token
+    # display everything as a plugins and as installed
+    # with github token display availble
+
+    # -a will display core
+
+    # assert all(plugin in result.output for plugin in SECOND_CLASS_PLUGINS)
 
     # path lib
     # strip ape_
@@ -85,6 +139,8 @@ def test_install_uninstall_plugins(ape_cli, runner):
 Installed Plugins:
   vyper     0.1.0a7
   jules      0.1.dev10+g0ca16f6)
+
+
     """
 
     # ape plugins list
