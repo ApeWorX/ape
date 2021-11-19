@@ -236,7 +236,7 @@
 
 
 
-.. py:function:: network_option()
+.. py:function:: network_option(default: str = networks.default_ecosystem.name)
 
 
 

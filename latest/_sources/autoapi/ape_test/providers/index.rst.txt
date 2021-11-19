@@ -18,6 +18,13 @@
 
 
 
+**Functions**:
+
+.. autoapisummary::
+
+   ape_test.providers._get_vm_err
+
+
 
 
 -----------
@@ -25,14 +32,9 @@
 
 .. py:class:: LocalNetwork
 
-   Bases: :py:obj:`ape.api.TestProviderAPI`
+   Bases: :py:obj:`ape.api.TestProviderAPI`, :py:obj:`ape.api.Web3Provider`
 
    An API for providers that have development functionality, such as snapshotting.
-
-   .. attribute:: _web3
-      :annotation: :web3.Web3
-
-      
 
    .. py:method:: connect(self)
 
@@ -42,19 +44,23 @@
 
    .. py:method:: update_settings(self, new_settings: dict)
 
+      Update the provider settings and re-connect.
+
 
    .. py:method:: __post_init__(self)
 
 
    .. py:method:: estimate_gas_cost(self, txn: ape.api.TransactionAPI) -> int
 
-
-   .. py:method:: chain_id(self) -> int
-      :property:
+      Generates and returns an estimate of how much gas is necessary
+      to allow the transaction to complete.
+      The transaction will not be added to the blockchain.
 
 
    .. py:method:: gas_price(self) -> int
       :property:
+
+      Returns the current price per gas in wei.
 
 
    .. py:method:: priority_fee(self) -> int
@@ -63,31 +69,13 @@
       Returns 0 because test chains do not care about priority fees.
 
 
-   .. py:method:: base_fee(self) -> int
-      :property:
-
-      Returns 0 because test chains do not care about base fees.
-
-
-   .. py:method:: get_nonce(self, address: str) -> int
-
-
-   .. py:method:: get_balance(self, address: str) -> int
-
-
-   .. py:method:: get_code(self, address: str) -> bytes
-
-
    .. py:method:: send_call(self, txn: ape.api.TransactionAPI) -> bytes
 
-
-   .. py:method:: get_transaction(self, txn_hash: str) -> ape.api.ReceiptAPI
+      Executes a new message call immediately without creating a
+      transaction on the block chain.
 
 
    .. py:method:: send_transaction(self, txn: ape.api.TransactionAPI) -> ape.api.ReceiptAPI
-
-
-   .. py:method:: get_events(self, **filter_params) -> Iterator[dict]
 
 
    .. py:method:: snapshot(self) -> str
@@ -95,6 +83,11 @@
 
    .. py:method:: revert(self, snapshot_id: str)
 
+
+
+
+
+.. py:function:: _get_vm_err(web3_err: eth_tester.exceptions.TransactionFailed) -> ape.exceptions.ContractLogicError
 
 
 

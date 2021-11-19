@@ -47,13 +47,13 @@
 
 
 
-.. py:class:: EphemeralGeth(base_directory: pathlib.Path, hostname: str, port: int, mnemonic: str, chain_id: int = 1337, initial_balance: Union[str, int] = to_wei(10000, 'ether'))
+.. py:class:: EphemeralGeth(base_directory: pathlib.Path, hostname: str, port: int, mnemonic: str, number_of_accounts: int, chain_id: int = 1337, initial_balance: Union[str, int] = to_wei(10000, 'ether'))
 
    Bases: :py:obj:`geth.LoggingMixin`, :py:obj:`geth.process.BaseGethProcess`
 
    A developer-configured geth that only exists until disconnected.
 
-   .. py:method:: __init__(self, base_directory: pathlib.Path, hostname: str, port: int, mnemonic: str, chain_id: int = 1337, initial_balance: Union[str, int] = to_wei(10000, 'ether'))
+   .. py:method:: __init__(self, base_directory: pathlib.Path, hostname: str, port: int, mnemonic: str, number_of_accounts: int, chain_id: int = 1337, initial_balance: Union[str, int] = to_wei(10000, 'ether'))
 
 
    .. py:method:: connect(self)
