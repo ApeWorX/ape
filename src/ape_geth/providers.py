@@ -243,7 +243,11 @@ def _get_vm_error(web3_value_error: ValueError) -> TransactionError:
     if isinstance(web3_value_error, Web3ContractLogicError):
         # This happens from `assert` or `require` statements.
         message = str(web3_value_error).split(":")[-1].strip()
-        return ContractLogicError(message)
+        if message == "execution reverted":
+            # Reverted without an error message
+            raise ContractLogicError()
+
+        return ContractLogicError(revert_message=message)
 
     if not len(web3_value_error.args):
         return VirtualMachineError(base_err=web3_value_error)
