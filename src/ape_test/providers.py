@@ -4,7 +4,8 @@ from eth_utils.exceptions import ValidationError
 from web3 import EthereumTesterProvider, Web3
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
-from ape.exceptions import ContractLogicError, OutOfGasError, VirtualMachineError
+from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, VirtualMachineError
+from ape.utils import gas_estimation_error_message
 
 
 class LocalNetwork(TestProviderAPI, Web3Provider):
@@ -24,6 +25,9 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         try:
             return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
+        except ValidationError as err:
+            message = gas_estimation_error_message(err)
+            raise TransactionError(base_err=err, message=message) from err
         except TransactionFailed as err:
             err_message = str(err).split("execution reverted: ")[-1]
             raise ContractLogicError(err_message) from err
@@ -47,10 +51,10 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
         try:
             txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
         except ValidationError as err:
-            raise VirtualMachineError(err) from err
+            raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:
-            err_message = str(err).split("execution reverted: ")[-1]
-            raise ContractLogicError(err_message) from err
+            err_message = str(err).split("execution reverted: ")[-1] or None
+            raise ContractLogicError(revert_message=err_message) from err
 
         receipt = self.get_transaction(txn_hash.hex())
         if txn.gas_limit is not None and receipt.ran_out_of_gas(txn.gas_limit):
