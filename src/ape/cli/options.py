@@ -33,6 +33,7 @@ class ApeCliContextObject:
         if base_error:
             logger.error(msg)
             raise Abort(msg) from base_error
+
         raise Abort(msg)
 
 
@@ -75,11 +76,11 @@ def ape_cli_context():
     return decorator
 
 
-def network_option():
+def network_option(default: str = networks.default_ecosystem.name):
     return click.option(
         "--network",
         type=NetworkChoice(case_sensitive=False),
-        default=networks.default_ecosystem.name,
+        default=default,
         help="Override the default network and provider. (see ``ape networks list`` for options)",
         show_default=True,
         show_choices=False,

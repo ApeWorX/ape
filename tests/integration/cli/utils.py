@@ -69,9 +69,9 @@ class ProjectSkipper:
         for project in projects:
             self._raise_if_not_exists(project, node.node_id)
             if node.module_name not in self.projects[project]:
-                self.projects[project][node.module_name] = []
+                self.projects[project][node.module_name] = set()
 
-            self.projects[project][node.module_name].append(node.name)
+            self.projects[project][node.module_name].add(node.name)
 
     def skip_projects_except(self, method: Callable, projects: List[str]):
         """

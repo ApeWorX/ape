@@ -36,6 +36,7 @@ class EphemeralGeth(LoggingMixin, BaseGethProcess):
         hostname: str,
         port: int,
         mnemonic: str,
+        number_of_accounts: int,
         chain_id: int = 1337,
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
     ):
@@ -53,7 +54,7 @@ class EphemeralGeth(LoggingMixin, BaseGethProcess):
         self._clean()
 
         sealer = ensure_account_exists(**geth_kwargs).decode().replace("0x", "")
-        accounts = generate_dev_accounts(mnemonic)
+        accounts = generate_dev_accounts(mnemonic, number_of_accounts=number_of_accounts)
         genesis_data: Dict = {
             "overwrite": True,
             "coinbase": "0x0000000000000000000000000000000000000000",
@@ -157,12 +158,14 @@ class GethProvider(Web3Provider):
             config_manager = self.network.config_manager
             test_config = config_manager.get_config("test")
             mnemonic = test_config["mnemonic"]
+            num_of_accounts = test_config["number_of_accounts"]
 
             self._geth = EphemeralGeth(
                 self.data_folder,
                 parsed_uri.hostname,
                 parsed_uri.port,
                 mnemonic,
+                number_of_accounts=num_of_accounts,
             )
             self._geth.connect()
 

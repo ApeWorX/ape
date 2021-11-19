@@ -1,14 +1,14 @@
-import json
-from typing import Iterator
-
+from eth_tester.backends import PyEVMBackend  # type: ignore
+from eth_tester.exceptions import TransactionFailed  # type: ignore
+from eth_utils.exceptions import ValidationError
 from web3 import EthereumTesterProvider, Web3
 
-from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI
+from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
+from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, VirtualMachineError
+from ape.utils import gas_estimation_error_message
 
 
-class LocalNetwork(TestProviderAPI):
-    _web3: Web3 = None  # type: ignore
-
+class LocalNetwork(TestProviderAPI, Web3Provider):
     def connect(self):
         pass
 
@@ -19,16 +19,19 @@ class LocalNetwork(TestProviderAPI):
         pass
 
     def __post_init__(self):
-        test_provider = EthereumTesterProvider()
-        self._web3 = Web3(test_provider)
-        self._tester = test_provider.ethereum_tester
+        self._tester = PyEVMBackend.from_mnemonic(
+            self.config["mnemonic"], num_accounts=self.config["number_of_accounts"]
+        )
+        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
-
-    @property
-    def chain_id(self) -> int:
-        return self._web3.eth.chain_id
+        try:
+            return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
+        except ValidationError as err:
+            message = gas_estimation_error_message(err)
+            raise TransactionError(base_err=err, message=message) from err
+        except TransactionFailed as err:
+            raise _get_vm_err(err) from err
 
     @property
     def gas_price(self) -> int:
@@ -39,44 +42,34 @@ class LocalNetwork(TestProviderAPI):
         """Returns 0 because test chains do not care about priority fees."""
         return 0
 
-    @property
-    def base_fee(self) -> int:
-        """Returns 0 because test chains do not care about base fees."""
-        return 0
-
-    def get_nonce(self, address: str) -> int:
-        return self._web3.eth.get_transaction_count(address)  # type: ignore
-
-    def get_balance(self, address: str) -> int:
-        return self._web3.eth.get_balance(address)  # type: ignore
-
-    def get_code(self, address: str) -> bytes:
-        return self._web3.eth.get_code(address)  # type: ignore
-
     def send_call(self, txn: TransactionAPI) -> bytes:
         data = txn.as_dict()
-        if data["gas"] == 0:
+        if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)
         return self._web3.eth.call(data)
 
-    def get_transaction(self, txn_hash: str) -> ReceiptAPI:
-        # TODO: Work on API that let's you work with ReceiptAPI and re-send transactions
-        receipt = self._web3.eth.wait_for_transaction_receipt(txn_hash)  # type: ignore
-        txn = self._web3.eth.get_transaction(txn_hash)  # type: ignore
-        return self.network.ecosystem.receipt_class.decode({**txn, **receipt})
-
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
-        return self.get_transaction(txn_hash.hex())
+        try:
+            txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
+        except ValidationError as err:
+            raise VirtualMachineError(base_err=err) from err
+        except TransactionFailed as err:
+            raise _get_vm_err(err) from err
 
-    def get_events(self, **filter_params) -> Iterator[dict]:
-        return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
+        receipt = self.get_transaction(txn_hash.hex())
+        if txn.gas_limit is not None and receipt.ran_out_of_gas(txn.gas_limit):
+            raise OutOfGasError()
+
+        return receipt
 
     def snapshot(self) -> str:
-        blocks_dict = self._tester.ethereum_tester.take_snapshot()
-        return json.dumps(blocks_dict)
+        return self._tester.take_snapshot()
 
     def revert(self, snapshot_id: str):
         if snapshot_id:
-            blocks_dict = json.loads(snapshot_id)
-            return self._tester.revert_to_snapshot(blocks_dict)
+            return self._tester.revert_to_snapshot(snapshot_id)
+
+
+def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:
+    err_message = str(web3_err).split("execution reverted: ")[-1] or None
+    return ContractLogicError(revert_message=err_message)
