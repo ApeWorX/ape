@@ -29,8 +29,7 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
             message = gas_estimation_error_message(err)
             raise TransactionError(base_err=err, message=message) from err
         except TransactionFailed as err:
-            err_message = str(err).split("execution reverted: ")[-1]
-            raise ContractLogicError(err_message) from err
+            raise _get_vm_err(err) from err
 
     @property
     def gas_price(self) -> int:
@@ -53,8 +52,7 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:
-            err_message = str(err).split("execution reverted: ")[-1] or None
-            raise ContractLogicError(revert_message=err_message) from err
+            raise _get_vm_err(err) from err
 
         receipt = self.get_transaction(txn_hash.hex())
         if txn.gas_limit is not None and receipt.ran_out_of_gas(txn.gas_limit):
@@ -68,3 +66,8 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
     def revert(self, snapshot_id: str):
         if snapshot_id:
             return self._tester.revert_to_snapshot(snapshot_id)
+
+
+def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:
+    err_message = str(web3_err).split("execution reverted: ")[-1] or None
+    return ContractLogicError(revert_message=err_message)
