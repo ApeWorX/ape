@@ -106,6 +106,11 @@
 
    Raised when issues occur related to transactions.
 
+   .. attribute:: DEFAULT_MESSAGE
+      :annotation: = Tranaction failed.
+
+      
+
    .. py:method:: __init__(self, base_err: Optional[Exception] = None, message: Optional[str] = None, code: Optional[int] = None)
 
       Initialize self.  See help(type(self)) for accurate signature.
@@ -123,14 +128,14 @@
 
 
 
-.. py:exception:: ContractLogicError(revert_message: str)
+.. py:exception:: ContractLogicError(revert_message: Optional[str] = None)
 
    Bases: :py:obj:`VirtualMachineError`
 
    Raised when there is a contract-defined revert,
    such as from an assert/require statement.
 
-   .. py:method:: __init__(self, revert_message: str)
+   .. py:method:: __init__(self, revert_message: Optional[str] = None)
 
       Initialize self.  See help(type(self)) for accurate signature.
 
