@@ -1,22 +1,13 @@
-from itertools import chain
-from pathlib import Path
 from typing import Dict
 
 import click
 
-from ape.cli import AllFilePaths, ape_cli_context
+from ape.cli import ape_cli_context, contract_file_paths_argument
 from ape.types import ContractType
-
-_flatten = chain.from_iterable
 
 
 @click.command(short_help="Compile select contract source files")
-@click.argument(
-    "file_paths",
-    nargs=-1,
-    type=AllFilePaths(exists=True, path_type=Path, resolve_path=True),
-    callback=lambda ctx, param, value: set([p.resolve() for p in _flatten(value) if p]),
-)
+@contract_file_paths_argument()
 @click.option(
     "-f",
     "--force",
@@ -43,15 +34,12 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
     Note that ape automatically recompiles any changed contracts each time
     a project is loaded. You do not have to manually trigger a recompile.
     """
-    # NOTE: Lazy load so that testing works properly
-    from ape import project
-
-    if not file_paths and project.sources_missing:
+    if not file_paths and cli_ctx.project.sources_missing:
         cli_ctx.logger.warning("No 'contracts/' directory detected")
         return
 
-    ext_with_missing_compilers = project.extensions_with_missing_compilers
-    ext_given = [p.suffix for p in file_paths]
+    ext_with_missing_compilers = cli_ctx.project.extensions_with_missing_compilers
+    ext_given = [p.suffix for p in file_paths if p]
     if ext_with_missing_compilers:
         extensions = (
             [e for e in ext_given if e in ext_with_missing_compilers]
@@ -62,7 +50,7 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
         message = f"No compilers detected for the following extensions: {extensions_str}"
         cli_ctx.logger.warning(message)
 
-    contract_types = project.load_contracts(use_cache)
+    contract_types = cli_ctx.project.load_contracts(file_paths=file_paths, use_cache=use_cache)
 
     if display_size:
         _display_byte_code_sizes(cli_ctx, contract_types)

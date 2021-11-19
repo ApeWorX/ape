@@ -17,6 +17,16 @@ class ApeCliContextObject:
 
     def __init__(self):
         self.logger = logger
+        self._project = None
+
+    @property
+    def project(self):
+        if not self._project:
+            from ape import project
+
+            self._project = project
+
+        return self._project
 
     @staticmethod
     def abort(msg: str, base_error: Exception = None):
