@@ -62,9 +62,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.api</span></code></a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli</span></code></a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.arguments</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.arguments._flatten">_flatten</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.arguments._require_non_existing_alias">_require_non_existing_alias</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.arguments.existing_alias_argument">existing_alias_argument</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.arguments.non_existing_alias_argument">non_existing_alias_argument</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.arguments._create_contracts_paths">_create_contracts_paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.arguments.contract_file_paths_argument">contract_file_paths_argument</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../choices/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.choices</span></code></a></li>
@@ -72,6 +75,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../options/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../paramtype/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.paramtype</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.utils</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.contract_file_paths_argument">contract_file_paths_argument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.existing_alias_argument">existing_alias_argument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.non_existing_alias_argument">non_existing_alias_argument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.AccountAliasPromptChoice">AccountAliasPromptChoice</a></li>
@@ -194,9 +198,32 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.arguments.non_existing_alias_argument" title="ape.cli.arguments.non_existing_alias_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">non_existing_alias_argument</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.arguments._create_contracts_paths" title="ape.cli.arguments._create_contracts_paths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_contracts_paths</span></code></a>(ctx, param, value)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.arguments.contract_file_paths_argument" title="ape.cli.arguments.contract_file_paths_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_file_paths_argument</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Attributes</strong>:</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.arguments._flatten" title="ape.cli.arguments._flatten"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_flatten</span></code></a></p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 <hr class="docutils" />
+<dl class="py data">
+<dt id="ape.cli.arguments._flatten">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">_flatten</span></code><a class="headerlink" href="#ape.cli.arguments._flatten" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py function">
 <dt id="ape.cli.arguments._require_non_existing_alias">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">_require_non_existing_alias</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.arguments._require_non_existing_alias" title="Permalink to this definition">¶</a></dt>
@@ -210,6 +237,16 @@
 <dl class="py function">
 <dt id="ape.cli.arguments.non_existing_alias_argument">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">non_existing_alias_argument</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.arguments.non_existing_alias_argument" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.arguments._create_contracts_paths">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">_create_contracts_paths</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.arguments._create_contracts_paths" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.arguments.contract_file_paths_argument">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">contract_file_paths_argument</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.arguments.contract_file_paths_argument" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

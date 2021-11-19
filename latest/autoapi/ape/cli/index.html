@@ -67,6 +67,7 @@
 <li class="toctree-l3"><a class="reference internal" href="options/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="paramtype/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.paramtype</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.utils</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.cli.contract_file_paths_argument">contract_file_paths_argument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.existing_alias_argument">existing_alias_argument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.non_existing_alias_argument">non_existing_alias_argument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.AccountAliasPromptChoice">AccountAliasPromptChoice</a><ul>
@@ -246,33 +247,41 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.existing_alias_argument" title="ape.cli.existing_alias_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">existing_alias_argument</span></code></a>(account_type: Optional[Type[ape.api.AccountAPI]] = None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.contract_file_paths_argument" title="ape.cli.contract_file_paths_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_file_paths_argument</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.non_existing_alias_argument" title="ape.cli.non_existing_alias_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">non_existing_alias_argument</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.existing_alias_argument" title="ape.cli.existing_alias_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">existing_alias_argument</span></code></a>(account_type: Optional[Type[ape.api.AccountAPI]] = None)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.get_user_selected_account" title="ape.cli.get_user_selected_account"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_user_selected_account</span></code></a>(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: Optional[str] = None) → ape.api.accounts.AccountAPI</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.non_existing_alias_argument" title="ape.cli.non_existing_alias_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">non_existing_alias_argument</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.get_user_selected_account" title="ape.cli.get_user_selected_account"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_user_selected_account</span></code></a>(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: Optional[str] = None) → ape.api.accounts.AccountAPI</p></td>
 <td><p>Prompts the user to pick from their accounts</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.account_option_that_prompts_when_not_given" title="ape.cli.account_option_that_prompts_when_not_given"><code class="xref py py-obj docutils literal notranslate"><span class="pre">account_option_that_prompts_when_not_given</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.account_option_that_prompts_when_not_given" title="ape.cli.account_option_that_prompts_when_not_given"><code class="xref py py-obj docutils literal notranslate"><span class="pre">account_option_that_prompts_when_not_given</span></code></a>()</p></td>
 <td><p>Accepts either the account alias or the account number.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.ape_cli_context" title="ape.cli.ape_cli_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape_cli_context</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.ape_cli_context" title="ape.cli.ape_cli_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape_cli_context</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.contract_option" title="ape.cli.contract_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_option</span></code></a>(help=None, required=False, multiple=False)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.contract_option" title="ape.cli.contract_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_option</span></code></a>(help=None, required=False, multiple=False)</p></td>
 <td><p>Contract(s) from the current project.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.network_option" title="ape.cli.network_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">network_option</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.network_option" title="ape.cli.network_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">network_option</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.skip_confirmation_option" title="ape.cli.skip_confirmation_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skip_confirmation_option</span></code></a>(help='')</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.skip_confirmation_option" title="ape.cli.skip_confirmation_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skip_confirmation_option</span></code></a>(help='')</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 <hr class="docutils" />
+<dl class="py function">
+<dt id="ape.cli.contract_file_paths_argument">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">contract_file_paths_argument</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.contract_file_paths_argument" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py function">
 <dt id="ape.cli.existing_alias_argument">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">existing_alias_argument</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../api/index.html#ape.api.AccountAPI" title="ape.api.AccountAPI"><span class="pre">ape.api.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.existing_alias_argument" title="Permalink to this definition">¶</a></dt>

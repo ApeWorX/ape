@@ -18,11 +18,27 @@
    ape.cli.arguments._require_non_existing_alias
    ape.cli.arguments.existing_alias_argument
    ape.cli.arguments.non_existing_alias_argument
+   ape.cli.arguments._create_contracts_paths
+   ape.cli.arguments.contract_file_paths_argument
 
+
+
+**Attributes**:
+
+.. autoapisummary::
+
+   ape.cli.arguments._flatten
 
 
 
 -----------
+
+
+.. data:: _flatten
+   
+
+   
+
 
 
 .. py:function:: _require_non_existing_alias(value)
@@ -36,6 +52,16 @@
 
 
 .. py:function:: non_existing_alias_argument()
+
+
+
+
+.. py:function:: _create_contracts_paths(ctx, param, value)
+
+
+
+
+.. py:function:: contract_file_paths_argument()
 
 
 

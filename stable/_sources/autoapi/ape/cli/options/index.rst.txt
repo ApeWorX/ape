@@ -46,6 +46,10 @@
    .. py:method:: __init__(self)
 
 
+   .. py:method:: project(self)
+      :property:
+
+
    .. py:method:: abort(msg: str, base_error: Exception = None)
       :staticmethod:
 

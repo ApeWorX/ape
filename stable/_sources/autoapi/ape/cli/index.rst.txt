@@ -44,6 +44,7 @@
 
 .. autoapisummary::
 
+   ape.cli.contract_file_paths_argument
    ape.cli.existing_alias_argument
    ape.cli.non_existing_alias_argument
    ape.cli.get_user_selected_account
@@ -57,6 +58,11 @@
 
 
 -----------
+
+
+.. py:function:: contract_file_paths_argument()
+
+
 
 
 .. py:function:: existing_alias_argument(account_type: Optional[Type[ape.api.AccountAPI]] = None)

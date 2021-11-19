@@ -20,22 +20,8 @@
 
 
 
-**Attributes**:
-
-.. autoapisummary::
-
-   ape_compile._cli._flatten
-
-
 
 -----------
-
-
-.. data:: _flatten
-   
-
-   
-
 
 
 .. py:function:: cli(cli_ctx, file_paths, use_cache, display_size)
