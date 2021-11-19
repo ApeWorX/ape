@@ -126,3 +126,19 @@ def assert_failure(result, expected_output):
     assert result.exception is not None
     assert "ERROR" in result.output
     assert expected_output in result.output
+
+
+@pytest.fixture
+def clean_cache(project):
+    """
+    Use this fixture to ensure a project
+    does not have a cached compilation.
+    """
+    cache_file = project.manifest_cachefile
+    if cache_file.exists():
+        cache_file.unlink()
+
+    yield
+
+    if cache_file.exists():
+        cache_file.unlink()

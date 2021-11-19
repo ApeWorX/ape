@@ -12,7 +12,7 @@ class Path(click.Path):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(path_type=PathLibPath)
+        super().__init__(*args, path_type=PathLibPath, **kwargs)
 
 
 class AllFilePaths(Path):
