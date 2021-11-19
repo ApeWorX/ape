@@ -3,7 +3,7 @@ import pytest
 from .utils import skip_projects, skip_projects_except
 
 
-@skip_projects(["unregistered-contracts", "one-interface", "hello-world"])
+@skip_projects(["unregistered-contracts", "one-interface"])
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
     assert result.exit_code == 0
@@ -41,25 +41,25 @@ def test_compile(ape_cli, runner, project):
         assert file.stem not in result.output
 
 
-@skip_projects_except(["hello-world"])
+@skip_projects_except(["one-interface"])
 @pytest.mark.parametrize(
     "contract_path",
-    ("HelloWorld", "HelloWorld.sol", "contracts/HelloWorld", "contracts/HelloWorld.sol"),
+    ("Interface", "Interface.json", "contracts/Interface", "contracts/Interface.json"),
 )
 def test_compile_specified_contracts(ape_cli, runner, project, contract_path, clean_cache):
     result = runner.invoke(ape_cli, ["compile", contract_path])
     assert result.exit_code == 0, result.output
-    assert "Compiling 'contracts/HelloWorld.sol'" in result.output
+    assert "Compiling 'contracts/Interface.json'" in result.output
 
 
-@skip_projects_except(["hello-world"])
+@skip_projects_except(["one-interface"])
 def test_compile_partial_extension_does_not_compile(ape_cli, runner, project, clean_cache):
-    result = runner.invoke(ape_cli, ["compile", "HelloWorld.so"])  # Missing `l` on `.sol`.
+    result = runner.invoke(ape_cli, ["compile", "Interface.js"])  # Suffix to existing extension
     assert result.exit_code == 2, result.output
-    assert "Error: Contract 'HelloWorld.so' not found." in result.output
+    assert "Error: Contract 'Interface.js' not found." in result.output
 
 
-@skip_projects_except(["hello-world"])
+@skip_projects_except([])
 def test_compile_contracts(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile", "--size"])
     assert result.exit_code == 0

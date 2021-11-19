@@ -16,7 +16,6 @@ extras_require = {
         "pytest-mock",  # For creating mocks
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
-        "ape-solidity",  # Required for compiling test contracts
     ],
     "lint": [
         "black>=21.10b0,<22.0",  # auto-formatter and linter
