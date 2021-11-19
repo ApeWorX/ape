@@ -1,4 +1,4 @@
-import pytest  # type: ignore
+import pytest
 from eth_typing import ChecksumAddress
 from hypothesis import given
 from hypothesis import strategies as st

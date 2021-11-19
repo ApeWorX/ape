@@ -19,7 +19,7 @@ def pytest_addoption(parser):
         default=networks.default_ecosystem.name,
         help="Override the default network and provider. (see ``ape networks list`` for options)",
     )
-    # NOTE: Other testing plugins, such as hypothesis, should integrate with pytest separately
+    # NOTE: Other testing plugins should integrate with pytest separately
 
 
 def pytest_configure(config):

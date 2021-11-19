@@ -186,7 +186,7 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
     """
     current_value: Any = root
     for arg in args:
-        if not isinstance(current_value, dict):
+        if not hasattr(current_value, "get"):
             return None
 
         current_value = current_value.get(arg)

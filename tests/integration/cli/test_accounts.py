@@ -1,12 +1,11 @@
 import json
 from pathlib import Path
 
-import pytest  # type: ignore
+import pytest
 from eth_account import Account  # type: ignore
 
 from ape.api import AccountAPI
-
-from .conftest import assert_failure
+from tests.integration.cli.utils import assert_failure
 
 ALIAS = "test"
 PASSWORD = "a"
