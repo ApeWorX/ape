@@ -4,12 +4,12 @@ from typing import Dict, List, Set
 from dataclassy import dataclass
 
 from ape.api.compiler import CompilerAPI
+from ape.exceptions import CompilerError
 from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.types import ContractType
 from ape.utils import cached_property
 
-from ..exceptions import CompilerError
 from .config import ConfigManager
 
 

@@ -1,12 +1,31 @@
-from ape_ethereum.ecosystem import Transaction
+import pytest
+
+from ape.exceptions import OutOfGasError
+from ape_ethereum.ecosystem import BaseTransaction, Receipt, TransactionStatusEnum
 
 
-class TestTransaction:
+class TestBaseTransaction:
     def test_as_dict_excludes_none_values(self):
-        txn = Transaction()
+        txn = BaseTransaction()
         txn.value = 1000000
         actual = txn.as_dict()
         assert "value" in actual
         txn.value = None
         actual = txn.as_dict()
         assert "value" not in actual
+
+
+class TestReceipt:
+    def test_raise_for_status_out_of_gas_error(self, mocker):
+        gas_limit = 100000
+        txn = BaseTransaction()
+        txn.gas_limit = gas_limit
+        receipt = Receipt(
+            txn_hash="",
+            gas_used=gas_limit,
+            status=TransactionStatusEnum.FAILING,
+            gas_price=0,
+            block_number=0,
+        )
+        with pytest.raises(OutOfGasError):
+            receipt.raise_for_status(txn)

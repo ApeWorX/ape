@@ -1,10 +1,10 @@
-from typing import List, Optional, Type
+from typing import List, Optional
 
+from ape.exceptions import AddressError
 from ape.types import AddressType
 
-from ..exceptions import AddressError
 from .base import abstractdataclass, abstractmethod
-from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
+from .providers import ProviderAPI
 
 
 @abstractdataclass
@@ -23,14 +23,6 @@ class AddressAPI:
     @provider.setter
     def provider(self, value: ProviderAPI):
         self._provider = value
-
-    @property
-    def _receipt_class(self) -> Type[ReceiptAPI]:
-        return self.provider.network.ecosystem.receipt_class
-
-    @property
-    def _transaction_class(self) -> Type[TransactionAPI]:
-        return self.provider.network.ecosystem.transaction_class
 
     @property
     @abstractmethod

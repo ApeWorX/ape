@@ -5,10 +5,10 @@ from typing import Dict, List, Optional
 import requests
 from dataclassy import dataclass
 
+from ape.exceptions import ProjectError
 from ape.types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ape.utils import compute_checksum
 
-from ..exceptions import ProjectError
 from .compilers import CompilerManager
 from .config import ConfigManager
 
