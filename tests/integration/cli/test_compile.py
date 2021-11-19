@@ -59,7 +59,7 @@ def test_compile_partial_extension_does_not_compile(ape_cli, runner, project, cl
     assert "Error: Contract 'HelloWorld.so' not found." in result.output
 
 
-@skip_projects_except([])
+@skip_projects_except(["hello-world"])
 def test_compile_contracts(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile", "--size"])
     assert result.exit_code == 0
