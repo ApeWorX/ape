@@ -320,3 +320,17 @@ class Web3Provider(ProviderAPI):
         txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
         receipt = self.get_transaction(txn_hash.hex())
         return receipt
+
+
+class UpstreamProvider(ProviderAPI):
+    """
+    A provider that can also be set as
+    another provider's upstream.
+    """
+
+    @property
+    def connection_str(self) -> str:
+        """
+        The str used by downstream providers to connect to this one.
+        For example, the URL for HTTP-based providers.
+        """

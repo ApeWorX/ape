@@ -78,6 +78,7 @@ class EcosystemAPI:
         return self._try_get_network(network_name)
 
     def __getattr__(self, network_name: str) -> "NetworkAPI":
+        network_name = network_name.replace("_", "-")
         return self._try_get_network(network_name)
 
     def add_network(self, network_name: str, network: "NetworkAPI"):
