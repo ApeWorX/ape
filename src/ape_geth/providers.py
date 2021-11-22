@@ -172,6 +172,14 @@ class GethProvider(Web3Provider):
             if not self._web3.isConnected():
                 self._geth.disconnect()
                 raise ConnectionError("Unable to connect to locally running geth.")
+        else:
+            client_version = self._web3.clientVersion
+
+            if "geth" in client_version.lower():
+                logger.info(f"Connecting to existing Geth node at '{self.uri}'.")
+            else:
+                network_name = client_version.split("/")[0]
+                logger.warning(f"Connecting Geth plugin to non-Geth network '{network_name}'.")
 
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
