@@ -6,7 +6,7 @@ BAD_COMMAND = "not-a-name"
 @skip_projects(["script"])
 def test_run_no_scripts_dir(ape_cli, runner, project):
     result = runner.invoke_using_test_network(ape_cli, ["run", BAD_COMMAND])
-    assert result.exit_code == 1
+    assert result.exit_code == 1, result.output
     assert "No 'scripts/' directory detected to run script" in result.output
 
 

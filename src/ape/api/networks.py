@@ -258,11 +258,7 @@ class NetworkAPI:
                     request_header=self.request_header,
                 )
 
-        if len(providers) > 0:
-            return providers
-
-        else:
-            raise NetworkError("No network providers found.")
+        return providers
 
     def get_provider(
         self,
