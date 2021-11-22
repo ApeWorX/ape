@@ -324,8 +324,7 @@ class Web3Provider(ProviderAPI):
 
 class UpstreamProvider(ProviderAPI):
     """
-    A provider that can also be set as
-    another provider's upstream.
+    A provider that can also be set as another provider's upstream.
     """
 
     @property
