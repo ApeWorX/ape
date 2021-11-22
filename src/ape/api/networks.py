@@ -262,7 +262,7 @@ class NetworkAPI:
             return providers
 
         else:
-            raise NetworkError("No network providers found")
+            raise NetworkError("No network providers found.")
 
     def get_provider(
         self,
