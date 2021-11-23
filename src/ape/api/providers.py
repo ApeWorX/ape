@@ -185,12 +185,10 @@ class ProviderAPI:
         ...
 
     @property
-    @abstractmethod
     def priority_fee(self) -> int:
         raise NotImplementedError("priority_fee is not implemented by this provider")
 
     @property
-    @abstractmethod
     def base_fee(self) -> int:
         raise NotImplementedError("base_fee is not implemented by this provider")
 
@@ -328,6 +326,7 @@ class UpstreamProvider(ProviderAPI):
     """
 
     @property
+    @abstractmethod
     def connection_str(self) -> str:
         """
         The str used by downstream providers to connect to this one.
