@@ -1,7 +1,10 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
 
+import click
+
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
+from ape.logging import logger
 from ape.types import (
     AddressType,
     ContractType,
@@ -147,6 +150,9 @@ class AccountAPI(AddressAPI):
 
         if not receipt.contract_address:
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
+
+        address = click.style(receipt.contract_address, bold=True)
+        logger.success(f"Contract '{contract_type.contractName}' deployed to: {address}")
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,
