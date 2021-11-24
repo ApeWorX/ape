@@ -124,10 +124,9 @@ class AccountAPI(AddressAPI):
         data: Union[bytes, str, None] = None,
         **kwargs,
     ) -> ReceiptAPI:
-        txn = self._transaction_class(  # type: ignore
-            sender=self.address,
-            receiver=self._convert(account, AddressType),
-            **kwargs,
+
+        txn = self._create_transaction(
+            sender=self.address, receiver=self._convert(account, AddressType), **kwargs
         )
 
         if data:

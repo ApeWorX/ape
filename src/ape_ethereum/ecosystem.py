@@ -1,4 +1,4 @@
-from typing import Any, Optional, Tuple, Type
+from typing import Any, Optional
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
@@ -124,7 +124,8 @@ class DynamicFeeTransaction(BaseTransaction):
         if "max_priority_fee" in data:
             data["maxPriorityFeePerGas"] = data.pop("max_priority_fee")
 
-        data["type"] = data.pop("type").value
+        if isinstance(data["type"], TransactionType):
+            data["type"] = data.pop("type").value
 
         return data
 
@@ -183,8 +184,7 @@ class Ethereum(EcosystemAPI):
     def encode_deployment(
         self, deployment_bytecode: bytes, abi: Optional[ABI], *args, **kwargs
     ) -> BaseTransaction:
-        kwargs["type"], txn_type = self._extract_transaction_type(**kwargs)
-        txn = txn_type(**kwargs)  # type: ignore
+        txn = self.create_transaction(**kwargs)
         txn.data = deployment_bytecode
 
         # Encode args, if there are any
@@ -200,8 +200,7 @@ class Ethereum(EcosystemAPI):
         *args,
         **kwargs,
     ) -> BaseTransaction:
-        kwargs["type"], txn_type = self._extract_transaction_type(**kwargs)
-        txn = txn_type(receiver=address, **kwargs)  # type: ignore
+        txn = self.create_transaction(receiver=address, **kwargs)
 
         # Add method ID
         txn.data = keccak(to_bytes(text=abi.selector))[:4]
@@ -209,7 +208,10 @@ class Ethereum(EcosystemAPI):
 
         return txn  # type: ignore
 
-    def _extract_transaction_type(self, **kwargs) -> Tuple[TransactionType, Type[TransactionAPI]]:
+    def create_transaction(self, **kwargs) -> TransactionAPI:
+        """
+        Returns a tranaction using the given constructor kwargs.
+        """
         if "type" in kwargs:
             type_arg = HexStr(str(kwargs["type"]))
             version_str = str(add_0x_prefix(type_arg))
@@ -219,7 +221,9 @@ class Ethereum(EcosystemAPI):
         else:
             version = TransactionType.DYNAMIC
 
-        return version, self.transaction_types[version]
+        txn_class = self.transaction_types[version]
+        kwargs["type"] = version.value
+        return txn_class(**kwargs)  # type: ignore
 
     def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
         filter_id = keccak(to_bytes(text=abi.selector))

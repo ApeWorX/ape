@@ -3,7 +3,7 @@ from .utils import skip_projects
 BAD_COMMAND = "not-a-name"
 
 
-@skip_projects(["script"])
+@skip_projects(["script", "testing-ape"])
 def test_run_no_scripts_dir(ape_cli, runner, project):
     result = runner.invoke_using_test_network(ape_cli, ["run", BAD_COMMAND])
     assert result.exit_code == 1, result.output
