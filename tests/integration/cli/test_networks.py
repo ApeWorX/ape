@@ -45,6 +45,7 @@ ecosystems:
     - name: geth
       isDefault: true
     - name: test
+  - name: mainnet-fork
 """
 
 
