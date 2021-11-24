@@ -26,7 +26,7 @@ def test_missing_extensions(ape_cli, runner, project):
     ) in result.output
 
 
-@skip_projects(["empty-config", "no-config", "script", "unregistered-contracts"])
+@skip_projects(["empty-config", "no-config", "script", "unregistered-contracts", "test"])
 def test_compile(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
     assert result.exit_code == 0, result.output

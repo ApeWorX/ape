@@ -10,7 +10,7 @@ def test_run_no_scripts_dir(ape_cli, runner, project):
     assert "No 'scripts/' directory detected to run script" in result.output
 
 
-@skip_projects(["empty-config", "no-config", "one-interface", "unregistered-contracts"])
+@skip_projects(["empty-config", "no-config", "one-interface", "unregistered-contracts", "test"])
 def test_run(ape_cli, runner, project):
     result = runner.invoke_using_test_network(ape_cli, ["run"])
     assert result.exit_code == 1, result.output
