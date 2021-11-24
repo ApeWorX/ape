@@ -20,5 +20,6 @@ def networks():
     for network_name, network_params in NETWORKS.items():
         yield "ethereum", network_name, create_network_type(*network_params)
 
-    # NOTE: This works for `geth --dev` as it gets chain_id from itself
+    # NOTE: This works for development providers, as they get chain_id from themselves
     yield "ethereum", "development", NetworkAPI
+    yield "ethereum", "mainnet-fork", NetworkAPI

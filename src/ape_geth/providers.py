@@ -16,7 +16,7 @@ from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.types import NodeInfo
 
-from ape.api import ReceiptAPI, TransactionAPI, Web3Provider
+from ape.api import ReceiptAPI, TransactionAPI, UpstreamProvider, Web3Provider
 from ape.api.config import ConfigItem
 from ape.exceptions import ContractLogicError, ProviderError, TransactionError, VirtualMachineError
 from ape.logging import logger
@@ -134,12 +134,16 @@ class GethNotInstalledError(ConnectionError):
         )
 
 
-class GethProvider(Web3Provider):
+class GethProvider(Web3Provider, UpstreamProvider):
     _geth: Optional[EphemeralGeth] = None
 
     @property
     def uri(self) -> str:
         return getattr(self.config, self.network.ecosystem.name)[self.network.name]["uri"]
+
+    @property
+    def connection_str(self) -> str:
+        return self.uri
 
     def connect(self):
         self._web3 = Web3(HTTPProvider(self.uri))
