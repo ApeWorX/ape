@@ -3,7 +3,12 @@ from typing import List, Optional, Union
 import click
 
 from ape import networks, project
-from ape.cli.choices import AccountAliasPromptChoice, NetworkChoice
+from ape.cli.choices import (
+    AccountAliasPromptChoice,
+    NetworkChoice,
+    OutputFormat,
+    output_format_choice,
+)
 from ape.cli.utils import Abort
 from ape.exceptions import ContractError
 from ape.logging import LogLevel, logger
@@ -144,4 +149,14 @@ def contract_option(help=None, required=False, multiple=False):
     help = help or "The name of a contract in the current project"
     return click.option(
         "--contract", help=help, required=required, callback=_load_contracts, multiple=multiple
+    )
+
+
+def output_format_option(default: OutputFormat = OutputFormat.TREE):
+    return click.option(
+        "--format",
+        "output_format",
+        type=output_format_choice(),
+        default=default.value,
+        callback=lambda ctx, param, value: OutputFormat(value.upper()),
     )
