@@ -40,7 +40,6 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
-                  <option value="v0.1.0-alpha.28">v0.1.0-alpha.28</option>
             </select>
           </div>
 <div role="search">
@@ -303,7 +302,7 @@
 <dl class="py class">
 <dt id="ape_geth.providers.GethProvider">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_geth.providers.</span></code><code class="sig-name descname"><span class="pre">GethProvider</span></code><a class="headerlink" href="#ape_geth.providers.GethProvider" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="../../ape/api/index.html#ape.api.Web3Provider" title="ape.api.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.Web3Provider</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="../../ape/api/index.html#ape.api.Web3Provider" title="ape.api.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.Web3Provider</span></code></a>, <a class="reference internal" href="../../ape/api/index.html#ape.api.UpstreamProvider" title="ape.api.UpstreamProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.UpstreamProvider</span></code></a></p>
 <p>A base provider that is web3 based.</p>
 <dl class="py attribute">
 <dt id="ape_geth.providers.GethProvider._geth">
@@ -314,6 +313,13 @@
 <dt id="ape_geth.providers.GethProvider.uri">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">uri</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape_geth.providers.GethProvider.uri" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape_geth.providers.GethProvider.connection_str">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">connection_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape_geth.providers.GethProvider.connection_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>The str used by downstream providers to connect to this one.
+For example, the URL for HTTP-based providers.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_geth.providers.GethProvider.connect">

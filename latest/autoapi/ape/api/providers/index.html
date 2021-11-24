@@ -161,6 +161,10 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.send_transaction">send_transaction</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.UpstreamProvider">UpstreamProvider</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.connection_str">connection_str</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.AccountAPI">AccountAPI</a></li>
@@ -183,6 +187,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TransactionAPI">TransactionAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TransactionStatusEnum">TransactionStatusEnum</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TransactionType">TransactionType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.UpstreamProvider">UpstreamProvider</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.Web3Provider">Web3Provider</a></li>
 </ul>
 </li>
@@ -282,6 +287,9 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.Web3Provider" title="ape.api.providers.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Web3Provider</span></code></a></p></td>
 <td><p>A base provider that is web3 based.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.UpstreamProvider" title="ape.api.providers.UpstreamProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a></p></td>
+<td><p>A provider that can also be set as another provider’s upstream.</p></td>
 </tr>
 </tbody>
 </table>
@@ -708,6 +716,20 @@ transaction on the block chain.</p>
 <dt id="ape.api.providers.Web3Provider.send_transaction">
 <code class="sig-name descname"><span class="pre">send_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.providers.Web3Provider.send_transaction" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.providers.UpstreamProvider">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">UpstreamProvider</span></code><a class="headerlink" href="#ape.api.providers.UpstreamProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
+<p>A provider that can also be set as another provider’s upstream.</p>
+<dl class="py method">
+<dt id="ape.api.providers.UpstreamProvider.connection_str">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">connection_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape.api.providers.UpstreamProvider.connection_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>The str used by downstream providers to connect to this one.
+For example, the URL for HTTP-based providers.</p>
+</dd></dl>
 
 </dd></dl>
 

@@ -21,6 +21,7 @@
    ape.api.providers.ProviderAPI
    ape.api.providers.TestProviderAPI
    ape.api.providers.Web3Provider
+   ape.api.providers.UpstreamProvider
 
 
 
@@ -420,6 +421,22 @@
 
 
    .. py:method:: send_transaction(self, txn: TransactionAPI) -> ReceiptAPI
+
+
+
+
+
+.. py:class:: UpstreamProvider
+
+   Bases: :py:obj:`ProviderAPI`
+
+   A provider that can also be set as another provider's upstream.
+
+   .. py:method:: connection_str(self) -> str
+      :property:
+
+      The str used by downstream providers to connect to this one.
+      For example, the URL for HTTP-based providers.
 
 
 

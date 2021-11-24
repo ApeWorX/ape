@@ -54,6 +54,7 @@
    ape.api.TransactionAPI
    ape.api.TransactionStatusEnum
    ape.api.TransactionType
+   ape.api.UpstreamProvider
    ape.api.Web3Provider
 
 
@@ -925,6 +926,22 @@
       :annotation: = 0x2
 
       
+
+
+
+
+.. py:class:: UpstreamProvider
+
+   Bases: :py:obj:`ProviderAPI`
+
+   A provider that can also be set as another provider's upstream.
+
+   .. py:method:: connection_str(self) -> str
+      :property:
+
+      The str used by downstream providers to connect to this one.
+      For example, the URL for HTTP-based providers.
+
 
 
 

@@ -86,7 +86,7 @@
 
 .. py:class:: GethProvider
 
-   Bases: :py:obj:`ape.api.Web3Provider`
+   Bases: :py:obj:`ape.api.Web3Provider`, :py:obj:`ape.api.UpstreamProvider`
 
    A base provider that is web3 based.
 
@@ -97,6 +97,13 @@
 
    .. py:method:: uri(self) -> str
       :property:
+
+
+   .. py:method:: connection_str(self) -> str
+      :property:
+
+      The str used by downstream providers to connect to this one.
+      For example, the URL for HTTP-based providers.
 
 
    .. py:method:: connect(self)
