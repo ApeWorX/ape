@@ -37,11 +37,13 @@ def _list(cli_ctx, output_format):
             ecosystem_tree = make_sub_tree(ecosystem, Tree)
             _networks = ecosystem["networks"]
             for network in _networks:
-                network_tree = make_sub_tree(network, ecosystem_tree.add)
                 providers = network["providers"]
-                for provider in providers:
-                    make_sub_tree(provider, network_tree.add)
+                if providers:
+                    network_tree = make_sub_tree(network, ecosystem_tree.add)
+                    for provider in providers:
+                        make_sub_tree(provider, network_tree.add)
 
-            echo_rich_text(ecosystem_tree)
+            if _networks:
+                echo_rich_text(ecosystem_tree)
     elif output_format == OutputFormat.YAML:
         click.echo(networks.networks_yaml.strip())
