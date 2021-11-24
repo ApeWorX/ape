@@ -30,6 +30,7 @@
    ape.cli.options.account_option_that_prompts_when_not_given
    ape.cli.options._load_contracts
    ape.cli.options.contract_option
+   ape.cli.options.output_format_option
 
 
 
@@ -102,6 +103,11 @@
 
    Contract(s) from the current project.
    If you pass ``multiple=True``, you will get a list of contract types from the callback.
+
+
+
+
+.. py:function:: output_format_option(default: ape.cli.choices.OutputFormat = OutputFormat.TREE)
 
 
 

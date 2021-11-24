@@ -33,6 +33,7 @@
 
    ape.cli.AccountAliasPromptChoice
    ape.cli.Alias
+   ape.cli.OutputFormat
    ape.cli.PromptChoice
    ape.cli.NetworkBoundCommand
    ape.cli.AllFilePaths
@@ -48,10 +49,12 @@
    ape.cli.existing_alias_argument
    ape.cli.non_existing_alias_argument
    ape.cli.get_user_selected_account
+   ape.cli.output_format_choice
    ape.cli.account_option_that_prompts_when_not_given
    ape.cli.ape_cli_context
    ape.cli.contract_option
    ape.cli.network_option
+   ape.cli.output_format_option
    ape.cli.skip_confirmation_option
 
 
@@ -146,6 +149,27 @@
 
 
 
+.. py:class:: OutputFormat
+
+   Bases: :py:obj:`enum.Enum`
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+   .. attribute:: TREE
+      :annotation: = TREE
+
+      
+
+   .. attribute:: YAML
+      :annotation: = YAML
+
+      
+
+
+
+
 .. py:class:: PromptChoice(choices)
 
    Bases: :py:obj:`click.ParamType`
@@ -199,6 +223,14 @@
 
 
 
+.. py:function:: output_format_choice(options: List[OutputFormat] = None) -> click.Choice
+
+   Returns a ``click.Choice()`` type for the given options.
+   If
+
+
+
+
 .. py:class:: NetworkBoundCommand(name: Optional[str], context_settings: Optional[Dict[str, Any]] = None, callback: Optional[Callable[Ellipsis, Any]] = None, params: Optional[List[Parameter]] = None, help: Optional[str] = None, epilog: Optional[str] = None, short_help: Optional[str] = None, options_metavar: Optional[str] = '[OPTIONS]', add_help_option: bool = True, no_args_is_help: bool = False, hidden: bool = False, deprecated: bool = False)
 
    Bases: :py:obj:`click.Command`
@@ -237,6 +269,11 @@
 
 
 .. py:function:: network_option(default: str = networks.default_ecosystem.name)
+
+
+
+
+.. py:function:: output_format_option(default: ape.cli.choices.OutputFormat = OutputFormat.TREE)
 
 
 

@@ -84,6 +84,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.Alias.choices">choices</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.cli.OutputFormat">OutputFormat</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.OutputFormat.TREE">TREE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.OutputFormat.YAML">YAML</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.PromptChoice">PromptChoice</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.PromptChoice.__init__">__init__</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.PromptChoice.print_choices">print_choices</a></li>
@@ -92,6 +97,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.get_user_selected_account">get_user_selected_account</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.cli.output_format_choice">output_format_choice</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.NetworkBoundCommand">NetworkBoundCommand</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.NetworkBoundCommand.invoke">invoke</a></li>
 </ul>
@@ -100,6 +106,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.ape_cli_context">ape_cli_context</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.contract_option">contract_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.network_option">network_option</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.cli.output_format_option">output_format_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.skip_confirmation_option">skip_confirmation_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.AllFilePaths">AllFilePaths</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.AllFilePaths.convert">convert</a></li>
@@ -226,16 +233,19 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.Alias" title="ape.cli.Alias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Alias</span></code></a></p></td>
 <td><p>Wraps <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to load account aliases for the active project at runtime.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.PromptChoice" title="ape.cli.PromptChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PromptChoice</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.OutputFormat" title="ape.cli.OutputFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OutputFormat</span></code></a></p></td>
+<td><p>Generic enumeration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.PromptChoice" title="ape.cli.PromptChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PromptChoice</span></code></a></p></td>
 <td><p>A choice option or argument from user selection.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.NetworkBoundCommand" title="ape.cli.NetworkBoundCommand"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkBoundCommand</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.NetworkBoundCommand" title="ape.cli.NetworkBoundCommand"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkBoundCommand</span></code></a></p></td>
 <td><p>A command that uses the network option.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.AllFilePaths" title="ape.cli.AllFilePaths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AllFilePaths</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.AllFilePaths" title="ape.cli.AllFilePaths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AllFilePaths</span></code></a></p></td>
 <td><p>Either all the file paths in the given directory,</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.Path" title="ape.cli.Path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Path</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.Path" title="ape.cli.Path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Path</span></code></a></p></td>
 <td><p>This class exists to encourage the consistent usage</p></td>
 </tr>
 </tbody>
@@ -259,16 +269,22 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.get_user_selected_account" title="ape.cli.get_user_selected_account"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_user_selected_account</span></code></a>(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: Optional[str] = None) → ape.api.accounts.AccountAPI</p></td>
 <td><p>Prompts the user to pick from their accounts</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.account_option_that_prompts_when_not_given" title="ape.cli.account_option_that_prompts_when_not_given"><code class="xref py py-obj docutils literal notranslate"><span class="pre">account_option_that_prompts_when_not_given</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.output_format_choice" title="ape.cli.output_format_choice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">output_format_choice</span></code></a>(options: List[OutputFormat] = None) → click.Choice</p></td>
+<td><p>Returns a <code class="docutils literal notranslate"><span class="pre">click.Choice()</span></code> type for the given options.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.account_option_that_prompts_when_not_given" title="ape.cli.account_option_that_prompts_when_not_given"><code class="xref py py-obj docutils literal notranslate"><span class="pre">account_option_that_prompts_when_not_given</span></code></a>()</p></td>
 <td><p>Accepts either the account alias or the account number.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.ape_cli_context" title="ape.cli.ape_cli_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape_cli_context</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.ape_cli_context" title="ape.cli.ape_cli_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape_cli_context</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.contract_option" title="ape.cli.contract_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_option</span></code></a>(help=None, required=False, multiple=False)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.contract_option" title="ape.cli.contract_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_option</span></code></a>(help=None, required=False, multiple=False)</p></td>
 <td><p>Contract(s) from the current project.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.network_option" title="ape.cli.network_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">network_option</span></code></a>(default: str = networks.default_ecosystem.name)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.network_option" title="ape.cli.network_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">network_option</span></code></a>(default: str = networks.default_ecosystem.name)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.output_format_option" title="ape.cli.output_format_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">output_format_option</span></code></a>(default: ape.cli.choices.OutputFormat = OutputFormat.TREE)</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.skip_confirmation_option" title="ape.cli.skip_confirmation_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skip_confirmation_option</span></code></a>(help='')</p></td>
@@ -371,6 +387,24 @@ Defaults to all account types in <code class="docutils literal notranslate"><spa
 </dd></dl>
 
 <dl class="py class">
+<dt id="ape.cli.OutputFormat">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">OutputFormat</span></code><a class="headerlink" href="#ape.cli.OutputFormat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Generic enumeration.</p>
+<p>Derive from this class to define new enumerations.</p>
+<dl class="py attribute">
+<dt id="ape.cli.OutputFormat.TREE">
+<code class="sig-name descname"><span class="pre">TREE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">TREE</span></em><a class="headerlink" href="#ape.cli.OutputFormat.TREE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.cli.OutputFormat.YAML">
+<code class="sig-name descname"><span class="pre">YAML</span></code><em class="property"> <span class="pre">=</span> <span class="pre">YAML</span></em><a class="headerlink" href="#ape.cli.OutputFormat.YAML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt id="ape.cli.PromptChoice">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">PromptChoice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">choices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.PromptChoice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">click.ParamType</span></code></p>
@@ -428,6 +462,13 @@ accounts _outside_ of CLI options. For CLI options,
 use <a class="reference internal" href="options/index.html#ape.cli.options.account_option_that_prompts_when_not_given" title="ape.cli.options.account_option_that_prompts_when_not_given"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.cli.options.account_option_that_prompts_when_not_given()</span></code></a>.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt id="ape.cli.output_format_choice">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">output_format_choice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.cli.OutputFormat" title="ape.cli.OutputFormat"><span class="pre">OutputFormat</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">click.Choice</span><a class="headerlink" href="#ape.cli.output_format_choice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <code class="docutils literal notranslate"><span class="pre">click.Choice()</span></code> type for the given options.
+If</p>
+</dd></dl>
+
 <dl class="py class">
 <dt id="ape.cli.NetworkBoundCommand">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">NetworkBoundCommand</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epilog</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">short_help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options_metavar</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'[OPTIONS]'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_help_option</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_args_is_help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deprecated</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.NetworkBoundCommand" title="Permalink to this definition">¶</a></dt>
@@ -465,6 +506,11 @@ If you pass <code class="docutils literal notranslate"><span class="pre">multipl
 <dl class="py function">
 <dt id="ape.cli.network_option">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">network_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">networks.default_ecosystem.name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.network_option" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.output_format_option">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">output_format_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="choices/index.html#ape.cli.choices.OutputFormat" title="ape.cli.choices.OutputFormat"><span class="pre">ape.cli.choices.OutputFormat</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">OutputFormat.TREE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.output_format_option" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">

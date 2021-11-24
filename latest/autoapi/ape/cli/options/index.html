@@ -74,6 +74,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.options.account_option_that_prompts_when_not_given">account_option_that_prompts_when_not_given</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.options._load_contracts">_load_contracts</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.options.contract_option">contract_option</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.options.output_format_option">output_format_option</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../paramtype/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.cli.paramtype</span></code></a></li>
@@ -83,13 +84,16 @@
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.non_existing_alias_argument">non_existing_alias_argument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.AccountAliasPromptChoice">AccountAliasPromptChoice</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.Alias">Alias</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.OutputFormat">OutputFormat</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.PromptChoice">PromptChoice</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.get_user_selected_account">get_user_selected_account</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.output_format_choice">output_format_choice</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.NetworkBoundCommand">NetworkBoundCommand</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.account_option_that_prompts_when_not_given">account_option_that_prompts_when_not_given</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.ape_cli_context">ape_cli_context</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.contract_option">contract_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.network_option">network_option</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.output_format_option">output_format_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.skip_confirmation_option">skip_confirmation_option</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.AllFilePaths">AllFilePaths</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape.cli.Path">Path</a></li>
@@ -228,6 +232,9 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.options.contract_option" title="ape.cli.options.contract_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_option</span></code></a>(help=None, required=False, multiple=False)</p></td>
 <td><p>Contract(s) from the current project.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.options.output_format_option" title="ape.cli.options.output_format_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">output_format_option</span></code></a>(default: ape.cli.choices.OutputFormat = OutputFormat.TREE)</p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 <hr class="docutils" />
@@ -299,6 +306,11 @@ If not given anything, it will prompt the user to select an account.</p>
 <dd><p>Contract(s) from the current project.
 If you pass <code class="docutils literal notranslate"><span class="pre">multiple=True</span></code>, you will get a list of contract types from the callback.</p>
 </dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.options.output_format_option">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">output_format_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../choices/index.html#ape.cli.choices.OutputFormat" title="ape.cli.choices.OutputFormat"><span class="pre">ape.cli.choices.OutputFormat</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">OutputFormat.TREE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.output_format_option" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 
