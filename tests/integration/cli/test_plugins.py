@@ -1,17 +1,9 @@
-import re
-from os import environ
-
 from ape_plugins.utils import FIRST_CLASS_PLUGINS, SECOND_CLASS_PLUGINS
 
 INSTALLED_CORE_PLUGINS_HEADER = "Installed Core Plugins"
 INSTALLED_PLUGINS_HEADER = "Installed Plugins"
 AVAILABLE_PLUGINS_HEADER = "Available Plugins"
-# obtaining result limit assumption
-# first class is filled in
-# maybe it is not filled
 
-
-# ape plugins test not required since it would be a click bug not us
 
 # test plugins list with github access token and no 2nd class or third class installed
 def test_plugins_list_nothing_installed(ape_cli, runner):
@@ -27,101 +19,47 @@ def assert_plugins_in_output(plugins, output, header):
 
 
 def assert_in_section(plugin, output, expected_section):
-    in_section = False
+
     headers = [INSTALLED_CORE_PLUGINS_HEADER, INSTALLED_PLUGINS_HEADER, AVAILABLE_PLUGINS_HEADER]
-    last_index = len(headers)
-    for i in range(0, last_index):
-        section = headers[i]
+    headers = [h for h in headers if h in output]  # filter headers
+    output_dict = {}
+    output = output.split("\n\n")
+
+    # splits dynamically into a dictionary of values for the output to be processed
+    for index, value in enumerate(output):
+        value = value.replace(headers[index] + ":\n", "")
+        output_dict[headers[index]] = value
+    """
+    {
+        Installed Core Plugins: 'Installed Core Plugins:\n  test\n  geth\n  accounts\n  ethereum\n
+        compile\n  networks\n  console\n  pm\n  plugins\n  run',
+        Available Plugins: 'Available Plugins:\n  tokens\n  trezor\n  debug\n  vyper\n  hardhat\n
+        infura\n  etherscan\n  ledger\n  solidity\n  ens\n'}
+        INSTALLED_CORE_PLUGINS_HEADER = "Installed Core Plugins"
+    """
+    for key, value in output_dict.items():
+        section = key
         if expected_section == section:
-            output_parts = output.split(expected_section)
-            assert len(output_parts) == 2, f"Section '{expected_section}' not in output"
-            assert plugin in output_parts[1]  # It should come after section
+            assert plugin in output_dict[key], "Not in the Section"
+        else:
+            assert plugin not in output_dict[key], "Wrong Section"
 
-            if i < last_index:
-                # Verify that the plugin is not actually in the next section
-                next_section_header = headers[i + 1]
-                next_section_parts = output.split(next_section_header)
-
-                if len(next_section_parts) == 2:
-                    next_section = next_section_parts[-1]
-                    assert plugin not in next_section
-
-                in_section = True
-    assert in_section, "Did not find plugin in section"
+    #
 
 
 # test plugins list -a with github access token and no 2nd class or third class installed
 def test_plugins_list_all(ape_cli, runner):
     result = runner.invoke(ape_cli, ["plugins", "list", "-a"])
     assert result.exit_code == 0  # no errors when it runs
-    # breakpoint()
 
-    # re.search vs re.match
-    assert re.search(r"Installed Core Plugins:\n", result.output)
-    # assert re.search(r"Installed Plugins\n",result.output)
-    assert re.search(r"Available Plugins:\n", result.output)
-    # change re.search to in result.output
-
-    # list comprehension
     assert_plugins_in_output(FIRST_CLASS_PLUGINS, result.output, INSTALLED_CORE_PLUGINS_HEADER)
-
-    # Assume that all second class is not installed and avialable
     assert_plugins_in_output(SECOND_CLASS_PLUGINS, result.output, AVAILABLE_PLUGINS_HEADER)
-
-    # assert_plugins_in_output
-
-    # expected_second_class_plugins = []
-
-    # all(...)  # every single item in the iterator is "truthy" truthy not none and not false
-    # assert all(plugin in result.output for plugin in FIRST_CLASS_PLUGINS)
 
     # all list available accessible only if you have github token
     # display everything as a plugins and as installed
     # with github token display availble
-
-    # -a will display core
-
-    # assert all(plugin in result.output for plugin in SECOND_CLASS_PLUGINS)
-
-    # path lib
-    # strip ape_
-    # save as first class plugins
-
-    # 2nd class comes from github api, use import to get names
-
     # make a mock 3rd class plugins and live in the test directory
     # for testing purpose
-
-    # FIRST CLASS
-    # SECOND CLASS
-
-
-"""
-(apeworx) chris@DESKTOP-ID4V0R6:~/ape$ ape plugins list -a
-Installed Core Plugins:
-  test
-  plugins
-  run
-  console
-  compile
-  accounts
-  networks
-  pm
-  ethereum
-  geth
-
-Available Plugins:
-  etherscan
-  infura
-  tokens
-  ledger
-  hardhat
-  debug
-  vyper
-  ens
-  trezor
-  solidity
-"""
 
 
 def test_install_uninstall_plugins(ape_cli, runner):
@@ -167,19 +105,26 @@ Installed Plugins:
     assert "No plugins installed" in result.output
 
 
-def test_github_access_token(ape_cli, runner, monkeypatch):
-    # read test token
-    github_access_token = environ["TEST_GITHUB_ACCESS_TOKEN"]
-    # set real token with test token
-    monkeypatch.setenv("GITHUB_ACCESS_TOKEN", github_access_token, prepend=False)
-    monkeypatch.delenv("GITHUB_ACCESS_TOKEN", raising=True)
+def setup_plugins():
+    # Set github token to test token
+    #
+    # user_token = environ['GITHUB_ACCESS_TOKEN']
+    # environ['GITHUB_ACCESS_TOKEN'] = 'TEST'
+    # plugins run a script to install plugins
+    pass
 
-    result = runner.invoke(ape_cli, ["plugins", "list"])
-    breakpoint()
-    assert result.exit_code == 0  # no errors when it runs
 
-    # assert 'No plugins installed\n' == result.output
-    # @TODO
-    # 5 github token invoke with enviorment in click documenation test cli apps
+def unintall_plugins():
+    # runs script to uninstall plugins
+    pass
+
+
+def test_github_access_token(ape_cli, runner, caplog):
+    pass
+    # result = runner.invoke(ape_cli, ["plugins", "list"])
+    # breakpoint()
+    # assert result.exit_code == 0, "Exit was not successful"
+    # assert "$GITHUB_ACCESS_TOKEN not set, skipping 2nd class plugins\n" in result.output
+
+    # github token invoke with enviorment in click documenation test cli apps
     # isolate installed enviorment during testing
-    # en
