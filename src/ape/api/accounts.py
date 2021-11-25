@@ -125,7 +125,7 @@ class AccountAPI(AddressAPI):
         **kwargs,
     ) -> ReceiptAPI:
 
-        txn = self._create_transaction(
+        txn = self.provider.network.ecosystem.create_transaction(
             sender=self.address, receiver=self._convert(account, AddressType), **kwargs
         )
 
@@ -158,9 +158,6 @@ class AccountAPI(AddressAPI):
             _address=receipt.contract_address,
             _contract_type=contract_type,
         )
-
-    def _create_transaction(self, **kwargs):
-        return self.provider.network.ecosystem.create_transaction(**kwargs)
 
 
 @abstractdataclass
