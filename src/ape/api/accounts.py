@@ -159,6 +159,9 @@ class AccountAPI(AddressAPI):
             _contract_type=contract_type,
         )
 
+    def _create_transaction(self, **kwargs):
+        return self.provider.network.ecosystem.create_transaction(**kwargs)
+
 
 @abstractdataclass
 class AccountContainerAPI:

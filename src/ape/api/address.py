@@ -24,9 +24,6 @@ class AddressAPI:
     def provider(self, value: ProviderAPI):
         self._provider = value
 
-    def _create_transaction(self, **kwargs):
-        return self.provider.network.ecosystem.create_transaction(**kwargs)
-
     @property
     @abstractmethod
     def address(self) -> AddressType:
