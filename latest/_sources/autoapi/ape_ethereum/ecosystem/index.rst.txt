@@ -167,7 +167,9 @@
    .. py:method:: encode_transaction(self, address: ape.types.AddressType, abi: ape.types.ABI, *args, **kwargs) -> BaseTransaction
 
 
-   .. py:method:: _extract_transaction_type(self, **kwargs) -> Tuple[ape.api.TransactionType, Type[ape.api.TransactionAPI]]
+   .. py:method:: create_transaction(self, **kwargs) -> ape.api.TransactionAPI
+
+      Returns a tranaction using the given constructor kwargs.
 
 
    .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.ReceiptAPI) -> ape.api.ContractLog

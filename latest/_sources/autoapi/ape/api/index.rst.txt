@@ -502,6 +502,10 @@
       :abstractmethod:
 
 
+   .. py:method:: create_transaction(self, **kwargs) -> ape.api.providers.TransactionAPI
+      :abstractmethod:
+
+
    .. py:method:: _try_get_network(self, network_name)
 
 

@@ -88,7 +88,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.decode_calldata">decode_calldata</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.encode_deployment">encode_deployment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.encode_transaction">encode_transaction</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum._extract_transaction_type">_extract_transaction_type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.create_transaction">create_transaction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.Ethereum.decode_event">decode_event</a></li>
 </ul>
 </li>
@@ -278,9 +278,10 @@
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="ape_ethereum.Ethereum._extract_transaction_type">
-<code class="sig-name descname"><span class="pre">_extract_transaction_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../ape/api/index.html#ape.api.TransactionType" title="ape.api.TransactionType"><span class="pre">ape.api.TransactionType</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../ape/api/index.html#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><span class="pre">ape.api.TransactionAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape_ethereum.Ethereum._extract_transaction_type" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="ape_ethereum.Ethereum.create_transaction">
+<code class="sig-name descname"><span class="pre">create_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../ape/api/index.html#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><span class="pre">ape.api.TransactionAPI</span></a><a class="headerlink" href="#ape_ethereum.Ethereum.create_transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a tranaction using the given constructor kwargs.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_ethereum.Ethereum.decode_event">
