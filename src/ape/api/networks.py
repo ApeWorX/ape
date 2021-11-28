@@ -117,6 +117,10 @@ class EcosystemAPI:
     def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
         ...
 
+    @abstractmethod
+    def create_transaction(self, **kwargs) -> "TransactionAPI":
+        ...
+
     def _try_get_network(self, network_name):
         if network_name in self.networks:
             return self.networks[network_name]
