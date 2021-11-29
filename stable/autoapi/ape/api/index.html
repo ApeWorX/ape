@@ -120,6 +120,17 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.AddressAPI.is_contract">is_contract</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.api.ConfigDict">ConfigDict</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ConfigDict.__post_init__">__post_init__</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.api.ConfigEnum">ConfigEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.api.ConfigItem">ConfigItem</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ConfigItem.serialize">serialize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ConfigItem.validate_config">validate_config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ConfigItem.__getitem__">__getitem__</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.api.ContractInstance">ContractInstance</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ContractInstance._address">_address</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ContractInstance._contract_type">_contract_type</a></li>
@@ -407,49 +418,58 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.api.AddressAPI" title="ape.api.AddressAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AddressAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ContractInstance" title="ape.api.ContractInstance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractInstance</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ConfigDict" title="ape.api.ConfigDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code></a></p></td>
+<td><p>Each plugin must inherit from this Config base class</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ConfigEnum" title="ape.api.ConfigEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigEnum</span></code></a></p></td>
+<td><p>str(object=’’) -&gt; str</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ConfigItem" title="ape.api.ConfigItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigItem</span></code></a></p></td>
+<td><p>Each plugin must inherit from this Config base class</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ContractInstance" title="ape.api.ContractInstance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractInstance</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ContractLog" title="ape.api.ContractLog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractLog</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ContractLog" title="ape.api.ContractLog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractLog</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ConverterAPI" title="ape.api.ConverterAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConverterAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ConverterAPI" title="ape.api.ConverterAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConverterAPI</span></code></a></p></td>
 <td><p>Abstract base class for generic types.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ExplorerAPI" title="ape.api.ExplorerAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplorerAPI</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ExplorerAPI" title="ape.api.ExplorerAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplorerAPI</span></code></a></p></td>
 <td><p>An Explorer must work with a particular Network in a particular Ecosystem</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.EcosystemAPI" title="ape.api.EcosystemAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EcosystemAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.EcosystemAPI" title="ape.api.EcosystemAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EcosystemAPI</span></code></a></p></td>
 <td><p>An Ecosystem is a set of related Networks</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.NetworkAPI" title="ape.api.NetworkAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.NetworkAPI" title="ape.api.NetworkAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p></td>
 <td><p>A Network is a wrapper around a Provider for a specific Ecosystem.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ProviderContextManager" title="ape.api.ProviderContextManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ProviderContextManager" title="ape.api.ProviderContextManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ProviderAPI" title="ape.api.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ProviderAPI" title="ape.api.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p></td>
 <td><p>A Provider must work with a particular Network in a particular Ecosystem</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TestProviderAPI" title="ape.api.TestProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.TestProviderAPI" title="ape.api.TestProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a></p></td>
 <td><p>An API for providers that have development functionality, such as snapshotting.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TransactionAPI" title="ape.api.TransactionAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TransactionStatusEnum" title="ape.api.TransactionStatusEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionStatusEnum</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.TransactionStatusEnum" title="ape.api.TransactionStatusEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionStatusEnum</span></code></a></p></td>
 <td><p>Enum where members are also (and must be) ints</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.TransactionType" title="ape.api.TransactionType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionType</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.TransactionType" title="ape.api.TransactionType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionType</span></code></a></p></td>
 <td><p>Generic enumeration.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.UpstreamProvider" title="ape.api.UpstreamProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.UpstreamProvider" title="ape.api.UpstreamProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a></p></td>
 <td><p>A provider that can also be set as another provider’s upstream.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.Web3Provider" title="ape.api.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Web3Provider</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.Web3Provider" title="ape.api.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Web3Provider</span></code></a></p></td>
 <td><p>A base provider that is web3 based.</p></td>
 </tr>
 </tbody>
@@ -702,6 +722,54 @@ is how they show up in the <code class="docutils literal notranslate"><span clas
 <dl class="py method">
 <dt id="ape.api.AddressAPI.is_contract">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_contract</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.api.AddressAPI.is_contract" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.ConfigDict">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.</span></code><code class="sig-name descname"><span class="pre">ConfigDict</span></code><a class="headerlink" href="#ape.api.ConfigDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.ConfigItem" title="ape.api.ConfigItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigItem</span></code></a></p>
+<p>Each plugin must inherit from this Config base class</p>
+<dl class="py method">
+<dt id="ape.api.ConfigDict.__post_init__">
+<code class="sig-name descname"><span class="pre">__post_init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.ConfigDict.__post_init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.ConfigEnum">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.</span></code><code class="sig-name descname"><span class="pre">ConfigEnum</span></code><a class="headerlink" href="#ape.api.ConfigEnum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>str(object=’’) -&gt; str
+str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
+<p>Create a new string object from the given object. If encoding or
+errors is specified, then the object must expose a data buffer
+that will be decoded using the given encoding and error handler.
+Otherwise, returns the result of object.__str__() (if defined)
+or repr(object).
+encoding defaults to sys.getdefaultencoding().
+errors defaults to ‘strict’.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.ConfigItem">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.</span></code><code class="sig-name descname"><span class="pre">ConfigItem</span></code><a class="headerlink" href="#ape.api.ConfigItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Each plugin must inherit from this Config base class</p>
+<dl class="py method">
+<dt id="ape.api.ConfigItem.serialize">
+<code class="sig-name descname"><span class="pre">serialize</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><a class="headerlink" href="#ape.api.ConfigItem.serialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.ConfigItem.validate_config">
+<code class="sig-name descname"><span class="pre">validate_config</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.ConfigItem.validate_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.ConfigItem.__getitem__">
+<code class="sig-name descname"><span class="pre">__getitem__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrname</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Any</span><a class="headerlink" href="#ape.api.ConfigItem.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
