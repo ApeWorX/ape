@@ -1,5 +1,6 @@
 from .accounts import AccountAPI, AccountContainerAPI, TestAccountAPI, TestAccountContainerAPI
 from .address import Address, AddressAPI
+from .config import ConfigDict, ConfigEnum, ConfigItem
 from .contracts import ContractInstance, ContractLog
 from .convert import ConverterAPI
 from .explorers import ExplorerAPI
@@ -20,6 +21,9 @@ __all__ = [
     "AccountContainerAPI",
     "Address",
     "AddressAPI",
+    "ConfigDict",
+    "ConfigEnum",
+    "ConfigItem",
     "ContractInstance",
     "ContractLog",
     "ConverterAPI",
