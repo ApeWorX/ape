@@ -4,6 +4,6 @@ from ape import networks
 
 
 @pytest.fixture
-def in_test_network():
+def eth_tester_provider():
     with networks.parse_network_choice("::test"):
-        yield
+        yield networks.active_provider

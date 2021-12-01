@@ -16,8 +16,7 @@ from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.types import NodeInfo
 
-from ape.api import ReceiptAPI, TransactionAPI, UpstreamProvider, Web3Provider
-from ape.api.config import ConfigItem
+from ape.api import ConfigItem, ReceiptAPI, TransactionAPI, UpstreamProvider, Web3Provider
 from ape.exceptions import ContractLogicError, ProviderError, TransactionError, VirtualMachineError
 from ape.logging import logger
 from ape.utils import extract_nested_value, gas_estimation_error_message, generate_dev_accounts

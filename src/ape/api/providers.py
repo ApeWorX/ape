@@ -1,8 +1,9 @@
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 from dataclassy import as_dict
+from eth_utils import add_0x_prefix
 from hexbytes import HexBytes
 from web3 import Web3
 
@@ -134,6 +135,27 @@ class ReceiptAPI:
 
 
 @abstractdataclass
+class BlockAPI:
+    base_fee_per_gas: Optional[int] = None
+    difficulty: int
+    gas_limit: int
+    gas_used: int
+    hash: HexBytes
+    miner: str
+    nonce: HexBytes
+    number: int
+    parent_hash: HexBytes
+    size: int
+    timestamp: float
+    total_difficulty: int
+
+    @classmethod
+    @abstractmethod
+    def decode(cls, data: Dict) -> "BlockAPI":
+        ...
+
+
+@abstractdataclass
 class ProviderAPI:
     """
     A Provider must work with a particular Network in a particular Ecosystem
@@ -191,6 +213,10 @@ class ProviderAPI:
     @property
     def base_fee(self) -> int:
         raise NotImplementedError("base_fee is not implemented by this provider")
+
+    @abstractmethod
+    def get_block(self, block_id: str) -> BlockAPI:
+        ...
 
     @abstractmethod
     def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
@@ -271,8 +297,28 @@ class Web3Provider(ProviderAPI):
 
     @property
     def base_fee(self) -> int:
-        block = self._web3.eth.get_block("latest")
-        return block.baseFeePerGas  # type: ignore
+        block = self.get_block("latest")
+        return block.base_fee_per_gas or 0
+
+    def get_block(self, block_id: str) -> BlockAPI:
+        """
+        Returns a block for the given ID.
+
+        Args:
+            block_id (str): The ID of the block to get. Set as
+              "latest" to get the latest block,
+              "earliest" to get the earliest block,
+              "pending" to get the pending block,
+              or pass in a block number or hash.
+
+        Returns:
+            The block for the given block ID.
+        """
+        if isinstance(block_id, str) and block_id.isnumeric():
+            block_id = add_0x_prefix(block_id)  # type: ignore
+
+        block_data = self._web3.eth.get_block(block_id)  # type: ignore
+        return self.network.ecosystem.block_class.decode(block_data)  # type: ignore
 
     def get_nonce(self, address: str) -> int:
         """

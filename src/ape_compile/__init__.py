@@ -1,5 +1,5 @@
 from ape import plugins
-from ape.api.config import ConfigEnum, ConfigItem
+from ape.api import ConfigEnum, ConfigItem
 
 
 class EvmVersion(ConfigEnum):

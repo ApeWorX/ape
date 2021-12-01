@@ -1,6 +1,6 @@
 from typing import Type
 
-from ape.api.config import ConfigItem
+from ape.api import ConfigItem
 
 from .pluggy_patch import PluginType, hookspec
 

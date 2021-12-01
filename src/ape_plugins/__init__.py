@@ -1,5 +1,5 @@
 from ape import plugins
-from ape.api.config import ConfigDict
+from ape.api import ConfigDict
 
 
 @plugins.register(plugins.Config)

@@ -6,6 +6,7 @@ from .convert import ConverterAPI
 from .explorers import ExplorerAPI
 from .networks import EcosystemAPI, NetworkAPI, ProviderContextManager, create_network_type
 from .providers import (
+    BlockAPI,
     ProviderAPI,
     ReceiptAPI,
     TestProviderAPI,
@@ -21,6 +22,7 @@ __all__ = [
     "AccountContainerAPI",
     "Address",
     "AddressAPI",
+    "BlockAPI",
     "ConfigDict",
     "ConfigEnum",
     "ConfigItem",

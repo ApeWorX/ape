@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
@@ -13,6 +13,7 @@ from eth_utils import add_0x_prefix, keccak, to_bytes, to_int
 from hexbytes import HexBytes
 
 from ape.api import (
+    BlockAPI,
     ContractLog,
     EcosystemAPI,
     ReceiptAPI,
@@ -158,12 +159,32 @@ class Receipt(ReceiptAPI):
         )
 
 
+class Block(BlockAPI):
+    @classmethod
+    def decode(cls, data: Dict) -> "BlockAPI":
+        return cls(  # type: ignore
+            base_fee_per_gas=data.get("baseFeePerGas"),
+            difficulty=data["difficulty"],
+            gas_limit=data["gasLimit"],
+            gas_used=data["gasUsed"],
+            hash=data["hash"],
+            miner=data["miner"],
+            nonce=data["nonce"],
+            number=data["number"],
+            parent_hash=data["parentHash"],
+            size=data["size"],
+            timestamp=data["timestamp"],
+            total_difficulty=data["totalDifficulty"],
+        )
+
+
 class Ethereum(EcosystemAPI):
     transaction_types = {
         TransactionType.STATIC: StaticFeeTransaction,
         TransactionType.DYNAMIC: DynamicFeeTransaction,
     }
     receipt_class = Receipt
+    block_class = Block
 
     def encode_calldata(self, abi: ABI, *args) -> bytes:
         if abi.inputs:
