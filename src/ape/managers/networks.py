@@ -4,9 +4,9 @@ import yaml
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
+from ape._compat import cached_property
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.exceptions import NetworkError
-from ape.utils import cached_property
 
 from .config import ConfigManager
 
