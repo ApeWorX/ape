@@ -161,23 +161,29 @@ class Receipt(ReceiptAPI):
 
 
 class BlockGasFee(BlockGasAPI):
+    _base_fee_per_gas: int
+    _gas_used: int
+
     @property
     def base_fee(self) -> Optional[int]:
-        return self.raw_data.get("baseFeePerGas")
+        return self._base_fee_per_gas
 
     @property
     def total_gas_used(self) -> int:
-        return self.raw_data.get("gasUsed") or 0
+        return self._gas_used or 0
+
+    @classmethod
+    def decode(cls, data: Dict):
+        return BlockGasFee(  # type: ignore
+            _base_fee_per_gas=data.get("baseFeePerGas"), _gas_used=data.get("gasUsed")
+        )
 
 
 class Block(BlockAPI):
     @classmethod
     def decode(cls, data: Dict) -> "BlockAPI":
-        gas_data = BlockGasFee(  # type: ignore
-            raw_data={k: v for k, v in data.items() if k in ["baseFeePerGas", "gasUsed"]}
-        )
         return cls(  # type: ignore
-            gas_data=gas_data,
+            gas_data=BlockGasFee.decode(data),
             number=data["number"],
             size=data.get("size"),
             timestamp=data.get("timestamp"),

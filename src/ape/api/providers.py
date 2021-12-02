@@ -138,8 +138,6 @@ class ReceiptAPI:
 
 @abstractdataclass
 class BlockGasAPI:
-    raw_data: Dict
-
     @property
     @abstractmethod
     def base_fee(self) -> Optional[int]:
