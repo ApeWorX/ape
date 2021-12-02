@@ -15,6 +15,16 @@ from importlib_metadata import PackageNotFoundError, packages_distributions, ver
 
 from ape.logging import logger
 
+try:
+    from functools import cached_property  # type: ignore
+except ImportError:
+    from backports.cached_property import cached_property  # type: ignore
+
+try:
+    from functools import singledispatchmethod  # type: ignore
+except ImportError:
+    from singledispatchmethod import singledispatchmethod  # type: ignore
+
 
 @lru_cache(maxsize=None)
 def get_distributions():
@@ -185,6 +195,7 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
 
 
 __all__ = [
+    "cached_property",
     "deep_merge",
     "expand_environment_variables",
     "extract_nested_value",
@@ -193,4 +204,5 @@ __all__ = [
     "GeneratedDevAccount",
     "generate_dev_accounts",
     "load_config",
+    "singledispatchmethod",
 ]

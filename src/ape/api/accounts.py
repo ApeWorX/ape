@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Unio
 
 import click
 
-from ape._compat import cached_property
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
 from ape.logging import logger
 from ape.types import (
@@ -13,6 +12,7 @@ from ape.types import (
     SignableMessage,
     TransactionSignature,
 )
+from ape.utils import cached_property
 
 from .address import AddressAPI
 from .base import abstractdataclass, abstractmethod

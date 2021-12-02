@@ -3,9 +3,9 @@ from typing import Dict, Iterator, List, Type
 from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
-from ape._compat import cached_property, singledispatchmethod
 from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.types import AddressType
+from ape.utils import cached_property, singledispatchmethod
 
 from .config import ConfigManager
 from .converters import ConversionManager

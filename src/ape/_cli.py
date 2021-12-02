@@ -5,11 +5,15 @@ from typing import Any, Dict
 import click
 import yaml
 
-from ape._compat import metadata
 from ape.cli import Abort, ape_cli_context
 from ape.exceptions import ApeException
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
+
+try:
+    from importlib import metadata  # type: ignore
+except ImportError:
+    import importlib_metadata as metadata  # type: ignore
 
 _DIFFLIB_CUT_OFF = 0.6
 

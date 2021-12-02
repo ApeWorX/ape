@@ -4,12 +4,12 @@ from dataclassy import dataclass
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
 from hexbytes import HexBytes
 
-from ape._compat import cached_property
 from ape.api import AddressAPI, ConverterAPI
 from ape.exceptions import ConversionError
 from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.types import AddressType
+from ape.utils import cached_property
 
 from .config import ConfigManager
 from .networks import NetworkManager
