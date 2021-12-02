@@ -7,6 +7,7 @@ from .explorers import ExplorerAPI
 from .networks import EcosystemAPI, NetworkAPI, ProviderContextManager, create_network_type
 from .providers import (
     BlockAPI,
+    BlockConsensusAPI,
     BlockGasAPI,
     ProviderAPI,
     ReceiptAPI,
@@ -24,6 +25,7 @@ __all__ = [
     "Address",
     "AddressAPI",
     "BlockAPI",
+    "BlockConsensusAPI",
     "BlockGasAPI",
     "ConfigDict",
     "ConfigEnum",

@@ -149,6 +149,11 @@ class BlockGasAPI:
 
 
 @abstractdataclass
+class BlockConsensusAPI:
+    ...
+
+
+@abstractdataclass
 class BlockAPI:
     gas_data: BlockGasAPI
     hash: HexBytes
