@@ -162,26 +162,12 @@ class Receipt(ReceiptAPI):
 
 
 class BlockGasFee(BlockGasAPI):
-    _base_fee_per_gas: int
-    _gas_used: int
-
-    @property
-    def base_fee(self) -> int:
-        fee = self._base_fee_per_gas
-        if fee is None:
-            # Raises not-implemented error.
-            return super().base_fee
-
-        return fee
-
-    @property
-    def total_gas_used(self) -> int:
-        return self._gas_used
-
     @classmethod
     def decode(cls, data: Dict):
         return BlockGasFee(  # type: ignore
-            _base_fee_per_gas=data.get("baseFeePerGas"), _gas_used=data.get("gasUsed", 0)
+            base_fee=data.get("baseFeePerGas"),
+            gas_used=data.get("gasUsed"),
+            gas_limit=data.get("gasLimit"),
         )
 
 

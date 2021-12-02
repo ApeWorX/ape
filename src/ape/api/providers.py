@@ -144,13 +144,12 @@ class ReceiptAPI:
 
 @abstractdataclass
 class BlockGasAPI:
-    @property
-    def base_fee(self) -> int:
-        raise NotImplementedError("base_fee is not implemented by this block.")
+    gas_limit: Optional[int] = None
+    gas_used: Optional[int] = None
+    base_fee: Optional[int] = None
 
-    @property
     @abstractmethod
-    def total_gas_used(self) -> int:
+    def decode(self, data: Dict):
         ...
 
 
@@ -318,8 +317,14 @@ class Web3Provider(ProviderAPI):
 
     @property
     def base_fee(self) -> int:
+        """
+        Returns the current base fee from the latest block.
+
+        NOTE: If your chain does not support base_fees (EIP-1559),
+        this method returns 0.
+        """
         block = self.get_block("latest")
-        return block.gas_data.base_fee
+        return block.gas_data.base_fee or 0
 
     def get_block(
         self, block_id: Union[str, int, HexBytes, Literal["latest"], Literal["pending"]]
