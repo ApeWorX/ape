@@ -162,19 +162,24 @@ class Receipt(ReceiptAPI):
 class Block(BlockAPI):
     @classmethod
     def decode(cls, data: Dict) -> "BlockAPI":
+        gas_fee_data = {
+            "base_fee_per_gas": data.get("baseFeePerGas"),
+            "gas_limit": data.get("gasLimit"),
+            "gas_used": data.get("gasUsed"),
+        }
+        consensus_data = {
+            "miner": AddressType(data["miner"]) if "miner" in data else None,
+            "difficulty": data.get("difficulty"),
+            "total_difficulty": data.get("totalDifficulty"),
+        }
         return cls(  # type: ignore
-            base_fee_per_gas=data.get("baseFeePerGas"),
-            difficulty=data["difficulty"],
-            gas_limit=data["gasLimit"],
-            gas_used=data["gasUsed"],
-            hash=data["hash"],
-            miner=data["miner"],
-            nonce=data["nonce"],
+            gas_fee_data=gas_fee_data,
+            consensus_data=consensus_data,
             number=data["number"],
-            parent_hash=data["parentHash"],
-            size=data["size"],
-            timestamp=data["timestamp"],
-            total_difficulty=data["totalDifficulty"],
+            size=data.get("size"),
+            timestamp=data.get("timestamp"),
+            hash=data.get("hash"),
+            parent_hash=data.get("hash"),
         )
 
 
