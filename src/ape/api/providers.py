@@ -168,6 +168,7 @@ class BlockConsensusAPI:
 @abstractdataclass
 class BlockAPI:
     gas_data: BlockGasAPI
+    consensus_data: BlockConsensusAPI
     hash: HexBytes
     number: int
     parent_hash: HexBytes
