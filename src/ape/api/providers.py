@@ -150,7 +150,7 @@ class BlockGasAPI:
 
     @classmethod
     @abstractmethod
-    def decode(cls, data: Dict):
+    def decode(cls, data: Dict) -> "BlockGasAPI":
         ...
 
 
@@ -161,7 +161,7 @@ class BlockConsensusAPI:
 
     @classmethod
     @abstractmethod
-    def decode(cls, data: Dict):
+    def decode(cls, data: Dict) -> "BlockConsensusAPI":
         ...
 
 
