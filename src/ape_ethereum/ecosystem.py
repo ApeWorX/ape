@@ -173,11 +173,11 @@ class BlockGasFee(BlockGasAPI):
 class Block(BlockAPI):
     @classmethod
     def decode(cls, data: Dict) -> "BlockAPI":
-        gas_fee_data = BlockGasFee(  # type: ignore
+        gas_data = BlockGasFee(  # type: ignore
             raw_data={k: v for k, v in data.items() if k in ["baseFeePerGas", "gasUsed"]}
         )
         return cls(  # type: ignore
-            gas_fee_data=gas_fee_data,
+            gas_data=gas_data,
             number=data["number"],
             size=data.get("size"),
             timestamp=data.get("timestamp"),
