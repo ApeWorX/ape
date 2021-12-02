@@ -171,12 +171,12 @@ class BlockGasFee(BlockGasAPI):
 
     @property
     def total_gas_used(self) -> int:
-        return self._gas_used or 0
+        return self._gas_used
 
     @classmethod
     def decode(cls, data: Dict):
         return BlockGasFee(  # type: ignore
-            _base_fee_per_gas=data.get("baseFeePerGas"), _gas_used=data.get("gasUsed")
+            _base_fee_per_gas=data.get("baseFeePerGas"), _gas_used=data.get("gasUsed", 0)
         )
 
 
