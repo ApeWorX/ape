@@ -144,8 +144,8 @@ class ReceiptAPI:
 
 @abstractdataclass
 class BlockGasAPI:
-    gas_limit: Optional[int] = None
-    gas_used: Optional[int] = None
+    gas_limit: int
+    gas_used: int
     base_fee: Optional[int] = None
 
     @abstractmethod

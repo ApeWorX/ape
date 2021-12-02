@@ -165,9 +165,9 @@ class BlockGasFee(BlockGasAPI):
     @classmethod
     def decode(cls, data: Dict):
         return BlockGasFee(  # type: ignore
+            gas_limit=data["gasLimit"],
+            gas_used=data["gasUsed"],
             base_fee=data.get("baseFeePerGas"),
-            gas_used=data.get("gasUsed"),
-            gas_limit=data.get("gasLimit"),
         )
 
 

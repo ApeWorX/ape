@@ -9,4 +9,4 @@ def test_get_block(eth_tester_provider, block_id):
     # Each parameter is the same as requesting the first block.
     assert latest_block.number == 0
     assert latest_block.gas_data.base_fee == 1000000000
-    assert latest_block.gas_data.total_gas_used == 0
+    assert latest_block.gas_data.gas_used == 0
