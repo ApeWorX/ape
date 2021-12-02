@@ -14,6 +14,7 @@ from hexbytes import HexBytes
 
 from ape.api import (
     BlockAPI,
+    BlockGasAPI,
     ContractLog,
     EcosystemAPI,
     ReceiptAPI,
@@ -159,22 +160,24 @@ class Receipt(ReceiptAPI):
         )
 
 
+class BlockGasFee(BlockGasAPI):
+    @property
+    def base_fee(self) -> Optional[int]:
+        return self.raw_data.get("baseFeePerGas")
+
+    @property
+    def total_gas_used(self) -> int:
+        return self.raw_data.get("gasUsed") or 0
+
+
 class Block(BlockAPI):
     @classmethod
     def decode(cls, data: Dict) -> "BlockAPI":
-        gas_fee_data = {
-            "base_fee_per_gas": data.get("baseFeePerGas"),
-            "gas_limit": data.get("gasLimit"),
-            "gas_used": data.get("gasUsed"),
-        }
-        consensus_data = {
-            "miner": AddressType(data["miner"]) if "miner" in data else None,
-            "difficulty": data.get("difficulty"),
-            "total_difficulty": data.get("totalDifficulty"),
-        }
+        gas_fee_data = BlockGasFee(  # type: ignore
+            raw_data={k: v for k, v in data.items() if k in ["baseFeePerGas", "gasUsed"]}
+        )
         return cls(  # type: ignore
             gas_fee_data=gas_fee_data,
-            consensus_data=consensus_data,
             number=data["number"],
             size=data.get("size"),
             timestamp=data.get("timestamp"),

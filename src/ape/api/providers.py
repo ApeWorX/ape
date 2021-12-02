@@ -137,9 +137,23 @@ class ReceiptAPI:
 
 
 @abstractdataclass
+class BlockGasAPI:
+    raw_data: Dict
+
+    @property
+    @abstractmethod
+    def base_fee(self) -> Optional[int]:
+        ...
+
+    @property
+    @abstractmethod
+    def total_gas_used(self) -> int:
+        ...
+
+
+@abstractdataclass
 class BlockAPI:
-    gas_fee_data: Dict
-    consensus_data: Dict
+    gas_fee_data: BlockGasAPI
     hash: HexBytes
     number: int
     parent_hash: HexBytes
@@ -297,7 +311,7 @@ class Web3Provider(ProviderAPI):
     @property
     def base_fee(self) -> int:
         block = self.get_block("latest")
-        return block.gas_fee_data.get("base_fee_per_gas", 0)
+        return block.gas_fee_data.base_fee or 0
 
     def get_block(
         self, block_id: Union[str, int, HexBytes, Literal["latest"], Literal["pending"]]
