@@ -139,9 +139,8 @@ class ReceiptAPI:
 @abstractdataclass
 class BlockGasAPI:
     @property
-    @abstractmethod
-    def base_fee(self) -> Optional[int]:
-        ...
+    def base_fee(self) -> int:
+        raise NotImplementedError("base_fee is not implemented by this block.")
 
     @property
     @abstractmethod
@@ -309,7 +308,7 @@ class Web3Provider(ProviderAPI):
     @property
     def base_fee(self) -> int:
         block = self.get_block("latest")
-        return block.gas_data.base_fee or 0
+        return block.gas_data.base_fee
 
     def get_block(
         self, block_id: Union[str, int, HexBytes, Literal["latest"], Literal["pending"]]

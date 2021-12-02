@@ -165,7 +165,7 @@ class BlockGasFee(BlockGasAPI):
     _gas_used: int
 
     @property
-    def base_fee(self) -> Optional[int]:
+    def base_fee(self) -> int:
         return self._base_fee_per_gas
 
     @property
