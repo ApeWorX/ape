@@ -187,7 +187,7 @@ class Block(BlockAPI):
     def decode(cls, data: Dict) -> BlockAPI:
         return cls(  # type: ignore
             gas_data=BlockGasFee.decode(data),
-            consensus_data=BlockConsensus.decode(data),  # type: ignore
+            consensus_data=BlockConsensus.decode(data),
             number=data["number"],
             size=data.get("size"),
             timestamp=data.get("timestamp"),
