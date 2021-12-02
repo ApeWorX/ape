@@ -10,7 +10,7 @@ from web3 import Web3
 
 from ape.exceptions import ProviderError
 from ape.logging import logger
-from ape.types import BlockId, TransactionSignature
+from ape.types import BlockID, TransactionSignature
 
 from . import networks
 from .base import abstractdataclass, abstractmethod
@@ -234,7 +234,7 @@ class ProviderAPI:
         raise NotImplementedError("base_fee is not implemented by this provider")
 
     @abstractmethod
-    def get_block(self, block_id: BlockId) -> BlockAPI:
+    def get_block(self, block_id: BlockID) -> BlockAPI:
         ...
 
     @abstractmethod
@@ -325,13 +325,12 @@ class Web3Provider(ProviderAPI):
         block = self.get_block("latest")
 
         if block.gas_data.base_fee is None:
-            # The only way we get here is if the provider does not use 'base_fee'
-            # because we are checking the latest block.
+            # Non-EIP-1559 chains or we time-travelled pre-London fork.
             raise NotImplementedError("base_fee is not implemented by this provider.")
 
         return block.gas_data.base_fee
 
-    def get_block(self, block_id: BlockId) -> BlockAPI:
+    def get_block(self, block_id: BlockID) -> BlockAPI:
         """
         Returns a block for the given ID.
 
