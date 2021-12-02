@@ -1,6 +1,6 @@
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Dict, Iterator, List, Literal, Optional, Union
+from typing import Dict, Iterator, List, Optional, Union
 
 from dataclassy import as_dict
 from eth_typing import HexStr
@@ -8,6 +8,7 @@ from eth_utils import add_0x_prefix
 from hexbytes import HexBytes
 from web3 import Web3
 
+from ape._compat import Literal
 from ape.exceptions import ProviderError
 from ape.logging import logger
 from ape.types import TransactionSignature
