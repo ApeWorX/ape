@@ -86,6 +86,7 @@ setup(
         "IPython>=7.25",
         "pytest>=6.0,<7.0",
         "rich>=10.14,<11",
+        "typing-extensions ; python_version<'3.8'",
         "web3[tester]>=5.25.0,<6.0.0",
     ],
     entry_points={
