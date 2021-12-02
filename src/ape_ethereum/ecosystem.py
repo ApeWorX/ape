@@ -173,6 +173,13 @@ class BlockGasFee(BlockGasAPI):
 
 class BlockConsensus(BlockConsensusAPI):
     difficulty: Optional[int] = None
+    total_difficulty: Optional[int] = None
+
+    @classmethod
+    def decode(cls, data: Dict):
+        return cls(
+            difficulty=data.get("difficulty"), total_difficulty=data.get("totalDifficulty")
+        )  # type: ignore
 
 
 class Block(BlockAPI):
@@ -180,7 +187,7 @@ class Block(BlockAPI):
     def decode(cls, data: Dict) -> "BlockAPI":
         return cls(  # type: ignore
             gas_data=BlockGasFee.decode(data),
-            consensus_data=BlockConsensus(difficulty=data.get("difficulty")),  # type: ignore
+            consensus_data=BlockConsensus.decode(data),  # type: ignore
             number=data["number"],
             size=data.get("size"),
             timestamp=data.get("timestamp"),

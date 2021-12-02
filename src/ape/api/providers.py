@@ -148,14 +148,21 @@ class BlockGasAPI:
     gas_used: int
     base_fee: Optional[int] = None
 
+    @classmethod
     @abstractmethod
-    def decode(self, data: Dict):
+    def decode(cls, data: Dict):
         ...
 
 
 @abstractdataclass
 class BlockConsensusAPI:
-    ...
+    difficulty: Optional[int] = None
+    total_difficulty: Optional[int] = None
+
+    @classmethod
+    @abstractmethod
+    def decode(cls, data: Dict):
+        ...
 
 
 @abstractdataclass
