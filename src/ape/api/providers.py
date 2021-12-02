@@ -320,10 +320,16 @@ class Web3Provider(ProviderAPI):
         Returns the current base fee from the latest block.
 
         NOTE: If your chain does not support base_fees (EIP-1559),
-        this method returns 0.
+        this method will raise a not-implemented error.
         """
         block = self.get_block("latest")
-        return block.gas_data.base_fee or 0
+
+        if block.gas_data.base_fee is None:
+            # The only way we get here is if the provider does not use 'base_fee'
+            # because we are checking the latest block.
+            raise NotImplementedError("base_fee is not implemented by this provider.")
+
+        return block.gas_data.base_fee
 
     def get_block(self, block_id: BlockId) -> BlockAPI:
         """
