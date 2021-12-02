@@ -167,7 +167,12 @@ class BlockGasFee(BlockGasAPI):
 
     @property
     def base_fee(self) -> int:
-        return self._base_fee_per_gas
+        fee = self._base_fee_per_gas
+        if fee is None:
+            # Raises not-implemented error.
+            return super().base_fee
+
+        return fee
 
     @property
     def total_gas_used(self) -> int:
