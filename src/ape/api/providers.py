@@ -1,7 +1,6 @@
-import sys
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Union
+from typing import Dict, Iterator, List, Optional
 
 from dataclassy import as_dict
 from eth_typing import HexStr
@@ -11,17 +10,11 @@ from web3 import Web3
 
 from ape.exceptions import ProviderError
 from ape.logging import logger
-from ape.types import TransactionSignature
+from ape.types import BlockId, TransactionSignature
 
 from . import networks
 from .base import abstractdataclass, abstractmethod
 from .config import ConfigItem
-
-# We can remove this once we stop supporting python3.7.
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    from typing_extensions import Literal
 
 
 class TransactionType(Enum):
@@ -241,9 +234,7 @@ class ProviderAPI:
         raise NotImplementedError("base_fee is not implemented by this provider")
 
     @abstractmethod
-    def get_block(
-        self, block_id: Union[str, int, HexBytes, Literal["latest", "pending", "earliest"]]
-    ) -> BlockAPI:
+    def get_block(self, block_id: BlockId) -> BlockAPI:
         ...
 
     @abstractmethod
@@ -334,9 +325,7 @@ class Web3Provider(ProviderAPI):
         block = self.get_block("latest")
         return block.gas_data.base_fee or 0
 
-    def get_block(
-        self, block_id: Union[str, int, HexBytes, Literal["latest"], Literal["pending"]]
-    ) -> BlockAPI:
+    def get_block(self, block_id: BlockId) -> BlockAPI:
         """
         Returns a block for the given ID.
 
