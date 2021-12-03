@@ -5,11 +5,12 @@ from copy import deepcopy
 from functools import lru_cache
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Set
 
 import yaml
 from eth_account import Account
 from eth_account.hdaccount import HDPath, seed_from_mnemonic
+from github import Github
 from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions, version
 
@@ -194,6 +195,36 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
     return current_value
 
 
+class GitHubClient:
+    def __init__(self):
+        key = "GITHUB_ACCESS_TOKEN"
+        token = None
+        self.has_auth = key in os.environ
+        if self.has_auth:
+            token = os.environ[key]
+
+        self._client = Github(login_or_token=token)
+
+    @cached_property
+    def ape_org(self):
+        return self._client.get_organization("ApeWorX")
+
+    @cached_property
+    def available_plugins(self) -> Set[str]:
+        if not self.has_auth:
+            logger.warning("$GITHUB_ACCESS_TOKEN not set, unable to list all plugins.")
+            return Set()
+
+        return {
+            repo.name.replace("-", "_")
+            for repo in self.ape_org.get_repos()
+            if repo.name.startswith("ape-")
+        }
+
+
+github_client = GitHubClient()
+
+
 __all__ = [
     "cached_property",
     "deep_merge",
@@ -201,6 +232,7 @@ __all__ = [
     "extract_nested_value",
     "get_relative_path",
     "gas_estimation_error_message",
+    "github_client",
     "GeneratedDevAccount",
     "generate_dev_accounts",
     "load_config",
