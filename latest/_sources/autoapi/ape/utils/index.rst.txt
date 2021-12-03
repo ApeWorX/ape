@@ -30,6 +30,7 @@
 .. autoapisummary::
 
    ape.utils.GeneratedDevAccount
+   ape.utils.github_client
 
 
 
@@ -91,5 +92,12 @@
    Dig through a nested ``Dict`` gives the keys to use in order as arguments.
    Returns the final value if it exists else `None` if the tree ends at any point.
 
+
+
+
+.. data:: github_client
+   
+
+   
 
 

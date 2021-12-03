@@ -25,30 +25,14 @@
 
 .. autoapisummary::
 
-   ape_plugins.utils.FIRST_CLASS_PLUGINS
-   ape_plugins.utils.SECOND_CLASS_PLUGINS
-   ape_plugins.utils.author
+   ape_plugins.utils.CORE_PLUGINS
 
 
 
 -----------
 
 
-.. data:: FIRST_CLASS_PLUGINS
-   
-
-   
-
-
-
-.. data:: SECOND_CLASS_PLUGINS
-   :annotation: :Set[str]
-
-   
-
-
-
-.. data:: author
+.. data:: CORE_PLUGINS
    
 
    

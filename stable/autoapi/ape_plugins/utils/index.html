@@ -22,7 +22,7 @@
   </script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="ape_compile" href="../../ape_compile/index.html" />
+    <link rel="next" title="ape_accounts" href="../../ape_accounts/index.html" />
     <link rel="prev" title="ape_plugins._cli" href="../_cli/index.html" /> 
 </head>
 
@@ -66,20 +66,15 @@
 <p class="caption"><span class="caption-text">Full API Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../../ape_test/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_run/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_run</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_geth/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_geth</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../ape_console/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_console</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_accounts/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_accounts</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_networks/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_networks</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../ape_ethereum/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_ethereum</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../ape_pm/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_pm</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_test/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_test</span></code></a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_plugins</span></code></a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../_cli/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_plugins._cli</span></code></a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_plugins.utils</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape_plugins.utils.FIRST_CLASS_PLUGINS">FIRST_CLASS_PLUGINS</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape_plugins.utils.SECOND_CLASS_PLUGINS">SECOND_CLASS_PLUGINS</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape_plugins.utils.author">author</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_plugins.utils.CORE_PLUGINS">CORE_PLUGINS</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_plugins.utils.is_plugin_installed">is_plugin_installed</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_plugins.utils.extract_module_and_package_install_names">extract_module_and_package_install_names</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_plugins.utils._get_config_error">_get_config_error</a></li>
@@ -88,8 +83,11 @@
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_plugins.config_class">config_class</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_accounts/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_accounts</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../ape_compile/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_compile</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../ape_networks/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_networks</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_run/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_run</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ape_geth/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_geth</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -180,31 +178,15 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_plugins.utils.FIRST_CLASS_PLUGINS" title="ape_plugins.utils.FIRST_CLASS_PLUGINS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIRST_CLASS_PLUGINS</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape_plugins.utils.SECOND_CLASS_PLUGINS" title="ape_plugins.utils.SECOND_CLASS_PLUGINS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SECOND_CLASS_PLUGINS</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_plugins.utils.author" title="ape_plugins.utils.author"><code class="xref py py-obj docutils literal notranslate"><span class="pre">author</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_plugins.utils.CORE_PLUGINS" title="ape_plugins.utils.CORE_PLUGINS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CORE_PLUGINS</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 <hr class="docutils" />
 <dl class="py data">
-<dt id="ape_plugins.utils.FIRST_CLASS_PLUGINS">
-<code class="sig-prename descclassname"><span class="pre">ape_plugins.utils.</span></code><code class="sig-name descname"><span class="pre">FIRST_CLASS_PLUGINS</span></code><a class="headerlink" href="#ape_plugins.utils.FIRST_CLASS_PLUGINS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py data">
-<dt id="ape_plugins.utils.SECOND_CLASS_PLUGINS">
-<code class="sig-prename descclassname"><span class="pre">ape_plugins.utils.</span></code><code class="sig-name descname"><span class="pre">SECOND_CLASS_PLUGINS</span></code><em class="property"> <span class="pre">:Set[str]</span></em><a class="headerlink" href="#ape_plugins.utils.SECOND_CLASS_PLUGINS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py data">
-<dt id="ape_plugins.utils.author">
-<code class="sig-prename descclassname"><span class="pre">ape_plugins.utils.</span></code><code class="sig-name descname"><span class="pre">author</span></code><a class="headerlink" href="#ape_plugins.utils.author" title="Permalink to this definition">¶</a></dt>
+<dt id="ape_plugins.utils.CORE_PLUGINS">
+<code class="sig-prename descclassname"><span class="pre">ape_plugins.utils.</span></code><code class="sig-name descname"><span class="pre">CORE_PLUGINS</span></code><a class="headerlink" href="#ape_plugins.utils.CORE_PLUGINS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -232,7 +214,7 @@ specified in the config.</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../../ape_compile/index.html" class="btn btn-neutral float-right" title="ape_compile" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../../ape_accounts/index.html" class="btn btn-neutral float-right" title="ape_accounts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="../_cli/index.html" class="btn btn-neutral float-left" title="ape_plugins._cli" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

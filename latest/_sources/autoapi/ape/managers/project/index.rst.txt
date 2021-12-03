@@ -83,11 +83,14 @@
       :property:
 
 
-   .. py:method:: extensions_with_missing_compilers(self) -> List[str]
-      :property:
+   .. py:method:: extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]
 
       All file extensions in the `contracts/` directory (recursively)
       that do not correspond to a registered compiler.
+
+      Args:
+          extensions: If provided, returns only extensions that
+              are in this list. Useful for checking against a sub-set of source files.
 
 
    .. py:method:: lookup_path(self, key_contract_path: pathlib.Path) -> Optional[pathlib.Path]
