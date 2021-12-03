@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from dataclassy import dataclass
 
-from ape.api.config import ConfigDict, ConfigItem
+from ape.api import ConfigDict, ConfigItem
 from ape.exceptions import ConfigError
 from ape.plugins import PluginManager
 from ape.utils import load_config

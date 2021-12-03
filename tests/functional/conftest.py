@@ -2,6 +2,7 @@ import pytest
 
 from ape.api import (
     AccountContainerAPI,
+    ConfigItem,
     EcosystemAPI,
     NetworkAPI,
     ProviderAPI,
@@ -9,7 +10,6 @@ from ape.api import (
     TransactionAPI,
     TransactionStatusEnum,
 )
-from ape.api.config import ConfigItem
 from ape.exceptions import ContractLogicError
 
 TEST_ADDRESS = "0x0A78AAAAA2122100000b9046f0A085AB2E111113"

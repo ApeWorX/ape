@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     from .contracts import ContractLog
     from .explorers import ExplorerAPI
-    from .providers import ProviderAPI, ReceiptAPI, TransactionAPI, TransactionType
+    from .providers import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI, TransactionType
 
 
 @abstractdataclass
@@ -35,6 +35,7 @@ class EcosystemAPI:
 
     transaction_types: Dict["TransactionType", Type["TransactionAPI"]]
     receipt_class: Type["ReceiptAPI"]
+    block_class: Type["BlockAPI"]
 
     _default_network: str = "development"
 

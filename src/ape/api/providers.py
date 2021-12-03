@@ -1,14 +1,16 @@
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 from dataclassy import as_dict
+from eth_typing import HexStr
+from eth_utils import add_0x_prefix
 from hexbytes import HexBytes
 from web3 import Web3
 
 from ape.exceptions import ProviderError
 from ape.logging import logger
-from ape.types import TransactionSignature
+from ape.types import BlockID, TransactionSignature
 
 from . import networks
 from .base import abstractdataclass, abstractmethod
@@ -134,6 +136,45 @@ class ReceiptAPI:
 
 
 @abstractdataclass
+class BlockGasAPI:
+    gas_limit: int
+    gas_used: int
+    base_fee: Optional[int] = None
+
+    @classmethod
+    @abstractmethod
+    def decode(cls, data: Dict) -> "BlockGasAPI":
+        ...
+
+
+@abstractdataclass
+class BlockConsensusAPI:
+    difficulty: Optional[int] = None
+    total_difficulty: Optional[int] = None
+
+    @classmethod
+    @abstractmethod
+    def decode(cls, data: Dict) -> "BlockConsensusAPI":
+        ...
+
+
+@abstractdataclass
+class BlockAPI:
+    gas_data: BlockGasAPI
+    consensus_data: BlockConsensusAPI
+    hash: HexBytes
+    number: int
+    parent_hash: HexBytes
+    size: int
+    timestamp: float
+
+    @classmethod
+    @abstractmethod
+    def decode(cls, data: Dict) -> "BlockAPI":
+        ...
+
+
+@abstractdataclass
 class ProviderAPI:
     """
     A Provider must work with a particular Network in a particular Ecosystem
@@ -191,6 +232,10 @@ class ProviderAPI:
     @property
     def base_fee(self) -> int:
         raise NotImplementedError("base_fee is not implemented by this provider")
+
+    @abstractmethod
+    def get_block(self, block_id: BlockID) -> BlockAPI:
+        ...
 
     @abstractmethod
     def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
@@ -271,8 +316,42 @@ class Web3Provider(ProviderAPI):
 
     @property
     def base_fee(self) -> int:
-        block = self._web3.eth.get_block("latest")
-        return block.baseFeePerGas  # type: ignore
+        """
+        Returns the current base fee from the latest block.
+
+        NOTE: If your chain does not support base_fees (EIP-1559),
+        this method will raise a not-implemented error.
+        """
+        block = self.get_block("latest")
+
+        if block.gas_data.base_fee is None:
+            # Non-EIP-1559 chains or we time-travelled pre-London fork.
+            raise NotImplementedError("base_fee is not implemented by this provider.")
+
+        return block.gas_data.base_fee
+
+    def get_block(self, block_id: BlockID) -> BlockAPI:
+        """
+        Returns a block for the given ID.
+
+        Args:
+            block_id: The ID of the block to get. Set as
+              "latest" to get the latest block,
+              "earliest" to get the earliest block,
+              "pending" to get the pending block,
+              or pass in a block number or hash.
+
+        Returns:
+            The block for the given block ID.
+        """
+        if isinstance(block_id, str):
+            block_id = HexStr(block_id)
+
+            if block_id.isnumeric():
+                block_id = add_0x_prefix(block_id)
+
+        block_data = self._web3.eth.get_block(block_id)
+        return self.network.ecosystem.block_class.decode(block_data)  # type: ignore
 
     def get_nonce(self, address: str) -> int:
         """
