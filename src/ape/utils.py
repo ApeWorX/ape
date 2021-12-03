@@ -196,12 +196,13 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
 
 
 class GitHubClient:
+    TOKEN_KEY = "GITHUB_ACCESS_TOKEN"
+
     def __init__(self):
-        key = "GITHUB_ACCESS_TOKEN"
         token = None
-        self.has_auth = key in os.environ
+        self.has_auth = self.TOKEN_KEY in os.environ
         if self.has_auth:
-            token = os.environ[key]
+            token = os.environ[self.TOKEN_KEY]
 
         self._client = Github(login_or_token=token)
 
@@ -212,7 +213,7 @@ class GitHubClient:
     @cached_property
     def available_plugins(self) -> Set[str]:
         if not self.has_auth:
-            logger.warning("$GITHUB_ACCESS_TOKEN not set, unable to list all plugins.")
+            logger.warning(f"${self.TOKEN_KEY} not set, unable to list all plugins.")
             return Set()
 
         return {
