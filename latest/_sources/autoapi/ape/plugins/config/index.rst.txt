@@ -27,7 +27,7 @@
 
    Bases: :py:obj:`ape.plugins.pluggy_patch.PluginType`
 
-   .. py:method:: config_class(self) -> Type[ape.api.config.ConfigItem]
+   .. py:method:: config_class(self) -> Type[ape.api.ConfigItem]
 
       Returns a :class:`ape.api.config.ConfigItem` parser class that can be
       used to deconstruct the user config options for this plugins.

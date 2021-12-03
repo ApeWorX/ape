@@ -76,6 +76,11 @@
 
       
 
+   .. attribute:: block_class
+      :annotation: :Type[ape.api.providers.BlockAPI]
+
+      
+
    .. attribute:: _default_network
       :annotation: :str = development
 

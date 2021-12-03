@@ -18,6 +18,9 @@
    ape.api.providers.TransactionAPI
    ape.api.providers.TransactionStatusEnum
    ape.api.providers.ReceiptAPI
+   ape.api.providers.BlockGasAPI
+   ape.api.providers.BlockConsensusAPI
+   ape.api.providers.BlockAPI
    ape.api.providers.ProviderAPI
    ape.api.providers.TestProviderAPI
    ape.api.providers.Web3Provider
@@ -229,6 +232,96 @@
 
 
 
+.. py:class:: BlockGasAPI
+
+   .. attribute:: gas_limit
+      :annotation: :int
+
+      
+
+   .. attribute:: gas_used
+      :annotation: :int
+
+      
+
+   .. attribute:: base_fee
+      :annotation: :Optional[int]
+
+      
+
+   .. py:method:: decode(cls, data: Dict) -> BlockGasAPI
+      :classmethod:
+      :abstractmethod:
+
+
+
+
+
+.. py:class:: BlockConsensusAPI
+
+   .. attribute:: difficulty
+      :annotation: :Optional[int]
+
+      
+
+   .. attribute:: total_difficulty
+      :annotation: :Optional[int]
+
+      
+
+   .. py:method:: decode(cls, data: Dict) -> BlockConsensusAPI
+      :classmethod:
+      :abstractmethod:
+
+
+
+
+
+.. py:class:: BlockAPI
+
+   .. attribute:: gas_data
+      :annotation: :BlockGasAPI
+
+      
+
+   .. attribute:: consensus_data
+      :annotation: :BlockConsensusAPI
+
+      
+
+   .. attribute:: hash
+      :annotation: :hexbytes.HexBytes
+
+      
+
+   .. attribute:: number
+      :annotation: :int
+
+      
+
+   .. attribute:: parent_hash
+      :annotation: :hexbytes.HexBytes
+
+      
+
+   .. attribute:: size
+      :annotation: :int
+
+      
+
+   .. attribute:: timestamp
+      :annotation: :float
+
+      
+
+   .. py:method:: decode(cls, data: Dict) -> BlockAPI
+      :classmethod:
+      :abstractmethod:
+
+
+
+
+
 .. py:class:: ProviderAPI
 
    A Provider must work with a particular Network in a particular Ecosystem
@@ -305,6 +398,10 @@
 
    .. py:method:: base_fee(self) -> int
       :property:
+
+
+   .. py:method:: get_block(self, block_id: ape.types.BlockID) -> BlockAPI
+      :abstractmethod:
 
 
    .. py:method:: send_call(self, txn: TransactionAPI) -> bytes
@@ -387,6 +484,26 @@
 
    .. py:method:: base_fee(self) -> int
       :property:
+
+      Returns the current base fee from the latest block.
+
+      NOTE: If your chain does not support base_fees (EIP-1559),
+      this method will raise a not-implemented error.
+
+
+   .. py:method:: get_block(self, block_id: ape.types.BlockID) -> BlockAPI
+
+      Returns a block for the given ID.
+
+      Args:
+          block_id: The ID of the block to get. Set as
+            "latest" to get the latest block,
+            "earliest" to get the earliest block,
+            "pending" to get the pending block,
+            or pass in a block number or hash.
+
+      Returns:
+          The block for the given block ID.
 
 
    .. py:method:: get_nonce(self, address: str) -> int

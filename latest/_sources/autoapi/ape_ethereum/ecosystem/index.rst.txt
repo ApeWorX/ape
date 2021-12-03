@@ -18,6 +18,9 @@
    ape_ethereum.ecosystem.StaticFeeTransaction
    ape_ethereum.ecosystem.DynamicFeeTransaction
    ape_ethereum.ecosystem.Receipt
+   ape_ethereum.ecosystem.BlockGasFee
+   ape_ethereum.ecosystem.BlockConsensus
+   ape_ethereum.ecosystem.Block
    ape_ethereum.ecosystem.Ethereum
 
 
@@ -139,6 +142,49 @@
 
 
 
+.. py:class:: BlockGasFee
+
+   Bases: :py:obj:`ape.api.BlockGasAPI`
+
+   .. py:method:: decode(cls, data: Dict) -> ape.api.BlockGasAPI
+      :classmethod:
+
+
+
+
+
+.. py:class:: BlockConsensus
+
+   Bases: :py:obj:`ape.api.BlockConsensusAPI`
+
+   .. attribute:: difficulty
+      :annotation: :Optional[int]
+
+      
+
+   .. attribute:: total_difficulty
+      :annotation: :Optional[int]
+
+      
+
+   .. py:method:: decode(cls, data: Dict) -> ape.api.BlockConsensusAPI
+      :classmethod:
+
+
+
+
+
+.. py:class:: Block
+
+   Bases: :py:obj:`ape.api.BlockAPI`
+
+   .. py:method:: decode(cls, data: Dict) -> ape.api.BlockAPI
+      :classmethod:
+
+
+
+
+
 .. py:class:: Ethereum
 
    Bases: :py:obj:`ape.api.EcosystemAPI`
@@ -151,6 +197,11 @@
       
 
    .. attribute:: receipt_class
+      
+
+      
+
+   .. attribute:: block_class
       
 
       

@@ -43,6 +43,13 @@
 
 
 
+**Attributes**:
+
+.. autoapisummary::
+
+   ape.types.BlockID
+
+
 
 -----------
 
@@ -418,5 +425,12 @@
 
    Bases: :py:obj:`_Signature`
 
+
+
+
+.. data:: BlockID
+   
+
+   
 
 

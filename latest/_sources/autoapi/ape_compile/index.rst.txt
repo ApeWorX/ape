@@ -45,7 +45,7 @@
 
 .. py:class:: EvmVersion
 
-   Bases: :py:obj:`ape.api.config.ConfigEnum`
+   Bases: :py:obj:`ape.api.ConfigEnum`
 
    str(object='') -> str
    str(bytes_or_buffer[, encoding[, errors]]) -> str
@@ -73,7 +73,7 @@
 
 .. py:class:: Config
 
-   Bases: :py:obj:`ape.api.config.ConfigItem`
+   Bases: :py:obj:`ape.api.ConfigItem`
 
    Each plugin must inherit from this Config base class
 

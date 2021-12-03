@@ -98,6 +98,11 @@
 
       
 
+   .. attribute:: block_class
+      
+
+      
+
    .. py:method:: encode_calldata(self, abi: ape.types.ABI, *args) -> bytes
 
 

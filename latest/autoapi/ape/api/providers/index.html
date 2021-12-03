@@ -115,6 +115,30 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.decode">decode</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.BlockGasAPI">BlockGasAPI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockGasAPI.gas_limit">gas_limit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockGasAPI.gas_used">gas_used</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockGasAPI.base_fee">base_fee</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockGasAPI.decode">decode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.BlockConsensusAPI">BlockConsensusAPI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockConsensusAPI.difficulty">difficulty</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockConsensusAPI.total_difficulty">total_difficulty</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockConsensusAPI.decode">decode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.BlockAPI">BlockAPI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.gas_data">gas_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.consensus_data">consensus_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.hash">hash</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.number">number</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.parent_hash">parent_hash</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.size">size</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.timestamp">timestamp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.decode">decode</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.ProviderAPI">ProviderAPI</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.name">name</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.network">network</a></li>
@@ -133,6 +157,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.gas_price">gas_price</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.priority_fee">priority_fee</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.base_fee">base_fee</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.get_block">get_block</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.send_call">send_call</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.get_transaction">get_transaction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.send_transaction">send_transaction</a></li>
@@ -152,6 +177,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.gas_price">gas_price</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.priority_fee">priority_fee</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.base_fee">base_fee</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.get_block">get_block</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.get_nonce">get_nonce</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.get_balance">get_balance</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.get_code">get_code</a></li>
@@ -184,6 +210,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.NetworkAPI">NetworkAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.ProviderContextManager">ProviderContextManager</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.create_network_type">create_network_type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.BlockAPI">BlockAPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.BlockConsensusAPI">BlockConsensusAPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.BlockGasAPI">BlockGasAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.ProviderAPI">ProviderAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.ReceiptAPI">ReceiptAPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#ape.api.TestProviderAPI">TestProviderAPI</a></li>
@@ -282,16 +311,25 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.BlockGasAPI" title="ape.api.providers.BlockGasAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockGasAPI</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.BlockConsensusAPI" title="ape.api.providers.BlockConsensusAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockConsensusAPI</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockAPI</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p></td>
 <td><p>A Provider must work with a particular Network in a particular Ecosystem</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.TestProviderAPI" title="ape.api.providers.TestProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.TestProviderAPI" title="ape.api.providers.TestProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a></p></td>
 <td><p>An API for providers that have development functionality, such as snapshotting.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.Web3Provider" title="ape.api.providers.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Web3Provider</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.Web3Provider" title="ape.api.providers.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Web3Provider</span></code></a></p></td>
 <td><p>A base provider that is web3 based.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.UpstreamProvider" title="ape.api.providers.UpstreamProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.UpstreamProvider" title="ape.api.providers.UpstreamProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a></p></td>
 <td><p>A provider that can also be set as another provider’s upstream.</p></td>
 </tr>
 </tbody>
@@ -503,6 +541,96 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 </dd></dl>
 
 <dl class="py class">
+<dt id="ape.api.providers.BlockGasAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">BlockGasAPI</span></code><a class="headerlink" href="#ape.api.providers.BlockGasAPI" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt id="ape.api.providers.BlockGasAPI.gas_limit">
+<code class="sig-name descname"><span class="pre">gas_limit</span></code><em class="property"> <span class="pre">:int</span></em><a class="headerlink" href="#ape.api.providers.BlockGasAPI.gas_limit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.BlockGasAPI.gas_used">
+<code class="sig-name descname"><span class="pre">gas_used</span></code><em class="property"> <span class="pre">:int</span></em><a class="headerlink" href="#ape.api.providers.BlockGasAPI.gas_used" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.BlockGasAPI.base_fee">
+<code class="sig-name descname"><span class="pre">base_fee</span></code><em class="property"> <span class="pre">:Optional[int]</span></em><a class="headerlink" href="#ape.api.providers.BlockGasAPI.base_fee" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.BlockGasAPI.decode">
+<em class="property"><span class="pre">abstract</span> <span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.BlockGasAPI" title="ape.api.providers.BlockGasAPI"><span class="pre">BlockGasAPI</span></a><a class="headerlink" href="#ape.api.providers.BlockGasAPI.decode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.providers.BlockConsensusAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">BlockConsensusAPI</span></code><a class="headerlink" href="#ape.api.providers.BlockConsensusAPI" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt id="ape.api.providers.BlockConsensusAPI.difficulty">
+<code class="sig-name descname"><span class="pre">difficulty</span></code><em class="property"> <span class="pre">:Optional[int]</span></em><a class="headerlink" href="#ape.api.providers.BlockConsensusAPI.difficulty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.BlockConsensusAPI.total_difficulty">
+<code class="sig-name descname"><span class="pre">total_difficulty</span></code><em class="property"> <span class="pre">:Optional[int]</span></em><a class="headerlink" href="#ape.api.providers.BlockConsensusAPI.total_difficulty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.BlockConsensusAPI.decode">
+<em class="property"><span class="pre">abstract</span> <span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.BlockConsensusAPI" title="ape.api.providers.BlockConsensusAPI"><span class="pre">BlockConsensusAPI</span></a><a class="headerlink" href="#ape.api.providers.BlockConsensusAPI.decode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.providers.BlockAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">BlockAPI</span></code><a class="headerlink" href="#ape.api.providers.BlockAPI" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt id="ape.api.providers.BlockAPI.gas_data">
+<code class="sig-name descname"><span class="pre">gas_data</span></code><em class="property"> <span class="pre">:BlockGasAPI</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.gas_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.BlockAPI.consensus_data">
+<code class="sig-name descname"><span class="pre">consensus_data</span></code><em class="property"> <span class="pre">:BlockConsensusAPI</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.consensus_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.BlockAPI.hash">
+<code class="sig-name descname"><span class="pre">hash</span></code><em class="property"> <span class="pre">:hexbytes.HexBytes</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.hash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.BlockAPI.number">
+<code class="sig-name descname"><span class="pre">number</span></code><em class="property"> <span class="pre">:int</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.number" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.BlockAPI.parent_hash">
+<code class="sig-name descname"><span class="pre">parent_hash</span></code><em class="property"> <span class="pre">:hexbytes.HexBytes</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.parent_hash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.BlockAPI.size">
+<code class="sig-name descname"><span class="pre">size</span></code><em class="property"> <span class="pre">:int</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.BlockAPI.timestamp">
+<code class="sig-name descname"><span class="pre">timestamp</span></code><em class="property"> <span class="pre">:float</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.BlockAPI.decode">
+<em class="property"><span class="pre">abstract</span> <span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">BlockAPI</span></a><a class="headerlink" href="#ape.api.providers.BlockAPI.decode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt id="ape.api.providers.ProviderAPI">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">ProviderAPI</span></code><a class="headerlink" href="#ape.api.providers.ProviderAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Provider must work with a particular Network in a particular Ecosystem</p>
@@ -592,6 +720,11 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="ape.api.providers.ProviderAPI.get_block">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_block</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../types/index.html#ape.types.BlockID" title="ape.types.BlockID"><span class="pre">ape.types.BlockID</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">BlockAPI</span></a><a class="headerlink" href="#ape.api.providers.ProviderAPI.get_block" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.providers.ProviderAPI.send_call">
 <em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">send_call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bytes</span><a class="headerlink" href="#ape.api.providers.ProviderAPI.send_call" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -676,7 +809,28 @@ a value used in replay-protected transaction signing as introduced by EIP-155.</
 <dl class="py method">
 <dt id="ape.api.providers.Web3Provider.base_fee">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">base_fee</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.providers.Web3Provider.base_fee" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the current base fee from the latest block.</p>
+<p>NOTE: If your chain does not support base_fees (EIP-1559),
+this method will raise a not-implemented error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.Web3Provider.get_block">
+<code class="sig-name descname"><span class="pre">get_block</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../types/index.html#ape.types.BlockID" title="ape.types.BlockID"><span class="pre">ape.types.BlockID</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">BlockAPI</span></a><a class="headerlink" href="#ape.api.providers.Web3Provider.get_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a block for the given ID.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>block_id: The ID of the block to get. Set as</dt><dd><p>“latest” to get the latest block,
+“earliest” to get the earliest block,
+“pending” to get the pending block,
+or pass in a block number or hash.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>The block for the given block ID.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.providers.Web3Provider.get_nonce">

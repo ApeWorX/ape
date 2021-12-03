@@ -76,6 +76,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.StaticFeeTransaction">StaticFeeTransaction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.DynamicFeeTransaction">DynamicFeeTransaction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.Receipt">Receipt</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.BlockGasFee">BlockGasFee</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.BlockConsensus">BlockConsensus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.Block">Block</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.Ethereum">Ethereum</a></li>
 </ul>
 </li>
@@ -179,7 +182,16 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ape_ethereum.ecosystem.Receipt" title="ape_ethereum.ecosystem.Receipt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Receipt</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape_ethereum.ecosystem.Ethereum" title="ape_ethereum.ecosystem.Ethereum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ethereum</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_ethereum.ecosystem.BlockGasFee" title="ape_ethereum.ecosystem.BlockGasFee"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockGasFee</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_ethereum.ecosystem.BlockConsensus" title="ape_ethereum.ecosystem.BlockConsensus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockConsensus</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_ethereum.ecosystem.Block" title="ape_ethereum.ecosystem.Block"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Block</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_ethereum.ecosystem.Ethereum" title="ape_ethereum.ecosystem.Ethereum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ethereum</span></code></a></p></td>
 <td><p>An Ecosystem is a set of related Networks</p></td>
 </tr>
 </tbody>
@@ -304,6 +316,49 @@ when the transaction has a failing status otherwise.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt id="ape_ethereum.ecosystem.BlockGasFee">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_ethereum.ecosystem.</span></code><code class="sig-name descname"><span class="pre">BlockGasFee</span></code><a class="headerlink" href="#ape_ethereum.ecosystem.BlockGasFee" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ape/api/index.html#ape.api.BlockGasAPI" title="ape.api.BlockGasAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.BlockGasAPI</span></code></a></p>
+<dl class="py method">
+<dt id="ape_ethereum.ecosystem.BlockGasFee.decode">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../ape/api/index.html#ape.api.BlockGasAPI" title="ape.api.BlockGasAPI"><span class="pre">ape.api.BlockGasAPI</span></a><a class="headerlink" href="#ape_ethereum.ecosystem.BlockGasFee.decode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape_ethereum.ecosystem.BlockConsensus">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_ethereum.ecosystem.</span></code><code class="sig-name descname"><span class="pre">BlockConsensus</span></code><a class="headerlink" href="#ape_ethereum.ecosystem.BlockConsensus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ape/api/index.html#ape.api.BlockConsensusAPI" title="ape.api.BlockConsensusAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.BlockConsensusAPI</span></code></a></p>
+<dl class="py attribute">
+<dt id="ape_ethereum.ecosystem.BlockConsensus.difficulty">
+<code class="sig-name descname"><span class="pre">difficulty</span></code><em class="property"> <span class="pre">:Optional[int]</span></em><a class="headerlink" href="#ape_ethereum.ecosystem.BlockConsensus.difficulty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape_ethereum.ecosystem.BlockConsensus.total_difficulty">
+<code class="sig-name descname"><span class="pre">total_difficulty</span></code><em class="property"> <span class="pre">:Optional[int]</span></em><a class="headerlink" href="#ape_ethereum.ecosystem.BlockConsensus.total_difficulty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape_ethereum.ecosystem.BlockConsensus.decode">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../ape/api/index.html#ape.api.BlockConsensusAPI" title="ape.api.BlockConsensusAPI"><span class="pre">ape.api.BlockConsensusAPI</span></a><a class="headerlink" href="#ape_ethereum.ecosystem.BlockConsensus.decode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape_ethereum.ecosystem.Block">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_ethereum.ecosystem.</span></code><code class="sig-name descname"><span class="pre">Block</span></code><a class="headerlink" href="#ape_ethereum.ecosystem.Block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ape/api/index.html#ape.api.BlockAPI" title="ape.api.BlockAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.BlockAPI</span></code></a></p>
+<dl class="py method">
+<dt id="ape_ethereum.ecosystem.Block.decode">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../ape/api/index.html#ape.api.BlockAPI" title="ape.api.BlockAPI"><span class="pre">ape.api.BlockAPI</span></a><a class="headerlink" href="#ape_ethereum.ecosystem.Block.decode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt id="ape_ethereum.ecosystem.Ethereum">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_ethereum.ecosystem.</span></code><code class="sig-name descname"><span class="pre">Ethereum</span></code><a class="headerlink" href="#ape_ethereum.ecosystem.Ethereum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../../ape/api/index.html#ape.api.EcosystemAPI" title="ape.api.EcosystemAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.EcosystemAPI</span></code></a></p>
@@ -316,6 +371,11 @@ when the transaction has a failing status otherwise.</p>
 <dl class="py attribute">
 <dt id="ape_ethereum.ecosystem.Ethereum.receipt_class">
 <code class="sig-name descname"><span class="pre">receipt_class</span></code><a class="headerlink" href="#ape_ethereum.ecosystem.Ethereum.receipt_class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape_ethereum.ecosystem.Ethereum.block_class">
+<code class="sig-name descname"><span class="pre">block_class</span></code><a class="headerlink" href="#ape_ethereum.ecosystem.Ethereum.block_class" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

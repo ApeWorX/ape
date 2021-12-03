@@ -75,14 +75,14 @@
       
 
    .. attribute:: _plugin_configs
-      :annotation: :Dict[str, ape.api.config.ConfigItem]
+      :annotation: :Dict[str, ape.api.ConfigItem]
 
       
 
    .. py:method:: __post_init__(self)
 
 
-   .. py:method:: get_config(self, plugin_name: str) -> ape.api.config.ConfigItem
+   .. py:method:: get_config(self, plugin_name: str) -> ape.api.ConfigItem
 
 
    .. py:method:: serialize(self) -> Dict
