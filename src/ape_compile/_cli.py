@@ -38,15 +38,10 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
         cli_ctx.logger.warning("No 'contracts/' directory detected")
         return
 
-    ext_with_missing_compilers = cli_ctx.project.extensions_with_missing_compilers
     ext_given = [p.suffix for p in file_paths if p]
+    ext_with_missing_compilers = cli_ctx.project.extensions_with_missing_compilers(ext_given)
     if ext_with_missing_compilers:
-        extensions = (
-            [e for e in ext_given if e in ext_with_missing_compilers]
-            if ext_given
-            else ext_with_missing_compilers
-        )
-        extensions_str = ", ".join(extensions)
+        extensions_str = ", ".join(ext_with_missing_compilers)
         message = f"No compilers detected for the following extensions: {extensions_str}"
         cli_ctx.logger.warning(message)
 
