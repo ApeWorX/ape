@@ -195,7 +195,7 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
     return current_value
 
 
-class GitHubClient:
+class GithubClient:
     TOKEN_KEY = "GITHUB_ACCESS_TOKEN"
 
     def __init__(self):
@@ -223,7 +223,7 @@ class GitHubClient:
         }
 
 
-github_client = GitHubClient()
+github_client = GithubClient()
 
 
 __all__ = [
