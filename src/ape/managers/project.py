@@ -86,11 +86,16 @@ class ProjectManager:
     def sources_missing(self) -> bool:
         return not self.contracts_folder.exists() or not self.contracts_folder.iterdir()
 
-    @property
-    def extensions_with_missing_compilers(self) -> List[str]:
-        """All file extensions in the `contracts/` directory (recursively)
-        that do not correspond to a registered compiler."""
-        extensions = []
+    def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
+        """
+        All file extensions in the `contracts/` directory (recursively)
+        that do not correspond to a registered compiler.
+
+        Args:
+            extensions: If provided, returns only extensions that
+                are in this list. Useful for checking against a sub-set of source files.
+        """
+        exts = []
 
         def _append_extensions_in_dir(directory: Path):
             for file in directory.iterdir():
@@ -98,13 +103,16 @@ class ProjectManager:
                     _append_extensions_in_dir(file)
                 elif (
                     file.suffix
-                    and file.suffix not in extensions
+                    and file.suffix not in exts
                     and file.suffix not in self.compilers.registered_compilers
                 ):
-                    extensions.append(file.suffix)
+                    exts.append(file.suffix)
 
         _append_extensions_in_dir(self.contracts_folder)
-        return extensions
+        if extensions:
+            exts = [e for e in exts if e in extensions]
+
+        return exts
 
     def lookup_path(self, key_contract_path: Path) -> Optional[Path]:
         """

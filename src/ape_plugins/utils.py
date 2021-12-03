@@ -1,28 +1,10 @@
-import os
-from typing import Dict, Set, Tuple
-
-from github import Github
+from typing import Dict, Tuple
 
 from ape.__modules__ import __modules__
 from ape.exceptions import ConfigError
-from ape.logging import logger
 
 # Plugins maintained OSS by ApeWorX (and trusted)
-FIRST_CLASS_PLUGINS = set(__modules__)
-
-SECOND_CLASS_PLUGINS: Set[str] = set()
-
-# TODO: Should the github client be in core?
-# TODO: Handle failures with connecting to github (potentially cached on disk?)
-if "GITHUB_ACCESS_TOKEN" in os.environ:
-    author = Github(os.environ["GITHUB_ACCESS_TOKEN"]).get_organization("ApeWorX")
-
-    SECOND_CLASS_PLUGINS = {
-        repo.name.replace("-", "_") for repo in author.get_repos() if repo.name.startswith("ape-")
-    }
-
-else:
-    logger.warning("$GITHUB_ACCESS_TOKEN not set, unable to list all plugins")
+CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
 
 
 def is_plugin_installed(plugin: str) -> bool:
