@@ -214,7 +214,7 @@ class GithubClient:
     def available_plugins(self) -> Set[str]:
         if not self.has_auth:
             logger.warning(f"${self.TOKEN_KEY} not set, unable to list all plugins.")
-            return Set()
+            return set()
 
         return {
             repo.name.replace("-", "_")
