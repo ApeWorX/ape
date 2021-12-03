@@ -7,10 +7,9 @@ import click
 from ape import config
 from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.plugins import clean_plugin_name, plugin_manager
-from ape.utils import get_package_version
+from ape.utils import get_package_version, github_client
 from ape_plugins.utils import (
-    FIRST_CLASS_PLUGINS,
-    SECOND_CLASS_PLUGINS,
+    CORE_PLUGINS,
     extract_module_and_package_install_names,
     is_plugin_installed,
 )
@@ -58,17 +57,17 @@ def _list(cli_ctx, display_all):
     for name, plugin in plugin_manager.list_name_plugin():
         version = get_package_version(name)
 
-        if name in FIRST_CLASS_PLUGINS:
+        if name in CORE_PLUGINS:
             if not display_all:
-
                 continue  # NOTE: Skip 1st class plugins unless specified
-            installed_first_class_plugins.add(f"{name}")
 
-        elif name in SECOND_CLASS_PLUGINS:
+            installed_first_class_plugins.add(name)
+
+        elif name in github_client.available_plugins:
             installed_second_class_plugins.add(f"{name}     {version}")
-            installed_second_class_plugins_no_version.add(f"{name}")
+            installed_second_class_plugins_no_version.add(name)
 
-        elif name not in FIRST_CLASS_PLUGINS or name not in SECOND_CLASS_PLUGINS:
+        elif name not in CORE_PLUGINS or name not in github_client.available_plugins:
             installed_third_class_plugins.add(f"{name}      {version})")
         else:
             cli_ctx.logger.error(f"{name} is not a plugin.")
@@ -80,7 +79,9 @@ def _list(cli_ctx, display_all):
         sections["Installed Core Plugins"] = [installed_first_class_plugins]
 
     # Second and Third Class Plugins
-    available_second = list(SECOND_CLASS_PLUGINS - installed_second_class_plugins_no_version)
+    available_second = list(
+        github_client.available_plugins - installed_second_class_plugins_no_version
+    )
 
     if installed_second_class_plugins:
         sections["Installed Plugins"] = [
@@ -101,7 +102,7 @@ def _list(cli_ctx, display_all):
             sections["Available Plugins"] = [available_second_output]
 
         else:
-            if SECOND_CLASS_PLUGINS:
+            if github_client.available_plugins:
                 click.echo("You have installed all the available Plugins\n")
 
     for i in range(0, len(sections)):
@@ -128,14 +129,14 @@ def add(cli_ctx, plugin, version, skip_confirmation):
     if version:
         plugin = f"{plugin}=={version}"
 
-    if plugin in FIRST_CLASS_PLUGINS:
+    if plugin in CORE_PLUGINS:
         cli_ctx.abort(f"Cannot add 1st class plugin '{plugin}'")
 
     elif is_plugin_installed(plugin):
         cli_ctx.abort(f"Plugin '{plugin}' already installed")
 
     elif (
-        plugin in SECOND_CLASS_PLUGINS
+        plugin in github_client.available_plugins
         or skip_confirmation
         or click.confirm(f"Install unknown 3rd party plugin '{plugin}'?")
     ):
@@ -154,7 +155,7 @@ def install(cli_ctx, skip_confirmation):
     for plugin in plugins:
         module_name, package_name = extract_module_and_package_install_names(plugin)
         if not is_plugin_installed(module_name) and (
-            module_name in SECOND_CLASS_PLUGINS
+            module_name in github_client.available_plugins
             or skip_confirmation
             or click.confirm(f"Install unknown 3rd party plugin '{package_name}'?")
         ):
@@ -179,7 +180,7 @@ def remove(cli_ctx, plugin, skip_confirmation):
     if not is_plugin_installed(plugin):
         cli_ctx.abort(f"Plugin '{plugin}' is not installed")
 
-    elif plugin in FIRST_CLASS_PLUGINS:
+    elif plugin in CORE_PLUGINS:
         cli_ctx.abort(f"Cannot remove 1st class plugin '{plugin}'")
 
     elif skip_confirmation or click.confirm(
