@@ -3,7 +3,7 @@ from typing import Dict, List, Set
 
 from dataclassy import dataclass
 
-from ape.api.compiler import CompilerAPI
+from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
 from ape.plugins import PluginManager

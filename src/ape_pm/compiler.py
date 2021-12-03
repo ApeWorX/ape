@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import List, Set
 
-from ape.api.compiler import CompilerAPI
+from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.types import ContractType
 
