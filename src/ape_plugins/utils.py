@@ -4,9 +4,7 @@ from ape.__modules__ import __modules__
 from ape.exceptions import ConfigError
 
 # Plugins maintained OSS by ApeWorX (and trusted)
-FIRST_CLASS_PLUGINS = set(__modules__)
-
-# TODO: Handle failures with connecting to github (potentially cached on disk?)
+CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
 
 
 def is_plugin_installed(plugin: str) -> bool:

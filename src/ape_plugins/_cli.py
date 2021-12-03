@@ -9,7 +9,7 @@ from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import get_package_version, github_client
 from ape_plugins.utils import (
-    FIRST_CLASS_PLUGINS,
+    CORE_PLUGINS,
     extract_module_and_package_install_names,
     is_plugin_installed,
 )
@@ -57,17 +57,17 @@ def _list(cli_ctx, display_all):
     for name, plugin in plugin_manager.list_name_plugin():
         version = get_package_version(name)
 
-        if name in FIRST_CLASS_PLUGINS:
+        if name in CORE_PLUGINS:
             if not display_all:
-
                 continue  # NOTE: Skip 1st class plugins unless specified
-            installed_first_class_plugins.add(f"{name}")
+
+            installed_first_class_plugins.add(name)
 
         elif name in github_client.available_plugins:
             installed_second_class_plugins.add(f"{name}     {version}")
-            installed_second_class_plugins_no_version.add(f"{name}")
+            installed_second_class_plugins_no_version.add(name)
 
-        elif name not in FIRST_CLASS_PLUGINS or name not in github_client.available_plugins:
+        elif name not in CORE_PLUGINS or name not in github_client.available_plugins:
             installed_third_class_plugins.add(f"{name}      {version})")
         else:
             cli_ctx.logger.error(f"{name} is not a plugin.")
@@ -129,7 +129,7 @@ def add(cli_ctx, plugin, version, skip_confirmation):
     if version:
         plugin = f"{plugin}=={version}"
 
-    if plugin in FIRST_CLASS_PLUGINS:
+    if plugin in CORE_PLUGINS:
         cli_ctx.abort(f"Cannot add 1st class plugin '{plugin}'")
 
     elif is_plugin_installed(plugin):
@@ -180,7 +180,7 @@ def remove(cli_ctx, plugin, skip_confirmation):
     if not is_plugin_installed(plugin):
         cli_ctx.abort(f"Plugin '{plugin}' is not installed")
 
-    elif plugin in FIRST_CLASS_PLUGINS:
+    elif plugin in CORE_PLUGINS:
         cli_ctx.abort(f"Cannot remove 1st class plugin '{plugin}'")
 
     elif skip_confirmation or click.confirm(
