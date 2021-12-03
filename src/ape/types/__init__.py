@@ -14,7 +14,7 @@ if sys.version_info >= (3, 8):
 else:
     from typing_extensions import Literal
 
-BlockID = Union[str, int, HexBytes, Literal["latest"], Literal["pending"]]
+BlockID = Union[str, int, HexBytes, Literal["earliest", "latest", "pending"]]
 
 __all__ = [
     "ABI",
