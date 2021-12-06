@@ -42,7 +42,7 @@ class CompilerManager:
         for extension in extensions:
             paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
             for path in paths_to_compile:
-                logger.info(f"Compiling '{self._get_contract_path(path)}'")
+                logger.info(f"Compiling '{self._get_contract_path(path)}'.")
 
             for contract_type in self.registered_compilers[extension].compile(paths_to_compile):
 
