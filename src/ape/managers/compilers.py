@@ -23,8 +23,8 @@ class CompilerManager:
         registered_compilers = {}
 
         for plugin_name, (extensions, compiler_class) in self.plugin_manager.register_compiler:
-            # TODO: Add config via ``self.config.get_config(plugin_name)``
-            compiler = compiler_class()
+            config = self.config.get_config(plugin_name)
+            compiler = compiler_class(config=config)
 
             for extension in extensions:
 
