@@ -234,8 +234,8 @@ class ContractInstance(AddressAPI):
 
 @dataclass
 class ContractContainer:
-    _provider: ProviderAPI
     _contract_type: ContractType
+    _provider: Optional[ProviderAPI]
 
     def __repr__(self) -> str:
         return f"<{self._contract_type.contractName}>"
