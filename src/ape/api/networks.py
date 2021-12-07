@@ -204,7 +204,6 @@ class NetworkAPI:
     plugin_manager: PluginManager
     data_folder: Path  # For caching any data that might need caching
     request_header: str
-
     _default_provider: str = ""
 
     @cached_property
@@ -218,7 +217,7 @@ class NetworkAPI:
 
         if not provider:
             message = (
-                "Cannot determine `chain_id`, please make sure you are connected to a provider"
+                "Cannot determine 'chain_id', please make sure you are connected to a provider."
             )
             raise NetworkError(message)
 
@@ -228,6 +227,18 @@ class NetworkAPI:
     def network_id(self) -> int:
         # NOTE: Unless overridden, returns same as chain_id
         return self.chain_id
+
+    @property
+    def required_confirmations(self) -> int:
+        """
+        The default amount of confirmations recommended to wait
+        before considering a transaction "confirmed".
+        """
+        try:
+            return self.config[self.name]["required_confirmations"]
+        except KeyError:
+            # Is likely a 'development' network.
+            return 0
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:

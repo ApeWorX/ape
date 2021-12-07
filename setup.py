@@ -22,7 +22,7 @@ extras_require = {
         "mypy>=0.910,<1.0",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
-        "flake8>=3.8.3,<4.0",  # Style linter
+        "flake8>=3.9.2,<4.0",  # Style linter
         "flake8-breakpoint>=1.1.0,<2.0.0",  # detect breakpoints left in code
         "flake8-print>=4.0.0,<5.0.0",  # detect print statements left in code
         "isort>=5.9.3,<6.0",  # Import sorting linter
@@ -83,6 +83,7 @@ setup(
         "requests>=2.25.1,<3.0",
         "importlib-metadata",
         "singledispatchmethod ; python_version<'3.8'",
+        "tqdm>=4.62.3,<5.0",
         "IPython>=7.25",
         "pytest>=6.0,<7.0",
         "rich>=10.14,<11",
