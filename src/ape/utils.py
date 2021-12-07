@@ -212,10 +212,6 @@ class GithubClient:
 
     @cached_property
     def available_plugins(self) -> Set[str]:
-        if not self.has_auth:
-            logger.warning(f"${self.TOKEN_KEY} not set, unable to list all plugins.")
-            return set()
-
         return {
             repo.name.replace("-", "_")
             for repo in self.ape_org.get_repos()
