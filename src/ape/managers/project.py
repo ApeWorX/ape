@@ -222,7 +222,7 @@ class ProjectManager:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
         return ContractContainer(  # type: ignore
-            _contract_type=contract_type, _provider=self.networks.active_provider
+            contract_type=contract_type, _provider=self.networks.active_provider
         )
 
     @property

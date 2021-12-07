@@ -141,12 +141,12 @@ class AccountAPI(AddressAPI):
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
         address = click.style(receipt.contract_address, bold=True)
-        logger.success(f"Contract '{contract._contract_type.contractName}' deployed to: {address}")
+        logger.success(f"Contract '{contract.contract_type.contractName}' deployed to: {address}")
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,
             _address=receipt.contract_address,
-            _contract_type=contract._contract_type,
+            _contract_type=contract.contract_type,
         )
 
 
