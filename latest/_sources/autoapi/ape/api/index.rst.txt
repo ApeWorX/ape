@@ -130,7 +130,7 @@
    .. py:method:: transfer(self, account: Union[str, ape.types.AddressType, ape.api.address.AddressAPI], value: Union[str, int, None] = None, data: Union[bytes, str, None] = None, **kwargs) -> ape.api.providers.ReceiptAPI
 
 
-   .. py:method:: deploy(self, contract_type: ape.types.ContractType, *args, **kwargs) -> ape.api.contracts.ContractInstance
+   .. py:method:: deploy(self, contract: ape.api.contracts.ContractContainer, *args, **kwargs) -> ape.api.contracts.ContractInstance
 
 
 

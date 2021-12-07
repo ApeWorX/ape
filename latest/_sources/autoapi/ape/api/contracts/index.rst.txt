@@ -272,13 +272,13 @@
 
 .. py:class:: ContractContainer
 
-   .. attribute:: _provider
-      :annotation: :ape.api.providers.ProviderAPI
+   .. attribute:: contract_type
+      :annotation: :ape.types.ContractType
 
       
 
-   .. attribute:: _contract_type
-      :annotation: :ape.types.ContractType
+   .. attribute:: _provider
+      :annotation: :Optional[ape.api.providers.ProviderAPI]
 
       
 

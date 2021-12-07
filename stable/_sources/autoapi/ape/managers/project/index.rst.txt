@@ -40,6 +40,11 @@
 
       
 
+   .. attribute:: networks
+      :annotation: :ape.managers.networks.NetworkManager
+
+      
+
    .. attribute:: dependencies
       :annotation: :Dict[str, ape.types.PackageManifest]
 
