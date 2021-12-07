@@ -34,10 +34,13 @@ def test_invocation(ape_cli, runner, args):
     ),
 )
 def test_invocation_run_once(ape_cli, runner, args):
-    try:
-        result = runner.invoke(ape_cli, args)
-        assert result.exit_code == 0
-    except RateLimitExceededException:
-        # We were rate-limited because we don't have the access token.
-        # The test still passes because we are able to call the command.
-        pass
+    result = runner.invoke(ape_cli, args)
+
+    if result.exit_code != 0:
+        # Check if failed because we were rate-limited.
+        # If that is the case, consider the test as passing.
+        err = result.exception
+        if not isinstance(err, RateLimitExceededException):
+            assert False, result.output
+
+    # Test Passed
