@@ -4,6 +4,8 @@ from typing import Any, List, Optional
 import click
 from click import Context, Parameter
 
+from ape.utils import get_all_files_in_directory
+
 
 class Path(click.Path):
     """
@@ -25,7 +27,4 @@ class AllFilePaths(Path):
         self, value: Any, param: Optional["Parameter"], ctx: Optional["Context"]
     ) -> List[PathLibPath]:
         path = super().convert(value, param, ctx)
-        if path.is_dir():
-            return list(path.rglob("*.*"))
-
-        return [path]
+        return get_all_files_in_directory(path)

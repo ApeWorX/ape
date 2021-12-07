@@ -34,7 +34,7 @@ class ConfigManager:
         # Top level config items
         self.name = user_config.pop("name", "")
         self.version = user_config.pop("version", "")
-        self.dependencies = user_config.pop("dependencies", [])
+        self.dependencies = user_config.pop("dependencies", {})
 
         for plugin_name, config_class in self.plugin_manager.config_class:
             # NOTE: `dict.pop()` is used for checking if all config was processed

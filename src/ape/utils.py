@@ -1,19 +1,27 @@
 import collections
+import contextlib
 import json
 import os
+import shutil
+import sys
+import zipfile
 from copy import deepcopy
 from functools import lru_cache
 from hashlib import md5
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Set
 
+import requests
 import yaml
 from eth_account import Account
 from eth_account.hdaccount import HDPath, seed_from_mnemonic
 from github import Github
 from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions, version
+from tqdm import tqdm  # type: ignore
 
+from ape.exceptions import CompilerError
 from ape.logging import logger
 
 try:
@@ -25,6 +33,11 @@ try:
     from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
+
+_python_version = (
+    f"{sys.version_info.major}.{sys.version_info.minor}"
+    f".{sys.version_info.micro} {sys.version_info.releaselevel}"
+)
 
 
 @lru_cache(maxsize=None)
@@ -93,6 +106,10 @@ def get_package_version(obj: Any) -> str:
     except PackageNotFoundError:
         # NOTE: Must handle empty string result here
         return ""
+
+
+__version__ = get_package_version(__name__)
+USER_AGENT = f"Ape/{__version__} (Python/{_python_version})"
 
 
 def deep_merge(dict1, dict2):
@@ -195,6 +212,36 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
     return current_value
 
 
+@contextlib.contextmanager
+def temporary_directory(base_path: Optional[Path] = None):
+    base_path = base_path or Path(".").resolve()
+    tmp_path = base_path / ".tmp"
+    if tmp_path.exists():
+        raise ValueError(f"Cannot use temporary directory '{tmp_path}': one already exists.")
+
+    tmp_path.mkdir(parents=True)
+    try:
+        yield tmp_path
+    finally:
+        shutil.rmtree(tmp_path)
+
+
+def stream_response(download_url: str, progress_bar_description: str = "Downloading") -> bytes:
+    response = requests.get(download_url, stream=True)
+    response.raise_for_status()
+
+    total_size = int(response.headers.get("content-length", 0))
+    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
+    progress_bar.set_description(progress_bar_description)
+    content = bytes()
+    for data in response.iter_content(1024, decode_unicode=True):
+        progress_bar.update(len(data))
+        content += data
+
+    progress_bar.close()
+    return content
+
+
 class GithubClient:
     TOKEN_KEY = "GITHUB_ACCESS_TOKEN"
 
@@ -204,7 +251,7 @@ class GithubClient:
         if self.has_auth:
             token = os.environ[self.TOKEN_KEY]
 
-        self._client = Github(login_or_token=token)
+        self._client = Github(login_or_token=token, user_agent=USER_AGENT)
 
     @cached_property
     def ape_org(self):
@@ -218,8 +265,54 @@ class GithubClient:
             if repo.name.startswith("ape-")
         }
 
+    def get_release(self, repo_path: str, version: str):
+        repo = self._client.get_repo(repo_path)
+
+        if not version.startswith("v"):
+            version = f"v{version}"
+
+        return repo.get_release(version)
+
+    def download_package(self, repo_path: str, version: str, target_path: Path):
+        if not target_path or not target_path.exists() or not target_path.is_dir():
+            raise ValueError(f"'target_path' must be a valid directory (got '{target_path}').")
+
+        release = self.get_release(repo_path, version)
+        description = f"Downloading {repo_path}@{version}"
+        release_content = stream_response(release.zipball_url, progress_bar_description=description)
+
+        # Use temporary path to isolate a package when unzipping
+        with temporary_directory(base_path=target_path) as temp_path:
+            with zipfile.ZipFile(BytesIO(release_content)) as zf:
+                zf.extractall(temp_path)
+
+            # Copy the directory contents into the target path.
+            downloaded_packages = [f for f in temp_path.iterdir() if f.is_dir()]
+            if len(downloaded_packages) < 1:
+                raise CompilerError(f"Unable to download package at '{repo_path}'.")
+            package_path = temp_path / downloaded_packages[0]
+            for source_file in package_path.iterdir():
+                shutil.move(str(source_file), str(target_path))
+
 
 github_client = GithubClient()
+
+
+def get_all_files_in_directory(path: Path) -> List[Path]:
+    """
+    Returns all the files in a directory structure.
+
+    For example: Given a dir structure like
+        dir_a: dir_b, file_a, file_b
+        dir_b: file_c
+
+      and you provide the path to `dir_a`, it will return a list containing
+      the Paths to `file_a`, `file_b` and `file_c`.
+    """
+    if path.is_dir():
+        return list(path.rglob("*.*"))
+
+    return [path]
 
 
 __all__ = [
@@ -229,9 +322,12 @@ __all__ = [
     "extract_nested_value",
     "get_relative_path",
     "gas_estimation_error_message",
+    "get_package_version",
     "github_client",
     "GeneratedDevAccount",
     "generate_dev_accounts",
+    "get_all_files_in_directory",
     "load_config",
     "singledispatchmethod",
+    "USER_AGENT",
 ]
