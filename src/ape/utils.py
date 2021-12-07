@@ -302,7 +302,7 @@ class GithubClient:
 github_client = GithubClient()
 
 
-def get_all_files_in_directory(directory: Path) -> List[Path]:
+def get_all_files_in_directory(path: Path) -> List[Path]:
     """
     Returns all the files in a directory structure.
 
@@ -313,18 +313,10 @@ def get_all_files_in_directory(directory: Path) -> List[Path]:
       and you provide the path to `dir_a`, it will return a list containing
       the Paths to `file_a`, `file_b` and `file_c`.
     """
-    if not directory.is_dir():
-        # Was given a file, return a list of just that file.
-        return [directory]
+    if path.is_dir():
+        return list(path.rglob("*.*"))
 
-    all_files = []
-    for file in directory.iterdir():
-        if file.is_dir():
-            all_files.extend(get_all_files_in_directory(file))
-        else:
-            all_files.append(file)
-
-    return all_files
+    return [path]
 
 
 __all__ = [
