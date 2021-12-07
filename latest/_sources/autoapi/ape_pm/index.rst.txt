@@ -44,7 +44,7 @@
 
 .. py:class:: InterfaceCompiler
 
-   Bases: :py:obj:`ape.api.compiler.CompilerAPI`
+   Bases: :py:obj:`ape.api.CompilerAPI`
 
    .. py:method:: name(self) -> str
       :property:

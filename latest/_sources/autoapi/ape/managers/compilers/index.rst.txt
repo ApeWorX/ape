@@ -35,7 +35,7 @@
 
       
 
-   .. py:method:: registered_compilers(self) -> Dict[str, ape.api.compiler.CompilerAPI]
+   .. py:method:: registered_compilers(self) -> Dict[str, ape.api.CompilerAPI]
 
 
    .. py:method:: compile(self, contract_filepaths: List[pathlib.Path]) -> Dict[str, ape.types.ContractType]
