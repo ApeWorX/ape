@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Unio
 
 import click
 
-from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
+from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.utils import cached_property
@@ -97,6 +97,11 @@ class AccountAPI(AddressAPI):
                 "Are you using the correct provider/account combination?\n"
                 f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
             )
+
+        if txn.required_confirmations is None:
+            txn.required_confirmations = self.provider.network.required_confirmations
+        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
+            raise TransactionError(message="'required_confirmations' must be a positive integer.")
 
         txn.signature = self.sign_transaction(txn)
         if not txn.signature:

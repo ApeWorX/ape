@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List, Set
 
+from ape.api import ConfigItem
 from ape.types import ContractType
 
 from .base import abstractdataclass, abstractmethod
@@ -8,6 +9,8 @@ from .base import abstractdataclass, abstractmethod
 
 @abstractdataclass
 class CompilerAPI:
+    config: ConfigItem
+
     @property
     @abstractmethod
     def name(self) -> str:
