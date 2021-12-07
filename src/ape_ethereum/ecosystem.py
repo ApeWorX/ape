@@ -168,7 +168,7 @@ class Receipt(ReceiptAPI):
     def decode(cls, data: dict) -> ReceiptAPI:
         return cls(  # type: ignore
             provider=data["provider"],
-            required_confirmations=data.get("required_confirmations"),
+            required_confirmations=data.get("required_confirmations", 0),
             txn_hash=data["hash"],
             status=TransactionStatusEnum(data["status"]),
             block_number=data["blockNumber"],
