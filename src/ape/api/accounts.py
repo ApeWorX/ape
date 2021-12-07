@@ -98,6 +98,9 @@ class AccountAPI(AddressAPI):
                 f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
             )
 
+        if txn.required_confirmations is None:
+            txn.required_confirmations = self.provider.network.required_confirmations
+
         txn.signature = self.sign_transaction(txn)
         if not txn.signature:
             raise SignatureError("The transaction was not signed.")

@@ -37,7 +37,7 @@ def test_account_api_can_sign(mock_account_container_api, mock_provider_api):
 
 
 class TestAccountAPI:
-    def test_txn_nonce_less_than_accounts_raise_tx_error(
+    def test_txn_nonce_less_than_accounts_raises_tx_error(
         self, mocker, mock_provider_api, test_account_api_can_sign
     ):
         mock_transaction = mocker.MagicMock(spec=TransactionAPI)
@@ -87,7 +87,7 @@ class TestAccountAPI:
 
         assert str(err.value) == "The transaction was not signed."
 
-    def test_transaction_when_no_gas_limit_calls_estimate_gas_cost(
+    def test_call_when_no_gas_limit_calls_estimate_gas_cost(
         self, mocker, mock_provider_api, test_account_api_can_sign
     ):
         mock_transaction = mocker.MagicMock(spec=TransactionAPI)
@@ -99,3 +99,18 @@ class TestAccountAPI:
         mock_transaction.signature.return_value = "test-signature"
         test_account_api_can_sign.call(mock_transaction)
         mock_provider_api.estimate_gas_cost.assert_called_once_with(mock_transaction)
+
+    def test_call_sets_required_confirmations(
+        self, mocker, mock_provider_api, test_account_api_can_sign
+    ):
+        mock_transaction = mocker.MagicMock(spec=TransactionAPI)
+        mock_transaction.type = TransactionType.STATIC
+        mock_transaction.gas_price = 0
+        mock_provider_api.get_nonce.return_value = mock_transaction.nonce = 0
+        mock_transaction.total_transfer_value = mock_provider_api.get_balance.return_value = 1000000
+
+        expected_required_confirmations = 12
+        mock_provider_api.network.required_confirmations = expected_required_confirmations
+        mock_transaction.required_confirmations = None
+        test_account_api_can_sign.call(mock_transaction)
+        assert mock_transaction.required_confirmations == expected_required_confirmations

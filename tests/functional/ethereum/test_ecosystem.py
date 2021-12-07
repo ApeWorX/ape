@@ -21,11 +21,14 @@ class TestReceipt:
         txn = BaseTransaction()
         txn.gas_limit = gas_limit
         receipt = Receipt(
+            provider=mocker.MagicMock(),
             txn_hash="",
             gas_used=gas_limit,
             status=TransactionStatusEnum.FAILING,
             gas_price=0,
             block_number=0,
+            sender="",
+            nonce=0,
         )
         with pytest.raises(OutOfGasError):
             receipt.raise_for_status(txn)
