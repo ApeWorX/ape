@@ -5,13 +5,7 @@ import click
 
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
 from ape.logging import logger
-from ape.types import (
-    AddressType,
-    ContractType,
-    MessageSignature,
-    SignableMessage,
-    TransactionSignature,
-)
+from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.utils import cached_property
 
 from .address import AddressAPI
@@ -137,13 +131,9 @@ class AccountAPI(AddressAPI):
 
         return self.call(txn, send_everything=value is None)
 
-    def deploy(self, contract_type: ContractType, *args, **kwargs) -> ContractInstance:
-        c = ContractContainer(  # type: ignore
-            _provider=self.provider,
-            _contract_type=contract_type,
-        )
+    def deploy(self, contract: ContractContainer, *args, **kwargs) -> ContractInstance:
 
-        txn = c(*args, **kwargs)
+        txn = contract(*args, **kwargs)
         txn.sender = self.address
         receipt = self.call(txn)
 
@@ -151,12 +141,12 @@ class AccountAPI(AddressAPI):
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
         address = click.style(receipt.contract_address, bold=True)
-        logger.success(f"Contract '{contract_type.contractName}' deployed to: {address}")
+        logger.success(f"Contract '{contract.contract_type.contractName}' deployed to: {address}")
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,
             _address=receipt.contract_address,
-            _contract_type=contract_type,
+            _contract_type=contract.contract_type,
         )
 
 

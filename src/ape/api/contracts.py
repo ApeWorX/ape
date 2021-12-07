@@ -234,41 +234,39 @@ class ContractInstance(AddressAPI):
 
 @dataclass
 class ContractContainer:
-    _provider: ProviderAPI
-    _contract_type: ContractType
+    contract_type: ContractType
+    _provider: Optional[ProviderAPI]
+    # _provider is only None when a user is not connected to a provider.
 
     def __repr__(self) -> str:
-        return f"<{self._contract_type.contractName}>"
+        return f"<{self.contract_type.contractName}>"
 
     def at(self, address: str) -> ContractInstance:
         return ContractInstance(  # type: ignore
             _address=address,
             _provider=self._provider,
-            _contract_type=self._contract_type,
+            _contract_type=self.contract_type,
         )
 
     @property
     def _deployment_bytecode(self) -> bytes:
-        if (
-            self._contract_type.deploymentBytecode
-            and self._contract_type.deploymentBytecode.bytecode
-        ):
-            return to_bytes(hexstr=self._contract_type.deploymentBytecode.bytecode)
+        if self.contract_type.deploymentBytecode and self.contract_type.deploymentBytecode.bytecode:
+            return to_bytes(hexstr=self.contract_type.deploymentBytecode.bytecode)
 
         else:
             return b""
 
     @property
     def _runtime_bytecode(self) -> bytes:
-        if self._contract_type.runtimeBytecode and self._contract_type.runtimeBytecode.bytecode:
-            return to_bytes(hexstr=self._contract_type.runtimeBytecode.bytecode)
+        if self.contract_type.runtimeBytecode and self.contract_type.runtimeBytecode.bytecode:
+            return to_bytes(hexstr=self.contract_type.runtimeBytecode.bytecode)
 
         else:
             return b""
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         constructor = ContractConstructor(  # type: ignore
-            abi=self._contract_type.constructor,
+            abi=self.contract_type.constructor,
             provider=self._provider,
             deployment_bytecode=self._deployment_bytecode,
         )

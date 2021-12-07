@@ -58,7 +58,7 @@ _converters = _ConversionManager(config, plugin_manager, networks)  # type: igno
 accounts = _AccountManager(config, _converters, plugin_manager, networks)  # type: ignore
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
-Project = _partial(_ProjectManager, config=config, compilers=compilers)
+Project = _partial(_ProjectManager, config=config, compilers=compilers, networks=networks)
 """User-facing class for instantiating Projects (in addition to the currently
 active ``project``). See :class:`ape.managers.project.ProjectManager`."""
 
