@@ -237,6 +237,7 @@ class NetworkAPI:
         try:
             return self.config[self.name]["required_confirmations"]
         except KeyError:
+            # Is likely a 'development' network.
             return 0
 
     @cached_property
