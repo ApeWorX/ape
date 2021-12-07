@@ -108,6 +108,7 @@ class TestAccountAPI:
         mock_transaction.gas_price = 0
         mock_provider_api.get_nonce.return_value = mock_transaction.nonce = 0
         mock_transaction.total_transfer_value = mock_provider_api.get_balance.return_value = 1000000
+        mock_transaction.required_confirmations = None  # To be explicit
 
         expected_required_confirmations = 12
         mock_provider_api.network.required_confirmations = expected_required_confirmations
