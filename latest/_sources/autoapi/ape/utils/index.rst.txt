@@ -16,12 +16,14 @@
 .. autoapisummary::
 
    ape.utils.get_relative_path
+   ape.utils.get_package_version
    ape.utils.deep_merge
    ape.utils.expand_environment_variables
    ape.utils.load_config
    ape.utils.generate_dev_accounts
    ape.utils.gas_estimation_error_message
    ape.utils.extract_nested_value
+   ape.utils.get_all_files_in_directory
 
 
 
@@ -29,6 +31,7 @@
 
 .. autoapisummary::
 
+   ape.utils.USER_AGENT
    ape.utils.GeneratedDevAccount
    ape.utils.github_client
 
@@ -43,6 +46,18 @@
    which may or may not share a common ancestor.
    NOTE: Both paths must be absolute
 
+
+
+
+.. py:function:: get_package_version(obj: Any) -> str
+
+
+
+
+.. data:: USER_AGENT
+   
+
+   
 
 
 
@@ -99,5 +114,19 @@
    
 
    
+
+
+
+.. py:function:: get_all_files_in_directory(path: pathlib.Path) -> List[pathlib.Path]
+
+   Returns all the files in a directory structure.
+
+   For example: Given a dir structure like
+       dir_a: dir_b, file_a, file_b
+       dir_b: file_c
+
+     and you provide the path to `dir_a`, it will return a list containing
+     the Paths to `file_a`, `file_b` and `file_c`.
+
 
 

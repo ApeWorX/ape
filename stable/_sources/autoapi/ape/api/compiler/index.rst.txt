@@ -25,6 +25,11 @@
 
 .. py:class:: CompilerAPI
 
+   .. attribute:: config
+      :annotation: :ape.api.ConfigItem
+
+      
+
    .. py:method:: name(self) -> str
       :property:
 

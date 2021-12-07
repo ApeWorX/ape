@@ -18,9 +18,21 @@
 
 
 
+**Functions**:
+
+.. autoapisummary::
+
+   ape.managers.project._create_source_dict
+
+
 
 
 -----------
+
+
+.. py:function:: _create_source_dict(contracts_paths: Collection[pathlib.Path]) -> Dict[str, ape.types.Source]
+
+
 
 
 .. py:class:: ProjectManager
@@ -53,7 +65,7 @@
    .. py:method:: __post_init__(self)
 
 
-   .. py:method:: _extract_manifest(self, manifest_uri: str) -> ape.types.PackageManifest
+   .. py:method:: _extract_manifest(self, name: str, download_path: str) -> ape.types.PackageManifest
 
 
    .. py:method:: __str__(self) -> str
@@ -109,7 +121,7 @@
       returns ``<absolute-project-path>/contracts/HelloWorld.sol``.
 
 
-   .. py:method:: load_contracts(self, file_paths: Optional[List[pathlib.Path]] = None, use_cache: bool = True) -> Dict[str, ape.types.ContractType]
+   .. py:method:: load_contracts(self, file_paths: Optional[Union[List[pathlib.Path], pathlib.Path]] = None, use_cache: bool = True) -> Dict[str, ape.types.ContractType]
 
 
    .. py:method:: contracts(self) -> Dict[str, ape.types.ContractType]
