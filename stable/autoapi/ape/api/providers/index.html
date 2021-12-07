@@ -40,7 +40,6 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
-                  <option value="v0.1.0-alpha.30">v0.1.0-alpha.30</option>
             </select>
           </div>
 <div role="search">
@@ -85,6 +84,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TransactionAPI.gas_limit">gas_limit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TransactionAPI.data">data</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TransactionAPI.type">type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TransactionAPI.required_confirmations">required_confirmations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TransactionAPI.signature">signature</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TransactionAPI.__post_init__">__post_init__</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TransactionAPI.max_fee">max_fee</a></li>
@@ -101,7 +101,17 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TransactionStatusEnum.NO_ERROR">NO_ERROR</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.ConfirmationsProgressBar">ConfirmationsProgressBar</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ConfirmationsProgressBar.__init__">__init__</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ConfirmationsProgressBar.__enter__">__enter__</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ConfirmationsProgressBar.__exit__">__exit__</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ConfirmationsProgressBar.confs">confs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ConfirmationsProgressBar._update_bar">_update_bar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ConfirmationsProgressBar._set_description">_set_description</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.ReceiptAPI">ReceiptAPI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.provider">provider</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.txn_hash">txn_hash</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.status">status</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.block_number">block_number</a></li>
@@ -109,11 +119,15 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.gas_price">gas_price</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.logs">logs</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.contract_address">contract_address</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.required_confirmations">required_confirmations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.sender">sender</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.nonce">nonce</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.__post_init__">__post_init__</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.__str__">__str__</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.raise_for_status">raise_for_status</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.ran_out_of_gas">ran_out_of_gas</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.decode">decode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ReceiptAPI.await_confirmations">await_confirmations</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.BlockGasAPI">BlockGasAPI</a><ul>
@@ -309,28 +323,31 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.TransactionStatusEnum" title="ape.api.providers.TransactionStatusEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionStatusEnum</span></code></a></p></td>
 <td><p>Enum where members are also (and must be) ints</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.ConfirmationsProgressBar" title="ape.api.providers.ConfirmationsProgressBar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfirmationsProgressBar</span></code></a></p></td>
+<td><p>A progress bar tracking the confirmations of a transaction.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.BlockGasAPI" title="ape.api.providers.BlockGasAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockGasAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.BlockGasAPI" title="ape.api.providers.BlockGasAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockGasAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.BlockConsensusAPI" title="ape.api.providers.BlockConsensusAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockConsensusAPI</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.BlockConsensusAPI" title="ape.api.providers.BlockConsensusAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockConsensusAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockAPI</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p></td>
 <td><p>A Provider must work with a particular Network in a particular Ecosystem</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.TestProviderAPI" title="ape.api.providers.TestProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.TestProviderAPI" title="ape.api.providers.TestProviderAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a></p></td>
 <td><p>An API for providers that have development functionality, such as snapshotting.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.Web3Provider" title="ape.api.providers.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Web3Provider</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.Web3Provider" title="ape.api.providers.Web3Provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Web3Provider</span></code></a></p></td>
 <td><p>A base provider that is web3 based.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.providers.UpstreamProvider" title="ape.api.providers.UpstreamProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.api.providers.UpstreamProvider" title="ape.api.providers.UpstreamProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a></p></td>
 <td><p>A provider that can also be set as another provider’s upstream.</p></td>
 </tr>
 </tbody>
@@ -395,6 +412,11 @@
 <dl class="py attribute">
 <dt id="ape.api.providers.TransactionAPI.type">
 <code class="sig-name descname"><span class="pre">type</span></code><em class="property"> <span class="pre">:TransactionType</span></em><a class="headerlink" href="#ape.api.providers.TransactionAPI.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.TransactionAPI.required_confirmations">
+<code class="sig-name descname"><span class="pre">required_confirmations</span></code><em class="property"> <span class="pre">:Optional[int]</span></em><a class="headerlink" href="#ape.api.providers.TransactionAPI.required_confirmations" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -472,9 +494,50 @@ to submit the transaction.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt id="ape.api.providers.ConfirmationsProgressBar">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">ConfirmationsProgressBar</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">confirmations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ConfirmationsProgressBar" title="Permalink to this definition">¶</a></dt>
+<dd><p>A progress bar tracking the confirmations of a transaction.</p>
+<dl class="py method">
+<dt id="ape.api.providers.ConfirmationsProgressBar.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confirmations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ConfirmationsProgressBar.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.ConfirmationsProgressBar.__enter__">
+<code class="sig-name descname"><span class="pre">__enter__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ConfirmationsProgressBar.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.ConfirmationsProgressBar.__exit__">
+<code class="sig-name descname"><span class="pre">__exit__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_tb</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ConfirmationsProgressBar.__exit__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.ConfirmationsProgressBar.confs">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">confs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.providers.ConfirmationsProgressBar.confs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.ConfirmationsProgressBar._update_bar">
+<code class="sig-name descname"><span class="pre">_update_bar</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ConfirmationsProgressBar._update_bar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.ConfirmationsProgressBar._set_description">
+<code class="sig-name descname"><span class="pre">_set_description</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ConfirmationsProgressBar._set_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt id="ape.api.providers.ReceiptAPI">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">ReceiptAPI</span></code><a class="headerlink" href="#ape.api.providers.ReceiptAPI" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py attribute">
+<dt id="ape.api.providers.ReceiptAPI.provider">
+<code class="sig-name descname"><span class="pre">provider</span></code><em class="property"> <span class="pre">:ProviderAPI</span></em><a class="headerlink" href="#ape.api.providers.ReceiptAPI.provider" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt id="ape.api.providers.ReceiptAPI.txn_hash">
 <code class="sig-name descname"><span class="pre">txn_hash</span></code><em class="property"> <span class="pre">:str</span></em><a class="headerlink" href="#ape.api.providers.ReceiptAPI.txn_hash" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -509,6 +572,21 @@ to submit the transaction.</p>
 <code class="sig-name descname"><span class="pre">contract_address</span></code><em class="property"> <span class="pre">:Optional[str]</span></em><a class="headerlink" href="#ape.api.providers.ReceiptAPI.contract_address" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt id="ape.api.providers.ReceiptAPI.required_confirmations">
+<code class="sig-name descname"><span class="pre">required_confirmations</span></code><em class="property"> <span class="pre">:int</span> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#ape.api.providers.ReceiptAPI.required_confirmations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.ReceiptAPI.sender">
+<code class="sig-name descname"><span class="pre">sender</span></code><em class="property"> <span class="pre">:str</span></em><a class="headerlink" href="#ape.api.providers.ReceiptAPI.sender" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.providers.ReceiptAPI.nonce">
+<code class="sig-name descname"><span class="pre">nonce</span></code><em class="property"> <span class="pre">:int</span></em><a class="headerlink" href="#ape.api.providers.ReceiptAPI.nonce" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt id="ape.api.providers.ReceiptAPI.__post_init__">
 <code class="sig-name descname"><span class="pre">__post_init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ReceiptAPI.__post_init__" title="Permalink to this definition">¶</a></dt>
@@ -538,6 +616,13 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 <dt id="ape.api.providers.ReceiptAPI.decode">
 <em class="property"><span class="pre">abstract</span> <span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.providers.ReceiptAPI.decode" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.ReceiptAPI.await_confirmations">
+<code class="sig-name descname"><span class="pre">await_confirmations</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.providers.ReceiptAPI.await_confirmations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits for a transaction to be considered confirmed.
+Returns the confirmed receipt.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -860,8 +945,20 @@ transaction on the block chain.</p>
 
 <dl class="py method">
 <dt id="ape.api.providers.Web3Provider.get_transaction">
-<code class="sig-name descname"><span class="pre">get_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.providers.Web3Provider.get_transaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_confirmations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.providers.Web3Provider.get_transaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the information about a transaction requested by transaction hash.</p>
+<dl>
+<dt>Params:</dt><dd><p>txn_hash (str): The hash of the transaction to retrieve.
+required_confirmations (int): If more than 0, waits for that many</p>
+<blockquote>
+<div><p>confirmations before returning the receipt. This is to increase confidence
+that your transaction is in its final position on the blockchain. Defaults
+to 0.</p>
+</div></blockquote>
+</dd>
+<dt>Returns:</dt><dd><p>The receipt of the transaction with the given hash.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

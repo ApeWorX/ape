@@ -29,6 +29,7 @@
 
    ape_ethereum.WeiConversions
    ape_ethereum.Ethereum
+   ape_ethereum.EthereumConfig
 
 
 
@@ -36,6 +37,7 @@
 
 .. autoapisummary::
 
+   ape_ethereum.config_class
    ape_ethereum.converters
    ape_ethereum.ecosystems
    ape_ethereum.networks
@@ -103,6 +105,10 @@
 
       
 
+   .. py:method:: config(self) -> EthereumConfig
+      :property:
+
+
    .. py:method:: encode_calldata(self, abi: ape.types.ABI, *args) -> bytes
 
 
@@ -122,6 +128,45 @@
 
    .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.ReceiptAPI) -> ape.api.ContractLog
 
+
+
+
+
+.. py:class:: EthereumConfig
+
+   Bases: :py:obj:`ape.api.ConfigItem`
+
+   Each plugin must inherit from this Config base class
+
+   .. attribute:: mainnet
+      :annotation: :NetworkConfig
+
+      
+
+   .. attribute:: ropsten
+      :annotation: :NetworkConfig
+
+      
+
+   .. attribute:: kovan
+      :annotation: :NetworkConfig
+
+      
+
+   .. attribute:: rinkeby
+      :annotation: :NetworkConfig
+
+      
+
+   .. attribute:: goerli
+      :annotation: :NetworkConfig
+
+      
+
+
+
+
+.. py:function:: config_class()
 
 
 

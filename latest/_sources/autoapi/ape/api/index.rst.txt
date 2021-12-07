@@ -627,6 +627,13 @@
       :property:
 
 
+   .. py:method:: required_confirmations(self) -> int
+      :property:
+
+      The default amount of confirmations recommended to wait
+      before considering a transaction "confirmed".
+
+
    .. py:method:: explorer(self) -> Optional[ape.api.explorers.ExplorerAPI]
 
 
@@ -871,6 +878,11 @@
 
 .. py:class:: ReceiptAPI
 
+   .. attribute:: provider
+      :annotation: :ProviderAPI
+
+      
+
    .. attribute:: txn_hash
       :annotation: :str
 
@@ -906,6 +918,21 @@
 
       
 
+   .. attribute:: required_confirmations
+      :annotation: :int = 0
+
+      
+
+   .. attribute:: sender
+      :annotation: :str
+
+      
+
+   .. attribute:: nonce
+      :annotation: :int
+
+      
+
    .. py:method:: __post_init__(self)
 
 
@@ -929,6 +956,12 @@
    .. py:method:: decode(cls, data: dict) -> ReceiptAPI
       :classmethod:
       :abstractmethod:
+
+
+   .. py:method:: await_confirmations(self) -> ReceiptAPI
+
+      Waits for a transaction to be considered confirmed.
+      Returns the confirmed receipt.
 
 
 
@@ -990,6 +1023,11 @@
 
    .. attribute:: type
       :annotation: :TransactionType
+
+      
+
+   .. attribute:: required_confirmations
+      :annotation: :Optional[int]
 
       
 
@@ -1188,9 +1226,19 @@
       transaction on the block chain.
 
 
-   .. py:method:: get_transaction(self, txn_hash: str) -> ReceiptAPI
+   .. py:method:: get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI
 
       Returns the information about a transaction requested by transaction hash.
+
+      Params:
+          txn_hash (str): The hash of the transaction to retrieve.
+          required_confirmations (int): If more than 0, waits for that many
+              confirmations before returning the receipt. This is to increase confidence
+              that your transaction is in its final position on the blockchain. Defaults
+              to 0.
+
+      Returns:
+          The receipt of the transaction with the given hash.
 
 
    .. py:method:: get_events(self, **filter_params) -> Iterator[dict]

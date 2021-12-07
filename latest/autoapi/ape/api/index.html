@@ -199,6 +199,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.config">config</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.chain_id">chain_id</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.network_id">network_id</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.required_confirmations">required_confirmations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.explorer">explorer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.providers">providers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.NetworkAPI.get_provider">get_provider</a></li>
@@ -266,6 +267,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.api.ReceiptAPI">ReceiptAPI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.provider">provider</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.txn_hash">txn_hash</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.status">status</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.block_number">block_number</a></li>
@@ -273,11 +275,15 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.gas_price">gas_price</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.logs">logs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.contract_address">contract_address</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.required_confirmations">required_confirmations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.sender">sender</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.nonce">nonce</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.__post_init__">__post_init__</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.__str__">__str__</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.raise_for_status">raise_for_status</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.ran_out_of_gas">ran_out_of_gas</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.decode">decode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.ReceiptAPI.await_confirmations">await_confirmations</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.api.TestProviderAPI">TestProviderAPI</a><ul>
@@ -294,6 +300,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.gas_limit">gas_limit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.data">data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.type">type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.required_confirmations">required_confirmations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.signature">signature</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.__post_init__">__post_init__</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.TransactionAPI.max_fee">max_fee</a></li>
@@ -1133,6 +1140,13 @@ translating into yaml.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="ape.api.NetworkAPI.required_confirmations">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">required_confirmations</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.api.NetworkAPI.required_confirmations" title="Permalink to this definition">¶</a></dt>
+<dd><p>The default amount of confirmations recommended to wait
+before considering a transaction “confirmed”.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.NetworkAPI.explorer">
 <code class="sig-name descname"><span class="pre">explorer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="explorers/index.html#ape.api.explorers.ExplorerAPI" title="ape.api.explorers.ExplorerAPI"><span class="pre">ape.api.explorers.ExplorerAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.NetworkAPI.explorer" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1410,6 +1424,11 @@ translating into yaml.</p>
 <dt id="ape.api.ReceiptAPI">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.</span></code><code class="sig-name descname"><span class="pre">ReceiptAPI</span></code><a class="headerlink" href="#ape.api.ReceiptAPI" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py attribute">
+<dt id="ape.api.ReceiptAPI.provider">
+<code class="sig-name descname"><span class="pre">provider</span></code><em class="property"> <span class="pre">:ProviderAPI</span></em><a class="headerlink" href="#ape.api.ReceiptAPI.provider" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt id="ape.api.ReceiptAPI.txn_hash">
 <code class="sig-name descname"><span class="pre">txn_hash</span></code><em class="property"> <span class="pre">:str</span></em><a class="headerlink" href="#ape.api.ReceiptAPI.txn_hash" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1444,6 +1463,21 @@ translating into yaml.</p>
 <code class="sig-name descname"><span class="pre">contract_address</span></code><em class="property"> <span class="pre">:Optional[str]</span></em><a class="headerlink" href="#ape.api.ReceiptAPI.contract_address" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt id="ape.api.ReceiptAPI.required_confirmations">
+<code class="sig-name descname"><span class="pre">required_confirmations</span></code><em class="property"> <span class="pre">:int</span> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#ape.api.ReceiptAPI.required_confirmations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.ReceiptAPI.sender">
+<code class="sig-name descname"><span class="pre">sender</span></code><em class="property"> <span class="pre">:str</span></em><a class="headerlink" href="#ape.api.ReceiptAPI.sender" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.ReceiptAPI.nonce">
+<code class="sig-name descname"><span class="pre">nonce</span></code><em class="property"> <span class="pre">:int</span></em><a class="headerlink" href="#ape.api.ReceiptAPI.nonce" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt id="ape.api.ReceiptAPI.__post_init__">
 <code class="sig-name descname"><span class="pre">__post_init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.ReceiptAPI.__post_init__" title="Permalink to this definition">¶</a></dt>
@@ -1473,6 +1507,13 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 <dt id="ape.api.ReceiptAPI.decode">
 <em class="property"><span class="pre">abstract</span> <span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.ReceiptAPI.decode" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.ReceiptAPI.await_confirmations">
+<code class="sig-name descname"><span class="pre">await_confirmations</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.ReceiptAPI.await_confirmations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits for a transaction to be considered confirmed.
+Returns the confirmed receipt.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1534,6 +1575,11 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 <dl class="py attribute">
 <dt id="ape.api.TransactionAPI.type">
 <code class="sig-name descname"><span class="pre">type</span></code><em class="property"> <span class="pre">:TransactionType</span></em><a class="headerlink" href="#ape.api.TransactionAPI.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.TransactionAPI.required_confirmations">
+<code class="sig-name descname"><span class="pre">required_confirmations</span></code><em class="property"> <span class="pre">:Optional[int]</span></em><a class="headerlink" href="#ape.api.TransactionAPI.required_confirmations" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1738,8 +1784,20 @@ transaction on the block chain.</p>
 
 <dl class="py method">
 <dt id="ape.api.Web3Provider.get_transaction">
-<code class="sig-name descname"><span class="pre">get_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.Web3Provider.get_transaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_confirmations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.ReceiptAPI" title="ape.api.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><a class="headerlink" href="#ape.api.Web3Provider.get_transaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the information about a transaction requested by transaction hash.</p>
+<dl>
+<dt>Params:</dt><dd><p>txn_hash (str): The hash of the transaction to retrieve.
+required_confirmations (int): If more than 0, waits for that many</p>
+<blockquote>
+<div><p>confirmations before returning the receipt. This is to increase confidence
+that your transaction is in its final position on the blockchain. Defaults
+to 0.</p>
+</div></blockquote>
+</dd>
+<dt>Returns:</dt><dd><p>The receipt of the transaction with the given hash.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

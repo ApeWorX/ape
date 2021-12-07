@@ -72,6 +72,8 @@
 <li class="toctree-l3"><a class="reference internal" href="../converters/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_ethereum.converters</span></code></a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape_ethereum.ecosystem</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.NETWORKS">NETWORKS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.NetworkConfig">NetworkConfig</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.EthereumConfig">EthereumConfig</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.BaseTransaction">BaseTransaction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.StaticFeeTransaction">StaticFeeTransaction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape_ethereum.ecosystem.DynamicFeeTransaction">DynamicFeeTransaction</a></li>
@@ -85,6 +87,8 @@
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_ethereum.WeiConversions">WeiConversions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_ethereum.NETWORKS">NETWORKS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_ethereum.Ethereum">Ethereum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape_ethereum.EthereumConfig">EthereumConfig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#ape_ethereum.config_class">config_class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_ethereum.converters">converters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_ethereum.ecosystems">ecosystems</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#ape_ethereum.networks">networks</a></li>
@@ -170,6 +174,12 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape_ethereum.ecosystem.NetworkConfig" title="ape_ethereum.ecosystem.NetworkConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkConfig</span></code></a></p></td>
+<td><p>Each plugin must inherit from this Config base class</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape_ethereum.ecosystem.EthereumConfig" title="ape_ethereum.ecosystem.EthereumConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EthereumConfig</span></code></a></p></td>
+<td><p>Each plugin must inherit from this Config base class</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape_ethereum.ecosystem.BaseTransaction" title="ape_ethereum.ecosystem.BaseTransaction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseTransaction</span></code></a></p></td>
 <td><p></p></td>
 </tr>
@@ -213,6 +223,50 @@
 <dt id="ape_ethereum.ecosystem.NETWORKS">
 <code class="sig-prename descclassname"><span class="pre">ape_ethereum.ecosystem.</span></code><code class="sig-name descname"><span class="pre">NETWORKS</span></code><a class="headerlink" href="#ape_ethereum.ecosystem.NETWORKS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py class">
+<dt id="ape_ethereum.ecosystem.NetworkConfig">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_ethereum.ecosystem.</span></code><code class="sig-name descname"><span class="pre">NetworkConfig</span></code><a class="headerlink" href="#ape_ethereum.ecosystem.NetworkConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ape/api/index.html#ape.api.ConfigItem" title="ape.api.ConfigItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.ConfigItem</span></code></a></p>
+<p>Each plugin must inherit from this Config base class</p>
+<dl class="py attribute">
+<dt id="ape_ethereum.ecosystem.NetworkConfig.required_confirmations">
+<code class="sig-name descname"><span class="pre">required_confirmations</span></code><em class="property"> <span class="pre">:int</span> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#ape_ethereum.ecosystem.NetworkConfig.required_confirmations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape_ethereum.ecosystem.EthereumConfig">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_ethereum.ecosystem.</span></code><code class="sig-name descname"><span class="pre">EthereumConfig</span></code><a class="headerlink" href="#ape_ethereum.ecosystem.EthereumConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ape/api/index.html#ape.api.ConfigItem" title="ape.api.ConfigItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.ConfigItem</span></code></a></p>
+<p>Each plugin must inherit from this Config base class</p>
+<dl class="py attribute">
+<dt id="ape_ethereum.ecosystem.EthereumConfig.mainnet">
+<code class="sig-name descname"><span class="pre">mainnet</span></code><em class="property"> <span class="pre">:NetworkConfig</span></em><a class="headerlink" href="#ape_ethereum.ecosystem.EthereumConfig.mainnet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape_ethereum.ecosystem.EthereumConfig.ropsten">
+<code class="sig-name descname"><span class="pre">ropsten</span></code><em class="property"> <span class="pre">:NetworkConfig</span></em><a class="headerlink" href="#ape_ethereum.ecosystem.EthereumConfig.ropsten" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape_ethereum.ecosystem.EthereumConfig.kovan">
+<code class="sig-name descname"><span class="pre">kovan</span></code><em class="property"> <span class="pre">:NetworkConfig</span></em><a class="headerlink" href="#ape_ethereum.ecosystem.EthereumConfig.kovan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape_ethereum.ecosystem.EthereumConfig.rinkeby">
+<code class="sig-name descname"><span class="pre">rinkeby</span></code><em class="property"> <span class="pre">:NetworkConfig</span></em><a class="headerlink" href="#ape_ethereum.ecosystem.EthereumConfig.rinkeby" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="ape_ethereum.ecosystem.EthereumConfig.goerli">
+<code class="sig-name descname"><span class="pre">goerli</span></code><em class="property"> <span class="pre">:NetworkConfig</span></em><a class="headerlink" href="#ape_ethereum.ecosystem.EthereumConfig.goerli" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
 
 <dl class="py class">
 <dt id="ape_ethereum.ecosystem.BaseTransaction">
@@ -376,6 +430,11 @@ when the transaction has a failing status otherwise.</p>
 <dl class="py attribute">
 <dt id="ape_ethereum.ecosystem.Ethereum.block_class">
 <code class="sig-name descname"><span class="pre">block_class</span></code><a class="headerlink" href="#ape_ethereum.ecosystem.Ethereum.block_class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ape_ethereum.ecosystem.Ethereum.config">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape_ethereum.ecosystem.EthereumConfig" title="ape_ethereum.ecosystem.EthereumConfig"><span class="pre">EthereumConfig</span></a><a class="headerlink" href="#ape_ethereum.ecosystem.Ethereum.config" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

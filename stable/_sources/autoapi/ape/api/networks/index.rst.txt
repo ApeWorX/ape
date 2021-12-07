@@ -217,6 +217,13 @@
       :property:
 
 
+   .. py:method:: required_confirmations(self) -> int
+      :property:
+
+      The default amount of confirmations recommended to wait
+      before considering a transaction "confirmed".
+
+
    .. py:method:: explorer(self) -> Optional[ape.api.explorers.ExplorerAPI]
 
 
