@@ -81,6 +81,7 @@ class TestAccountAPI:
         mock_transaction.total_transfer_value = mock_provider_api.get_balance.return_value = 1000000
         mock_transaction.type = TransactionType.STATIC
         mock_transaction.gas_price = 0
+        mock_transaction.required_confirmations = 0
 
         with pytest.raises(AccountsError) as err:
             test_account_api_no_sign.call(mock_transaction)
@@ -92,6 +93,7 @@ class TestAccountAPI:
     ):
         mock_transaction = mocker.MagicMock(spec=TransactionAPI)
         mock_transaction.type = TransactionType.STATIC
+        mock_transaction.required_confirmations = 0
         mock_transaction.gas_price = 0
         mock_transaction.gas_limit = None  # Causes estimate_gas_cost to get called
         mock_provider_api.get_nonce.return_value = mock_transaction.nonce = 0
