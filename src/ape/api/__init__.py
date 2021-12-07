@@ -1,5 +1,6 @@
 from .accounts import AccountAPI, AccountContainerAPI, TestAccountAPI, TestAccountContainerAPI
 from .address import Address, AddressAPI
+from .compiler import CompilerAPI
 from .config import ConfigDict, ConfigEnum, ConfigItem
 from .contracts import ContractInstance, ContractLog
 from .convert import ConverterAPI
@@ -27,6 +28,7 @@ __all__ = [
     "BlockAPI",
     "BlockConsensusAPI",
     "BlockGasAPI",
+    "CompilerAPI",
     "ConfigDict",
     "ConfigEnum",
     "ConfigItem",

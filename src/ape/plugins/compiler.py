@@ -1,6 +1,6 @@
 from typing import Tuple, Type
 
-from ape.api.compiler import CompilerAPI
+from ape.api import CompilerAPI
 
 from .pluggy_patch import PluginType, hookspec
 
