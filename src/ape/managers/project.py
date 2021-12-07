@@ -42,8 +42,21 @@ class ProjectManager:
         }
 
     def _extract_manifest(self, name: str, download_path: str) -> PackageManifest:
+        packages_path = self.config.DATA_FOLDER / "packages"
+        packages_path.mkdir(exist_ok=True, parents=True)
+        target_path = packages_path / name
+        target_path.mkdir(exist_ok=True, parents=True)
+
         if download_path.startswith("https://") or download_path.startswith("http://"):
-            manifest_dict = requests.get(download_path).json()
+            manifest_file_path = target_path / "manifest.json"
+            if manifest_file_path.exists():
+                manifest_dict = json.loads(manifest_file_path.read_text())
+            else:
+                # Download manifest
+                response = requests.get(download_path)
+                manifest_file_path.write_text(response.text)
+                manifest_dict = response.json()
+
             if "name" not in manifest_dict:
                 raise ProjectError("Dependencies must have a name.")
 
@@ -55,13 +68,10 @@ class ProjectManager:
             except ValueError:
                 raise ValueError("Invalid Github ID. Must be given as <org>/<repo>@<version>")
 
-            packages_path = self.config.DATA_FOLDER / "packages"
-            packages_path.mkdir(exist_ok=True, parents=True)
-            target_path = packages_path / name
             package_contracts_path = target_path / "contracts"
+            is_cached = len([p for p in target_path.iterdir()]) > 0
 
-            if not target_path.exists():
-                target_path.mkdir(parents=True)
+            if not is_cached:
                 github_client.download_package(path, version, target_path)
 
             if not package_contracts_path.exists():
