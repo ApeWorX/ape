@@ -5,7 +5,9 @@ from typing import Dict, List, Optional
 import requests
 from dataclassy import dataclass
 
+from ape.api.contracts import ContractContainer
 from ape.exceptions import ProjectError
+from ape.managers.networks import NetworkManager
 from ape.types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ape.utils import compute_checksum
 
@@ -18,6 +20,7 @@ class ProjectManager:
     path: Path
     config: ConfigManager
     compilers: CompilerManager
+    networks: NetworkManager
 
     dependencies: Dict[str, PackageManifest] = dict()
 
@@ -209,12 +212,18 @@ class ProjectManager:
 
     def __getattr__(self, attr_name: str):
         contracts = self.load_contracts()
+        contract_type = None
+
         if attr_name in contracts:
-            return contracts[attr_name]
+            contract_type = contracts[attr_name]
         elif attr_name in self.dependencies:
-            return self.dependencies[attr_name]
+            contract_type = self.dependencies[attr_name]  # type: ignore
         else:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
+
+        return ContractContainer(  # type: ignore
+            contract_type=contract_type, _provider=self.networks.active_provider
+        )
 
     @property
     def interfaces_folder(self) -> Path:
