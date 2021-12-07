@@ -35,7 +35,7 @@ Committing will now automatically run the local hooks and ensure that your commi
 ## Github Access Token
 
 If you are a member of ApeWorX and would like to install private plugins, 
-[create a Github access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+[create a Github access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
 
 Once you have your token, export it to your terminal session:
 
