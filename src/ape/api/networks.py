@@ -234,7 +234,10 @@ class NetworkAPI:
         The default amount of confirmations recommended to wait
         before considering a transaction "confirmed".
         """
-        return self.config[self.name].required_confirmations
+        try:
+            return self.config[self.name]["required_confirmations"]
+        except KeyError:
+            return 0
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:
