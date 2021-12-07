@@ -294,12 +294,12 @@ class Ethereum(EcosystemAPI):
             if active_provider:
                 # Look up required confirmations from config file
                 network_name = active_provider.network.name
-
-                try:
-                    required_confirmations = self.config[network_name].required_confirmations
-                except KeyError:
-                    # Using a development network, don't require confs.
-                    pass
+                if network_name != "development":
+                    try:
+                        required_confirmations = self.config[network_name]["required_confirmations"]
+                    except KeyError:
+                        # Using a development network, don't require confs.
+                        pass
 
             kwargs["required_confirmations"] = required_confirmations
 
