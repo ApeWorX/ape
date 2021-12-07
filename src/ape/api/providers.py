@@ -472,7 +472,7 @@ class Web3Provider(ProviderAPI):
             The receipt of the transaction with the given hash.
         """
         if required_confirmations < 0:
-            raise ValueError("Required confirmations cannot be negative.")
+            raise ProviderError("Required confirmations cannot be negative.")
 
         receipt_data = self._web3.eth.wait_for_transaction_receipt(HexBytes(txn_hash))
         txn = self._web3.eth.get_transaction(txn_hash)  # type: ignore
