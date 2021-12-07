@@ -3,15 +3,9 @@ from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Unio
 
 import click
 
-from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
+from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
-from ape.types import (
-    AddressType,
-    ContractType,
-    MessageSignature,
-    SignableMessage,
-    TransactionSignature,
-)
+from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.utils import cached_property
 
 from .address import AddressAPI
@@ -104,6 +98,11 @@ class AccountAPI(AddressAPI):
                 f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
             )
 
+        if txn.required_confirmations is None:
+            txn.required_confirmations = self.provider.network.required_confirmations
+        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
+            raise TransactionError(message="'required_confirmations' must be a positive integer.")
+
         txn.signature = self.sign_transaction(txn)
         if not txn.signature:
             raise SignatureError("The transaction was not signed.")
@@ -137,13 +136,9 @@ class AccountAPI(AddressAPI):
 
         return self.call(txn, send_everything=value is None)
 
-    def deploy(self, contract_type: ContractType, *args, **kwargs) -> ContractInstance:
-        c = ContractContainer(  # type: ignore
-            _provider=self.provider,
-            _contract_type=contract_type,
-        )
+    def deploy(self, contract: ContractContainer, *args, **kwargs) -> ContractInstance:
 
-        txn = c(*args, **kwargs)
+        txn = contract(*args, **kwargs)
         txn.sender = self.address
         receipt = self.call(txn)
 
@@ -151,12 +146,12 @@ class AccountAPI(AddressAPI):
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
         address = click.style(receipt.contract_address, bold=True)
-        logger.success(f"Contract '{contract_type.contractName}' deployed to: {address}")
+        logger.success(f"Contract '{contract.contract_type.contractName}' deployed to: {address}")
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,
             _address=receipt.contract_address,
-            _contract_type=contract_type,
+            _contract_type=contract.contract_type,
         )
 
 

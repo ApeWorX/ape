@@ -2,7 +2,12 @@ from ape import plugins
 from ape.api import NetworkAPI, create_network_type
 
 from .converters import WeiConversions
-from .ecosystem import NETWORKS, Ethereum
+from .ecosystem import NETWORKS, Ethereum, EthereumConfig
+
+
+@plugins.register(plugins.Config)
+def config_class():
+    return EthereumConfig
 
 
 @plugins.register(plugins.ConversionPlugin)
