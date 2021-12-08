@@ -1,20 +1,17 @@
-from abc import ABCMeta, abstractmethod
-from functools import partial
+from abc import ABC
+from abc import abstractmethod as apimethod
+from typing import List
 
-from dataclassy import dataclass
-from dataclassy.dataclass import DataClassMeta
-
-
-class AbstractDataClassMeta(DataClassMeta, ABCMeta):
-    pass
+from pydantic import BaseModel
 
 
-abstractdataclass = partial(dataclass, kwargs=True, meta=AbstractDataClassMeta)
+class API(ABC, BaseModel):
+    def __dir__(self) -> List[str]:
+        # Filter out private members
+        return [member for member in super().__dir__() if not member.startswith("_")]
 
 
 __all__ = [
-    "abstractdataclass",
-    "abstractmethod",
-    "AbstractDataClassMeta",
-    "dataclass",
+    "API",
+    "apimethod",
 ]

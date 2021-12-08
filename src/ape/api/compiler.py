@@ -3,26 +3,25 @@ from typing import List, Set
 
 from ape.types import ContractType
 
-from .base import abstractdataclass, abstractmethod
+from .base import API, apimethod
 from .config import ConfigItem
 
 
-@abstractdataclass
-class CompilerAPI:
+class CompilerAPI(API):
     config: ConfigItem
 
     @property
-    @abstractmethod
+    @apimethod
     def name(self) -> str:
         ...
 
-    @abstractmethod
+    @apimethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:
         """
         Retrieve set of available compiler versions for this plugin to compile `all_paths`
         """
 
-    @abstractmethod
+    @apimethod
     def compile(self, contract_filepaths: List[Path]) -> List[ContractType]:
         """
         Compile the source given ``pkg_manifest``.

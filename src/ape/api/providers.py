@@ -15,7 +15,7 @@ from ape.logging import logger
 from ape.types import BlockID, TransactionSignature
 
 from . import networks
-from .base import abstractdataclass, abstractmethod
+from .base import API, apimethod
 from .config import ConfigItem
 
 
@@ -24,8 +24,7 @@ class TransactionType(Enum):
     DYNAMIC = "0x2"  # EIP-1559
 
 
-@abstractdataclass
-class TransactionAPI:
+class TransactionAPI(API):
     chain_id: int = 0
     sender: str = ""
     receiver: str = ""
@@ -69,11 +68,11 @@ class TransactionAPI:
         return self.value + self.max_fee
 
     @property
-    @abstractmethod
+    @apimethod
     def is_valid(self):
         ...
 
-    @abstractmethod
+    @apimethod
     def encode(self) -> bytes:
         """
         Take this object and produce a hash to sign to submit a transaction
@@ -143,8 +142,7 @@ class ConfirmationsProgressBar:
         self._bar.set_description(f"Confirmations ({self._confs}/{self._req_confs})")
 
 
-@abstractdataclass
-class ReceiptAPI:
+class ReceiptAPI(API):
     provider: "ProviderAPI"
     txn_hash: str
     status: TransactionStatusEnum
@@ -178,7 +176,7 @@ class ReceiptAPI:
         return self.status == TransactionStatusEnum.FAILING and self.gas_used == gas_limit
 
     @classmethod
-    @abstractmethod
+    @apimethod
     def decode(cls, data: dict) -> "ReceiptAPI":
         ...
 
@@ -214,31 +212,28 @@ class ReceiptAPI:
         return self
 
 
-@abstractdataclass
-class BlockGasAPI:
+class BlockGasAPI(API):
     gas_limit: int
     gas_used: int
     base_fee: Optional[int] = None
 
     @classmethod
-    @abstractmethod
+    @apimethod
     def decode(cls, data: Dict) -> "BlockGasAPI":
         ...
 
 
-@abstractdataclass
-class BlockConsensusAPI:
+class BlockConsensusAPI(API):
     difficulty: Optional[int] = None
     total_difficulty: Optional[int] = None
 
     @classmethod
-    @abstractmethod
+    @apimethod
     def decode(cls, data: Dict) -> "BlockConsensusAPI":
         ...
 
 
-@abstractdataclass
-class BlockAPI:
+class BlockAPI(API):
     gas_data: BlockGasAPI
     consensus_data: BlockConsensusAPI
     hash: HexBytes
@@ -248,13 +243,12 @@ class BlockAPI:
     timestamp: float
 
     @classmethod
-    @abstractmethod
+    @apimethod
     def decode(cls, data: Dict) -> "BlockAPI":
         ...
 
 
-@abstractdataclass
-class ProviderAPI:
+class ProviderAPI(API):
     """
     A Provider must work with a particular Network in a particular Ecosystem
     """
@@ -266,41 +260,41 @@ class ProviderAPI:
     data_folder: Path
     request_header: str
 
-    @abstractmethod
+    @apimethod
     def connect(self):
         ...
 
-    @abstractmethod
+    @apimethod
     def disconnect(self):
         ...
 
-    @abstractmethod
+    @apimethod
     def update_settings(self, new_settings: dict):
         ...
 
     @property
-    @abstractmethod
+    @apimethod
     def chain_id(self) -> int:
         ...
 
-    @abstractmethod
+    @apimethod
     def get_balance(self, address: str) -> int:
         ...
 
-    @abstractmethod
+    @apimethod
     def get_code(self, address: str) -> bytes:
         ...
 
-    @abstractmethod
+    @apimethod
     def get_nonce(self, address: str) -> int:
         ...
 
-    @abstractmethod
+    @apimethod
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         ...
 
     @property
-    @abstractmethod
+    @apimethod
     def gas_price(self) -> int:
         ...
 
@@ -312,23 +306,23 @@ class ProviderAPI:
     def base_fee(self) -> int:
         raise NotImplementedError("base_fee is not implemented by this provider")
 
-    @abstractmethod
+    @apimethod
     def get_block(self, block_id: BlockID) -> BlockAPI:
         ...
 
-    @abstractmethod
+    @apimethod
     def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
         ...
 
-    @abstractmethod
+    @apimethod
     def get_transaction(self, txn_hash: str) -> ReceiptAPI:
         ...
 
-    @abstractmethod
+    @apimethod
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         ...
 
-    @abstractmethod
+    @apimethod
     def get_events(self, **filter_params) -> Iterator[dict]:
         ...
 
@@ -338,11 +332,11 @@ class TestProviderAPI(ProviderAPI):
     An API for providers that have development functionality, such as snapshotting.
     """
 
-    @abstractmethod
+    @apimethod
     def snapshot(self) -> str:
         ...
 
-    @abstractmethod
+    @apimethod
     def revert(self, snapshot_id: str):
         ...
 
@@ -509,7 +503,7 @@ class UpstreamProvider(ProviderAPI):
     """
 
     @property
-    @abstractmethod
+    @apimethod
     def connection_str(self) -> str:
         """
         The str used by downstream providers to connect to this one.

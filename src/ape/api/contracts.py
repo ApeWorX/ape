@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from eth_utils import to_bytes
+from pydantic import BaseModel
 
 from ape.exceptions import ArgumentsLengthError, ContractDeployError, TransactionError
 from ape.logging import logger
 from ape.types import ABI, AddressType, ContractType
 
 from .address import Address, AddressAPI
-from .base import dataclass
 from .providers import ProviderAPI, ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
@@ -15,15 +15,14 @@ if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
-@dataclass
-class ContractConstructor:
+class ContractConstructor(BaseModel):
     deployment_bytecode: bytes
     abi: Optional[ABI]
     provider: ProviderAPI
 
     def __post_init__(self):
         if len(self.deployment_bytecode) == 0:
-            raise ContractDeployError("No bytecode to deploy.")
+            raise ContractDeployError(message="No bytecode to deploy.")
 
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
@@ -46,8 +45,7 @@ class ContractConstructor:
             return self.provider.send_transaction(txn)
 
 
-@dataclass
-class ContractCall:
+class ContractCall(BaseModel):
     abi: ABI
     address: AddressType
     provider: ProviderAPI
@@ -82,8 +80,7 @@ class ContractCall:
             return tuple_output
 
 
-@dataclass
-class ContractCallHandler:
+class ContractCallHandler(BaseModel):
     provider: ProviderAPI
     address: AddressType
     abis: List[ABI]
@@ -113,8 +110,7 @@ def _select_abi(abis, args):
     return selected_abi
 
 
-@dataclass
-class ContractTransaction:
+class ContractTransaction(BaseModel):
     abi: ABI
     address: AddressType
     provider: ProviderAPI
@@ -140,8 +136,7 @@ class ContractTransaction:
             raise TransactionError(message="Must specify a `sender`.")
 
 
-@dataclass
-class ContractTransactionHandler:
+class ContractTransactionHandler(BaseModel):
     provider: ProviderAPI
     address: AddressType
     abis: List[ABI]
@@ -162,14 +157,12 @@ class ContractTransactionHandler:
         )(*args, **kwargs)
 
 
-@dataclass
-class ContractLog:
+class ContractLog(BaseModel):
     name: str
     data: Dict[str, Any]
 
 
-@dataclass
-class ContractEvent:
+class ContractEvent(BaseModel):
     provider: ProviderAPI
     address: str
     abis: List[ABI]
@@ -232,11 +225,9 @@ class ContractInstance(AddressAPI):
         raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
 
 
-@dataclass
-class ContractContainer:
+class ContractContainer(BaseModel):
     contract_type: ContractType
-    _provider: Optional[ProviderAPI]
-    # _provider is only None when a user is not connected to a provider.
+    _provider: ProviderAPI
 
     def __repr__(self) -> str:
         return f"<{self.contract_type.contractName}>"

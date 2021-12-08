@@ -9,7 +9,7 @@ from ape.types import AddressType, MessageSignature, SignableMessage, Transactio
 from ape.utils import cached_property
 
 from .address import AddressAPI
-from .base import abstractdataclass, abstractmethod
+from .base import API, apimethod
 from .contracts import ContractContainer, ContractInstance
 from .providers import ReceiptAPI, TransactionAPI, TransactionType
 
@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from ape.managers.config import ConfigManager
 
 
-# NOTE: AddressAPI is a dataclass already
 class AccountAPI(AddressAPI):
     container: "AccountContainerAPI"
 
@@ -39,7 +38,7 @@ class AccountAPI(AddressAPI):
         """
         return None
 
-    @abstractmethod
+    @apimethod
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         """
         Signs the given message.
@@ -51,7 +50,7 @@ class AccountAPI(AddressAPI):
           :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
         """
 
-    @abstractmethod
+    @apimethod
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         """
         Signs the given transaction.
@@ -155,27 +154,27 @@ class AccountAPI(AddressAPI):
         )
 
 
-@abstractdataclass
-class AccountContainerAPI:
+class AccountContainerAPI(API):
     data_folder: Path
     account_type: Type[AccountAPI]
     config_manager: "ConfigManager"
 
     @property
-    @abstractmethod
+    @apimethod
     def aliases(self) -> Iterator[str]:
         ...
 
-    @abstractmethod
+    @apimethod
     def __len__(self) -> int:
         ...
 
-    @abstractmethod
-    def __iter__(self) -> Iterator[AccountAPI]:
+    @property
+    @apimethod
+    def accounts(self) -> Iterator[AccountAPI]:
         ...
 
     def __getitem__(self, address: AddressType) -> AccountAPI:
-        for account in self.__iter__():
+        for account in self.accounts:
             if account.address == address:
                 return account
 

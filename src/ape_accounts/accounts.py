@@ -33,7 +33,7 @@ class AccountContainer(AccountContainerAPI):
     def __len__(self) -> int:
         return len([*self._keyfiles])
 
-    def __iter__(self) -> Iterator[AccountAPI]:
+    def accounts(self) -> Iterator[AccountAPI]:
         for keyfile in self._keyfiles:
             yield KeyfileAccount(self, keyfile)  # type: ignore
 

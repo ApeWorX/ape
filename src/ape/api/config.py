@@ -3,15 +3,14 @@ from typing import Any, Dict, List, Union
 
 from ape.logging import logger
 
-from .base import dataclass
+from .base import API
 
 
 class ConfigEnum(str, Enum):
     pass
 
 
-@dataclass(slots=True, kwargs=True)
-class ConfigItem:
+class ConfigItem(API):
     """
     Each plugin must inherit from this Config base class
     """

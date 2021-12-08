@@ -3,12 +3,11 @@ from typing import List, Optional
 from ape.exceptions import AddressError
 from ape.types import AddressType
 
-from .base import abstractdataclass, abstractmethod
+from .base import API, apimethod
 from .providers import ProviderAPI
 
 
-@abstractdataclass
-class AddressAPI:
+class AddressAPI(API):
     _provider: Optional[ProviderAPI] = None
 
     @property
@@ -25,7 +24,7 @@ class AddressAPI:
         self._provider = value
 
     @property
-    @abstractmethod
+    @apimethod
     def address(self) -> AddressType:
         ...
 

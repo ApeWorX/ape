@@ -1,6 +1,6 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Type
+from typing import TYPE_CHECKING, Dict, List, Optional, Type
 
 from pluggy import PluginManager  # type: ignore
 
@@ -8,7 +8,7 @@ from ape.exceptions import NetworkError, NetworkNotFoundError
 from ape.types import ABI, AddressType
 from ape.utils import cached_property
 
-from .base import abstractdataclass, abstractmethod, dataclass
+from .base import API, apimethod
 from .config import ConfigItem
 
 if TYPE_CHECKING:
@@ -20,8 +20,7 @@ if TYPE_CHECKING:
     from .providers import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI, TransactionType
 
 
-@abstractdataclass
-class EcosystemAPI:
+class EcosystemAPI(API):
     """
     An Ecosystem is a set of related Networks
     """
@@ -69,12 +68,6 @@ class EcosystemAPI:
         if len(self.networks) == 0:
             raise NetworkError("Must define at least one network in ecosystem")
 
-    def __iter__(self) -> Iterator[str]:
-        """
-        Provides the set of all valid Network names in the ecosystem
-        """
-        yield from self.networks
-
     def __getitem__(self, network_name: str) -> "NetworkAPI":
         return self._try_get_network(network_name)
 
@@ -102,23 +95,23 @@ class EcosystemAPI:
             message = f"'{network_name}' is not a valid network for ecosystem '{self.name}'"
             raise NetworkError(message)
 
-    @abstractmethod
+    @apimethod
     def encode_deployment(
         self, deployment_bytecode: bytes, abi: Optional[ABI], *args, **kwargs
     ) -> "TransactionAPI":
         ...
 
-    @abstractmethod
+    @apimethod
     def encode_transaction(
         self, address: AddressType, abi: ABI, *args, **kwargs
     ) -> "TransactionAPI":
         ...
 
-    @abstractmethod
+    @apimethod
     def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
         ...
 
-    @abstractmethod
+    @apimethod
     def create_transaction(self, **kwargs) -> "TransactionAPI":
         ...
 
@@ -192,8 +185,7 @@ class ProviderContextManager:
             self.network_manager.active_provider = self._connected_providers[-1]
 
 
-@dataclass
-class NetworkAPI:
+class NetworkAPI(API):
     """
     A Network is a wrapper around a Provider for a specific Ecosystem.
     """
