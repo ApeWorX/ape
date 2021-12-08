@@ -1,7 +1,7 @@
 from .accounts import AccountAPI, AccountContainerAPI, TestAccountAPI, TestAccountContainerAPI
 from .address import Address, AddressAPI
 from .compiler import CompilerAPI
-from .config import ConfigDict, ConfigEnum, ConfigItem
+from .config import ConfigDict, ConfigEnum, PluginConfig
 from .contracts import ContractInstance, ContractLog
 from .convert import ConverterAPI
 from .explorers import ExplorerAPI
@@ -31,7 +31,6 @@ __all__ = [
     "CompilerAPI",
     "ConfigDict",
     "ConfigEnum",
-    "ConfigItem",
     "ContractInstance",
     "ContractLog",
     "ConverterAPI",
@@ -42,6 +41,7 @@ __all__ = [
     "ProviderContextManager",
     "NetworkAPI",
     "ReceiptAPI",
+    "PluginConfig",
     "TestAccountAPI",
     "TestAccountContainerAPI",
     "TestProviderAPI",

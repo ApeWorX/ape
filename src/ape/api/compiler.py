@@ -4,11 +4,11 @@ from typing import List, Set
 from ape.types import ContractType
 
 from .base import API, apimethod
-from .config import ConfigItem
+from .config import PluginConfig
 
 
 class CompilerAPI(API):
-    config: ConfigItem
+    config: PluginConfig
 
     @property
     @apimethod

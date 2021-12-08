@@ -1,46 +1,32 @@
 from enum import Enum
-from typing import Any, Dict, List, Union
+from typing import Any
 
-from ape.logging import logger
-
-from .base import API
+from pydantic import BaseModel, BaseSettings
 
 
 class ConfigEnum(str, Enum):
     pass
 
 
-class ConfigItem(API):
+class ConfigDict(BaseModel):
+    __root__: dict = {}
+
+
+class PluginConfig(BaseSettings):
     """
-    Each plugin must inherit from this Config base class
+    Each plugin's config must inherit from this base class
     """
 
-    def serialize(self) -> Dict:
-        data: Dict[str, Union[str, int, Dict, List, None]] = dict()
-        for name in self.__slots__:
-            value = getattr(self, name)
-            if isinstance(value, ConfigItem):
-                data[name] = value.serialize()
-            elif isinstance(value, ConfigEnum):
-                data[name] = value.name
-            elif value is None or isinstance(value, (int, str, dict, list)):
-                data[name] = value
-            else:
-                logger.error(
-                    f"Received unknown type '{type(value)}' when serializing a config item."
-                )
-        return data
+    def __getitem__(self, attr_name: str) -> Any:
+        if not hasattr(self, attr_name):
+            raise AttributeError(f"{self.__class__.__name__} has no attr '{attr_name}'")
 
-    def validate_config(self):
-        pass
-
-    def __getitem__(self, attrname: str) -> Any:
-        if attrname in self.__slots__:
-            return getattr(self, attrname)
-
-        raise KeyError(f"{attrname!r}")
+        return getattr(self, attr_name)
 
 
-class ConfigDict(ConfigItem):
-    def __post_init__(self):
-        raise ValueError("Do not use this class directly!")
+class UnprocessedConfig(PluginConfig):
+    """
+    The default class used when no specialized class is used
+    """
+
+    __root__: dict = {}

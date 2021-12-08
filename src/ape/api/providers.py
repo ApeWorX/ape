@@ -16,7 +16,7 @@ from ape.types import BlockID, TransactionSignature
 
 from . import networks
 from .base import API, apimethod
-from .config import ConfigItem
+from .config import PluginConfig
 
 
 class TransactionType(Enum):
@@ -255,7 +255,7 @@ class ProviderAPI(API):
 
     name: str  # Plugin name
     network: networks.NetworkAPI
-    config: ConfigItem
+    config: PluginConfig
     provider_settings: dict
     data_folder: Path
     request_header: str

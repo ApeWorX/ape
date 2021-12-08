@@ -9,7 +9,7 @@ from ape.types import ABI, AddressType
 from ape.utils import cached_property
 
 from .base import API, apimethod
-from .config import ConfigItem
+from .config import PluginConfig
 
 if TYPE_CHECKING:
     from ape.managers.config import ConfigManager
@@ -39,7 +39,7 @@ class EcosystemAPI(API):
     _default_network: str = "development"
 
     @cached_property
-    def config(self) -> ConfigItem:
+    def config(self) -> PluginConfig:
         return self.config_manager.get_config(self.name)
 
     @cached_property
@@ -199,7 +199,7 @@ class NetworkAPI(API):
     _default_provider: str = ""
 
     @cached_property
-    def config(self) -> ConfigItem:
+    def config(self) -> PluginConfig:
         return self.config_manager.get_config(self.ecosystem.name)
 
     @property
