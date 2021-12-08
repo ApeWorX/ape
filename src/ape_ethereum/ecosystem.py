@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
@@ -18,8 +18,8 @@ from ape.api import (
     BlockGasAPI,
     ContractLog,
     EcosystemAPI,
-    ReceiptAPI,
     PluginConfig,
+    ReceiptAPI,
     TransactionAPI,
     TransactionStatusEnum,
     TransactionType,
@@ -132,9 +132,17 @@ class DynamicFeeTransaction(BaseTransaction):
     and ``maxPriorityFeePerGas`` fields.
     """
 
-    max_fee: int = None  # type: ignore
+    _max_fee: int = None  # type: ignore
     max_priority_fee: int = None  # type: ignore
     type: TransactionType = TransactionType.DYNAMIC
+
+    @property
+    def max_fee(self) -> int:
+        return self._max_fee
+
+    @max_fee.setter
+    def max_fee(self, new_value):
+        self._max_fee = new_value
 
     def as_dict(self):
         data = super().as_dict()
@@ -217,7 +225,7 @@ class Block(BlockAPI):
 
 
 class Ethereum(EcosystemAPI):
-    transaction_types = {
+    transaction_types: Dict["TransactionType", Type[BaseTransaction]] = {
         TransactionType.STATIC: StaticFeeTransaction,
         TransactionType.DYNAMIC: DynamicFeeTransaction,
     }

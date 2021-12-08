@@ -61,7 +61,7 @@ class AccountManager(BaseManager):
 
     def iter(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
-            for account in container:
+            for account in container.accounts:
                 self._inject_provider(account)
                 yield account
 
