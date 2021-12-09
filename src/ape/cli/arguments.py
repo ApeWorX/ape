@@ -19,10 +19,22 @@ def _require_non_existing_alias(value):
 
 
 def existing_alias_argument(account_type: Optional[Type[AccountAPI]] = None):
+    """
+    A ``click.argument`` for an existing account alias.
+
+    Args:
+        account_type (type[:class:`~ape.api.accounts.AccountAPI`], optional):
+          If given, limits the type of account the user may choose from.
+    """
+
     return click.argument("alias", type=Alias(account_type=account_type))
 
 
 def non_existing_alias_argument():
+    """
+    A ``click.argument`` for an account alias that does not yet exist in ape.
+    """
+
     return click.argument(
         "alias", callback=lambda ctx, param, value: _require_non_existing_alias(value)
     )
@@ -48,6 +60,14 @@ def _create_contracts_paths(ctx, param, value):
 
 
 def contract_file_paths_argument():
+    """
+    A ``click.argument`` representing contract source file paths.
+    This argument takes 0-to-many values.
+
+    The return type from the callback is a flattened list of
+    source file-paths.
+    """
+
     return click.argument(
         "file_paths",
         nargs=-1,
