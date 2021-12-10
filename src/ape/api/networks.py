@@ -12,10 +12,10 @@ from .base import abstractdataclass, abstractmethod, dataclass
 from .config import ConfigItem
 
 if TYPE_CHECKING:
+    from ape.contracts import ContractLog
     from ape.managers.config import ConfigManager
     from ape.managers.networks import NetworkManager
 
-    from .contracts import ContractLog
     from .explorers import ExplorerAPI
     from .providers import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI, TransactionType
 
