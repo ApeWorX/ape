@@ -1,9 +1,9 @@
 import collections
-import contextlib
 import json
 import os
 import shutil
 import sys
+import tempfile
 import zipfile
 from copy import deepcopy
 from functools import lru_cache
@@ -212,20 +212,6 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
     return current_value
 
 
-@contextlib.contextmanager
-def temporary_directory(base_path: Optional[Path] = None):
-    base_path = base_path or Path(".").resolve()
-    tmp_path = base_path / ".tmp"
-    if tmp_path.exists():
-        raise ValueError(f"Cannot use temporary directory '{tmp_path}': one already exists.")
-
-    tmp_path.mkdir(parents=True)
-    try:
-        yield tmp_path
-    finally:
-        shutil.rmtree(tmp_path)
-
-
 def stream_response(download_url: str, progress_bar_description: str = "Downloading") -> bytes:
     response = requests.get(download_url, stream=True)
     response.raise_for_status()
@@ -282,7 +268,8 @@ class GithubClient:
         release_content = stream_response(release.zipball_url, progress_bar_description=description)
 
         # Use temporary path to isolate a package when unzipping
-        with temporary_directory(base_path=target_path) as temp_path:
+        with tempfile.TemporaryDirectory() as tmp:
+            temp_path = Path(tmp)
             with zipfile.ZipFile(BytesIO(release_content)) as zf:
                 zf.extractall(temp_path)
 
