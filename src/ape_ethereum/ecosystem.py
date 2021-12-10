@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
@@ -9,7 +9,7 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, keccak, to_bytes, to_int
+from eth_utils import add_0x_prefix, keccak, to_bytes, to_checksum_address, to_int
 from hexbytes import HexBytes
 
 from ape.api import (
@@ -236,10 +236,25 @@ class Ethereum(EcosystemAPI):
         else:
             return HexBytes(b"")
 
-    def decode_calldata(self, abi: ABI, raw_data: bytes) -> Any:
+    def decode_calldata(self, abi: ABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types = [o.canonical_type for o in abi.outputs]
         try:
-            return abi_decode(output_types, raw_data)
+            vm_return_values = abi_decode(output_types, raw_data)
+            if not vm_return_values:
+                return vm_return_values
+
+            if not isinstance(vm_return_values, (tuple, list)):
+                vm_return_values = (vm_return_values,)
+
+            output_values: List[Any] = []
+            for index in range(len(vm_return_values)):
+                value = vm_return_values[index]
+                if index < len(output_types) and output_types[index] == "address":
+                    value = to_checksum_address(value)
+
+                output_values.append(value)
+
+            return tuple(output_values)
 
         except InsufficientDataBytes as err:
             raise DecodingError() from err
