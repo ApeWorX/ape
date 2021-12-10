@@ -263,7 +263,7 @@
    .. py:method:: encode_calldata(self, abi: ape.types.ABI, *args) -> bytes
 
 
-   .. py:method:: decode_calldata(self, abi: ape.types.ABI, raw_data: bytes) -> Any
+   .. py:method:: decode_calldata(self, abi: ape.types.ABI, raw_data: bytes) -> Tuple[Any, Ellipsis]
 
 
    .. py:method:: encode_deployment(self, deployment_bytecode: bytes, abi: Optional[ape.types.ABI], *args, **kwargs) -> BaseTransaction
