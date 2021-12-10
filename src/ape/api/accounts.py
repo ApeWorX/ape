@@ -19,10 +19,19 @@ if TYPE_CHECKING:
 
 # NOTE: AddressAPI is a dataclass already
 class AccountAPI(AddressAPI):
+    """
+    A base account API with inherited address traits.
+    """
+
     container: "AccountContainerAPI"
 
     def __dir__(self) -> List[str]:
-        # This displays methods to IPython on `a.[TAB]` tab completion
+        """
+        Display methods to IPython on ``a.[TAB]`` tab completion.
+
+        Returns:
+            list[str]: Method names that IPython uses for tab completion.
+        """
         return list(super(AddressAPI, self).__dir__()) + [
             "alias",
             "sign_message",
@@ -35,7 +44,7 @@ class AccountAPI(AddressAPI):
     @property
     def alias(self) -> Optional[str]:
         """
-        Override with whatever alias might want to use, if applicable
+        Override with whatever alias might want to use, if applicable.
         """
         return None
 
@@ -64,6 +73,16 @@ class AccountAPI(AddressAPI):
         """
 
     def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
+        """
+        Make a transaction call.
+
+        Args:
+            txn (:class:`~ape.api.providers.ProviderAPI`): The transaction to call.
+            send_everything (bool): ``True`` will send the value difference from balance and fee
+
+        Returns:
+            :class:`~ape.api.providers.ReceiptAPI`
+        """
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
         txn.chain_id = self.provider.network.chain_id
 
@@ -111,6 +130,9 @@ class AccountAPI(AddressAPI):
 
     @cached_property
     def _convert(self) -> Callable:
+        """
+        Converts the account.
+        """
         # NOTE: Need to differ loading this property
         from ape import convert
 
@@ -123,6 +145,17 @@ class AccountAPI(AddressAPI):
         data: Union[bytes, str, None] = None,
         **kwargs,
     ) -> ReceiptAPI:
+        """
+        Make a transfer to an account.
+
+        Args:
+            account (``str``): Concats Address and AddressAPI
+            value (``str``): Concats string and integer
+            data (``str``): Concats bytes and string
+
+        Returns:
+            :class:`~ape.api.providers.ReceiptAPI`
+        """
 
         txn = self.provider.network.ecosystem.create_transaction(
             sender=self.address, receiver=self._convert(account, AddressType), **kwargs
@@ -137,6 +170,19 @@ class AccountAPI(AddressAPI):
         return self.call(txn, send_everything=value is None)
 
     def deploy(self, contract: ContractContainer, *args, **kwargs) -> ContractInstance:
+        """
+        Creates a smart contract on the blockchain.
+
+        Method Limiations:
+            Smart Contract must compile before deploying.
+            A provider must be specified
+
+        Args:
+            contract (:class:`~ape.api.contracts.ContractContainer`): Requires a contract type.
+
+        Returns:
+            :class:`~ape.api.contracts.ContractInstance`
+        """
 
         txn = contract(*args, **kwargs)
         txn.sender = self.address
@@ -164,17 +210,36 @@ class AccountContainerAPI:
     @property
     @abstractmethod
     def aliases(self) -> Iterator[str]:
-        ...
+        """
+        List all available aliases.
+
+        Returns:
+            Iterator[str]: List of aliases.
+        """
 
     @abstractmethod
     def __len__(self) -> int:
-        ...
+        """
+        Number of aliases.
+
+        """
 
     @abstractmethod
     def __iter__(self) -> Iterator[AccountAPI]:
-        ...
+        """
+        List all accounts.
+
+        Returns:
+            Iterator[AccountAPI] (``List[str]``)
+        """
 
     def __getitem__(self, address: AddressType) -> AccountAPI:
+        """
+        Raw input will be used to iterate and match the address.
+
+        Returns:
+            AccountAPI (:class:`~ape.api.accounts.AccountAPI`)
+        """
         for account in self.__iter__():
             if account.address == address:
                 return account
@@ -182,6 +247,17 @@ class AccountContainerAPI:
         raise IndexError(f"No local account {address}.")
 
     def append(self, account: AccountAPI):
+        """
+        Add account the iterable list of accounts in Account Container.
+
+        Args:
+            account (:class:`~ape.api.accounts.AccountAPI`): Requires contract type.
+
+        Flags:
+            Returns nothing if successful.
+            Verify the account type.
+            Verify account uniqueness.
+        """
         self._verify_account_type(account)
 
         if account.address in self:
@@ -192,9 +268,23 @@ class AccountContainerAPI:
         self.__setitem__(account.address, account)
 
     def __setitem__(self, address: AddressType, account: AccountAPI):
+        """
+        Add attribute to account.
+
+        Args:
+            address :class:`~ape.types.AddressType`
+            account :class:`~ape.accounts.AccountAPI`
+        """
         raise NotImplementedError("Must define this method to use `container.append(acct)`.")
 
     def remove(self, account: AccountAPI):
+        """
+        Delete an account by calling ``__delitem_``.
+        Must be in list or else raises ``AccountsError``
+
+        Args:
+            account :class:`~ape.accounts.AccountAPI`
+        """
         self._verify_account_type(account)
 
         if account.address not in self:
@@ -203,9 +293,27 @@ class AccountContainerAPI:
         self.__delitem__(account.address)
 
     def __delitem__(self, address: AddressType):
+        """
+        Delete an account.
+        Must be overriden or else raises ``NotImplementedError``.
+
+        Args:
+            address: address :class:`~ape.types.AddressType`
+
+        """
         raise NotImplementedError("Must define this method to use `container.remove(acct)`.")
 
     def __contains__(self, address: AddressType) -> bool:
+        """
+        Search in account for item.
+        Must be valid address or else raises ``IndexError``
+
+        Args:
+            address :class:`~ape.types.AddressType`
+
+        Returns:
+            bool
+        """
         try:
             self.__getitem__(address)
             return True
@@ -214,6 +322,13 @@ class AccountContainerAPI:
             return False
 
     def _verify_account_type(self, account):
+        """
+        Check if the account is of the correct type.
+        Raise ``AccountError`` if the account in the contaier is not correct
+
+        Args:
+            account :class:`~ape.accounts.AccountAPI`
+        """
         if not isinstance(account, self.account_type):
             message = (
                 f"Container '{type(account).__name__}' is an incorrect "
@@ -222,6 +337,9 @@ class AccountContainerAPI:
             raise AccountsError(message)
 
     def _verify_unused_alias(self, account):
+        """
+        Check address if it used.
+        """
         if account.alias and account.alias in self.aliases:
             raise AliasAlreadyInUseError(account.alias)
 
