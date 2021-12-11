@@ -25,14 +25,28 @@ from ape.exceptions import CompilerError
 from ape.logging import logger
 
 try:
-    from functools import cached_property  # type: ignore
+    from functools import cached_property as _cached_property  # type: ignore
 except ImportError:
-    from backports.cached_property import cached_property  # type: ignore
+    from backports.cached_property import cached_property as _cached_property  # type: ignore
 
 try:
-    from functools import singledispatchmethod  # type: ignore
+    from functools import singledispatchmethod as _singledispatchmethod  # type: ignore
 except ImportError:
-    from singledispatchmethod import singledispatchmethod  # type: ignore
+    from singledispatchmethod import singledispatchmethod as _singledispatchmethod  # type: ignore
+
+
+cached_property = _cached_property
+"""
+A class property that is calculated only once.
+"""
+
+singledispatchmethod = _singledispatchmethod
+"""
+Single-dispatch generic method descriptor.
+
+Supports wrapping existing descriptors and handles non-descriptor
+callables as instance methods.
+"""
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"

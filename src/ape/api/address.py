@@ -24,7 +24,7 @@ class AddressAPI:
     def provider(self, value: ProviderAPI):
         self._provider = value
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def address(self) -> AddressType:
         ...

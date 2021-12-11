@@ -12,6 +12,7 @@ from ape.cli.choices import (
 from ape.cli.utils import Abort
 from ape.exceptions import ContractError
 from ape.logging import LogLevel, logger
+from ape.managers.project import ProjectManager
 from ape.types import ContractType
 
 
@@ -25,7 +26,7 @@ class ApeCliContextObject:
         self._project = None
 
     @property
-    def project(self):
+    def project(self) -> ProjectManager:
         if not self._project:
             from ape import project
 
@@ -106,6 +107,7 @@ def skip_confirmation_option(help=""):
 def _account_callback(ctx, param, value):
     if param and not value:
         return param.type.get_user_selected_account()
+
     return value
 
 

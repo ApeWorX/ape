@@ -1,7 +1,7 @@
 import sys
 from typing import Union
 
-from eth_typing import ChecksumAddress as AddressType
+from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 
 from .contract import ABI, Bytecode, Checksum, Compiler, ContractType, Source
@@ -14,7 +14,17 @@ if sys.version_info >= (3, 8):
 else:
     from typing_extensions import Literal
 
+
+AddressType = ChecksumAddress
+"""
+A checksum address.
+"""
+
 BlockID = Union[str, int, HexBytes, Literal["earliest", "latest", "pending"]]
+"""
+An ID that can match a block, such as the literals 'earliest', 'latest', or 'pending'
+as well as a block number or hash (HexBytes).
+"""
 
 __all__ = [
     "ABI",

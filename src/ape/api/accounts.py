@@ -161,7 +161,7 @@ class AccountContainerAPI:
     account_type: Type[AccountAPI]
     config_manager: "ConfigManager"
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def aliases(self) -> Iterator[str]:
         ...

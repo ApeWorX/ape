@@ -11,7 +11,7 @@ from .config import ConfigItem
 class CompilerAPI:
     config: ConfigItem
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def name(self) -> str:
         ...

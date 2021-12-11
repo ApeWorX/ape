@@ -43,6 +43,30 @@ Once you have your token, export it to your terminal session:
 export GITHUB_ACCESS_TOKEN=<your-token>
 ```
 
+## Running the docs locally
+
+First, make sure you have the docs-related tooling installed:
+
+```bash
+pip install -e .'[docs]'
+```
+
+Then, run the following from the root project directory:
+
+```bash
+python build_docs.py
+```
+
+To view the resulting documentation, open `docs/_build/development/index.html`.
+
+For the best viewing experience, use a local server:
+
+```bash
+python -m http.server --directory "docs/_build/development" --bind 127.0.0.1 1337
+```
+
+and then open your browser to `127.0.0.1:1337`.
+
 ## Pull Requests
 
 Pull requests are welcomed! Please adhere to the following:

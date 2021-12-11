@@ -150,7 +150,6 @@ class OutputFormat(Enum):
 def output_format_choice(options: List[OutputFormat] = None) -> Choice:
     """
     Returns a ``click.Choice()`` type for the given options.
-    If
     """
     options = options or [o for o in OutputFormat]
 
