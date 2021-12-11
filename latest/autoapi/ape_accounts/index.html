@@ -184,7 +184,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape_accounts.KeyfileAccount" title="ape_accounts.KeyfileAccount"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KeyfileAccount</span></code></a></p></td>
-<td><p></p></td>
+<td><p>A base address API class. All account-types subclass this type.</p></td>
 </tr>
 </tbody>
 </table>
@@ -231,6 +231,7 @@
 <dt id="ape_accounts.KeyfileAccount">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape_accounts.</span></code><code class="sig-name descname"><span class="pre">KeyfileAccount</span></code><a class="headerlink" href="#ape_accounts.KeyfileAccount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../ape/api/index.html#ape.api.AccountAPI" title="ape.api.AccountAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.AccountAPI</span></code></a></p>
+<p>A base address API class. All account-types subclass this type.</p>
 <dl class="py attribute">
 <dt id="ape_accounts.KeyfileAccount._keyfile">
 <code class="sig-name descname"><span class="pre">_keyfile</span></code><em class="property"> <span class="pre">:pathlib.Path</span></em><a class="headerlink" href="#ape_accounts.KeyfileAccount._keyfile" title="Permalink to this definition">¶</a></dt>
@@ -255,7 +256,12 @@
 <dl class="py method">
 <dt id="ape_accounts.KeyfileAccount.address">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">address</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ape.types.AddressType</span><a class="headerlink" href="#ape_accounts.KeyfileAccount.address" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The address of this account. Subclasses must override and provide this value.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape_accounts.KeyfileAccount.__key">

@@ -69,6 +69,8 @@
 
    Bases: :py:obj:`ape.api.AccountAPI`
 
+   A base address API class. All account-types subclass this type.
+
    .. attribute:: _keyfile
       :annotation: :pathlib.Path
 
@@ -89,6 +91,11 @@
 
    .. py:method:: address(self) -> ape.types.AddressType
       :property:
+
+      The address of this account. Subclasses must override and provide this value.
+
+      Returns:
+          :class:`~ape.types.AddressType`
 
 
    .. py:method:: __key(self) -> eth_account.Account

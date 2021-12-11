@@ -30,6 +30,8 @@
 
    Bases: :py:obj:`ape.api.address.AddressAPI`
 
+   A base address API class. All account-types subclass this type.
+
    .. attribute:: container
       :annotation: :AccountContainerAPI
 
@@ -37,7 +39,10 @@
 
    .. py:method:: __dir__(self) -> List[str]
 
-      Default dir() implementation.
+      Display methods to IPython on ``a.[TAB]`` tab completion.
+
+      Returns:
+          list[str]: Method names that IPython uses for tab completion.
 
 
    .. py:method:: alias(self) -> Optional[str]

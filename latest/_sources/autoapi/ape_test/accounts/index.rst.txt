@@ -84,6 +84,11 @@
    .. py:method:: address(self) -> ape.types.AddressType
       :property:
 
+      The address of this account. Subclasses must override and provide this value.
+
+      Returns:
+          :class:`~ape.types.AddressType`
+
 
    .. py:method:: sign_message(self, msg: eth_account.messages.SignableMessage) -> Optional[ape.types.MessageSignature]
 

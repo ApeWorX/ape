@@ -278,7 +278,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.api.contracts.ContractInstance" title="ape.api.contracts.ContractInstance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractInstance</span></code></a></p></td>
-<td><p></p></td>
+<td><p>A base address API class. All account-types subclass this type.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.api.contracts.ContractContainer" title="ape.api.contracts.ContractContainer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContractContainer</span></code></a></p></td>
 <td><p></p></td>
@@ -525,6 +525,7 @@
 <dt id="ape.api.contracts.ContractInstance">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.contracts.</span></code><code class="sig-name descname"><span class="pre">ContractInstance</span></code><a class="headerlink" href="#ape.api.contracts.ContractInstance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../address/index.html#ape.api.address.AddressAPI" title="ape.api.address.AddressAPI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape.api.address.AddressAPI</span></code></a></p>
+<p>A base address API class. All account-types subclass this type.</p>
 <dl class="py attribute">
 <dt id="ape.api.contracts.ContractInstance._address">
 <code class="sig-name descname"><span class="pre">_address</span></code><em class="property"> <span class="pre">:ape.types.AddressType</span></em><a class="headerlink" href="#ape.api.contracts.ContractInstance._address" title="Permalink to this definition">¶</a></dt>
@@ -544,12 +545,21 @@
 <dl class="py method">
 <dt id="ape.api.contracts.ContractInstance.address">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">address</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ape.types.AddressType</span><a class="headerlink" href="#ape.api.contracts.ContractInstance.address" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The address of this account. Subclasses must override and provide this value.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.contracts.ContractInstance.__dir__">
 <code class="sig-name descname"><span class="pre">__dir__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.contracts.ContractInstance.__dir__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Default dir() implementation.</p>
+<dd><p>Display methods to IPython on <code class="docutils literal notranslate"><span class="pre">a.[TAB]</span></code> tab completion.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>list[str]: Method names that IPython uses for tab completion.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

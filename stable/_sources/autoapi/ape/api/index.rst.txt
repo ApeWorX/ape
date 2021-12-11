@@ -82,6 +82,8 @@
 
    Bases: :py:obj:`ape.api.address.AddressAPI`
 
+   A base address API class. All account-types subclass this type.
+
    .. attribute:: container
       :annotation: :AccountContainerAPI
 
@@ -89,7 +91,10 @@
 
    .. py:method:: __dir__(self) -> List[str]
 
-      Default dir() implementation.
+      Display methods to IPython on ``a.[TAB]`` tab completion.
+
+      Returns:
+          list[str]: Method names that IPython uses for tab completion.
 
 
    .. py:method:: alias(self) -> Optional[str]
@@ -221,6 +226,10 @@
 
    Bases: :py:obj:`AddressAPI`
 
+   A generic blockchain address.
+   Typically, this is used when we do not know the contract type at a given address,
+   or to refer to an EOA the user doesn't personally control.
+
    .. attribute:: _address
       :annotation: :ape.types.AddressType
 
@@ -229,11 +238,18 @@
    .. py:method:: address(self) -> ape.types.AddressType
       :property:
 
+      The raw address type.
+
+      Returns:
+          :class:`~ape.types.AddressType`
+
 
 
 
 
 .. py:class:: AddressAPI
+
+   A base address API class. All account-types subclass this type.
 
    .. attribute:: _provider
       :annotation: :Optional[ape.api.providers.ProviderAPI]
@@ -243,14 +259,29 @@
    .. py:method:: provider(self) -> ape.api.providers.ProviderAPI
       :property:
 
+      The current active provider if connected to one.
+      If there is no active provider at runtime, then this raises an
+      :class:`~ape.exceptions.AddressError`.
+
+      Returns:
+          :class:`~ape.api.providers.ProviderAPI`
+
 
    .. py:method:: address(self) -> ape.types.AddressType
       :property:
 
+      The address of this account. Subclasses must override and provide this value.
+
+      Returns:
+          :class:`~ape.types.AddressType`
+
 
    .. py:method:: __dir__(self) -> List[str]
 
-      Default dir() implementation.
+      Display methods to IPython on ``a.[TAB]`` tab completion.
+
+      Returns:
+          list[str]: Method names that IPython uses for tab completion.
 
 
    .. py:method:: __repr__(self) -> str
@@ -260,27 +291,55 @@
 
    .. py:method:: __str__(self) -> str
 
-      Return str(self).
+      Convert this class to a ``str`` address.
+
+      Returns:
+          str: The stringified address.
 
 
    .. py:method:: nonce(self) -> int
       :property:
 
+      The number of transactions associated with the address.
+
+      Returns:
+          int
+
 
    .. py:method:: balance(self) -> int
       :property:
+
+      The total balance of the account.
+
+      Returns:
+          int
 
 
    .. py:method:: code(self) -> bytes
       :property:
 
+      The smart-contract code at the address.
+
+      Returns:
+          bytes: The raw bytes of the contract.
+
 
    .. py:method:: codesize(self) -> int
       :property:
 
+      The size of the smart-contract.
+
+      Returns:
+          int: The number of bytes in the smart contract.
+
 
    .. py:method:: is_contract(self) -> bool
       :property:
+
+      ``True`` when there is code associated with the address.
+
+      Returns:
+          bool
 
 
 
@@ -373,6 +432,8 @@
 
    Bases: :py:obj:`ape.api.address.AddressAPI`
 
+   A base address API class. All account-types subclass this type.
+
    .. attribute:: _address
       :annotation: :ape.types.AddressType
 
@@ -391,10 +452,18 @@
    .. py:method:: address(self) -> ape.types.AddressType
       :property:
 
+      The address of this account. Subclasses must override and provide this value.
+
+      Returns:
+          :class:`~ape.types.AddressType`
+
 
    .. py:method:: __dir__(self) -> List[str]
 
-      Default dir() implementation.
+      Display methods to IPython on ``a.[TAB]`` tab completion.
+
+      Returns:
+          list[str]: Method names that IPython uses for tab completion.
 
 
    .. py:method:: __getattr__(self, attr_name: str) -> Any
