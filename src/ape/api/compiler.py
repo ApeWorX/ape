@@ -15,7 +15,7 @@ class CompilerAPI:
     @abstractmethod
     def name(self) -> str:
         """
-        Name converts raw intput into string
+        The name of the compiler.
 
         Returns:
             str
