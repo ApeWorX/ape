@@ -178,7 +178,10 @@ class OutputFormat(Enum):
     """
 
     TREE = "TREE"
+    """A rich text tree view of the data."""
+
     YAML = "YAML"
+    """A standard .yaml format of the data."""
 
 
 def output_format_choice(options: List[OutputFormat] = None) -> Choice:
