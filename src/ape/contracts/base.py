@@ -2,12 +2,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from eth_utils import to_bytes
 
-from ape.api.address import Address, AddressAPI
-from ape.api.base import dataclass
-from ape.api.providers import ProviderAPI, ReceiptAPI, TransactionAPI
+from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.exceptions import ArgumentsLengthError, ContractDeployError, TransactionError
 from ape.logging import logger
 from ape.types import ABI, AddressType, ContractType
+from ape.utils import dataclass
 
 if TYPE_CHECKING:
     from ape.managers.converters import ConversionManager

@@ -2,8 +2,7 @@ from enum import Enum
 from typing import Any, Dict, List, Union
 
 from ape.logging import logger
-
-from .base import dataclass
+from ape.utils import dataclass
 
 
 class ConfigEnum(str, Enum):

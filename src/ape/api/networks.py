@@ -6,9 +6,8 @@ from pluggy import PluginManager  # type: ignore
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
 from ape.types import ABI, AddressType
-from ape.utils import cached_property
+from ape.utils import abstractdataclass, abstractmethod, cached_property, dataclass
 
-from .base import abstractdataclass, abstractmethod, dataclass
 from .config import ConfigItem
 
 if TYPE_CHECKING:

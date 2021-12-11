@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import List, Set
 
 from ape.types import ContractType
+from ape.utils import abstractdataclass, abstractmethod
 
-from .base import abstractdataclass, abstractmethod
 from .config import ConfigItem
 
 

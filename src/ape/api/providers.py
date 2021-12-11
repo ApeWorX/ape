@@ -13,9 +13,9 @@ from web3 import Web3
 from ape.exceptions import ProviderError, TransactionError
 from ape.logging import logger
 from ape.types import BlockID, TransactionSignature
+from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
-from .base import abstractdataclass, abstractmethod
 from .config import ConfigItem
 
 

@@ -6,10 +6,9 @@ import click
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
-from ape.utils import cached_property
+from ape.utils import abstractdataclass, abstractmethod, cached_property
 
 from .address import AddressAPI
-from .base import abstractdataclass, abstractmethod
 from .providers import ReceiptAPI, TransactionAPI, TransactionType
 
 if TYPE_CHECKING:
