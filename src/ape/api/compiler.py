@@ -14,7 +14,12 @@ class CompilerAPI:
     @property
     @abstractmethod
     def name(self) -> str:
-        ...
+        """
+        Name converts raw intput into string
+
+        Returns:
+            str
+        """
 
     @abstractmethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:

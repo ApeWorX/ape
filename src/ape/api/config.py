@@ -17,6 +17,9 @@ class ConfigItem:
     """
 
     def serialize(self) -> Dict:
+        """
+        Takes raw data and dictionize then serialize it.
+        """
         data: Dict[str, Union[str, int, Dict, List, None]] = dict()
         for name in self.__slots__:
             value = getattr(self, name)
@@ -43,5 +46,9 @@ class ConfigItem:
 
 
 class ConfigDict(ConfigItem):
+    """
+    A class for Config Dictionary
+    """
+
     def __post_init__(self):
         raise ValueError("Do not use this class directly!")

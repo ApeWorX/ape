@@ -14,8 +14,24 @@ class ExplorerAPI:
 
     @abstractmethod
     def get_address_url(self, address: str) -> str:
-        ...
+        """
+        Get address url given an address.
+
+        Args:
+            address (`str`): Value of address
+
+        Returns:
+            str
+        """
 
     @abstractmethod
     def get_transaction_url(self, transaction_hash: str) -> str:
-        ...
+        """
+        Get transaction url given the transaction.
+
+        Args:
+            transaction_hash (`str`): Value of transaction hash.
+
+        Returns:
+            str
+        """
