@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath(".."))
 
 project = "ape"
 copyright = "2021, ApeWorX LTD"
-author = "ApeWorX"
+author = "ApeWorX Team"
 extensions = [
     "recommonmark",
     "sphinx_click",
