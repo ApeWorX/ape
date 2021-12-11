@@ -172,8 +172,9 @@ class NetworkChoice(click.Choice):
 
 class OutputFormat(Enum):
     """
-    Various output format types to use for outputting data
-    to the user.
+    An enum representing output formats, such as ``TREE`` or ``YAML``.
+    Use this to select a subset of common output formats to use
+    when creating a :meth:`~ape.cli.choices.output_format_choice`.
     """
 
     TREE = "TREE"
