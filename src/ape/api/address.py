@@ -9,10 +9,23 @@ from .providers import ProviderAPI
 
 @abstractdataclass
 class AddressAPI:
+    """
+    A base address API class. All account-types subclass this type.
+    """
+
     _provider: Optional[ProviderAPI] = None
 
     @property
     def provider(self) -> ProviderAPI:
+        """
+        The current active provider if connected to one.
+        If there is no active provider at runtime, then this raises an
+        :class:`~ape.exceptions.AddressError`.
+
+        Returns:
+            :class:`~ape.api.providers.ProviderAPI`
+        """
+
         if not self._provider:
             raise AddressError(
                 f"Incorrectly implemented provider API for class {type(self).__name__}"
@@ -22,15 +35,32 @@ class AddressAPI:
 
     @provider.setter
     def provider(self, value: ProviderAPI):
+        """
+        Set the active provider if connected to one.
+
+        Args:
+            value (:class:`~ape.api.providers.ProviderAPI`): The provider to set.
+        """
+
         self._provider = value
 
     @property
     @abstractmethod
     def address(self) -> AddressType:
-        ...
+        """
+        The address of this account. Subclasses must override and provide this value.
+
+        Returns:
+            :class:`~ape.types.AddressType`
+        """
 
     def __dir__(self) -> List[str]:
-        # This displays methods to IPython on `a.[TAB]` tab completion
+        """
+        Display methods to IPython on ``a.[TAB]`` tab completion.
+
+        Returns:
+            list[str]: Method names that IPython uses for tab completion.
+        """
         return [
             "address",
             "balance",
@@ -45,33 +75,88 @@ class AddressAPI:
         return f"<{self.__class__.__name__} {self.address}>"
 
     def __str__(self) -> str:
+        """
+        Convert this class to a ``str`` address.
+
+        Returns:
+            str: The stringified address.
+        """
+
         return self.address
 
     @property
     def nonce(self) -> int:
+        """
+        The number of transactions associated with the address.
+
+        Returns:
+            int
+        """
+
         return self.provider.get_nonce(self.address)
 
     @property
     def balance(self) -> int:
+        """
+        The total balance of the account.
+
+        Returns:
+            int
+        """
+
         return self.provider.get_balance(self.address)
 
     @property
     def code(self) -> bytes:
+        """
+        The smart-contract code at the address.
+
+        Returns:
+            bytes: The raw bytes of the contract.
+        """
+
         # TODO: Explore caching this (based on `self.provider.network` and examining code)
         return self.provider.get_code(self.address)
 
     @property
     def codesize(self) -> int:
+        """
+        The size of the smart-contract.
+
+        Returns:
+            int: The number of bytes in the smart contract.
+        """
+
         return len(self.code)
 
     @property
     def is_contract(self) -> bool:
+        """
+        ``True`` when there is code associated with the address.
+
+        Returns:
+            bool
+        """
+
         return len(self.code) > 0
 
 
 class Address(AddressAPI):
+    """
+    A generic blockchain address.
+    Typically, this is used when we do not know the contract type at a given address,
+    or to refer to an EOA the user doesn't personally control.
+    """
+
     _address: AddressType
 
     @property
     def address(self) -> AddressType:
+        """
+        The raw address type.
+
+        Returns:
+            :class:`~ape.types.AddressType`
+        """
+
         return self._address
