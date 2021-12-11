@@ -146,7 +146,7 @@ class AccountAliasPromptChoice(PromptChoice):
         Returns the selected account.
 
         Returns:
-            :class:`~ape.apo.accounts.AccountAPI`
+            :class:`~ape.api.accounts.AccountAPI`
         """
 
         if not self.choices:
