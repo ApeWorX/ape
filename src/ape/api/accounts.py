@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 # NOTE: AddressAPI is a dataclass already
 class AccountAPI(AddressAPI):
     """
-    A base account API with inherited address traits.
+    An API class representing an account.
     """
 
     container: "AccountContainerAPI"
@@ -77,8 +77,9 @@ class AccountAPI(AddressAPI):
         Make a transaction call.
 
         Args:
-            txn (:class:`~ape.api.providers.ProviderAPI`): The transaction to call.
-            send_everything (bool): ``True`` will send the value difference from balance and fee
+            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to submit in call.
+                Review TransactionAPI for what is required and optional
+            send_everything (bool): ``True`` will send the value difference from balance and fee.
 
         Returns:
             :class:`~ape.api.providers.ReceiptAPI`
@@ -130,9 +131,6 @@ class AccountAPI(AddressAPI):
 
     @cached_property
     def _convert(self) -> Callable:
-        """
-        Converts the account.
-        """
         # NOTE: Need to differ loading this property
         from ape import convert
 
@@ -146,12 +144,12 @@ class AccountAPI(AddressAPI):
         **kwargs,
     ) -> ReceiptAPI:
         """
-        Make a transfer to an account.
+        Send funds to an account.
 
         Args:
-            account (``str``): Concats Address and AddressAPI
-            value (``str``): Concats string and integer
-            data (``str``): Concats bytes and string
+            account (``str``): The account to send funds to.
+            value (``str``): Amount to send
+            data (``str``): Extra data
 
         Returns:
             :class:`~ape.api.providers.ReceiptAPI`
@@ -171,14 +169,15 @@ class AccountAPI(AddressAPI):
 
     def deploy(self, contract: ContractContainer, *args, **kwargs) -> ContractInstance:
         """
-        Creates a smart contract on the blockchain.
+        Create a smart contract on the blockchain.
 
-        Method Limiations:
+        Method Limitations:
             Smart Contract must compile before deploying.
-            A provider must be specified
+            A provider must be specified.
 
         Args:
-            contract (:class:`~ape.api.contracts.ContractContainer`): Requires a contract type.
+            contract (:class:`~ape.api.contracts.ContractContainer`):
+            The type of contract to deploy.
 
         Returns:
             :class:`~ape.api.contracts.ContractInstance`
@@ -221,24 +220,23 @@ class AccountContainerAPI:
     def __len__(self) -> int:
         """
         Number of aliases.
-
         """
 
     @abstractmethod
     def __iter__(self) -> Iterator[AccountAPI]:
         """
-        List all accounts.
+        LIterate over all accounts.
 
         Returns:
-            Iterator[AccountAPI] (``List[str]``)
+            iter[:class:`~ape.api.accounts.AccountAPI`]
         """
 
     def __getitem__(self, address: AddressType) -> AccountAPI:
         """
-        Raw input will be used to iterate and match the address.
+        Get an account by address.
 
         Returns:
-            AccountAPI (:class:`~ape.api.accounts.AccountAPI`)
+            :class:`~ape.api.accounts.AccountAPI`
         """
         for account in self.__iter__():
             if account.address == address:
@@ -248,15 +246,10 @@ class AccountContainerAPI:
 
     def append(self, account: AccountAPI):
         """
-        Add account the iterable list of accounts in Account Container.
+        Add an account to the container.
 
         Args:
-            account (:class:`~ape.api.accounts.AccountAPI`): Requires contract type.
-
-        Flags:
-            Returns nothing if successful.
-            Verify the account type.
-            Verify account uniqueness.
+            account (:class:`~ape.api.accounts.AccountAPI`): The account to add.
         """
         self._verify_account_type(account)
 
@@ -279,11 +272,11 @@ class AccountContainerAPI:
 
     def remove(self, account: AccountAPI):
         """
-        Delete an account by calling ``__delitem_``.
-        Must be in list or else raises ``AccountsError``
+        Delete an account.
+        Must be in list or else raises :class:`~ape.exceptions.AccountsError`.
 
         Args:
-            account :class:`~ape.accounts.AccountAPI`
+            account (:class:`~ape.accounts.AccountAPI`)
         """
         self._verify_account_type(account)
 
@@ -298,21 +291,22 @@ class AccountContainerAPI:
         Must be overriden or else raises ``NotImplementedError``.
 
         Args:
-            address: address :class:`~ape.types.AddressType`
+            address: (address :class:`~ape.types.AddressType`):
+            The address of the account to delete.
 
         """
         raise NotImplementedError("Must define this method to use `container.remove(acct)`.")
 
     def __contains__(self, address: AddressType) -> bool:
         """
-        Search in account for item.
-        Must be valid address or else raises ``IndexError``
+        Check if the address is an existing account managed by ape.
+        Must be valid address or else raises ``IndexError``.
 
         Args:
             address :class:`~ape.types.AddressType`
 
         Returns:
-            bool
+            bool: ``True`` if ape manages and account with the given address.
         """
         try:
             self.__getitem__(address)
@@ -337,9 +331,6 @@ class AccountContainerAPI:
             raise AccountsError(message)
 
     def _verify_unused_alias(self, account):
-        """
-        Check address if it used.
-        """
         if account.alias and account.alias in self.aliases:
             raise AliasAlreadyInUseError(account.alias)
 
