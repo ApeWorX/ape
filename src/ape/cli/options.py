@@ -18,7 +18,7 @@ from ape.types import ContractType
 
 class ApeCliContextObject:
     """
-    A ``click`` context object class. Use via ``@ape_cli_context()``.
+    A ``click`` context object class. Use via :meth:`~ape.cli.options.ape_cli_context()`.
     It provides common CLI utilities for ape, such as logging or
     access to the managers.
     """

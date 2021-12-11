@@ -144,6 +144,9 @@ class AccountAliasPromptChoice(PromptChoice):
     def get_user_selected_account(self) -> AccountAPI:
         """
         Returns the selected account.
+
+        Returns:
+            :class:`~ape.apo.accounts.AccountAPI`
         """
 
         if not self.choices:
