@@ -18,7 +18,7 @@ class ExplorerAPI:
         Get the address URL for the given address.
 
         Args:
-            address (`str`): Value of address
+            address (str): The address to get the URL for.
 
         Returns:
             str
