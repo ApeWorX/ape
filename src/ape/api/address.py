@@ -103,7 +103,7 @@ class AddressAPI:
         The total balance of the account.
 
         Returns:
-            `int`
+            int
         """
 
         return self.provider.get_balance(self.address)
@@ -145,7 +145,9 @@ class AddressAPI:
 
 class Address(AddressAPI):
     """
-    A generic blockchain address. Typically used when we do not know the contract type at a given address, or to refer to an EOA the user doesn't personally control.
+    A generic blockchain address.
+    Typically, this is used when we do not know the contract type at a given address,
+    or to refer to an EOA the user doesn't personally control.
     """
 
     _address: AddressType
