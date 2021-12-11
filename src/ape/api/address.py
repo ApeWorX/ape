@@ -143,7 +143,7 @@ class AddressAPI:
 
 class Address(AddressAPI):
     """
-    A blockchain address.
+    A generic blockchain address. Typically used when we do not know the contract type at a given address, or to refer to an EOA the user doesn't personally control.
     """
 
     _address: AddressType
