@@ -48,7 +48,7 @@ class AddressAPI:
     @abstractmethod
     def address(self) -> AddressType:
         """
-        The raw address type.
+        The address of this account. Subclasses must override and provide this value.
 
         Returns:
             :class:`~ape.types.AddressType`
