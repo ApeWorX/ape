@@ -77,8 +77,7 @@ class AccountAPI(AddressAPI):
         Make a transaction call.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to submit in call.
-                Review TransactionAPI for what is required and optional
+            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to submit in a call.
             send_everything (bool): ``True`` will send the value difference from balance and fee.
 
         Returns:
@@ -147,9 +146,9 @@ class AccountAPI(AddressAPI):
         Send funds to an account.
 
         Args:
-            account (``str``): The account to send funds to.
-            value (``str``): Amount to send
-            data (``str``): Extra data
+            account (`str`): The account to send funds to.
+            value (`str`): Amount to send
+            data (`str`): Extra data
 
         Returns:
             :class:`~ape.api.providers.ReceiptAPI`
@@ -173,7 +172,7 @@ class AccountAPI(AddressAPI):
 
         Method Limitations:
             Smart Contract must compile before deploying.
-            A provider must be specified.
+            A provider must active.
 
         Args:
             contract (:class:`~ape.api.contracts.ContractContainer`):
@@ -225,7 +224,7 @@ class AccountContainerAPI:
     @abstractmethod
     def __iter__(self) -> Iterator[AccountAPI]:
         """
-        LIterate over all accounts.
+        Iterate over all accounts.
 
         Returns:
             iter[:class:`~ape.api.accounts.AccountAPI`]
@@ -300,13 +299,13 @@ class AccountContainerAPI:
     def __contains__(self, address: AddressType) -> bool:
         """
         Check if the address is an existing account managed by ape.
-        Must be valid address or else raises ``IndexError``.
+        Must be a valid address or else raises ``IndexError``.
 
         Args:
             address :class:`~ape.types.AddressType`
 
         Returns:
-            bool: ``True`` if ape manages and account with the given address.
+            bool: ``True`` if ape manages the account with the given address.
         """
         try:
             self.__getitem__(address)
@@ -316,13 +315,6 @@ class AccountContainerAPI:
             return False
 
     def _verify_account_type(self, account):
-        """
-        Check if the account is of the correct type.
-        Raise ``AccountError`` if the account in the contaier is not correct
-
-        Args:
-            account :class:`~ape.accounts.AccountAPI`
-        """
         if not isinstance(account, self.account_type):
             message = (
                 f"Container '{type(account).__name__}' is an incorrect "
