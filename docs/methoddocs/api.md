@@ -1,4 +1,4 @@
-# API
+# ape.api
 
 ```eval_rst
 .. automodule:: ape.api

@@ -1,4 +1,4 @@
-# Utilities
+# ape.utils
 
 ```eval_rst
 .. automodule:: ape.utils

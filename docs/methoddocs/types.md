@@ -1,4 +1,4 @@
-# Types
+# ape.types
 
 ```eval_rst
 .. automodule:: ape.types
