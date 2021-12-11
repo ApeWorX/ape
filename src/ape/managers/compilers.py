@@ -19,7 +19,7 @@ class CompilerManager:
     plugin_manager: PluginManager
 
     def __repr__(self):
-        return f"<CompilerManager, registered_compilers={self.registered_compilers}>"
+        return "<CompilerManager>"
 
     @cached_property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
