@@ -10,7 +10,9 @@ from .providers import ProviderAPI
 @abstractdataclass
 class AddressAPI:
     """
-    A base address API class.
+    A base address API class. All account-types subclass
+    this type, including externally owned accounts as well
+    as contract accounts.
     """
 
     _provider: Optional[ProviderAPI] = None
