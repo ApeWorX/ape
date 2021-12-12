@@ -197,7 +197,7 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.options.ApeCliContextObject" title="ape.cli.options.ApeCliContextObject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ApeCliContextObject</span></code></a></p></td>
-<td><p>A class that can be auto-imported into a plugin <code class="docutils literal notranslate"><span class="pre">click.command()</span></code></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">click</span></code> context object class. Use via <a class="reference internal" href="#ape.cli.options.ape_cli_context" title="ape.cli.options.ape_cli_context"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape_cli_context()</span></code></a>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -212,13 +212,13 @@
 <td><p>A decorator that adds a <cite>–verbosity, -v</cite> option to the decorated</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.options.ape_cli_context" title="ape.cli.options.ape_cli_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ape_cli_context</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">click</span></code> context object with helpful utilities.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.options.network_option" title="ape.cli.options.network_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">network_option</span></code></a>(default: str = networks.default_ecosystem.name)</p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for specifying a network.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.options.skip_confirmation_option" title="ape.cli.options.skip_confirmation_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skip_confirmation_option</span></code></a>(help='')</p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for skipping confirmation (<code class="docutils literal notranslate"><span class="pre">--yes</span></code>).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.options._account_callback" title="ape.cli.options._account_callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_account_callback</span></code></a>(ctx, param, value)</p></td>
 <td><p></p></td>
@@ -233,7 +233,7 @@
 <td><p>Contract(s) from the current project.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.options.output_format_option" title="ape.cli.options.output_format_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">output_format_option</span></code></a>(default: ape.cli.choices.OutputFormat = OutputFormat.TREE)</p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for specifying a format to use when outputting data.</p></td>
 </tr>
 </tbody>
 </table>
@@ -241,9 +241,9 @@
 <dl class="py class">
 <dt id="ape.cli.options.ApeCliContextObject">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">ApeCliContextObject</span></code><a class="headerlink" href="#ape.cli.options.ApeCliContextObject" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class that can be auto-imported into a plugin <code class="docutils literal notranslate"><span class="pre">click.command()</span></code>
-via <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context()</span></code>. It can help do common CLI tasks such as log
-messages to the user or abort execution.</p>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click</span></code> context object class. Use via <a class="reference internal" href="#ape.cli.options.ape_cli_context" title="ape.cli.options.ape_cli_context"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape_cli_context()</span></code></a>.
+It provides common CLI utilities for ape, such as logging or
+access to the managers.</p>
 <dl class="py method">
 <dt id="ape.cli.options.ApeCliContextObject.__init__">
 <code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.ApeCliContextObject.__init__" title="Permalink to this definition">¶</a></dt>
@@ -251,13 +251,28 @@ messages to the user or abort execution.</p>
 
 <dl class="py method">
 <dt id="ape.cli.options.ApeCliContextObject.project">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">project</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.ApeCliContextObject.project" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">project</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../managers/project/index.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ape.managers.project.ProjectManager</span></a><a class="headerlink" href="#ape.cli.options.ApeCliContextObject.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class representing the project that is active at runtime.
+(This is the same object as from <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">ape</span> <span class="pre">import</span> <span class="pre">project</span></code>).</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p><a class="reference internal" href="../../managers/project/index.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape.cli.options.ApeCliContextObject.abort">
 <em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">abort</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_error</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Exception</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.ApeCliContextObject.abort" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>End execution of the current command invocation.</p>
+<dl>
+<dt>Args:</dt><dd><p>msg (str): A message to output to the terminal.
+base_error (Exception, optional): Optionally provide</p>
+<blockquote>
+<div><p>an error to preserve the exception stack.</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -271,17 +286,34 @@ command.</p>
 <dl class="py function">
 <dt id="ape.cli.options.ape_cli_context">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">ape_cli_context</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.ape_cli_context" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click</span></code> context object with helpful utilities.
+Use in your commands to get access to common utility features,
+such as logging or accessing managers.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt id="ape.cli.options.network_option">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">network_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">networks.default_ecosystem.name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.network_option" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for specifying a network.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>default (str): Optionally, change which network to</dt><dd><p>use as the default. Defaults to how <code class="docutils literal notranslate"><span class="pre">ape</span></code> normally
+selects a default network.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="ape.cli.options.skip_confirmation_option">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">skip_confirmation_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.skip_confirmation_option" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for skipping confirmation (<code class="docutils literal notranslate"><span class="pre">--yes</span></code>).</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>help (str): CLI option help text. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="ape.cli.options._account_callback">
@@ -310,7 +342,12 @@ If you pass <code class="docutils literal notranslate"><span class="pre">multipl
 <dl class="py function">
 <dt id="ape.cli.options.output_format_option">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">output_format_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../choices/index.html#ape.cli.choices.OutputFormat" title="ape.cli.choices.OutputFormat"><span class="pre">ape.cli.choices.OutputFormat</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">OutputFormat.TREE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.output_format_option" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for specifying a format to use when outputting data.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>default (<a class="reference internal" href="../choices/index.html#ape.cli.choices.OutputFormat" title="ape.cli.choices.OutputFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">OutputFormat</span></code></a>): Defaults to <code class="docutils literal notranslate"><span class="pre">TREE</span></code> format.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 

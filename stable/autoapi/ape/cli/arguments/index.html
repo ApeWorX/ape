@@ -196,16 +196,16 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.arguments.existing_alias_argument" title="ape.cli.arguments.existing_alias_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">existing_alias_argument</span></code></a>(account_type: Optional[Type[ape.api.AccountAPI]] = None)</p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> for an existing account alias.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.arguments.non_existing_alias_argument" title="ape.cli.arguments.non_existing_alias_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">non_existing_alias_argument</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> for an account alias that does not yet exist in ape.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.arguments._create_contracts_paths" title="ape.cli.arguments._create_contracts_paths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_contracts_paths</span></code></a>(ctx, param, value)</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.arguments.contract_file_paths_argument" title="ape.cli.arguments.contract_file_paths_argument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_file_paths_argument</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> representing contract source file paths.</p></td>
 </tr>
 </tbody>
 </table>
@@ -235,12 +235,21 @@
 <dl class="py function">
 <dt id="ape.cli.arguments.existing_alias_argument">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">existing_alias_argument</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/index.html#ape.api.AccountAPI" title="ape.api.AccountAPI"><span class="pre">ape.api.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.arguments.existing_alias_argument" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> for an existing account alias.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>account_type (type[<a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>], optional):</dt><dd><p>If given, limits the type of account the user may choose from.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="ape.cli.arguments.non_existing_alias_argument">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">non_existing_alias_argument</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.arguments.non_existing_alias_argument" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> for an account alias that does not yet exist in ape.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt id="ape.cli.arguments._create_contracts_paths">
@@ -250,7 +259,11 @@
 <dl class="py function">
 <dt id="ape.cli.arguments.contract_file_paths_argument">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">contract_file_paths_argument</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.arguments.contract_file_paths_argument" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> representing contract source file paths.
+This argument takes 0-to-many values.</p>
+<p>The return type from the callback is a flattened list of
+source file-paths.</p>
+</dd></dl>
 
 </div>
 

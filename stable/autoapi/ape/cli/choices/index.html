@@ -195,7 +195,7 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.choices.Alias" title="ape.cli.choices.Alias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Alias</span></code></a></p></td>
-<td><p>Wraps <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to load account aliases for the active project at runtime.</p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> for loading account aliases for the active project at runtime.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.choices.PromptChoice" title="ape.cli.choices.PromptChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PromptChoice</span></code></a></p></td>
 <td><p>A choice option or argument from user selection.</p></td>
@@ -204,10 +204,10 @@
 <td><p>Prompts the user to select an alias from their accounts.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.choices.NetworkChoice" title="ape.cli.choices.NetworkChoice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NetworkChoice</span></code></a></p></td>
-<td><p>Wraps <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to provide network choice defaults for the active project.</p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to provide network choice defaults for the active project.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.choices.OutputFormat" title="ape.cli.choices.OutputFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OutputFormat</span></code></a></p></td>
-<td><p>Generic enumeration.</p></td>
+<td><p>An enum representing output formats, such as <code class="docutils literal notranslate"><span class="pre">TREE</span></code> or <code class="docutils literal notranslate"><span class="pre">YAML</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -222,7 +222,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ape.cli.choices.get_user_selected_account" title="ape.cli.choices.get_user_selected_account"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_user_selected_account</span></code></a>(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: Optional[str] = None) → ape.api.accounts.AccountAPI</p></td>
-<td><p>Prompts the user to pick from their accounts</p></td>
+<td><p>Prompt the user to pick from their accounts and return that account.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.cli.choices.output_format_choice" title="ape.cli.choices.output_format_choice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">output_format_choice</span></code></a>(options: List[OutputFormat] = None) → click.Choice</p></td>
 <td><p>Returns a <code class="docutils literal notranslate"><span class="pre">click.Choice()</span></code> type for the given options.</p></td>
@@ -239,7 +239,7 @@
 <dt id="ape.cli.choices.Alias">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">Alias</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.Alias" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">click.Choice</span></code></p>
-<p>Wraps <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to load account aliases for the active project at runtime.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> for loading account aliases for the active project at runtime.</p>
 <p>Provide an <code class="docutils literal notranslate"><span class="pre">account_type</span></code> to limit the type of account to choose from.
 Defaults to all account types in <code class="docutils literal notranslate"><span class="pre">choices()</span></code>.</p>
 <dl class="py attribute">
@@ -255,7 +255,12 @@ Defaults to all account types in <code class="docutils literal notranslate"><spa
 <dl class="py method">
 <dt id="ape.cli.choices.Alias.choices">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">choices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.choices.Alias.choices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The aliases available to choose from.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>list[str]: A list of account aliases the user may choose from.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -272,7 +277,8 @@ Defaults to all account types in <code class="docutils literal notranslate"><spa
 <dl class="py method">
 <dt id="ape.cli.choices.PromptChoice.print_choices">
 <code class="sig-name descname"><span class="pre">print_choices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.PromptChoice.print_choices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Echo the choices to the terminal.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape.cli.choices.PromptChoice.convert">
@@ -309,12 +315,20 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 <dl class="py function">
 <dt id="ape.cli.choices.get_user_selected_account">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">get_user_selected_account</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.cli.choices.get_user_selected_account" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prompts the user to pick from their accounts
-and returns that account. Optionally filter the accounts
-by type.</p>
-<p>Use this method if you want to prompt users to select
-accounts _outside_ of CLI options. For CLI options,
-use <a class="reference internal" href="../options/index.html#ape.cli.options.account_option_that_prompts_when_not_given" title="ape.cli.options.account_option_that_prompts_when_not_given"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.cli.options.account_option_that_prompts_when_not_given()</span></code></a>.</p>
+<dd><p>Prompt the user to pick from their accounts and return that account.
+Use this method if you want to prompt users to select accounts _outside_
+of CLI options. For CLI options, use
+<a class="reference internal" href="../options/index.html#ape.cli.options.account_option_that_prompts_when_not_given" title="ape.cli.options.account_option_that_prompts_when_not_given"><code class="xref py py-meth docutils literal notranslate"><span class="pre">account_option_that_prompts_when_not_given()</span></code></a>.</p>
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt>account_type (type[<a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>], optional):</dt><dd><p>If given, the user may only select an account of this type.</p>
+</dd>
+</dl>
+<p>prompt_message (str, optional): Customize the prompt message.</p>
+</dd>
+<dt>Returns:</dt><dd><p><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
@@ -356,12 +370,21 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 <dl class="py method">
 <dt id="ape.cli.choices.AccountAliasPromptChoice.choices">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">choices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.choices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>All the account aliases.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>list[str]: A list of all the account aliases.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account">
 <code class="sig-name descname"><span class="pre">get_user_selected_account</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the selected account.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p><a class="reference internal" href="../../api/accounts/index.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -375,7 +398,7 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 <dt id="ape.cli.choices.NetworkChoice">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">NetworkChoice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.NetworkChoice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">click.Choice</span></code></p>
-<p>Wraps <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to provide network choice defaults for the active project.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to provide network choice defaults for the active project.</p>
 <dl class="py method">
 <dt id="ape.cli.choices.NetworkChoice.__init__">
 <code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.NetworkChoice.__init__" title="Permalink to this definition">¶</a></dt>
@@ -393,25 +416,36 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 <dt id="ape.cli.choices.OutputFormat">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">OutputFormat</span></code><a class="headerlink" href="#ape.cli.choices.OutputFormat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
-<p>Generic enumeration.</p>
-<p>Derive from this class to define new enumerations.</p>
+<p>An enum representing output formats, such as <code class="docutils literal notranslate"><span class="pre">TREE</span></code> or <code class="docutils literal notranslate"><span class="pre">YAML</span></code>.
+Use this to select a subset of common output formats to use
+when creating a <a class="reference internal" href="#ape.cli.choices.output_format_choice" title="ape.cli.choices.output_format_choice"><code class="xref py py-meth docutils literal notranslate"><span class="pre">output_format_choice()</span></code></a>.</p>
 <dl class="py attribute">
 <dt id="ape.cli.choices.OutputFormat.TREE">
 <code class="sig-name descname"><span class="pre">TREE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">TREE</span></em><a class="headerlink" href="#ape.cli.choices.OutputFormat.TREE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A rich text tree view of the data.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt id="ape.cli.choices.OutputFormat.YAML">
 <code class="sig-name descname"><span class="pre">YAML</span></code><em class="property"> <span class="pre">=</span> <span class="pre">YAML</span></em><a class="headerlink" href="#ape.cli.choices.OutputFormat.YAML" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A standard .yaml format of the data.</p>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
 <dt id="ape.cli.choices.output_format_choice">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">output_format_choice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.cli.choices.OutputFormat" title="ape.cli.choices.OutputFormat"><span class="pre">OutputFormat</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">click.Choice</span><a class="headerlink" href="#ape.cli.choices.output_format_choice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a <code class="docutils literal notranslate"><span class="pre">click.Choice()</span></code> type for the given options.
-If</p>
+<dd><p>Returns a <code class="docutils literal notranslate"><span class="pre">click.Choice()</span></code> type for the given options.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>options (list[<code class="xref py py-class docutils literal notranslate"><span class="pre">OutputFormat</span></code>], optional):</dt><dd><p>Limit the formats to accept. Defaults to allowing all formats.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">click.Choice</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>

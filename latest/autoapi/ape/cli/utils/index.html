@@ -185,7 +185,9 @@
 <dt id="ape.cli.utils.Abort">
 <em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.utils.</span></code><code class="sig-name descname"><span class="pre">Abort</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.utils.Abort" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">click.ClickException</span></code></p>
-<p>Wrapper around a CLI exception</p>
+<p>A wrapper around a CLI exception. When you raise this error,
+the error is nicely printed to the terminal. This is
+useful for all user-facing errors.</p>
 <dl class="py method">
 <dt id="ape.cli.utils.Abort.__init__">
 <code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.utils.Abort.__init__" title="Permalink to this definition">¶</a></dt>

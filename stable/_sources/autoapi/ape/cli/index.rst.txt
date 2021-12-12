@@ -65,15 +65,29 @@
 
 .. py:function:: contract_file_paths_argument()
 
+   A ``click.argument`` representing contract source file paths.
+   This argument takes 0-to-many values.
+
+   The return type from the callback is a flattened list of
+   source file-paths.
+
 
 
 
 .. py:function:: existing_alias_argument(account_type: Optional[Type[ape.api.AccountAPI]] = None)
 
+   A ``click.argument`` for an existing account alias.
+
+   Args:
+       account_type (type[:class:`~ape.api.accounts.AccountAPI`], optional):
+         If given, limits the type of account the user may choose from.
+
 
 
 
 .. py:function:: non_existing_alias_argument()
+
+   A ``click.argument`` for an account alias that does not yet exist in ape.
 
 
 
@@ -113,10 +127,18 @@
    .. py:method:: choices(self) -> List[str]
       :property:
 
+      All the account aliases.
+
+      Returns:
+          list[str]: A list of all the account aliases.
+
 
    .. py:method:: get_user_selected_account(self) -> ape.api.accounts.AccountAPI
 
       Returns the selected account.
+
+      Returns:
+          :class:`~ape.api.accounts.AccountAPI`
 
 
    .. py:method:: fail_from_invalid_choice(self, param)
@@ -129,7 +151,7 @@
 
    Bases: :py:obj:`click.Choice`
 
-   Wraps ``click.Choice`` to load account aliases for the active project at runtime.
+   A ``click.Choice`` for loading account aliases for the active project at runtime.
 
    Provide an ``account_type`` to limit the type of account to choose from.
    Defaults to all account types in ``choices()``.
@@ -145,6 +167,11 @@
    .. py:method:: choices(self) -> List[str]
       :property:
 
+      The aliases available to choose from.
+
+      Returns:
+          list[str]: A list of account aliases the user may choose from.
+
 
 
 
@@ -153,19 +180,21 @@
 
    Bases: :py:obj:`enum.Enum`
 
-   Generic enumeration.
-
-   Derive from this class to define new enumerations.
+   An enum representing output formats, such as ``TREE`` or ``YAML``.
+   Use this to select a subset of common output formats to use
+   when creating a :meth:`~ape.cli.choices.output_format_choice`.
 
    .. attribute:: TREE
       :annotation: = TREE
 
-      
+      A rich text tree view of the data.
+
 
    .. attribute:: YAML
       :annotation: = YAML
 
-      
+      A standard .yaml format of the data.
+
 
 
 
@@ -180,6 +209,8 @@
 
 
    .. py:method:: print_choices(self)
+
+      Echo the choices to the terminal.
 
 
    .. py:method:: convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Optional[Any]
@@ -212,13 +243,18 @@
 
 .. py:function:: get_user_selected_account(account_type: Optional[Type[ape.api.accounts.AccountAPI]] = None, prompt_message: Optional[str] = None) -> ape.api.accounts.AccountAPI
 
-   Prompts the user to pick from their accounts
-   and returns that account. Optionally filter the accounts
-   by type.
+   Prompt the user to pick from their accounts and return that account.
+   Use this method if you want to prompt users to select accounts _outside_
+   of CLI options. For CLI options, use
+   :meth:`~ape.cli.options.account_option_that_prompts_when_not_given`.
 
-   Use this method if you want to prompt users to select
-   accounts _outside_ of CLI options. For CLI options,
-   use :meth:`ape.cli.options.account_option_that_prompts_when_not_given`.
+   Args:
+       account_type (type[:class:`~ape.api.accounts.AccountAPI`], optional):
+         If given, the user may only select an account of this type.
+       prompt_message (str, optional): Customize the prompt message.
+
+   Returns:
+       :class:`~ape.api.accounts.AccountAPI`
 
 
 
@@ -226,7 +262,13 @@
 .. py:function:: output_format_choice(options: List[OutputFormat] = None) -> click.Choice
 
    Returns a ``click.Choice()`` type for the given options.
-   If
+
+   Args:
+       options (list[:class:`~ape.choices.OutputFormat`], optional):
+         Limit the formats to accept. Defaults to allowing all formats.
+
+   Returns:
+       :class:`click.Choice`
 
 
 
@@ -235,7 +277,7 @@
 
    Bases: :py:obj:`click.Command`
 
-   A command that uses the network option.
+   A command that uses the :meth:`~ape.cli.options.network_option`.
    It will automatically set the network for the duration of the command execution.
 
    .. py:method:: invoke(self, ctx: click.Context) -> Any
@@ -257,6 +299,10 @@
 
 .. py:function:: ape_cli_context()
 
+   A ``click`` context object with helpful utilities.
+   Use in your commands to get access to common utility features,
+   such as logging or accessing managers.
+
 
 
 
@@ -270,15 +316,32 @@
 
 .. py:function:: network_option(default: str = networks.default_ecosystem.name)
 
+   A ``click.option`` for specifying a network.
+
+   Args:
+       default (str): Optionally, change which network to
+         use as the default. Defaults to how ``ape`` normally
+         selects a default network.
+
 
 
 
 .. py:function:: output_format_option(default: ape.cli.choices.OutputFormat = OutputFormat.TREE)
 
+   A ``click.option`` for specifying a format to use when outputting data.
+
+   Args:
+       default (:class:`~ape.cli.choices.OutputFormat`): Defaults to ``TREE`` format.
+
 
 
 
 .. py:function:: skip_confirmation_option(help='')
+
+   A ``click.option`` for skipping confirmation (``--yes``).
+
+   Args:
+       help (str): CLI option help text. Defaults to ``""``.
 
 
 
@@ -332,7 +395,9 @@
 
    Bases: :py:obj:`click.ClickException`
 
-   Wrapper around a CLI exception
+   A wrapper around a CLI exception. When you raise this error,
+   the error is nicely printed to the terminal. This is
+   useful for all user-facing errors.
 
    .. py:method:: __init__(self, message)
 

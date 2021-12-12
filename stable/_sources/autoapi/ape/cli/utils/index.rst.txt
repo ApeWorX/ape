@@ -18,7 +18,9 @@
 
    Bases: :py:obj:`click.ClickException`
 
-   Wrapper around a CLI exception
+   A wrapper around a CLI exception. When you raise this error,
+   the error is nicely printed to the terminal. This is
+   useful for all user-facing errors.
 
    .. py:method:: __init__(self, message)
 
