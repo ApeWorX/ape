@@ -7,7 +7,8 @@ from ape import networks
 
 
 class NetworkBoundCommand(click.Command):
-    """A command that uses the network option.
+    """
+    A command that uses the :meth:`~ape.cli.options.network_option`.
     It will automatically set the network for the duration of the command execution.
     """
 
