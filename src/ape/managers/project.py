@@ -85,6 +85,8 @@ class ProjectManager:
                     "Dependency does not have a support structure. Expecting 'contracts/' path."
                 )
 
+            # THIS IS A TEST
+
             manifest = PackageManifest()
             sources = [
                 s
