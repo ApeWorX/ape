@@ -13,8 +13,6 @@ import os
 import sys
 from typing import List
 
-from recommonmark.transform import AutoStructify  # type: ignore
-
 sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
@@ -23,7 +21,7 @@ project = "ape"
 copyright = "2021, ApeWorX LTD"
 author = "ApeWorX Team"
 extensions = [
-    "recommonmark",
+    "myst_parser",
     "sphinx_click",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
@@ -69,9 +67,4 @@ html_css_files = ["custom.css"]
 
 
 def setup(app):
-    app.add_config_value(
-        "recommonmark_config",
-        {"enable_eval_rst": True},
-        True,
-    )
-    app.add_transform(AutoStructify)
+    app.add_js_file("custom.js")

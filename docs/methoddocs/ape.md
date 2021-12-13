@@ -1,6 +1,6 @@
 # ape
 
-```eval_rst
+```{eval-rst}
 .. automodule:: ape
     :members:
 ```

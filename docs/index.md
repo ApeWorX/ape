@@ -1,6 +1,6 @@
 # Ape-Docs
 
-```eval_rst
+```{eval-rst}
 .. toctree::
    :caption: User Guides
    :maxdepth: 2
@@ -9,7 +9,7 @@
    userguides/plugins
 ```
 
-```eval_rst
+```{eval-rst}
 .. toctree::
    :caption: CLI Reference
 
@@ -22,7 +22,7 @@
    commands/test.rst
 ```
 
-```eval_rst
+```{eval-rst}
 .. toctree::
    :caption: User API Reference
    :maxdepth: 1

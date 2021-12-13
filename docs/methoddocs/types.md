@@ -1,6 +1,6 @@
 # ape.types
 
-```eval_rst
+```{eval-rst}
 .. automodule:: ape.types
     :members:
     :show-inheritance:

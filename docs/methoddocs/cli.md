@@ -1,6 +1,6 @@
 # ap.cli
 
-```eval_rst
+```{eval-rst}
 .. automodule:: ape.cli
     :members:
     :show-inheritance:

@@ -1,6 +1,6 @@
 # ape.api
 
-```eval_rst
+```{eval-rst}
 .. automodule:: ape.api
     :members:
     :show-inheritance:
