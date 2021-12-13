@@ -54,12 +54,14 @@ def build_docs_from_release():
 
     build_dir = DOCS_BUILD_PATH / tag
     build_docs(build_dir)
-    shutil.copytree(build_dir, STABLE_PATH)
 
     # Clean-up unnecessary extra 'fonts/' directories to save space.
-    for font_dirs in DOCS_BUILD_PATH.glob("**/fonts"):
+    # There should still be one in 'latest/'
+    for font_dirs in build_dir.glob("**/fonts"):
         if font_dirs.exists():
             shutil.rmtree(font_dirs)
+
+    shutil.copytree(build_dir, STABLE_PATH)
 
 
 def main():
