@@ -61,7 +61,7 @@ def build_docs_from_release():
     if not tag:
         raise DocsBuildError("Unable to find release tag.")
 
-    new_version_dir = new_dir(DOCS_BUILD_PATH / tag)
+    new_version_dir = DOCS_BUILD_PATH / tag
 
     if not LATEST_PATH.exists():
         # This should already exist from the last push to 'main'.
@@ -72,6 +72,8 @@ def build_docs_from_release():
     shutil.copytree(LATEST_PATH, new_version_dir)
 
     # Copy the latest build from 'main' to the 'stable' dir.
+    if STABLE_PATH.exists():
+        shutil.rmtree(STABLE_PATH)
     shutil.copytree(LATEST_PATH, STABLE_PATH)
 
     # Clean-up unnecessary extra 'fonts/' directories to save space.
