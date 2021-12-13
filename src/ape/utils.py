@@ -5,8 +5,9 @@ import shutil
 import sys
 import tempfile
 import zipfile
+from abc import ABCMeta, abstractmethod
 from copy import deepcopy
-from functools import lru_cache
+from functools import lru_cache, partial
 from hashlib import md5
 from io import BytesIO
 from pathlib import Path
@@ -14,6 +15,8 @@ from typing import Any, Dict, List, Mapping, Optional, Set
 
 import requests
 import yaml
+from dataclassy import dataclass
+from dataclassy.dataclass import DataClassMeta
 from eth_account import Account
 from eth_account.hdaccount import HDPath, seed_from_mnemonic
 from github import Github
@@ -302,8 +305,19 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     return [path]
 
 
+class AbstractDataClassMeta(DataClassMeta, ABCMeta):
+    pass
+
+
+abstractdataclass = partial(dataclass, kwargs=True, meta=AbstractDataClassMeta)
+
+
 __all__ = [
+    "abstractdataclass",
+    "abstractmethod",
+    "AbstractDataClassMeta",
     "cached_property",
+    "dataclass",
     "deep_merge",
     "expand_environment_variables",
     "extract_nested_value",

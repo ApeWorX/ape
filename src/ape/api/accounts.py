@@ -6,14 +6,13 @@ import click
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
-from ape.utils import cached_property
+from ape.utils import abstractdataclass, abstractmethod, cached_property
 
 from .address import AddressAPI
-from .base import abstractdataclass, abstractmethod
-from .contracts import ContractContainer, ContractInstance
 from .providers import ReceiptAPI, TransactionAPI, TransactionType
 
 if TYPE_CHECKING:
+    from ape.contracts import ContractContainer, ContractInstance
     from ape.managers.config import ConfigManager
 
 
@@ -136,7 +135,7 @@ class AccountAPI(AddressAPI):
 
         return self.call(txn, send_everything=value is None)
 
-    def deploy(self, contract: ContractContainer, *args, **kwargs) -> ContractInstance:
+    def deploy(self, contract: "ContractContainer", *args, **kwargs) -> "ContractInstance":
 
         txn = contract(*args, **kwargs)
         txn.sender = self.address

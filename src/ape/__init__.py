@@ -6,7 +6,7 @@ import sys as _sys
 from functools import partial as _partial
 from pathlib import Path as _Path
 
-from .api.contracts import _Contract
+from .contracts import _Contract
 from .managers.accounts import AccountManager as _AccountManager
 from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
@@ -57,7 +57,7 @@ project = Project(config.PROJECT_FOLDER)
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
 Contract = _partial(_Contract, networks=networks, converters=_converters)
-"""User-facing class for instantiating contracts. See :class:`ape.api.contracts._Contract`."""
+"""User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 
 convert = _converters.convert
 """Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
