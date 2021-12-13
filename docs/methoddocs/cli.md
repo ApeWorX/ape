@@ -1,4 +1,4 @@
-# ap.cli
+# ape.cli
 
 ```{eval-rst}
 .. automodule:: ape.cli
