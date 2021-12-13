@@ -26,10 +26,6 @@ class TransactionType(Enum):
 
 @abstractdataclass
 class TransactionAPI:
-    """
-    An API class representing a Transaction API.
-    """
-
     chain_id: int = 0
     sender: str = ""
     receiver: str = ""
@@ -61,13 +57,6 @@ class TransactionAPI:
 
     @max_fee.setter
     def max_fee(self, value):
-        """
-        Set the max fee.
-        Must be overriden or else raises `NotImplementedError`
-
-        Args:
-            value (`int`): The number of the fee
-        """
         raise NotImplementedError("Max fee is not settable by default.")
 
     @property
@@ -91,12 +80,6 @@ class TransactionAPI:
         """
 
     def as_dict(self) -> dict:
-        """
-        Creates a dict with the raw input.
-
-        Returns:
-            dict (`dict`)
-        """
         return as_dict(self)
 
     def __repr__(self) -> str:
@@ -105,9 +88,6 @@ class TransactionAPI:
         return f"<{self.__class__.__name__} {params}>"
 
     def __str__(self) -> str:
-        """
-        Convert `dict` to `HexBytes`
-        """
         data = as_dict(self)  # NOTE: `as_dict` could be overridden
         if len(data["data"]) > 9:
             data["data"] = (
@@ -143,11 +123,6 @@ class ConfirmationsProgressBar:
 
     @property
     def confs(self) -> int:
-        """
-        NOT SURE WHAT THIS DOES
-        Returns:
-            int
-        """
         return self._confs
 
     @confs.setter
@@ -205,22 +180,12 @@ class ReceiptAPI:
     @classmethod
     @abstractmethod
     def decode(cls, data: dict) -> "ReceiptAPI":
-        """
-        Converts a dictionary to :class:`~ape.api.ReceiptAPI`.
-
-        Args:
-            data (`[dict]`): :class:`~ape.api.ReceiptAPI`.
-
-        Returns:
-            :class:`~ape.api.ReceiptAPI`
-        """
+        ...
 
     def await_confirmations(self) -> "ReceiptAPI":
         """
         Waits for a transaction to be considered confirmed.
-
-        Returns:
-            :class:`~ape.api.ReceiptAPI`
+        Returns the confirmed receipt.
         """
         # Wait for nonce from provider to increment.
         sender_nonce = self.provider.get_nonce(self.sender)
@@ -251,10 +216,6 @@ class ReceiptAPI:
 
 @abstractdataclass
 class BlockGasAPI:
-    """
-    A base class for BlockGasAPI.
-    """
-
     gas_limit: int
     gas_used: int
     base_fee: Optional[int] = None
@@ -262,46 +223,22 @@ class BlockGasAPI:
     @classmethod
     @abstractmethod
     def decode(cls, data: Dict) -> "BlockGasAPI":
-        """
-        Converts a dictionary to :class:`~ape.api.BlockGasAPI`.
-
-        Args:
-            data (`[dict]`): :class:`~ape.api.BlockGasAPI`.
-
-        Returns:
-            :class:`~ape.api.BlockGasAPI`
-        """
+        ...
 
 
 @abstractdataclass
 class BlockConsensusAPI:
-    """
-    A base class for BlockConsensusAPI.
-    """
-
     difficulty: Optional[int] = None
     total_difficulty: Optional[int] = None
 
     @classmethod
     @abstractmethod
     def decode(cls, data: Dict) -> "BlockConsensusAPI":
-        """
-        Converts a dictionary to :class:`~ape.api.BlockConsensusAPI`.
-
-        Args:
-            data (`[dict]`): :class:`~ape.api.BlockConsensusAPI`.
-
-        Returns:
-            :class:`~ape.api.BlockConsensusAPI`
-        """
+        ...
 
 
 @abstractdataclass
 class BlockAPI:
-    """
-    A base class for BlockAPI.
-    """
-
     gas_data: BlockGasAPI
     consensus_data: BlockConsensusAPI
     hash: HexBytes
@@ -313,15 +250,7 @@ class BlockAPI:
     @classmethod
     @abstractmethod
     def decode(cls, data: Dict) -> "BlockAPI":
-        """
-        Converts a dictionary to :class:`~ape.api.BlockAPI`.
-
-        Args:
-            data (`[dict]`): :class:`~ape.api.BlockAPI`.
-
-        Returns:
-            :class:`~ape.api.BlockAPI`
-        """
+        ...
 
 
 @abstractdataclass
@@ -339,152 +268,61 @@ class ProviderAPI:
 
     @abstractmethod
     def connect(self):
-        """
-        Connect a contract to a provider.
-        """
+        ...
 
     @abstractmethod
     def disconnect(self):
-        """
-        Disconnect a contract from a provider.
-        """
+        ...
 
     @abstractmethod
     def update_settings(self, new_settings: dict):
-        """
-        Change the settings connection protocol.
-        May require a reconnect.
-
-        Agrs:
-            new_settings ([`dict`]): Value of new provider
-        """
+        ...
 
     @property
     @abstractmethod
     def chain_id(self) -> int:
-        """
-        Gives value of blockchain id.
-
-        Returns:
-            int: value of blockchain id."""
+        ...
 
     @abstractmethod
     def get_balance(self, address: str) -> int:
-        """
-        Gives values of address balance.
-
-        Args:
-            address (`str`): Address string.
-
-        Returns:
-            int: value of balance at the address.
-        """
+        ...
 
     @abstractmethod
     def get_code(self, address: str) -> bytes:
-        """
-        Get the bytes of the contract.
-        Must override address or else raise `error`.
-
-        Args:
-            address (`str`): value of address (Required)
-
-        Returns:
-        bytes (`int`): HexBytes of contract.
-        """
+        ...
 
     @abstractmethod
     def get_nonce(self, address: str) -> int:
-        """
-        Gets the number of transactions.
-
-        Agrs:
-            address (`str`): string of address.
-
-        Returns:
-            int: value of nonce.
-        """
+        ...
 
     @abstractmethod
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        """
-        Gets the calculated gas cost.
-        See :class:`~ape.api.accounts.AccountAPI.call` to see calculation.
-
-        Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`) : transaction.
-
-        Returns:
-            int: value of estimated gas cost.
-        """
+        ...
 
     @property
     @abstractmethod
     def gas_price(self) -> int:
-        """
-        Value of gas.
-
-        Returns:
-            int
-        """
+        ...
 
     @property
     def priority_fee(self) -> int:
-        """
-        Value of miner tip to incentivize them
-        to include your transaction in a block.
-
-        Returns:
-            int: Value of fee.
-        """
         raise NotImplementedError("priority_fee is not implemented by this provider")
 
     @property
     def base_fee(self) -> int:
-        """
-        Value of the fee determinted by the network.
-        Must overrride address or else it will raise `NotImplementedError`.
-
-        Returns:
-            int
-        """
         raise NotImplementedError("base_fee is not implemented by this provider")
 
     @abstractmethod
     def get_block(self, block_id: BlockID) -> BlockAPI:
-        """
-        Gets blockchain id.
-        Must override block_id or else rasise `error`.
-
-        Args:
-            block_id (`int`): Value of Block Id.
-
-        Returns:
-            BlockAPI (:class:~`ape.types.BlockID`)
-        """
+        ...
 
     @abstractmethod
     def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
-        """
-        Executes a new transaction call immediately without creating a
-        transaction on the block chain.
-
-        Returns:
-            bytes (`str`): HexBytes
-        """
+        ...
 
     @abstractmethod
     def get_transaction(self, txn_hash: str) -> ReceiptAPI:
-        """
-        Returns the information about a transaction requested by transaction hash.
-
-        Params:
-            txn_hash (str): The hash of the transaction to retrieve.
-
-        Returns:
-            ReceiptAPI (:class:~`api.providers.ReceiptAPI`):
-            The receipt of the transaction with the given hash.
-        """
+        ...
 
     @abstractmethod
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
@@ -492,9 +330,7 @@ class ProviderAPI:
 
     @abstractmethod
     def get_events(self, **filter_params) -> Iterator[dict]:
-        """
-        Returns an array of all logs matching a given set of filter parameters.
-        """
+        ...
 
 
 class TestProviderAPI(ProviderAPI):
