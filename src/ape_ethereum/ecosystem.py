@@ -17,13 +17,13 @@ from ape.api import (
     BlockConsensusAPI,
     BlockGasAPI,
     ConfigItem,
-    ContractLog,
     EcosystemAPI,
     ReceiptAPI,
     TransactionAPI,
     TransactionStatusEnum,
     TransactionType,
 )
+from ape.contracts import ContractLog
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
 from ape.types import ABI, AddressType
 

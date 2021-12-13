@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
-from .base import abstractdataclass, abstractmethod
+from ape.utils import abstractdataclass, abstractmethod
+
 from .config import ConfigItem
 
 if TYPE_CHECKING:

@@ -5,7 +5,7 @@ from typing import Collection, Dict, List, Optional, Union
 import requests
 from dataclassy import dataclass
 
-from ape.api.contracts import ContractContainer
+from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.managers.networks import NetworkManager
 from ape.types import Checksum, Compiler, ContractType, PackageManifest, Source
