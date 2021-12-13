@@ -146,9 +146,9 @@ class AccountAPI(AddressAPI):
         Send funds to an account.
 
         Args:
-            account (`str`): The account to send funds to.
-            value (`str`): Amount to send
-            data (`str`): Extra data
+            account (str): The account to send funds to.
+            value (str): Amount to send
+            data (str): Extra data
 
         Returns:
             :class:`~ape.api.providers.ReceiptAPI`
@@ -176,7 +176,7 @@ class AccountAPI(AddressAPI):
 
         Args:
             contract (:class:`~ape.api.contracts.ContractContainer`):
-            The type of contract to deploy.
+                The type of contract to deploy.
 
         Returns:
             :class:`~ape.api.contracts.ContractInstance`
@@ -291,7 +291,7 @@ class AccountContainerAPI:
 
         Args:
             address: (address :class:`~ape.types.AddressType`):
-            The address of the account to delete.
+                        The address of the account to delete.
 
         """
         raise NotImplementedError("Must define this method to use `container.remove(acct)`.")
