@@ -28,11 +28,19 @@ try:
     from functools import cached_property  # type: ignore
 except ImportError:
     from backports.cached_property import cached_property  # type: ignore
+"""
+Not sure what this is.
+"""
 
 try:
     from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
+
+    """
+    A form of generic function dispatch
+    where the implementation is chosen based on the type of a single argument.
+    """
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -42,10 +50,24 @@ _python_version = (
 
 @lru_cache(maxsize=None)
 def get_distributions():
+    """
+    Gives archived packages and modules based on release.
+    """
     return packages_distributions()
 
 
 def is_relative_to(path: Path, target: Path) -> bool:
+    """
+    Searches a path and determines its relevancy.
+    Must overrride path or else will trigger a ``ValueError``.
+    Args:
+        path (str): Path represents a filesystem to find.
+        target (str): Path represents a filesystem to match.
+
+    Returns:
+        bool: ``True`` Returns either a PosixPath or a Windows object
+                depending on your system.
+    """
     if hasattr(path, "is_relative_to"):
         # NOTE: Only available ``>=3.9``
         return target.is_relative_to(path)  # type: ignore
@@ -80,6 +102,15 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
 
 
 def get_package_version(obj: Any) -> str:
+    """
+    Gets package version of packages.
+
+    Args:
+        obj (Any): object to search inside for version.
+
+    Returns:
+        str: version string.
+    """
     # If value is already cached/static
     if hasattr(obj, "__version__"):
         return obj.__version__
@@ -113,7 +144,10 @@ USER_AGENT = f"Ape/{__version__} (Python/{_python_version})"
 
 
 def deep_merge(dict1, dict2):
-    """Return a new dictionary by merging two dictionaries recursively."""
+    """Return a new dictionary by merging two dictionaries recursively.
+
+    Do you need to be explicit in the what is returned onb line 145?
+    `` -> Dict: ``"""
 
     result = deepcopy(dict1)
 
@@ -127,10 +161,35 @@ def deep_merge(dict1, dict2):
 
 
 def expand_environment_variables(contents: str) -> str:
+    """
+    Used to expand the enviroment variable given the path.
+
+    Args:
+        contents (str): A path-like object representing a file system path.
+                            A path-like object is either a string or bytes object
+                            representing a path.
+    Returns:
+        str: String which represents the parameter with enviroment variables expanded.
+    """
     return os.path.expandvars(contents)
 
 
 def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
+    """
+    Implements the configuration for the project based on the configuration file.
+    It must exist or else it will throw ``OSError``.
+    Configuration file must be a `.json` or `.yaml` or else it will throw ``TypeError``.
+
+    Args:
+        path (str): path to filesystem to find.
+        expand_envars (bool): ``True`` the variables in path
+                                are able to expand to show full path.
+        must_exist (bool):  ``True`` will be set if the configuration file exist
+                                and is able to be load.
+
+    Returns:
+        Dict (dict): Configured settings parsed from config file.
+    """
     if path.exists():
         contents = path.read_text()
         if expand_envars:
@@ -153,6 +212,13 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
 
 
 def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
+    """
+    Compute the md5 checksum against bytes for a string.
+
+    Args:
+        source (bytes): The bytes to checksum.
+        algorithm (str): Message-Digest Algorithm 5
+                            cryptographic hash function."""
     if algorithm == "md5":
         hasher = md5
     else:
@@ -173,6 +239,14 @@ def generate_dev_accounts(
     Creates accounts from the configured test mnemonic.
     Use these accounts (or the mnemonic) in chain-genesis
     for testing providers.
+
+    Args:
+        mnemonic (str): mnemonic phrase or seed words.
+        number_of_accounts: Number of accounts
+        hd_path_format (fstr): Hard Wallets/HD Keys derviation path format.
+
+    Returns:
+        List[GeneratedDevAccount] (list): List of dev accounts.
     """
     seed = seed_from_mnemonic(mnemonic, "")
     accounts = []
@@ -200,7 +274,13 @@ def gas_estimation_error_message(tx_error: Exception) -> str:
 def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
     """
     Dig through a nested ``Dict`` gives the keys to use in order as arguments.
-    Returns the final value if it exists else `None` if the tree ends at any point.
+
+    Args:
+        root (Mapping): Nested keys to form agruments.
+
+    Returns:
+        Optional[Dict] (dict): The final value if it exists
+                                else `None` if the tree ends at any point.
     """
     current_value: Any = root
     for arg in args:
@@ -213,6 +293,16 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
 
 
 def stream_response(download_url: str, progress_bar_description: str = "Downloading") -> bytes:
+    """
+    To prvoide a visual represenation of the downloads.
+
+    Args:
+        download_url (str): String to get files to download.
+        progress_bar_description (str): Downloading word.
+
+    Returns:
+        bytes (bytes): Content in bytes to show the progress.
+    """
     response = requests.get(download_url, stream=True)
     response.raise_for_status()
 
@@ -229,6 +319,10 @@ def stream_response(download_url: str, progress_bar_description: str = "Download
 
 
 class GithubClient:
+    """
+    A class to for the GITHUB_ACCESS_TOKEN used to commuincate with Github.
+    """
+
     TOKEN_KEY = "GITHUB_ACCESS_TOKEN"
 
     def __init__(self):
@@ -241,10 +335,19 @@ class GithubClient:
 
     @cached_property
     def ape_org(self):
+        """
+        A property to get organization for the github token.
+        """
         return self._client.get_organization("ApeWorX")
 
     @cached_property
     def available_plugins(self) -> Set[str]:
+        """ "
+        To retrive available plugins to download for the apeworx project.
+
+        Returns:
+            Set[str] (set): datatype to hold plugins.
+        """
         return {
             repo.name.replace("-", "_")
             for repo in self.ape_org.get_repos()
@@ -252,6 +355,14 @@ class GithubClient:
         }
 
     def get_release(self, repo_path: str, version: str):
+        """
+        Gives version/release number of available plugins.
+
+        Args:
+            repot_path (str): A path to a filesystem
+                                to retrive version/release number.
+            version (str): A string to contain version number.
+        """
         repo = self._client.get_repo(repo_path)
 
         if not version.startswith("v"):
@@ -260,6 +371,15 @@ class GithubClient:
         return repo.get_release(version)
 
     def download_package(self, repo_path: str, version: str, target_path: Path):
+        """
+        Download the selected plugin based on version number and path.
+
+        Args:
+            repo_path (str): A string to contain the repository path.
+            version (str): Number to specify update types
+                                to the downloaded package.
+            target_path (path): A path to a filesystem to find package to download.
+        """
         if not target_path or not target_path.exists() or not target_path.is_dir():
             raise ValueError(f"'target_path' must be a valid directory (got '{target_path}').")
 
