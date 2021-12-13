@@ -46,6 +46,9 @@ class KeyfileAccount(AccountAPI):
         self.locked = True
         self.__cached_key = None
 
+    def __repr__(self):
+        return f"<KeyfileAccount, address={self.address}, alias={self.alias}>"
+
     @property
     def alias(self) -> str:
         return self._keyfile.stem

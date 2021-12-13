@@ -22,6 +22,9 @@ class NetworkManager:
     active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
 
+    def __repr__(self):
+        return f"<NetworkManager, active_provider={self.active_provider}>"
+
     @cached_property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
         return {

@@ -382,14 +382,14 @@ class Web3Provider(ProviderAPI):
     @property
     def gas_price(self) -> int:
         """
-        Returns the current price per gas in wei.
+        Returns the current price per gas in Wei.
         """
         return self._web3.eth.generate_gas_price()  # type: ignore
 
     @property
     def priority_fee(self) -> int:
         """
-        Returns the current max priority fee per gas in wei.
+        Returns the current max priority fee per gas in Wei.
         """
         return self._web3.eth.max_priority_fee
 
@@ -414,14 +414,14 @@ class Web3Provider(ProviderAPI):
         Returns a block for the given ID.
 
         Args:
-            block_id: The ID of the block to get. Set as
+            block_id (:class:`~ape.types.BlockID`): The ID of the block to get. Set as
               "latest" to get the latest block,
               "earliest" to get the earliest block,
               "pending" to get the pending block,
               or pass in a block number or hash.
 
         Returns:
-            The block for the given block ID.
+            :class:`~ape.api.providers.BlockAPI`
         """
         if isinstance(block_id, str):
             block_id = HexStr(block_id)
@@ -461,15 +461,15 @@ class Web3Provider(ProviderAPI):
         """
         Returns the information about a transaction requested by transaction hash.
 
-        Params:
+        Args:
             txn_hash (str): The hash of the transaction to retrieve.
             required_confirmations (int): If more than 0, waits for that many
-                confirmations before returning the receipt. This is to increase confidence
-                that your transaction is in its final position on the blockchain. Defaults
-                to 0.
+              confirmations before returning the receipt. This is to increase confidence
+              that your transaction is in its final position on the blockchain. Defaults
+              to 0.
 
         Returns:
-            The receipt of the transaction with the given hash.
+            :class:`~ape.api.providers.ReceiptAPI`
         """
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")

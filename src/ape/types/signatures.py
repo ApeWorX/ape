@@ -1,7 +1,7 @@
 from typing import Iterator, Union
 
 from dataclassy import dataclass
-from eth_account.messages import SignableMessage  # type: ignore
+from eth_account.messages import SignableMessage
 from eth_utils import to_bytes
 
 
