@@ -14,7 +14,8 @@ def _get_account_by_type(account_type: Optional[Type[AccountAPI]] = None) -> Lis
 
 
 class Alias(click.Choice):
-    """Wraps ``click.Choice`` to load account aliases for the active project at runtime.
+    """
+    A ``click.Choice`` for loading account aliases for the active project at runtime.
 
     Provide an ``account_type`` to limit the type of account to choose from.
     Defaults to all account types in ``choices()``.
@@ -30,6 +31,13 @@ class Alias(click.Choice):
 
     @property
     def choices(self) -> List[str]:  # type: ignore
+        """
+        The aliases available to choose from.
+
+        Returns:
+            list[str]: A list of account aliases the user may choose from.
+        """
+
         options = _get_account_by_type(self._account_type)
         return [a.alias for a in options if a.alias is not None]
 
@@ -43,6 +51,10 @@ class PromptChoice(click.ParamType):
         self.choices = choices
 
     def print_choices(self):
+        """
+        Echo the choices to the terminal.
+        """
+
         choices = dict(enumerate(self.choices, 0))
         for choice in choices:
             click.echo(f"{choice}. {choices[choice]}")
@@ -70,14 +82,20 @@ def get_user_selected_account(
     account_type: Optional[Type[AccountAPI]] = None, prompt_message: Optional[str] = None
 ) -> AccountAPI:
     """
-    Prompts the user to pick from their accounts
-    and returns that account. Optionally filter the accounts
-    by type.
+    Prompt the user to pick from their accounts and return that account.
+    Use this method if you want to prompt users to select accounts _outside_
+    of CLI options. For CLI options, use
+    :meth:`~ape.cli.options.account_option_that_prompts_when_not_given`.
 
-    Use this method if you want to prompt users to select
-    accounts _outside_ of CLI options. For CLI options,
-    use :meth:`ape.cli.options.account_option_that_prompts_when_not_given`.
+    Args:
+        account_type (type[:class:`~ape.api.accounts.AccountAPI`], optional):
+          If given, the user may only select an account of this type.
+        prompt_message (str, optional): Customize the prompt message.
+
+    Returns:
+        :class:`~ape.api.accounts.AccountAPI`
     """
+
     if account_type and (type(account_type) != type or not issubclass(account_type, AccountAPI)):
         raise AccountsError(f"Cannot return accounts with type '{account_type}'.")
 
@@ -110,6 +128,13 @@ class AccountAliasPromptChoice(PromptChoice):
 
     @property
     def choices(self) -> List[str]:
+        """
+        All the account aliases.
+
+        Returns:
+            list[str]: A list of all the account aliases.
+        """
+
         return [
             a.alias
             for a in _get_account_by_type(self._account_type)
@@ -119,7 +144,11 @@ class AccountAliasPromptChoice(PromptChoice):
     def get_user_selected_account(self) -> AccountAPI:
         """
         Returns the selected account.
+
+        Returns:
+            :class:`~ape.api.accounts.AccountAPI`
         """
+
         if not self.choices:
             raise AccountsError("No accounts found.")
         elif len(self.choices) == 1:
@@ -133,7 +162,9 @@ class AccountAliasPromptChoice(PromptChoice):
 
 
 class NetworkChoice(click.Choice):
-    """Wraps ``click.Choice`` to provide network choice defaults for the active project."""
+    """
+    A ``click.Choice`` to provide network choice defaults for the active project.
+    """
 
     def __init__(self, case_sensitive=True):
         super().__init__(list(networks.network_choices), case_sensitive)
@@ -143,15 +174,31 @@ class NetworkChoice(click.Choice):
 
 
 class OutputFormat(Enum):
+    """
+    An enum representing output formats, such as ``TREE`` or ``YAML``.
+    Use this to select a subset of common output formats to use
+    when creating a :meth:`~ape.cli.choices.output_format_choice`.
+    """
+
     TREE = "TREE"
+    """A rich text tree view of the data."""
+
     YAML = "YAML"
+    """A standard .yaml format of the data."""
 
 
 def output_format_choice(options: List[OutputFormat] = None) -> Choice:
     """
     Returns a ``click.Choice()`` type for the given options.
-    If
+
+    Args:
+        options (list[:class:`~ape.choices.OutputFormat`], optional):
+          Limit the formats to accept. Defaults to allowing all formats.
+
+    Returns:
+        :class:`click.Choice`
     """
+
     options = options or [o for o in OutputFormat]
 
     # Uses `str` form of enum for CLI choices.
