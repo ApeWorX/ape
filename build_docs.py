@@ -62,18 +62,14 @@ def build_docs_from_release():
     if not tag:
         raise DocsBuildError("Unable to find release tag.")
 
-    with tempfile.TemporaryDirectory as temp_dir_str:
-        temp_dir = Path(temp_dir_str)
-        build_docs(temp_dir)
+    build_dir = DOCS_BUILD_PATH / tag
+    build_docs(build_dir)
+    shutil.copytree(build_dir, STABLE_PATH)
 
-        # Copy the latest build from 'main' to the new version dir.
-        shutil.copytree(temp_dir, DOCS_BUILD_PATH / tag)
-        shutil.copytree(temp_dir, STABLE_PATH)
-
-        # Clean-up unnecessary extra 'fonts/' directories to save space.
-        for font_dirs in DOCS_BUILD_PATH.glob("**/fonts"):
-            if font_dirs.exists():
-                shutil.rmtree(font_dirs)
+    # Clean-up unnecessary extra 'fonts/' directories to save space.
+    for font_dirs in DOCS_BUILD_PATH.glob("**/fonts"):
+        if font_dirs.exists():
+            shutil.rmtree(font_dirs)
 
 
 def main():
