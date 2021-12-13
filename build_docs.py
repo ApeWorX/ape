@@ -1,7 +1,6 @@
 import os
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 
 REDIRECT_HTML = """
@@ -42,15 +41,6 @@ def build_docs(path: Path) -> Path:
     return path
 
 
-def build_docs_from_push_to_main():
-    build_docs(LATEST_PATH)
-
-    if not STABLE_PATH.exists():
-        # 'stable/' required for serving.
-        # If we have never released, just use 'latest/' as 'stable'/
-        shutil.copytree(LATEST_PATH, STABLE_PATH)
-
-
 def build_docs_from_release():
     """
     When building the docs from a release, we create a new release
@@ -87,7 +77,7 @@ def main():
     #
 
     if event_name == "push":  # Is 'push' to branch 'main'.
-        build_docs_from_push_to_main()
+        build_docs(LATEST_PATH)
     elif event_name == "release":
         build_docs_from_release()
     elif event_name in ["pull_request", None]:
