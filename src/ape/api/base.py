@@ -10,9 +10,6 @@ class AbstractDataClassMeta(DataClassMeta, ABCMeta):
 
 
 abstractdataclass = partial(dataclass, kwargs=True, meta=AbstractDataClassMeta)
-"""
-An API version of a :meth:`~ape.api.base.dataclass`.
-"""
 
 
 __all__ = [

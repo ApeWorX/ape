@@ -65,7 +65,7 @@ For the best viewing experience, use a local server:
 python -m http.server --directory "docs/_build/development" --bind 127.0.0.1 1337
 ```
 
-and then open your browser to `127.0.0.1:1337`.
+and open your browser to `127.0.0.1:1337`.
 
 ## Pull Requests
 

@@ -72,7 +72,18 @@ def build_docs_from_release():
 def main():
     event_name = os.environ.get("GITHUB_EVENT_NAME")
 
-    if event_name == "push":
+    # There are three GH events we build for:
+    #
+    # 1. Push to main: we build into 'latest/'.
+    #    The GH action will commit these changes to the 'gh-pages' branch.
+    #
+    # 2. Release: we copy 'latest/' into the release dir, as well as to 'stable/'.
+    #    The GH action will commit these changes to the 'gh-pages' branch.
+    #
+    # 3. Pull requests or local development: We ensure a successful build.
+    #
+
+    if event_name == "push":  # Is 'push' to branch 'main'.
         build_docs(DOCS_BUILD_PATH / "latest")
     elif event_name == "release":
         build_docs_from_release()
