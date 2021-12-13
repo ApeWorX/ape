@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 REDIRECT_HTML = """
@@ -61,18 +62,9 @@ def build_docs_from_release():
     if not tag:
         raise DocsBuildError("Unable to find release tag.")
 
-    if not LATEST_PATH.exists():
-        # This should already exist from the last push to 'main'.
-        # But just in case, we can build it now.
-        build_docs(LATEST_PATH)
-
-    # Copy the latest build from 'main' to the new version dir.
-    shutil.copytree(LATEST_PATH, DOCS_BUILD_PATH / tag)
-
-    # Copy the latest build from 'main' to the 'stable' dir.
-    if STABLE_PATH.exists():
-        shutil.rmtree(STABLE_PATH)
-    shutil.copytree(LATEST_PATH, STABLE_PATH)
+    build_dir = DOCS_BUILD_PATH / tag
+    build_docs(build_dir)
+    shutil.copytree(build_dir, STABLE_PATH)
 
     # Clean-up unnecessary extra 'fonts/' directories to save space.
     for font_dirs in DOCS_BUILD_PATH.glob("**/fonts"):
