@@ -1,13 +1,8 @@
 from typing import Iterator, Union
 
 from dataclassy import dataclass
-from eth_account.messages import SignableMessage as _SignableMessage  # type: ignore
+from eth_account.messages import SignableMessage
 from eth_utils import to_bytes
-
-SignableMessage = _SignableMessage
-"""
-A message that can be signed by an account.
-"""
 
 
 @dataclass(frozen=True, slots=True, kwargs=True)

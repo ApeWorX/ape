@@ -68,7 +68,7 @@ class TransactionAPI:
         """
         return self.value + self.max_fee
 
-    @property  # type: ignore
+    @property
     @abstractmethod
     def is_valid(self):
         ...
@@ -278,7 +278,7 @@ class ProviderAPI:
     def update_settings(self, new_settings: dict):
         ...
 
-    @property  # type: ignore
+    @property
     @abstractmethod
     def chain_id(self) -> int:
         ...
@@ -299,7 +299,7 @@ class ProviderAPI:
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         ...
 
-    @property  # type: ignore
+    @property
     @abstractmethod
     def gas_price(self) -> int:
         ...
@@ -508,7 +508,7 @@ class UpstreamProvider(ProviderAPI):
     A provider that can also be set as another provider's upstream.
     """
 
-    @property  # type: ignore
+    @property
     @abstractmethod
     def connection_str(self) -> str:
         """
