@@ -15,10 +15,8 @@
 
    accounts/index.rst
    address/index.rst
-   base/index.rst
    compiler/index.rst
    config/index.rst
-   contracts/index.rst
    convert/index.rst
    explorers/index.rst
    networks/index.rst
@@ -45,8 +43,6 @@
    ape.api.ConfigDict
    ape.api.ConfigEnum
    ape.api.ConfigItem
-   ape.api.ContractInstance
-   ape.api.ContractLog
    ape.api.ConverterAPI
    ape.api.ExplorerAPI
    ape.api.EcosystemAPI
@@ -136,7 +132,7 @@
    .. py:method:: transfer(self, account: Union[str, ape.types.AddressType, ape.api.address.AddressAPI], value: Union[str, int, None] = None, data: Union[bytes, str, None] = None, **kwargs) -> ape.api.providers.ReceiptAPI
 
 
-   .. py:method:: deploy(self, contract: ape.api.contracts.ContractContainer, *args, **kwargs) -> ape.api.contracts.ContractInstance
+   .. py:method:: deploy(self, contract: ape.contracts.ContractContainer, *args, **kwargs) -> ape.contracts.ContractInstance
 
 
 
@@ -428,65 +424,6 @@
 
 
 
-.. py:class:: ContractInstance
-
-   Bases: :py:obj:`ape.api.address.AddressAPI`
-
-   A base address API class. All account-types subclass this type.
-
-   .. attribute:: _address
-      :annotation: :ape.types.AddressType
-
-      
-
-   .. attribute:: _contract_type
-      :annotation: :ape.types.ContractType
-
-      
-
-   .. py:method:: __repr__(self) -> str
-
-      Return repr(self).
-
-
-   .. py:method:: address(self) -> ape.types.AddressType
-      :property:
-
-      The address of this account. Subclasses must override and provide this value.
-
-      Returns:
-          :class:`~ape.types.AddressType`
-
-
-   .. py:method:: __dir__(self) -> List[str]
-
-      Display methods to IPython on ``a.[TAB]`` tab completion.
-
-      Returns:
-          list[str]: Method names that IPython uses for tab completion.
-
-
-   .. py:method:: __getattr__(self, attr_name: str) -> Any
-
-
-
-
-
-.. py:class:: ContractLog
-
-   .. attribute:: name
-      :annotation: :str
-
-      
-
-   .. attribute:: data
-      :annotation: :Dict[str, Any]
-
-      
-
-
-
-
 .. py:class:: ConverterAPI
 
    Bases: :py:obj:`Generic`\ [\ :py:obj:`ConvertedType`\ ]
@@ -662,7 +599,7 @@
       :abstractmethod:
 
 
-   .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.providers.ReceiptAPI) -> ape.api.contracts.ContractLog
+   .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.providers.ReceiptAPI) -> ape.contracts.ContractLog
       :abstractmethod:
 
 

@@ -74,6 +74,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.extract_nested_value">extract_nested_value</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.github_client">github_client</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.get_all_files_in_directory">get_all_files_in_directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.AbstractDataClassMeta">AbstractDataClassMeta</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.abstractdataclass">abstractdataclass</a></li>
 </ul>
 </li>
 </ul>
@@ -141,7 +143,19 @@
              
   <div class="section" id="module-ape.utils">
 <span id="ape-utils"></span><h1><a class="reference internal" href="#module-ape.utils" title="ape.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ape.utils</span></code></a><a class="headerlink" href="#module-ape.utils" title="Permalink to this headline">¶</a></h1>
-<h3>Module Contents</h3><p><strong>Functions</strong>:</p>
+<h3>Module Contents</h3><p><strong>Classes</strong>:</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ape.utils.AbstractDataClassMeta" title="ape.utils.AbstractDataClassMeta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AbstractDataClassMeta</span></code></a></p></td>
+<td><p>The metaclass that implements data class behaviour.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Functions</strong>:</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -191,6 +205,9 @@
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ape.utils.github_client" title="ape.utils.github_client"><code class="xref py py-obj docutils literal notranslate"><span class="pre">github_client</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ape.utils.abstractdataclass" title="ape.utils.abstractdataclass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abstractdataclass</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -276,6 +293,18 @@ the Paths to <cite>file_a</cite>, <cite>file_b</cite> and <cite>file_c</cite>.</
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py class">
+<dt id="ape.utils.AbstractDataClassMeta">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">AbstractDataClassMeta</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.AbstractDataClassMeta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dataclassy.dataclass.DataClassMeta</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABCMeta</span></code></p>
+<p>The metaclass that implements data class behaviour.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="ape.utils.abstractdataclass">
+<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">abstractdataclass</span></code><a class="headerlink" href="#ape.utils.abstractdataclass" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 

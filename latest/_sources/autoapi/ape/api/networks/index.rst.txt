@@ -126,7 +126,7 @@
       :abstractmethod:
 
 
-   .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.providers.ReceiptAPI) -> ape.api.contracts.ContractLog
+   .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.providers.ReceiptAPI) -> ape.contracts.ContractLog
       :abstractmethod:
 
 

@@ -126,7 +126,7 @@
       Returns a tranaction using the given constructor kwargs.
 
 
-   .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.ReceiptAPI) -> ape.api.ContractLog
+   .. py:method:: decode_event(self, abi: ape.types.ABI, receipt: ape.api.ReceiptAPI) -> ape.contracts.ContractLog
 
 
 

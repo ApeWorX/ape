@@ -10,6 +10,13 @@
 
    <h3>Module Contents</h3>
 
+**Classes**:
+
+.. autoapisummary::
+
+   ape.utils.AbstractDataClassMeta
+
+
 
 **Functions**:
 
@@ -34,6 +41,7 @@
    ape.utils.USER_AGENT
    ape.utils.GeneratedDevAccount
    ape.utils.github_client
+   ape.utils.abstractdataclass
 
 
 
@@ -128,5 +136,21 @@
      and you provide the path to `dir_a`, it will return a list containing
      the Paths to `file_a`, `file_b` and `file_c`.
 
+
+
+
+.. py:class:: AbstractDataClassMeta(cls, *args, **kwargs)
+
+   Bases: :py:obj:`dataclassy.dataclass.DataClassMeta`, :py:obj:`abc.ABCMeta`
+
+   The metaclass that implements data class behaviour.
+
+
+
+
+.. data:: abstractdataclass
+   
+
+   
 
 

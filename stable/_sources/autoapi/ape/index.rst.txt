@@ -15,6 +15,7 @@
 
    api/index.rst
    cli/index.rst
+   contracts/index.rst
    convert/index.rst
    managers/index.rst
    plugins/index.rst
@@ -101,7 +102,7 @@
 .. data:: Contract
    
 
-   User-facing class for instantiating contracts. See :class:`ape.api.contracts._Contract`.
+   User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`.
 
 
 
