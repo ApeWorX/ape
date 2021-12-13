@@ -10,6 +10,9 @@ REDIRECT_HTML = """
 <meta http-equiv="refresh" content="0; URL=./stable/">
 """
 DOCS_BUILD_PATH = Path("docs/_build")
+LATEST_PATH = DOCS_BUILD_PATH / "latest"
+STABLE_PATH = DOCS_BUILD_PATH / "stable"
+LOCAL_PATH = DOCS_BUILD_PATH / "development"
 
 
 class DocsBuildError(Exception):
@@ -38,6 +41,15 @@ def build_docs(path: Path) -> Path:
     return path
 
 
+def build_docs_from_push_to_main():
+    build_docs(LATEST_PATH)
+
+    if not STABLE_PATH.exists():
+        # 'stable/' required for serving.
+        # If we have never released, just use 'latest/' as 'stable'/
+        shutil.copytree(LATEST_PATH, STABLE_PATH)
+
+
 def build_docs_from_release():
     """
     When building the docs from a release, we create a new release
@@ -51,17 +63,16 @@ def build_docs_from_release():
 
     new_version_dir = new_dir(DOCS_BUILD_PATH / tag)
 
-    latest_docs_build = DOCS_BUILD_PATH / "latest"
-    if not latest_docs_build.exists():
+    if not LATEST_PATH.exists():
         # This should already exist from the last push to 'main'.
         # But just in case, we can build it now.
-        build_docs(latest_docs_build)
+        build_docs(LATEST_PATH)
 
     # Copy the latest build from 'main' to the new version dir.
-    shutil.copytree(latest_docs_build, new_version_dir)
+    shutil.copytree(LATEST_PATH, new_version_dir)
 
     # Copy the latest build from 'main' to the 'stable' dir.
-    shutil.copytree(latest_docs_build, DOCS_BUILD_PATH / "stable")
+    shutil.copytree(LATEST_PATH, STABLE_PATH)
 
     # Clean-up unnecessary extra 'fonts/' directories to save space.
     for font_dirs in DOCS_BUILD_PATH.glob("**/fonts"):
@@ -84,11 +95,11 @@ def main():
     #
 
     if event_name == "push":  # Is 'push' to branch 'main'.
-        build_docs(DOCS_BUILD_PATH / "latest")
+        build_docs_from_push_to_main()
     elif event_name == "release":
         build_docs_from_release()
     elif event_name in ["pull_request", None]:
-        build_docs(DOCS_BUILD_PATH / "development")
+        build_docs(LOCAL_PATH)
 
     # Set up the redirect at /index.html
     with open(DOCS_BUILD_PATH / "index.html", "w") as f:
