@@ -21,7 +21,7 @@ class ContractConstructor:
 
     def __post_init__(self):
         if len(self.deployment_bytecode) == 0:
-            raise ContractDeployError("No bytecode to deploy.")
+            raise ContractDeployError(message="No bytecode to deploy.")
 
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
@@ -297,7 +297,7 @@ def _Contract(
     #    contract_type = explorer.get_contract_type(address)
 
     # We have a contract type either:
-    #   1) explicity provided,
+    #   1) explicitly provided,
     #   2) from network cache, or
     #   3) from explorer
     if contract_type:
