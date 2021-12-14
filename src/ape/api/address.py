@@ -54,6 +54,18 @@ class AddressAPI:
             :class:`~ape.types.AddressType`
         """
 
+    def __eq__(self, __o: object) -> bool:
+        """
+        Compares AddressAPI/str objs
+
+        Returns:
+            bool: comparison result
+        """
+
+        if isinstance(__o, str):
+            return self.address == __o
+        return super.__eq__(self, __o)
+
     def __dir__(self) -> List[str]:
         """
         Display methods to IPython on ``a.[TAB]`` tab completion.
@@ -72,6 +84,13 @@ class AddressAPI:
         ]
 
     def __repr__(self) -> str:
+        """
+        String representation of object
+
+        Returns:
+            str: Class name and address
+        """
+
         return f"<{self.__class__.__name__} {self.address}>"
 
     def __str__(self) -> str:
