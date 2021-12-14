@@ -13,6 +13,19 @@ if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
+def _encode_address_args(*args):
+    # Convert higher level address types to str
+    return [arg.address if isinstance(arg, AddressAPI) else arg for arg in args]
+
+
+def _encode_address_kwargs(**kwargs):
+    # Convert higher level address types to str
+    return {
+        key: value.address if isinstance(value, AddressAPI) else value
+        for key, value in kwargs.items()
+    }
+
+
 @dataclass
 class ContractConstructor:
     deployment_bytecode: bytes
@@ -28,20 +41,20 @@ class ContractConstructor:
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
         return self.provider.network.ecosystem.encode_deployment(
-            self.deployment_bytecode, self.abi, *args, **kwargs
+            self.deployment_bytecode,
+            self.abi,
+            *_encode_address_args(*args),
+            **_encode_address_kwargs(**kwargs),
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         if "sender" in kwargs:
             sender = kwargs["sender"]
-            kwargs["sender"] = sender.address
-
             txn = self.encode(*args, **kwargs)
             return sender.call(txn)
 
-        else:
-            txn = self.encode(*args, **kwargs)
-            return self.provider.send_transaction(txn)
+        txn = self.encode(*args, **kwargs)
+        return self.provider.send_transaction(txn)
 
 
 @dataclass
@@ -55,15 +68,12 @@ class ContractCall:
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *args, **kwargs
+            self.address, self.abi, *_encode_address_args(*args), **_encode_address_kwargs(**kwargs)
         )
 
     def __call__(self, *args, **kwargs) -> Any:
         txn = self.encode(*args, **kwargs)
         txn.chain_id = self.provider.network.chain_id
-
-        if "sender" in kwargs and not isinstance(kwargs["sender"], str):
-            txn.sender = kwargs["sender"].address
 
         raw_output = self.provider.send_call(txn)
         tuple_output = self.provider.network.ecosystem.decode_calldata(  # type: ignore
@@ -75,9 +85,8 @@ class ContractCall:
         if len(tuple_output) < 2:
             return tuple_output[0] if len(tuple_output) == 1 else None
 
-        else:
-            # TODO: Handle struct output
-            return tuple_output
+        # TODO: Handle struct output
+        return tuple_output
 
 
 @dataclass
@@ -122,20 +131,16 @@ class ContractTransaction:
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *args, **kwargs
+            self.address, self.abi, *_encode_address_args(*args), **_encode_address_kwargs(**kwargs)
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
-
         if "sender" in kwargs:
             sender = kwargs["sender"]
-            kwargs["sender"] = sender.address
-
             txn = self.encode(*args, **kwargs)
             return sender.call(txn)
 
-        else:
-            raise TransactionError(message="Must specify a `sender`.")
+        raise TransactionError(message="Must specify a `sender`.")
 
 
 @dataclass
