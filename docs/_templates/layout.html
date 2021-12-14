@@ -157,11 +157,9 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
-              {%- if versions %}
-                {%- for tag in versions.tags %}
-                  <option value="{{ tag.name }}">{{ tag.name }}</option>
-                {%- endfor %}
-              {%- endif %}
+              {%- for tag in get_versions() %}
+                <option value="{{ tag }}">{{ tag }}</option>
+              {%- endfor %}
             </select>
           </div>
 

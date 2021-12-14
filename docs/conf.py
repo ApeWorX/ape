@@ -9,8 +9,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import re
 import os
 import sys
+from pathlib import Path
 from typing import List
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -55,7 +57,7 @@ master_doc = "index"
 html_theme = "sphinx_rtd_theme"
 html_favicon = "favicon.ico"
 html_logo = "logo.jpg"
-html_baseurl = '/ape/'
+html_baseurl = "/ape/"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -67,11 +69,11 @@ html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
 
-def fixpath(p):
+def fixpath(path: str) -> str:
     """
     Change paths to reference the resources from 'latest/' to save room.
     """
-    suffix = p.split("_static")[1]
+    suffix = path.split("_static")[1]
     new = f"/{project}/latest/_static"
 
     if suffix:
@@ -80,6 +82,18 @@ def fixpath(p):
     return new
 
 
+def get_versions() -> List[str]:
+    build_dir = Path(__file__).parent / "_build" / "ape"
+    if not build_dir.exists():
+        return []
+
+    versions = [
+        d.name for d in build_dir.iterdir() if d.is_dir and re.match("v\d+.?\d?.?\d?", d.stem)
+    ]
+    return versions
+
+
 html_context = {
     "fixpath": fixpath,
+    "get_versions": get_versions,
 }
