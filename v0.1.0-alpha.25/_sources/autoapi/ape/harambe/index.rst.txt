@@ -1,8 +1,0 @@
-:orphan:
-
-:mod:`ape.harambe`
-==================
-
-.. py:module:: ape.harambe
-
-
