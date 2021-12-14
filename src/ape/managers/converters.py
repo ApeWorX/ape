@@ -56,6 +56,9 @@ class ConversionManager:
     plugin_manager: PluginManager
     networks: NetworkManager
 
+    def __repr__(self):
+        return "<ConversionManager>"
+
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
         converters: Dict[Type, List[ConverterAPI]] = {

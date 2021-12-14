@@ -21,8 +21,8 @@
 
   {#- CSS #}
   <link rel="stylesheet" href="{{ fixpath(pathto('_static/' + style, 1)) }}" type="text/css" />
-  <link rel="stylesheet" href="{{ fixpath(pathto('_static/custom.css', 1)) }}" type="text/css" />
   <link rel="stylesheet" href="{{ fixpath(pathto('_static/pygments.css', 1)) }}" type="text/css" />
+  <link rel="stylesheet" href="{{ fixpath(pathto('_static/custom.css', 1)) }}" type="text/css" />
   {%- for css in css_files %}
     {%- if css|attr("rel") %}
       <link rel="{{ css.rel }}" href="{{ fixpath(pathto(css.filename, 1)) }}" type="text/css"{% if css.title is not none %} title="{{ css.title }}"{% endif %} />
@@ -56,7 +56,7 @@
     <script src="{{ pathto('_static/js/html5shiv.min.js', 1) }}"></script>
   <![endif]-->
   {%- if not embedded %}
-  {# XXX Sphinx 1.8.0 made this an external js-file, quick fix until we refactor the template to inherert more blocks directly from sphinx #}
+  {# XXX Sphinx 1.8.0 made this an external js-file, quick fix until we refactor the template to inherit more blocks directly from sphinx #}
     {%- if sphinx_version >= "1.8.0" -%}
       <script id="documentation_options" data-url_root="{{ url_root }}" src="{{ pathto('_static/documentation_options.js', 1) }}"></script>
       {%- for scriptfile in script_files %}
@@ -157,11 +157,9 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
-              {%- if versions %}
-                {%- for tag in versions.tags %}
-                  <option value="{{ tag.name }}">{{ tag.name }}</option>
-                {%- endfor %}
-              {%- endif %}
+              {%- for tag in get_versions() %}
+                <option value="{{ tag }}">{{ tag }}</option>
+              {%- endfor %}
             </select>
           </div>
 

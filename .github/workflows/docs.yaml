@@ -30,23 +30,22 @@ jobs:
           uses: actions/upload-artifact@v1
           with:
               name: DocumentationHTML
-              path: docs/_build/
+              path: docs/_build/ape
 
         - name: Commit and publish documentation changes to gh-pages branch
           run: |
-              git clone https://github.com/${GITHUB_REPOSITORY} --branch gh-pages --single-branch gh-pages
-              cp -r docs/_build/* gh-pages/
-              cd gh-pages
-              touch .nojekyll
-              git config --local user.email "action@github.com"
-              git config --local user.name "GitHub Action"
-              git add .
               if [[ "${GITHUB_EVENT_NAME}" =~ "pull_request" ]]; then
                 echo "skipping 'git commit' step for PR"
               else
+                git clone https://github.com/${GITHUB_REPOSITORY} --branch gh-pages --single-branch gh-pages
+                cp -r docs/_build/ape/* gh-pages/
+                cd gh-pages
+                touch .nojekyll
+                git config --local user.email "action@github.com"
+                git config --local user.name "GitHub Action"
+                git add .
                 git commit -m "Update documentation" -a || true
               fi
-              # The above command will fail if no changes were present, so we use "|| true" to ignore that
         - name: Push changes
           uses: ad-m/github-push-action@master
           if: ${{ github.event_name != 'pull_request' }}
