@@ -30,6 +30,8 @@
 
 .. autoapisummary::
 
+   ape.contracts.base._encode_address_args
+   ape.contracts.base._encode_address_kwargs
    ape.contracts.base._select_abi
    ape.contracts.base._Contract
 
@@ -37,6 +39,16 @@
 
 
 -----------
+
+
+.. py:function:: _encode_address_args(*args)
+
+
+
+
+.. py:function:: _encode_address_kwargs(**kwargs)
+
+
 
 
 .. py:class:: ContractConstructor
