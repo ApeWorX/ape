@@ -110,8 +110,7 @@ Comments, questions, criticisms and pull requests are welcomed.
 To build docs:
 
 ```bash
-python build_docs.py  # build docs in docs/_build
-python build_docs.py --rsync=/tmp/ape  # for serving up docs in development
+python build_docs.py
 ```
 
 ## License

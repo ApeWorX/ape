@@ -5,7 +5,7 @@ from hypothesis import strategies as st
 
 from ape import convert
 from ape.exceptions import ConversionError
-from ape_ethereum.converters import ETHER_UNITS
+from ape_ethereum._converters import ETHER_UNITS
 
 
 @pytest.mark.fuzzing
