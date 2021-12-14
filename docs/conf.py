@@ -88,7 +88,7 @@ def get_versions() -> List[str]:
         return []
 
     versions = [
-        d.name for d in build_dir.iterdir() if d.is_dir and re.match("v\d+.?\d?.?\d?", d.stem)
+        d.name for d in build_dir.iterdir() if d.is_dir and re.match(r"v\d+.?\d?.?\d?", d.stem)
     ]
     return versions
 
