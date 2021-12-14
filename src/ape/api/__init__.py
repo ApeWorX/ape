@@ -2,7 +2,6 @@ from .accounts import AccountAPI, AccountContainerAPI, TestAccountAPI, TestAccou
 from .address import Address, AddressAPI
 from .compiler import CompilerAPI
 from .config import ConfigDict, ConfigEnum, ConfigItem
-from .contracts import ContractInstance, ContractLog
 from .convert import ConverterAPI
 from .explorers import ExplorerAPI
 from .networks import EcosystemAPI, NetworkAPI, ProviderContextManager, create_network_type
@@ -32,8 +31,6 @@ __all__ = [
     "ConfigDict",
     "ConfigEnum",
     "ConfigItem",
-    "ContractInstance",
-    "ContractLog",
     "ConverterAPI",
     "create_network_type",
     "EcosystemAPI",

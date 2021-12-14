@@ -1,5 +1,6 @@
+from ape.utils import abstractdataclass, abstractmethod
+
 from . import networks
-from .base import abstractdataclass, abstractmethod
 
 
 @abstractdataclass
