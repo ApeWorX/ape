@@ -38,7 +38,7 @@ jobs:
                 echo "skipping 'git commit' step for PR"
               else
                 git clone https://github.com/${GITHUB_REPOSITORY} --branch gh-pages --single-branch gh-pages
-                cp -r docs/_build/ape gh-pages/
+                cp -r docs/_build/ape/* gh-pages/
                 cd gh-pages
                 touch .nojekyll
                 git config --local user.email "action@github.com"
