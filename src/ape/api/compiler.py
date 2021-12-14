@@ -14,12 +14,7 @@ class CompilerAPI:
     @property
     @abstractmethod
     def name(self) -> str:
-        """
-        The name of the compiler.
-
-        Returns:
-            str
-        """
+        ...
 
     @abstractmethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:

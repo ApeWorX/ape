@@ -6,7 +6,7 @@ from . import networks
 @abstractdataclass
 class ExplorerAPI:
     """
-    An Explorer must work with a particular Network in a particular Ecosystem
+    An Explorer must work with a particular Network in a particular Ecosystem.
     """
 
     name: str  # Plugin name
@@ -16,7 +16,7 @@ class ExplorerAPI:
     @abstractmethod
     def get_address_url(self, address: str) -> str:
         """
-        Get the address URL for the given address.
+        Get an address URL, such as for a transaction.
 
         Args:
             address (str): The address to get the URL for.
