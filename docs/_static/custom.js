@@ -1,19 +1,14 @@
 $(document).ready(function () {
-  // version picker logic
-  let currentDocsVersion = "stable";
-  let path = document.location.pathname.split("/");
-  if (path.length >= 3) {
-    currentDocsVersion = path[2];
-  }
-  $("option[value='" + currentDocsVersion + "']").attr("selected", "selected");
+  // Version picker logic
+  let current = document.location.pathname.replaceAll("/", "")
+  $("option[value='" + current + "']").attr("selected", "selected");
   $("select").change(function () {
     if (this.value === "") {
       return false;
     }
-    let newUrl = document.URL.replace(
-      PROJECT + "/" + currentDocsVersion,
-      PROJECT + "/" + $(this).val()
-    );
-    window.location = newUrl;
+    let current = document.location.pathname.replaceAll("/", "")
+    let selected = $(this).val();
+    $("option[value='" + selected + "']").attr("selected", "selected");
+    window.location = document.URL.replace(current, selected);
   });
 });

@@ -62,7 +62,7 @@ To view the resulting documentation, open `docs/_build/development/index.html`.
 For the best viewing experience, use a local server:
 
 ```bash
-python -m http.server --directory "docs/_build/development" --bind 127.0.0.1 1337
+python -m http.server --directory "docs/_build" --bind 127.0.0.1 1337
 ```
 
 and open your browser to `127.0.0.1:1337`.

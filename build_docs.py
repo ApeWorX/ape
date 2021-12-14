@@ -7,12 +7,11 @@ REDIRECT_HTML = """
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Redirecting...</title>
-<meta http-equiv="refresh" content="0; URL=./stable/">
+<meta http-equiv="refresh" content="0; URL=./{}/">
 """
 DOCS_BUILD_PATH = Path("docs/_build")
 LATEST_PATH = DOCS_BUILD_PATH / "latest"
 STABLE_PATH = DOCS_BUILD_PATH / "stable"
-LOCAL_PATH = DOCS_BUILD_PATH / "development"
 
 
 class DocsBuildError(Exception):
@@ -41,53 +40,44 @@ def build_docs(path: Path) -> Path:
     return path
 
 
-def build_docs_from_release():
-    """
-    When building the docs from a release, we create a new release
-    directory and copy the 'latest/' docs into it. We also copy the
-    'latest/' docs into the 'stable/' directory.
-    """
-
-    tag = git("describe", "--tag")
-    if not tag:
-        raise DocsBuildError("Unable to find release tag.")
-
-    build_dir = DOCS_BUILD_PATH / tag
-    build_docs(build_dir)
-
-    # Clean-up unnecessary extra 'fonts/' directories to save space.
-    # There should still be one in 'latest/'
-    for font_dirs in build_dir.glob("**/fonts"):
-        if font_dirs.exists():
-            shutil.rmtree(font_dirs)
-
-    shutil.copytree(build_dir, STABLE_PATH)
-
-
 def main():
+    """
+    There are three GH events we build for:
+
+    1. Push to main: we build into 'latest/'.
+       The GH action will commit these changes to the 'gh-pages' branch.
+
+    2. Release: we copy 'latest/' into the release dir, as well as to 'stable/'.
+       The GH action will commit these changes to the 'gh-pages' branch.
+
+    3. Pull requests or local development: We ensure a successful build.
+    """
+
     event_name = os.environ.get("GITHUB_EVENT_NAME")
+    is_ephemeral = event_name in ["pull_request", None]
 
-    # There are three GH events we build for:
-    #
-    # 1. Push to main: we build into 'latest/'.
-    #    The GH action will commit these changes to the 'gh-pages' branch.
-    #
-    # 2. Release: we copy 'latest/' into the release dir, as well as to 'stable/'.
-    #    The GH action will commit these changes to the 'gh-pages' branch.
-    #
-    # 3. Pull requests or local development: We ensure a successful build.
-    #
-
-    if event_name == "push":  # Is 'push' to branch 'main'.
+    if event_name == "push" or is_ephemeral:
         build_docs(LATEST_PATH)
     elif event_name == "release":
-        build_docs_from_release()
-    elif event_name in ["pull_request", None]:
-        build_docs(LOCAL_PATH)
+        tag = git("describe", "--tag")
+        if not tag:
+            raise DocsBuildError("Unable to find release tag.")
+
+        build_dir = DOCS_BUILD_PATH / tag
+        build_docs(build_dir)
+
+        # Clean-up unnecessary extra 'fonts/' directories to save space.
+        # There should still be one in 'latest/'
+        for font_dirs in build_dir.glob("**/fonts"):
+            if font_dirs.exists():
+                shutil.rmtree(font_dirs)
+
+        shutil.copytree(build_dir, STABLE_PATH)
 
     # Set up the redirect at /index.html
     with open(DOCS_BUILD_PATH / "index.html", "w") as f:
-        f.write(REDIRECT_HTML)
+        redirect = "latest" if is_ephemeral else "stable"
+        f.write(REDIRECT_HTML.format(redirect))
 
 
 if __name__ == "__main__":

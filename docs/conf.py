@@ -66,5 +66,13 @@ html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
 
-def setup(app):
-    app.add_js_file("custom.js")
+def fixpath(p):
+    """
+    Change paths to reference the resources from 'latest/' to save room.
+    """
+    return f"../latest/_static/{p.split('_static')[1]}"
+
+
+html_context = {
+    "fixpath": fixpath,
+}
