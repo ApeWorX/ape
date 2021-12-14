@@ -9,7 +9,7 @@ REDIRECT_HTML = """
 <title>Redirecting...</title>
 <meta http-equiv="refresh" content="0; URL=./{}/">
 """
-DOCS_BUILD_PATH = Path("docs/_build")
+DOCS_BUILD_PATH = Path("docs/_build/ape")
 LATEST_PATH = DOCS_BUILD_PATH / "latest"
 STABLE_PATH = DOCS_BUILD_PATH / "stable"
 

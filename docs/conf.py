@@ -55,6 +55,7 @@ master_doc = "index"
 html_theme = "sphinx_rtd_theme"
 html_favicon = "favicon.ico"
 html_logo = "logo.jpg"
+html_baseurl = '/ape/'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -70,7 +71,13 @@ def fixpath(p):
     """
     Change paths to reference the resources from 'latest/' to save room.
     """
-    return f"../latest/_static/{p.split('_static')[1]}"
+    suffix = p.split("_static")[1]
+    new = f"/{project}/latest/_static"
+
+    if suffix:
+        new = f"{new}/{suffix}"
+
+    return new
 
 
 html_context = {
