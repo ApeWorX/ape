@@ -9,6 +9,10 @@ from .config import ConfigItem
 
 @abstractdataclass
 class CompilerAPI:
+    """
+    Compiler plugins, such as for languages like Solidity or Vyper, implement this API.
+    """
+
     config: ConfigItem
 
     @property
@@ -19,7 +23,7 @@ class CompilerAPI:
     @abstractmethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:
         """
-        Retrieve set of available compiler versions for this plugin to compile `all_paths`
+        Retrieve set of available compiler versions for this plugin to compile `all_paths`.
         """
 
     @abstractmethod
