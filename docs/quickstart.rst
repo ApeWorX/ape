@@ -9,6 +9,7 @@ In the latest release, Ape requires:
 * Linux or macOS
 * Python 3.7.X or later
 
+Download the most recent version at python.org 
 **Windows**: 
 
 #. Install Windows Subsystem Linux `(WSL) <https://docs.microsoft.com/en-us/windows/wsl/install>`_ 
@@ -25,7 +26,7 @@ Please make sure you are using Python 3.7.X or later.
 
 Installation
 ************
-**Suggestion**: Create a virtual environment via virtualenv or venv. After creation and activating a virtual env.
+**Suggestion**: Create a virtual environment via virtualenv or venv. After creating and activating your virtual env.
 You should install ape in the isolated virtual environment to try for yourself!
 
 You may skip this creating a virtual environment if you know you don't require one for your use case. 
