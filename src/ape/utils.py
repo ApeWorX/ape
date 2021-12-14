@@ -53,12 +53,13 @@ def get_distributions():
 
 def is_relative_to(path: Path, target: Path) -> bool:
     """
-    Searches a path and determines its relevancy.
+    Search a path and determine its relevancy.
+
     Args:
         path (str): Path represents a filesystem to find.
         target (str): Path represents a filesystem to match.
 
-    Return:
+    Returns:
         bool: ``True`` if the path is relative to the target path or ``False``.
     """
     if hasattr(path, "is_relative_to"):
@@ -96,10 +97,10 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
 
 def get_package_version(obj: Any) -> str:
     """
-    Gets package version of packages.
+    Get the version of a single package.
 
     Args:
-        obj: object to search inside for version.
+        obj: object to search inside for ``__version__``.
 
     Returns:
         str: version string.
@@ -157,8 +158,8 @@ def deep_merge(dict1, dict2) -> Dict:
 
 def expand_environment_variables(contents: str) -> str:
     """
-    Replace substrings of the form ``$name`` or ``${name}` in the given path
-        with the value of environment variable name.
+    Replace substrings of the form ``$name`` or ``${name}`` in the given path
+    with the value of environment variable name.
 
     Args:
         contents (str): A path-like object representing a file system.
@@ -234,7 +235,7 @@ def generate_dev_accounts(
     hd_path_format="m/44'/60'/0'/{}",
 ) -> List[GeneratedDevAccount]:
     """
-    Creates accounts from the configured test mnemonic.
+    Create accounts from the configured test mnemonic.
     Use these accounts (or the mnemonic) in chain-genesis
     for testing providers.
 
@@ -271,14 +272,14 @@ def gas_estimation_error_message(tx_error: Exception) -> str:
 
 def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
     """
-    Digs through a nested ``Dict`` gives the keys to use in order as arguments.
+    Dig through a nested ``Dict`` gives the keys to use in order as arguments.
 
     Args:
         root (dict): Nested keys to form arguments.
 
     Returns:
         dict, optional: The final value if it exists
-                        else `None` if the tree ends at any point.
+        else ``None`` if the tree ends at any point.
     """
     current_value: Any = root
     for arg in args:
@@ -427,7 +428,10 @@ class AbstractDataClassMeta(DataClassMeta, ABCMeta):
 
 
 abstractdataclass = partial(dataclass, kwargs=True, meta=AbstractDataClassMeta)
-
+"""
+A class with abstract properties that cannot be subclassed on its own.
+ex: API classes
+"""
 
 __all__ = [
     "abstractdataclass",
