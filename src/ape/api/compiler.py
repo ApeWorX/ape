@@ -19,7 +19,7 @@ class CompilerAPI:
     @abstractmethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:
         """
-        Retrieve set of available compiler versions for this plugin to compile `all_paths`
+        Retrieve set of available compiler versions for this plugin to compile `all_paths`.
         """
 
     @abstractmethod
