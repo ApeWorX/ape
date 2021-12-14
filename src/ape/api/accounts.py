@@ -147,6 +147,8 @@ class AccountAPI(AddressAPI):
         address = click.style(receipt.contract_address, bold=True)
         logger.success(f"Contract '{contract.contract_type.contractName}' deployed to: {address}")
 
+        from ape.contracts import ContractInstance
+
         return ContractInstance(  # type: ignore
             _provider=self.provider,
             _address=receipt.contract_address,

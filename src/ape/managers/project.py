@@ -258,7 +258,6 @@ class ProjectManager:
 
     def __getattr__(self, attr_name: str):
         contracts = self.load_contracts()
-        contract_type = None
 
         if attr_name in contracts:
             contract_type = contracts[attr_name]
