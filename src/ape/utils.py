@@ -37,6 +37,7 @@ try:
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
+
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
     f".{sys.version_info.micro} {sys.version_info.releaselevel}"

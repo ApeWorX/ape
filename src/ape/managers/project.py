@@ -44,6 +44,9 @@ class ProjectManager:
             n: self._extract_manifest(n, dep_id) for n, dep_id in self.config.dependencies.items()
         }
 
+    def __repr__(self):
+        return "<ProjectManager>"
+
     def _extract_manifest(self, name: str, download_path: str) -> PackageManifest:
         packages_path = self.config.DATA_FOLDER / "packages"
         packages_path.mkdir(exist_ok=True, parents=True)

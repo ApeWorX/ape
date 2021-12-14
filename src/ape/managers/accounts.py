@@ -72,6 +72,9 @@ class AccountManager:
         """
         Accounts generated from the configured test mnemonic.
         Use these accounts when testing.
+
+        Returns:
+            list[:class:`~ape.api.accounts.TestAccountAPI`]
         """
         accounts = []
         for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
@@ -107,7 +110,7 @@ class AccountManager:
                 self._inject_provider(account)
                 return account
 
-        raise IndexError(f"No account at index `{account_id}`.")
+        raise IndexError(f"No account at index '{account_id}'.")
 
     @__getitem__.register
     def __getitem_str(self, account_str: str) -> AccountAPI:

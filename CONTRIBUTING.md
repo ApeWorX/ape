@@ -43,6 +43,29 @@ Once you have your token, export it to your terminal session:
 export GITHUB_ACCESS_TOKEN=<your-token>
 ```
 
+## Running the docs locally
+
+First, make sure you have the docs-related tooling installed:
+
+```bash
+pip install -e .'[docs]'
+```
+
+Then, run the following from the root project directory:
+
+```bash
+python build_docs.py
+```
+
+For the best viewing experience, use a local server:
+
+```bash
+python -m http.server --directory "docs/_build/" --bind 127.0.0.1 1337
+```
+
+Then, open your browser to `127.0.0.1:1337` and click the `ape` directory link.
+NOTE: Serving from `"docs/_build/"` rather than `"docs/_build/ape"` is necessary to make routing work.
+
 ## Pull Requests
 
 Pull requests are welcomed! Please adhere to the following:
