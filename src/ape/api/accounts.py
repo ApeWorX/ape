@@ -165,7 +165,7 @@ class AccountAPI(AddressAPI):
 
         return self.call(txn, send_everything=value is None)
 
-    def deploy(self, contract: ContractContainer, *args, **kwargs) -> ContractInstance:
+    def deploy(self, contract: "ContractContainer", *args, **kwargs) -> ContractInstance:
         """
         Create a smart contract on the blockchain.
 
@@ -174,11 +174,11 @@ class AccountAPI(AddressAPI):
             A provider must active.
 
         Args:
-            contract (:class:`~ape.api.contracts.ContractContainer`):
+            contract (:class:`~ape.contracts.ContractContainer`):
                 The type of contract to deploy.
 
         Returns:
-            :class:`~ape.api.contracts.ContractInstance`
+            :class:`~ape.contracts.ContractInstance`
         """
 
         txn = contract(*args, **kwargs)
@@ -263,13 +263,6 @@ class AccountContainerAPI:
         self.__setitem__(account.address, account)
 
     def __setitem__(self, address: AddressType, account: AccountAPI):
-        """
-        Add attribute to account.
-
-        Args:
-            address :class:`~ape.types.AddressType`
-            account :class:`~ape.accounts.AccountAPI`
-        """
         raise NotImplementedError("Must define this method to use `container.append(acct)`.")
 
     def remove(self, account: AccountAPI):
