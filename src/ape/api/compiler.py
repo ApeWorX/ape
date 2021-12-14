@@ -9,6 +9,10 @@ from .config import ConfigItem
 
 @abstractdataclass
 class CompilerAPI:
+    """
+    Compiler plugins, such as for languages like Solidity or Vyper, implement this API.
+    """
+
     config: ConfigItem
 
     @property

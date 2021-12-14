@@ -59,7 +59,7 @@
 ## ape.api.providers
 
 ```{eval-rst}
-.. automodule:: ape.api.networks
+.. automodule:: ape.api.providers
     :members:
     :show-inheritance:
 ```
