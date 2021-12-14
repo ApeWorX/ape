@@ -28,7 +28,7 @@ extras_require = {
         "isort>=5.9.3,<6.0",  # Import sorting linter
     ],
     "doc": [
-        "myst-parser==0.16.0",  # For building markdown docs,
+        "myst-parser==0.16.0",  # Tools for parsing markdown files in the docs
         "sphinx-click>=3.0.0,<4.0",  # For documenting CLI
         "Sphinx>=3.4.3,<4",  # Documentation generator
         "sphinx-click>=3.0.0",  # Allows autodoc to work for click CLI commands
