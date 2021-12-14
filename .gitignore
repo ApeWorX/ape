@@ -119,6 +119,3 @@ version.py
 
 # Ape stuff
 .build/
-
-# VS Code
-.vscode

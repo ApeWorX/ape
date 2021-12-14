@@ -14,16 +14,12 @@ if TYPE_CHECKING:
 
 
 def _encode_address_args(*args):
-    """
-    Helper for encoding Ape AddressAPI to underlying address for ABI use
-    """
+    # Convert higher level address types to str
     return [arg.address if isinstance(arg, AddressAPI) else arg for arg in args]
 
 
 def _encode_address_kwargs(**kwargs):
-    """
-    Helper for encoding Ape AddressAPI to underlying address for ABI use
-    """
+    # Convert higher level address types to str
     return {
         key: value.address if isinstance(value, AddressAPI) else value
         for key, value in kwargs.items()
