@@ -200,6 +200,10 @@ class AccountAPI(AddressAPI):
 
 @abstractdataclass
 class AccountContainerAPI:
+    """
+    An API class for managing accounts.
+    """
+
     data_folder: Path
     account_type: Type[AccountAPI]
     config_manager: "ConfigManager"
