@@ -352,7 +352,7 @@ class BlockAPI:
 @abstractdataclass
 class ProviderAPI:
     """
-    A Provider must work with a particular network in a particular Ecosystem.
+    A provider must work with a particular network in a particular ecosystem.
     An abstraction of a connection to the Ethereum Network.
     """
 
