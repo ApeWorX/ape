@@ -43,7 +43,7 @@ class AccountAPI(AddressAPI):
     @property
     def alias(self) -> Optional[str]:
         """
-        Override with whatever alias might want to use, if applicable.
+        A shortened-name for quicker access to the account.
         """
         return None
 
@@ -169,8 +169,8 @@ class AccountAPI(AddressAPI):
         """
         Create a smart contract on the blockchain.
 
-        Method Limitations:
-            Smart Contract must compile before deploying.
+        Method Limitations:t
+            The smart contract must compile before deploying.
             A provider must be active.
 
         Args:
@@ -270,7 +270,7 @@ class AccountContainerAPI:
     def remove(self, account: AccountAPI):
         """
         Delete an account.
-        Must be in list or else raises :class:`~ape.exceptions.AccountsError`.
+        Must be managed by ``ape`` or else raises :class:`~ape.exceptions.AccountsError`.
 
         Args:
             account (:class:`~ape.accounts.AccountAPI`): The account to remove.
@@ -303,7 +303,7 @@ class AccountContainerAPI:
             address :class:`~ape.types.AddressType`: An account address.
 
         Returns:
-            bool: ``True`` if ape manages the account with the given address.
+            bool: ``True`` if ``ape`` manages the account with the given address.
         """
         try:
             self.__getitem__(address)
