@@ -146,8 +146,8 @@ class AccountAPI(AddressAPI):
 
         Args:
             account (str): The account to send funds to.
-            value (str): Amount to send
-            data (str): Extra data
+            value (str): The amount to send.
+            data (str): Extra data to include in the transaction.
 
         Returns:
             :class:`~ape.api.providers.ReceiptAPI`
@@ -165,13 +165,13 @@ class AccountAPI(AddressAPI):
 
         return self.call(txn, send_everything=value is None)
 
-    def deploy(self, contract: "ContractContainer", *args, **kwargs) -> ContractInstance:
+    def deploy(self, contract: "ContractContainer", *args, **kwargs) -> "ContractInstance":
         """
         Create a smart contract on the blockchain.
 
         Method Limitations:
             Smart Contract must compile before deploying.
-            A provider must active.
+            A provider must be active.
 
         Args:
             contract (:class:`~ape.contracts.ContractContainer`):
@@ -273,7 +273,7 @@ class AccountContainerAPI:
         Must be in list or else raises :class:`~ape.exceptions.AccountsError`.
 
         Args:
-            account (:class:`~ape.accounts.AccountAPI`)
+            account (:class:`~ape.accounts.AccountAPI`): The account to remove.
         """
         self._verify_account_type(account)
 
@@ -300,7 +300,7 @@ class AccountContainerAPI:
         Must be a valid address or else raises ``IndexError``.
 
         Args:
-            address :class:`~ape.types.AddressType`
+            address :class:`~ape.types.AddressType`: An account address.
 
         Returns:
             bool: ``True`` if ape manages the account with the given address.
