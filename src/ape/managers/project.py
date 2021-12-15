@@ -30,15 +30,15 @@ def _create_source_dict(contracts_paths: Collection[Path]) -> Dict[str, Source]:
 @dataclass
 class ProjectManager:
     """
-    A singleton in ``ape`` for managing the active project, such as
-    its dependencies and various paths structure. The project also has
-    more convenient ways to compile contracts in the project, such as the
-    :meth:`~ape.managers.project.ProjectManager`.
+    A singleton in ``ape`` for accessing contract-types and dependencies.
+    Additionally, access project-related resources, such as directories, and compile contracts
+    using the :meth:`~ape.managers.project.ProjectManager.load_contracts` method.
 
     Usage example::
 
-        from ape import project
+        from ape import project  # "project" is the ProjectManager singleton
 
+        # MyContractType (example) is contract type in the project
         contract_type = project.MyContactType
     """
 
@@ -122,11 +122,12 @@ class ProjectManager:
     @property
     def manifest_cachefile(self) -> Path:
         """
-        The path to project's cached manifest. When you compile,
-        this manifest gets updated.
+        The path to the project's cached manifest. The manifest
+        is a cached file representing the project and is useful
+        for sharing, such as uploading to IPFS.
 
         Returns:
-            Path
+            pathlib.Path
         """
 
         file_name = self.config.name or "__local__"
@@ -158,7 +159,7 @@ class ProjectManager:
         The path to project's ``contracts/`` directory.
 
         Returns:
-            Path
+            pathlib.Path
         """
 
         return self.path / "contracts"
@@ -170,7 +171,7 @@ class ProjectManager:
         Excludes files with extensions that don't have a registered compiler.
 
         Returns:
-            list[Path]: A list of a source file paths in the project.
+            list[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
         for extension in self.compilers.registered_compilers:
@@ -194,7 +195,7 @@ class ProjectManager:
 
         Args:
             extensions (list[str], optional): If provided, returns only extensions that
-                are in this list. Useful for checking against a sub-set of source files.
+                are in this list. Useful for checking against a subset of source files.
 
         Returns:
             list[str]: A list of file extensions found in the ``contracts/`` directory
@@ -230,10 +231,10 @@ class ProjectManager:
         returns ``<absolute-project-path>/contracts/HelloWorld.sol``.
 
         Args:
-            key_contract_path (Path): The sub-path to get the full path of.
+            key_contract_path (pathlib.Path): A sub-path to a contract.
 
         Returns:
-            Path: The path if it exists, else ``None``.
+            pathlib.Path: The path if it exists, else ``None``.
         """
         ext = key_contract_path.suffix or None
 
@@ -258,11 +259,11 @@ class ProjectManager:
     ) -> Dict[str, ContractType]:
         """
         Compile and get the contract types in the project.
-        This is called when invoking CLI command ``ape compile`` as well as prior to running
+        This is called when invoking the CLI command ``ape compile`` as well as prior to running
         scripts or tests in ``ape``, such as from ``ape run`` or ``ape test``.
 
         Args:
-            file_paths (list[Path] or Path], optional): Provide one or more contract file-paths
+            file_paths (list[pathlib.Path] or pathlib.Path], optional): Provide one or more contract file-paths
               to load. If excluded, will load all the contracts.
             use_cache (bool, optional): Set to ``False`` to force a re-compile. Defaults to ``True``.
 
@@ -372,7 +373,7 @@ class ProjectManager:
         The path to the ``interfaces/`` directory of the project.
 
         Returns:
-            Path
+            pathlib.Path
         """
 
         return self.path / "interfaces"
@@ -383,7 +384,7 @@ class ProjectManager:
         The path to the ``scripts/`` directory of the project.
 
         Returns:
-            Path
+            pathlib.Path
         """
 
         return self.path / "scripts"
@@ -394,7 +395,7 @@ class ProjectManager:
         The path to the ``tests/`` directory of the project.
 
         Returns:
-            Path
+            pathlib.Path
         """
 
         return self.path / "tests"

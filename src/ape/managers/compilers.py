@@ -24,7 +24,7 @@ class CompilerManager:
 
     Usage example::
 
-        from ape import compilers
+        from ape import compilers  # "compilers" is the CompilerManager singleton
     """
 
     config: ConfigManager
@@ -36,8 +36,8 @@ class CompilerManager:
     @cached_property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
         """
-        Each file extension that can be compiled using ``ape`` mapped
-        to its respective :class:`~ape.api.compiler.CompilerAPI` instance.
+        Each compile-able file extension mapped to its respective
+        :class:`~ape.api.compiler.CompilerAPI` instance.
 
         Returns:
             dict[str, :class:`~ape.api.compiler.CompilerAPI`]: The mapping of file-extensions
@@ -66,7 +66,7 @@ class CompilerManager:
         to compile ``'.sol'`` files.
 
         Args:
-            contract_filepaths (list[Path]): The list of files to compile,
+            contract_filepaths (list[pathlib.Path]): The list of files to compile,
               as ``pathlib.Path`` objects.
 
         Returns:

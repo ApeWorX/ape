@@ -24,7 +24,7 @@ class AccountManager:
 
     Usage example::
 
-        from ape import accounts
+        from ape import accounts  # "accounts" is the AccountManager singleton
 
         my_accounts = accounts.load("dev")
     """
@@ -62,10 +62,10 @@ class AccountManager:
     @property
     def aliases(self) -> Iterator[str]:
         """
-        All account aliases from every account-related plugin. Every
-        :class:`~ape.api.accounts.AccountAPI` has an alias. Usually,
-        the alias gets set by the user. Use the account alias to load
-        the account via :meth:`~ape.managers.accounts.AccountManager.load`.
+        All account aliases from every account-related plugin. The "alias"
+        is part of the :class:`~ape.api.accounts.AccountAPI`. Use the
+        account alias to load an account using method
+        :meth:`~ape.managers.accounts.AccountManager.load`.
 
         Returns:
             iter[str]
@@ -116,8 +116,18 @@ class AccountManager:
     @cached_property
     def test_accounts(self) -> List[TestAccountAPI]:
         """
-        Accounts generated from the configured test mnemonic.
-        Use these accounts when testing.
+        Accounts generated from the configured test mnemonic. These accounts
+        are also the subject of a fixture available in the ``test`` plugin called
+        ``accounts``. Configure these accounts, such as the mnemonic and / or
+        number-of-accounts using the ``test`` section of the `ape-config.yaml` file.
+
+        Usage example::
+
+            def test_my_contract(accounts):
+               # The "accounts" fixture uses the AccountsManager.test_accounts()
+               sender = accounts[0]
+               receiver = accounts[1]
+               ...
 
         Returns:
             list[:class:`~ape.api.accounts.TestAccountAPI`]

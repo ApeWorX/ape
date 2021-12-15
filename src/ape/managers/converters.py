@@ -108,10 +108,10 @@ class HexAddressConverter(ConverterAPI):
 
     def convert(self, value: str) -> AddressType:
         """
-        Convert the given value to :class:`~ape.types.AddressType`.
+        Convert the given value to a :class:`~ape.types.AddressType`.
 
         Args:
-            value (str): The value to convert.
+            value (str): The address ``str`` to convert.
 
         Returns:
             :class:`~ape.types.AddressType`
@@ -169,7 +169,7 @@ class ConversionManager:
     def is_type(self, value: Any, type: Type) -> bool:
         """
         Check if the value is the given type.
-        If given an :class`~ape.types.AddressType`, will also check
+        If given an :class:`~ape.types.AddressType`, will also check
         that it is checksummed.
 
         Args:

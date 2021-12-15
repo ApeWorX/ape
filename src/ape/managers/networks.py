@@ -18,12 +18,13 @@ class NetworkManager:
     Typically, you set the provider via the ``--network`` command line option.
     However, use this singleton for more granular access to networks.
 
-    Usage example:
+    Usage example::
 
         from ape import networks
 
-        with networks.ethereum.mainnet.use_provider("infura"):
-           # Work with the infura provider here
+        # "networks" is the NetworkManager singleton
+        with networks.ethereum.mainnet.use_provider("geth"):
+           ...
     """
 
     config: ConfigManager
@@ -110,7 +111,7 @@ class NetworkManager:
         :class:`~ape.api.providers.ProviderAPI` that is installed.
 
         Use the CLI command ``ape networks list`` to list all the possible network
-        combinations as tree.
+        combinations.
 
         Returns:
             iter[str]: An iterator over all the network-choice possibilities.
@@ -144,17 +145,16 @@ class NetworkManager:
         provider_settings: Optional[Dict] = None,
     ) -> ProviderAPI:
         """
-        Get a :class:`~ape.api.providers.ProviderAPI` from network choice.
+        Get a :class:`~ape.api.providers.ProviderAPI` from a network choice.
         A network choice is any value returned from
-        :meth:`~ape.managers.networks.NetworkManager.network_choices`. Also,
-        use the CLI command ``ape networks list`` to list all the possible network
-        combinations as tree.
+        :meth:`~ape.managers.networks.NetworkManager.network_choices`. Use the
+        CLI command ``ape networks list`` to list all the possible network
+        combinations.
 
         Args:
             network_choice (str, optional): The network choice
               (see :meth:`~ape.managers.networks.NetworkManager.network_choices`).
-              Defaults to the default ecosystem, default network, and default provider
-              combination.
+              Defaults to the default ecosystem, network, and provider combination.
             provider_settings (dict, optional): Settings for the provider. Defaults to None.
 
         Returns:
@@ -207,16 +207,15 @@ class NetworkManager:
         provider_settings: Optional[Dict] = None,
     ) -> ProviderContextManager:
         """
-        Parse a network choice into a context manager for managing
-        a temporarily connection to a provider. See
+        Parse a network choice into a context manager for managing a temporary
+        connection to a provider. See
         :meth:`~ape.managers.networks.NetworkManager.network_choices` for all
         available choices (or use CLI command ``ape networks list``).
 
         Args:
             network_choice (str, optional): The network choice
               (see :meth:`~ape.managers.networks.NetworkManager.network_choices`).
-              Defaults to the default ecosystem, default network, and default provider
-              combination.
+              Defaults to the default ecosystem, network, and provider combination.
             provider_settings (dict, optional): Settings for the provider. Defaults to None.
 
         Returns:
@@ -233,9 +232,9 @@ class NetworkManager:
         """
         The default ecosystem. Call
         :meth:`~ape.managers.networks.NetworkManager.set_default_ecosystem` to
-        change the default ecosystem. If a default is not set, and there is
-        only a single ecosystem installed (such as ``ape-ethereum``, which installs
-        out-of-the-box), then that is the ecosystem returned.
+        change the default ecosystem. If a default is not set and there is
+        only a single ecosystem installed, such as Ethereum, then returns
+        that ecosystem.
         """
 
         if self._default:
@@ -250,8 +249,7 @@ class NetworkManager:
 
     def set_default_ecosystem(self, ecosystem_name: str):
         """
-        Change the default ecosystem. **NOTE**: currently, changes
-        are only active for the session.
+        Change the default ecosystem.
 
         Args:
             ecosystem_name (str): The name of the ecosystem to set
@@ -267,9 +265,9 @@ class NetworkManager:
     @property
     def network_data(self) -> Dict:
         """
-        Get a dictionary of data about networks in the ecosystem.
+        Get a dictionary containing data about networks in the ecosystem.
 
-        Note: The keys are added in an opinionated order for nicely
+        **NOTE**: The keys are added in an opinionated order for nicely
         translating into ``yaml``.
 
         Returns:
@@ -304,7 +302,7 @@ class NetworkManager:
         Get a ``yaml`` ``str`` representing all the networks
         in all the ecosystems.
 
-        Via the result via CLI command ``ape networks list --format yaml``.
+        View the result via CLI command ``ape networks list --format yaml``.
 
         Returns:
             str
