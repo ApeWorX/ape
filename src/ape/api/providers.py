@@ -21,7 +21,8 @@ from .config import ConfigItem
 
 class TransactionType(Enum):
     """
-    Transaction Enumerables type constants defined by EIP-1559.
+    Transaction Enumerables type constants defined by
+    EIP-2718 ``https://eips.ethereum.org/EIPS/eip-2718``.
     """
 
     STATIC = "0x0"
