@@ -33,8 +33,8 @@ class TransactionAPI:
     """
     An API class representing a transaction.
     Ecosystem plugins implement one or more of transaction APIs
-        depending on which schemas they permit,
-        such as typed-transactions from EIP-1559.
+    depending on which schemas they permit,
+    such as typed-transactions from EIP-1559.
     """
 
     chain_id: int = 0
@@ -62,7 +62,7 @@ class TransactionAPI:
         Override this property as needed, such as for EIP-1559 differences.
 
         See :class:`~ape_ethereum.ecosystem.StaticFeeTransaction` and
-        :class`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
+        :class:`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
         """
         return 0
 
@@ -82,7 +82,7 @@ class TransactionAPI:
         """
         The total amount of WEI that a transaction could use.
         Useful for determining if an account balance can afford
-            to submit the transaction.
+        to submit the transaction.
         """
         return self.value + self.max_fee
 
@@ -90,7 +90,7 @@ class TransactionAPI:
     @abstractmethod
     def is_valid(self):
         """
-        Checks if the transaction is valid.
+        Check if the transaction is valid.
         """
 
     @abstractmethod
@@ -127,7 +127,7 @@ class TransactionAPI:
 
 class TransactionStatusEnum(IntEnum):
     """
-    Transaction enumerables Constants to verify transactions.
+    Transaction Enumerables Constants to verify transactions.
     """
 
     FAILING = 0
@@ -183,8 +183,9 @@ class ConfirmationsProgressBar:
 class ReceiptAPI:
     """
     An Abstract class to represent ReceiptAPI.
-        Receipt is used to find a new contract Address and its many attributes.
-        It is also used to provided the Existence of Logs to the Blockchain."""
+    Receipt is used to find a new contract Address and its many attributes.
+    It is also used to provided the Existence of Logs to the Blockchain.
+    """
 
     provider: "ProviderAPI"
     txn_hash: str
@@ -213,7 +214,7 @@ class ReceiptAPI:
 
     def ran_out_of_gas(self, gas_limit: int) -> bool:
         """
-        Returns ``True`` when the transaction failed and used the
+        ``True`` when the transaction failed and used the
         same amount of gas as the given ``gas_limit``.
         """
         return self.status == TransactionStatusEnum.FAILING and self.gas_used == gas_limit
@@ -222,7 +223,7 @@ class ReceiptAPI:
     @abstractmethod
     def decode(cls, data: dict) -> "ReceiptAPI":
         """
-        Converts data to :class:`~ape.api.ReceiptAPI`.
+        Convert data to :class:`~ape.api.ReceiptAPI`.
 
         Args:
             data (dict): A dictionary of Receipt properties.
@@ -233,7 +234,7 @@ class ReceiptAPI:
 
     def await_confirmations(self) -> "ReceiptAPI":
         """
-        Waits for a transaction to be considered confirmed.
+        Wait for a transaction to be considered confirmed.
 
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
@@ -279,7 +280,7 @@ class BlockGasAPI:
     @abstractmethod
     def decode(cls, data: Dict) -> "BlockGasAPI":
         """
-        Convert data to a :class:`~ape.api.BlockGasAPI`.
+        Decode data to a :class:`~ape.api.BlockGasAPI`.
 
         Args:
             data (dict): A dictionary of BlockGas properties.
@@ -293,8 +294,8 @@ class BlockGasAPI:
 class BlockConsensusAPI:
     """
     An abstract class representing the necessary agreement
-        on a single data value or a single state of the network
-        EIP-3675.
+    on a single data value or a single state of the network
+    EIP-3675 ``https://eips.ethereum.org/EIPS/eip-3675``.
     """
 
     difficulty: Optional[int] = None
@@ -304,7 +305,7 @@ class BlockConsensusAPI:
     @abstractmethod
     def decode(cls, data: Dict) -> "BlockConsensusAPI":
         """
-        Convert data to a :class:`~ape.api.BlockConsensusAPI`.
+        Decode data to a :class:`~ape.api.BlockConsensusAPI`.
 
         Args:
             data (dict): A dictionary of data to decode.
@@ -317,7 +318,7 @@ class BlockConsensusAPI:
 @abstractdataclass
 class BlockAPI:
     """
-    An abstract class representing a block.
+    An abstract class representing a block and its attributes.
     """
 
     gas_data: BlockGasAPI
@@ -332,7 +333,7 @@ class BlockAPI:
     @abstractmethod
     def decode(cls, data: Dict) -> "BlockAPI":
         """
-        Create data to a :class:`~ape.api.BlockAPI`.
+        Decode data to a :class:`~ape.api.BlockAPI`.
 
         Args:
             data (dict): A dictionary of data to decode.
@@ -374,7 +375,7 @@ class ProviderAPI:
         Change the settings connection protocol.
         May require a reconnect.
 
-        Agrs:
+        Args:
             new_settings (dict): Value of new provider settings.
         """
 
@@ -417,7 +418,7 @@ class ProviderAPI:
         """
         Get the number of times an account has transacted.
 
-        Agrs:
+        Args:
             address (str): The address of the account.
 
         Returns:
@@ -451,9 +452,9 @@ class ProviderAPI:
     def priority_fee(self) -> int:
         """
          A miner tip to incentivize them
-            to include your transaction in a block.
+        to include your transaction in a block.
         Only providers that implement EIP-1559 will have this property,
-            otherwise will raise ``NotImplementedError``.
+        otherwise will raise `NotImplementedError`.
 
         Returns:
             int: Value of fee.
@@ -464,9 +465,9 @@ class ProviderAPI:
     def base_fee(self) -> int:
         """
         The minimum value required to get your transaction
-            included on the next block.
+        included on the next block.
         Only providers that implement EIP-1559 will use this property,
-            otherwise will raise ``NotImplementedError``.
+        otherwise will raise ``NotImplementedError``.
 
         Returns:
             int
@@ -476,11 +477,11 @@ class ProviderAPI:
     @abstractmethod
     def get_block(self, block_id: BlockID) -> BlockAPI:
         """
-        Gets a block.
+        Get a block.
 
         Args:
             block_id (:class:`~ape.types.blockID`): The ID of the block to get.
-                Can be 'latest', 'earliest', 'pending', a block hash or a block number.
+                Can be `latest`, `earliest`, `pending`, a block hash or a block number.
 
         Returns:
             :class:`~ape.types.BlockID`: The block for the given ID.
@@ -489,11 +490,11 @@ class ProviderAPI:
     @abstractmethod
     def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
         """
-        Executes a new transaction call immediately without creating a
+        Execute a new transaction call immediately without creating a
         transaction on the block chain.
 
         Args:
-            txn :class:`~ape.api.providers.TransactionAPI`
+            txn: :class:`~ape.api.providers.TransactionAPI`
 
         Returns:
             str: The result of the transaction call.
@@ -502,9 +503,9 @@ class ProviderAPI:
     @abstractmethod
     def get_transaction(self, txn_hash: str) -> ReceiptAPI:
         """
-        Returns the information about a transaction requested by transaction hash.
+        Get the information about a transaction requested by transaction hash.
 
-        Params:
+        Args:
             txn_hash (str): The hash of the transaction to retrieve.
 
         Returns:
@@ -518,7 +519,7 @@ class ProviderAPI:
         Sends a transaction to the network.
 
         Args:
-            txn :class:`~ape.api.providers.TransactionAPI`
+            txn (:class:`~ape.api.providers.TransactionAPI`): Transaction
 
         Returns:
             :class:`~ape.api.providers.ReceiptAPI`
@@ -527,14 +528,14 @@ class ProviderAPI:
     @abstractmethod
     def get_events(self, **filter_params) -> Iterator[dict]:
         """
-        Returns an array of all logs matching a given set of filter parameters.
+        Get all logs matching a given set of filter parameters.
 
         Args:
-            **filter_params (): filter which logs
+            `filter_params`: filter which logs
                 ex: logs certains or types.
 
         Returns:
-            Iterator[dict] (dict): A dictionary of events.
+            iter[dict]: A dictionary of events.
         """
 
 
@@ -546,7 +547,7 @@ class TestProviderAPI(ProviderAPI):
     @abstractmethod
     def snapshot(self) -> str:
         """
-        Takes a recording a state in a blockchain (for development only).
+        Take a recording a state in a blockchain (for development only).
 
         Returns:
             str: The snapshot ID.
@@ -556,7 +557,7 @@ class TestProviderAPI(ProviderAPI):
     def revert(self, snapshot_id: str):
         """
         Regress the current call and using the snapshot ID
-            allows the dev to go back to the state.
+        allows the dev to go back to the state.
 
         Args:
             snapshot_ID (str): The snapshot ID.
@@ -580,7 +581,7 @@ class Web3Provider(ProviderAPI):
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         """
-        Generates and returns an estimate of how much gas is necessary
+        Generate and get an estimate of how much gas is necessary
         to allow the transaction to complete.
         The transaction will not be added to the blockchain.
         """
@@ -590,7 +591,7 @@ class Web3Provider(ProviderAPI):
     @property
     def chain_id(self) -> int:
         """
-        Returns the currently configured chain ID,
+        The currently configured chain ID,
         a value used in replay-protected transaction signing as introduced by EIP-155.
         """
         return self._web3.eth.chain_id
@@ -598,24 +599,24 @@ class Web3Provider(ProviderAPI):
     @property
     def gas_price(self) -> int:
         """
-        Returns the current price per gas in Wei.
+        The current price per gas in Wei.
         """
         return self._web3.eth.generate_gas_price()  # type: ignore
 
     @property
     def priority_fee(self) -> int:
         """
-        Returns the current max priority fee per gas in Wei.
+        The current max priority fee per gas in Wei.
         """
         return self._web3.eth.max_priority_fee
 
     @property
     def base_fee(self) -> int:
         """
-        Returns the current base fee from the latest block.
+        The current base fee from the latest block.
 
         NOTE: If your chain does not support base_fees (EIP-1559),
-        this method will raise a not-implemented error.
+        this method will raise a ``NotImplementedError``.
         """
         block = self.get_block("latest")
 
@@ -627,13 +628,13 @@ class Web3Provider(ProviderAPI):
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
         """
-        Returns a block for the given ID.
+        A block for the given ID.
 
         Args:
             block_id (:class:`~ape.types.BlockID`): The ID of the block to get. Set as
-              "latest" to get the latest block,
-              "earliest" to get the earliest block,
-              "pending" to get the pending block,
+              `latest` to get the latest block,
+              `earliest` to get the earliest block,
+              `pending` to get the pending block,
               or pass in a block number or hash.
 
         Returns:
@@ -650,32 +651,32 @@ class Web3Provider(ProviderAPI):
 
     def get_nonce(self, address: str) -> int:
         """
-        Returns the number of transactions sent from an address.
+        The number of transactions sent from an address.
         """
         return self._web3.eth.get_transaction_count(address)  # type: ignore
 
     def get_balance(self, address: str) -> int:
         """
-        Returns the balance of the account of a given address.
+        The balance of the account of a given address.
         """
         return self._web3.eth.get_balance(address)  # type: ignore
 
     def get_code(self, address: str) -> bytes:
         """
-        Returns code at a given address.
+        Code at a given address.
         """
         return self._web3.eth.get_code(address)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
         """
-        Executes a new message call immediately without creating a
+        Execute a new message call immediately without creating a
         transaction on the block chain.
         """
         return self._web3.eth.call(txn.as_dict())
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
         """
-        Returns the information about a transaction requested by transaction hash.
+        The information about a transaction requested by transaction hash.
 
         Args:
             txn_hash (str): The hash of the transaction to retrieve.
@@ -704,14 +705,14 @@ class Web3Provider(ProviderAPI):
 
     def get_events(self, **filter_params) -> Iterator[dict]:
         """
-        Returns an array of all logs matching a given set of filter parameters.
+        Get all logs matching a given set of filter parameters.
 
         Args:
-            **filter_params (): filter which logs
+            `filter_params`: filter which logs
                 ex: logs certains or types.
 
         Returns:
-            Iterator[dict] (dict): A dictionary of events.
+            iter[dict]: A dictionary of events.
 
         """
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
