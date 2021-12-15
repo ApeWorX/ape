@@ -22,16 +22,6 @@ class HexConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: str) -> bool:
-        """
-        Check if the given value can be converted.
-
-        Args:
-            value (str): The value to check.
-
-        Returns:
-            bool: ``True`` when the given value can be converted.
-        """
-
         return is_hex(value)
 
     def convert(self, value: str) -> bytes:
@@ -58,16 +48,6 @@ class AddressAPIConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        """
-        Check if the given value can be converted.
-
-        Args:
-            value (str): The value to check.
-
-        Returns:
-            bool: ``True`` when the given value can be converted.
-        """
-
         return isinstance(value, AddressAPI)
 
     def convert(self, value: AddressAPI) -> AddressType:
@@ -94,16 +74,6 @@ class HexAddressConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: str) -> bool:
-        """
-        Check if the given value can be converted.
-
-        Args:
-            value (str): The value to check.
-
-        Returns:
-            bool: ``True`` when the given value can be converted.
-        """
-
         return isinstance(value, str) and is_hex_address(value) and not is_checksum_address(value)
 
     def convert(self, value: str) -> AddressType:
