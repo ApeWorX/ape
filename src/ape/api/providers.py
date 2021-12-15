@@ -35,7 +35,7 @@ class TransactionAPI:
     An API class representing a transaction.
     Ecosystem plugins implement one or more of transaction APIs
     depending on which schemas they permit,
-    such as typed-transactions from EIP-1559.
+    such as typed-transactions from `EIP-1559` <https://eips.ethereum.org/EIPS/eip-1559>`__.
     """
 
     chain_id: int = 0
@@ -128,7 +128,7 @@ class TransactionAPI:
 
 class TransactionStatusEnum(IntEnum):
     """
-    Transaction Enumerables Constants to verify transactions.
+    Transaction enumerable constants to verify transactions.
     """
 
     FAILING = 0
@@ -183,9 +183,13 @@ class ConfirmationsProgressBar:
 @abstractdataclass
 class ReceiptAPI:
     """
-    An Abstract class to represent ReceiptAPI.
-    Receipt is used to find a new contract Address and its many attributes.
-    It is also used to provided the Existence of Logs to the Blockchain.
+    An Abstract class to represent :class:`~ape.api.providers.ReceiptAPI~.
+    It contains information about the transaction
+    such as the status and required_confirmations.
+
+    NOTE: Use a required_confirmations  of 0 in your transaction to not wait for confirmations.
+
+    A receipt is returned after making a contract or account transfers.
     """
 
     provider: "ProviderAPI"
@@ -296,7 +300,7 @@ class BlockConsensusAPI:
     """
     An abstract class representing the necessary agreement
     on a single data value or a single state of the network
-    EIP-3675 ``https://eips.ethereum.org/EIPS/eip-3675``.
+    `EIP-3675` <https://eips.ethereum.org/EIPS/eip-3675>`__.
     """
 
     difficulty: Optional[int] = None
@@ -384,7 +388,7 @@ class ProviderAPI:
     @abstractmethod
     def chain_id(self) -> int:
         """
-        The Blockchain ID.
+        The blockchain ID.
 
         Returns:
             int: The value of the blockchain ID.
@@ -452,13 +456,13 @@ class ProviderAPI:
     @property
     def priority_fee(self) -> int:
         """
-         A miner tip to incentivize them
+        A miner tip to incentivize them
         to include your transaction in a block.
-        Only providers that implement EIP-1559 will have this property,
-        otherwise will raise `NotImplementedError`.
+        Only providers that implement `EIP-1559` <https://eips.ethereum.org/EIPS/eip-1559>`__
+        will have this property, otherwise will raise ``NotImplementedError``.
 
         Returns:
-            int: Value of fee.
+            int: The value of the fee.
         """
         raise NotImplementedError("priority_fee is not implemented by this provider")
 
@@ -467,8 +471,8 @@ class ProviderAPI:
         """
         The minimum value required to get your transaction
         included on the next block.
-        Only providers that implement EIP-1559 will use this property,
-        otherwise will raise ``NotImplementedError``.
+        Only providers that implement `EIP-1559` <https://eips.ethereum.org/EIPS/eip-1559>`__
+        will use this property, otherwise will raise ``NotImplementedError``.
 
         Returns:
             int
@@ -481,8 +485,8 @@ class ProviderAPI:
         Get a block.
 
         Args:
-            block_id (:class:`~ape.types.blockID`): The ID of the block to get.
-                Can be `latest`, `earliest`, `pending`, a block hash or a block number.
+            block_id (:class:`~ape.types.BlockID`): The ID of the block to get.
+                Can be ``"latest"``, ``"earliest"``, ``"pending"``, a block hash or a block number.
 
         Returns:
             :class:`~ape.types.BlockID`: The block for the given ID.
@@ -504,23 +508,23 @@ class ProviderAPI:
     @abstractmethod
     def get_transaction(self, txn_hash: str) -> ReceiptAPI:
         """
-        Get the information about a transaction requested by transaction hash.
+        Get the information about a transaction from a transaction hash.
 
         Args:
             txn_hash (str): The hash of the transaction to retrieve.
 
         Returns:
             :class:`~api.providers.ReceiptAPI`:
-                The receipt of the transaction with the given hash.
+            The receipt of the transaction with the given hash.
         """
 
     @abstractmethod
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         """
-        Sends a transaction to the network.
+        Send a transaction to the network.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`): Transaction
+            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to send.
 
         Returns:
             :class:`~ape.api.providers.ReceiptAPI`
@@ -557,8 +561,8 @@ class TestProviderAPI(ProviderAPI):
     @abstractmethod
     def revert(self, snapshot_id: str):
         """
-        Regress the current call and using the snapshot ID
-        allows the dev to go back to the state.
+        Regress the current call using the given snapshot ID.
+        Allows developers to go back to a previous state.
 
         Args:
             snapshot_ID (str): The snapshot ID.
@@ -633,9 +637,9 @@ class Web3Provider(ProviderAPI):
 
         Args:
             block_id (:class:`~ape.types.BlockID`): The ID of the block to get. Set as
-              `latest` to get the latest block,
-              `earliest` to get the earliest block,
-              `pending` to get the pending block,
+              ``"latest"`` to get the latest block, to get the latest block,
+              ``"earliest"`` to get the earliest block,
+              ``"pending"`` to get the pending block,
               or pass in a block number or hash.
 
         Returns:
