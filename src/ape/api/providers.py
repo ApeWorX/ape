@@ -22,7 +22,7 @@ from .config import ConfigItem
 class TransactionType(Enum):
     """
     Transaction enumerables type constants defined by
-    EIP-2718 `EIP-2718` <https://eips.ethereum.org/EIPS/eip-2718>`__.
+    `EIP-2718` <https://eips.ethereum.org/EIPS/eip-2718>`__.
     """
 
     STATIC = "0x0"
@@ -185,9 +185,10 @@ class ReceiptAPI:
     """
     An Abstract class to represent :class:`~ape.api.providers.ReceiptAPI~.
     It contains information about the transaction
-    such as the status and required_confirmations.
+    such as the status and required confirmations.
 
-    NOTE: Use a required_confirmations  of 0 in your transaction to not wait for confirmations.
+    NOTE: Use a ``required_confirmations`` of ``0`` in your transaction
+    to not wait for confirmations.
 
     A receipt is returned after making a contract or account transfers.
     """
@@ -288,7 +289,7 @@ class BlockGasAPI:
         Decode data to a :class:`~ape.api.BlockGasAPI`.
 
         Args:
-            data (dict): A dictionary of BlockGas properties.
+            data (dict): A dictionary of block-gas properties.
 
         Returns:
             :class:`~ape.api.BlockGasAPI`
@@ -298,8 +299,8 @@ class BlockGasAPI:
 @abstractdataclass
 class BlockConsensusAPI:
     """
-    An abstract class representing the necessary agreement
-    on a single data value or a single state of the network
+    An abstract class representing block consensus-data,
+    such as PoW-related information regarding the block.
     `EIP-3675` <https://eips.ethereum.org/EIPS/eip-3675>`__.
     """
 
@@ -351,7 +352,7 @@ class BlockAPI:
 @abstractdataclass
 class ProviderAPI:
     """
-    A Provider must work with a particular Network in a particular Ecosystem.
+    A Provider must work with a particular network in a particular Ecosystem.
     An abstraction of a connection to the Ethereum Network.
     """
 
@@ -365,23 +366,23 @@ class ProviderAPI:
     @abstractmethod
     def connect(self):
         """
-        Connect a contract to a provider.
+        Connect a to a provider, such as start up a process or create an HTTP connection.
         """
 
     @abstractmethod
     def disconnect(self):
         """
-        Disconnect a contract from a provider.
+        Disconnect from a provider, such as tear-down a process or quit an HTTP session.
         """
 
     @abstractmethod
     def update_settings(self, new_settings: dict):
         """
-        Change the settings connection protocol.
+        Change a provider's setting, such as configure a new port to run on.
         May require a reconnect.
 
         Args:
-            new_settings (dict): Value of new provider settings.
+            new_settings (dict): The new provider settings.
         """
 
     @property
