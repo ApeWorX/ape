@@ -420,8 +420,6 @@
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.address.AddressAPI">AddressAPI (class in ape.api.address)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ALIAS
 
@@ -435,6 +433,8 @@
         <li><a href="commands/accounts.html#cmdoption-accounts-import-arg-ALIAS">accounts-import command line option</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/cli.html#ape.cli.Alias">Alias (class in ape.cli)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.alias">alias() (ape.api.accounts.AccountAPI property)</a>
@@ -531,6 +531,10 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.append">append() (ape.api.accounts.AccountContainerAPI method)</a>
 </li>
+      <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.as_dict">as_dict() (ape.api.providers.TransactionAPI method)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.providers.ReceiptAPI.await_confirmations">await_confirmations() (ape.api.providers.ReceiptAPI method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -539,10 +543,20 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.address.AddressAPI.balance">balance() (ape.api.address.AddressAPI property)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.base_fee">base_fee() (ape.api.providers.Web3Provider property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.base_fee">base_fee() (ape.api.providers.ProviderAPI property)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.base_fee">(ape.api.providers.Web3Provider property)</a>
+</li>
+      </ul></li>
+      <li><a href="methoddocs/api.html#ape.api.providers.BlockAPI">BlockAPI (class in ape.api.providers)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/api.html#ape.api.providers.BlockConsensusAPI">BlockConsensusAPI (class in ape.api.providers)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.providers.BlockGasAPI">BlockGasAPI (class in ape.api.providers)</a>
+</li>
       <li><a href="methoddocs/types.html#ape.types.BlockID">BlockID (in module ape.types)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.SignableMessage.body">body (ape.types.SignableMessage attribute)</a>
@@ -555,8 +569,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.call">call() (ape.api.accounts.AccountAPI method)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.chain_id">chain_id() (ape.api.providers.Web3Provider property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.chain_id">chain_id() (ape.api.providers.ProviderAPI property)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.chain_id">(ape.api.providers.Web3Provider property)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/cli.html#ape.cli.AccountAliasPromptChoice.choices">choices() (ape.cli.AccountAliasPromptChoice property)</a>
 
       <ul>
@@ -594,15 +612,19 @@
 </li>
       <li><a href="methoddocs/ape.html#ape.config">config (in module ape)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.config.ConfigDict">ConfigDict (class in ape.api.config)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.config.ConfigEnum">ConfigEnum (class in ape.api.config)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.config.ConfigItem">ConfigItem (class in ape.api.config)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ConfirmationsProgressBar">ConfirmationsProgressBar (class in ape.api.providers)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.providers.ConfirmationsProgressBar.confs">confs() (ape.api.providers.ConfirmationsProgressBar property)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.connect">connect() (ape.api.providers.ProviderAPI method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.connection_str">connection_str() (ape.api.providers.UpstreamProvider property)</a>
 </li>
@@ -647,11 +669,23 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/utils.html#ape.utils.dataclass">dataclass() (in module ape.utils)</a>
 </li>
+      <li><a href="methoddocs/api.html#ape.api.providers.BlockAPI.decode">decode() (ape.api.providers.BlockAPI class method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.BlockConsensusAPI.decode">(ape.api.providers.BlockConsensusAPI class method)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.providers.BlockGasAPI.decode">(ape.api.providers.BlockGasAPI class method)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.providers.ReceiptAPI.decode">(ape.api.providers.ReceiptAPI class method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/utils.html#ape.utils.deep_merge">deep_merge() (in module ape.utils)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.deploy">deploy() (ape.api.accounts.AccountAPI method)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.disconnect">disconnect() (ape.api.providers.ProviderAPI method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -661,12 +695,18 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI">EcosystemAPI (class in ape.api.networks)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.estimate_gas_cost">estimate_gas_cost() (ape.api.providers.Web3Provider method)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.encode">encode() (ape.api.providers.TransactionAPI method)</a>
 </li>
-      <li><a href="methoddocs/cli.html#ape.cli.existing_alias_argument">existing_alias_argument() (in module ape.cli)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.estimate_gas_cost">estimate_gas_cost() (ape.api.providers.ProviderAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.estimate_gas_cost">(ape.api.providers.Web3Provider method)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/cli.html#ape.cli.existing_alias_argument">existing_alias_argument() (in module ape.cli)</a>
+</li>
       <li><a href="methoddocs/utils.html#ape.utils.expand_environment_variables">expand_environment_variables() (in module ape.utils)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.explorers.ExplorerAPI">ExplorerAPI (class in ape.api.explorers)</a>
@@ -694,8 +734,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/utils.html#ape.utils.gas_estimation_error_message">gas_estimation_error_message() (in module ape.utils)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.gas_price">gas_price() (ape.api.providers.Web3Provider property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.gas_price">gas_price() (ape.api.providers.ProviderAPI property)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.gas_price">(ape.api.providers.Web3Provider property)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.generate_dev_accounts">generate_dev_accounts() (in module ape.utils)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.GeneratedDevAccount">GeneratedDevAccount (class in ape.utils)</a>
@@ -704,26 +748,50 @@
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.get_all_files_in_directory">get_all_files_in_directory() (in module ape.utils)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_balance">get_balance() (ape.api.providers.Web3Provider method)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_balance">get_balance() (ape.api.providers.ProviderAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_balance">(ape.api.providers.Web3Provider method)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_block">get_block() (ape.api.providers.Web3Provider method)</a>
+      </ul></li>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_block">get_block() (ape.api.providers.ProviderAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_block">(ape.api.providers.Web3Provider method)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_code">get_code() (ape.api.providers.Web3Provider method)</a>
+      </ul></li>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_code">get_code() (ape.api.providers.ProviderAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_code">(ape.api.providers.Web3Provider method)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_events">get_events() (ape.api.providers.Web3Provider method)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_events">get_events() (ape.api.providers.ProviderAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_events">(ape.api.providers.Web3Provider method)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.get_network_data">get_network_data() (ape.api.networks.EcosystemAPI method)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_nonce">get_nonce() (ape.api.providers.Web3Provider method)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_nonce">get_nonce() (ape.api.providers.ProviderAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_nonce">(ape.api.providers.Web3Provider method)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.get_package_version">get_package_version() (in module ape.utils)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.get_relative_path">get_relative_path() (in module ape.utils)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_transaction">get_transaction() (ape.api.providers.Web3Provider method)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_transaction">get_transaction() (ape.api.providers.ProviderAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_transaction">(ape.api.providers.Web3Provider method)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.explorers.ExplorerAPI.get_transaction_url">get_transaction_url() (ape.api.explorers.ExplorerAPI method)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.AccountAliasPromptChoice.get_user_selected_account">get_user_selected_account() (ape.cli.AccountAliasPromptChoice method)</a>
@@ -750,11 +818,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/cli.html#ape.cli.NetworkBoundCommand.invoke">invoke() (ape.cli.NetworkBoundCommand method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.address.AddressAPI.is_contract">is_contract() (ape.api.address.AddressAPI property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.convert.ConverterAPI.is_convertible">is_convertible() (ape.api.convert.ConverterAPI method)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.is_valid">is_valid() (ape.api.providers.TransactionAPI property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -770,6 +840,8 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.max_fee">max_fee() (ape.api.providers.TransactionAPI property)</a>
+</li>
       <li>
     module
 
@@ -923,8 +995,12 @@
       </ul></li>
       <li><a href="methoddocs/cli.html#ape.cli.PromptChoice.print_choices">print_choices() (ape.cli.PromptChoice method)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.priority_fee">priority_fee() (ape.api.providers.Web3Provider property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.priority_fee">priority_fee() (ape.api.providers.ProviderAPI property)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.priority_fee">(ape.api.providers.Web3Provider property)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.GeneratedDevAccount.private_key">private_key (ape.utils.GeneratedDevAccount attribute)</a>
 </li>
       <li><a href="methoddocs/ape.html#ape.Project">Project (in module ape)</a>
@@ -950,12 +1026,22 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/api.html#ape.api.providers.ReceiptAPI.raise_for_status">raise_for_status() (ape.api.providers.ReceiptAPI method)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.providers.ReceiptAPI.ran_out_of_gas">ran_out_of_gas() (ape.api.providers.ReceiptAPI method)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.providers.ReceiptAPI">ReceiptAPI (class in ape.api.providers)</a>
+</li>
       <li><a href="methoddocs/utils.html#ape.utils.singledispatchmethod.register">register() (ape.utils.singledispatchmethod method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.remove">remove() (ape.api.accounts.AccountContainerAPI method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.required_confirmations">required_confirmations() (ape.api.networks.NetworkAPI property)</a>
 </li>
+      <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.revert">revert() (ape.api.providers.TestProviderAPI method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     run command line option
 
@@ -986,14 +1072,24 @@
         <li><a href="commands/run.html#cmdoption-run-arg-SCRIPTS">run command line option</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.send_call">send_call() (ape.api.providers.Web3Provider method)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.send_call">send_call() (ape.api.providers.ProviderAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.send_call">(ape.api.providers.Web3Provider method)</a>
 </li>
+      </ul></li>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.send_transaction">send_transaction() (ape.api.providers.ProviderAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.send_transaction">(ape.api.providers.Web3Provider method)</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.config.ConfigItem.serialize">serialize() (ape.api.config.ConfigItem method)</a>
-</li>
-      <li><a href="methoddocs/cli.html#ape.cli.Abort.show">show() (ape.cli.Abort method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/cli.html#ape.cli.Abort.show">show() (ape.cli.Abort method)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.sign_message">sign_message() (ape.api.accounts.AccountAPI method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.sign_transaction">sign_transaction() (ape.api.accounts.AccountAPI method)</a>
@@ -1003,6 +1099,8 @@
       <li><a href="methoddocs/utils.html#ape.utils.singledispatchmethod">singledispatchmethod (class in ape.utils)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.skip_confirmation_option">skip_confirmation_option() (in module ape.cli)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.snapshot">snapshot() (ape.api.providers.TestProviderAPI method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1021,9 +1119,13 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.TestAccountContainerAPI">TestAccountContainerAPI (class in ape.api.accounts)</a>
 </li>
+      <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI">TestProviderAPI (class in ape.api.providers)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI">TestProviderAPI (class in ape.api.providers)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.total_transfer_value">total_transfer_value() (ape.api.providers.TransactionAPI property)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI">TransactionAPI (class in ape.api.providers)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.TransactionStatusEnum">TransactionStatusEnum (class in ape.api.providers)</a>
 </li>
@@ -1039,8 +1141,12 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.update_settings">update_settings() (ape.api.providers.Web3Provider method)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.update_settings">update_settings() (ape.api.providers.ProviderAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.update_settings">(ape.api.providers.Web3Provider method)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider">UpstreamProvider (class in ape.api.providers)</a>
