@@ -149,12 +149,49 @@
 <span id="ape-api-accounts"></span><h2>ape.api.accounts<a class="headerlink" href="#module-ape.api.accounts" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="ape.api.accounts.AccountAPI">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.accounts.</span></code><code class="sig-name descname"><span class="pre">AccountAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">container</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">AccountContainerAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ape.api.providers.ProviderAPI</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountAPI" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.accounts.</span></code><code class="sig-name descname"><span class="pre">AccountAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">container</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><span class="pre">AccountContainerAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">_provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ape.api.providers.ProviderAPI</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.address.AddressAPI" title="ape.api.address.AddressAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.address.AddressAPI</span></code></a></p>
+<p>An API class representing an account.</p>
 <dl class="py method">
 <dt id="ape.api.accounts.AccountAPI.alias">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">alias</span></code><a class="headerlink" href="#ape.api.accounts.AccountAPI.alias" title="Permalink to this definition">¶</a></dt>
-<dd><p>Override with whatever alias might want to use, if applicable</p>
+<dd><p>A shortened-name for quicker access to the account.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.accounts.AccountAPI.call">
+<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ape.api.providers.TransactionAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">send_everything</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ape.api.providers.ReceiptAPI</span><a class="headerlink" href="#ape.api.accounts.AccountAPI.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a transaction call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>txn</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code>) – The transaction to submit in a call.</p></li>
+<li><p><strong>send_everything</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> will send the value difference from balance and fee.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.accounts.AccountAPI.deploy">
+<code class="sig-name descname"><span class="pre">deploy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ContractContainer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ContractInstance</span><a class="headerlink" href="#ape.api.accounts.AccountAPI.deploy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a smart contract on the blockchain.</p>
+<dl class="simple">
+<dt>Method Limitations:</dt><dd><p>The smart contract must compile before deploying.
+A provider must be active.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>contract</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractContainer</span></code>) – The type of contract to deploy.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -191,11 +228,73 @@
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt id="ape.api.accounts.AccountAPI.transfer">
+<code class="sig-name descname"><span class="pre">transfer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="#ape.api.address.AddressAPI" title="ape.api.address.AddressAPI"><span class="pre">ape.api.address.AddressAPI</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ape.api.providers.ReceiptAPI</span><a class="headerlink" href="#ape.api.accounts.AccountAPI.transfer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send funds to an account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account</strong> (<em>str</em>) – The account to send funds to.</p></li>
+<li><p><strong>value</strong> (<em>str</em>) – The amount to send.</p></li>
+<li><p><strong>data</strong> (<em>str</em>) – Extra data to include in the transaction.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.accounts.AccountContainerAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.accounts.</span></code><code class="sig-name descname"><span class="pre">AccountContainerAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ConfigManager</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An API class for managing accounts.</p>
+<dl class="py method">
+<dt id="ape.api.accounts.AccountContainerAPI.aliases">
+<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">aliases</span></code><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.aliases" title="Permalink to this definition">¶</a></dt>
+<dd><p>List all available aliases.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of aliases.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>iter[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.accounts.AccountContainerAPI.append">
+<code class="sig-name descname"><span class="pre">append</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an account to the container.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>account</strong> (<a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>) – The account to add.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.accounts.AccountContainerAPI.remove">
+<code class="sig-name descname"><span class="pre">remove</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete an account.
+Must be managed by <code class="docutils literal notranslate"><span class="pre">ape</span></code> or else raises <code class="xref py py-class docutils literal notranslate"><span class="pre">AccountsError</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>account</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code>) – The account to remove.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt id="ape.api.accounts.TestAccountAPI">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.accounts.</span></code><code class="sig-name descname"><span class="pre">TestAccountAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">container</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">AccountContainerAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ape.api.providers.ProviderAPI</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.TestAccountAPI" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.accounts.</span></code><code class="sig-name descname"><span class="pre">TestAccountAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">container</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><span class="pre">AccountContainerAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">_provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ape.api.providers.ProviderAPI</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.TestAccountAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.accounts.AccountAPI</span></code></a></p>
 <p>Test accounts for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> should implement this API
 instead of <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code> directly. This is how they show
@@ -205,7 +304,7 @@ up in the <code class="docutils literal notranslate"><span class="pre">accounts<
 <dl class="py class">
 <dt id="ape.api.accounts.TestAccountContainerAPI">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.accounts.</span></code><code class="sig-name descname"><span class="pre">TestAccountContainerAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ConfigManager</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.TestAccountContainerAPI" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.accounts.AccountContainerAPI</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.accounts.AccountContainerAPI</span></code></a></p>
 <p>Test account containers for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> should implement
 this API instead of <code class="docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code> directly. This
 is how they show up in the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> test fixture.</p>
