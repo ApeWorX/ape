@@ -263,9 +263,11 @@ class ProjectManager:
         scripts or tests in ``ape``, such as from ``ape run`` or ``ape test``.
 
         Args:
-            file_paths (list[pathlib.Path] or pathlib.Path], optional): Provide one or more contract file-paths
-              to load. If excluded, will load all the contracts.
-            use_cache (bool, optional): Set to ``False`` to force a re-compile. Defaults to ``True``.
+            file_paths (list[pathlib.Path] or pathlib.Path], optional):
+              Provide one or more contract file-paths to load. If excluded,
+              will load all the contracts.
+            use_cache (bool, optional): Set to ``False`` to force a re-compile.
+              Defaults to ``True``.
 
         Returns:
             dict[str, :class:`~ape.types.contract.ContractType`]: A dictionary of contract names
