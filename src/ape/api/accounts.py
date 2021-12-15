@@ -169,7 +169,7 @@ class AccountAPI(AddressAPI):
         """
         Create a smart contract on the blockchain.
 
-        Method Limitations:t
+        Method Limitations:
             The smart contract must compile before deploying.
             A provider must be active.
 
@@ -217,13 +217,13 @@ class AccountContainerAPI:
         List all available aliases.
 
         Returns:
-            Iterator[str]: List of aliases.
+            iter[str]: List of aliases.
         """
 
     @abstractmethod
     def __len__(self) -> int:
         """
-        Number of aliases.
+        Number of accounts.
         """
 
     @abstractmethod
