@@ -250,7 +250,7 @@ class NetworkManager:
 
     def set_default_ecosystem(self, ecosystem_name: str):
         """
-        Change the default ecosystem. NOTE: currently, changes
+        Change the default ecosystem. **NOTE**: currently, changes
         are only active for the session.
 
         Args:

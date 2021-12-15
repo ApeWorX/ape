@@ -16,11 +16,11 @@ from .config import ConfigManager
 @dataclass
 class CompilerManager:
     """
-    The singleton that manages :class`~ape.api.compiler.CompilerAPI` instances.
-    Each compiler plugin typically contains a single :class`~ape.api.compiler.CompilerAPI`.
+    The singleton that manages :class:`~ape.api.compiler.CompilerAPI` instances.
+    Each compiler plugin typically contains a single :class:`~ape.api.compiler.CompilerAPI`.
 
-    NOTE: Typically, users compile their projects using the CLI via ``ape compile``,
-    which will use your :class`~ape.api.compiler.CompilerAPI` under-the-hood.
+    **NOTE**: Typically, users compile their projects using the CLI via ``ape compile``,
+    which uses the :class:`~ape.api.compiler.CompilerAPI` under-the-hood.
 
     Usage example::
 
@@ -36,8 +36,8 @@ class CompilerManager:
     @cached_property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
         """
-        Each compiler that is successfully installed in ``ape`` matched to
-        the file extension that it compiles.
+        Each file extension that can be compiled using ``ape`` mapped
+        to its respective :class:`~ape.api.compiler.CompilerAPI` instance.
 
         Returns:
             dict[str, :class:`~ape.api.compiler.CompilerAPI`]: The mapping of file-extensions
@@ -61,17 +61,16 @@ class CompilerManager:
 
     def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
         """
-        Invoke respective :meth:`~ape.ape.compiler.CompilerAPI.compile` for each
-        of the given files. For example, use the
-        `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__ to compile
-        ``'.sol'`` files.
+        Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
+        For example, use the `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__
+        to compile ``'.sol'`` files.
 
         Args:
             contract_filepaths (list[Path]): The list of files to compile,
               as ``pathlib.Path`` objects.
 
         Returns:
-            dict[str, ~`ape.types.contract.ContractType`]: A mapping of
+            dict[str, :class:`~ape.types.contract.ContractType`]: A mapping of
             contract names to their type.
         """
 

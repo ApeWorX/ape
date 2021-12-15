@@ -53,7 +53,7 @@ hex_converter = HexConverter(None, None)  # type: ignore
 
 class AddressAPIConverter(ConverterAPI):
     """
-    A converter that converts a :class:`~ape.api.address.AddressAPI` to a
+    A converter that converts an :class:`~ape.api.address.AddressAPI` to a
     :class:`~ape.types.AddressType`.
     """
 
@@ -129,7 +129,7 @@ class ConversionManager:
     """
     A singleton that manages all the converters.
 
-    NOTE: typically, users will not interact with this class directly,
+    **NOTE**: typically, users will not interact with this class directly,
     but rather its ``convert()`` method, which is accessible from
     the root ``ape`` namespace.
 
