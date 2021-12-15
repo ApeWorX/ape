@@ -1,1 +1,129 @@
-#version-picker-label { color: white; display: inline; }
+@import url("https://fonts.googleapis.com/css?family=Space+Mono&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Rubik&display=swap");
+
+#version-picker-label {
+  color: #ffffff;
+  display: inline;
+}
+
+body {
+  font-weight: 400;
+  min-height: 100%;
+  background: #9b9b9b;
+  font-family: "Rubik", sans-serif;
+}
+
+p {
+  font-weight: 400;
+  font-family: "Rubik", sans-serif;
+}
+
+h1 {
+  font-size: 65px;
+  line-height: 65px;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  font-family: "Space Mono", sans-serif;
+}
+
+h2 {
+  font-size: 42px;
+  line-height: 42px;
+  letter-spacing: -0.05em;
+  font-family: "Space Mono", sans-serif;
+}
+
+h3 {
+  font-size: 24px;
+  line-height: 24px;
+  letter-spacing: -0.05em;
+  font-weight: 300;
+  font-family: "Space Mono", sans-serif;
+}
+
+a {
+  color: #ff7e7e;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a:visited {
+  color: #ff7e7e;
+}
+
+a:hover {
+  color: #e70000;
+}
+
+.wy-side-scroll {
+  width: 320px;
+  background-color: #ffffff;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: 100%;
+}
+
+.wy-nav-content-wrap {
+  margin-left: 300px;
+  background: #d3e0d1;
+  min-height: 100%;
+}
+
+.wy-side-nav-search {
+  display: block;
+  width: 300px;
+  padding: 0.809em;
+  margin-bottom: 0.809em;
+  z-index: 200;
+  background-color: #040722;
+  text-align: center;
+  color: #fcfcfc;
+}
+
+.wy-side-scroll {
+  width: 320px;
+  background-color: #040722;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: 100%;
+}
+
+.wy-menu-vertical header,
+.wy-menu-vertical p.caption {
+  color: #7cffb4;
+  font-family: 'Space Mono', sans-serif;
+  height: 32px;
+  line-height: 32px;
+  display: block;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 20px;
+  white-space: nowrap;
+}
+
+.rst-content code.literal,
+.rst-content tt.literal {
+  color: #ff7e7e;
+}
+
+.wy-nav-side {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  padding-bottom: 2em;
+  width: 300px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  min-height: 100%;
+  color: #9b9b9b;
+  background: #343131;
+  z-index: 200;
+}
+
+footer {
+  color: grey;
+  display: none;
+}

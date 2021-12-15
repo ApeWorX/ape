@@ -8,8 +8,10 @@ from ape import accounts
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
 from ape_accounts import KeyfileAccount
 
-# NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
-container = accounts.containers["accounts"]
+
+def _get_container():
+    # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
+    return accounts.containers["accounts"]
 
 
 @click.group(short_help="Manage local accounts")
@@ -45,7 +47,7 @@ def _list(cli_ctx, all):
 @non_existing_alias_argument()
 @ape_cli_context()
 def generate(cli_ctx, alias):
-    path = container.data_folder.joinpath(f"{alias}.json")
+    path = _get_container().data_folder.joinpath(f"{alias}.json")
     extra_entropy = click.prompt(
         "Add extra entropy for key generation...",
         hide_input=True,
@@ -67,7 +69,7 @@ def generate(cli_ctx, alias):
 @non_existing_alias_argument()
 @ape_cli_context()
 def _import(cli_ctx, alias):
-    path = container.data_folder.joinpath(f"{alias}.json")
+    path = _get_container().data_folder.joinpath(f"{alias}.json")
     key = click.prompt("Enter Private Key", hide_input=True)
     try:
         account = EthAccount.from_key(to_bytes(hexstr=key))
