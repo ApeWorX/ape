@@ -15,8 +15,18 @@ from .networks import NetworkManager
 @dataclass
 class AccountManager:
     """
-    Accounts is a container of containers for AccountAPI objects
-    All containers must subclass AccountContainerAPI, and are treated as singletons
+    The ``AccountManager`` is a container of containers for
+    :class:`~ape.api.accounts.AccountAPI` objects.
+    All containers must subclass :class:`~ape.api.accounts.AccountContainerAPI`
+    and are treated as singletons.
+
+    Import the accounts manager singleton from the root ``ape`` namespace.
+
+    Usage example::
+
+        from ape import accounts
+
+        my_accounts = accounts.load("dev")
     """
 
     config: ConfigManager
@@ -26,6 +36,14 @@ class AccountManager:
 
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
+        """
+        The list of all :class:`~ape.api.accounts.AccountContainerAPI` instances
+        across all installed plugins.
+
+        Returns:
+            dict[str, :class:`~ape.api.accounts.AccountContainerAPI`]
+        """
+
         containers = {}
         data_folder = self.config.DATA_FOLDER
         data_folder.mkdir(exist_ok=True)
@@ -43,10 +61,31 @@ class AccountManager:
 
     @property
     def aliases(self) -> Iterator[str]:
+        """
+        All account aliases from every account-related plugin. Every
+        :class:`~ape.api.accounts.AccountAPI` has an alias. Usually,
+        the alias gets set by the user. Use the account alias to load
+        the account via :meth:`~ape.managers.accounts.AccountManager.load`.
+
+        Returns:
+            iter[str]
+        """
+
         for container in self.containers.values():
             yield from container.aliases
 
     def get_accounts_by_type(self, type_: Type[AccountAPI]) -> List[AccountAPI]:
+        """
+        Get an a list of accounts by their type.
+
+        Args:
+            type_ (type[:class:`~ape.api.accounts.AccountAPI`]): The type of account
+              to get.
+
+        Returns:
+            list[:class:`~ape.api.accounts.AccountAPI`]
+        """
+
         accounts_with_type = []
         for account in self:
             if isinstance(account, type_):
@@ -56,6 +95,13 @@ class AccountManager:
         return accounts_with_type
 
     def __len__(self) -> int:
+        """
+        The number of account containers managed by ``ape``.
+
+        Returns:
+            int
+        """
+
         return sum(len(container) for container in self.containers.values())
 
     def __iter__(self) -> Iterator[AccountAPI]:
@@ -89,6 +135,13 @@ class AccountManager:
         return accounts
 
     def load(self, alias: str) -> AccountAPI:
+        """
+        Get an account by its alias.
+
+        Returns:
+            :class:`~ape.api.accounts.AccountAPI`
+        """
+
         if alias == "":
             raise ValueError("Cannot use empty string as alias!")
 
@@ -105,6 +158,18 @@ class AccountManager:
 
     @__getitem__.register
     def __getitem_int(self, account_id: int) -> AccountAPI:
+        """
+        Get an account by index. For example, when you do the CLI command
+        ``ape accounts list --all``, you will see a list of enumerated accounts
+        by their indices. Use this method as a quicker, ad-hoc way to get an
+        account from that index. NOTE: It is generally preferred to use
+        :meth:`~ape.managers.accounts.AccountManager.load` or
+        :meth:`~ape.managers.accounts.AccountManager.__getitem_str__`.
+
+        Returns:
+            :class:`~ape.api.accounts.AccountAPI`
+        """
+
         for idx, account in enumerate(self.__iter__()):
             if account_id == idx:
                 self._inject_provider(account)
@@ -114,6 +179,13 @@ class AccountManager:
 
     @__getitem__.register
     def __getitem_str(self, account_str: str) -> AccountAPI:
+        """
+        Get an account by address.
+
+        Returns:
+            :class:`~ape.api.accounts.AccountAPI`
+        """
+
         account_id = self.converters.convert(account_str, AddressType)
 
         for container in self.containers.values():
@@ -125,6 +197,16 @@ class AccountManager:
         raise IndexError(f"No account with address `{account_id}`.")
 
     def __contains__(self, address: AddressType) -> bool:
+        """
+        Determine if the given address matches a managed account in ``ape``.
+
+        Args:
+            address (:class:`~ape.types.AddressType`): The address to check.
+
+        Returns:
+            bool: ``True`` when the given address is managed is found.
+        """
+
         return any(address in container for container in self.containers.values())
 
     def _inject_provider(self, account: AccountAPI):

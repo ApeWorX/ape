@@ -14,6 +14,20 @@ CONFIG_FILE_NAME = "ape-config.yaml"
 
 @dataclass
 class ConfigManager:
+    """
+    The singleton responsible for managing the ``ape-config.yaml`` project file.
+    Typically, developers commit the ``ape-config.yaml`` file along-side their
+    ``ape`` project, and the file contains shared configurations for all team members.
+    Use the ``ConfigManager`` to directly access configured settings by loading
+    plugin-configs.
+
+    Access the ``ConfigManager`` from the ``ape`` namespace directly via:
+
+    Usage example::
+
+        from ape import config
+    """
+
     DATA_FOLDER: Path
     REQUEST_HEADER: Dict
     PROJECT_FOLDER: Path
@@ -60,6 +74,16 @@ class ConfigManager:
         return "<ConfigManager>"
 
     def get_config(self, plugin_name: str) -> ConfigItem:
+        """
+        Get a plugin config.
+
+        Args:
+            plugin_name (str): The name of the plugin to get the config for.
+
+        Returns:
+            :class:`~ape.api.config.ConfigItem`
+        """
+
         if plugin_name not in self._plugin_configs:
             # plugin has no registered config class, so return empty config
             return ConfigItem()
@@ -67,6 +91,13 @@ class ConfigManager:
         return self._plugin_configs[plugin_name]
 
     def serialize(self) -> Dict:
+        """
+        Convert the project config file, ``ape-config.yaml``, to a dictionary.
+
+        Returns:
+            dict
+        """
+
         project_config = dict()
 
         for name, config in self._plugin_configs.items():
@@ -76,4 +107,11 @@ class ConfigManager:
         return project_config
 
     def __str__(self) -> str:
+        """
+        The JSON-text version of the project config data.
+
+        Returns:
+            str
+        """
+
         return json.dumps(self.serialize())
