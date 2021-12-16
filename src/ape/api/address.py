@@ -54,6 +54,19 @@ class AddressAPI:
             :class:`~ape.types.AddressType`
         """
 
+    def __eq__(self, other: object) -> bool:
+        """
+        Compares :class:`~ape.api.AddressAPI`/``str`` objects by converting to
+        :class:`~ape.types.AddressType`.
+
+        Returns:
+            bool: comparison result
+        """
+        # Circular import
+        from ape import convert
+
+        return convert(self, AddressType) == convert(other, AddressType)
+
     def __dir__(self) -> List[str]:
         """
         Display methods to IPython on ``a.[TAB]`` tab completion.
