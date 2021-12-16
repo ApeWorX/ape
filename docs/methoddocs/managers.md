@@ -5,6 +5,8 @@
 ```{eval-rst}
 .. automodule:: ape.managers.accounts
     :members:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__
 ```
 
 ## Compilers
@@ -19,6 +21,8 @@
 ```{eval-rst}
 .. automodule:: ape.managers.config
     :members:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__
 ```
 
 ## Converters
@@ -40,4 +44,6 @@
 ```{eval-rst}
 .. automodule:: ape.managers.project
     :members:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__
 ```
