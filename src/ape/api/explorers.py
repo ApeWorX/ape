@@ -49,5 +49,5 @@ class ExplorerAPI:
             address (str): The contract address.
 
         Returns:
-            :class:`~ape.contracts.ContractType` if published, else ``None``.
+            class:`~ape.contracts.ContractType` if published, else ``None``.
         """
