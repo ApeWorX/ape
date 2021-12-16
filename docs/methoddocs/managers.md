@@ -28,7 +28,7 @@
     :members:
 ```
 
-## Network
+## Networks
 
 ```{eval-rst}
 .. automodule:: ape.managers.networks
