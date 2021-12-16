@@ -30,15 +30,19 @@ def _create_source_dict(contracts_paths: Collection[Path]) -> Dict[str, Source]:
 @dataclass
 class ProjectManager:
     """
-    A singleton in ``ape`` for accessing contract-types and dependencies.
-    Additionally, access project-related resources, such as directories, and compile contracts
-    using the :meth:`~ape.managers.project.ProjectManager.load_contracts` method.
+    A manager for accessing contract-types, dependencies, and other project resources.
+    Additionally, compile contracts using the
+    :meth:`~ape.managers.project.ProjectManager.load_contracts` method.
+
+    Use ``ape.project`` to reference the current project and ``ape.Project`` to reference
+    this class uninitialized.
 
     Usage example::
 
-        from ape import project  # "project" is the ProjectManager singleton
+        from ape import project  # "project" is the ProjectManager for the active project
+        from ape import Project  # Is a ProjectManager
 
-        # MyContractType (example) is contract type in the project
+        # MyContractType (example) is contract type in the active project
         contract_type = project.MyContactType
     """
 
