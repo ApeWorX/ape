@@ -96,7 +96,7 @@ class AccountManager:
 
     def __len__(self) -> int:
         """
-        The number of accounts.
+        The number of accounts managed by all account plugins.
 
         Returns:
             int
