@@ -96,7 +96,7 @@ class AccountManager:
 
     def __len__(self) -> int:
         """
-        The number of account containers managed by ``ape``.
+        The number of accounts.
 
         Returns:
             int
