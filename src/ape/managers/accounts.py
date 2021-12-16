@@ -208,13 +208,13 @@ class AccountManager:
 
     def __contains__(self, address: AddressType) -> bool:
         """
-        Determine if the given address matches a managed account in ``ape``.
+        Determine if the given address matches an account in ``ape``.
 
         Args:
             address (:class:`~ape.types.AddressType`): The address to check.
 
         Returns:
-            bool: ``True`` when the given address is managed is found.
+            bool: ``True`` when the given address is found.
         """
 
         return any(address in container for container in self.containers.values())
