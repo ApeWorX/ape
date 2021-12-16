@@ -270,7 +270,7 @@ class AccountContainerAPI:
     def remove(self, account: AccountAPI):
         """
         Delete an account.
-        Must be managed by ``ape`` or else raises :class:`~ape.exceptions.AccountsError`.
+        Must be known to ``ape`` or else raises :class:`~ape.exceptions.AccountsError`.
 
         Args:
             account (:class:`~ape.accounts.AccountAPI`): The account to remove.
@@ -296,7 +296,7 @@ class AccountContainerAPI:
 
     def __contains__(self, address: AddressType) -> bool:
         """
-        Check if the address is an existing account managed by ape.
+        Check if the address is an existing account in ``ape``.
         Must be a valid address or else raises ``IndexError``.
 
         Args:
