@@ -73,6 +73,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
@@ -145,45 +146,45 @@
 <dt id="ape.Project">
 <code class="sig-prename descclassname"><span class="pre">ape.</span></code><code class="sig-name descname"><span class="pre">Project</span></code><em class="property"> <span class="pre">=</span> <span class="pre">functools.partial(&lt;class</span> <span class="pre">'ape.managers.project.ProjectManager'&gt;,</span> <span class="pre">config=&lt;ConfigManager&gt;,</span> <span class="pre">compilers=&lt;CompilerManager</span> <span class="pre">len(registered_compilers)=1&gt;,</span> <span class="pre">networks=&lt;NetworkManager,</span> <span class="pre">active_provider=None&gt;)</span></em><a class="headerlink" href="#ape.Project" title="Permalink to this definition">¶</a></dt>
 <dd><p>User-facing class for instantiating Projects (in addition to the currently
-active <code class="docutils literal notranslate"><span class="pre">project</span></code>). See <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.project.ProjectManager</span></code>.</p>
+active <code class="docutils literal notranslate"><span class="pre">project</span></code>). See <a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.project.ProjectManager</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">
 <dt id="ape.accounts">
 <code class="sig-prename descclassname"><span class="pre">ape.</span></code><code class="sig-name descname"><span class="pre">accounts</span></code><em class="property"> <span class="pre">=</span> <span class="pre">[]</span></em><a class="headerlink" href="#ape.accounts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Manages accounts for the current project. See <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.accounts.AccountManager</span></code>.</p>
+<dd><p>Manages accounts for the current project. See <a class="reference internal" href="managers.html#ape.managers.accounts.AccountManager" title="ape.managers.accounts.AccountManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.accounts.AccountManager</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">
 <dt id="ape.compilers">
 <code class="sig-prename descclassname"><span class="pre">ape.</span></code><code class="sig-name descname"><span class="pre">compilers</span></code><em class="property"> <span class="pre">=</span> <span class="pre">&lt;CompilerManager</span> <span class="pre">len(registered_compilers)=1&gt;</span></em><a class="headerlink" href="#ape.compilers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Manages compilers for the current project. See
-<code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.compilers.CompilerManager</span></code>.</p>
+<a class="reference internal" href="managers.html#ape.managers.compilers.CompilerManager" title="ape.managers.compilers.CompilerManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.compilers.CompilerManager</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">
 <dt id="ape.config">
 <code class="sig-prename descclassname"><span class="pre">ape.</span></code><code class="sig-name descname"><span class="pre">config</span></code><em class="property"> <span class="pre">=</span> <span class="pre">&lt;ConfigManager&gt;</span></em><a class="headerlink" href="#ape.config" title="Permalink to this definition">¶</a></dt>
-<dd><p>The active configs for the current project. See <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.config.ConfigManager</span></code>.</p>
+<dd><p>The active configs for the current project. See <a class="reference internal" href="managers.html#ape.managers.config.ConfigManager" title="ape.managers.config.ConfigManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.config.ConfigManager</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ape.convert">
 <code class="sig-prename descclassname"><span class="pre">ape.</span></code><code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Type</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Any</span><a class="headerlink" href="#ape.convert" title="Permalink to this definition">¶</a></dt>
-<dd><p>Conversion utility function. See <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.converters.ConversionManager</span></code>.</p>
+<dd><p>Conversion utility function. See <a class="reference internal" href="managers.html#ape.managers.converters.ConversionManager" title="ape.managers.converters.ConversionManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.converters.ConversionManager</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">
 <dt id="ape.networks">
 <code class="sig-prename descclassname"><span class="pre">ape.</span></code><code class="sig-name descname"><span class="pre">networks</span></code><em class="property"> <span class="pre">=</span> <span class="pre">&lt;NetworkManager,</span> <span class="pre">active_provider=None&gt;</span></em><a class="headerlink" href="#ape.networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Manages the networks for the current project. See
-<code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.networks.NetworkManager</span></code>.</p>
+<a class="reference internal" href="managers.html#ape.managers.networks.NetworkManager" title="ape.managers.networks.NetworkManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.networks.NetworkManager</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">
 <dt id="ape.project">
 <code class="sig-prename descclassname"><span class="pre">ape.</span></code><code class="sig-name descname"><span class="pre">project</span></code><em class="property"> <span class="pre">=</span> <span class="pre">&lt;ProjectManager&gt;</span></em><a class="headerlink" href="#ape.project" title="Permalink to this definition">¶</a></dt>
-<dd><p>The currently active project. See <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.project.ProjectManager</span></code>.</p>
+<dd><p>The currently active project. See <a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.project.ProjectManager</span></code></a>.</p>
 </dd></dl>
 
 </div>
