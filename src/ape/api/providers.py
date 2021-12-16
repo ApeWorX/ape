@@ -183,7 +183,7 @@ class ConfirmationsProgressBar:
 @abstractdataclass
 class ReceiptAPI:
     """
-    An Abstract class to represent :class:`~ape.api.providers.ReceiptAPI~.
+    An Abstract class to represent :class:`~ape.api.providers.ReceiptAPI`.
     It contains information about the transaction
     such as the status and required confirmations.
 
