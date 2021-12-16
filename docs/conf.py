@@ -56,7 +56,7 @@ master_doc = "index"
 #
 html_theme = "sphinx_rtd_theme"
 html_favicon = "favicon.ico"
-html_logo = "logo.jpg"
+html_logo = "logo.gif"
 html_baseurl = "/ape/"
 
 # Add any paths that contain custom static files (such as style sheets) here,
