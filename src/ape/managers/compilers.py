@@ -15,6 +15,18 @@ from .config import ConfigManager
 
 @dataclass
 class CompilerManager:
+    """
+    The singleton that manages :class:`~ape.api.compiler.CompilerAPI` instances.
+    Each compiler plugin typically contains a single :class:`~ape.api.compiler.CompilerAPI`.
+
+    **NOTE**: Typically, users compile their projects using the CLI via ``ape compile``,
+    which uses the :class:`~ape.api.compiler.CompilerAPI` under-the-hood.
+
+    Usage example::
+
+        from ape import compilers  # "compilers" is the CompilerManager singleton
+    """
+
     config: ConfigManager
     plugin_manager: PluginManager
 
@@ -23,6 +35,15 @@ class CompilerManager:
 
     @cached_property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
+        """
+        Each compile-able file extension mapped to its respective
+        :class:`~ape.api.compiler.CompilerAPI` instance.
+
+        Returns:
+            dict[str, :class:`~ape.api.compiler.CompilerAPI`]: The mapping of file-extensions
+            to compiler API classes.
+        """
+
         registered_compilers = {}
 
         for plugin_name, (extensions, compiler_class) in self.plugin_manager.register_compiler:
@@ -39,6 +60,20 @@ class CompilerManager:
         return registered_compilers
 
     def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
+        """
+        Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
+        For example, use the `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__
+        to compile ``'.sol'`` files.
+
+        Args:
+            contract_filepaths (list[pathlib.Path]): The list of files to compile,
+              as ``pathlib.Path`` objects.
+
+        Returns:
+            dict[str, :class:`~ape.types.contract.ContractType`]: A mapping of
+            contract names to their type.
+        """
+
         extensions = self._get_contract_extensions(contract_filepaths)
 
         contract_types = {}

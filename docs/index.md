@@ -29,6 +29,7 @@
 
    methoddocs/ape.md
    methoddocs/api.md
+   methoddocs/managers.md
    methoddocs/cli.md
    methoddocs/types.md
    methoddocs/utils.md

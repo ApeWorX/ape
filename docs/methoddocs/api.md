@@ -6,6 +6,8 @@
 .. automodule:: ape.api.accounts
     :members:
     :show-inheritance:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__
 ```
 
 ## ape.api.address
@@ -30,6 +32,8 @@
 .. automodule:: ape.api.config
     :members:
     :show-inheritance:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__
 ```
 
 ## ape.api.convert
@@ -54,6 +58,8 @@
 .. automodule:: ape.api.networks
     :members:
     :show-inheritance:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__
 ```
 
 ## ape.api.providers
