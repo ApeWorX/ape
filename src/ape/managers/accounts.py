@@ -174,7 +174,7 @@ class AccountManager:
         by their indices. Use this method as a quicker, ad-hoc way to get an
         account from that index. **NOTE**: It is generally preferred to use
         :meth:`~ape.managers.accounts.AccountManager.load` or
-        :meth:`~ape.managers.accounts.AccountManager.__getitem_str__`.
+        :meth:`~ape.managers.accounts.AccountManager.__getitem_str`.
 
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
