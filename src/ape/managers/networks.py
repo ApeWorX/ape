@@ -14,7 +14,17 @@ from .config import ConfigManager
 @dataclass
 class NetworkManager:
     """
-    The set of all blockchain network ecosystems that Ape has registered through its plugin system.
+    The set of all blockchain network ecosystems registered from the plugin system.
+    Typically, you set the provider via the ``--network`` command line option.
+    However, use this singleton for more granular access to networks.
+
+    Usage example::
+
+        from ape import networks
+
+        # "networks" is the NetworkManager singleton
+        with networks.ethereum.mainnet.use_provider("geth"):
+           ...
     """
 
     config: ConfigManager
@@ -27,6 +37,10 @@ class NetworkManager:
 
     @cached_property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
+        """
+        All the registered ecosystems in ``ape``, such as ``ethereum``.
+        """
+
         return {
             plugin_name: ecosystem_class(
                 name=plugin_name,
@@ -40,15 +54,46 @@ class NetworkManager:
         }
 
     def __iter__(self) -> Iterator[str]:
+        """
+        All the managed ecosystems in ``ape``, as an iterable.
+
+        Returns:
+            iter[:class:`~ape.api.networks.EcosystemAPI`]
+        """
+
         yield from self.ecosystems
 
     def __getitem__(self, ecosystem_name: str) -> EcosystemAPI:
+        """
+        Get an ecosystem by name.
+
+        Args:
+            ecosystem_name (str): The name of the ecosystem to get.
+
+        Returns:
+            :class:`~ape.api.networks.EcosystemAPI`
+        """
+
         if ecosystem_name not in self.ecosystems:
             raise NetworkError(f"Unknown ecosystem '{ecosystem_name}'.")
 
         return self.ecosystems[ecosystem_name]
 
     def __getattr__(self, attr_name: str) -> EcosystemAPI:
+        """
+        Get an ecosystem via ``.`` access.
+
+        Args:
+            attr_name (str): The name of the ecosystem.
+
+        Returns:
+            :class:`~ape.api.networks.EcosystemAPI`
+
+        Usage example::
+
+            eth = networks.ethereum
+        """
+
         if attr_name not in self.ecosystems:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
@@ -57,8 +102,19 @@ class NetworkManager:
     @property
     def network_choices(self) -> Iterator[str]:
         """
-        Produce the set of all possible network choices that could be provided
-        for a "network selection" choice e.g. `--network [ECOSYSTEM:NETWORK:PROVIDER]`
+        The set of all possible network choices available as a "network selection"
+        e.g. ``--network [ECOSYSTEM:NETWORK:PROVIDER]``.
+
+        Each value is in the form ``ecosystem:network:provider`` and shortened options also
+        appear in the list. For example, ``::geth`` would default to ``:ethereum:development:geth``
+        and both will be in the returned list. The values come from each
+        :class:`~ape.api.providers.ProviderAPI` that is installed.
+
+        Use the CLI command ``ape networks list`` to list all the possible network
+        combinations.
+
+        Returns:
+            iter[str]: An iterator over all the network-choice possibilities.
         """
         for ecosystem_name, ecosystem in self.ecosystems.items():
             yield ecosystem_name
@@ -88,6 +144,23 @@ class NetworkManager:
         network_choice: Optional[str] = None,
         provider_settings: Optional[Dict] = None,
     ) -> ProviderAPI:
+        """
+        Get a :class:`~ape.api.providers.ProviderAPI` from a network choice.
+        A network choice is any value returned from
+        :meth:`~ape.managers.networks.NetworkManager.network_choices`. Use the
+        CLI command ``ape networks list`` to list all the possible network
+        combinations.
+
+        Args:
+            network_choice (str, optional): The network choice
+              (see :meth:`~ape.managers.networks.NetworkManager.network_choices`).
+              Defaults to the default ecosystem, network, and provider combination.
+            provider_settings (dict, optional): Settings for the provider. Defaults to None.
+
+        Returns:
+            :class:`~ape.api.providers.ProviderAPI`
+        """
+
         if network_choice is None:
             return self.default_ecosystem["development"].get_provider(
                 provider_settings=provider_settings
@@ -133,6 +206,22 @@ class NetworkManager:
         network_choice: Optional[str] = None,
         provider_settings: Optional[Dict] = None,
     ) -> ProviderContextManager:
+        """
+        Parse a network choice into a context manager for managing a temporary
+        connection to a provider. See
+        :meth:`~ape.managers.networks.NetworkManager.network_choices` for all
+        available choices (or use CLI command ``ape networks list``).
+
+        Args:
+            network_choice (str, optional): The network choice
+              (see :meth:`~ape.managers.networks.NetworkManager.network_choices`).
+              Defaults to the default ecosystem, network, and provider combination.
+            provider_settings (dict, optional): Settings for the provider. Defaults to None.
+
+        Returns:
+            :class:`~api.api.networks.ProviderContextManager`
+        """
+
         provider = self.get_provider_from_choice(
             network_choice, provider_settings=provider_settings
         )
@@ -140,6 +229,14 @@ class NetworkManager:
 
     @property
     def default_ecosystem(self) -> EcosystemAPI:
+        """
+        The default ecosystem. Call
+        :meth:`~ape.managers.networks.NetworkManager.set_default_ecosystem` to
+        change the default ecosystem. If a default is not set and there is
+        only a single ecosystem installed, such as Ethereum, then get
+        that ecosystem.
+        """
+
         if self._default:
             return self.ecosystems[self._default]
 
@@ -151,19 +248,30 @@ class NetworkManager:
             raise NetworkError("No ecosystems installed.")
 
     def set_default_ecosystem(self, ecosystem_name: str):
+        """
+        Change the default ecosystem.
+
+        Args:
+            ecosystem_name (str): The name of the ecosystem to set
+              as the default.
+        """
+
         if ecosystem_name in self.__iter__():
             self._default = ecosystem_name
 
         else:
-            raise NetworkError("Not a registered ecosystem.")
+            raise NetworkError(f"Ecosystem '{ecosystem_name}' is not a registered ecosystem.")
 
     @property
     def network_data(self) -> Dict:
         """
-        Creates a dictionary of data about networks in the ecosystem.
+        Get a dictionary containing data about networks in the ecosystem.
 
-        Note: The keys are added in an opinionated order for nicely
-        translating into yaml.
+        **NOTE**: The keys are added in an opinionated order for nicely
+        translating into ``yaml``.
+
+        Returns:
+            dict
         """
         data: Dict = {"ecosystems": []}
 
@@ -190,4 +298,14 @@ class NetworkManager:
 
     @property
     def networks_yaml(self) -> str:
+        """
+        Get a ``yaml`` ``str`` representing all the networks
+        in all the ecosystems.
+
+        View the result via CLI command ``ape networks list --format yaml``.
+
+        Returns:
+            str
+        """
+
         return yaml.dump(self.network_data, sort_keys=False)
