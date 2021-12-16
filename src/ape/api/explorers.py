@@ -43,7 +43,7 @@ class ExplorerAPI:
     @abstractmethod
     def get_contract_type(self, address: AddressType) -> Optional[ContractType]:
         """
-        Get the contract type for a given address if it has been published in explorer
+        Get the contract type for a given address if it has been published in an explorer.
 
         Args:
             address (str): The contract address.
