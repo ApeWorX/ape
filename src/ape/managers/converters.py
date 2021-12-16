@@ -159,8 +159,8 @@ class ConversionManager:
     def convert(self, value: Any, type: Type) -> Any:
         """
         Convert the given value to the given type. This method accesses
-        all :class:`~ape.api.convert.ConverterAPI` instances managed
-        by ``ape`` and selects the appropriate one, so long that it exists.
+        all :class:`~ape.api.convert.ConverterAPI` instances known to
+        `ape`` and selects the appropriate one, so long that it exists.
         Raises a :class:`~ape.exceptions.ConversionError` when there is not
         a registered converter for the given arguments.
 

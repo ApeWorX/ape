@@ -344,7 +344,7 @@ class ProjectManager:
 
     def __getattr__(self, attr_name: str) -> ContractContainer:
         """
-        Get a contract containers from an existing contract type or dependency
+        Get a contract container from an existing contract type or dependency
         name using ``.`` access.
 
         Usage example::

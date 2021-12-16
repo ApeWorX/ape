@@ -233,7 +233,7 @@ class NetworkManager:
         The default ecosystem. Call
         :meth:`~ape.managers.networks.NetworkManager.set_default_ecosystem` to
         change the default ecosystem. If a default is not set and there is
-        only a single ecosystem installed, such as Ethereum, then returns
+        only a single ecosystem installed, such as Ethereum, then get
         that ecosystem.
         """
 
