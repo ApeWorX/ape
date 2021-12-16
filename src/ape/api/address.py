@@ -54,16 +54,18 @@ class AddressAPI:
             :class:`~ape.types.AddressType`
         """
 
-    def __eq__(self, __o: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
-        Compares :class:`~ape.api.AddressAPI`/``str`` objects.
+        Compares :class:`~ape.api.AddressAPI`/``str`` objects by converting to
+        :class:`~ape.types.AddressType`.
 
         Returns:
             bool: comparison result
         """
-        if isinstance(__o, str):
-            return self.address == __o
-        return super().__eq__(__o)
+        # Circular import
+        from ape import convert
+
+        return convert(self, AddressType) == convert(other, AddressType)
 
     def __dir__(self) -> List[str]:
         """
