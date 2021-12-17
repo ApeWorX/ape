@@ -3,7 +3,12 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from eth_utils import to_bytes
 
 from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
-from ape.exceptions import ArgumentsLengthError, ContractDeployError, TransactionError
+from ape.exceptions import (
+    ArgumentsLengthError,
+    ContractDeployError,
+    ProviderError,
+    TransactionError,
+)
 from ape.logging import logger
 from ape.types import ABI, AddressType, ContractType
 from ape.utils import dataclass
@@ -287,6 +292,10 @@ def _Contract(
     the given address/network combo, or explicitly provided. If none are found,
     returns a simple ``Address`` instance instead of throwing (provides a warning)
     """
+    provider = networks.active_provider
+    if not provider:
+        raise ProviderError("Not connected to a network")
+    converted_address: AddressType = converters.convert(address, AddressType)
 
     # Check contract cache (e.g. previously deployed/downloaded contracts)
     # TODO: Add ``contract_cache`` dict-like object to ``NetworkAPI``
@@ -295,11 +304,10 @@ def _Contract(
     #    contract_type = network.contract_cache[address]
 
     # Check explorer API/cache (e.g. publicly published contracts)
-    # TODO: Add ``get_contract_type`` to ``ExplorerAPI``
     # TODO: Store in ``NetworkAPI.contract_cache`` to reduce API calls
-    # explorer = provider.network.explorer
-    # if not contract_type and explorer:
-    #    contract_type = explorer.get_contract_type(address)
+    explorer = provider.network.explorer
+    if not contract_type and explorer:
+        contract_type = explorer.get_contract_type(converted_address)
 
     # We have a contract type either:
     #   1) explicitly provided,
@@ -307,8 +315,8 @@ def _Contract(
     #   3) from explorer
     if contract_type:
         return ContractInstance(  # type: ignore
-            _address=converters.convert(address, AddressType),
-            _provider=networks.active_provider,
+            _address=converted_address,
+            _provider=provider,
             _contract_type=contract_type,
         )
 
@@ -316,6 +324,6 @@ def _Contract(
         # We don't have a contract type from any source, provide raw address instead
         logger.warning(f"No contract type found for {address}")
         return Address(  # type: ignore
-            _address=converters.convert(address, AddressType),
-            _provider=networks.active_provider,
+            _address=converted_address,
+            _provider=provider,
         )

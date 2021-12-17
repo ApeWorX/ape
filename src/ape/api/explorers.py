@@ -1,3 +1,6 @@
+from typing import Optional
+
+from ape.types import AddressType, ContractType
 from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
@@ -14,7 +17,7 @@ class ExplorerAPI:
     request_header: str
 
     @abstractmethod
-    def get_address_url(self, address: str) -> str:
+    def get_address_url(self, address: AddressType) -> str:
         """
         Get an address URL, such as for a transaction.
 
@@ -35,4 +38,16 @@ class ExplorerAPI:
 
         Returns:
             str
+        """
+
+    @abstractmethod
+    def get_contract_type(self, address: AddressType) -> Optional[ContractType]:
+        """
+        Get the contract type for a given address if it has been published in an explorer.
+
+        Args:
+            address (str): The contract address.
+
+        Returns:
+            class:`~ape.contracts.ContractType` if published, else ``None``.
         """
