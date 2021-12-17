@@ -114,7 +114,7 @@ setup(
     package_dir={"": "src"},
     package_data={p: ["py.typed"] for p in packages_data["__modules__"]},
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
