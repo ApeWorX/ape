@@ -265,7 +265,7 @@ class ProviderContextManager:
         from ape import networks
 
         mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
-        with mainnet.use_provider():
+        with mainnet.use_provider("infura"):
             ...
     """
 
@@ -487,7 +487,7 @@ class NetworkAPI:
             from ape import networks
 
             mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
-            with mainnet.use_provider():
+            with mainnet.use_provider("infura"):
                 ...
 
         Args:
@@ -538,6 +538,12 @@ class NetworkAPI:
         method :meth:`ape.api.providers.ProviderAPI.disconnect`.
 
         **NOTE**: If multiple providers exist, uses whatever was "first" registered.
+
+        Usage example::
+            from ape import networks
+            mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
+            with mainnet.use_default_provider():
+                ...
 
         Args:
             provider_settings (dict, optional): Settings to override the provider.
