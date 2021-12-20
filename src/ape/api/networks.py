@@ -27,7 +27,7 @@ class EcosystemAPI:
 
     name: str
     """
-    The name of the ecosystem. This should be set as the same name as the plugin.
+    The name of the ecosystem. This should be set the same name as the plugin.
     """
 
     network_manager: "NetworkManager"
@@ -60,7 +60,7 @@ class EcosystemAPI:
     def config(self) -> ConfigItem:
         """
         The configuration of the ecosystem. See :class:`ape.managers.config.ConfigManager`
-        for more information on plugin configuration.
+        for more information on plugin configurations.
 
         Returns:
             :class:`ape.api.config.ConfigItem`
@@ -479,6 +479,14 @@ class NetworkAPI:
     ) -> ProviderContextManager:
         """
         Use and connect to a provider in a temporary context.
+
+        Usage example::
+
+            from ape import networks
+
+            mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
+            with mainnet.use_provider():
+                ...
 
         Args:
             provider_name (str): The name of the provider to use.
