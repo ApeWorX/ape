@@ -281,7 +281,7 @@ class ContractInstance(AddressAPI):
 @dataclass
 class ContractContainer:
     """
-    A wrapper around the contract type that has access to the active provider.
+    A wrapper around the contract type that has access to the provider.
     When you import your contracts from the :class:`ape.managers.project.ProjectManager`, you
     are using this class.
 
