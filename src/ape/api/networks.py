@@ -520,7 +520,7 @@ class NetworkAPI:
         Change the default provider.
 
         Raises:
-            :class:`~ape.exceptions.NetworkError`
+            :class:`~ape.exceptions.NetworkError`: When the given provider is not found.
 
         Args:
             provider_name (str): The name of the provider to switch to.
