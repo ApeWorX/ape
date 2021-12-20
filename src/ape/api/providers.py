@@ -461,7 +461,11 @@ class ProviderAPI:
         A miner tip to incentivize them
         to include your transaction in a block.
         Only providers that implement `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__
-        will have this property, otherwise will raise ``NotImplementedError``.
+        typed transactions will have this property, otherwise will raise ``NotImplementedError``.
+
+        Raises:
+            NotImplementedError: When provider does not implement
+              `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ typed transactions
 
         Returns:
             int: The value of the fee.
