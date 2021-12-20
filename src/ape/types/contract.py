@@ -353,6 +353,9 @@ class Source(SerializableType):
     :meth:`~ape.types.contract.Source.compute_checksum`.
     """
 
+    urls: List[str] = []
+    """The URLs by which to obtain the source, such as IPFS URLs."""
+
     content: Optional[str] = None
     # TODO This was probably done for solidity, needs files cached to disk for compiling
     # If processing a local project, code already exists, so no issue
