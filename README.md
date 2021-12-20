@@ -2,7 +2,7 @@
 
 Ape is a framework for Web3 Python applications and smart contracts, with advanced functionality for testing, deployment, and on-chain interactions.
 
-See [website](https://apeworx.io/) and [documentation](https://apeworx.io/ape/).
+See [website](https://apeworx.io/) and [documentation](https://docs.apeworx.io/ape).
 
 ## Dependencies
 
@@ -101,8 +101,8 @@ assert c.MyEvent[-1].caller == a  # Search through Web3 events
 
 ## Development
 
-This project is in early development and should be considered an alpha.
-Things might not work, breaking changes are likely.
+This project is in development and should be considered a beta.
+Things might not be in their final state and breaking changes may occur.
 Comments, questions, criticisms and pull requests are welcomed.
 
 ## Documentation
