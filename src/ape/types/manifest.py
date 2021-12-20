@@ -62,7 +62,7 @@ class PackageManifest(FileMixin, SerializableType):
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
     @classmethod
-    def from_dict(cls, params: Dict) -> "PackageManifest":
+    def from_dict(cls, params: Dict):
         """
         Create this class from a dictionary of its properties.
         The dictionary keys must be the same name as the properties.

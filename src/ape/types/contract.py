@@ -44,7 +44,7 @@ class Bytecode(SerializableType):
         return self_str
 
     @classmethod
-    def from_dict(cls, params: Dict) -> "Bytecode":
+    def from_dict(cls, params: Dict):
         """
         Create this class from a dictionary of its properties.
         The dictionary keys must be the same name as the properties.
@@ -238,7 +238,7 @@ class ABI(SerializableType):
         return self.stateMutability not in ("view", "pure")
 
     @classmethod
-    def from_dict(cls, params: Dict) -> "ABI":
+    def from_dict(cls, params: Dict):
         """
         Create this class from a dictionary of its properties.
         The dictionary keys must be the same name as the properties.
@@ -355,7 +355,7 @@ class ContractType(FileMixin, SerializableType):
         return [abi for abi in self.abi if abi.type == "function" and abi.is_stateful]
 
     @classmethod
-    def from_dict(cls, params: Dict) -> "ContractType":
+    def from_dict(cls, params: Dict):
         """
         Create this class from a dictionary of its properties.
         The dictionary keys must be the same name as the properties.
@@ -440,7 +440,7 @@ class Source(SerializableType):
         )
 
     @classmethod
-    def from_dict(cls, params: Dict) -> "Checksum":
+    def from_dict(cls, params: Dict):
         """
         Create this class from a dictionary of its properties.
         The dictionary keys must be the same name as the properties.
