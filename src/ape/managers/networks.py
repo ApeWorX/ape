@@ -67,6 +67,10 @@ class NetworkManager:
         """
         Get an ecosystem by name.
 
+        Raises:
+            :class:`~ape.exceptions.NetworkError`: When the given ecosystem name is
+              unknown.
+
         Args:
             ecosystem_name (str): The name of the ecosystem to get.
 
@@ -150,6 +154,10 @@ class NetworkManager:
         :meth:`~ape.managers.networks.NetworkManager.network_choices`. Use the
         CLI command ``ape networks list`` to list all the possible network
         combinations.
+
+        Raises:
+            :class:`~ape.exceptions.NetworkError`: When the given network choice does not
+              match any known network.
 
         Args:
             network_choice (str, optional): The network choice
@@ -250,6 +258,9 @@ class NetworkManager:
     def set_default_ecosystem(self, ecosystem_name: str):
         """
         Change the default ecosystem.
+
+        Raises:
+            :class:`~ape.exceptions.NetworkError`: When the given ecosystem name is unknown.
 
         Args:
             ecosystem_name (str): The name of the ecosystem to set

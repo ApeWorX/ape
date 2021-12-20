@@ -114,6 +114,10 @@ class EcosystemAPI:
         """
         Get a network by name.
 
+        Raises:
+            :class:`~ape.exceptions.NetworkNotFoundError`:
+              When there is no network with the given name.
+
         Args:
             network_name (str): The name of the network to retrieve.
 
@@ -131,6 +135,10 @@ class EcosystemAPI:
 
             from ape import networks
             mainnet = networks.ecosystem.mainnet
+
+        Raises:
+            :class:`~ape.exceptions.NetworkNotFoundError`:
+              When there is no network with the given name.
 
         Args:
             network_name (str): The name of the network to retrieve.

@@ -161,8 +161,10 @@ class ConversionManager:
         Convert the given value to the given type. This method accesses
         all :class:`~ape.api.convert.ConverterAPI` instances known to
         `ape`` and selects the appropriate one, so long that it exists.
-        Raises a :class:`~ape.exceptions.ConversionError` when there is not
-        a registered converter for the given arguments.
+
+        Raises:
+            :class:`~ape.exceptions.ConversionError`: When there is not a registered
+              converter for the given arguments.
 
         Args:
             value (any): The value to convert.

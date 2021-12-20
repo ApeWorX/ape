@@ -37,6 +37,9 @@ class ProjectManager:
     Use ``ape.project`` to reference the current project and ``ape.Project`` to reference
     this class uninitialized.
 
+    Raises:
+        :class:`~ape.exceptions.ProjectError`: When the project's dependencies are invalid.
+
     Usage example::
 
         from ape import project  # "project" is the ProjectManager for the active project
@@ -99,7 +102,8 @@ class ProjectManager:
 
             if not package_contracts_path.exists():
                 raise ProjectError(
-                    "Dependency does not have a support structure. Expecting 'contracts/' path."
+                    "Dependency does not have a supported file structure. "
+                    "Expecting 'contracts/' path."
                 )
 
             manifest = PackageManifest()
