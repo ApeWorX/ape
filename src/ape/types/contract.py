@@ -45,17 +45,6 @@ class Bytecode(SerializableType):
 
     @classmethod
     def from_dict(cls, params: Dict):
-        """
-        Create this class from a dictionary of its properties.
-        The dictionary keys must be the same name as the properties.
-
-        Args:
-            params (dict): A dictionary of properties.
-
-        Returns:
-            :class:`~ape.types.contract.Bytecode`
-        """
-
         params = deepcopy(params)
         update_list_params(params, "linkReferences", LinkReference)
         update_list_params(params, "linkDependencies", LinkDependency)
@@ -68,7 +57,7 @@ class ContractInstance(SerializableType):
     """
 
     contractType: str
-    """The name of the type of the smart-contract."""
+    """The name of the type of smart-contract."""
 
     address: str
     """The address of the smart-contract."""
@@ -84,17 +73,6 @@ class ContractInstance(SerializableType):
 
     @classmethod
     def from_dict(cls, params: Dict):
-        """
-        Create this class from a dictionary of its properties.
-        The dictionary keys must be the same name as the properties.
-
-        Args:
-            params (dict): A dictionary of properties.
-
-        Returns:
-            :class:`~ape.types.contract.Bytecode`
-        """
-
         params = deepcopy(params)
         update_params(params, "runtimeBytecode", Bytecode)
         return cls(**params)  # type: ignore
@@ -239,17 +217,6 @@ class ABI(SerializableType):
 
     @classmethod
     def from_dict(cls, params: Dict):
-        """
-        Create this class from a dictionary of its properties.
-        The dictionary keys must be the same name as the properties.
-
-        Args:
-            params (dict): A dictionary of properties.
-
-        Returns:
-            :class:`~ape.types.contract.ABI`
-        """
-
         params = deepcopy(params)
 
         # Handle ABI v1 fields (convert to ABI v2)
@@ -356,17 +323,6 @@ class ContractType(FileMixin, SerializableType):
 
     @classmethod
     def from_dict(cls, params: Dict):
-        """
-        Create this class from a dictionary of its properties.
-        The dictionary keys must be the same name as the properties.
-
-        Args:
-            params (dict): A dictionary of properties.
-
-        Returns:
-            :class:`~ape.types.contract.ContractType`
-        """
-
         params = deepcopy(params)
         update_list_params(params, "abi", ABI)
         update_params(params, "deploymentBytecode", Bytecode)
@@ -441,17 +397,6 @@ class Source(SerializableType):
 
     @classmethod
     def from_dict(cls, params: Dict):
-        """
-        Create this class from a dictionary of its properties.
-        The dictionary keys must be the same name as the properties.
-
-        Args:
-            params (dict): A dictionary of properties.
-
-        Returns:
-            :class:`~ape.types.contract.Checksum`
-        """
-
         params = deepcopy(params)
         update_params(params, "checksum", Checksum)
         return cls(**params)  # type: ignore

@@ -63,17 +63,6 @@ class PackageManifest(FileMixin, SerializableType):
 
     @classmethod
     def from_dict(cls, params: Dict):
-        """
-        Create this class from a dictionary of its properties.
-        The dictionary keys must be the same name as the properties.
-
-        Args:
-            params (dict): A dictionary of properties.
-
-        Returns:
-            :class:`~ape.types.manifest.PackageManifest`
-        """
-
         params = deepcopy(params)
         update_params(params, "meta", PackageMeta)
         update_dict_params(params, "sources", Source)
