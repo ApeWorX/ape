@@ -393,7 +393,7 @@ class Source(SerializableType):
 
     checksum: Optional[Checksum] = None
     """
-    The checksum of the source. Set by calling method
+    The checksum of the source. Set by calling the method
     :meth:`~ape.types.contract.Source.compute_checksum`.
     """
 
