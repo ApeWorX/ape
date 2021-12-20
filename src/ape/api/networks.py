@@ -412,7 +412,7 @@ class NetworkAPI:
     @cached_property
     def providers(self):  # -> Dict[str, Partial[ProviderAPI]]
         """
-        The providers of the network, such as the Infura, Alchemy, or Geth.
+        The providers of the network, such as Infura, Alchemy, or Geth.
 
         Returns:
             dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
