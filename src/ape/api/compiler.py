@@ -23,7 +23,13 @@ class CompilerAPI:
     @abstractmethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:
         """
-        Retrieve set of available compiler versions for this plugin to compile `all_paths`.
+        Retrieve the set of available compiler versions for this plugin to compile ``all_paths``.
+
+        Args:
+            all_paths (list[pathlib.Path]): The list of paths.
+
+        Returns:
+            set[str]: A set of available compiler versions.
         """
 
     @abstractmethod
@@ -31,10 +37,16 @@ class CompilerAPI:
         """
         Compile the source given ``pkg_manifest``.
         All compiler plugins must implement this function.
+
+        Args:
+            contract_filepaths (list[pathlib.Path]): A list of source file paths to compile.
+
+        Returns:
+            list[:class:`~ape.type.contract.ContractType`]
         """
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.name}>"
 
     def __str__(self) -> str:
-        return f"{self.name}>"
+        return self.name

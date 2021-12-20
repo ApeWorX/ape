@@ -35,7 +35,7 @@ class TransactionAPI:
     An API class representing a transaction.
     Ecosystem plugins implement one or more of transaction APIs
     depending on which schemas they permit,
-    such as typed-transactions from `EIP-1559` <https://eips.ethereum.org/EIPS/eip-1559>`__.
+    such as typed-transactions from `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
     """
 
     chain_id: int = 0
@@ -60,7 +60,8 @@ class TransactionAPI:
     def max_fee(self) -> int:
         """
         The total amount in fees willing to be spent on a transaction.
-        Override this property as needed, such as for EIP-1559 differences.
+        Override this property as needed, such as for
+        `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ differences.
 
         See :class:`~ape_ethereum.ecosystem.StaticFeeTransaction` and
         :class:`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
@@ -301,7 +302,7 @@ class BlockConsensusAPI:
     """
     An abstract class representing block consensus-data,
     such as PoW-related information regarding the block.
-    `EIP-3675` <https://eips.ethereum.org/EIPS/eip-3675>`__.
+    `EIP-3675 <https://eips.ethereum.org/EIPS/eip-3675>`__.
     """
 
     difficulty: Optional[int] = None
@@ -459,8 +460,10 @@ class ProviderAPI:
         """
         A miner tip to incentivize them
         to include your transaction in a block.
-        Only providers that implement `EIP-1559` <https://eips.ethereum.org/EIPS/eip-1559>`__
-        will have this property, otherwise will raise ``NotImplementedError``.
+
+        Raises:
+            NotImplementedError: When the provider does not implement
+              `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ typed transactions.
 
         Returns:
             int: The value of the fee.
@@ -472,7 +475,7 @@ class ProviderAPI:
         """
         The minimum value required to get your transaction
         included on the next block.
-        Only providers that implement `EIP-1559` <https://eips.ethereum.org/EIPS/eip-1559>`__
+        Only providers that implement `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__
         will use this property, otherwise will raise ``NotImplementedError``.
 
         Returns:
