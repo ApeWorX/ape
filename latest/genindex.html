@@ -71,6 +71,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/ape.html">ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="methoddocs/exceptions.html">ape.exceptions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/managers.html">ape.managers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/types.html">ape.types</a></li>
@@ -450,6 +451,8 @@
         <li><a href="commands/accounts.html#cmdoption-accounts-list-v">-v</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.AccountsError">AccountsError</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.add_network">add_network() (ape.api.networks.EcosystemAPI method)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.GeneratedDevAccount.address">address (ape.utils.GeneratedDevAccount attribute)</a>
@@ -466,6 +469,8 @@
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.AddressAPIConverter">AddressAPIConverter (class in ape.managers.converters)</a>
 </li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.AddressError">AddressError</a>
+</li>
       <li>
     ALIAS
 
@@ -481,10 +486,12 @@
       </ul></li>
       <li><a href="methoddocs/cli.html#ape.cli.Alias">Alias (class in ape.cli)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.alias">alias() (ape.api.accounts.AccountAPI property)</a>
 </li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.AliasAlreadyInUseError">AliasAlreadyInUseError</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.aliases">aliases() (ape.api.accounts.AccountContainerAPI property)</a>
 
       <ul>
@@ -564,6 +571,13 @@
 </li>
       </ul></li>
       <li>
+    ape.exceptions
+
+      <ul>
+        <li><a href="methoddocs/exceptions.html#module-ape.exceptions">module</a>
+</li>
+      </ul></li>
+      <li>
     ape.managers.accounts
 
       <ul>
@@ -621,7 +635,11 @@
       </ul></li>
       <li><a href="methoddocs/cli.html#ape.cli.ape_cli_context">ape_cli_context() (in module ape.cli)</a>
 </li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.ApeException">ApeException</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.append">append() (ape.api.accounts.AccountContainerAPI method)</a>
+</li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.ArgumentsLengthError">ArgumentsLengthError</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.as_dict">as_dict() (ape.api.providers.TransactionAPI method)</a>
 </li>
@@ -708,6 +726,8 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.compiler.CompilerAPI">CompilerAPI (class in ape.api.compiler)</a>
 </li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.CompilerError">CompilerError</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager">CompilerManager (class in ape.managers.compilers)</a>
 </li>
       <li><a href="methoddocs/ape.html#ape.compilers">compilers (in module ape)</a>
@@ -718,12 +738,14 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.config.ConfigEnum">ConfigEnum (class in ape.api.config)</a>
 </li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.ConfigError">ConfigError</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.config.ConfigItem">ConfigItem (class in ape.api.config)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager">ConfigManager (class in ape.managers.config)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager">ConfigManager (class in ape.managers.config)</a>
-</li>
       <li><a href="methoddocs/api.html#ape.api.providers.ConfirmationsProgressBar">ConfirmationsProgressBar (class in ape.api.providers)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ConfirmationsProgressBar.confs">confs() (ape.api.providers.ConfirmationsProgressBar property)</a>
@@ -751,9 +773,17 @@
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.contract_option">contract_option() (in module ape.cli)</a>
 </li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractDeployError">ContractDeployError</a>
+</li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractError">ContractError</a>
+</li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractLogicError">ContractLogicError</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.contracts">contracts() (ape.managers.project.ProjectManager property)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.contracts_folder">contracts_folder() (ape.managers.project.ProjectManager property)</a>
+</li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.ConversionError">ConversionError</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.ConversionManager">ConversionManager (class in ape.managers.converters)</a>
 </li>
@@ -801,6 +831,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.DecodingError">DecodingError</a>
+</li>
       <li><a href="methoddocs/utils.html#ape.utils.deep_merge">deep_merge() (in module ape.utils)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.default_ecosystem">default_ecosystem() (ape.managers.networks.NetworkManager property)</a>
@@ -852,6 +884,10 @@
         <li><a href="commands/compile.html#cmdoption-compile-arg-FILE_PATHS">compile command line option</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractLogicError.from_error">from_error() (ape.exceptions.ContractLogicError class method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -1028,6 +1064,8 @@
 </li>
         <li><a href="methoddocs/cli.html#module-ape.cli">ape.cli</a>
 </li>
+        <li><a href="methoddocs/exceptions.html#module-ape.exceptions">ape.exceptions</a>
+</li>
         <li><a href="methoddocs/managers.html#module-ape.managers.accounts">ape.managers.accounts</a>
 </li>
         <li><a href="methoddocs/managers.html#module-ape.managers.compilers">ape.managers.compilers</a>
@@ -1061,12 +1099,16 @@
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.NetworkBoundCommand">NetworkBoundCommand (class in ape.cli)</a>
 </li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkError">NetworkError</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager">NetworkManager (class in ape.managers.networks)</a>
 </li>
-      <li><a href="methoddocs/ape.html#ape.networks">networks (in module ape)</a>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkNotFoundError">NetworkNotFoundError</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/ape.html#ape.networks">networks (in module ape)</a>
+</li>
       <li>
     networks-list command line option
 
@@ -1090,6 +1132,8 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.OutOfGasError">OutOfGasError</a>
+</li>
       <li><a href="methoddocs/cli.html#ape.cli.output_format_choice">output_format_choice() (in module ape.cli)</a>
 </li>
   </ul></td>
@@ -1191,6 +1235,8 @@
 </li>
       <li><a href="methoddocs/ape.html#ape.project">project (in module ape)</a>
 </li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.ProjectError">ProjectError</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager">ProjectManager (class in ape.managers.project)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.PromptChoice">PromptChoice (class in ape.cli)</a>
@@ -1198,6 +1244,8 @@
       <li><a href="methoddocs/api.html#ape.api.address.AddressAPI.provider">provider() (ape.api.address.AddressAPI property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI">ProviderAPI (class in ape.api.providers)</a>
+</li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.ProviderError">ProviderError</a>
 </li>
       <li>
     PYTEST_ARGS
@@ -1280,10 +1328,10 @@
         <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.serialize">(ape.managers.config.ConfigManager method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.set_default_ecosystem">set_default_ecosystem() (ape.managers.networks.NetworkManager method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/cli.html#ape.cli.Abort.show">show() (ape.cli.Abort method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.sign_message">sign_message() (ape.api.accounts.AccountAPI method)</a>
@@ -1291,6 +1339,8 @@
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.sign_transaction">sign_transaction() (ape.api.accounts.AccountAPI method)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.SignableMessage">SignableMessage (class in ape.types)</a>
+</li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.SignatureError">SignatureError</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.singledispatchmethod">singledispatchmethod (class in ape.utils)</a>
 </li>
@@ -1323,13 +1373,15 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI">TestProviderAPI (class in ape.api.providers)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.tests_folder">tests_folder() (ape.managers.project.ProjectManager property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.total_transfer_value">total_transfer_value() (ape.api.providers.TransactionAPI property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI">TransactionAPI (class in ape.api.providers)</a>
+</li>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.TransactionError">TransactionError</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.TransactionStatusEnum">TransactionStatusEnum (class in ape.api.providers)</a>
 </li>
@@ -1362,6 +1414,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/types.html#ape.types.SignableMessage.version">version (ape.types.SignableMessage attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.VirtualMachineError">VirtualMachineError</a>
 </li>
   </ul></td>
 </tr></table>
