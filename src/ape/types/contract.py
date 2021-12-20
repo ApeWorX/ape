@@ -117,10 +117,10 @@ class ABIType(SerializableType):
     name: str = ""
     indexed: Optional[bool] = None
     type: Union[str, "ABIType"]
-    """The type, as defined in the contract, such as ``int``."""
+    """The type, as defined in the contract, such as ``int`` or ``bool``."""
 
     internalType: Optional[str] = None
-    """The real type used in the byte-code, such as ``uint256``."""
+    """The real type used in the byte-code, such as ``uint256`` or ``bool``."""
 
     @property
     def canonical_type(self) -> str:
