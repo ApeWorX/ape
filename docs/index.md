@@ -3,7 +3,7 @@
 ```{eval-rst}
 .. toctree::
    :caption: User Guides
-   :maxdepth: 2
+   :maxdepth: 1
 
    userguides/quickstart
    userguides/plugins
