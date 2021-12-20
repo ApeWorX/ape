@@ -27,7 +27,7 @@ class EcosystemAPI:
 
     name: str
     """
-    The name of the ecosystem. **NOTE**: This should be set as the same name as the plugin.
+    The name of the ecosystem. This should be set as the same name as the plugin.
     """
 
     network_manager: "NetworkManager"
