@@ -14,6 +14,24 @@ CONFIG_FILE_NAME = "ape-config.yaml"
 
 @dataclass
 class ConfigManager:
+    """
+    The singleton responsible for managing the ``ape-config.yaml`` project file.
+    The config manager is useful for loading plugin configurations which contain
+    settings that determine how ``ape`` functions. When developing plugins,
+    you may want to have settings that control how the plugin works. When developing
+    scripts in a project, you may want to parametrize how it runs. The config manager
+    is how you can access those settings at runtime.
+
+    Access the ``ConfigManager`` from the ``ape`` namespace directly via:
+
+    Usage example::
+
+        from ape import config  # "config" is the ConfigManager singleton
+
+        # Example: load the "ape-test" plugin and access the mnemonic
+        test_mnemonic = config.get_config("test").mnemonic
+    """
+
     DATA_FOLDER: Path
     REQUEST_HEADER: Dict
     PROJECT_FOLDER: Path
@@ -60,6 +78,16 @@ class ConfigManager:
         return "<ConfigManager>"
 
     def get_config(self, plugin_name: str) -> ConfigItem:
+        """
+        Get a plugin config.
+
+        Args:
+            plugin_name (str): The name of the plugin to get the config for.
+
+        Returns:
+            :class:`~ape.api.config.ConfigItem`
+        """
+
         if plugin_name not in self._plugin_configs:
             # plugin has no registered config class, so return empty config
             return ConfigItem()
@@ -67,6 +95,13 @@ class ConfigManager:
         return self._plugin_configs[plugin_name]
 
     def serialize(self) -> Dict:
+        """
+        Convert the project config file, ``ape-config.yaml``, to a dictionary.
+
+        Returns:
+            dict
+        """
+
         project_config = dict()
 
         for name, config in self._plugin_configs.items():
@@ -76,4 +111,11 @@ class ConfigManager:
         return project_config
 
     def __str__(self) -> str:
+        """
+        The JSON-text version of the project config data.
+
+        Returns:
+            str
+        """
+
         return json.dumps(self.serialize())

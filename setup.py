@@ -104,7 +104,7 @@ setup(
             "ape_test=ape_test._cli:cli",
         ],
     },
-    python_requires=">=3.7,<3.10",
+    python_requires=">=3.7,<3.11",
     extras_require=extras_require,
     py_modules=packages_data["__modules__"],
     license="Apache-2.0",
@@ -114,7 +114,7 @@ setup(
     package_dir={"": "src"},
     package_data={p: ["py.typed"] for p in packages_data["__modules__"]},
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
@@ -124,5 +124,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
 )

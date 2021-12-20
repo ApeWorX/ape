@@ -29,6 +29,23 @@ def _create_source_dict(contracts_paths: Collection[Path]) -> Dict[str, Source]:
 
 @dataclass
 class ProjectManager:
+    """
+    A manager for accessing contract-types, dependencies, and other project resources.
+    Additionally, compile contracts using the
+    :meth:`~ape.managers.project.ProjectManager.load_contracts` method.
+
+    Use ``ape.project`` to reference the current project and ``ape.Project`` to reference
+    this class uninitialized.
+
+    Usage example::
+
+        from ape import project  # "project" is the ProjectManager for the active project
+        from ape import Project  # Is a ProjectManager
+
+        # MyContractType (example) is contract type in the active project
+        contract_type = project.MyContactType
+    """
+
     path: Path
     config: ConfigManager
     compilers: CompilerManager
@@ -108,11 +125,26 @@ class ProjectManager:
 
     @property
     def manifest_cachefile(self) -> Path:
+        """
+        The path to the project's cached manifest. The manifest
+        is a cached file representing the project and is useful
+        for sharing, such as uploading to IPFS.
+
+        Returns:
+            pathlib.Path
+        """
+
         file_name = self.config.name or "__local__"
         return self._cache_folder / (file_name + ".json")
 
     @property
     def cached_manifest(self) -> Optional[PackageManifest]:
+        """
+        The cached :class:`~ape.types.manifest.PackageManifest`.
+        If nothing has been compiled, then no manifest will exist, and
+        this will return ``None``.
+        """
+
         manifest_file = self.manifest_cachefile
         if manifest_file.exists():
             manifest_json = json.loads(manifest_file.read_text())
@@ -127,12 +159,23 @@ class ProjectManager:
     # NOTE: Using these paths should handle the case when the folder doesn't exist
     @property
     def contracts_folder(self) -> Path:
+        """
+        The path to project's ``contracts/`` directory.
+
+        Returns:
+            pathlib.Path
+        """
+
         return self.path / "contracts"
 
     @property
     def sources(self) -> List[Path]:
-        """All the source files in the project.
+        """
+        All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
+
+        Returns:
+            list[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
         for extension in self.compilers.registered_compilers:
@@ -142,16 +185,25 @@ class ProjectManager:
 
     @property
     def sources_missing(self) -> bool:
+        """
+        ``True`` when there are no contracts anywhere to be found
+        in the project. ``False`` otherwise.
+        """
+
         return not self.contracts_folder.exists() or not self.contracts_folder.iterdir()
 
     def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
         """
-        All file extensions in the `contracts/` directory (recursively)
+        All file extensions in the ``contracts/`` directory (recursively)
         that do not correspond to a registered compiler.
 
         Args:
-            extensions: If provided, returns only extensions that
-                are in this list. Useful for checking against a sub-set of source files.
+            extensions (list[str], optional): If provided, returns only extensions that
+                are in this list. Useful for checking against a subset of source files.
+
+        Returns:
+            list[str]: A list of file extensions found in the ``contracts/`` directory
+            that do not have associated compilers installed.
         """
         exts = []
 
@@ -174,13 +226,19 @@ class ProjectManager:
 
     def lookup_path(self, key_contract_path: Path) -> Optional[Path]:
         """
-        Figures out the full path of the contract from the given ``key_contract_path``.
+        Figure out the full path of the contract from the given ``key_contract_path``.
 
-        For example, give it ``HelloWorld``, it returns
+        For example, give it ``HelloWorld`` and it returns
         ``<absolute-project-path>/contracts/HelloWorld.sol``.
 
         Another example is to give it ``contracts/HelloWorld.sol`` and it also
         returns ``<absolute-project-path>/contracts/HelloWorld.sol``.
+
+        Args:
+            key_contract_path (pathlib.Path): A sub-path to a contract.
+
+        Returns:
+            pathlib.Path: The path if it exists, else ``None``.
         """
         ext = key_contract_path.suffix or None
 
@@ -203,6 +261,23 @@ class ProjectManager:
     def load_contracts(
         self, file_paths: Optional[Union[List[Path], Path]] = None, use_cache: bool = True
     ) -> Dict[str, ContractType]:
+        """
+        Compile and get the contract types in the project.
+        This is called when invoking the CLI command ``ape compile`` as well as prior to running
+        scripts or tests in ``ape``, such as from ``ape run`` or ``ape test``.
+
+        Args:
+            file_paths (list[pathlib.Path] or pathlib.Path], optional):
+              Provide one or more contract file-paths to load. If excluded,
+              will load all the contracts.
+            use_cache (bool, optional): Set to ``False`` to force a re-compile.
+              Defaults to ``True``.
+
+        Returns:
+            dict[str, :class:`~ape.types.contract.ContractType`]: A dictionary of contract names
+            to their types for each compiled contract.
+        """
+
         if isinstance(file_paths, Path):
             file_paths = [file_paths]
 
@@ -257,9 +332,34 @@ class ProjectManager:
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
+        """
+        A dictionary of contract names to their type.
+        See :meth:`~ape.managers.project.ProjectManager.load_contracts` for more information.
+
+        Returns:
+            dict[str, :class:`~ape.types.contract.ContractType`]
+        """
+
         return self.load_contracts()
 
-    def __getattr__(self, attr_name: str):
+    def __getattr__(self, attr_name: str) -> ContractContainer:
+        """
+        Get a contract container from an existing contract type or dependency
+        name using ``.`` access.
+
+        Usage example::
+
+            from ape import project
+
+            contract = project.MyContract
+
+        Args:
+            attr_name (str): The name of the contract or dependency.
+
+        Returns:
+            :class:`~ape.contracts.ContractContainer`
+        """
+
         contracts = self.load_contracts()
 
         if attr_name in contracts:
@@ -275,19 +375,47 @@ class ProjectManager:
 
     @property
     def interfaces_folder(self) -> Path:
+        """
+        The path to the ``interfaces/`` directory of the project.
+
+        Returns:
+            pathlib.Path
+        """
+
         return self.path / "interfaces"
 
     @property
     def scripts_folder(self) -> Path:
+        """
+        The path to the ``scripts/`` directory of the project.
+
+        Returns:
+            pathlib.Path
+        """
+
         return self.path / "scripts"
 
     @property
     def tests_folder(self) -> Path:
+        """
+        The path to the ``tests/`` directory of the project.
+
+        Returns:
+            pathlib.Path
+        """
+
         return self.path / "tests"
 
     # TODO: Make this work for generating and caching the manifest file
     @property
     def compiler_data(self) -> List[Compiler]:
+        """
+        A list of objects representing the raw-data specifics of a compiler.
+
+        Returns:
+            list[:class:`~ape.types.contract.Compiler`]
+        """
+
         compilers = []
 
         for extension, compiler in self.compilers.registered_compilers.items():
