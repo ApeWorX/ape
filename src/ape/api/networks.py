@@ -46,7 +46,7 @@ class EcosystemAPI:
     """A shareable HTTP header for network requests."""
 
     transaction_types: Dict["TransactionType", Type["TransactionAPI"]]
-    """The available types of transaction API this ecosystem support."""
+    """The available types of transaction API this ecosystem supports."""
 
     receipt_class: Type["ReceiptAPI"]
     """The receipt class for this ecosystem."""
