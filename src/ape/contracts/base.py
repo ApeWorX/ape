@@ -216,7 +216,7 @@ class ContractInstance(AddressAPI):
 
     def __dir__(self) -> List[str]:
         """
-        Display methods to IPython on `c.[TAB]` tab completion.
+        Display methods to IPython on ``c.[TAB]`` tab completion.
 
         Returns:
             list[str]
@@ -227,7 +227,7 @@ class ContractInstance(AddressAPI):
 
     def __getattr__(self, attr_name: str) -> Any:
         """
-        Access a method on the contract using ``.`` access.
+        Access a method or property on the contract using ``.`` access.
 
         Usage example::
 
