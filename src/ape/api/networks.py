@@ -312,7 +312,7 @@ class NetworkAPI:
     """The name of the network."""
 
     ecosystem: EcosystemAPI
-    """The ecosystem the network is part of."""
+    """The ecosystem of the network."""
 
     config_manager: "ConfigManager"
     """A reference to the global config manager."""
