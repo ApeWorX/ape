@@ -25,16 +25,34 @@ class EcosystemAPI:
     A set of related networks, such as Ethereum.
     """
 
-    name: str  # Set as plugin name
+    name: str
+    """
+    The name of the ecosystem. **NOTE**: This should be set as the same name as the plugin.
+    """
+
     network_manager: "NetworkManager"
+    """A reference to the global network manager."""
+
     config_manager: "ConfigManager"
+    """A reference to  the global config manager."""
+
     plugin_manager: PluginManager
+    """A reference to the global plugin manager."""
+
     data_folder: Path
+    """The path to the ``.ape`` directory."""
+
     request_header: str
+    """A shareable HTTP header for network requests."""
 
     transaction_types: Dict["TransactionType", Type["TransactionAPI"]]
+    """The available types of transaction API this ecosystem support."""
+
     receipt_class: Type["ReceiptAPI"]
+    """The receipt class for this ecosystem."""
+
     block_class: Type["BlockAPI"]
+    """The block class for this ecosystem."""
 
     _default_network: str = "development"
 
@@ -238,6 +256,17 @@ class ProviderContextManager:
     When entering the context, calls the :meth:`ape.api.providers.ProviderAPI.connect` method.
     And conversely, when exiting, calls the :meth:`ape.api.providers.ProviderPAI.disconnect`
     method.
+
+    The method :meth:`ape.api.networks.NetworkAPI.use_provider` returns
+    an instance of this context manager.
+
+    Usage example::
+
+        from ape import networks
+
+        mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
+        with mainnet.use_provider():
+            ...
     """
 
     # NOTE: Class variable, so it will manage stack across instances of this object
@@ -280,11 +309,23 @@ class NetworkAPI:
     """
 
     name: str  # Name given when registered in ecosystem
+    """The name of the network."""
+
     ecosystem: EcosystemAPI
+    """The ecosystem the network is part of."""
+
     config_manager: "ConfigManager"
+    """A reference to the global config manager."""
+
     plugin_manager: PluginManager
+    """A reference to the global plugin manager."""
+
     data_folder: Path  # For caching any data that might need caching
+    """The path to the ``.ape`` directory."""
+
     request_header: str
+    """A shareable network HTTP header."""
+
     _default_provider: str = ""
 
     @cached_property
@@ -489,7 +530,7 @@ class NetworkAPI:
         **NOTE**: If multiple providers exist, uses whatever was "first" registered.
 
         Args:
-            provider_settings (dict, optional): Settings to override the provider with.
+            provider_settings (dict, optional): Settings to override the provider.
 
         Returns:
             :class:`~ape.api.networks.ProviderContextManager`
