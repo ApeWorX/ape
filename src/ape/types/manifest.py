@@ -20,6 +20,13 @@ class PackageMeta(SerializableType):
 
 
 class PackageManifest(FileMixin, SerializableType):
+    """
+    Content referring to a complete smart-contract package.
+    The manifest contains everything needed to "share" a package.
+    Use manifests to publish your project as well as use other projects locally,
+    whether as dependencies or just in scripts.
+    """
+
     # NOTE: Must not override this key
     manifest: str = "ethpm/3"
     # NOTE: ``name`` and ``version`` should appear together
@@ -55,7 +62,18 @@ class PackageManifest(FileMixin, SerializableType):
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
     @classmethod
-    def from_dict(cls, params: Dict):
+    def from_dict(cls, params: Dict) -> "PackageManifest":
+        """
+        Create this class from a dictionary of its properties.
+        The dictionary keys must be the same name as the properties.
+
+        Args:
+            params (dict): A dictionary of properties.
+
+        Returns:
+            :class:`~ape.types.manifest.PackageManifest`
+        """
+
         params = deepcopy(params)
         update_params(params, "meta", PackageMeta)
         update_dict_params(params, "sources", Source)
