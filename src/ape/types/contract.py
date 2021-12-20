@@ -103,8 +103,8 @@ class ABIType(SerializableType):
     @property
     def canonical_type(self) -> str:
         """
-        The lower-level type. For example, the type may be ``uint``
-        but at compile-time, gets replaces with ``uint256``.
+        The lower-level type. For example, the type may be ``uint`` in the code,
+        but at compile-time, it gets replaced with ``uint256``.
 
         Returns:
             str
@@ -125,13 +125,13 @@ class ABI(SerializableType):
     name: str = ""
     inputs: List[ABIType] = []
     """
-    A list of :class:`~ape.types.contract.ABIType` representing arguments
+    A list of :class:`~ape.types.contract.ABIType` instances representing arguments
     to the method.
     """
 
     outputs: List[ABIType] = []
     """
-    A list of :class:`~ape.types.contract.ABIType` representing return values
+    A list of :class:`~ape.types.contract.ABIType` instances representing return values
     from the method.
     """
 
@@ -279,7 +279,7 @@ class ContractType(FileMixin, SerializableType):
         """
         The fallback method of the contract, if it has one. A fallback method
         is external, has no name, arguments, or return value, and gets invoked
-        the user attempts to call a method that does not exist.
+        when the user attempts to call a method that does not exist.
         """
 
         for abi in self.abi:
