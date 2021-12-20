@@ -101,7 +101,7 @@ assert c.MyEvent[-1].caller == a  # Search through Web3 events
 
 ## Development
 
-This project is in development and is beta-software.
+This project is in development and should be considered a beta.
 Things might not be in their final state and breaking changes may occur.
 Comments, questions, criticisms and pull requests are welcomed.
 
