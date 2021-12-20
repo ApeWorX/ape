@@ -403,7 +403,7 @@ class Source(SerializableType):
     # If processing remote project, cache them in ape project data folder
     installPath: Optional[str] = None
     type: Optional[str] = None
-    """The type of the source, such as ``"interface"``."""
+    """The type of source, such as ``"interface"``."""
 
     license: Optional[str] = None
     """The license of the source, if one exists, such as the MIT license."""
