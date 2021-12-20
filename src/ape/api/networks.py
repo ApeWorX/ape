@@ -478,7 +478,9 @@ class NetworkAPI:
         provider_settings: dict = None,
     ) -> ProviderContextManager:
         """
-        Use and connect to a provider in a temporary context.
+        Use and connect to a provider in a temporary context. When entering the context, it calls
+        method :meth:`ape.api.providers.ProviderAPI.connect` and when exiting, it calls
+        method :meth:`ape.api.providers.ProviderAPI.disconnect`.
 
         Usage example::
 
@@ -531,7 +533,7 @@ class NetworkAPI:
 
     def use_default_provider(self, provider_settings: Optional[Dict]) -> ProviderContextManager:
         """
-        Temporarily connect and use a provider. When entering the context, it calls
+        Temporarily connect and use the default provider. When entering the context, it calls
         method :meth:`ape.api.providers.ProviderAPI.connect` and when exiting, it calls
         method :meth:`ape.api.providers.ProviderAPI.disconnect`.
 
