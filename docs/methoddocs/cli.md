@@ -1,6 +1,6 @@
 # ape.cli
 
-The CLI namespace is a collection of `click` extensions and reusable implementations, such as common arguments / 
+The `ape.cli` namespace is a collection of `click` extensions and reusable implementations, such as common arguments / 
 options for accounts, project file-paths, and generic utilities. Use these resources in plugins as well as in CLI-based 
 scripts.
 
