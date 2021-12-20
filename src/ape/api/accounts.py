@@ -243,7 +243,7 @@ class AccountContainerAPI:
         Get an account by address.
 
         Raises:
-            IndexError: When there is no account, locally, with the given address.
+            IndexError: When there is no local account with the given address.
 
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
@@ -259,7 +259,7 @@ class AccountContainerAPI:
         Add an account to the container.
 
         Raises:
-            :class:`~ape.exceptions.AccountsError`: When the account already is in the container.
+            :class:`~ape.exceptions.AccountsError`: When the account is already in the container.
 
         Args:
             account (:class:`~ape.api.accounts.AccountAPI`): The account to add.

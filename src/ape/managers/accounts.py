@@ -149,7 +149,7 @@ class AccountManager:
         Get an account by its alias.
 
         Raises:
-            IndexError: When there is no local accounts with the given alias.
+            IndexError: When there is no local account with the given alias.
 
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
