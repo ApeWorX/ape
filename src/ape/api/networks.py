@@ -34,7 +34,7 @@ class EcosystemAPI:
     """A reference to the global network manager."""
 
     config_manager: "ConfigManager"
-    """A reference to  the global config manager."""
+    """A reference to the global config manager."""
 
     plugin_manager: PluginManager
     """A reference to the global plugin manager."""
