@@ -540,6 +540,7 @@ class NetworkAPI:
         **NOTE**: If multiple providers exist, uses whatever was "first" registered.
 
         Usage example::
+
             from ape import networks
             mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
             with mainnet.use_default_provider():
