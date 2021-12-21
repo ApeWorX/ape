@@ -28,11 +28,15 @@ class _Signature:
 
 
 class MessageSignature(_Signature):
-    pass
+    """
+    A ECDSA signature (vrs) of a message.
+    """
 
 
 class TransactionSignature(_Signature):
-    pass
+    """
+    A ECDSA signature (vrs) of a transaction.
+    """
 
 
 _ = SignableMessage
