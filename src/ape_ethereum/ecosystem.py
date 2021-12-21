@@ -155,8 +155,7 @@ class Receipt(ReceiptAPI):
         Raise an error for the given transaction, if the transaction has failed.
 
         Args:
-            txn (:class:`ape.api.providers.TransactionAPI`): The sent-transaction to
-              check the status of.
+            txn (:class:`ape.api.providers.TransactionAPI`): The already-sent transaction to check.
 
         Raises:
             :class:`~ape.exceptions.OutOfGasError`: When the transaction failed
