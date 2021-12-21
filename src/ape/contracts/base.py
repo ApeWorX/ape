@@ -237,7 +237,7 @@ class ContractInstance(AddressAPI):
             attr_name (str): The name of the method or property to access.
 
         Returns:
-            any: The return value from the contract call / transaction.
+            any: The return value from the contract call, or a transaction receipt.
         """
 
         handlers = {
