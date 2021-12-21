@@ -625,7 +625,7 @@ class Web3Provider(ProviderAPI):
 
         Raises:
             NotImplementedError: When your chain does not support base_fees
-              (`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__)
+              (`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
         block = self.get_block("latest")
 

@@ -22,7 +22,7 @@ class AddressAPI:
 
         Raises:
             :class:`~ape.exceptions.AddressError`: When there is no active
-             provider at runtime.
+               provider at runtime.
 
         Returns:
             :class:`~ape.api.providers.ProviderAPI`
