@@ -195,7 +195,7 @@ class ContractInstance(AddressAPI):
         from ape import accounts, project
 
         a = accounts.load("alias")  # Load an account by alias
-        contract = a.deploy(project.MyContract)  # The result of the deploy is a ContractInstance
+        contract = a.deploy(project.MyContract)  # The result of 'deploy()' is a ContractInstance
     """
 
     _address: AddressType
