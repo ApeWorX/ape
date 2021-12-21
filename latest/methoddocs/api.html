@@ -212,7 +212,7 @@ A provider must be active.</p>
 
 <dl class="py method">
 <dt id="ape.api.accounts.AccountAPI.sign_message">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">sign_message</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">eth_account.messages.SignableMessage</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.signatures.MessageSignature</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_message" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">sign_message</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">eth_account.messages.SignableMessage</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">ape.types.signatures.MessageSignature</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_message" title="Permalink to this definition">¶</a></dt>
 <dd><p>Signs the given message.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -222,14 +222,14 @@ A provider must be active.</p>
 <dd class="field-even"><p>The signed message.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code> (optional)</p>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a> (optional)</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.accounts.AccountAPI.sign_transaction">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">sign_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.signatures.TransactionSignature</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_transaction" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">sign_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.signatures.TransactionSignature" title="ape.types.signatures.TransactionSignature"><span class="pre">ape.types.signatures.TransactionSignature</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_transaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Signs the given transaction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -239,7 +239,7 @@ A provider must be active.</p>
 <dd class="field-even"><p>The signed transaction.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionSignature</span></code> (optional)</p>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.signatures.TransactionSignature" title="ape.types.signatures.TransactionSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionSignature</span></code></a> (optional)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -274,7 +274,7 @@ A provider must be active.</p>
 <code class="sig-name descname"><span class="pre">__contains__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.__contains__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the address is an existing account in <code class="docutils literal notranslate"><span class="pre">ape</span></code>.
 Must be a valid address or else raises <code class="docutils literal notranslate"><span class="pre">IndexError</span></code>.</p>
-<p>:param address <code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code>: An account address.</p>
+<p>:param address <a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>: An account address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if <code class="docutils literal notranslate"><span class="pre">ape</span></code> manages the account with the given address.</p>
@@ -292,7 +292,7 @@ Must be a valid address or else raises <code class="docutils literal notranslate
 Must be overriden or else raises <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> – (address <code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code>):
+<dd class="field-odd"><p><strong>address</strong> – (address <a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>):
 The address of the account to delete.</p>
 </dd>
 </dl>
@@ -399,7 +399,7 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <dd><p>The raw address type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></p>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -417,7 +417,7 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <dd><p>The address of this account. Subclasses must override and provide this value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></p>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -508,7 +508,7 @@ If there is no active provider at runtime, then this raises an
 <p>Compiler plugins, such as for languages like Solidity or Vyper, implement this API.</p>
 <dl class="py method">
 <dt id="ape.api.compiler.CompilerAPI.compile">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.contract.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.compile" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><span class="pre">ape.types.contract.ContractType</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.compile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compile the source given <code class="docutils literal notranslate"><span class="pre">pkg_manifest</span></code>.
 All compiler plugins must implement this function.</p>
 <dl class="field-list simple">
@@ -628,7 +628,7 @@ All compiler plugins must implement this function.</p>
 
 <dl class="py method">
 <dt id="ape.api.explorers.ExplorerAPI.get_contract_type">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_contract_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.contract.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.get_contract_type" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_contract_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><span class="pre">ape.types.contract.ContractType</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.get_contract_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the contract type for a given address if it has been published in an explorer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

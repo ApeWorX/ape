@@ -76,7 +76,13 @@
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ape.types</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ape.types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.types.contract">Contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.types.manifest">Manifest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.types">Miscellaneous</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.types.signatures">Signatures</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
 </ul>
 
@@ -135,54 +141,320 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="tex2jax_ignore mathjax_ignore section" id="module-ape.types">
-<span id="ape-types"></span><h1>ape.types<a class="headerlink" href="#module-ape.types" title="Permalink to this headline">¶</a></h1>
+  <div class="tex2jax_ignore mathjax_ignore section" id="ape-types">
+<h1>ape.types<a class="headerlink" href="#ape-types" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-ape.types.contract">
+<span id="contracts"></span><h2>Contracts<a class="headerlink" href="#module-ape.types.contract" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.types.contract.ABI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.contract.</span></code><code class="sig-name descname"><span class="pre">ABI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_keep_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_skip_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.contract.ABIType</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.contract.ABIType</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stateMutability</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anonymous</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.contract.ABI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.abstract.SerializableType</span></code></p>
+<p>The “Application Binary Interface” as a serializable data-structure.</p>
+<dl class="py attribute">
+<dt id="ape.types.contract.ABI.inputs">
+<code class="sig-name descname"><span class="pre">inputs</span></code><a class="headerlink" href="#ape.types.contract.ABI.inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of <code class="xref py py-class docutils literal notranslate"><span class="pre">ABIType</span></code> instances representing arguments
+to the method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.types.contract.ABI.is_event">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_event</span></code><a class="headerlink" href="#ape.types.contract.ABI.is_event" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when this ABI refers to an event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.types.contract.ABI.is_payable">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_payable</span></code><a class="headerlink" href="#ape.types.contract.ABI.is_payable" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when this ABI refers to a payable function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.types.contract.ABI.is_stateful">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_stateful</span></code><a class="headerlink" href="#ape.types.contract.ABI.is_stateful" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when this ABI refers to a function that may alter the state
+of the contract, such as updating a list.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.types.contract.ABI.outputs">
+<code class="sig-name descname"><span class="pre">outputs</span></code><a class="headerlink" href="#ape.types.contract.ABI.outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of <code class="xref py py-class docutils literal notranslate"><span class="pre">ABIType</span></code> instances representing return values
+from the method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.types.contract.ABI.selector">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">selector</span></code><a class="headerlink" href="#ape.types.contract.ABI.selector" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string representing the function selector, used to compute <code class="docutils literal notranslate"><span class="pre">method_id</span></code> and <code class="docutils literal notranslate"><span class="pre">event_id</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.types.contract.ABI.signature">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">signature</span></code><a class="headerlink" href="#ape.types.contract.ABI.signature" title="Permalink to this definition">¶</a></dt>
+<dd><p>String representing the function/event signature, which includes the arg names and types,
+and output names (if any) and type(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.types.contract.ABI.type">
+<code class="sig-name descname"><span class="pre">type</span></code><a class="headerlink" href="#ape.types.contract.ABI.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of the ABI, such as <code class="docutils literal notranslate"><span class="pre">&quot;function&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;event&quot;</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.types.contract.Bytecode">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.contract.</span></code><code class="sig-name descname"><span class="pre">Bytecode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_keep_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_skip_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bytecode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linkReferences</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.contract.LinkReference</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linkDependencies</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.contract.LinkDependency</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.contract.Bytecode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.abstract.SerializableType</span></code></p>
+<p>Serializable data representing the byte-code of a smart-contract.</p>
+<dl class="py attribute">
+<dt id="ape.types.contract.Bytecode.bytecode">
+<code class="sig-name descname"><span class="pre">bytecode</span></code><a class="headerlink" href="#ape.types.contract.Bytecode.bytecode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The raw byte-code <code class="docutils literal notranslate"><span class="pre">str</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.types.contract.Checksum">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.contract.</span></code><code class="sig-name descname"><span class="pre">Checksum</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_keep_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_skip_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.contract.Checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.abstract.SerializableType</span></code></p>
+<p>A serializable type representing a checksum.</p>
+<dl class="py attribute">
+<dt id="ape.types.contract.Checksum.algorithm">
+<code class="sig-name descname"><span class="pre">algorithm</span></code><a class="headerlink" href="#ape.types.contract.Checksum.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>The algorithm used to compute the checksum, such as <code class="docutils literal notranslate"><span class="pre">&quot;md5&quot;</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.types.contract.Checksum.hash">
+<code class="sig-name descname"><span class="pre">hash</span></code><a class="headerlink" href="#ape.types.contract.Checksum.hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>The hash <code class="docutils literal notranslate"><span class="pre">str</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.types.contract.Compiler">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.contract.</span></code><code class="sig-name descname"><span class="pre">Compiler</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_keep_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_skip_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contractTypes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.contract.Compiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.abstract.SerializableType</span></code></p>
+<p>Serializable data representing a compiler.</p>
+<dl class="py attribute">
+<dt id="ape.types.contract.Compiler.version">
+<code class="sig-name descname"><span class="pre">version</span></code><a class="headerlink" href="#ape.types.contract.Compiler.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The compiler version.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.types.contract.ContractInstance">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.contract.</span></code><code class="sig-name descname"><span class="pre">ContractInstance</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contractType</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_keep_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_skip_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtimeBytecode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.contract.Bytecode" title="ape.types.contract.Bytecode"><span class="pre">ape.types.contract.Bytecode</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.contract.ContractInstance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.abstract.SerializableType</span></code></p>
+<p>Serializable data representing a contract instance.</p>
+<dl class="py attribute">
+<dt id="ape.types.contract.ContractInstance.address">
+<code class="sig-name descname"><span class="pre">address</span></code><a class="headerlink" href="#ape.types.contract.ContractInstance.address" title="Permalink to this definition">¶</a></dt>
+<dd><p>The address of the smart-contract.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.types.contract.ContractInstance.block">
+<code class="sig-name descname"><span class="pre">block</span></code><a class="headerlink" href="#ape.types.contract.ContractInstance.block" title="Permalink to this definition">¶</a></dt>
+<dd><p>The block containing the smart-contract deployment.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.types.contract.ContractInstance.contractType">
+<code class="sig-name descname"><span class="pre">contractType</span></code><a class="headerlink" href="#ape.types.contract.ContractInstance.contractType" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the type of smart-contract.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.types.contract.ContractInstance.runtimeBytecode">
+<code class="sig-name descname"><span class="pre">runtimeBytecode</span></code><a class="headerlink" href="#ape.types.contract.ContractInstance.runtimeBytecode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#ape.types.contract.Bytecode" title="ape.types.contract.Bytecode"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bytecode</span></code></a> of the smart-contract.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.types.contract.ContractInstance.transaction">
+<code class="sig-name descname"><span class="pre">transaction</span></code><a class="headerlink" href="#ape.types.contract.ContractInstance.transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>The deployment transaction-hash for the smart-contract.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.types.contract.ContractType">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.contract.</span></code><code class="sig-name descname"><span class="pre">ContractType</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contractName</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_keep_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{'abi'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_skip_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{'contractName'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sourceId</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deploymentBytecode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.contract.Bytecode" title="ape.types.contract.Bytecode"><span class="pre">ape.types.contract.Bytecode</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtimeBytecode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.contract.Bytecode" title="ape.types.contract.Bytecode"><span class="pre">ape.types.contract.Bytecode</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.contract.ABI" title="ape.types.contract.ABI"><span class="pre">ape.types.contract.ABI</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">userdoc</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">devdoc</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.contract.ContractType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.abstract.FileMixin</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.abstract.SerializableType</span></code></p>
+<p>A serializable type representing the type of a contract.
+For example, if you define your contract as <code class="docutils literal notranslate"><span class="pre">contract</span> <span class="pre">MyContract</span></code> (in Solidity),
+then <code class="docutils literal notranslate"><span class="pre">MyContract</span></code> would be the type.</p>
+<dl class="py method">
+<dt id="ape.types.contract.ContractType.calls">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">calls</span></code><a class="headerlink" href="#ape.types.contract.ContractType.calls" title="Permalink to this definition">¶</a></dt>
+<dd><p>The call-methods (read-only method, non-payable methods) defined in a smart contract.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#ape.types.contract.ABI" title="ape.types.contract.ABI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.types.contract.ContractType.constructor">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">constructor</span></code><a class="headerlink" href="#ape.types.contract.ContractType.constructor" title="Permalink to this definition">¶</a></dt>
+<dd><p>The constructor of the contract, if it has one. For example,
+your smart-contract (in Solidity) may define a <code class="docutils literal notranslate"><span class="pre">constructor()</span> <span class="pre">public</span> <span class="pre">{}</span></code>.
+This property contains information about the parameters needed to initialize
+a contract.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.types.contract.ContractType.events">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">events</span></code><a class="headerlink" href="#ape.types.contract.ContractType.events" title="Permalink to this definition">¶</a></dt>
+<dd><p>The events defined in a smart contract.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#ape.types.contract.ABI" title="ape.types.contract.ABI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.types.contract.ContractType.fallback">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">fallback</span></code><a class="headerlink" href="#ape.types.contract.ContractType.fallback" title="Permalink to this definition">¶</a></dt>
+<dd><p>The fallback method of the contract, if it has one. A fallback method
+is external, has no name, arguments, or return value, and gets invoked
+when the user attempts to call a method that does not exist.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.types.contract.ContractType.transactions">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">transactions</span></code><a class="headerlink" href="#ape.types.contract.ContractType.transactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction-methods (stateful or payable methods) defined in a smart contract.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#ape.types.contract.ABI" title="ape.types.contract.ABI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.types.contract.Source">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.contract.</span></code><code class="sig-name descname"><span class="pre">Source</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_keep_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_skip_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checksum</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.contract.Checksum" title="ape.types.contract.Checksum"><span class="pre">ape.types.contract.Checksum</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">urls</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">installPath</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">license</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.contract.Source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.abstract.SerializableType</span></code></p>
+<p>A serializable type representing source material.</p>
+<dl class="py attribute">
+<dt id="ape.types.contract.Source.checksum">
+<code class="sig-name descname"><span class="pre">checksum</span></code><a class="headerlink" href="#ape.types.contract.Source.checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The checksum of the source. Set by calling the method
+<a class="reference internal" href="#ape.types.contract.Source.compute_checksum" title="ape.types.contract.Source.compute_checksum"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_checksum()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.types.contract.Source.compute_checksum">
+<code class="sig-name descname"><span class="pre">compute_checksum</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'md5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.contract.Source.compute_checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the checksum if <code class="docutils literal notranslate"><span class="pre">content</span></code> exists but <code class="docutils literal notranslate"><span class="pre">checksum</span></code> doesn’t
+exist yet. Or compute the checksum regardless if <code class="docutils literal notranslate"><span class="pre">force</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – When the content is not yet loaded.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>algorithm</strong> (<em>str</em><em>, </em><em>optional</em>) – The algorithm to use when computing the checksum.
+Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;md5&quot;</span></code>.</p></li>
+<li><p><strong>force</strong> (<em>bool</em><em>, </em><em>optional</em>) – Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to force a re-check. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.types.contract.Source.license">
+<code class="sig-name descname"><span class="pre">license</span></code><a class="headerlink" href="#ape.types.contract.Source.license" title="Permalink to this definition">¶</a></dt>
+<dd><p>The license of the source, if one exists, such as the MIT license.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.types.contract.Source.type">
+<code class="sig-name descname"><span class="pre">type</span></code><a class="headerlink" href="#ape.types.contract.Source.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of source, such as <code class="docutils literal notranslate"><span class="pre">&quot;interface&quot;</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.types.contract.Source.urls">
+<code class="sig-name descname"><span class="pre">urls</span></code><a class="headerlink" href="#ape.types.contract.Source.urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>The URLs by which to obtain the source, such as IPFS URLs.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.types.manifest">
+<span id="manifest"></span><h2>Manifest<a class="headerlink" href="#module-ape.types.manifest" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.types.manifest.PackageManifest">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.manifest.</span></code><code class="sig-name descname"><span class="pre">PackageManifest</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_keep_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_skip_fields_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manifest</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'ethpm/3'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.manifest.PackageMeta</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sources</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="#ape.types.contract.Source" title="ape.types.contract.Source"><span class="pre">ape.types.contract.Source</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contractTypes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><span class="pre">ape.types.contract.ContractType</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compilers</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.contract.Compiler" title="ape.types.contract.Compiler"><span class="pre">ape.types.contract.Compiler</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deployments</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="#ape.types.contract.ContractInstance" title="ape.types.contract.ContractInstance"><span class="pre">ape.types.contract.ContractInstance</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buildDependencies</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.manifest.PackageManifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.abstract.FileMixin</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.abstract.SerializableType</span></code></p>
+<p>Content referring to a complete smart-contract package.
+The manifest contains everything needed to “share” a package.
+Use manifests to publish your project as well as use other projects locally,
+whether as dependencies or just in scripts.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.types">
+<span id="miscellaneous"></span><h2>Miscellaneous<a class="headerlink" href="#module-ape.types" title="Permalink to this headline">¶</a></h2>
+<dl class="py data">
+<dt id="ape.types.AddressType">
+<code class="sig-prename descclassname"><span class="pre">ape.types.</span></code><code class="sig-name descname"><span class="pre">AddressType</span></code><a class="headerlink" href="#ape.types.AddressType" title="Permalink to this definition">¶</a></dt>
+<dd><p>A type representing a checksummed address.</p>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">HexAddress</span></code></p>
+</dd></dl>
+
 <dl class="py data">
 <dt id="ape.types.BlockID">
 <code class="sig-prename descclassname"><span class="pre">ape.types.</span></code><code class="sig-name descname"><span class="pre">BlockID</span></code><a class="headerlink" href="#ape.types.BlockID" title="Permalink to this definition">¶</a></dt>
-<dd><p>An ID that can match a block, such as the literals ‘earliest’, ‘latest’, or ‘pending’
+<dd><p>An ID that can match a block, such as the literals <code class="docutils literal notranslate"><span class="pre">&quot;earliest&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;latest&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;pending&quot;</span></code>
 as well as a block number or hash (HexBytes).</p>
 <p>alias of Union[str, int, hexbytes.main.HexBytes, Literal[earliest, latest, pending]]</p>
 </dd></dl>
 
+</div>
+<div class="section" id="module-ape.types.signatures">
+<span id="signatures"></span><h2>Signatures<a class="headerlink" href="#module-ape.types.signatures" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="ape.types.SignableMessage">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.</span></code><code class="sig-name descname"><span class="pre">SignableMessage</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.SignableMessage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
-<p>A message compatible with <a href="#id1"><span class="problematic" id="id2">EIP-191_</span></a> that is ready to be signed.</p>
-<p>The properties are components of an <a href="#id3"><span class="problematic" id="id4">EIP-191_</span></a> signable message. Other message formats
-can be encoded into this format for easy signing. This data structure doesn’t need to
-know about the original message format. For example, you can think of
-EIP-712 as compiling down to an EIP-191 message.</p>
-<p>In typical usage, you should never need to create these by hand. Instead, use
-one of the available encode_* methods in this module, like:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">encode_structured_data()</span></code></p></li>
-<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">encode_intended_validator()</span></code></p></li>
-<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">encode_defunct()</span></code></p></li>
-</ul>
-</div></blockquote>
-<dl class="py attribute">
-<dt id="ape.types.SignableMessage.body">
-<code class="sig-name descname"><span class="pre">body</span></code><em class="property"><span class="pre">:</span> <span class="pre">bytes</span></em><a class="headerlink" href="#ape.types.SignableMessage.body" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 2</p>
+<dt id="ape.types.signatures.MessageSignature">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></code><code class="sig-name descname"><span class="pre">MessageSignature</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.MessageSignature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.signatures._Signature</span></code></p>
+<p>A ECDSA signature (vrs) of a message.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="ape.types.SignableMessage.header">
-<code class="sig-name descname"><span class="pre">header</span></code><em class="property"><span class="pre">:</span> <span class="pre">bytes</span></em><a class="headerlink" href="#ape.types.SignableMessage.header" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 1</p>
+<dl class="py class">
+<dt id="ape.types.signatures.TransactionSignature">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></code><code class="sig-name descname"><span class="pre">TransactionSignature</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.TransactionSignature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.signatures._Signature</span></code></p>
+<p>A ECDSA signature (vrs) of a transaction.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="ape.types.SignableMessage.version">
-<code class="sig-name descname"><span class="pre">version</span></code><em class="property"><span class="pre">:</span> <span class="pre">bytes</span></em><a class="headerlink" href="#ape.types.SignableMessage.version" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 0</p>
-</dd></dl>
-
-</dd></dl>
-
+</div>
 </div>
 
 
