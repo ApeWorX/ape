@@ -185,6 +185,19 @@ class ContractEvent:
 
 
 class ContractInstance(AddressAPI):
+    """
+    An interactive instance of a smart contract.
+    After you deploy a contract using the :class:`~ape.api.accounts.AccountAPI.deploy` method,
+    you get back a contract instance.
+
+    Usage example::
+
+        from ape import accounts, project
+
+        a = accounts.load("alias")  # Load an account by alias
+        contract = a.deploy(project.MyContract)  # The result of 'deploy()' is a ContractInstance
+    """
+
     _address: AddressType
     _contract_type: ContractType
 
@@ -193,15 +206,40 @@ class ContractInstance(AddressAPI):
 
     @property
     def address(self) -> AddressType:
+        """
+        The address of the contract.
+
+        Returns:
+            :class:`~ape.types.AddressType`
+        """
         return self._address
 
     def __dir__(self) -> List[str]:
-        # This displays methods to IPython on `c.[TAB]` tab completion
+        """
+        Display methods to IPython on ``c.[TAB]`` tab completion.
+
+        Returns:
+            list[str]
+        """
         return list(super(AddressAPI, self).__dir__()) + [
             abi.name for abi in self._contract_type.abi
         ]
 
     def __getattr__(self, attr_name: str) -> Any:
+        """
+        Access a method or property on the contract using ``.`` access.
+
+        Usage example::
+
+            result = contract.vote()  # Implies a method named "vote" exists on the contract.
+
+        Args:
+            attr_name (str): The name of the method or property to access.
+
+        Returns:
+            any: The return value from the contract call, or a transaction receipt.
+        """
+
         handlers = {
             "events": ContractEvent,
             "calls": ContractCallHandler,
@@ -242,7 +280,21 @@ class ContractInstance(AddressAPI):
 
 @dataclass
 class ContractContainer:
+    """
+    A wrapper around the contract type that has access to the provider.
+    When you import your contracts from the :class:`ape.managers.project.ProjectManager`, you
+    are using this class.
+
+    Usage example::
+
+        from ape import project
+
+        contract_container = project.MyContract  # Assuming there is a contract named "MyContract"
+    """
+
     contract_type: ContractType
+    """The type of the contract."""
+
     _provider: Optional[ProviderAPI]
     # _provider is only None when a user is not connected to a provider.
 
@@ -250,6 +302,25 @@ class ContractContainer:
         return f"<{self.contract_type.contractName}>"
 
     def at(self, address: str) -> ContractInstance:
+        """
+        Get a contract at the given address.
+
+        Usage example::
+
+            from ape import project
+
+            my_contract = project.MyContract.at("0xAbC1230001112223334445566611855443322111")
+
+        Args:
+            address (str): The address to initialize a contract.
+              **NOTE**: Things will not work as expected if the contract is not actually
+              deployed to this address or if the contract at the given address has
+              a different ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.
+
+        Returns:
+            :class:`~ape.contracts.ContractInstance`
+        """
+
         return ContractInstance(  # type: ignore
             _address=address,
             _provider=self._provider,
