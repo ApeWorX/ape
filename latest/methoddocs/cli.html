@@ -75,7 +75,15 @@
 <li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ape.cli</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ape.cli</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.arguments">Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.choices">Choices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.commands">Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.options">Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.paramtype">Parameter Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.utils">Utilities</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
 </ul>
@@ -135,32 +143,51 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="tex2jax_ignore mathjax_ignore section" id="module-ape.cli">
-<span id="ape-cli"></span><h1>ape.cli<a class="headerlink" href="#module-ape.cli" title="Permalink to this headline">¶</a></h1>
-<dl class="py exception">
-<dt id="ape.cli.Abort">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">Abort</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.Abort" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">click.exceptions.ClickException</span></code></p>
-<p>A wrapper around a CLI exception. When you raise this error,
-the error is nicely printed to the terminal. This is
-useful for all user-facing errors.</p>
-<dl class="py method">
-<dt id="ape.cli.Abort.show">
-<code class="sig-name descname"><span class="pre">show</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.Abort.show" title="Permalink to this definition">¶</a></dt>
-<dd><p>Override default <code class="docutils literal notranslate"><span class="pre">show</span></code> to print CLI errors in red text.</p>
+  <div class="tex2jax_ignore mathjax_ignore section" id="ape-cli">
+<h1>ape.cli<a class="headerlink" href="#ape-cli" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">ape.cli</span></code> namespace is a collection of <code class="docutils literal notranslate"><span class="pre">click</span></code> extensions and reusable implementations, such as common arguments /
+options for accounts, project file-paths, and generic utilities. Use these resources in plugins as well as in CLI-based
+scripts.</p>
+<div class="section" id="module-ape.cli.arguments">
+<span id="arguments"></span><h2>Arguments<a class="headerlink" href="#module-ape.cli.arguments" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="ape.cli.arguments.contract_file_paths_argument">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">contract_file_paths_argument</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.arguments.contract_file_paths_argument" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> representing contract source file paths.
+This argument takes 0-to-many values.</p>
+<p>The return type from the callback is a flattened list of
+source file-paths.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt id="ape.cli.arguments.existing_alias_argument">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">existing_alias_argument</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.arguments.existing_alias_argument" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> for an existing account alias.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>account_type</strong> (type[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>], optional) – If given, limits the type of account the user may choose from.</p>
+</dd>
+</dl>
 </dd></dl>
 
+<dl class="py function">
+<dt id="ape.cli.arguments.non_existing_alias_argument">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.arguments.</span></code><code class="sig-name descname"><span class="pre">non_existing_alias_argument</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.arguments.non_existing_alias_argument" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> for an account alias that does not yet exist in ape.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.cli.choices">
+<span id="choices"></span><h2>Choices<a class="headerlink" href="#module-ape.cli.choices" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="ape.cli.AccountAliasPromptChoice">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">AccountAliasPromptChoice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.AccountAliasPromptChoice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.cli.choices.PromptChoice</span></code></p>
+<dt id="ape.cli.choices.AccountAliasPromptChoice">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">AccountAliasPromptChoice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.cli.choices.PromptChoice" title="ape.cli.choices.PromptChoice"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.cli.choices.PromptChoice</span></code></a></p>
 <p>Prompts the user to select an alias from their accounts.
 Useful for adhoc scripts to lessen the need to hard-code aliases.</p>
 <dl class="py method">
-<dt id="ape.cli.AccountAliasPromptChoice.choices">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">choices</span></code><a class="headerlink" href="#ape.cli.AccountAliasPromptChoice.choices" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.AccountAliasPromptChoice.choices">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">choices</span></code><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.choices" title="Permalink to this definition">¶</a></dt>
 <dd><p>All the account aliases.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -173,8 +200,8 @@ Useful for adhoc scripts to lessen the need to hard-code aliases.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="ape.cli.AccountAliasPromptChoice.convert">
-<code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Context</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.AccountAliasPromptChoice.convert" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.AccountAliasPromptChoice.convert">
+<code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Context</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.convert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the value to the correct type. This is not called if
 the value is <code class="docutils literal notranslate"><span class="pre">None</span></code> (the missing value).</p>
 <p>This must accept string values from the command line, as well as
@@ -198,8 +225,8 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dd></dl>
 
 <dl class="py method">
-<dt id="ape.cli.AccountAliasPromptChoice.get_user_selected_account">
-<code class="sig-name descname"><span class="pre">get_user_selected_account</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.cli.AccountAliasPromptChoice.get_user_selected_account" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account">
+<code class="sig-name descname"><span class="pre">get_user_selected_account</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the selected account.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -211,15 +238,15 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dd></dl>
 
 <dl class="py class">
-<dt id="ape.cli.Alias">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">Alias</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.Alias" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.Alias">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">Alias</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.Alias" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">click.types.Choice</span></code></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> for loading account aliases for the active project at runtime.</p>
 <p>Provide an <code class="docutils literal notranslate"><span class="pre">account_type</span></code> to limit the type of account to choose from.
 Defaults to all account types in <code class="docutils literal notranslate"><span class="pre">choices()</span></code>.</p>
 <dl class="py method">
-<dt id="ape.cli.Alias.choices">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">choices</span></code><a class="headerlink" href="#ape.cli.Alias.choices" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.Alias.choices">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">choices</span></code><a class="headerlink" href="#ape.cli.choices.Alias.choices" title="Permalink to this definition">¶</a></dt>
 <dd><p>The aliases available to choose from.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -234,90 +261,47 @@ Defaults to all account types in <code class="docutils literal notranslate"><spa
 </dd></dl>
 
 <dl class="py class">
-<dt id="ape.cli.AllFilePaths">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">AllFilePaths</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.AllFilePaths" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.cli.paramtype.Path</span></code></p>
-<p>Either all the file paths in the given directory,
-or a list containing only the given file.</p>
+<dt id="ape.cli.choices.NetworkChoice">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">NetworkChoice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.NetworkChoice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">click.types.Choice</span></code></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> to provide network choice defaults for the active project.</p>
 <dl class="py method">
-<dt id="ape.cli.AllFilePaths.convert">
-<code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Context</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.AllFilePaths.convert" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert the value to the correct type. This is not called if
-the value is <code class="docutils literal notranslate"><span class="pre">None</span></code> (the missing value).</p>
-<p>This must accept string values from the command line, as well as
-values that are already the correct type. It may also convert
-other compatible types.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">param</span></code> and <code class="docutils literal notranslate"><span class="pre">ctx</span></code> arguments may be <code class="docutils literal notranslate"><span class="pre">None</span></code> in certain
-situations, such as when converting prompt input.</p>
-<p>If the value cannot be converted, call <code class="xref py py-meth docutils literal notranslate"><span class="pre">fail()</span></code> with a
-descriptive message.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>value</strong> – The value to convert.</p></li>
-<li><p><strong>param</strong> – The parameter that is using this type to convert
-its value. May be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
-<li><p><strong>ctx</strong> – The current context that arrived at this value. May
-be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
+<dt id="ape.cli.choices.NetworkChoice.get_metavar">
+<code class="sig-name descname"><span class="pre">get_metavar</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.NetworkChoice.get_metavar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the metavar default for this param if it provides one.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="ape.cli.NetworkBoundCommand">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">NetworkBoundCommand</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epilog</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">short_help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options_metavar</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'[OPTIONS]'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_help_option</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_args_is_help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deprecated</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.NetworkBoundCommand" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">click.core.Command</span></code></p>
-<p>A command that uses the <code class="xref py py-meth docutils literal notranslate"><span class="pre">network_option()</span></code>.
-It will automatically set the network for the duration of the command execution.</p>
-<dl class="py method">
-<dt id="ape.cli.NetworkBoundCommand.invoke">
-<code class="sig-name descname"><span class="pre">invoke</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">click.core.Context</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Any</span><a class="headerlink" href="#ape.cli.NetworkBoundCommand.invoke" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a context, this invokes the attached callback (if it exists)
-in the right way.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="ape.cli.OutputFormat">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">OutputFormat</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.OutputFormat" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.OutputFormat">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">OutputFormat</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.OutputFormat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>An enum representing output formats, such as <code class="docutils literal notranslate"><span class="pre">TREE</span></code> or <code class="docutils literal notranslate"><span class="pre">YAML</span></code>.
 Use this to select a subset of common output formats to use
-when creating a <code class="xref py py-meth docutils literal notranslate"><span class="pre">output_format_choice()</span></code>.</p>
+when creating a <a class="reference internal" href="#ape.cli.choices.output_format_choice" title="ape.cli.choices.output_format_choice"><code class="xref py py-meth docutils literal notranslate"><span class="pre">output_format_choice()</span></code></a>.</p>
 <dl class="py attribute">
-<dt id="ape.cli.OutputFormat.TREE">
-<code class="sig-name descname"><span class="pre">TREE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'TREE'</span></em><a class="headerlink" href="#ape.cli.OutputFormat.TREE" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.OutputFormat.TREE">
+<code class="sig-name descname"><span class="pre">TREE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'TREE'</span></em><a class="headerlink" href="#ape.cli.choices.OutputFormat.TREE" title="Permalink to this definition">¶</a></dt>
 <dd><p>A rich text tree view of the data.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="ape.cli.OutputFormat.YAML">
-<code class="sig-name descname"><span class="pre">YAML</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'YAML'</span></em><a class="headerlink" href="#ape.cli.OutputFormat.YAML" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.OutputFormat.YAML">
+<code class="sig-name descname"><span class="pre">YAML</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'YAML'</span></em><a class="headerlink" href="#ape.cli.choices.OutputFormat.YAML" title="Permalink to this definition">¶</a></dt>
 <dd><p>A standard .yaml format of the data.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="ape.cli.Path">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">Path</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.Path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">click.types.Path</span></code></p>
-<p>This class exists to encourage the consistent usage
-of <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> for path_type.</p>
-</dd></dl>
-
-<dl class="py class">
-<dt id="ape.cli.PromptChoice">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">PromptChoice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">choices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.PromptChoice" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.PromptChoice">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">PromptChoice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">choices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.PromptChoice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">click.types.ParamType</span></code></p>
 <p>A choice option or argument from user selection.</p>
 <dl class="py method">
-<dt id="ape.cli.PromptChoice.convert">
-<code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Context</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.PromptChoice.convert" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.PromptChoice.convert">
+<code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Context</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.choices.PromptChoice.convert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the value to the correct type. This is not called if
 the value is <code class="docutils literal notranslate"><span class="pre">None</span></code> (the missing value).</p>
 <p>This must accept string values from the command line, as well as
@@ -341,62 +325,20 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dd></dl>
 
 <dl class="py method">
-<dt id="ape.cli.PromptChoice.print_choices">
-<code class="sig-name descname"><span class="pre">print_choices</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.PromptChoice.print_choices" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.PromptChoice.print_choices">
+<code class="sig-name descname"><span class="pre">print_choices</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.PromptChoice.print_choices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Echo the choices to the terminal.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
-<dt id="ape.cli.account_option_that_prompts_when_not_given">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">account_option_that_prompts_when_not_given</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.account_option_that_prompts_when_not_given" title="Permalink to this definition">¶</a></dt>
-<dd><p>Accepts either the account alias or the account number.
-If not given anything, it will prompt the user to select an account.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="ape.cli.ape_cli_context">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">ape_cli_context</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.ape_cli_context" title="Permalink to this definition">¶</a></dt>
-<dd><p>A <code class="docutils literal notranslate"><span class="pre">click</span></code> context object with helpful utilities.
-Use in your commands to get access to common utility features,
-such as logging or accessing managers.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="ape.cli.contract_file_paths_argument">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">contract_file_paths_argument</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.contract_file_paths_argument" title="Permalink to this definition">¶</a></dt>
-<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> representing contract source file paths.
-This argument takes 0-to-many values.</p>
-<p>The return type from the callback is a flattened list of
-source file-paths.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="ape.cli.contract_option">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">contract_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.contract_option" title="Permalink to this definition">¶</a></dt>
-<dd><p>Contract(s) from the current project.
-If you pass <code class="docutils literal notranslate"><span class="pre">multiple=True</span></code>, you will get a list of contract types from the callback.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="ape.cli.existing_alias_argument">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">existing_alias_argument</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.existing_alias_argument" title="Permalink to this definition">¶</a></dt>
-<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> for an existing account alias.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>account_type</strong> (type[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>], optional) – If given, limits the type of account the user may choose from.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="ape.cli.get_user_selected_account">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">get_user_selected_account</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.cli.get_user_selected_account" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.get_user_selected_account">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">get_user_selected_account</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.cli.choices.get_user_selected_account" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prompt the user to pick from their accounts and return that account.
 Use this method if you want to prompt users to select accounts _outside_
 of CLI options. For CLI options, use
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">account_option_that_prompts_when_not_given()</span></code>.</p>
+<a class="reference internal" href="#ape.cli.options.account_option_that_prompts_when_not_given" title="ape.cli.options.account_option_that_prompts_when_not_given"><code class="xref py py-meth docutils literal notranslate"><span class="pre">account_option_that_prompts_when_not_given()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -411,27 +353,8 @@ of CLI options. For CLI options, use
 </dd></dl>
 
 <dl class="py function">
-<dt id="ape.cli.network_option">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">network_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'ethereum'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.network_option" title="Permalink to this definition">¶</a></dt>
-<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for specifying a network.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>default</strong> (<em>str</em>) – Optionally, change which network to
-use as the default. Defaults to how <code class="docutils literal notranslate"><span class="pre">ape</span></code> normally
-selects a default network.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="ape.cli.non_existing_alias_argument">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">non_existing_alias_argument</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.non_existing_alias_argument" title="Permalink to this definition">¶</a></dt>
-<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> for an account alias that does not yet exist in ape.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="ape.cli.output_format_choice">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">output_format_choice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.cli.choices.OutputFormat</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">click.types.Choice</span><a class="headerlink" href="#ape.cli.output_format_choice" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.choices.output_format_choice">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></code><code class="sig-name descname"><span class="pre">output_format_choice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.cli.choices.OutputFormat" title="ape.cli.choices.OutputFormat"><span class="pre">ape.cli.choices.OutputFormat</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">click.types.Choice</span><a class="headerlink" href="#ape.cli.choices.output_format_choice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a <code class="docutils literal notranslate"><span class="pre">click.Choice()</span></code> type for the given options.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -443,20 +366,112 @@ selects a default network.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt id="ape.cli.output_format_option">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">output_format_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">default:</span> <span class="pre">ape.cli.choices.OutputFormat</span> <span class="pre">=</span> <span class="pre">&lt;OutputFormat.TREE:</span> <span class="pre">'TREE'&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.output_format_option" title="Permalink to this definition">¶</a></dt>
-<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for specifying a format to use when outputting data.</p>
+</div>
+<div class="section" id="module-ape.cli.commands">
+<span id="commands"></span><h2>Commands<a class="headerlink" href="#module-ape.cli.commands" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.cli.commands.NetworkBoundCommand">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.commands.</span></code><code class="sig-name descname"><span class="pre">NetworkBoundCommand</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epilog</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">short_help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options_metavar</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'[OPTIONS]'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_help_option</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_args_is_help</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deprecated</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.commands.NetworkBoundCommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">click.core.Command</span></code></p>
+<p>A command that uses the <a class="reference internal" href="#ape.cli.options.network_option" title="ape.cli.options.network_option"><code class="xref py py-meth docutils literal notranslate"><span class="pre">network_option()</span></code></a>.
+It will automatically set the network for the duration of the command execution.</p>
+<dl class="py method">
+<dt id="ape.cli.commands.NetworkBoundCommand.invoke">
+<code class="sig-name descname"><span class="pre">invoke</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">click.core.Context</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Any</span><a class="headerlink" href="#ape.cli.commands.NetworkBoundCommand.invoke" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a context, this invokes the attached callback (if it exists)
+in the right way.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.cli.options">
+<span id="options"></span><h2>Options<a class="headerlink" href="#module-ape.cli.options" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.cli.options.ApeCliContextObject">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">ApeCliContextObject</span></code><a class="headerlink" href="#ape.cli.options.ApeCliContextObject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">click</span></code> context object class. Use via <a class="reference internal" href="#ape.cli.options.ape_cli_context" title="ape.cli.options.ape_cli_context"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape_cli_context()</span></code></a>.
+It provides common CLI utilities for ape, such as logging or
+access to the managers.</p>
+<dl class="py method">
+<dt id="ape.cli.options.ApeCliContextObject.abort">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">abort</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_error</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.ApeCliContextObject.abort" title="Permalink to this definition">¶</a></dt>
+<dd><p>End execution of the current command invocation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>default</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">OutputFormat</span></code>) – Defaults to <code class="docutils literal notranslate"><span class="pre">TREE</span></code> format.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<em>str</em>) – A message to output to the terminal.</p></li>
+<li><p><strong>base_error</strong> (<em>Exception</em><em>, </em><em>optional</em>) – Optionally provide
+an error to preserve the exception stack.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.cli.options.ApeCliContextObject.project">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">project</span></code><a class="headerlink" href="#ape.cli.options.ApeCliContextObject.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class representing the project that is active at runtime.
+(This is the same object as from <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">ape</span> <span class="pre">import</span> <span class="pre">project</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.options.account_option_that_prompts_when_not_given">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">account_option_that_prompts_when_not_given</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.account_option_that_prompts_when_not_given" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accepts either the account alias or the account number.
+If not given anything, it will prompt the user to select an account.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.options.ape_cli_context">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">ape_cli_context</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.ape_cli_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click</span></code> context object with helpful utilities.
+Use in your commands to get access to common utility features,
+such as logging or accessing managers.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.options.contract_option">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">contract_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.contract_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contract(s) from the current project.
+If you pass <code class="docutils literal notranslate"><span class="pre">multiple=True</span></code>, you will get a list of contract types from the callback.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.options.network_option">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">network_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'ethereum'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.network_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for specifying a network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>default</strong> (<em>str</em>) – Optionally, change which network to
+use as the default. Defaults to how <code class="docutils literal notranslate"><span class="pre">ape</span></code> normally
+selects a default network.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ape.cli.skip_confirmation_option">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.</span></code><code class="sig-name descname"><span class="pre">skip_confirmation_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.skip_confirmation_option" title="Permalink to this definition">¶</a></dt>
+<dt id="ape.cli.options.output_format_option">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">output_format_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">default:</span> <span class="pre">ape.cli.choices.OutputFormat</span> <span class="pre">=</span> <span class="pre">&lt;OutputFormat.TREE:</span> <span class="pre">'TREE'&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.output_format_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for specifying a format to use when outputting data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>default</strong> (<a class="reference internal" href="#ape.cli.choices.OutputFormat" title="ape.cli.choices.OutputFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">OutputFormat</span></code></a>) – Defaults to <code class="docutils literal notranslate"><span class="pre">TREE</span></code> format.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.options.skip_confirmation_option">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">skip_confirmation_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">help</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.skip_confirmation_option" title="Permalink to this definition">¶</a></dt>
 <dd><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for skipping confirmation (<code class="docutils literal notranslate"><span class="pre">--yes</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -465,6 +480,76 @@ selects a default network.</p>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt id="ape.cli.options.verbosity_option">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">verbosity_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_logger</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.verbosity_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator that adds a <cite>–verbosity, -v</cite> option to the decorated
+command.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.cli.paramtype">
+<span id="parameter-types"></span><h2>Parameter Types<a class="headerlink" href="#module-ape.cli.paramtype" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.cli.paramtype.AllFilePaths">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.paramtype.</span></code><code class="sig-name descname"><span class="pre">AllFilePaths</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.paramtype.AllFilePaths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.cli.paramtype.Path</span></code></a></p>
+<p>Either all the file paths in the given directory,
+or a list containing only the given file.</p>
+<dl class="py method">
+<dt id="ape.cli.paramtype.AllFilePaths.convert">
+<code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">click.core.Context</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.cli.paramtype.AllFilePaths.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the value to the correct type. This is not called if
+the value is <code class="docutils literal notranslate"><span class="pre">None</span></code> (the missing value).</p>
+<p>This must accept string values from the command line, as well as
+values that are already the correct type. It may also convert
+other compatible types.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">param</span></code> and <code class="docutils literal notranslate"><span class="pre">ctx</span></code> arguments may be <code class="docutils literal notranslate"><span class="pre">None</span></code> in certain
+situations, such as when converting prompt input.</p>
+<p>If the value cannot be converted, call <code class="xref py py-meth docutils literal notranslate"><span class="pre">fail()</span></code> with a
+descriptive message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – The value to convert.</p></li>
+<li><p><strong>param</strong> – The parameter that is using this type to convert
+its value. May be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>ctx</strong> – The current context that arrived at this value. May
+be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.cli.paramtype.Path">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.paramtype.</span></code><code class="sig-name descname"><span class="pre">Path</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.paramtype.Path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">click.types.Path</span></code></p>
+<p>This class exists to encourage the consistent usage
+of <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> for path_type.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.cli.utils">
+<span id="utilities"></span><h2>Utilities<a class="headerlink" href="#module-ape.cli.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="py exception">
+<dt id="ape.cli.utils.Abort">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.utils.</span></code><code class="sig-name descname"><span class="pre">Abort</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.utils.Abort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">click.exceptions.ClickException</span></code></p>
+<p>A wrapper around a CLI exception. When you raise this error,
+the error is nicely printed to the terminal. This is
+useful for all user-facing errors.</p>
+<dl class="py method">
+<dt id="ape.cli.utils.Abort.show">
+<code class="sig-name descname"><span class="pre">show</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.utils.Abort.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Override default <code class="docutils literal notranslate"><span class="pre">show</span></code> to print CLI errors in red text.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 
 
