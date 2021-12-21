@@ -293,6 +293,8 @@ class ContractContainer:
     """
 
     contract_type: ContractType
+    """The type of the contract."""
+
     _provider: Optional[ProviderAPI]
     # _provider is only None when a user is not connected to a provider.
 
@@ -312,7 +314,8 @@ class ContractContainer:
         Args:
             address (str): The address to initialize a contract.
               **NOTE**: Things will not work as expected if the contract is not actually
-              deployed to this address.
+              deployed to this address or if the contract at the given address has
+              a different type than :attr:`~ape.contracts.ContractContainer.contract_type`.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`
