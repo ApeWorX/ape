@@ -159,13 +159,13 @@ If you want to run specific files in a `scripts/` directory, you can do it with 
 $ ape run deploy
 ```
 
-**Ape Logging:** 
+### Logging
 
-If you want to view more information while running any of the ape commands.
-You can type `ape keyword arguments -v [LVL]`, `--verbosity [LVL]` 
+If you want to enable debug logging you should appened
+`ape command_word -v [LVL]` or  `ape command_word --verbosity [LVL]` 
 
 ```bash
-ape run deploy --verbosity INFO
+ape run deploy --verbosity DEBUG
 ape run deploy -v ERROR
 ```
 
@@ -197,5 +197,3 @@ c.viewThis()  # Make Web3 calls
 c.doThat(sender=a)  # Make Web3 transactions
 assert c.MyEvent[-1].caller == a  # Search through Web3 events
 ```
-
-
