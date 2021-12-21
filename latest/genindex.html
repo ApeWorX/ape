@@ -71,6 +71,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/ape.html">ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="methoddocs/contracts.html">ape.contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/exceptions.html">ape.exceptions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/managers.html">ape.managers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/cli.html">ape.cli</a></li>
@@ -345,21 +346,27 @@
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.__delitem__">__delitem__() (ape.api.accounts.AccountContainerAPI method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.__dir__">__dir__() (ape.api.accounts.AccountAPI method)</a>
+
+      <ul>
+        <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance.__dir__">(ape.contracts.base.ContractInstance method)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.__getattr__">__getattr__() (ape.api.networks.EcosystemAPI method)</a>
 
       <ul>
+        <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance.__getattr__">(ape.contracts.base.ContractInstance method)</a>
+</li>
         <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.__getattr__">(ape.managers.project.ProjectManager method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.__getitem__">__getitem__() (ape.api.accounts.AccountContainerAPI method)</a>
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.__getitem__">(ape.api.networks.EcosystemAPI method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.networks.ProviderContextManager.__init__">__init__() (ape.api.networks.ProviderContextManager method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.__iter__">__iter__() (ape.api.accounts.AccountContainerAPI method)</a>
@@ -481,6 +488,8 @@
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.address.AddressAPI.address">(ape.api.address.AddressAPI property)</a>
+</li>
+        <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance.address">(ape.contracts.base.ContractInstance property)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.address.AddressAPI">AddressAPI (class in ape.api.address)</a>
@@ -723,6 +732,8 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.as_dict">as_dict() (ape.api.providers.TransactionAPI method)</a>
 </li>
+      <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractContainer.at">at() (ape.contracts.base.ContractContainer method)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.providers.ReceiptAPI.await_confirmations">await_confirmations() (ape.api.providers.ReceiptAPI method)</a>
 </li>
   </ul></td>
@@ -848,12 +859,12 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.config.ConfigEnum">ConfigEnum (class in ape.api.config)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ConfigError">ConfigError</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.config.ConfigItem">ConfigItem (class in ape.api.config)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager">ConfigManager (class in ape.managers.config)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ConfirmationsProgressBar">ConfirmationsProgressBar (class in ape.api.providers)</a>
@@ -885,12 +896,20 @@
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.options.contract_option">contract_option() (in module ape.cli.options)</a>
 </li>
+      <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractContainer.contract_type">contract_type (ape.contracts.base.ContractContainer attribute)</a>
+</li>
+      <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractContainer">ContractContainer (class in ape.contracts.base)</a>
+</li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractDeployError">ContractDeployError</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractError">ContractError</a>
 </li>
-      <li><a href="methoddocs/types.html#ape.types.contract.ContractInstance">ContractInstance (class in ape.types.contract)</a>
+      <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance">ContractInstance (class in ape.contracts.base)</a>
+
+      <ul>
+        <li><a href="methoddocs/types.html#ape.types.contract.ContractInstance">(class in ape.types.contract)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractLogicError">ContractLogicError</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.contracts">contracts() (ape.managers.project.ProjectManager property)</a>
