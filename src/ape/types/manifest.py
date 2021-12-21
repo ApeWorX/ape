@@ -20,6 +20,13 @@ class PackageMeta(SerializableType):
 
 
 class PackageManifest(FileMixin, SerializableType):
+    """
+    Content referring to a complete smart-contract package.
+    The manifest contains everything needed to "share" a package.
+    Use manifests to publish your project as well as use other projects locally,
+    whether as dependencies or just in scripts.
+    """
+
     # NOTE: Must not override this key
     manifest: str = "ethpm/3"
     # NOTE: ``name`` and ``version`` should appear together
