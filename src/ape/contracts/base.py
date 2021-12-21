@@ -307,7 +307,7 @@ class ContractContainer:
 
             from ape import project
 
-            bored_ape = project.BoredApeYachtClub.at("0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D")
+            my_contract = project.MyContract.at("0xAbC1230001112223334445566611855443322111")
 
         Args:
             address (str): The address to initialize the contract from.
