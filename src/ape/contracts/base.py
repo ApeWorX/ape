@@ -186,7 +186,7 @@ class ContractEvent:
 
 class ContractInstance(AddressAPI):
     """
-    An instance of a smart contract that you can interact with.
+    An interactive instance of a smart contract.
     After you deploy a contract using the :class:`~ape.api.accounts.AccountAPI.deploy` method,
     you get back a contract instance.
 
