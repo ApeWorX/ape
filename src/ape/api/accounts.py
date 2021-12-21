@@ -298,7 +298,7 @@ class AccountContainerAPI:
         Delete an account.
 
         Raises:
-            NotImplementError: When this is not overridden in a plugin.
+            NotImplementError: When not overridden within a plugin.
 
         Args:
             address: (address :class:`~ape.types.AddressType`):
