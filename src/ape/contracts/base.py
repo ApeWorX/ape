@@ -310,7 +310,7 @@ class ContractContainer:
             my_contract = project.MyContract.at("0xAbC1230001112223334445566611855443322111")
 
         Args:
-            address (str): The address to initialize the contract from.
+            address (str): The address to initialize a contract.
               **NOTE**: Things will not work as expected if the contract is not actually
               deployed to this address.
 
