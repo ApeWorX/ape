@@ -152,7 +152,7 @@ class DynamicFeeTransaction(BaseTransaction):
 class Receipt(ReceiptAPI):
     def raise_for_status(self, txn: TransactionAPI):
         """
-        Raise an error for the given transaction if the transaction has failed.
+        Raise an error for the given transaction, if the transaction has failed.
 
         Args:
             txn (:class:`ape.api.providers.TransactionAPI`): The sent-transaction to
