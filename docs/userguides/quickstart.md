@@ -159,6 +159,16 @@ If you want to run specific files in a `scripts/` directory, you can do it with 
 $ ape run deploy
 ```
 
+**Ape Logging:** 
+
+If you want to view more information while running any of the ape commands.
+You can type `ape keyword arguments -v [LVL]`, `--verbosity [LVL]` 
+
+```bash
+ape run deploy --verbosity INFO
+ape run deploy -v ERROR
+```
+
 You can use `ape` as a package outside of scripts for the `ape run` command as well.
 
 You can work with registered networks, providers, and blockchain ecosystems (like Ethereum):
@@ -187,3 +197,5 @@ c.viewThis()  # Make Web3 calls
 c.doThat(sender=a)  # Make Web3 transactions
 assert c.MyEvent[-1].caller == a  # Search through Web3 events
 ```
+
+

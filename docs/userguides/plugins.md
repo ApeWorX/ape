@@ -118,3 +118,36 @@ CLI arguments are decoded and passed in to the application with `click`.
 CLI plugins will use the plugin registration process defined above. The
 CLI plugins should use the `click` library in order to be able to supply
 arguments from the CLI.
+
+## Logging Ape
+
+Ape comes equiped with additional logging tools to help view output. Custom plugins may need to stop a process and log the info. The `Abort` and `ape_cli_context` are available on the `from ape.cli` and _@ape_cli_context decorator_.
+
+
+* **Abort:**
+    
+    A wrapper around a CLI exception. When you raise this error,
+    the error is nicely printed to the terminal. This is
+    useful for all user-facing errors.
+    
+    ```bash
+    from ape.cli import Abort
+    
+        try:
+            foo()
+        except ApeException as err:
+            raise Abort(f"({type(err).__name__}) {err}") from err
+    ```
+    
+* **ape_cli_context:**
+    
+    A ``click`` context object with helpful utilities.
+    Use in your commands to get access to common utility features,
+    such as logging or accessing managers.
+    ```bash
+    from ape.cli import ape_cli_context
+    
+    @ape_cli_context()
+    def my_command(cli_ctx)
+      cli_ctx.logger.info("my log message")
+    ```
