@@ -231,7 +231,7 @@ class ContractInstance(AddressAPI):
 
         Usage example::
 
-            result = contract.Vote()  # Implies a method named Vote exists on the contract.
+            result = contract.vote()  # Implies a method named "vote" exists on the contract.
 
         Args:
             attr_name (str): The name of the method or property to access.
