@@ -303,6 +303,12 @@ class ContractContainer:
         """
         Get a contract at the given address.
 
+        Usage example::
+
+            from ape import project
+
+            bored_ape = project.BoredApeYachtClub.at("0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D")
+
         Args:
             address (str): The address to initialize the contract from.
               **NOTE**: Things will not work as expected if the contract is not actually
