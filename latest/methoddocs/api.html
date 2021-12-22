@@ -180,14 +180,17 @@
 <code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">send_everything</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a><a class="headerlink" href="#ape.api.accounts.AccountAPI.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a transaction call.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.AccountsError" title="ape.exceptions.AccountsError"><strong>AccountsError</strong></a> – When the nonce is invalid.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
 <li><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to submit in a call.</p></li>
 <li><p><strong>send_everything</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> will send the value difference from balance and fee.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -273,8 +276,12 @@ A provider must be active.</p>
 <dl class="py method">
 <dt id="ape.api.accounts.AccountContainerAPI.__contains__">
 <code class="sig-name descname"><span class="pre">__contains__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.__contains__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if the address is an existing account in <code class="docutils literal notranslate"><span class="pre">ape</span></code>.
-Must be a valid address or else raises <code class="docutils literal notranslate"><span class="pre">IndexError</span></code>.</p>
+<dd><p>Check if the address is an existing account in <code class="docutils literal notranslate"><span class="pre">ape</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>IndexError</strong> – When the given account address is not in this container.</p>
+</dd>
+</dl>
 <p>:param address <a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>: An account address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -289,11 +296,13 @@ Must be a valid address or else raises <code class="docutils literal notranslate
 <dl class="py method">
 <dt id="ape.api.accounts.AccountContainerAPI.__delitem__">
 <code class="sig-name descname"><span class="pre">__delitem__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.__delitem__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete an account.
-Must be overriden or else raises <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>.</p>
+<dd><p>Delete an account.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> – (address <a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>):
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>NotImplementError</strong> – When not overridden within a plugin.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>address</strong> – (address <a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>):
 The address of the account to delete.</p>
 </dd>
 </dl>
@@ -304,8 +313,11 @@ The address of the account to delete.</p>
 <code class="sig-name descname"><span class="pre">__getitem__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an account by address.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>IndexError</strong> – When there is no local account with the given address.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -346,8 +358,11 @@ The address of the account to delete.</p>
 <code class="sig-name descname"><span class="pre">append</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an account to the container.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>account</strong> (<a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>) – The account to add.</p>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.AccountsError" title="ape.exceptions.AccountsError"><strong>AccountsError</strong></a> – When the account is already in the container.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>account</strong> (<a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>) – The account to add.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -355,11 +370,13 @@ The address of the account to delete.</p>
 <dl class="py method">
 <dt id="ape.api.accounts.AccountContainerAPI.remove">
 <code class="sig-name descname"><span class="pre">remove</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.remove" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete an account.
-Must be known to <code class="docutils literal notranslate"><span class="pre">ape</span></code> or else raises <a class="reference internal" href="exceptions.html#ape.exceptions.AccountsError" title="ape.exceptions.AccountsError"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountsError</span></code></a>.</p>
+<dd><p>Delete an account.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>account</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code>) – The account to remove.</p>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.AccountsError" title="ape.exceptions.AccountsError"><strong>AccountsError</strong></a> – When the account is not known to <code class="docutils literal notranslate"><span class="pre">ape</span></code>.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>account</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code>) – The account to remove.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -487,12 +504,14 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <dl class="py method">
 <dt id="ape.api.address.AddressAPI.provider">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">provider</span></code><a class="headerlink" href="#ape.api.address.AddressAPI.provider" title="Permalink to this definition">¶</a></dt>
-<dd><p>The current active provider if connected to one.
-If there is no active provider at runtime, then this raises an
-<a class="reference internal" href="exceptions.html#ape.exceptions.AddressError" title="ape.exceptions.AddressError"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressError</span></code></a>.</p>
+<dd><p>The current active provider if connected to one.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.AddressError" title="ape.exceptions.AddressError"><strong>AddressError</strong></a> – When there is no active
+    provider at runtime.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -678,11 +697,14 @@ All compiler plugins must implement this function.</p>
 </pre></div>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>network_name</strong> (<em>str</em>) – The name of the network to retrieve.</p>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.NetworkNotFoundError" title="ape.exceptions.NetworkNotFoundError"><strong>NetworkNotFoundError</strong></a> – When there is no network with the given name.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>network_name</strong> (<em>str</em>) – The name of the network to retrieve.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -692,11 +714,14 @@ All compiler plugins must implement this function.</p>
 <code class="sig-name descname"><span class="pre">__getitem__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">network_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a><a class="headerlink" href="#ape.api.networks.EcosystemAPI.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a network by name.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>network_name</strong> (<em>str</em>) – The name of the network to retrieve.</p>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.NetworkNotFoundError" title="ape.exceptions.NetworkNotFoundError"><strong>NetworkNotFoundError</strong></a> – When there is no network with the given name.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>network_name</strong> (<em>str</em>) – The name of the network to retrieve.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1547,6 +1572,14 @@ Override this property as needed, such as for
 <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> differences.</p>
 <p>See <code class="xref py py-class docutils literal notranslate"><span class="pre">StaticFeeTransaction</span></code> and
 <code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicFeeTransaction</span></code> as examples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – When setting in a class that did not override the setter.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1597,8 +1630,12 @@ For example, the URL for HTTP-based providers.</p>
 <dt id="ape.api.providers.Web3Provider.base_fee">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">base_fee</span></code><a class="headerlink" href="#ape.api.providers.Web3Provider.base_fee" title="Permalink to this definition">¶</a></dt>
 <dd><p>The current base fee from the latest block.</p>
-<p>NOTE: If your chain does not support base_fees (EIP-1559),
-this method will raise a <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – When your chain does not support base_fees
+    (<a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>).</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1681,8 +1718,11 @@ ex: logs certains or types.</p>
 <code class="sig-name descname"><span class="pre">get_transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_confirmations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a><a class="headerlink" href="#ape.api.providers.Web3Provider.get_transaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>The information about a transaction requested by transaction hash.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.TransactionError" title="ape.exceptions.TransactionError"><strong>TransactionError</strong></a> – When the required confirmations is negative.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
 <li><p><strong>txn_hash</strong> (<em>str</em>) – The hash of the transaction to retrieve.</p></li>
 <li><p><strong>required_confirmations</strong> (<em>int</em>) – If more than 0, waits for that many
 confirmations before returning the receipt. This is to increase confidence
@@ -1690,8 +1730,8 @@ that your transaction is in its final position on the blockchain. Defaults
 to 0.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>

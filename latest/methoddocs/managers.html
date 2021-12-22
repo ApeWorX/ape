@@ -236,8 +236,11 @@ to get.</p>
 <code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.managers.accounts.AccountManager.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an account by its alias.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>IndexError</strong> – When there is no local account with the given alias.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -287,16 +290,20 @@ which uses the <a class="reference internal" href="api.html#ape.api.compiler.Com
 For example, use the <a class="reference external" href="https://github.com/ApeWorX/ape-solidity">ape-solidity plugin</a>
 to compile <code class="docutils literal notranslate"><span class="pre">'.sol'</span></code> files.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>contract_filepaths</strong> (<em>list</em><em>[</em><em>pathlib.Path</em><em>]</em>) – The list of files to compile,
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.CompilerError" title="ape.exceptions.CompilerError"><strong>CompilerError</strong></a> – When there is no compiler found for the given
+    extension as well as when there is a contract-type collision across compilers.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>contract_filepaths</strong> (<em>list</em><em>[</em><em>pathlib.Path</em><em>]</em>) – The list of files to compile,
 as <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> objects.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A mapping of
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A mapping of
 contract names to their type.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict[str, <a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code></a>]</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict[str, <a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -437,21 +444,23 @@ the root <code class="docutils literal notranslate"><span class="pre">ape</span>
 <code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Type</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Any</span><a class="headerlink" href="#ape.managers.converters.ConversionManager.convert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the given value to the given type. This method accesses
 all <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" title="ape.api.convert.ConverterAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConverterAPI</span></code></a> instances known to
-<cite>ape`</cite> and selects the appropriate one, so long that it exists.
-Raises a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a> when there is not
-a registered converter for the given arguments.</p>
+<cite>ape`</cite> and selects the appropriate one, so long that it exists.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><strong>ConversionError</strong></a> – When there is not a registered
+    converter for the given arguments.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
 <li><p><strong>value</strong> (<em>any</em>) – The value to convert.</p></li>
 <li><p><strong>type</strong> (<em>type</em>) – The type to convert the value to.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The same given value but with the new given type.</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The same given value but with the new given type.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>any</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>any</p>
 </dd>
 </dl>
 </dd></dl>
@@ -599,16 +608,20 @@ A network choice is any value returned from
 CLI command <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">list</span></code> to list all the possible network
 combinations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.NetworkError" title="ape.exceptions.NetworkError"><strong>NetworkError</strong></a> – When the given network choice does not
+    match any known network.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
 <li><p><strong>network_choice</strong> (<em>str</em><em>, </em><em>optional</em>) – The network choice
 (see <a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">network_choices()</span></code></a>).
 Defaults to the default ecosystem, network, and provider combination.</p></li>
 <li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings for the provider. Defaults to None.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -687,8 +700,11 @@ Defaults to the default ecosystem, network, and provider combination.</p></li>
 <code class="sig-name descname"><span class="pre">set_default_ecosystem</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecosystem_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.networks.NetworkManager.set_default_ecosystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the default ecosystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>ecosystem_name</strong> (<em>str</em>) – The name of the ecosystem to set
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.NetworkError" title="ape.exceptions.NetworkError"><strong>NetworkError</strong></a> – When the given ecosystem name is unknown.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>ecosystem_name</strong> (<em>str</em>) – The name of the ecosystem to set
 as the default.</p>
 </dd>
 </dl>
@@ -707,6 +723,11 @@ Additionally, compile contracts using the
 <a class="reference internal" href="#ape.managers.project.ProjectManager.load_contracts" title="ape.managers.project.ProjectManager.load_contracts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_contracts()</span></code></a> method.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">ape.project</span></code> to reference the current project and <code class="docutils literal notranslate"><span class="pre">ape.Project</span></code> to reference
 this class uninitialized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ProjectError" title="ape.exceptions.ProjectError"><strong>ProjectError</strong></a> – When the project’s dependencies are invalid.</p>
+</dd>
+</dl>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>  <span class="c1"># &quot;project&quot; is the ProjectManager for the active project</span>
 <span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Project</span>  <span class="c1"># Is a ProjectManager</span>
