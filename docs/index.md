@@ -6,6 +6,7 @@
    :maxdepth: 1
 
    userguides/quickstart
+   userguides/project
    userguides/plugins
 ```
 

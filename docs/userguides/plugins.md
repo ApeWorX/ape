@@ -5,7 +5,7 @@ from the the `ape.api` namespace or add key `ape_cli_subcommands` to your entry-
 `setup.py`, depending on what type of plugin you want to create. This guide is intended to assist in both of those 
 use-cases.
 
-The following is a list of example plugins to use a reference when developing your own plugins:
+The following is a list of example plugins to use as a reference when developing plugins:
 
 * `CompilerAPI`: [the Solidity plugin](https://github.com/apeworx/ape-solidity)
 * `ProviderAPI`: [the Infura plugin](https://github.com/apeworx/ape-infura)
@@ -23,11 +23,11 @@ keep your plugin of similar quality to plugins developed by the ApeWorX team.
 ## Implementing API Classes
 
 API classes (classes from the `ape.api` namespace) are primary composed of abstract methods and properties that plugins 
-must implement. The benefit of the plugin system is that each plugin can implement these however they need, so long as 
+must implement. A benefit of the plugin system is that each plugin can implement these however they need, so long as 
 they conform to the API interface. Two plugins with the same API may do entirely different things and yet be 
 interchangeable in their usage.
 
-To implement an API, import its class and use it as a base-class in your implementation class. **WARN** The plugin 
+To implement an API, import its class and use it as a base-class in your implementation class. **WARNING**: The plugin 
 will fail to work properly if you do not implement all the abstract methods.
 
 ```python
@@ -60,10 +60,10 @@ process it according to its registration interface.
 
 ### CLI Plugins
 
-The `ape` CLI is built using the python package [click](https://palletsprojects.com/p/click/). To create an `ape` CLI
-plugin, create any type of `click` command (such as a `click.group` or a `click.command`).
+The `ape` CLI is built using the python package [click](https://palletsprojects.com/p/click/). To create a CLI plugin,
+create any type of `click` command (such as a `click.group` or a `click.command`).
 
-(`_cli.py`):
+`_cli.py`:
 
 ```python
 import click
@@ -80,7 +80,7 @@ def my_sub_cmd():
 
 Then, register it using `entrypoints`, which is a built-in python registry of items declared in `setup.py`.
 
-(`setup.py`):
+`setup.py`:
 
 ```python
 ...
