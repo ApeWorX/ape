@@ -65,18 +65,17 @@ class TransactionAPI:
 
         See :class:`~ape_ethereum.ecosystem.StaticFeeTransaction` and
         :class:`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
+
+        Raises:
+            NotImplementedError: When setting in a class that did not override the setter.
+
+        Returns:
+            int
         """
         return 0
 
     @max_fee.setter
     def max_fee(self, value: int):
-        """
-        Set the max fee.
-        Must be overriden or else raises `NotImplementedError`.
-
-        Args:
-            value (int): The number of the fee
-        """
         raise NotImplementedError("Max fee is not settable by default.")
 
     @property
@@ -624,8 +623,9 @@ class Web3Provider(ProviderAPI):
         """
         The current base fee from the latest block.
 
-        NOTE: If your chain does not support base_fees (EIP-1559),
-        this method will raise a ``NotImplementedError``.
+        Raises:
+            NotImplementedError: When your chain does not support base_fees
+              (`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
         block = self.get_block("latest")
 
@@ -686,6 +686,9 @@ class Web3Provider(ProviderAPI):
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
         """
         The information about a transaction requested by transaction hash.
+
+        Raises:
+            :class:`~ape.exceptions.TransactionError`: When the required confirmations is negative.
 
         Args:
             txn_hash (str): The hash of the transaction to retrieve.

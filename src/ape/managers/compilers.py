@@ -51,11 +51,8 @@ class CompilerManager:
             compiler = compiler_class(config=config)
 
             for extension in extensions:
-
-                if extension in registered_compilers:
-                    raise CompilerError(f"Compiler for '{extension}' is already registered.")
-
-                registered_compilers[extension] = compiler
+                if extension not in registered_compilers:
+                    registered_compilers[extension] = compiler
 
         return registered_compilers
 
@@ -64,6 +61,10 @@ class CompilerManager:
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
         For example, use the `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__
         to compile ``'.sol'`` files.
+
+        Raises:
+            :class:`~ape.exceptions.CompilerError`: When there is no compiler found for the given
+              extension as well as when there is a contract-type collision across compilers.
 
         Args:
             contract_filepaths (list[pathlib.Path]): The list of files to compile,

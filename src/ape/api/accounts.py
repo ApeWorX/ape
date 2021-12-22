@@ -75,6 +75,9 @@ class AccountAPI(AddressAPI):
         """
         Make a transaction call.
 
+        Raises:
+            :class:`~ape.exceptions.AccountsError`: When the nonce is invalid.
+
         Args:
             txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to submit in a call.
             send_everything (bool): ``True`` will send the value difference from balance and fee.
@@ -239,6 +242,9 @@ class AccountContainerAPI:
         """
         Get an account by address.
 
+        Raises:
+            IndexError: When there is no local account with the given address.
+
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
@@ -251,6 +257,9 @@ class AccountContainerAPI:
     def append(self, account: AccountAPI):
         """
         Add an account to the container.
+
+        Raises:
+            :class:`~ape.exceptions.AccountsError`: When the account is already in the container.
 
         Args:
             account (:class:`~ape.api.accounts.AccountAPI`): The account to add.
@@ -270,7 +279,9 @@ class AccountContainerAPI:
     def remove(self, account: AccountAPI):
         """
         Delete an account.
-        Must be known to ``ape`` or else raises :class:`~ape.exceptions.AccountsError`.
+
+        Raises:
+            :class:`~ape.exceptions.AccountsError`: When the account is not known to ``ape``.
 
         Args:
             account (:class:`~ape.accounts.AccountAPI`): The account to remove.
@@ -285,7 +296,9 @@ class AccountContainerAPI:
     def __delitem__(self, address: AddressType):
         """
         Delete an account.
-        Must be overriden or else raises ``NotImplementedError``.
+
+        Raises:
+            NotImplementError: When not overridden within a plugin.
 
         Args:
             address: (address :class:`~ape.types.AddressType`):
@@ -297,7 +310,9 @@ class AccountContainerAPI:
     def __contains__(self, address: AddressType) -> bool:
         """
         Check if the address is an existing account in ``ape``.
-        Must be a valid address or else raises ``IndexError``.
+
+        Raises:
+            IndexError: When the given account address is not in this container.
 
         Args:
             address :class:`~ape.types.AddressType`: An account address.

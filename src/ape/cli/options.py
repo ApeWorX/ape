@@ -189,6 +189,9 @@ def contract_option(help=None, required=False, multiple=False):
     """
     Contract(s) from the current project.
     If you pass ``multiple=True``, you will get a list of contract types from the callback.
+
+    Raises:
+        :class:`~ape.exceptions.ContractError`: In the callback when it fails to load the contracts.
     """
 
     help = help or "The name of a contract in the current project"

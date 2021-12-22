@@ -148,6 +148,9 @@ class AccountManager:
         """
         Get an account by its alias.
 
+        Raises:
+            IndexError: When there is no local account with the given alias.
+
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
@@ -160,7 +163,7 @@ class AccountManager:
                 self._inject_provider(account)
                 return account
 
-        raise IndexError(f"No account with alias `{alias}`.")
+        raise IndexError(f"No account with alias '{alias}'.")
 
     @singledispatchmethod
     def __getitem__(self, account_id) -> AccountAPI:
@@ -192,6 +195,9 @@ class AccountManager:
         """
         Get an account by address.
 
+        Raises:
+            IndexError: When there is no local account with the given address.
+
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
@@ -204,7 +210,7 @@ class AccountManager:
                 self._inject_provider(account)
                 return account
 
-        raise IndexError(f"No account with address `{account_id}`.")
+        raise IndexError(f"No account with address '{account_id}'.")
 
     def __contains__(self, address: AddressType) -> bool:
         """
