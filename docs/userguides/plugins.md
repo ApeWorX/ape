@@ -7,10 +7,10 @@ want to create. This guide is intended to assist in both of those use-cases.
 
 The following is a list of example plugins to use as a reference when developing plugins:
 
-* `CompilerAPI`: [the Solidity plugin](https://github.com/apeworx/ape-solidity)
-* `ProviderAPI`: [the Infura plugin](https://github.com/apeworx/ape-infura)
-* `AccountAPI`: [the Trezor plugin](https://github.com/apeworx/ape-trezor)
-* `CLI Extension`: [the Tokens-List plugin](https://github.com/apeworx/ape-tokens)
+* [the Solidity plugin](https://github.com/apeworx/ape-solidity), an example `CompilerAPI`
+* [the Infura plugin](https://github.com/apeworx/ape-infura), an example `ProviderAPI`
+* [the Trezor plugin](https://github.com/apeworx/ape-trezor), an example `AccountAPI`
+* [the Tokens-List plugin](https://github.com/apeworx/ape-tokens), an example CLI Extension
 
 ## Initialize a Plugin Project
 
@@ -48,7 +48,6 @@ class MyProvider(ProviderAPI):
 
 Once you have finished implementing your API classes, you need to register them using the 
 [@plugins.register](../methoddocs/plugins.html#ape.plugins.register) method decorator.
-decorator.
 
 ```python
 from ape import plugins
@@ -101,7 +100,7 @@ entry_points={
 
 **NOTE**: Typically, a `_cli.py` module is used instead of a `__init__.py` module for the location of the Click CLI 
 group because it is logically separate from the Python module loading process. If you try to define them together and 
-use ape as a library as well, there is a race condition in the loading process that will prevent the cli plugin from 
+use `ape` as a library as well, there is a race condition in the loading process that will prevent the CLI plugin from 
 working.
 
 For common `ape-click` usages, use the `ape.cli` namespace. For example, use the 
