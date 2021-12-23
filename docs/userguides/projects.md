@@ -19,7 +19,7 @@ from ape import project
 
 Your `project` contains all the "relevant" files, such as source files in the `contracts/` directory. The 
 `contracts/` directory is where compilers look for contracts to compile. File extensions found within the `contracts/` 
-directory determine which compiler plugin ape uses. Make sure to intall the compiler plugins you need if they are 
+directory determine which compiler plugin ape uses. Make sure to install the compiler plugins you need if they are 
 missing.
 
 ```bash
