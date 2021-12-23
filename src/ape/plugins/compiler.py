@@ -18,6 +18,12 @@ class CompilerPlugin(PluginType):
         A hook for returning the set of file extensions the plugin handles
         and the compiler class that can be used to compile them.
 
+        Usage example::
+
+            @plugins.register(plugins.CompilerPlugin)
+            def register_compiler():
+                return (".json",), InterfaceCompiler
+
         Returns:
             tuple[tuple[str], type[:class:`~ape.api.CompilerAPI`]]
         """

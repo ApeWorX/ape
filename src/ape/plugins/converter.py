@@ -14,7 +14,14 @@ class ConversionPlugin(PluginType):
     @hookspec
     def converters(self) -> Iterator[Tuple[str, Type[ConverterAPI]]]:
         """
-        A hook that returns an iterator of tuples of a string ABIType and an ConverterAPI subclass.
+        A hook that returns an iterator of tuples of a string ABI type and a
+        ``ConverterAPI`` subclass.
+
+        Usage example::
+
+            @plugins.register(plugins.ConversionPlugin)
+            def converters():
+                yield int, MweiConversions
 
         Returns:
             iter[tuple[str, type[:class:`~ape.api.convert.ConverterAPI`]]]

@@ -8,15 +8,22 @@ from .pluggy_patch import PluginType, hookspec
 class AccountPlugin(PluginType):
     """
     An account-related plugin. The plugin must register both
-    a :class:`ape.api.accounts.AccountContainerAPI` as well as a
+    an :class:`ape.api.accounts.AccountContainerAPI` as well as an
     :class:`ape.api.accounts.AccountAPI`.
     """
 
     @hookspec
     def account_types(self) -> Tuple[Type[AccountContainerAPI], Type[AccountAPI]]:
         """
-        A hook for returning a tuple of an Account Container and an Account type.
+        A hook for returning a tuple of an account container and an account type.
         Each account-base plugin defines and returns their own types here.
+
+        Usage example::
+
+            @plugins.register(plugins.AccountPlugin)
+            def account_types():
+                return AccountContainer, KeyfileAccount
+
 
         Returns:
             tuple[type[:class:`~ape.api.accounts.AccountContainerAPI`],
