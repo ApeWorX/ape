@@ -3,10 +3,11 @@
 Use `ape` to create blockchain projects. A common project structure looks like this:
 
 ```
-project         # The root project directory
-├── contracts/  # Project source files, such as .sol or .vy files
-├── tests/      # Project tests, ran using the 'ape test' command
-└── scripts/    # Project scripts, such as deploy scripts, ran using the 'ape run <name>' command
+project              # The root project directory
+├── contracts/       # Project source files, such as .sol or .vy files
+├── tests/           # Project tests, ran using the 'ape test' command
+└── scripts/         # Project scripts, such as deploy scripts, ran using the 'ape run <name>' command
+└── ape-config.yaml  # The ape project configuration file
 ```
 
 ## Compiling Contracts
