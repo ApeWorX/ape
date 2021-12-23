@@ -1,4 +1,4 @@
-# Developing Projects
+# Developing Projects with Ape
 
 Use `ape` to create blockchain projects. A common project structure looks like this:
 
