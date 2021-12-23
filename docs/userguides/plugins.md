@@ -138,7 +138,8 @@ Similarly, if you implemented a `ProviderAPI`, that provider is now accessible i
 ape run my_script --network ethereum:development:my_provider_plugin
 ```
 
-**NOTE**: The `--network` option is available on the commands `run`, `test`, and `console`.
+**NOTE**: The `--network` option is available on the commands `run`, `test`, and `console` or any CLI command that 
+uses the [network option decorator](../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option).
 
 When creating the CLI-based plugins, you should see your CLI command as a top-level command in the `ape --help` output:
 
