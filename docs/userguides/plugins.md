@@ -121,7 +121,7 @@ def my_cmd(alias):
 
 Once you have finished implementing and registering your API classes, they will now be part of `ape`. For example, 
 if you implemented the `AccountAPI`, you can now use accounts created from this plugin. The top-level `ape` manager 
-classes are indifferent about the plugin their sources originated from.
+classes are indifferent about the source of the plugin.
 
 ```python
 from ape import accounts
