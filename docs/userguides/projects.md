@@ -9,7 +9,7 @@ project         # The root project directory
 └── scripts/    # Project scripts, such as deploy scripts, ran using the 'ape run <name>' command
 ```
 
-# Compiling Contracts
+## Compiling Contracts
 
 The project manager object is a representation of your current project. Access it from the root `ape` namespace:
 

@@ -10,4 +10,10 @@ plugin_manager = pluggy.PluginManager("ape")
 
 
 class PluginType:
-    pass
+    """
+    The type of plugin to use when registering your plugin in ape.
+
+    Usage example:
+
+
+    """

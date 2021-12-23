@@ -6,7 +6,7 @@
    :maxdepth: 1
 
    userguides/quickstart
-   userguides/project
+   userguides/projects
    userguides/plugins
 ```
 
@@ -30,10 +30,11 @@
 
    methoddocs/ape.md
    methoddocs/api.md
+   methoddocs/cli.md
    methoddocs/contracts.md
    methoddocs/exceptions.md
    methoddocs/managers.md
-   methoddocs/cli.md
+   methoddocs/plugins.md
    methoddocs/types.md
    methoddocs/utils.md
 ```

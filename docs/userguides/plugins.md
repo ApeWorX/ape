@@ -103,8 +103,9 @@ group because it is logically separate from the Python module loading process. I
 use ape as a library as well, there is a race condition in the loading process that will prevent the cli plugin from 
 working.
 
-For common `ape-click` usages, use the `ape.cli` namespace. For example, use the `@existing_alias_argument()`
-decorator when you need a CLI argument for specifying an existing account alias:
+For common `ape-click` usages, use the `ape.cli` namespace. For example, use the 
+[@existing_alias_argument() decorator](../methoddocs/cli.html#ape.cli.arguments.existing_alias_argument)) when you need 
+a CLI argument for specifying an existing account alias:
 
 ```python
 import click
