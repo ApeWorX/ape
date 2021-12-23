@@ -1,6 +1,6 @@
 # Developing Projects
 
-Use `ape` to create blockchain projects.A common project structure looks like this:
+Use `ape` to create blockchain projects. A common project structure looks like this:
 
 ```
 project         # The root project directory
