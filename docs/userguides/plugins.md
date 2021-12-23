@@ -46,7 +46,8 @@ class MyProvider(ProviderAPI):
 
 ### Registering API Classes
 
-Once you have finished implementing your API classes, you need to register them using the `@plugins.register`
+Once you have finished implementing your API classes, you need to register them using the 
+[@plugins.register](../methoddocs/plugins.html#ape.plugins.register) method decorator.
 decorator.
 
 ```python
