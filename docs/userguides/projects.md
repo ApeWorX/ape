@@ -47,8 +47,8 @@ a.deploy(project.MyContract)
 
 ## Testing
 
-You can test your project using the [ape test command](../commands/test.html). The `ape test` command comes with the 
-core-plugin `ape-test`. The `ape-test` plugin extends the popular python testing framework
+You can test your project using the `ape test` command. The `ape test` command comes with the core-plugin `ape-test`. 
+The `ape-test` plugin extends the popular python testing framework
 [pytest](https://docs.pytest.org/en/6.2.x/contents.html).
 
 ### Test Structure

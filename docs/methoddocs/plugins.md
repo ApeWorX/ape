@@ -53,5 +53,3 @@
     :members:
     :show-inheritance:
 ```
-
-
