@@ -25,7 +25,7 @@
 
 ```{eval-rst}
 .. toctree::
-   :caption: User API Reference
+   :caption: Python Reference
    :maxdepth: 1
 
    methoddocs/ape.md
