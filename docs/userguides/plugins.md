@@ -32,10 +32,16 @@ will fail to work properly if you do not implement all the abstract methods.
 
 ```python
 from ape.api import ProviderAPI
+from web3 import Web3, HTTPProvider
 
 
 class MyProvider(ProviderAPI):
-  """Implement the abstracts methods here."""
+    _web3: Web3 = None  # type: ignore
+    
+    def connect(self):
+        self._web3  = Web3(HTTPProvider(str("https://localhost:1337")))
+
+    """Implement rest of abstract methods"""
 ```
 
 ### Registering API Classes
