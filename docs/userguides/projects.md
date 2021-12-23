@@ -33,7 +33,7 @@ Then, use the following command to compile all of the contracts in the `contract
 ape compile
 ```
 
-**WARNING**: Compiler plugins download missing compiler version binaries, based on the contracts' pragma-spec.
+**NOTE**: Compiler plugins download missing compiler version binaries, based on the contracts' pragma-spec.
 
 The contract types are then accessible from the `project` manager and can be deployed in the `console` or in scripts:
 
