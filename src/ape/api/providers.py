@@ -91,9 +91,7 @@ class TransactionAPI:
     @property
     @abstractmethod
     def is_valid(self):
-        """
-        Check if the transaction is valid.
-        """
+        ...
 
     @abstractmethod
     def encode(self) -> bytes:
@@ -129,11 +127,17 @@ class TransactionAPI:
 
 class TransactionStatusEnum(IntEnum):
     """
-    Transaction enumerable constants to verify transactions.
+    An ``Enum`` class representing the status of a transaction.
     """
 
     FAILING = 0
+    """The transaction has failed or is in the process of failing."""
+
     NO_ERROR = 1
+    """
+    The transaction is successful and is confirmed or is in the process
+    of getting confirmed.
+    """
 
 
 class ConfirmationsProgressBar:
@@ -563,8 +567,7 @@ class ProviderAPI:
         Get all logs matching a given set of filter parameters.
 
         Args:
-            `filter_params`: filter which logs
-                ex: logs certains or types.
+            `filter_params`: Filter which logs you get.
 
         Returns:
             Iterator[dict]: A dictionary of events.
@@ -598,59 +601,35 @@ class TestProviderAPI(ProviderAPI):
 
 class Web3Provider(ProviderAPI):
     """
-    A base provider that is web3 based.
+    A base provider mixin class that uses the
+    [web3.py](https://web3py.readthedocs.io/en/stable/) python package.
     """
 
     _web3: Web3 = None  # type: ignore
 
     def update_settings(self, new_settings: dict):
-        """
-        Update the provider settings and re-connect.
-        """
         self.disconnect()
         self.provider_settings.update(new_settings)
         self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        """
-        Generate and get an estimate of how much gas is necessary
-        to allow the transaction to complete.
-        The transaction will not be added to the blockchain.
-        """
         txn_dict = txn.as_dict()
         return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
 
     @property
     def chain_id(self) -> int:
-        """
-        The currently configured chain ID,
-        a value used in replay-protected transaction signing as introduced by EIP-155.
-        """
         return self._web3.eth.chain_id
 
     @property
     def gas_price(self) -> int:
-        """
-        The current price per gas in Wei.
-        """
         return self._web3.eth.generate_gas_price()  # type: ignore
 
     @property
     def priority_fee(self) -> int:
-        """
-        The current max priority fee per gas in Wei.
-        """
         return self._web3.eth.max_priority_fee
 
     @property
     def base_fee(self) -> int:
-        """
-        The current base fee from the latest block.
-
-        Raises:
-            NotImplementedError: When your chain does not support base_fees
-              (`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
-        """
         block = self.get_block("latest")
 
         if block.gas_data.base_fee is None:
@@ -660,19 +639,6 @@ class Web3Provider(ProviderAPI):
         return block.gas_data.base_fee
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
-        """
-        A block for the given ID.
-
-        Args:
-            block_id (:class:`~ape.types.BlockID`): The ID of the block to get. Set as
-              ``"latest"`` to get the latest block, to get the latest block,
-              ``"earliest"`` to get the earliest block,
-              ``"pending"`` to get the pending block,
-              or pass in a block number or hash.
-
-        Returns:
-            :class:`~ape.api.providers.BlockAPI`
-        """
         if isinstance(block_id, str):
             block_id = HexStr(block_id)
 
@@ -683,47 +649,18 @@ class Web3Provider(ProviderAPI):
         return self.network.ecosystem.block_class.decode(block_data)  # type: ignore
 
     def get_nonce(self, address: str) -> int:
-        """
-        The number of transactions sent from an address.
-        """
         return self._web3.eth.get_transaction_count(address)  # type: ignore
 
     def get_balance(self, address: str) -> int:
-        """
-        The balance of the account of a given address.
-        """
         return self._web3.eth.get_balance(address)  # type: ignore
 
     def get_code(self, address: str) -> bytes:
-        """
-        Code at a given address.
-        """
         return self._web3.eth.get_code(address)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
-        """
-        Execute a new message call immediately without creating a
-        transaction on the block chain.
-        """
         return self._web3.eth.call(txn.as_dict())
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
-        """
-        The information about a transaction requested by transaction hash.
-
-        Raises:
-            :class:`~ape.exceptions.TransactionError`: When the required confirmations is negative.
-
-        Args:
-            txn_hash (str): The hash of the transaction to retrieve.
-            required_confirmations (int): If more than 0, waits for that many
-              confirmations before returning the receipt. This is to increase confidence
-              that your transaction is in its final position on the blockchain. Defaults
-              to 0.
-
-        Returns:
-            :class:`~ape.api.providers.ReceiptAPI`
-        """
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
 
@@ -740,17 +677,6 @@ class Web3Provider(ProviderAPI):
         return receipt.await_confirmations()
 
     def get_events(self, **filter_params) -> Iterator[dict]:
-        """
-        Get all logs matching a given set of filter parameters.
-
-        Args:
-            `filter_params`: filter which logs
-                ex: logs certains or types.
-
-        Returns:
-            Iterator[dict]: A dictionary of events.
-
-        """
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
@@ -775,4 +701,7 @@ class UpstreamProvider(ProviderAPI):
         """
         The str used by downstream providers to connect to this one.
         For example, the URL for HTTP-based providers.
+
+        Returns:
+            str
         """
