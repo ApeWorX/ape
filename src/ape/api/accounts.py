@@ -58,7 +58,8 @@ class AccountAPI(AddressAPI):
         Args:
           msg (SignableMessage): The message to sign.
             See these
-            `docs <https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage>`__  # noqa: E501
+            # noqa: E501
+            `docs <https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage>`__
             for more type information on this type.
 
         Returns:
