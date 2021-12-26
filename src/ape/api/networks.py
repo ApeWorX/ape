@@ -350,7 +350,8 @@ class NetworkAPI:
         """
         The ID of the blockchain.
 
-        **NOTE**: Unless overridden, returns same as :meth:`ape.api.providers.ProviderAPI.chain_id`.
+        **NOTE**: Unless overridden, returns same as
+        :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
 
         Returns:
             int

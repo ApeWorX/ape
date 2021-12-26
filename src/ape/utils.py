@@ -77,7 +77,14 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     """
     Compute the relative path of ``target`` relative to ``anchor``,
     which may or may not share a common ancestor.
-    NOTE: Both paths must be absolute
+    **NOTE**: Both paths must be absolute.
+
+    Args:
+        target (pathlib.Path): The path we are interested in.
+        anchor (pathlib.Path): The path we are starting from.
+
+    Returns:
+        pathlib.Path: The new path to the target path from the anchor path.
     """
     if not target.is_absolute():
         raise ValueError("'target' must be an absolute path.")
@@ -139,10 +146,10 @@ USER_AGENT = f"Ape/{__version__} (Python/{_python_version})"
 
 def deep_merge(dict1, dict2) -> Dict:
     """
-    Return a new dictionary by merging two dictionaries recursively.
+    Merge two dictionaries recursively.
 
     Returns:
-        dict
+        dict: The result of the merge as a new dictionary.
     """
 
     result = deepcopy(dict1)
@@ -228,9 +235,9 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
 
 GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", "private_key"))
 """
-An account key-pair generated using a test mnemonic. Set the test ``mnemonic``
+An account key-pair generated from the test mnemonic. Set the test mnemonic
 in your ``ape-config.yaml`` file under the ``test`` section. Access your test
-accounts using :meth:`~ape.managers.accounts.AccountManager.test_accounts`.
+accounts using the :py:attr:`~ape.managers.accounts.AccountManager.test_accounts` property.
 
 Config example::
 
@@ -247,7 +254,7 @@ def generate_dev_accounts(
     hd_path_format="m/44'/60'/0'/{}",
 ) -> List[GeneratedDevAccount]:
     """
-    Create accounts from the configured test mnemonic.
+    Create accounts from the given test mnemonic.
     Use these accounts (or the mnemonic) in chain-genesis
     for testing providers.
 
@@ -372,7 +379,7 @@ class GithubClient:
         The available ``ape`` plugins, found from looking at the ``ApeWorx`` Github organization.
 
         Returns:
-            set[str]: The plugin names.
+            Set[str]: The plugin names.
         """
         return {
             repo.name.replace("-", "_")
@@ -457,13 +464,19 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
 
 
 class AbstractDataClassMeta(DataClassMeta, ABCMeta):
-    pass
+    """
+    A `data class <https://docs.python.org/3/library/dataclasses.html>`__ that
+    is also abstract (meaning it has methods that **must** be implemented in a
+    sub-class or else errors will occur). This class cannot be instantiated
+    on its own.
+    """
 
 
 abstractdataclass = partial(dataclass, kwargs=True, meta=AbstractDataClassMeta)
 """
-A class with abstract properties that cannot be subclassed on its own.
-ex: API classes
+A `data class <https://docs.python.org/3/library/dataclasses.html>`__ that is
+also abstract (meaning it has methods that **must** be implemented or else
+errors will occur. This class cannot be instantiated on its own.
 """
 
 __all__ = [
