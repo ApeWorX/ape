@@ -372,7 +372,8 @@ class NetworkAPI:
         """
         The ID of the network.
 
-        **NOTE**: Unless overridden, returns same as :meth:`~ape.api.networks.NetworkAPI.chain_id`.
+        **NOTE**: Unless overridden, returns same as
+        :py:attr:`~ape.api.networks.NetworkAPI.chain_id`.
 
         Returns:
             int
