@@ -246,7 +246,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
         except ValueError as err:
             raise _get_vm_error(err) from err
 
-        receipt.raise_for_status(txn)
+        receipt.raise_for_status()
         return receipt
 
 
