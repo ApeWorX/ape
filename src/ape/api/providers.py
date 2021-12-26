@@ -10,7 +10,7 @@ from hexbytes import HexBytes
 from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
-from ape.exceptions import ProviderError, TransactionError
+from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import BlockID, TransactionSignature
 from ape.utils import abstractdataclass, abstractmethod
@@ -52,10 +52,6 @@ class TransactionAPI:
 
     signature: Optional[TransactionSignature] = None
 
-    def __post_init__(self):
-        if not self.is_valid:
-            raise ProviderError("Transaction is not valid.")
-
     @property
     def max_fee(self) -> int:
         """
@@ -86,13 +82,6 @@ class TransactionAPI:
         to submit the transaction.
         """
         return self.value + self.max_fee
-
-    @property
-    @abstractmethod
-    def is_valid(self):
-        """
-        Check if the transaction is valid.
-        """
 
     @abstractmethod
     def encode(self) -> bytes:
