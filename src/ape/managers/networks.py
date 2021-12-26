@@ -58,7 +58,7 @@ class NetworkManager:
         All the managed ecosystems in ``ape``, as an iterable.
 
         Returns:
-            iter[:class:`~ape.api.networks.EcosystemAPI`]
+            Iterator[:class:`~ape.api.networks.EcosystemAPI`]
         """
 
         yield from self.ecosystems
@@ -118,7 +118,7 @@ class NetworkManager:
         combinations.
 
         Returns:
-            iter[str]: An iterator over all the network-choice possibilities.
+            Iterator[str]: An iterator over all the network-choice possibilities.
         """
         for ecosystem_name, ecosystem in self.ecosystems.items():
             yield ecosystem_name

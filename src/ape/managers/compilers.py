@@ -40,7 +40,7 @@ class CompilerManager:
         :class:`~ape.api.compiler.CompilerAPI` instance.
 
         Returns:
-            dict[str, :class:`~ape.api.compiler.CompilerAPI`]: The mapping of file-extensions
+            Dict[str, :class:`~ape.api.compiler.CompilerAPI`]: The mapping of file-extensions
             to compiler API classes.
         """
 
@@ -67,11 +67,11 @@ class CompilerManager:
               extension as well as when there is a contract-type collision across compilers.
 
         Args:
-            contract_filepaths (list[pathlib.Path]): The list of files to compile,
+            contract_filepaths (List[pathlib.Path]): The list of files to compile,
               as ``pathlib.Path`` objects.
 
         Returns:
-            dict[str, :class:`~ape.types.contract.ContractType`]: A mapping of
+            Dict[str, :class:`~ape.types.contract.ContractType`]: A mapping of
             contract names to their type.
         """
 

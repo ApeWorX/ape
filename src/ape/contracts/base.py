@@ -219,7 +219,7 @@ class ContractInstance(AddressAPI):
         Display methods to IPython on ``c.[TAB]`` tab completion.
 
         Returns:
-            list[str]
+            List[str]
         """
         return list(super(AddressAPI, self).__dir__()) + [
             abi.name for abi in self._contract_type.abi

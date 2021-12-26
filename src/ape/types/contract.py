@@ -294,7 +294,7 @@ class ContractType(FileMixin, SerializableType):
         The events defined in a smart contract.
 
         Returns:
-            list[:class:`~ape.types.contract.ABI`]
+            List[:class:`~ape.types.contract.ABI`]
         """
 
         return [abi for abi in self.abi if abi.type == "event"]
@@ -305,7 +305,7 @@ class ContractType(FileMixin, SerializableType):
         The call-methods (read-only method, non-payable methods) defined in a smart contract.
 
         Returns:
-            list[:class:`~ape.types.contract.ABI`]
+            List[:class:`~ape.types.contract.ABI`]
         """
 
         return [abi for abi in self.abi if abi.type == "function" and not abi.is_stateful]
@@ -316,7 +316,7 @@ class ContractType(FileMixin, SerializableType):
         The transaction-methods (stateful or payable methods) defined in a smart contract.
 
         Returns:
-            list[:class:`~ape.types.contract.ABI`]
+            List[:class:`~ape.types.contract.ABI`]
         """
 
         return [abi for abi in self.abi if abi.type == "function" and abi.is_stateful]

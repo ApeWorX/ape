@@ -179,7 +179,7 @@ class ProjectManager:
         Excludes files with extensions that don't have a registered compiler.
 
         Returns:
-            list[pathlib.Path]: A list of a source file paths in the project.
+            List[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
         for extension in self.compilers.registered_compilers:
@@ -202,11 +202,11 @@ class ProjectManager:
         that do not correspond to a registered compiler.
 
         Args:
-            extensions (list[str], optional): If provided, returns only extensions that
+            extensions (List[str], optional): If provided, returns only extensions that
                 are in this list. Useful for checking against a subset of source files.
 
         Returns:
-            list[str]: A list of file extensions found in the ``contracts/`` directory
+            List[str]: A list of file extensions found in the ``contracts/`` directory
             that do not have associated compilers installed.
         """
         exts = []
@@ -271,14 +271,14 @@ class ProjectManager:
         scripts or tests in ``ape``, such as from ``ape run`` or ``ape test``.
 
         Args:
-            file_paths (list[pathlib.Path] or pathlib.Path], optional):
+            file_paths (List[pathlib.Path] or pathlib.Path], optional):
               Provide one or more contract file-paths to load. If excluded,
               will load all the contracts.
             use_cache (bool, optional): Set to ``False`` to force a re-compile.
               Defaults to ``True``.
 
         Returns:
-            dict[str, :class:`~ape.types.contract.ContractType`]: A dictionary of contract names
+            Dict[str, :class:`~ape.types.contract.ContractType`]: A dictionary of contract names
             to their types for each compiled contract.
         """
 
@@ -341,7 +341,7 @@ class ProjectManager:
         See :meth:`~ape.managers.project.ProjectManager.load_contracts` for more information.
 
         Returns:
-            dict[str, :class:`~ape.types.contract.ContractType`]
+            Dict[str, :class:`~ape.types.contract.ContractType`]
         """
 
         return self.load_contracts()
@@ -417,7 +417,7 @@ class ProjectManager:
         A list of objects representing the raw-data specifics of a compiler.
 
         Returns:
-            list[:class:`~ape.types.contract.Compiler`]
+            List[:class:`~ape.types.contract.Compiler`]
         """
 
         compilers = []

@@ -227,6 +227,18 @@ def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
 
 
 GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", "private_key"))
+"""
+An account key-pair generated using a test mnemonic. Set the test ``mnemonic``
+in your ``ape-config.yaml`` file under the ``test`` section. Access your test
+accounts using :meth:`~ape.managers.accounts.AccountManager.test_accounts`.
+
+Config example::
+
+    test:
+      mnemonic: test test test test test test test test test test test junk
+      number_of_accounts: 10
+
+"""
 
 
 def generate_dev_accounts(
@@ -241,11 +253,12 @@ def generate_dev_accounts(
 
     Args:
         mnemonic (str): mnemonic phrase or seed words.
-        number_of_accounts: Number of accounts
+        number_of_accounts (int): Number of accounts. Defaults to ``10``.
         hd_path_format (str): Hard Wallets/HD Keys derivation path format.
+          Defaults to ``"m/44'/60'/0'/{}"``.
 
     Returns:
-        list[:class:`~ape.utils.GeneratedDevAccount`]: List of development accounts.
+        List[:class:`~ape.utils.GeneratedDevAccount`]: List of development accounts.
     """
     seed = seed_from_mnemonic(mnemonic, "")
     accounts = []
@@ -261,8 +274,15 @@ def generate_dev_accounts(
 
 def gas_estimation_error_message(tx_error: Exception) -> str:
     """
-    Use this method in ``ProviderAPI`` implementations when error handling
-    transaction errors. This is to have a consistent experience across providers.
+    Get an error message containing the given error and an explanation of how the
+    gas estimation failed, as in :class:`ape.api.providers.ProviderAPI` implementations.
+
+    Args:
+        tx_error (Exception): The error that occurred when trying to estimate gas.
+
+    Returns:
+        str: An error message explaining that the gas failed and that the transaction
+        will likely revert.
     """
     return (
         f"Gas estimation failed: '{tx_error}'. This transaction will likely revert. "
@@ -272,7 +292,13 @@ def gas_estimation_error_message(tx_error: Exception) -> str:
 
 def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
     """
-    Dig through a nested ``Dict`` gives the keys to use in order as arguments.
+    Dig through a nested ``dict`` using the given keys and return the
+    last-found object.
+
+    Usage example::
+
+            >>> extract_nested_value({"foo": {"bar": {"test": "VALUE"}}}, "foo", "bar", "test")
+            'VALUE'
 
     Args:
         root (dict): Nested keys to form arguments.
@@ -410,12 +436,19 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     """
     Returns all the files in a directory structure.
 
-    For example: Given a dir structure like
+    For example, given a director structure like::
+
         dir_a: dir_b, file_a, file_b
         dir_b: file_c
 
-      and you provide the path to `dir_a`, it will return a list containing
-      the Paths to `file_a`, `file_b` and `file_c`.
+    and you provide the path to ``dir_a``, it will return a list containing
+    the Paths to ``file_a``, ``file_b`` and ``file_c``.
+
+    Args:
+        path (pathlib.Path): A directory containing files of interest.
+
+    Returns:
+        List[pathlib.Path]: A list of files in the given directory.
     """
     if path.is_dir():
         return list(path.rglob("*.*"))

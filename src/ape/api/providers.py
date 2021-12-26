@@ -53,6 +53,7 @@ class TransactionAPI:
     signature: Optional[TransactionSignature] = None
 
     def __post_init__(self):
+        breakpoint()
         if not self.is_valid:
             raise ProviderError("Transaction is not valid.")
 
@@ -183,14 +184,15 @@ class ConfirmationsProgressBar:
 @abstractdataclass
 class ReceiptAPI:
     """
-    An Abstract class to represent :class:`~ape.api.providers.ReceiptAPI`.
-    It contains information about the transaction
-    such as the status and required confirmations.
+    An abstract class to represent a transaction receipt. The receipt
+    contains information about the transaction, such as the status
+    and required confirmations.
 
-    NOTE: Use a ``required_confirmations`` of ``0`` in your transaction
+    **NOTE**: Use a ``required_confirmations`` of ``0`` in your transaction
     to not wait for confirmations.
 
-    A receipt is returned after making a contract or account transfers.
+    Get a receipt by making transactions in ``ape``, such as interacting with
+    a :class:`ape.contracts.base.ContractInstance`.
     """
 
     provider: "ProviderAPI"
@@ -220,8 +222,14 @@ class ReceiptAPI:
 
     def ran_out_of_gas(self, gas_limit: int) -> bool:
         """
-        ``True`` when the transaction failed and used the
-        same amount of gas as the given ``gas_limit``.
+        Check if a transaction has ran out of gas and failed.
+
+        Args:
+            gas_limit (int): The gas limit of the transaction.
+
+        Returns:
+            bool:  ``True`` when the transaction failed and used the
+            same amount of gas as the given ``gas_limit``.
         """
         return self.status == TransactionStatusEnum.FAILING and self.gas_used == gas_limit
 
@@ -352,21 +360,33 @@ class BlockAPI:
 @abstractdataclass
 class ProviderAPI:
     """
-    A provider must work with a particular network in a particular ecosystem.
-    An abstraction of a connection to the Ethereum Network.
+    An abstraction of a connection to a network in an ecosystem. Example ``ProviderAPI``
+    implementations include the `ape-infura <https://github.com/ApeWorX/ape-infura>`__
+    plugin or the `ape-hardhat <https://github.com/ApeWorX/ape-hardhat>`__ plugin.
     """
 
-    name: str  # Plugin name
+    name: str
+    """The name of the provider (should be the plugin name)."""
+
     network: networks.NetworkAPI
+    """A reference to the network this provider provides."""
+
     config: ConfigItem
+    """The provider's configuration."""
+
     provider_settings: dict
+    """The settings for the provider, as overrides to the configuration."""
+
     data_folder: Path
+    """The path to the  ``.ape`` directory."""
+
     request_header: str
+    """A header to set on HTTP/RPC requests."""
 
     @abstractmethod
     def connect(self):
         """
-        Connect a to a provider, such as start up a process or create an HTTP connection.
+        Connect a to a provider, such as start-up a process or create an HTTP connection.
         """
 
     @abstractmethod
@@ -475,7 +495,11 @@ class ProviderAPI:
         The minimum value required to get your transaction
         included on the next block.
         Only providers that implement `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__
-        will use this property, otherwise will raise ``NotImplementedError``.
+        will use this property.
+
+        Raises:
+            NotImplementedError: When this provider does not implement
+              `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
 
         Returns:
             int
@@ -543,7 +567,7 @@ class ProviderAPI:
                 ex: logs certains or types.
 
         Returns:
-            iter[dict]: A dictionary of events.
+            Iterator[dict]: A dictionary of events.
         """
 
 
@@ -724,7 +748,7 @@ class Web3Provider(ProviderAPI):
                 ex: logs certains or types.
 
         Returns:
-            iter[dict]: A dictionary of events.
+            Iterator[dict]: A dictionary of events.
 
         """
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
