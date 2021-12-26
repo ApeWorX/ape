@@ -69,7 +69,7 @@ class ProviderPlugin(PluginType):
         """
         A hook that must return an iterator of tuples of:
 
-        * the target ccosystem plugin's name
+        * the target ecosystem plugin's name
         * the network it works with (which must be valid network in the ecosystem)
         * a :class:`ape.api.providers.ProviderAPI` subclass
 
