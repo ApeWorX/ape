@@ -443,13 +443,13 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     """
     Returns all the files in a directory structure.
 
-    For example, given a director structure like::
+    For example, given a directory structure like::
 
         dir_a: dir_b, file_a, file_b
         dir_b: file_c
 
     and you provide the path to ``dir_a``, it will return a list containing
-    the Paths to ``file_a``, ``file_b`` and ``file_c``.
+    the paths to ``file_a``, ``file_b`` and ``file_c``.
 
     Args:
         path (pathlib.Path): A directory containing files of interest.

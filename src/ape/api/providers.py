@@ -53,7 +53,6 @@ class TransactionAPI:
     signature: Optional[TransactionSignature] = None
 
     def __post_init__(self):
-        breakpoint()
         if not self.is_valid:
             raise ProviderError("Transaction is not valid.")
 
