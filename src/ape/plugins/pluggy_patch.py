@@ -14,5 +14,6 @@ class PluginType:
     """
     The base plugin class in ape. There are several types of plugins available in ape, such
     as the :class:`~ape.plugins.config.Config` or :class:`~ape.plugins.network.EcosystemPlugin`.
-    Each one of them subclass this class.
+    Each one of them subclass this class. It is used to namespace the plugin hooks for the
+    registration process, and to ensure overall conformance to type interfaces as much as possible.
     """
