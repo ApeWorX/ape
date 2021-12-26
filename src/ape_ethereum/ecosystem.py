@@ -50,9 +50,6 @@ class EthereumConfig(ConfigItem):
 
 
 class BaseTransaction(TransactionAPI):
-    def is_valid(self) -> bool:
-        return False
-
     def as_dict(self) -> dict:
         data = super().as_dict()
 
