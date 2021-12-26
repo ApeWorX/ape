@@ -26,6 +26,6 @@ class AccountPlugin(PluginType):
 
 
         Returns:
-            tuple[type[:class:`~ape.api.accounts.AccountContainerAPI`],
-            type[:class:`~ape.api.accounts.AccountAPI`]]
+            Tuple[Type[:class:`~ape.api.accounts.AccountContainerAPI`],
+            Type[:class:`~ape.api.accounts.AccountAPI`]]
         """

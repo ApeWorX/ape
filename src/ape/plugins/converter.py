@@ -24,5 +24,5 @@ class ConversionPlugin(PluginType):
                 yield int, MweiConversions
 
         Returns:
-            iter[tuple[str, type[:class:`~ape.api.convert.ConverterAPI`]]]
+            Iterator[tuple[str, Type[:class:`~ape.api.convert.ConverterAPI`]]]
         """

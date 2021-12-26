@@ -25,7 +25,7 @@ class EcosystemPlugin(PluginType):
                 yield Ethereum
 
         Returns:
-            iter[type[:class:`~ape.api.networks.EcosystemAPI`]]
+            Iterator[Type[:class:`~ape.api.networks.EcosystemAPI`]]
         """
 
 
@@ -52,7 +52,7 @@ class NetworkPlugin(PluginType):
                 yield "ethereum", "ShibaChain", ShibaNetwork
 
         Returns:
-            iter[tuple[str, str, type[:class:`~ape.api.networks.NetworkAPI`]]]
+            Iterator[tuple[str, str, Type[:class:`~ape.api.networks.NetworkAPI`]]]
         """
 
 
@@ -80,7 +80,7 @@ class ProviderPlugin(PluginType):
                 yield "ethereum", "development", MyProvider
 
         Returns:
-            iter[tuple[str, str, type[:class:`~ape.api.providers.ProviderAPI`]]]
+            Iterator[tuple[str, str, Type[:class:`~ape.api.providers.ProviderAPI`]]]
         """
 
 
@@ -95,7 +95,7 @@ class ExplorerPlugin(PluginType):
         """
         A hook that must return an iterator of tuples of:
 
-        * the target ccosystem plugin's name
+        * the target ecosystem plugin's name
         * the network it works with (which must be valid network in the ecosystem)
         * a :class:`~ape.api.explorers.ExplorerAPI` subclass
 
@@ -106,5 +106,5 @@ class ExplorerPlugin(PluginType):
                 yield "ethereum", "mainnet", MyBlockExplorer
 
         Returns:
-            iter[tuple[str, str, type[:class:`ape.api.explorers.ExplorerAPI`]]]
+            Iterator[tuple[str, str, Type[:class:`ape.api.explorers.ExplorerAPI`]]]
         """

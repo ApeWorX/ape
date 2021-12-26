@@ -25,5 +25,5 @@ class CompilerPlugin(PluginType):
                 return (".json",), InterfaceCompiler
 
         Returns:
-            tuple[tuple[str], type[:class:`~ape.api.CompilerAPI`]]
+            Tuple[Tuple[str], Type[:class:`~ape.api.CompilerAPI`]]
         """

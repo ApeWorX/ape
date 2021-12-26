@@ -28,5 +28,5 @@ class Config(PluginType):
                 return MyPluginConfig
 
         Returns:
-            type[:class:`~ape.api.config.ConfigItem`]
+            Type[:class:`~ape.api.config.ConfigItem`]
         """
