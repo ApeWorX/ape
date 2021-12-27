@@ -74,7 +74,7 @@ class EcosystemAPI:
         A dictionary of network names mapped to their API implementation.
 
         Returns:
-            dict[str, :class:`~ape.api.networks.NetworkAPI`]
+            Dict[str, :class:`~ape.api.networks.NetworkAPI`]
         """
 
         networks = {}
@@ -106,7 +106,7 @@ class EcosystemAPI:
         Iterate over the set of all valid network names in the ecosystem.
 
         Returns:
-            iter[str]
+            Iterator[str]
         """
         yield from self.networks
 
@@ -350,7 +350,8 @@ class NetworkAPI:
         """
         The ID of the blockchain.
 
-        **NOTE**: Unless overridden, returns same as :meth:`ape.api.providers.ProviderAPI.chain_id`.
+        **NOTE**: Unless overridden, returns same as
+        :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
 
         Returns:
             int
@@ -371,7 +372,8 @@ class NetworkAPI:
         """
         The ID of the network.
 
-        **NOTE**: Unless overridden, returns same as :meth:`~ape.api.networks.NetworkAPI.chain_id`.
+        **NOTE**: Unless overridden, returns same as
+        :py:attr:`~ape.api.networks.NetworkAPI.chain_id`.
 
         Returns:
             int
@@ -423,7 +425,7 @@ class NetworkAPI:
         The providers of the network, such as Infura, Alchemy, or Geth.
 
         Returns:
-            dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
+            Dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
         """
 
         providers = {}

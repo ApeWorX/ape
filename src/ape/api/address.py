@@ -74,7 +74,7 @@ class AddressAPI:
         Display methods to IPython on ``a.[TAB]`` tab completion.
 
         Returns:
-            list[str]: Method names that IPython uses for tab completion.
+            List[str]: Method names that IPython uses for tab completion.
         """
         return [
             "address",

@@ -35,7 +35,7 @@ class Alias(click.Choice):
         The aliases available to choose from.
 
         Returns:
-            list[str]: A list of account aliases the user may choose from.
+            List[str]: A list of account aliases the user may choose from.
         """
 
         options = _get_account_by_type(self._account_type)
@@ -132,7 +132,7 @@ class AccountAliasPromptChoice(PromptChoice):
         All the account aliases.
 
         Returns:
-            list[str]: A list of all the account aliases.
+            List[str]: A list of all the account aliases.
         """
 
         return [
@@ -192,7 +192,7 @@ def output_format_choice(options: List[OutputFormat] = None) -> Choice:
     Returns a ``click.Choice()`` type for the given options.
 
     Args:
-        options (list[:class:`~ape.choices.OutputFormat`], optional):
+        options (List[:class:`~ape.choices.OutputFormat`], optional):
           Limit the formats to accept. Defaults to allowing all formats.
 
     Returns:

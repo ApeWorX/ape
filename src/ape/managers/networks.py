@@ -58,7 +58,7 @@ class NetworkManager:
         All the managed ecosystems in ``ape``, as an iterable.
 
         Returns:
-            iter[:class:`~ape.api.networks.EcosystemAPI`]
+            Iterator[:class:`~ape.api.networks.EcosystemAPI`]
         """
 
         yield from self.ecosystems
@@ -118,7 +118,7 @@ class NetworkManager:
         combinations.
 
         Returns:
-            iter[str]: An iterator over all the network-choice possibilities.
+            Iterator[str]: An iterator over all the network-choice possibilities.
         """
         for ecosystem_name, ecosystem in self.ecosystems.items():
             yield ecosystem_name
@@ -151,7 +151,7 @@ class NetworkManager:
         """
         Get a :class:`~ape.api.providers.ProviderAPI` from a network choice.
         A network choice is any value returned from
-        :meth:`~ape.managers.networks.NetworkManager.network_choices`. Use the
+        :py:attr:`~ape.managers.networks.NetworkManager.network_choices`. Use the
         CLI command ``ape networks list`` to list all the possible network
         combinations.
 
@@ -161,7 +161,7 @@ class NetworkManager:
 
         Args:
             network_choice (str, optional): The network choice
-              (see :meth:`~ape.managers.networks.NetworkManager.network_choices`).
+              (see :py:attr:`~ape.managers.networks.NetworkManager.network_choices`).
               Defaults to the default ecosystem, network, and provider combination.
             provider_settings (dict, optional): Settings for the provider. Defaults to None.
 
@@ -217,12 +217,12 @@ class NetworkManager:
         """
         Parse a network choice into a context manager for managing a temporary
         connection to a provider. See
-        :meth:`~ape.managers.networks.NetworkManager.network_choices` for all
+        :py:attr:`~ape.managers.networks.NetworkManager.network_choices` for all
         available choices (or use CLI command ``ape networks list``).
 
         Args:
             network_choice (str, optional): The network choice
-              (see :meth:`~ape.managers.networks.NetworkManager.network_choices`).
+              (see :py:attr:`~ape.managers.networks.NetworkManager.network_choices`).
               Defaults to the default ecosystem, network, and provider combination.
             provider_settings (dict, optional): Settings for the provider. Defaults to None.
 

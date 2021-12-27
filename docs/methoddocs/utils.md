@@ -4,4 +4,5 @@
 .. automodule:: ape.utils
     :members:
     :show-inheritance:
+    :exclude-members: abstractmethod, dataclass
 ```
