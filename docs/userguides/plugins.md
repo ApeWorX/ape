@@ -1,120 +1,150 @@
-# Writing Plugins
+# Developing Plugins
 
-## Initialize a plugin project
+Your plugin project can be any type of python project, so long as its package name starts with `ape_` (such as 
+`ape_ethereum`). To create an `ape` plugin, implement one or more API classes from the the `ape.api` namespace or add 
+key `ape_cli_subcommands` to your entry-points list in your project's `setup.py`, depending on what type of plugin you 
+want to create. This guide is intended to assist in both of those use-cases.
 
-Use this [project template](https://github.com/ApeWorX/project-template)
-as a reference for developing a plugin. Note: this template is designed
-for 2nd class plugins so not everything may apply. The template may be
-good to follow if you want to keep your plugin of similar quality to
-plugins developed by ApeWorX. See [the Solidity
-plugin](https://github.com/apeworx/ape-solidity) as an example of a
-compiler implementations.
+The following is a list of example plugins to use as a reference when developing plugins:
 
-## Plugin architecture
+* [the Solidity plugin](https://github.com/apeworx/ape-solidity), an example `CompilerAPI`
+* [the Infura plugin](https://github.com/apeworx/ape-infura), an example `ProviderAPI`
+* [the Trezor plugin](https://github.com/apeworx/ape-trezor), an example `AccountAPI`
+* [the Tokens-List plugin](https://github.com/apeworx/ape-tokens), an example CLI Extension
 
-In order to create a plugin which will work with ape, you will need to
+## Initialize a Plugin Project
 
-* Define a class that subclasses the abstract methods within the `ape` api. 
-* Implement all the methods in order for it to work.
+As previously mentioned, a plugin project is merely a python project. However, you can optionally use this 
+[project template](https://github.com/ApeWorX/project-template) for initializing your plugin. **NOTE**: this template 
+is primarily designed for plugins built within the ApeWorX team organization; not everything may apply. It is okay to 
+delete anything that does not work or that you don't find helpful. The template may be good to follow if you want to 
+keep your plugin of similar quality to plugins developed by the ApeWorX team.
 
-### Types of plugins
+## Implementing API Classes
 
-* Core plugins - These are plugins that are bundled with ape core. They are
-  built in, don\'t have a version, and can\'t be uninstalled. 
-* ApeWorx Trusted plugins - These plugins are maintained by ApeWorX. They are trusted. 
-  Users and developers can pin different versions but should be aware
-  of api changes when doing so.
-* 3rd party plugins - These are plugins developed outside the ApeWorX organization.
-  These should be installed at your own risk. These can also be pinned
-  like the ApeWorx Trusted plugins.
+API classes (classes from the `ape.api` namespace) are primary composed of abstract methods and properties that plugins 
+must implement. A benefit of the plugin system is that each plugin can implement these however they need, so long as 
+they conform to the API interface. Two plugins with the same API may do entirely different things and yet be 
+interchangeable in their usage.
 
-### Plugin Registration process flow
+To implement an API, import its class and use it as a base-class in your implementation class. **WARNING**: The plugin 
+will fail to work properly if you do not implement all the abstract methods.
 
-Ape uses `pluggy` for plugin management. The `@plugins.register`
-decorator hooks into ape core. The plugin process looks for all local
-installed site packages that start with `ape_`. The plugin process will
-loop through these potential ape plugins and see which ones have created
-a plugin type registration. If the plugin type registration is found,
-then `ape` knows that this package is a plugin and attempts to process
-it according to registration interface. Then we have a set of registered
-plugins that the registration process defines it needs. The `@hookspec`
-decorator describes how the plugin works. Find out more about
-`@hookspec` in the [Pluggy documentation](https://pluggy.readthedocs.io/en/stable/index.html#specifications).
+```python
+from ape.api import ProviderAPI
+from web3 import Web3, HTTPProvider
 
-### CLI Registration
 
-CLI registration uses `entrypoints` which is a built-in python registry
-of items declared in `setup.py`. Also note that typically, `_cli.py` is
-used instead of `__init__.py` for the location of the Click CLI group,
-because it is logically separate from the Python module loading process.
-If you try to define them together and use ape as a library as well,
-there is a race condition in the loading process that will prevent the
-cli plugin from working.
+class MyProvider(ProviderAPI):
+    _web3: Web3 = None  # type: ignore
+    
+    def connect(self):
+        self._web3  = Web3(HTTPProvider(str("https://localhost:1337")))
 
-### Compilation process flow
+    """Implement rest of abstract methods"""
+```
 
-The project manager object is a representation of your current project,
-which should contain all the files the user\'s project will use,
-including `contracts/` folder (where contract source code is stored).
-The `contracts/` folder is where the compiler looks for contracts to
-compile. File extensions found within the `contracts/` directory
-determine which compiler plugin ape uses. The pragma spec of the
-compilable files within the folder is checked and then used to decide if
-a new compiler needs to be downloaded or if the version matches one of
-the currently installed compiler versions. The contracts are then
-grouped by compiler type and version and fed into the corresponding
-compiler to compile them. These are then output as a JSON file to the
-`.build` directory. They can then be deployed on the chain from the
-console or a script.
+### Registering API Classes
 
-### Compiler manager
+Once you have finished implementing your API classes, you need to register them using the 
+[@plugins.register](../methoddocs/plugins.html#ape.plugins.register) method decorator.
 
-The compiler manager contains all the registered compilers. Compiler
-plugins must subclass the
-[CompilerAPI](autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI)
-object and implement all `abstractmethod`. Implement
-[get\_versions](autoapi/ape/api/compiler/index#ape.api.compiler.CompilerAPI.get_versions)
-in compile. `get_versions` gets a set of all the files and tell it all
-the versions that are needed. It needs to get that information to create
-the manifest, so it can record the compilers which are required. From the
-contract types you can then initialize or deploy a contract using the
-contract types. data structure source is how to get the source file from
-the manifest This method should always return the same value and
-doesn\'t cache. Compiler Manager uses the compiler api and has a list of
-all the compiler api subclasses. The compiler manager has the set of all
-the registered compiler plugins. Those compiler plugins subclass the
-compiler api, and so that\'s how it can call out to the plugins in order
-to compile files which are detected inside the contracts folder.
+```python
+from ape import plugins
 
-CompilerAPI plugins
+# Here, we register our provider plugin so we can use it in 'ape'.
+@plugins.register(plugins.ProviderPlugin)
+def providers():
+    # NOTE: 'MyProvider' defined in a prior code-block.
+    yield "ethereum", "development", MyProvider
+```
 
-### ContractType type
+This decorator hooks into ape core and ties everything together by looking for all local installed site-packages that 
+start with `ape_`. Then, it will loop through these potential `ape` plugins and see which ones have created a plugin 
+type registration. If the plugin type registration is found, then `ape` knows this package is a plugin and attempts to 
+process it according to its registration interface.
 
-The compilation produces the `.build` The manifest is a file that
-describes the package. It describes everything that is within the
-package. The package manifest contains links to source code on IPFS, a
-hierarchy of which compilers and which versions of those compilers are
-used to compile files, contract types which come from the compiled files
-that you might want to use in the package.
-[ContractType](autoapi/ape/types/contract/index.html#ape.types.contract.ContractType)
+### CLI Plugins
 
-### Account registration process flow
+The `ape` CLI is built using the python package [click](https://palletsprojects.com/p/click/). To create a CLI plugin,
+create any type of `click` command (such as a `click.group` or a `click.command`).
 
-accounts manager AccountAPI/AccountContainerAPI plugins Signing messages
-and transactions via AccountAPI
+`_cli.py`:
 
-### Transactional process flow
+```python
+import click
 
-networks manager EcosystemAPI plugins NetworkAPI plugins ProviderAPI
-plugins ExplorerAPI plugins ContractInstance type and encoding via
-EcosystemAPI
+@click.group
+def cli():
+    """My custom commands."""
 
-### Argument conversion process flow
 
-CLI arguments are decoded and passed in to the application with `click`.
+@cli.command()
+def my_sub_cmd():
+    """My subcommand."""
+```
 
-## Writing CLI plugins
+Then, register it using `entrypoints`, which is a built-in python registry of items declared in `setup.py`.
 
-CLI plugins will use the plugin registration process defined above. The
-CLI plugins should use the `click` library in order to be able to supply
-arguments from the CLI.
+`setup.py`:
+
+```python
+...
+entry_points={
+    "ape_cli_subcommands": [
+        "ape_myplugin=ape_myplugin._cli:cli",
+    ],
+},
+...
+```
+
+**NOTE**: Typically, a `_cli.py` module is used instead of a `__init__.py` module for the location of the Click CLI 
+group because it is logically separate from the Python module loading process. If you try to define them together and 
+use `ape` as a library as well, there is a race condition in the loading process that will prevent the CLI plugin from 
+working.
+
+For common `ape-click` usages, use the `ape.cli` namespace. For example, use the 
+[@existing_alias_argument() decorator](../methoddocs/cli.html#ape.cli.arguments.existing_alias_argument)) when you need 
+a CLI argument for specifying an existing account alias:
+
+```python
+import click
+from ape.cli import existing_alias_argument
+
+@click.command()
+@existing_alias_argument()
+def my_cmd(alias):
+  click.echo(f"{alias} is an existing account!")
+```
+
+## Using Plugins
+
+Once you have finished implementing and registering your API classes, they will now be part of `ape`. For example, 
+if you implemented the `AccountAPI`, you can now use accounts created from this plugin. The top-level `ape` manager 
+classes are indifferent about the source of the plugin.
+
+```python
+from ape import accounts
+
+# The manager can load accounts from any account-based plugin.
+my_ledger_account = accounts.load("ledger_0")  # Created using the 'ape-ledger' plugin
+my_trezor_account = accounts.load("trezor_0")  # Created using the 'ape-trezor' plugin
+```
+
+Similarly, if you implemented a `ProviderAPI`, that provider is now accessible in the CLI via the `--network` option:
+
+```bash
+ape run my_script --network ethereum:development:my_provider_plugin
+```
+
+**NOTE**: The `--network` option is available on the commands `run`, `test`, and `console` or any CLI command that 
+uses the [network option decorator](../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option).
+
+When creating the CLI-based plugins, you should see your CLI command as a top-level command in the `ape --help` output:
+
+```
+Commands:
+  ...
+  my-plugin  Utilities for my plugin
+  ...
+```

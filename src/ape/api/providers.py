@@ -22,7 +22,7 @@ from .config import ConfigItem
 class TransactionType(Enum):
     """
     Transaction enumerables type constants defined by
-    `EIP-2718` <https://eips.ethereum.org/EIPS/eip-2718>`__.
+    `EIP-2718 <https://eips.ethereum.org/EIPS/eip-2718>`__.
     """
 
     STATIC = "0x0"
