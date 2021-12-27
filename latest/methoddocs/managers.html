@@ -201,7 +201,7 @@ account alias to load an account using method
 <a class="reference internal" href="#ape.managers.accounts.AccountManager.load" title="ape.managers.accounts.AccountManager.load"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>iter[str]</p>
+<dd class="field-odd"><p>Iterator[str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -224,11 +224,11 @@ across all installed plugins.</p>
 <dd><p>Get a list of accounts by their type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>type</strong> (type[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>]) – The type of account
+<dd class="field-odd"><p><strong>type</strong> (Type[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>]) – The type of account
 to get.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>list[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>]</p>
+<dd class="field-even"><p>List[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -264,7 +264,7 @@ number-of-accounts using the <code class="docutils literal notranslate"><span cl
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>list[<a class="reference internal" href="api.html#ape.api.accounts.TestAccountAPI" title="ape.api.accounts.TestAccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestAccountAPI</span></code></a>]</p>
+<dd class="field-odd"><p>List[<a class="reference internal" href="api.html#ape.api.accounts.TestAccountAPI" title="ape.api.accounts.TestAccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestAccountAPI</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -297,7 +297,7 @@ to compile <code class="docutils literal notranslate"><span class="pre">'.sol'</
     extension as well as when there is a contract-type collision across compilers.</p>
 </dd>
 <dt class="field-even">Parameters</dt>
-<dd class="field-even"><p><strong>contract_filepaths</strong> (<em>list</em><em>[</em><em>pathlib.Path</em><em>]</em>) – The list of files to compile,
+<dd class="field-even"><p><strong>contract_filepaths</strong> (<em>List</em><em>[</em><em>pathlib.Path</em><em>]</em>) – The list of files to compile,
 as <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> objects.</p>
 </dd>
 <dt class="field-odd">Returns</dt>
@@ -305,7 +305,7 @@ as <code class="docutils literal notranslate"><span class="pre">pathlib.Path</sp
 contract names to their type.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>dict[str, <a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code></a>]</p>
+<dd class="field-even"><p>Dict[str, <a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -321,7 +321,7 @@ contract names to their type.</p>
 to compiler API classes.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>dict[str, <a class="reference internal" href="api.html#ape.api.compiler.CompilerAPI" title="ape.api.compiler.CompilerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompilerAPI</span></code></a>]</p>
+<dd class="field-even"><p>Dict[str, <a class="reference internal" href="api.html#ape.api.compiler.CompilerAPI" title="ape.api.compiler.CompilerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompilerAPI</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -606,7 +606,7 @@ that ecosystem.</p>
 <code class="sig-name descname"><span class="pre">get_provider_from_choice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">network_choice</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ape.api.providers.ProviderAPI</span></a><a class="headerlink" href="#ape.managers.networks.NetworkManager.get_provider_from_choice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a <a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a> from a network choice.
 A network choice is any value returned from
-<a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">network_choices()</span></code></a>. Use the
+<a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network_choices</span></code></a>. Use the
 CLI command <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">list</span></code> to list all the possible network
 combinations.</p>
 <dl class="field-list simple">
@@ -617,7 +617,7 @@ combinations.</p>
 <dt class="field-even">Parameters</dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>network_choice</strong> (<em>str</em><em>, </em><em>optional</em>) – The network choice
-(see <a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">network_choices()</span></code></a>).
+(see <a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network_choices</span></code></a>).
 Defaults to the default ecosystem, network, and provider combination.</p></li>
 <li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings for the provider. Defaults to None.</p></li>
 </ul>
@@ -644,7 +644,7 @@ combinations.</p>
 <dd class="field-odd"><p>An iterator over all the network-choice possibilities.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>iter[str]</p>
+<dd class="field-even"><p>Iterator[str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -680,13 +680,13 @@ in all the ecosystems.</p>
 <code class="sig-name descname"><span class="pre">parse_network_choice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">network_choice</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="api.html#ape.api.networks.ProviderContextManager" title="ape.api.networks.ProviderContextManager"><span class="pre">ape.api.networks.ProviderContextManager</span></a><a class="headerlink" href="#ape.managers.networks.NetworkManager.parse_network_choice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a network choice into a context manager for managing a temporary
 connection to a provider. See
-<a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">network_choices()</span></code></a> for all
+<a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network_choices</span></code></a> for all
 available choices (or use CLI command <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">list</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>network_choice</strong> (<em>str</em><em>, </em><em>optional</em>) – The network choice
-(see <a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">network_choices()</span></code></a>).
+(see <a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network_choices</span></code></a>).
 Defaults to the default ecosystem, network, and provider combination.</p></li>
 <li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings for the provider. Defaults to None.</p></li>
 </ul>
@@ -779,7 +779,7 @@ this will return <code class="docutils literal notranslate"><span class="pre">No
 <dd><p>A list of objects representing the raw-data specifics of a compiler.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>list[<a class="reference internal" href="types.html#ape.types.contract.Compiler" title="ape.types.contract.Compiler"><code class="xref py py-class docutils literal notranslate"><span class="pre">Compiler</span></code></a>]</p>
+<dd class="field-odd"><p>List[<a class="reference internal" href="types.html#ape.types.contract.Compiler" title="ape.types.contract.Compiler"><code class="xref py py-class docutils literal notranslate"><span class="pre">Compiler</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -791,7 +791,7 @@ this will return <code class="docutils literal notranslate"><span class="pre">No
 See <a class="reference internal" href="#ape.managers.project.ProjectManager.load_contracts" title="ape.managers.project.ProjectManager.load_contracts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_contracts()</span></code></a> for more information.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>dict[str, <a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code></a>]</p>
+<dd class="field-odd"><p>Dict[str, <a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -814,7 +814,7 @@ See <a class="reference internal" href="#ape.managers.project.ProjectManager.loa
 that do not correspond to a registered compiler.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>extensions</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – If provided, returns only extensions that
+<dd class="field-odd"><p><strong>extensions</strong> (<em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – If provided, returns only extensions that
 are in this list. Useful for checking against a subset of source files.</p>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -822,7 +822,7 @@ are in this list. Useful for checking against a subset of source files.</p>
 that do not have associated compilers installed.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list[str]</p>
+<dd class="field-odd"><p>List[str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -847,7 +847,7 @@ scripts or tests in <code class="docutils literal notranslate"><span class="pre"
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_paths</strong> (<em>list</em><em>[</em><em>pathlib.Path</em><em>] or </em><em>pathlib.Path</em><em>]</em><em>, </em><em>optional</em>) – Provide one or more contract file-paths to load. If excluded,
+<li><p><strong>file_paths</strong> (<em>List</em><em>[</em><em>pathlib.Path</em><em>] or </em><em>pathlib.Path</em><em>]</em><em>, </em><em>optional</em>) – Provide one or more contract file-paths to load. If excluded,
 will load all the contracts.</p></li>
 <li><p><strong>use_cache</strong> (<em>bool</em><em>, </em><em>optional</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to force a re-compile.
 Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
@@ -858,7 +858,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">True</s
 to their types for each compiled contract.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict[str, <a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code></a>]</p>
+<dd class="field-odd"><p>Dict[str, <a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -918,7 +918,7 @@ Excludes files with extensions that don’t have a registered compiler.</p>
 <dd class="field-odd"><p>A list of a source file paths in the project.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list[pathlib.Path]</p>
+<dd class="field-even"><p>List[pathlib.Path]</p>
 </dd>
 </dl>
 </dd></dl>

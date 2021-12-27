@@ -168,7 +168,7 @@ source file-paths.</p>
 <dd><p>A <code class="docutils literal notranslate"><span class="pre">click.argument</span></code> for an existing account alias.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>account_type</strong> (type[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>], optional) – If given, limits the type of account the user may choose from.</p>
+<dd class="field-odd"><p><strong>account_type</strong> (Type[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>], optional) – If given, limits the type of account the user may choose from.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -197,7 +197,7 @@ Useful for adhoc scripts to lessen the need to hard-code aliases.</p>
 <dd class="field-odd"><p>A list of all the account aliases.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list[str]</p>
+<dd class="field-even"><p>List[str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -256,7 +256,7 @@ Defaults to all account types in <code class="docutils literal notranslate"><spa
 <dd class="field-odd"><p>A list of account aliases the user may choose from.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list[str]</p>
+<dd class="field-even"><p>List[str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -361,7 +361,7 @@ of CLI options. For CLI options, use
 <dd><p>Returns a <code class="docutils literal notranslate"><span class="pre">click.Choice()</span></code> type for the given options.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>options</strong> (list[<code class="xref py py-class docutils literal notranslate"><span class="pre">OutputFormat</span></code>], optional) – Limit the formats to accept. Defaults to allowing all formats.</p>
+<dd class="field-odd"><p><strong>options</strong> (List[<code class="xref py py-class docutils literal notranslate"><span class="pre">OutputFormat</span></code>], optional) – Limit the formats to accept. Defaults to allowing all formats.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">click.Choice</span></code></p>

@@ -143,12 +143,25 @@
 <dt id="ape.utils.AbstractDataClassMeta">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">AbstractDataClassMeta</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict_</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.AbstractDataClassMeta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dataclassy.dataclass.DataClassMeta</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABCMeta</span></code></p>
+<p>A <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html">data class</a> that
+is also abstract (meaning it has methods that <strong>must</strong> be implemented in a
+sub-class or else errors will occur). This class cannot be instantiated
+on its own.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt id="ape.utils.GeneratedDevAccount">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">GeneratedDevAccount</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.GeneratedDevAccount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<p>An account key-pair generated from the test mnemonic. Set the test mnemonic
+in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file under the <code class="docutils literal notranslate"><span class="pre">test</span></code> section. Access your test
+accounts using the <a class="reference internal" href="managers.html#ape.managers.accounts.AccountManager.test_accounts" title="ape.managers.accounts.AccountManager.test_accounts"><code class="xref py py-attr docutils literal notranslate"><span class="pre">test_accounts</span></code></a> property.</p>
+<p>Config example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">test</span><span class="p">:</span>
+  <span class="n">mnemonic</span><span class="p">:</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">junk</span>
+  <span class="n">number_of_accounts</span><span class="p">:</span> <span class="mi">10</span>
+</pre></div>
+</div>
 <dl class="py attribute">
 <dt id="ape.utils.GeneratedDevAccount.address">
 <code class="sig-name descname"><span class="pre">address</span></code><a class="headerlink" href="#ape.utils.GeneratedDevAccount.address" title="Permalink to this definition">¶</a></dt>
@@ -166,87 +179,21 @@
 <dl class="py function">
 <dt id="ape.utils.abstractdataclass">
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">abstractdataclass</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">cls:</span> <span class="pre">Optional[type]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">*</span></em>, <em class="sig-param"><span class="pre">meta=&lt;class</span> <span class="pre">'ape.utils.AbstractDataClassMeta'&gt;</span></em>, <em class="sig-param"><span class="pre">**options</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.utils.abstractdataclass" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class with abstract properties that cannot be subclassed on its own.
-ex: API classes</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="ape.utils.abstractmethod">
-<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">abstractmethod</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">funcobj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.abstractmethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator indicating abstract methods.</p>
-<p>Requires that the metaclass is ABCMeta or derived from it.  A
-class that has a metaclass derived from ABCMeta cannot be
-instantiated unless all of its abstract methods are overridden.
-The abstract methods can be called using any of the normal
-‘super’ call mechanisms.  abstractmethod() may be used to declare
-abstract methods for properties and descriptors.</p>
-<p>Usage:</p>
-<blockquote>
-<div><dl>
-<dt>class C(metaclass=ABCMeta):</dt><dd><p>&#64;abstractmethod
-def my_abstract_method(self, …):</p>
-<blockquote>
-<div><p>…</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
-</dd></dl>
-
-<dl class="py function">
-<dt id="ape.utils.dataclass">
-<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">dataclass</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">cls:</span> <span class="pre">Optional[type]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">*</span></em>, <em class="sig-param"><span class="pre">meta=&lt;class</span> <span class="pre">'dataclassy.dataclass.DataClassMeta'&gt;</span></em>, <em class="sig-param"><span class="pre">**options</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.utils.dataclass" title="Permalink to this definition">¶</a></dt>
-<dd><p>The decorator used to convert an ordinary class into a data class.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>cls</strong> – The class to be converted into a data class</p></li>
-<li><p><strong>meta</strong> – The metaclass to use</p></li>
-</ul>
-</dd>
-<dt class="field-even">Key init</dt>
-<dd class="field-even"><p>Generate an __init__ method</p>
-</dd>
-<dt class="field-odd">Key repr</dt>
-<dd class="field-odd"><p>Generate a __repr__ method</p>
-</dd>
-<dt class="field-even">Key eq</dt>
-<dd class="field-even"><p>Generate an __eq__ method</p>
-</dd>
-<dt class="field-odd">Key iter</dt>
-<dd class="field-odd"><p>Generate an __iter__ method</p>
-</dd>
-<dt class="field-even">Key frozen</dt>
-<dd class="field-even"><p>Allow field reassignment after initialisation</p>
-</dd>
-<dt class="field-odd">Key kwargs</dt>
-<dd class="field-odd"><p>Append <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs to the list of initialiser parameters</p>
-</dd>
-<dt class="field-even">Key slots</dt>
-<dd class="field-even"><p>Generate __slots__</p>
-</dd>
-<dt class="field-odd">Key order</dt>
-<dd class="field-odd"><p>Generate comparison methods other than __eq__</p>
-</dd>
-<dt class="field-even">Key unsafe_hash</dt>
-<dd class="field-even"><p>Force generation of __hash__</p>
-</dd>
-<dt class="field-odd">Key hide_internals</dt>
-<dd class="field-odd"><p>Hide internal methods in __repr__</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The newly created data class</p>
-</dd>
-</dl>
+<dd><p>A <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html">data class</a> that is
+also abstract (meaning it has methods that <strong>must</strong> be implemented or else
+errors will occur. This class cannot be instantiated on its own.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ape.utils.deep_merge">
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">deep_merge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict2</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><a class="headerlink" href="#ape.utils.deep_merge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a new dictionary by merging two dictionaries recursively.</p>
+<dd><p>Merge two dictionaries recursively.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p>The result of the merge as a new dictionary.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -274,7 +221,13 @@ representing a path.</p>
 <dl class="py function">
 <dt id="ape.utils.extract_nested_value">
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">extract_nested_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Mapping</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.utils.extract_nested_value" title="Permalink to this definition">¶</a></dt>
-<dd><p>Dig through a nested <code class="docutils literal notranslate"><span class="pre">Dict</span></code> gives the keys to use in order as arguments.</p>
+<dd><p>Dig through a nested <code class="docutils literal notranslate"><span class="pre">dict</span></code> using the given keys and return the
+last-found object.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">extract_nested_value</span><span class="p">({</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;bar&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="s2">&quot;VALUE&quot;</span><span class="p">}}},</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<span class="go">&#39;VALUE&#39;</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>root</strong> (<em>dict</em>) – Nested keys to form arguments.</p>
@@ -292,29 +245,42 @@ else <code class="docutils literal notranslate"><span class="pre">None</span></c
 <dl class="py function">
 <dt id="ape.utils.gas_estimation_error_message">
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">gas_estimation_error_message</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tx_error</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Exception</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape.utils.gas_estimation_error_message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use this method in <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code> implementations when error handling
-transaction errors. This is to have a consistent experience across providers.</p>
+<dd><p>Get an error message containing the given error and an explanation of how the
+gas estimation failed, as in <a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI</span></code></a> implementations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tx_error</strong> (<em>Exception</em>) – The error that occurred when trying to estimate gas.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An error message explaining that the gas failed and that the transaction
+will likely revert.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ape.utils.generate_dev_accounts">
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">generate_dev_accounts</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mnemonic</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_accounts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hd_path_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&quot;m/44'/60'/0'/{}&quot;</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.utils.GeneratedDevAccount" title="ape.utils.GeneratedDevAccount"><span class="pre">ape.utils.GeneratedDevAccount</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.utils.generate_dev_accounts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create accounts from the configured test mnemonic.
+<dd><p>Create accounts from the given test mnemonic.
 Use these accounts (or the mnemonic) in chain-genesis
 for testing providers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mnemonic</strong> (<em>str</em>) – mnemonic phrase or seed words.</p></li>
-<li><p><strong>number_of_accounts</strong> – Number of accounts</p></li>
-<li><p><strong>hd_path_format</strong> (<em>str</em>) – Hard Wallets/HD Keys derivation path format.</p></li>
+<li><p><strong>number_of_accounts</strong> (<em>int</em>) – Number of accounts. Defaults to <code class="docutils literal notranslate"><span class="pre">10</span></code>.</p></li>
+<li><p><strong>hd_path_format</strong> (<em>str</em>) – Hard Wallets/HD Keys derivation path format.
+Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;m/44'/60'/0'/{}&quot;</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>List of development accounts.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list[<a class="reference internal" href="#ape.utils.GeneratedDevAccount" title="ape.utils.GeneratedDevAccount"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneratedDevAccount</span></code></a>]</p>
+<dd class="field-odd"><p>List[<a class="reference internal" href="#ape.utils.GeneratedDevAccount" title="ape.utils.GeneratedDevAccount"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneratedDevAccount</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -323,13 +289,22 @@ for testing providers.</p>
 <dt id="ape.utils.get_all_files_in_directory">
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">get_all_files_in_directory</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.utils.get_all_files_in_directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all the files in a directory structure.</p>
-<dl>
-<dt>For example: Given a dir structure like</dt><dd><blockquote>
-<div><p>dir_a: dir_b, file_a, file_b
-dir_b: file_c</p>
-</div></blockquote>
-<p>and you provide the path to <cite>dir_a</cite>, it will return a list containing
-the Paths to <cite>file_a</cite>, <cite>file_b</cite> and <cite>file_c</cite>.</p>
+<p>For example, given a directory structure like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dir_a</span><span class="p">:</span> <span class="n">dir_b</span><span class="p">,</span> <span class="n">file_a</span><span class="p">,</span> <span class="n">file_b</span>
+<span class="n">dir_b</span><span class="p">:</span> <span class="n">file_c</span>
+</pre></div>
+</div>
+<p>and you provide the path to <code class="docutils literal notranslate"><span class="pre">dir_a</span></code>, it will return a list containing
+the paths to <code class="docutils literal notranslate"><span class="pre">file_a</span></code>, <code class="docutils literal notranslate"><span class="pre">file_b</span></code> and <code class="docutils literal notranslate"><span class="pre">file_c</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>pathlib.Path</em>) – A directory containing files of interest.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of files in the given directory.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[pathlib.Path]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -356,7 +331,21 @@ the Paths to <cite>file_a</cite>, <cite>file_b</cite> and <cite>file_c</cite>.</
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">get_relative_path</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pathlib.Path</span><a class="headerlink" href="#ape.utils.get_relative_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the relative path of <code class="docutils literal notranslate"><span class="pre">target</span></code> relative to <code class="docutils literal notranslate"><span class="pre">anchor</span></code>,
 which may or may not share a common ancestor.
-NOTE: Both paths must be absolute</p>
+<strong>NOTE</strong>: Both paths must be absolute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>pathlib.Path</em>) – The path we are interested in.</p></li>
+<li><p><strong>anchor</strong> (<em>pathlib.Path</em>) – The path we are starting from.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The new path to the target path from the anchor path.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pathlib.Path</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
