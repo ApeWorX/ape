@@ -24,7 +24,7 @@
   </script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Writing Plugins" href="plugins.html" />
+    <link rel="next" title="Developing Projects with Ape" href="projects.html" />
     <link rel="prev" title="Ape-Docs" href="../index.html" /> 
 </head>
 
@@ -67,7 +67,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#quick-usage">Quick Usage</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Developing Plugins</a></li>
 </ul>
 <p class="caption"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -83,10 +84,11 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
 </ul>
@@ -253,6 +255,11 @@ ape plugins add vyper
 ape plugins list -a
 </pre></div>
 </div>
+<p><strong>NOTE</strong>: If a plugin does not originate from the
+<a class="reference external" href="https://github.com/ApeWorX?q=ape&amp;type=all">ApeWorX GitHub organization</a>, you will get a warning about installing
+3rd-class plugins. Any plugin that is not an official plugin has the chance of not being trustworthy. Thus, you should
+be mindful about which plugins you install. Additionally, plugins that come bundled with <code class="docutils literal notranslate"><span class="pre">ape</span></code> in the core installation
+cannot be removed and are considered part of the <code class="docutils literal notranslate"><span class="pre">ape</span></code> core software.</p>
 <p>You can interact and compile contracts.
 Here is an example of a project with a contract you interact with:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/brownie-mix/vyper-token-mix.git
@@ -307,7 +314,7 @@ $ ape run deploy
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="plugins.html" class="btn btn-neutral float-right" title="Writing Plugins" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="projects.html" class="btn btn-neutral float-right" title="Developing Projects with Ape" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="../index.html" class="btn btn-neutral float-left" title="Ape-Docs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

@@ -55,7 +55,8 @@
               <p class="caption"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="userguides/quickstart.html">Quick Start</a></li>
-<li class="toctree-l1"><a class="reference internal" href="userguides/plugins.html">Writing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguides/projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguides/plugins.html">Developing Plugins</a></li>
 </ul>
 <p class="caption"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -71,10 +72,11 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/ape.html">ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/contracts.html">ape.contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/exceptions.html">ape.exceptions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/managers.html">ape.managers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="methoddocs/plugins.html">ape.plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/utils.html">ape.utils</a></li>
 </ul>
@@ -407,6 +409,8 @@
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.options.account_option_that_prompts_when_not_given">account_option_that_prompts_when_not_given() (in module ape.cli.options)</a>
 </li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.account.AccountPlugin.account_types">account_types() (ape.plugins.account.AccountPlugin method)</a>
+</li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.AccountAliasPromptChoice">AccountAliasPromptChoice (class in ape.cli.choices)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI">AccountAPI (class in ape.api.accounts)</a>
@@ -414,6 +418,8 @@
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI">AccountContainerAPI (class in ape.api.accounts)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.accounts.AccountManager">AccountManager (class in ape.managers.accounts)</a>
+</li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.account.AccountPlugin">AccountPlugin (class in ape.plugins.account)</a>
 </li>
       <li><a href="methoddocs/ape.html#ape.accounts">accounts (in module ape)</a>
 </li>
@@ -543,8 +549,6 @@
         <li><a href="methoddocs/api.html#module-ape.api.accounts">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ape.api.address
 
@@ -566,6 +570,8 @@
         <li><a href="methoddocs/api.html#module-ape.api.config">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ape.api.convert
 
@@ -683,6 +689,55 @@
 
       <ul>
         <li><a href="methoddocs/managers.html#module-ape.managers.project">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.plugins
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.plugins.account
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.account">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.plugins.compiler
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.compiler">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.plugins.config
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.config">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.plugins.converter
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.converter">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.plugins.network
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.network">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.plugins.pluggy_patch
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.pluggy_patch">module</a>
 </li>
       </ul></li>
       <li>
@@ -837,9 +892,13 @@
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager">CompilerManager (class in ape.managers.compilers)</a>
 </li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.compiler.CompilerPlugin">CompilerPlugin (class in ape.plugins.compiler)</a>
+</li>
       <li><a href="methoddocs/ape.html#ape.compilers">compilers (in module ape)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.contract.Source.compute_checksum">compute_checksum() (ape.types.contract.Source method)</a>
+</li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.config.Config">Config (class in ape.plugins.config)</a>
 </li>
       <li><a href="methoddocs/ape.html#ape.config">config (in module ape)</a>
 </li>
@@ -849,6 +908,8 @@
         <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.config">(ape.api.networks.NetworkAPI property)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.config.Config.config_class">config_class() (ape.plugins.config.Config method)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.config_manager">config_manager (ape.api.networks.EcosystemAPI attribute)</a>
 
       <ul>
@@ -861,10 +922,10 @@
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ConfigError">ConfigError</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.config.ConfigItem">ConfigItem (class in ape.api.config)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/api.html#ape.api.config.ConfigItem">ConfigItem (class in ape.api.config)</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager">ConfigManager (class in ape.managers.config)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ConfirmationsProgressBar">ConfirmationsProgressBar (class in ape.api.providers)</a>
@@ -924,6 +985,8 @@
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.ConversionManager">ConversionManager (class in ape.managers.converters)</a>
 </li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.converter.ConversionPlugin">ConversionPlugin (class in ape.plugins.converter)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.convert.ConverterAPI.convert">convert() (ape.api.convert.ConverterAPI method)</a>
 
       <ul>
@@ -945,6 +1008,8 @@
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.convert.ConverterAPI">ConverterAPI (class in ape.api.convert)</a>
+</li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.converter.ConversionPlugin.converters">converters() (ape.plugins.converter.ConversionPlugin method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.create_network_type">create_network_type() (in module ape.api.networks)</a>
 </li>
@@ -998,8 +1063,14 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI">EcosystemAPI (class in ape.api.networks)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.ecosystems">ecosystems() (ape.managers.networks.NetworkManager property)</a>
+      <li><a href="methoddocs/plugins.html#ape.plugins.network.EcosystemPlugin">EcosystemPlugin (class in ape.plugins.network)</a>
 </li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.ecosystems">ecosystems() (ape.managers.networks.NetworkManager property)</a>
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#ape.plugins.network.EcosystemPlugin.ecosystems">(ape.plugins.network.EcosystemPlugin method)</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.encode">encode() (ape.api.providers.TransactionAPI method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.estimate_gas_cost">estimate_gas_cost() (ape.api.providers.ProviderAPI method)</a>
@@ -1019,6 +1090,10 @@
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.explorer">explorer() (ape.api.networks.NetworkAPI property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.explorers.ExplorerAPI">ExplorerAPI (class in ape.api.explorers)</a>
+</li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.network.ExplorerPlugin">ExplorerPlugin (class in ape.plugins.network)</a>
+</li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.network.ExplorerPlugin.explorers">explorers() (ape.plugins.network.ExplorerPlugin method)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.extensions_with_missing_compilers">extensions_with_missing_compilers() (ape.managers.project.ProjectManager method)</a>
 </li>
@@ -1257,6 +1332,20 @@
 </li>
         <li><a href="methoddocs/managers.html#module-ape.managers.project">ape.managers.project</a>
 </li>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins">ape.plugins</a>
+</li>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.account">ape.plugins.account</a>
+</li>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.compiler">ape.plugins.compiler</a>
+</li>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.config">ape.plugins.config</a>
+</li>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.converter">ape.plugins.converter</a>
+</li>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.network">ape.plugins.network</a>
+</li>
+        <li><a href="methoddocs/plugins.html#module-ape.plugins.pluggy_patch">ape.plugins.pluggy_patch</a>
+</li>
         <li><a href="methoddocs/types.html#module-ape.types">ape.types</a>
 </li>
         <li><a href="methoddocs/types.html#module-ape.types.contract">ape.types.contract</a>
@@ -1298,16 +1387,22 @@
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkError">NetworkError</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager">NetworkManager (class in ape.managers.networks)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkNotFoundError">NetworkNotFoundError</a>
+</li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.network.NetworkPlugin">NetworkPlugin (class in ape.plugins.network)</a>
 </li>
       <li><a href="methoddocs/ape.html#ape.networks">networks (in module ape)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.networks">networks() (ape.api.networks.EcosystemAPI property)</a>
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#ape.plugins.network.NetworkPlugin.networks">(ape.plugins.network.NetworkPlugin method)</a>
 </li>
+      </ul></li>
       <li>
     networks-list command line option
 
@@ -1368,6 +1463,8 @@
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.plugin_manager">(ape.api.networks.NetworkAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/plugins.html#ape.plugins.pluggy_patch.plugin_manager">(in module ape.plugins.pluggy_patch)</a>
 </li>
       </ul></li>
       <li>
@@ -1430,6 +1527,8 @@
         <li><a href="commands/plugins.html#cmdoption-plugins-remove-arg-PLUGIN">PLUGIN</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.pluggy_patch.PluginType">PluginType (class in ape.plugins.pluggy_patch)</a>
+</li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.PromptChoice.print_choices">print_choices() (ape.cli.choices.PromptChoice method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.priority_fee">priority_fee() (ape.api.providers.ProviderAPI property)</a>
@@ -1460,8 +1559,14 @@
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ProviderError">ProviderError</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.providers">providers() (ape.api.networks.NetworkAPI property)</a>
+      <li><a href="methoddocs/plugins.html#ape.plugins.network.ProviderPlugin">ProviderPlugin (class in ape.plugins.network)</a>
 </li>
+      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.providers">providers() (ape.api.networks.NetworkAPI property)</a>
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#ape.plugins.network.ProviderPlugin.providers">(ape.plugins.network.ProviderPlugin method)</a>
+</li>
+      </ul></li>
       <li>
     PYTEST_ARGS
 
@@ -1484,6 +1589,12 @@
       <li><a href="methoddocs/api.html#ape.api.providers.ReceiptAPI">ReceiptAPI (class in ape.api.providers)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.singledispatchmethod.register">register() (ape.utils.singledispatchmethod method)</a>
+
+      <ul>
+        <li><a href="methoddocs/plugins.html#ape.plugins.register">(in module ape.plugins)</a>
+</li>
+      </ul></li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.compiler.CompilerPlugin.register_compiler">register_compiler() (ape.plugins.compiler.CompilerPlugin method)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager.registered_compilers">registered_compilers() (ape.managers.compilers.CompilerManager property)</a>
 </li>
