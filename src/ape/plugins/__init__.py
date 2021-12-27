@@ -48,6 +48,26 @@ def get_hooks(plugin_type):
 
 
 def register(plugin_type: Type[PluginType], **hookimpl_kwargs) -> Callable:
+    """
+    Register your plugin to ape. You must call this decorator to get your plugins
+    included in ape's plugin ecosystem.
+
+    Usage example::
+
+        @plugins.register(plugins.AccountPlugin)  # 'register()' example
+        def account_types():
+            return AccountContainer, KeyfileAccount
+
+    Args:
+        plugin_type (Type[:class:`~ape.plugins.pluggy_patch.PluginType`]): The plugin
+          type to register.
+
+        hookimpl_kwargs: Return-values required by the plugin type.
+
+    Returns:
+        Callable
+    """
+
     # NOTE: we are basically checking that `plugin_type`
     #       is one of the parent classes of `Plugins`
     if not issubclass(AllPluginHooks, plugin_type):
@@ -72,6 +92,17 @@ def register(plugin_type: Type[PluginType], **hookimpl_kwargs) -> Callable:
 
 
 def valid_impl(api_class: Any) -> bool:
+    """
+    Check if an API class is valid. The class must not have any unimplemented
+    abstract methods.
+
+    Args:
+        api_class (any)
+
+    Returns:
+        bool
+    """
+
     if isinstance(api_class, tuple):
         return all(valid_impl(c) for c in api_class)
 
