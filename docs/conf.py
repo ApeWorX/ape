@@ -77,7 +77,7 @@ def fixpath(path: str) -> str:
     new = f"/{project}/latest/_static"
 
     if suffix:
-        new = f"{new}/{suffix}"
+        new = str(Path(new) / suffix)
 
     return new
 
