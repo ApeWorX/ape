@@ -34,7 +34,7 @@ class ConverterAPI(Generic[ConvertedType]):
     @abstractmethod
     def convert(self, value: Any) -> ConvertedType:
         """
-        Implements any conversion logic on `value` to produce `ABIType`.
-
-        Must throw if not convertible.
+        Convert the given value to the type specified as the generic for this class.
+        Implementations of this API must throw a :class:`~ape.exceptions.ConversionError`
+        when the item fails to convert properly.
         """

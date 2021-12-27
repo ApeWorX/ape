@@ -68,7 +68,7 @@ class AccountManager:
         :meth:`~ape.managers.accounts.AccountManager.load`.
 
         Returns:
-            iter[str]
+            Iterator[str]
         """
 
         for container in self.containers.values():
@@ -79,11 +79,11 @@ class AccountManager:
         Get a list of accounts by their type.
 
         Args:
-            type_ (type[:class:`~ape.api.accounts.AccountAPI`]): The type of account
+            type_ (Type[:class:`~ape.api.accounts.AccountAPI`]): The type of account
               to get.
 
         Returns:
-            list[:class:`~ape.api.accounts.AccountAPI`]
+            List[:class:`~ape.api.accounts.AccountAPI`]
         """
 
         accounts_with_type = []
@@ -130,7 +130,7 @@ class AccountManager:
                ...
 
         Returns:
-            list[:class:`~ape.api.accounts.TestAccountAPI`]
+            List[:class:`~ape.api.accounts.TestAccountAPI`]
         """
         accounts = []
         for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
