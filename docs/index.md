@@ -13,6 +13,7 @@
 ```{eval-rst}
 .. toctree::
    :caption: CLI Reference
+   :maxdepth: 1
 
    commands/accounts.rst
    commands/compile.rst
