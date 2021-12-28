@@ -16,12 +16,16 @@ class ConfigEnum(str, Enum):
 @dataclass(slots=True, kwargs=True)
 class ConfigItem:
     """
-    Each plugin must inherit from this Config base class.
+    A base plugin configuration class. Each plugin that includes
+    a config API must register a subclass of this class.
     """
 
     def serialize(self) -> Dict:
         """
         Serialize the config item into a raw dict format for storing on disk.
+
+        Returns:
+            Dict
         """
         data: Dict[str, Union[str, int, Dict, List, None]] = dict()
         for name in self.__slots__:
