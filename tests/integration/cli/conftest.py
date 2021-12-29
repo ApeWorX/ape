@@ -1,6 +1,6 @@
 import os
 from distutils.dir_util import copy_tree
-from importlib import import_module, reload
+from importlib import import_module
 from pathlib import Path
 
 import pytest
@@ -109,7 +109,6 @@ class ApeCliRunner(CliRunner):
 def runner(project_folder):
     previous_cwd = str(Path.cwd())
     os.chdir(str(project_folder))
-    reload(ape)
     runner = ApeCliRunner()
     yield runner
     os.chdir(previous_cwd)
