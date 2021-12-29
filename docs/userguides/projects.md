@@ -47,7 +47,7 @@ a.deploy(project.MyContract)
 
 ## Networks
 
-Change default networks and providers using the `ape-config.yaml` file.
+Change default providers using the `ape-config.yaml` file.
 
 ```yaml
 ethereum:
