@@ -48,7 +48,7 @@ a.deploy(project.MyContract)
 ## Networks
 
 The default provider for the development network is the 
-[Ethereum Tester provider](https://github.com/ethereum/eth-testers). However, you change the default provider per
+[Ethereum Tester provider](https://github.com/ethereum/eth-testers). However, you can change the default provider per
 network using the `ape-config.yaml` file. 
 
 ```yaml
