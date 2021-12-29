@@ -47,7 +47,8 @@ a.deploy(project.MyContract)
 
 ## Networks
 
-Change default providers using the `ape-config.yaml` file.
+Change default providers using the `ape-config.yaml` file. The default uses an out-of-the-box
+[Ethereum Tester provider](https://github.com/ethereum/eth-testers).
 
 ```yaml
 ethereum:
