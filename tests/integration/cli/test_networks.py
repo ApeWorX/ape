@@ -108,10 +108,10 @@ def test_list_yaml(ape_cli, runner):
 
 @skip_projects_except(["geth"])
 def test_change_default_from_config_file(ape_cli, runner):
+    from ape import config
+
+    actual = config.get_config("ethereum").development.default_provider
+    assert actual == "geth"
+
     result = runner.invoke(ape_cli, ["networks", "list"])
-
-    # The 'geth' project has 'geth' set as the default in the 'ape-config.yaml' file.
-    expected = _GETH_NETWORKS_YAML.strip()
-    breakpoint()
-
-    assert expected in result.output
+    _assert_rich_text(result.output, _GETH_NETWORKS_YAML)
