@@ -43,11 +43,7 @@ class ConfigManager:
 
     def __post_init__(self):
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
-
-        if config_file.exists():
-            user_config = load_config(config_file)
-        else:
-            user_config = {}
+        user_config = load_config(config_file) if config_file.exists() else {}
 
         # Top level config items
         self.name = user_config.pop("name", "")
