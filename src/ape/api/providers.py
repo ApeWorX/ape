@@ -195,6 +195,7 @@ class ReceiptAPI:
     block_number: int
     gas_used: int
     gas_price: int
+    gas_limit: int
     logs: List[dict] = []
     contract_address: Optional[str] = None
     required_confirmations: int = 0
@@ -208,13 +209,14 @@ class ReceiptAPI:
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
-    def raise_for_status(self, txn: TransactionAPI):
+    def raise_for_status(self):
         """
         Handle provider-specific errors regarding a non-successful
         :class:`~api.providers.TransactionStatusEnum`.
         """
 
-    def ran_out_of_gas(self, gas_limit: int) -> bool:
+    @property
+    def ran_out_of_gas(self) -> bool:
         """
         Check if a transaction has ran out of gas and failed.
 
@@ -225,7 +227,7 @@ class ReceiptAPI:
             bool:  ``True`` when the transaction failed and used the
             same amount of gas as the given ``gas_limit``.
         """
-        return self.status == TransactionStatusEnum.FAILING and self.gas_used == gas_limit
+        return self.status == TransactionStatusEnum.FAILING and self.gas_used == self.gas_limit
 
     @classmethod
     @abstractmethod

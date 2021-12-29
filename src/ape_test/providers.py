@@ -57,7 +57,7 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
             raise _get_vm_err(err) from err
 
         receipt = self.get_transaction(txn_hash.hex())
-        if txn.gas_limit is not None and receipt.ran_out_of_gas(txn.gas_limit):
+        if txn.gas_limit is not None and receipt.ran_out_of_gas:
             raise OutOfGasError()
 
         return receipt

@@ -147,12 +147,9 @@ class DynamicFeeTransaction(BaseTransaction):
 
 
 class Receipt(ReceiptAPI):
-    def raise_for_status(self, txn: TransactionAPI):
+    def raise_for_status(self):
         """
         Raise an error for the given transaction, if the transaction has failed.
-
-        Args:
-            txn (:class:`ape.api.providers.TransactionAPI`): The already-sent transaction to check.
 
         Raises:
             :class:`~ape.exceptions.OutOfGasError`: When the transaction failed
@@ -161,7 +158,7 @@ class Receipt(ReceiptAPI):
               failing status otherwise.
         """
 
-        if txn.gas_limit and self.ran_out_of_gas(txn.gas_limit):
+        if self.gas_limit and self.ran_out_of_gas:
             raise OutOfGasError()
         elif self.status != TransactionStatusEnum.NO_ERROR:
             txn_hash = HexBytes(self.txn_hash).hex()
@@ -177,6 +174,7 @@ class Receipt(ReceiptAPI):
             block_number=data["blockNumber"],
             gas_used=data["gasUsed"],
             gas_price=data["gasPrice"],
+            gas_limit=data.get("gas") or data.get("gasLimit"),
             logs=data["logs"],
             contract_address=data["contractAddress"],
             sender=data["from"],
