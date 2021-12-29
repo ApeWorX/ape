@@ -47,8 +47,9 @@ a.deploy(project.MyContract)
 
 ## Networks
 
-Change default providers using the `ape-config.yaml` file. The default uses an out-of-the-box
-[Ethereum Tester provider](https://github.com/ethereum/eth-testers).
+The default provider for the development network is the 
+[Ethereum Tester provider](https://github.com/ethereum/eth-testers). However, you change the default provider per
+network using the `ape-config.yaml` file. 
 
 ```yaml
 ethereum:
@@ -56,8 +57,8 @@ ethereum:
     default_provider: hardhat
 ```
 
-Otherwise, commands such as `run`, `test`, and `console` offer the `--network` option which all you to override
-the default network:
+For specifying the network in an ad-hoc fashion, commands such as `run`, `test`, and `console` offer a `--network` 
+option:
 
 ```bash
 ape run deploy --network ethereum:development:hardhat
