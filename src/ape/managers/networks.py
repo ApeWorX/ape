@@ -5,7 +5,7 @@ from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
-from ape.exceptions import NetworkError
+from ape.exceptions import ConfigError, NetworkError
 from ape.utils import cached_property
 
 from .config import ConfigManager
@@ -31,6 +31,23 @@ class NetworkManager:
     plugin_manager: PluginManager
     active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
+
+    def __post_init__(self):
+        # Apply configurations from 'ape-config.yaml', such as the default provider.
+        for ecosystem_name, ecosystem in self.ecosystems.items():
+            ecosystem_config = self.config.get_config(ecosystem_name)
+            if not ecosystem_config:
+                continue
+
+            for network_name, network in ecosystem.networks.items():
+                network_config = ecosystem_config.get(network_name)
+                if network_config:
+                    default_provider = network_config.get("default_provider")
+                    if default_provider:
+                        if default_provider in network.providers:
+                            network.set_default_provider(default_provider)
+                        else:
+                            raise ConfigError(f"No provider named '{default_provider}'.")
 
     def __repr__(self):
         return f"<NetworkManager, active_provider={self.active_provider}>"

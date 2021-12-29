@@ -45,6 +45,29 @@ a = accounts.load("metamask_0")
 a.deploy(project.MyContract)
 ```
 
+## Networks
+
+Change default networks and providers using the `ape-config.yaml` file.
+
+```yaml
+ethereum:
+  development:
+    default_provider: hardhat
+```
+
+Otherwise, commands such as `run`, `test`, and `console` offer the `--network` option which all you to override
+the default network:
+
+```bash
+ape run deploy --network ethereum:development:hardhat
+```
+
+**NOTE**: If you are using the default ecosystem or network, you can omit them from the option:
+
+```bash
+ape run deploy --network ::hardhat
+```
+
 ## Testing
 
 You can test your project using the `ape test` command. The `ape test` command comes with the core-plugin `ape-test`. 

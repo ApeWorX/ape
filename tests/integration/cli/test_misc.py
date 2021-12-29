@@ -1,10 +1,11 @@
 import pytest
 from github import RateLimitExceededException
 
-from .utils import skip_projects_except
+from .utils import skip_projects, skip_projects_except
 
 
 # NOTE: test all the things without a direct test elsewhere
+@skip_projects(["geth"])
 @pytest.mark.parametrize(
     "args",
     (

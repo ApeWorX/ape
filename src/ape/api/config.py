@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from ape.logging import logger
 from ape.utils import dataclass
@@ -50,6 +50,12 @@ class ConfigItem:
             return getattr(self, attrname)
 
         raise KeyError(f"{attrname!r}")
+
+    def get(self, attrname: str) -> Optional[Any]:
+        if attrname in self.__slots__:
+            return getattr(self, attrname)
+
+        return None
 
 
 class ConfigDict(ConfigItem):
