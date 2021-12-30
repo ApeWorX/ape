@@ -114,7 +114,7 @@ def runner(project_folder):
     os.chdir(previous_cwd)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def ape_cli():
     from ape._cli import cli
 

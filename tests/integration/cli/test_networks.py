@@ -1,5 +1,3 @@
-from ape import networks
-
 from .utils import skip_projects, skip_projects_except
 
 _DEFAULT_NETWORKS_TREE = """
@@ -69,21 +67,7 @@ ethereum  (default)
 """
 
 
-@skip_projects(["geth"])
-def test_list(ape_cli, runner):
-    result = runner.invoke(ape_cli, ["networks", "list"])
-    _assert_rich_text(result.output, _DEFAULT_NETWORKS_TREE)
-
-    networks.ethereum.development.set_default_provider("geth")
-
-    result = runner.invoke(ape_cli, ["networks", "list"])
-    _assert_rich_text(result.output, _GETH_NETWORKS_YAML)
-
-    # Undo
-    networks.ethereum.development.set_default_provider("test")
-
-
-def _assert_rich_text(actual: str, expected: str):
+def assert_rich_text(actual: str, expected: str):
     """
     The output from `rich` causes a bunch of extra spaces to
     appear at the end of each line. For easier testing, we remove those here.
@@ -100,6 +84,12 @@ def _assert_rich_text(actual: str, expected: str):
 
 
 @skip_projects(["geth"])
+def test_list(ape_cli, runner):
+    result = runner.invoke(ape_cli, ["networks", "list"])
+    assert_rich_text(result.output, _DEFAULT_NETWORKS_TREE)
+
+
+@skip_projects(["geth"])
 def test_list_yaml(ape_cli, runner):
     result = runner.invoke(ape_cli, ["networks", "list", "--format", "yaml"])
     expected = _DEFAULT_NETWORKS_YAML.strip()
@@ -109,4 +99,4 @@ def test_list_yaml(ape_cli, runner):
 @skip_projects_except(["geth"])
 def test_change_default_from_config_file(ape_cli, runner, config):
     result = runner.invoke(ape_cli, ["networks", "list"])
-    _assert_rich_text(result.output, _GETH_NETWORKS_YAML)
+    assert_rich_text(result.output, _GETH_NETWORKS_YAML)
