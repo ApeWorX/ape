@@ -4,6 +4,7 @@ import click
 from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
 
+from ape import accounts
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
 from ape_accounts import KeyfileAccount
 
@@ -21,15 +22,13 @@ def cli():
 @click.option("--all", help="Output accounts from all plugins", is_flag=True)
 @ape_cli_context()
 def _list(cli_ctx, all):
-    accounts_to_output = (
-        cli_ctx.accounts if all else cli_ctx.accounts.containers.get("accounts", [])
-    )
+    accounts_to_output = accounts if all else accounts.containers.get("accounts", [])
     if len(accounts_to_output) == 0:
         cli_ctx.logger.warning("No accounts found.")
         return
 
     elif len(accounts_to_output) > 1:
-        click.echo(f"Found {len(cli_ctx.accounts)} accounts:")
+        click.echo(f"Found {len(accounts)} accounts:")
 
     else:
         click.echo("Found 1 account:")
@@ -43,7 +42,7 @@ def _list(cli_ctx, all):
 @non_existing_alias_argument()
 @ape_cli_context()
 def generate(cli_ctx, alias):
-    path = cli_ctx.accounts.containers["accounts"].data_folder.joinpath(f"{alias}.json")
+    path = accounts.containers["accounts"].data_folder.joinpath(f"{alias}.json")
     extra_entropy = click.prompt(
         "Add extra entropy for key generation...",
         hide_input=True,
@@ -65,7 +64,7 @@ def generate(cli_ctx, alias):
 @non_existing_alias_argument()
 @ape_cli_context()
 def _import(cli_ctx, alias):
-    path = cli_ctx.accounts.containers["accounts"].data_folder.joinpath(f"{alias}.json")
+    path = accounts.containers["accounts"].data_folder.joinpath(f"{alias}.json")
     key = click.prompt("Enter Private Key", hide_input=True)
     try:
         account = EthAccount.from_key(to_bytes(hexstr=key))
@@ -88,7 +87,7 @@ def _import(cli_ctx, alias):
 @existing_alias_argument(account_type=KeyfileAccount)
 @ape_cli_context()
 def change_password(cli_ctx, alias):
-    account = cli_ctx.accounts.load(alias)
+    account = accounts.load(alias)
     account.change_password()
     cli_ctx.logger.success(f"Password has been changed for account '{alias}'")
 
@@ -97,6 +96,6 @@ def change_password(cli_ctx, alias):
 @existing_alias_argument(account_type=KeyfileAccount)
 @ape_cli_context()
 def delete(cli_ctx, alias):
-    account = cli_ctx.accounts.load(alias)
+    account = accounts.load(alias)
     account.delete()
     cli_ctx.logger.success(f"Account '{alias}' has been deleted")

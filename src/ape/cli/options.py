@@ -12,9 +12,6 @@ from ape.cli.choices import (
 from ape.cli.utils import Abort
 from ape.exceptions import ContractError
 from ape.logging import LogLevel, logger
-from ape.managers.accounts import AccountManager
-from ape.managers.config import ConfigManager
-from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 from ape.types import ContractType
 
@@ -29,8 +26,6 @@ class ApeCliContextObject:
     def __init__(self):
         self.logger = logger
         self._project = None
-        self._networks = None
-        self._accounts = None
 
     @property
     def project(self) -> ProjectManager:
@@ -48,28 +43,6 @@ class ApeCliContextObject:
             self._project = project
 
         return self._project
-
-    @property
-    def config(self) -> ConfigManager:
-        return self._project.config
-
-    @property
-    def networks(self) -> NetworkManager:
-        if not self._networks:
-            from ape import networks
-
-            self._networks = networks
-
-        return self._networks
-
-    @property
-    def accounts(self) -> AccountManager:
-        if not self._accounts:
-            from ape import accounts
-
-            self._accounts = accounts
-
-        return self._accounts
 
     @staticmethod
     def abort(msg: str, base_error: Exception = None):
