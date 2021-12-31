@@ -106,9 +106,9 @@ class ApeCliRunner(CliRunner):
 
 
 @pytest.fixture
-def runner(project):
+def runner(project_folder):
     previous_cwd = str(Path.cwd())
-    os.chdir(str(project.path))
+    os.chdir(str(project_folder))
     runner = ApeCliRunner()
     yield runner
     os.chdir(previous_cwd)
