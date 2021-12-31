@@ -22,8 +22,8 @@ class HexConverter(ConverterAPI):
     A converter that converts ``str`` to ``HexBytes``.
     """
 
-    def is_convertible(self, value: str) -> bool:
-        return is_hex(value)
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, str) and is_hex(value)
 
     def convert(self, value: str) -> bytes:
         """
@@ -74,7 +74,7 @@ class HexAddressConverter(ConverterAPI):
     :class:`~ape.types.AddressType`.
     """
 
-    def is_convertible(self, value: str) -> bool:
+    def is_convertible(self, value: Any) -> bool:
         return isinstance(value, str) and is_hex_address(value) and not is_checksum_address(value)
 
     def convert(self, value: str) -> AddressType:
