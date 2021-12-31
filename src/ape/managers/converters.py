@@ -39,7 +39,7 @@ class HexConverter(ConverterAPI):
         return HexBytes(value)
 
 
-hex_converter = HexConverter(None, None)  # type: ignore
+hex_converter = HexConverter(None, None, None)  # type: ignore
 
 
 class AddressAPIConverter(ConverterAPI):
@@ -65,7 +65,7 @@ class AddressAPIConverter(ConverterAPI):
         return value.address
 
 
-address_api_converter = AddressAPIConverter(None, None)  # type: ignore
+address_api_converter = AddressAPIConverter(None, None, None)  # type: ignore
 
 
 class HexAddressConverter(ConverterAPI):
@@ -128,7 +128,7 @@ class ConversionManager:
         }
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
-            converter = converter_class(self.config.get_config(plugin_name), self.networks)
+            converter = converter_class(self.config.get_config(plugin_name), self.networks, self)
 
             if conversion_type not in converters:
                 options = ", ".join([t.__name__ for t in converters])
