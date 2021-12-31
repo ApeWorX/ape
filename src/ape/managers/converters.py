@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any, Dict, List, Type
 
 from dataclassy import dataclass
@@ -123,6 +124,7 @@ class ConversionManager:
             AddressType: [address_api_converter, hex_address_converter],
             bytes: [hex_converter],
             int: [],
+            Decimal: [],
         }
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
