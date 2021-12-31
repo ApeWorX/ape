@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from dataclassy import dataclass
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
@@ -102,17 +102,17 @@ class ListTupleConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, list) or isinstance(value, tuple)
+        return isinstance(value, (list, tuple))
 
-    def convert(self, value: Union[list, tuple]) -> Union[list, tuple]:
+    def convert(self, value: Union[List, Tuple]) -> Union[List, Tuple]:
         """
         Convert the items inside the given list or tuple.
 
         Args:
-            value (``list`` or ``tuple``): The collection to convert.
+            value (Union[List, Tuple]): The collection to convert.
 
         Returns:
-            ``list`` or ``tuple`` (depending on input)
+            Union[list, tuple]: Depending on the input
         """
 
         converted_value: List[Any] = []
@@ -136,13 +136,11 @@ class ListTupleConverter(ConverterAPI):
                     raise ConversionError(f"Unsupported ABI Type: {v.__class__}")
 
             # Try all of them to see if one converts it over (only use first one)
+            conversion_found = False
             for check_fn, convert_fn in map(lambda c: (c.is_convertible, c.convert), converters):
                 if check_fn(v):
                     converted_value.append(convert_fn(v))
                     conversion_found = True
-                    break
-
-                if conversion_found:
                     break
 
             if not conversion_found:
