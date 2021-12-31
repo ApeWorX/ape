@@ -1,13 +1,16 @@
 import os
 from distutils.dir_util import copy_tree
-from importlib import import_module
+from importlib import import_module, reload
 from pathlib import Path
+from typing import IO, Any, Mapping, Optional, Sequence, Union
 
 import pytest
-from click.testing import CliRunner
+from click import BaseCommand
+from click.testing import CliRunner, Result
 
 import ape
 from ape import Project
+from ape.cli.options import ApeCliContextObject
 
 from .utils import NodeId, project_names, project_skipper, projects_directory
 
@@ -100,16 +103,45 @@ def project(project_folder):
 
 
 class ApeCliRunner(CliRunner):
+    def __init__(self, project):
+        self._project = project
+        super().__init__()
+
+    def invoke(
+        self,
+        cli: BaseCommand,
+        args: Optional[Union[str, Sequence[str]]] = None,
+        input: Optional[Union[str, bytes, IO]] = None,
+        env: Optional[Mapping[str, Optional[str]]] = None,
+        catch_exceptions: bool = True,
+        color: bool = False,
+        **extra: Any,
+    ) -> Result:
+        obj = ApeCliContextObject()
+        obj._project = self._project
+        return super().invoke(
+            cli,
+            args,
+            input=input,
+            env=env,
+            catch_exceptions=catch_exceptions,
+            color=color,
+            obj=obj,
+            **extra,
+        )
+
     def invoke_using_test_network(self, cli, args, input=None):
         args.extend(("--network", "::test"))
         return self.invoke(cli, args, input=input)
 
 
 @pytest.fixture
-def runner(project_folder):
+def runner(project):
     previous_cwd = str(Path.cwd())
-    os.chdir(str(project_folder))
-    runner = ApeCliRunner()
+    os.chdir(str(project.path))
+    reload(ape)
+    project.config = ape.config
+    runner = ApeCliRunner(project)
     yield runner
     os.chdir(previous_cwd)
 

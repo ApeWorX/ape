@@ -97,6 +97,6 @@ def test_list_yaml(ape_cli, runner):
 
 
 @skip_projects_except(["geth"])
-def test_change_default_from_config_file(ape_cli, runner, config):
+def test_change_default_from_config_file(ape_cli, runner):
     result = runner.invoke(ape_cli, ["networks", "list"])
     assert_rich_text(result.output, _GETH_NETWORKS_YAML)

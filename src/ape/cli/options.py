@@ -12,6 +12,7 @@ from ape.cli.choices import (
 from ape.cli.utils import Abort
 from ape.exceptions import ContractError
 from ape.logging import LogLevel, logger
+from ape.managers.config import ConfigManager
 from ape.managers.project import ProjectManager
 from ape.types import ContractType
 
@@ -43,6 +44,10 @@ class ApeCliContextObject:
             self._project = project
 
         return self._project
+
+    @property
+    def config(self) -> ConfigManager:
+        return self._project.config
 
     @staticmethod
     def abort(msg: str, base_error: Exception = None):
