@@ -43,14 +43,11 @@ class ConfigManager:
     _project_plugin_configs: Dict[str, Dict[str, ConfigItem]] = {}
 
     @property
-    def _project_name(self):
-        return self.PROJECT_FOLDER.stem
-
-    @property
     def _plugin_configs(self) -> Dict[str, ConfigItem]:
         # This property is cached per active project.
-        if self._project_name in self._project_plugin_configs:
-            return self._project_plugin_configs[self._project_name]
+        project_name = self.PROJECT_FOLDER.stem
+        if project_name in self._project_plugin_configs:
+            return self._project_plugin_configs[project_name]
 
         configs = {}
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
@@ -81,7 +78,7 @@ class ConfigManager:
         if len(user_config.keys()) > 0:
             raise ConfigError("Unprocessed config items.")
 
-        self._project_plugin_configs[self._project_name] = configs
+        self._project_plugin_configs[project_name] = configs
         return configs
 
     def __repr__(self):
