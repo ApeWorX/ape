@@ -88,7 +88,6 @@ def project_folder(request, config):
     project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
     copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
     previous_project_folder = config.PROJECT_FOLDER
-    config.PROJECT_FOLDER = project_dest_dir
     yield project_dest_dir
     config.PROJECT_FOLDER = previous_project_folder
 
@@ -103,11 +102,6 @@ def project(project_folder):
 
 
 class ApeCliRunner(CliRunner):
-    def __init__(self, project, networks):
-        self._project = project
-        self._networks = networks
-        super().__init__()
-
     def invoke(
         self,
         cli: BaseCommand,
@@ -119,7 +113,6 @@ class ApeCliRunner(CliRunner):
         **extra: Any,
     ) -> Result:
         obj = ApeCliContextObject()
-        obj._project = self._project
         return super().invoke(
             cli,
             args,
@@ -141,8 +134,7 @@ def runner(project):
     previous_cwd = str(Path.cwd())
     os.chdir(str(project.path))
     reload(ape)
-    project.config = ape.config
-    runner = ApeCliRunner(project, ape.networks)
+    runner = ApeCliRunner()
     yield runner
     os.chdir(previous_cwd)
 
