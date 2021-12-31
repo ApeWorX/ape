@@ -28,7 +28,9 @@ def test_bad_type():
     with pytest.raises(ConversionError) as err:
         convert(value="something", type=float)
 
-    expected = "Type '<class 'float'>' must be one of [ChecksumAddress, bytes, int, Decimal]."
+    expected = (
+        "Type '<class 'float'>' must be one of [ChecksumAddress, bytes, int, Decimal, list, tuple]."
+    )
     assert str(err.value) == expected
 
 

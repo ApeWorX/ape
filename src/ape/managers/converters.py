@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Optional, Type, Union
 
 from dataclassy import dataclass
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
@@ -92,7 +92,67 @@ class HexAddressConverter(ConverterAPI):
         return to_checksum_address(value)
 
 
-hex_address_converter = HexAddressConverter(None, None)  # type: ignore
+hex_address_converter = HexAddressConverter(None, None, None)  # type: ignore
+
+
+class ListTupleConverter(ConverterAPI):
+    """
+    A converter that converts any tuple or list of items
+    :class:`~ape.types.AddressType`.
+    """
+
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, list) or isinstance(value, tuple)
+
+    def convert(self, value: Union[list, tuple]) -> Union[list, tuple]:
+        """
+        Convert the items inside the given list or tuple.
+
+        Args:
+            value (``list`` or ``tuple``): The collection to convert.
+
+        Returns:
+            ``list`` or ``tuple`` (depending on input)
+        """
+
+        converted_value: List[Any] = []
+
+        for v in value:
+            # Find the potential converters for this value
+            converters: Optional[List[ConverterAPI[Any]]] = None
+            if isinstance(v, AddressAPI):
+                converters = self.converter._converters[AddressType]
+
+            else:
+                # We have to search for the right one to apply
+                # TODO: Is there a way to fuzzily pattern-match subclasses?
+                for typ in self.converter._converters:
+                    if isinstance(v, typ):
+                        converters = self.converter._converters[typ]
+                        break
+
+                if not converters:
+                    # NOTE: Only Pythonic types supported by `eth-abi` should be convertible
+                    raise ConversionError(f"Unsupported ABI Type: {v.__class__}")
+
+            # Try all of them to see if one converts it over (only use first one)
+            for check_fn, convert_fn in map(lambda c: (c.is_convertible, c.convert), converters):
+                if check_fn(v):
+                    converted_value.append(convert_fn(v))
+                    conversion_found = True
+                    break
+
+                if conversion_found:
+                    break
+
+            if not conversion_found:
+                # NOTE: If no conversions found, just insert the original
+                converted_value.append(v)
+
+        return value.__class__(converted_value)
+
+
+list_tuple_converter = ListTupleConverter(None, None, None)  # type: ignore
 
 
 @dataclass
@@ -120,11 +180,14 @@ class ConversionManager:
 
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
+        list_tuple_converter.converter = self  # Splice this in (no need for the rest)
         converters: Dict[Type, List[ConverterAPI]] = {
             AddressType: [address_api_converter, hex_address_converter],
             bytes: [hex_converter],
             int: [],
             Decimal: [],
+            list: [list_tuple_converter],
+            tuple: [list_tuple_converter],
         }
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
