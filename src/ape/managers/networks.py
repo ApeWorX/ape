@@ -30,7 +30,7 @@ class NetworkManager:
     plugin_manager: PluginManager
     active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
-    _project_ecosystems: Dict[str, Dict[str, EcosystemAPI]] = {}
+    _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
 
     def __repr__(self):
         return f"<NetworkManager, active_provider={self.active_provider}>"
@@ -41,8 +41,8 @@ class NetworkManager:
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
         project_name = self.config.PROJECT_FOLDER.stem
-        if project_name in self._project_ecosystems:
-            return self._project_ecosystems[project_name]
+        if project_name in self._ecosystems_by_project:
+            return self._ecosystems_by_project[project_name]
 
         ecosystem_dict = {}
         for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
@@ -68,7 +68,7 @@ class NetworkManager:
 
             ecosystem_dict[plugin_name] = ecosystem
 
-        self._project_ecosystems[project_name] = ecosystem_dict
+        self._ecosystems_by_project[project_name] = ecosystem_dict
         return ecosystem_dict
 
     def __iter__(self) -> Iterator[str]:
