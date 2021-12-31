@@ -1,6 +1,6 @@
 import os
 from distutils.dir_util import copy_tree
-from importlib import import_module, reload
+from importlib import import_module
 from pathlib import Path
 from typing import IO, Any, Mapping, Optional, Sequence, Union
 
@@ -82,7 +82,7 @@ def pytest_collection_modifyitems(session, config, items):
     items[:] = modified_items
 
 
-@pytest.fixture(params=project_names, scope="function")
+@pytest.fixture(params=project_names)
 def project_folder(request, config):
     project_source_dir = projects_directory / request.param
     project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
@@ -92,7 +92,7 @@ def project_folder(request, config):
     config.PROJECT_FOLDER = previous_project_folder
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def project(project_folder):
     previous_project = ape.project
     project = Project(project_folder)
@@ -129,17 +129,16 @@ class ApeCliRunner(CliRunner):
         return self.invoke(cli, args, input=input)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def runner(project):
     previous_cwd = str(Path.cwd())
     os.chdir(str(project.path))
-    reload(ape)
     runner = ApeCliRunner()
     yield runner
     os.chdir(previous_cwd)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def ape_cli():
     from ape._cli import cli
 
@@ -153,7 +152,7 @@ def assert_failure(result, expected_output):
     assert expected_output in result.output
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def clean_cache(project):
     """
     Use this fixture to ensure a project

@@ -6,7 +6,6 @@ from pluggy import PluginManager  # type: ignore
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.exceptions import ConfigError, NetworkError
-from ape.utils import cached_property
 
 from .config import ConfigManager
 
@@ -32,34 +31,18 @@ class NetworkManager:
     active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
 
-    def __post_init__(self):
-        # Apply configurations from 'ape-config.yaml', such as the default provider.
-        for ecosystem_name, ecosystem in self.ecosystems.items():
-            ecosystem_config = self.config.get_config(ecosystem_name)
-            if not ecosystem_config:
-                continue
-
-            for network_name, network in ecosystem.networks.items():
-                network_config = ecosystem_config.get(network_name)
-                if network_config:
-                    default_provider = network_config.get("default_provider")
-                    if default_provider:
-                        if default_provider in network.providers:
-                            network.set_default_provider(default_provider)
-                        else:
-                            raise ConfigError(f"No provider named '{default_provider}'.")
-
     def __repr__(self):
         return f"<NetworkManager, active_provider={self.active_provider}>"
 
-    @cached_property
+    @property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
 
-        return {
-            plugin_name: ecosystem_class(
+        ecosystem_dict = {}
+        for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
+            ecosystem = ecosystem_class(
                 name=plugin_name,
                 network_manager=self,
                 config_manager=self.config,
@@ -67,8 +50,21 @@ class NetworkManager:
                 data_folder=self.config.DATA_FOLDER / plugin_name,
                 request_header=self.config.REQUEST_HEADER,
             )
-            for plugin_name, ecosystem_class in self.plugin_manager.ecosystems
-        }
+            ecosystem_config = self.config.get_config(plugin_name)
+            if ecosystem_config:
+                for network_name, network in ecosystem.networks.items():
+                    network_config = ecosystem_config.get(network_name)
+                    if network_config:
+                        default_provider = network_config.get("default_provider")
+                        if default_provider:
+                            if default_provider in network.providers:
+                                network.set_default_provider(default_provider)
+                            else:
+                                raise ConfigError(f"No provider named '{default_provider}'.")
+
+            ecosystem_dict[plugin_name] = ecosystem
+
+        return ecosystem_dict
 
     def __iter__(self) -> Iterator[str]:
         """
@@ -77,7 +73,6 @@ class NetworkManager:
         Returns:
             Iterator[:class:`~ape.api.networks.EcosystemAPI`]
         """
-
         yield from self.ecosystems
 
     def __getitem__(self, ecosystem_name: str) -> EcosystemAPI:
@@ -94,7 +89,6 @@ class NetworkManager:
         Returns:
             :class:`~ape.api.networks.EcosystemAPI`
         """
-
         if ecosystem_name not in self.ecosystems:
             raise NetworkError(f"Unknown ecosystem '{ecosystem_name}'.")
 
@@ -261,7 +255,6 @@ class NetworkManager:
         only a single ecosystem installed, such as Ethereum, then get
         that ecosystem.
         """
-
         if self._default:
             return self.ecosystems[self._default]
 

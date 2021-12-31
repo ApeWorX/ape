@@ -1,9 +1,8 @@
 import pytest
 
-from ape import networks
+from ape_test.providers import LocalNetwork
 
 
 @pytest.fixture
 def eth_tester_provider():
-    with networks.parse_network_choice("::test"):
-        yield networks.active_provider
+    return LocalNetwork()

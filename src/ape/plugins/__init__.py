@@ -121,10 +121,9 @@ class PluginManager:
             if name.startswith("ape_") and ispkg:
                 try:
                     module = importlib.import_module(name)
-                    if plugin_manager.is_registered(module):
-                        plugin_manager.unregister(module)
+                    if not plugin_manager.is_registered(module):
+                        plugin_manager.register(module)
 
-                    plugin_manager.register(module)
                 except Exception as err:
                     logger.warn_from_exception(err, f"Error loading plugin package '{name}'.")
 
