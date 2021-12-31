@@ -82,7 +82,7 @@ def pytest_collection_modifyitems(session, config, items):
     items[:] = modified_items
 
 
-@pytest.fixture(params=project_names)
+@pytest.fixture(params=project_names, scope="function")
 def project_folder(request, config):
     project_source_dir = projects_directory / request.param
     project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
@@ -93,7 +93,7 @@ def project_folder(request, config):
     config.PROJECT_FOLDER = previous_project_folder
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def project(project_folder):
     previous_project = ape.project
     project = Project(project_folder)
@@ -103,8 +103,9 @@ def project(project_folder):
 
 
 class ApeCliRunner(CliRunner):
-    def __init__(self, project):
+    def __init__(self, project, networks):
         self._project = project
+        self._networks = networks
         super().__init__()
 
     def invoke(
@@ -135,18 +136,18 @@ class ApeCliRunner(CliRunner):
         return self.invoke(cli, args, input=input)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def runner(project):
     previous_cwd = str(Path.cwd())
     os.chdir(str(project.path))
     reload(ape)
     project.config = ape.config
-    runner = ApeCliRunner(project)
+    runner = ApeCliRunner(project, ape.networks)
     yield runner
     os.chdir(previous_cwd)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def ape_cli():
     from ape._cli import cli
 
@@ -160,7 +161,7 @@ def assert_failure(result, expected_output):
     assert expected_output in result.output
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def clean_cache(project):
     """
     Use this fixture to ensure a project
