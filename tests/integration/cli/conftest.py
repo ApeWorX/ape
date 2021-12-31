@@ -2,15 +2,12 @@ import os
 from distutils.dir_util import copy_tree
 from importlib import import_module
 from pathlib import Path
-from typing import IO, Any, Mapping, Optional, Sequence, Union
 
 import pytest
-from click import BaseCommand
-from click.testing import CliRunner, Result
+from click.testing import CliRunner
 
 import ape
 from ape import Project
-from ape.cli.options import ApeCliContextObject
 
 from .utils import NodeId, project_names, project_skipper, projects_directory
 
@@ -103,28 +100,6 @@ def project(project_folder):
 
 
 class ApeCliRunner(CliRunner):
-    def invoke(
-        self,
-        cli: BaseCommand,
-        args: Optional[Union[str, Sequence[str]]] = None,
-        input: Optional[Union[str, bytes, IO]] = None,
-        env: Optional[Mapping[str, Optional[str]]] = None,
-        catch_exceptions: bool = True,
-        color: bool = False,
-        **extra: Any,
-    ) -> Result:
-        obj = ApeCliContextObject()
-        return super().invoke(
-            cli,
-            args,
-            input=input,
-            env=env,
-            catch_exceptions=catch_exceptions,
-            color=color,
-            obj=obj,
-            **extra,
-        )
-
     def invoke_using_test_network(self, cli, args, input=None):
         args.extend(("--network", "::test"))
         return self.invoke(cli, args, input=input)
@@ -139,7 +114,7 @@ def runner(project):
     os.chdir(previous_cwd)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def ape_cli():
     from ape._cli import cli
 
