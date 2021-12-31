@@ -20,7 +20,6 @@ def cli():
 @ape_cli_context()
 @output_format_option()
 def _list(cli_ctx, output_format):
-    breakpoint()
     if output_format == OutputFormat.TREE:
         default_suffix = "[dim default]  (default)"
         ecosystems = cli_ctx.networks.network_data["ecosystems"]

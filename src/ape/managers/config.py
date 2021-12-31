@@ -58,7 +58,7 @@ class ConfigManager:
 
             if config_class != ConfigDict:
                 # NOTE: Will raise if improperly provided keys
-                config = config_class(**user_override)
+                config = config_class(**user_override)  # type: ignore
 
                 # NOTE: Should raise if settings violate some sort of plugin requirement
                 config.validate_config()

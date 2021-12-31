@@ -110,27 +110,18 @@ def valid_impl(api_class: Any) -> bool:
     if not hasattr(api_class, "__abstractmethods__"):
         return True  # not an abstract class
 
-    else:
-        return len(api_class.__abstractmethods__) == 0
+    return len(api_class.__abstractmethods__) == 0
 
 
 class PluginManager:
-    def __init__(self):
-        # NOTE: This actually loads the plugins, and should only be done once
-        for _, name, ispkg in pkgutil.iter_modules():
-            if name.startswith("ape_") and ispkg:
-                try:
-                    module = importlib.import_module(name)
-                    if not plugin_manager.is_registered(module):
-                        plugin_manager.register(module)
-
-                except Exception as err:
-                    logger.warn_from_exception(err, f"Error loading plugin package '{name}'.")
+    _did_register = False
 
     def __repr__(self):
         return "<PluginManager>"
 
-    def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
+    def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
+        self._register_plugins_if_needed()
+
         if not hasattr(plugin_manager.hook, attr_name):
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
@@ -161,6 +152,23 @@ class PluginManager:
 
             else:
                 _warn_not_fully_implemented_error(results, plugin_name)
+
+    def _register_plugins_if_needed(self):
+        # NOTE: This actually loads the plugins, and should only be done once
+        if self._did_register:
+            return
+
+        for _, name, ispkg in pkgutil.iter_modules():
+            if name.startswith("ape_") and ispkg:
+                try:
+                    module = importlib.import_module(name)
+                    if not plugin_manager.is_registered(module):
+                        plugin_manager.register(module)
+
+                except Exception as err:
+                    logger.warn_from_exception(err, f"Error loading plugin package '{name}'.")
+
+        self._did_register = True
 
 
 def _warn_not_fully_implemented_error(results, plugin_name):

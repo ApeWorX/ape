@@ -88,6 +88,7 @@ def project_folder(request, config):
     project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
     copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
     previous_project_folder = config.PROJECT_FOLDER
+    config.PROJECT_FOLDER = project_dest_dir
     yield project_dest_dir
     config.PROJECT_FOLDER = previous_project_folder
 
