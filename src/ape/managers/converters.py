@@ -97,8 +97,7 @@ hex_address_converter = HexAddressConverter(None, None, None)  # type: ignore
 
 class ListTupleConverter(ConverterAPI):
     """
-    A converter that converts any tuple or list of items
-    :class:`~ape.types.AddressType`.
+    A converter that converts all items in a tuple or list recursively.
     """
 
     def is_convertible(self, value: Any) -> bool:
