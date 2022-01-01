@@ -47,7 +47,9 @@ class ConfigItem:
 
     def __getitem__(self, attrname: str) -> Any:
         """
-        Get a configuration setting property by name.
+        Get a configuration setting property by name. Use
+        :meth:`~ape.api.config.ConfigItem.get` when it is ok for the key not to
+        exist in the config.
 
         Raises:
             KeyError: When the attribute name is not a key in the config.
@@ -64,21 +66,23 @@ class ConfigItem:
 
         raise KeyError(f"{attrname!r}")
 
-    def get(self, attrname: str) -> Optional[Any]:
+    def get(self, attrname: str, default_value: Optional[Any] = None) -> Optional[Any]:
         """
         Get a configuration setting property by name.
 
         Args:
             attrname (str): The configuration setting key.
+            default_value (Optional[Any]): The value to return if the key does
+              not exist. Defaults to ``None``.
 
         Returns:
-            Optional[Any]: ``None`` if the key is not in the config, the value otherwise.
+            Optional[Any]: The default value if the key is not in the config, the value otherwise.
         """
 
         if attrname in self.__slots__:
             return getattr(self, attrname)
 
-        return None
+        return default_value
 
 
 class ConfigDict(ConfigItem):
