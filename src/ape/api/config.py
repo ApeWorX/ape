@@ -46,12 +46,35 @@ class ConfigItem:
         pass
 
     def __getitem__(self, attrname: str) -> Any:
+        """
+        Get a configuration setting property by name.
+
+        Raises:
+            KeyError: When the attribute name is not a key in the config.
+
+        Args:
+            attrname (str): The configuration setting key.
+
+        Returns:
+            Any: The value from the config.
+        """
+
         if attrname in self.__slots__:
             return getattr(self, attrname)
 
         raise KeyError(f"{attrname!r}")
 
     def get(self, attrname: str) -> Optional[Any]:
+        """
+        Get a configuration setting property by name.
+
+        Args:
+            attrname (str): The configuration setting key.
+
+        Returns:
+            Optional[Any]: ``None`` if the key is not in the config, the value otherwise.
+        """
+
         if attrname in self.__slots__:
             return getattr(self, attrname)
 
