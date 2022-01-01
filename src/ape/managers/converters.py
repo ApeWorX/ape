@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Tuple, Type, Union
 
 from dataclassy import dataclass
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
@@ -118,30 +118,18 @@ class ListTupleConverter(ConverterAPI):
         converted_value: List[Any] = []
 
         for v in value:
-            # Find the potential converters for this value
-            converters: Optional[List[ConverterAPI[Any]]] = None
-            if isinstance(v, AddressAPI):
-                converters = self.converter._converters[AddressType]
-
-            else:
-                # We have to search for the right one to apply
-                # TODO: Is there a way to fuzzily pattern-match subclasses?
-                for typ in self.converter._converters:
-                    if isinstance(v, typ):
-                        converters = self.converter._converters[typ]
-                        break
-
-                if not converters:
-                    # NOTE: Only Pythonic types supported by `eth-abi` should be convertible
-                    raise ConversionError(f"Unsupported ABI Type: {v.__class__}")
-
             # Try all of them to see if one converts it over (only use first one)
             conversion_found = False
-            for check_fn, convert_fn in map(lambda c: (c.is_convertible, c.convert), converters):
-                if check_fn(v):
-                    converted_value.append(convert_fn(v))
-                    conversion_found = True
-                    break
+            # NOTE: Double loop required because we might not know the exact type of the inner
+            #       items. The UX of having to specify all inner items seemed poor as well.
+            for typ in self.converter._converters:
+                for check_fn, convert_fn in map(
+                    lambda c: (c.is_convertible, c.convert), self.converter._converters[typ]
+                ):
+                    if check_fn(v):
+                        converted_value.append(convert_fn(v))
+                        conversion_found = True
+                        break
 
             if not conversion_found:
                 # NOTE: If no conversions found, just insert the original
@@ -241,7 +229,8 @@ class ConversionManager:
             options = ", ".join([t.__name__ for t in self._converters])
             raise ConversionError(f"Type '{type}' must be one of [{options}].")
 
-        if self.is_type(value, type):
+        if self.is_type(value, type) and not isinstance(value, (list, tuple)):
+            # NOTE: Always process lists and tuples
             return value
 
         for converter in self._converters[type]:
