@@ -39,3 +39,7 @@ def test_no_registered_converter():
         convert(value="something", type=ChecksumAddress)
 
     assert str(err.value) == "No conversion registered to handle 'something'."
+
+
+def test_lists():
+    assert convert(["1 ether"], list) == [int(1e18)]
