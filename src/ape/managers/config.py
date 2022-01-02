@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 from dataclassy import dataclass
 
@@ -37,22 +37,20 @@ class ConfigManager:
     PROJECT_FOLDER: Path
     name: str = ""
     version: str = ""
-    dependencies: List[str] = []
+    dependencies: Dict[str, str] = {}
+    deployments: Dict[str, str] = {}
     plugin_manager: PluginManager
     _plugin_configs: Dict[str, ConfigItem] = dict()
 
     def __post_init__(self):
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
-
-        if config_file.exists():
-            user_config = load_config(config_file)
-        else:
-            user_config = {}
+        user_config = load_config(config_file) if config_file.exists() else {}
 
         # Top level config items
         self.name = user_config.pop("name", "")
         self.version = user_config.pop("version", "")
         self.dependencies = user_config.pop("dependencies", {})
+        self.deployments = user_config.pop("deployments", {})
 
         for plugin_name, config_class in self.plugin_manager.config_class:
             # NOTE: `dict.pop()` is used for checking if all config was processed
