@@ -44,3 +44,13 @@ Install these plugins by running command:
 ```bash
 ape plugins install
 ```
+
+## Testing
+
+Configure your test accounts:
+
+```yaml
+test:
+  mnemonic: test test test test test test test test test test test junk
+  number_of_accounts: 5
+```
