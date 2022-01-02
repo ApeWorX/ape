@@ -120,6 +120,7 @@ class ContractCallHandler:
             abi=selected_abi,
             address=self.address,
             provider=self.provider,
+            converter=self.converter,
         )(*args, **kwargs)
 
 
@@ -179,6 +180,7 @@ class ContractTransactionHandler:
             abi=selected_abi,
             address=self.address,
             provider=self.provider,
+            converter=self.converter,
         )(*args, **kwargs)
 
 
