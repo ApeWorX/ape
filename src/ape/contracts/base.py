@@ -41,6 +41,7 @@ class ContractConstructor:
         return self.abi.signature if self.abi else "constructor()"
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
+        args = self.converter.convert(args, tuple)
         return self.provider.network.ecosystem.encode_deployment(
             self.deployment_bytecode, self.abi, *args, **_encode_address_kwargs(**kwargs)
         )
