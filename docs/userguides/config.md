@@ -1,11 +1,11 @@
 # Configure Ape
 
-A `ape-config.yaml` file allows you to configure ape. This guide serves as an index of the settings you can include 
+An `ape-config.yaml` file allows you to configure ape. This guide serves as an index of the settings you can include 
 in an `ape-config.yaml` file.
 
 ## Deployments
 
-Share deployments with teammates.
+Share deployments with teammates:
 
 ```yaml
 deployments:
@@ -20,7 +20,7 @@ deployments:
 
 ## Networks
 
-Set default networks.
+Set default networks:
 
 ```yaml
 ethereum:
