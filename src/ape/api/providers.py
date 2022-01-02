@@ -386,7 +386,7 @@ class ProviderAPI:
             Dict[str, List[AddressType]]: A dictionary of contract names to
             a list of deployments.
         """
-        deployments: Dict[str, List[Union[str, int]]] = (
+        deployments: Dict[str, List[Union[str, bytes]]] = (
             extract_nested_value(
                 self.network.config_manager.deployments,
                 self.network.ecosystem.name,
