@@ -18,11 +18,6 @@ if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
-def _encode_address_args(*args):
-    # Convert higher level address types to str
-    return [arg.address if isinstance(arg, AddressAPI) else arg for arg in args]
-
-
 def _encode_address_kwargs(**kwargs):
     # Convert higher level address types to str
     return {
@@ -47,10 +42,7 @@ class ContractConstructor:
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
         return self.provider.network.ecosystem.encode_deployment(
-            self.deployment_bytecode,
-            self.abi,
-            *_encode_address_args(*args),
-            **_encode_address_kwargs(**kwargs),
+            self.deployment_bytecode, self.abi, *args, **_encode_address_kwargs(**kwargs)
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
@@ -77,7 +69,7 @@ class ContractCall:
     def encode(self, *args, **kwargs) -> TransactionAPI:
         args = self.converter.convert(args, tuple)
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *_encode_address_args(*args), **_encode_address_kwargs(**kwargs)
+            self.address, self.abi, *args, **_encode_address_kwargs(**kwargs)
         )
 
     def __call__(self, *args, **kwargs) -> Any:
@@ -146,7 +138,7 @@ class ContractTransaction:
     def encode(self, *args, **kwargs) -> TransactionAPI:
         args = self.converter.convert(args, tuple)
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *_encode_address_args(*args), **_encode_address_kwargs(**kwargs)
+            self.address, self.abi, *args, **_encode_address_kwargs(**kwargs)
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
