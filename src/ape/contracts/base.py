@@ -296,7 +296,7 @@ class ContractContainer:
     """The type of the contract."""
 
     _provider: Optional[ProviderAPI]
-    # _provider is only None when not connected to a provider.
+    # _provider is only None when a user is not connected to a provider.
 
     def __repr__(self) -> str:
         return f"<{self.contract_type.contractName}>"
@@ -308,6 +308,7 @@ class ContractContainer:
         Usage example::
 
             from ape import project
+
             my_contract = project.MyContract.at("0xAbC1230001112223334445566611855443322111")
 
         Args:
