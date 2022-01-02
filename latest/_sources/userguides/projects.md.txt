@@ -45,6 +45,31 @@ a = accounts.load("metamask_0")
 a.deploy(project.MyContract)
 ```
 
+## Networks
+
+The default provider for the development network is the 
+[Ethereum Tester provider](https://github.com/ethereum/eth-testers). However, you can change the default provider per
+network using the `ape-config.yaml` file. 
+
+```yaml
+ethereum:
+  development:
+    default_provider: hardhat
+```
+
+For specifying the network in an ad-hoc fashion, commands such as `run`, `test`, and `console` offer a `--network` 
+option:
+
+```bash
+ape run deploy --network ethereum:development:hardhat
+```
+
+**NOTE**: If you are using the default ecosystem or network, you can omit them from the option:
+
+```bash
+ape run deploy --network ::hardhat
+```
+
 ## Testing
 
 You can test your project using the `ape test` command. The `ape test` command comes with the core-plugin `ape-test`. 

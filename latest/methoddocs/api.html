@@ -604,11 +604,60 @@ Use this to limit the values of a config item, such as colors <code class="docut
 <dt id="ape.api.config.ConfigItem">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.config.</span></code><code class="sig-name descname"><span class="pre">ConfigItem</span></code><a class="headerlink" href="#ape.api.config.ConfigItem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Each plugin must inherit from this Config base class.</p>
+<p>A base plugin configuration class. Each plugin that includes
+a config API must register a subclass of this class.</p>
+<dl class="py method">
+<dt id="ape.api.config.ConfigItem.__getitem__">
+<code class="sig-name descname"><span class="pre">__getitem__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attrname</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Any</span><a class="headerlink" href="#ape.api.config.ConfigItem.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a configuration setting property by name. Use
+<a class="reference internal" href="#ape.api.config.ConfigItem.get" title="ape.api.config.ConfigItem.get"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get()</span></code></a> when it is ok for the key not to
+exist in the config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>KeyError</strong> – When the attribute name is not a key in the config.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>attrname</strong> (<em>str</em>) – The configuration setting key.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The value from the config.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.config.ConfigItem.get">
+<code class="sig-name descname"><span class="pre">get</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attrname</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.config.ConfigItem.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a configuration setting property by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attrname</strong> (<em>str</em>) – The configuration setting key.</p></li>
+<li><p><strong>default_value</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – The value to return if the key does
+not exist. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The default value if the key is not in the config, the value otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="ape.api.config.ConfigItem.serialize">
 <code class="sig-name descname"><span class="pre">serialize</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><a class="headerlink" href="#ape.api.config.ConfigItem.serialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Serialize the config item into a raw dict format for storing on disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
