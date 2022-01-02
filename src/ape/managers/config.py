@@ -38,7 +38,7 @@ class ConfigManager:
     name: str = ""
     version: str = ""
     dependencies: Dict[str, str] = {}
-    deployments: Dict[str, str] = {}
+    deployments: Dict[str, Dict[str, str]] = {}
     plugin_manager: PluginManager
     _plugin_configs: Dict[str, ConfigItem] = dict()
 
