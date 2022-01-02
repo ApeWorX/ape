@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 from dataclassy import dataclass
 
@@ -38,7 +38,7 @@ class ConfigManager:
     name: str = ""
     version: str = ""
     dependencies: Dict[str, str] = {}
-    deployments: Dict[str, Dict[str, str]] = {}
+    deployments: Dict[str, Dict[str, Dict[str, List[str]]]] = {}
     plugin_manager: PluginManager
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
 
