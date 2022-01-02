@@ -54,6 +54,7 @@ class ContractConstructor:
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        args = self.converter.convert(args, tuple)
         if "sender" in kwargs:
             sender = kwargs["sender"]
             txn = self.encode(*args, **kwargs)
@@ -74,11 +75,13 @@ class ContractCall:
         return self.abi.signature
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
+        args = self.converter.convert(args, tuple)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *_encode_address_args(*args), **_encode_address_kwargs(**kwargs)
         )
 
     def __call__(self, *args, **kwargs) -> Any:
+        args = self.converter.convert(args, tuple)
         txn = self.encode(*args, **kwargs)
         txn.chain_id = self.provider.network.chain_id
 
@@ -108,6 +111,7 @@ class ContractCallHandler:
         return abis[-1].signature
 
     def __call__(self, *args, **kwargs) -> Any:
+        args = self.converter.convert(args, tuple)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
             raise ArgumentsLengthError()
@@ -139,11 +143,13 @@ class ContractTransaction:
         return self.abi.signature
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
+        args = self.converter.convert(args, tuple)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *_encode_address_args(*args), **_encode_address_kwargs(**kwargs)
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        args = self.converter.convert(args, tuple)
         if "sender" in kwargs:
             sender = kwargs["sender"]
             txn = self.encode(*args, **kwargs)
@@ -164,6 +170,7 @@ class ContractTransactionHandler:
         return abis[-1].signature
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        args = self.converter.convert(args, tuple)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
             raise ArgumentsLengthError()
@@ -355,6 +362,7 @@ class ContractContainer:
             return b""
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
+        args = self._converter.convert(args, tuple)
         constructor = ContractConstructor(  # type: ignore
             abi=self.contract_type.constructor,
             provider=self._provider,
