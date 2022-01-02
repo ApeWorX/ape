@@ -5,8 +5,10 @@ from typing import Dict, List
 from dataclassy import dataclass
 
 from ape.api import ConfigDict, ConfigItem
+from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.plugins import PluginManager
+from ape.types import AddressType
 from ape.utils import load_config
 
 CONFIG_FILE_NAME = "ape-config.yaml"
@@ -38,7 +40,7 @@ class ConfigManager:
     name: str = ""
     version: str = ""
     dependencies: Dict[str, str] = {}
-    deployments: Dict[str, Dict[str, Dict[str, List[str]]]] = {}
+    _deployments: Dict[str, Dict[str, Dict[str, List[str]]]] = {}
     plugin_manager: PluginManager
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
 
@@ -57,7 +59,7 @@ class ConfigManager:
         self.name = user_config.pop("name", "")
         self.version = user_config.pop("version", "")
         self.dependencies = user_config.pop("dependencies", {})
-        self.deployments = user_config.pop("deployments", {})
+        self._deployments = user_config.pop("deployments", {})
 
         for plugin_name, config_class in self.plugin_manager.config_class:
             # NOTE: `dict.pop()` is used for checking if all config was processed
@@ -84,6 +86,20 @@ class ConfigManager:
 
     def __repr__(self):
         return "<ConfigManager>"
+
+    @property
+    def deployments(self) -> Dict[str, Dict[str, Dict[str, List[AddressType]]]]:
+        result: Dict[str, Dict[str, Dict[str, List[AddressType]]]] = {}
+        for ecosystem_name, networks in self._deployments.items():
+            result[ecosystem_name] = {}
+            for network_name, contract_types in networks.items():
+                result[ecosystem_name][network_name] = {}
+                for contract_name, deployment_addresses in contract_types.items():
+                    result[ecosystem_name][network_name][contract_name] = [
+                        to_address(a) for a in deployment_addresses
+                    ]
+
+        return result
 
     def get_config(self, plugin_name: str) -> ConfigItem:
         """

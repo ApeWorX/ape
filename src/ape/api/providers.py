@@ -1,7 +1,7 @@
 import time
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Union
+from typing import Dict, Iterator, List, Optional
 
 from dataclassy import as_dict
 from eth_typing import HexStr
@@ -10,11 +10,10 @@ from hexbytes import HexBytes
 from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
-from ape.convert import to_address
 from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import AddressType, BlockID, TransactionSignature
-from ape.utils import abstractdataclass, abstractmethod, extract_nested_value
+from ape.types import BlockID, TransactionSignature
+from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
 from .config import ConfigItem
@@ -376,26 +375,6 @@ class ProviderAPI:
 
     request_header: str
     """A header to set on HTTP/RPC requests."""
-
-    @property
-    def contract_deployments(self) -> Dict[str, List[AddressType]]:
-        """
-        A known list of contract deployments by contract name.
-        """
-        deployments: Dict[str, List[Union[str, bytes]]] = (
-            extract_nested_value(
-                self.network.config_manager.deployments,
-                self.network.ecosystem.name,
-                self.network.name,
-            )
-            or {}
-        )
-
-        fixed_deployments = {}
-        for contract_name, deployment_addresses in deployments.items():
-            fixed_deployments[contract_name] = [to_address(a) for a in deployment_addresses]
-
-        return fixed_deployments
 
     @abstractmethod
     def connect(self):
