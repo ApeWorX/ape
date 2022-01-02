@@ -130,6 +130,9 @@ class ListTupleConverter(ConverterAPI):
                         conversion_found = True
                         break
 
+                if conversion_found:
+                    break
+
             if not conversion_found:
                 # NOTE: If no conversions found, just insert the original
                 converted_value.append(v)
