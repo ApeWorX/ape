@@ -36,6 +36,7 @@ class ContractConstructor:
     deployment_bytecode: bytes
     abi: Optional[ABI]
     provider: ProviderAPI
+    converter: "ConversionManager"
 
     def __post_init__(self):
         if len(self.deployment_bytecode) == 0:
@@ -67,6 +68,7 @@ class ContractCall:
     abi: ABI
     address: AddressType
     provider: ProviderAPI
+    converter: "ConversionManager"
 
     def __repr__(self) -> str:
         return self.abi.signature
@@ -97,6 +99,7 @@ class ContractCall:
 @dataclass
 class ContractCallHandler:
     provider: ProviderAPI
+    converter: "ConversionManager"
     address: AddressType
     abis: List[ABI]
 
@@ -130,6 +133,7 @@ class ContractTransaction:
     abi: ABI
     address: AddressType
     provider: ProviderAPI
+    converter: "ConversionManager"
 
     def __repr__(self) -> str:
         return self.abi.signature
@@ -151,6 +155,7 @@ class ContractTransaction:
 @dataclass
 class ContractTransactionHandler:
     provider: ProviderAPI
+    converter: "ConversionManager"
     address: AddressType
     abis: List[ABI]
 
@@ -179,6 +184,7 @@ class ContractLog:
 @dataclass
 class ContractEvent:
     provider: ProviderAPI
+    converter: "ConversionManager"
     address: str
     abis: List[ABI]
     cached_logs: List[ContractLog] = []
@@ -199,6 +205,7 @@ class ContractInstance(AddressAPI):
     """
 
     _address: AddressType
+    _converter: "ConversionManager"
     _contract_type: ContractType
 
     def __repr__(self) -> str:
@@ -256,6 +263,7 @@ class ContractInstance(AddressAPI):
 
             kwargs = {
                 "provider": self.provider,
+                "converter": self._converter,
                 "address": self.address,
                 "abis": selected_abis,
             }
@@ -298,6 +306,8 @@ class ContractContainer:
     _provider: Optional[ProviderAPI]
     # _provider is only None when a user is not connected to a provider.
 
+    _converter: "ConversionManager"
+
     def __repr__(self) -> str:
         return f"<{self.contract_type.contractName}>"
 
@@ -324,6 +334,7 @@ class ContractContainer:
         return ContractInstance(  # type: ignore
             _address=address,
             _provider=self._provider,
+            _converter=self._converter,
             _contract_type=self.contract_type,
         )
 
@@ -347,6 +358,7 @@ class ContractContainer:
         constructor = ContractConstructor(  # type: ignore
             abi=self.contract_type.constructor,
             provider=self._provider,
+            converter=self._converter,
             deployment_bytecode=self._deployment_bytecode,
         )
         return constructor.encode(*args, **kwargs)
@@ -388,6 +400,7 @@ def _Contract(
         return ContractInstance(  # type: ignore
             _address=converted_address,
             _provider=provider,
+            _converter=converters,
             _contract_type=contract_type,
         )
 
