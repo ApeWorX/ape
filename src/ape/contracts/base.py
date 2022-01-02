@@ -304,14 +304,18 @@ class ContractContainer:
     def at(self, address: str) -> ContractInstance:
         """
         Get a contract at the given address.
+
         Usage example::
+
             from ape import project
             my_contract = project.MyContract.at("0xAbC1230001112223334445566611855443322111")
+
         Args:
             address (str): The address to initialize a contract.
               **NOTE**: Things will not work as expected if the contract is not actually
               deployed to this address or if the contract at the given address has
               a different ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.
+
         Returns:
             :class:`~ape.contracts.ContractInstance`
         """
