@@ -18,14 +18,6 @@ if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
-def _encode_address_kwargs(**kwargs):
-    # Convert higher level address types to str
-    return {
-        key: value.address if isinstance(value, AddressAPI) else value
-        for key, value in kwargs.items()
-    }
-
-
 @dataclass
 class ContractConstructor:
     deployment_bytecode: bytes
@@ -40,14 +32,23 @@ class ContractConstructor:
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
 
+    def _convert_tuple(self, v: tuple) -> tuple:
+        return self.converter.convert(v, tuple)
+
     def encode(self, *args, **kwargs) -> TransactionAPI:
-        args = self.converter.convert(args, tuple)
+        args = self._convert_tuple(args)
+        kwargs = dict(
+            (k, v)
+            for k, v in zip(
+                kwargs.keys(),
+                self._convert_tuple(tuple(kwargs.values())),
+            )
+        )
         return self.provider.network.ecosystem.encode_deployment(
-            self.deployment_bytecode, self.abi, *args, **_encode_address_kwargs(**kwargs)
+            self.deployment_bytecode, self.abi, *args, **kwargs
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
-        args = self.converter.convert(args, tuple)
         if "sender" in kwargs:
             sender = kwargs["sender"]
             txn = self.encode(*args, **kwargs)
@@ -67,14 +68,22 @@ class ContractCall:
     def __repr__(self) -> str:
         return self.abi.signature
 
+    def _convert_tuple(self, v: tuple) -> tuple:
+        return self.converter.convert(v, tuple)
+
     def encode(self, *args, **kwargs) -> TransactionAPI:
-        args = self.converter.convert(args, tuple)
+        kwargs = dict(
+            (k, v)
+            for k, v in zip(
+                kwargs.keys(),
+                self._convert_tuple(tuple(kwargs.values())),
+            )
+        )
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *args, **_encode_address_kwargs(**kwargs)
+            self.address, self.abi, *args, **kwargs
         )
 
     def __call__(self, *args, **kwargs) -> Any:
-        args = self.converter.convert(args, tuple)
         txn = self.encode(*args, **kwargs)
         txn.chain_id = self.provider.network.chain_id
 
@@ -103,8 +112,11 @@ class ContractCallHandler:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs))
         return abis[-1].signature
 
+    def _convert_tuple(self, v: tuple) -> tuple:
+        return self.converter.convert(v, tuple)
+
     def __call__(self, *args, **kwargs) -> Any:
-        args = self.converter.convert(args, tuple)
+        args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
             raise ArgumentsLengthError()
@@ -136,14 +148,22 @@ class ContractTransaction:
     def __repr__(self) -> str:
         return self.abi.signature
 
+    def _convert_tuple(self, v: tuple) -> tuple:
+        return self.converter.convert(v, tuple)
+
     def encode(self, *args, **kwargs) -> TransactionAPI:
-        args = self.converter.convert(args, tuple)
+        kwargs = dict(
+            (k, v)
+            for k, v in zip(
+                kwargs.keys(),
+                self._convert_tuple(tuple(kwargs.values())),
+            )
+        )
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *args, **_encode_address_kwargs(**kwargs)
+            self.address, self.abi, *args, **kwargs
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
-        args = self.converter.convert(args, tuple)
         if "sender" in kwargs:
             sender = kwargs["sender"]
             txn = self.encode(*args, **kwargs)
@@ -163,8 +183,11 @@ class ContractTransactionHandler:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs))
         return abis[-1].signature
 
+    def _convert_tuple(self, v: tuple) -> tuple:
+        return self.converter.convert(v, tuple)
+
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
-        args = self.converter.convert(args, tuple)
+        args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
             raise ArgumentsLengthError()
