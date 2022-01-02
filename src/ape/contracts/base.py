@@ -296,12 +296,12 @@ class ContractContainer:
     """The type of the contract."""
 
     _provider: Optional[ProviderAPI]
-    # _provider is only None when a user is not connected to a provider.
+    # _provider is only None when not connected to a provider.
 
     def __repr__(self) -> str:
         return f"<{self.contract_type.contractName}>"
 
-    def at(self, address: str) -> ContractInstance:
+    def at(self, address: Union[str, int]) -> ContractInstance:
         """
         Get a contract at the given address.
 
@@ -312,14 +312,21 @@ class ContractContainer:
             my_contract = project.MyContract.at("0xAbC1230001112223334445566611855443322111")
 
         Args:
-            address (str): The address to initialize a contract.
-              **NOTE**: Things will not work as expected if the contract is not actually
-              deployed to this address or if the contract at the given address has
-              a different ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.
+            address (Union[str, int]): The address to initialize a contract. If given an
+              ``int``, searches the known-list of deployments in the network. **NOTE**:
+              Things will not work as expected if the contract is not actually deployed
+              to this address or if the contract at the given address has a different
+              ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`
         """
+        if isinstance(address, int) and self._provider:
+            try:
+                contract_name = self.contract_type.contractName
+                address = self._provider.contract_deployments[contract_name][address]
+            except IndexError as err:
+                raise IndexError(f"No deployment address at index '{address}'.") from err
 
         return ContractInstance(  # type: ignore
             _address=address,

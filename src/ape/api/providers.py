@@ -1,7 +1,7 @@
 import time
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional, Union
 
 from dataclassy import as_dict
 from eth_typing import HexStr
@@ -10,10 +10,11 @@ from hexbytes import HexBytes
 from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
+from ape.convert import to_address
 from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import BlockID, TransactionSignature
-from ape.utils import abstractdataclass, abstractmethod
+from ape.types import AddressType, BlockID, TransactionSignature
+from ape.utils import abstractdataclass, abstractmethod, extract_nested_value
 
 from . import networks
 from .config import ConfigItem
@@ -220,9 +221,6 @@ class ReceiptAPI:
         """
         Check if a transaction has ran out of gas and failed.
 
-        Args:
-            gas_limit (int): The gas limit of the transaction.
-
         Returns:
             bool:  ``True`` when the transaction failed and used the
             same amount of gas as the given ``gas_limit``.
@@ -378,6 +376,30 @@ class ProviderAPI:
 
     request_header: str
     """A header to set on HTTP/RPC requests."""
+
+    @property
+    def contract_deployments(self) -> Dict[str, List[AddressType]]:
+        """
+        A known list of contract deployments by contract name.
+
+        Returns:
+            Dict[str, List[AddressType]]: A dictionary of contract names to
+            a list of deployments.
+        """
+        deployments: Dict[str, List[Union[str, int]]] = (
+            extract_nested_value(
+                self.network.config_manager.deployments,
+                self.network.ecosystem.name,
+                self.network.name,
+            )
+            or {}
+        )
+
+        fixed_deployments = {}
+        for contract_name, deployment_addresses in deployments.items():
+            fixed_deployments[contract_name] = [to_address(a) for a in deployment_addresses]
+
+        return fixed_deployments
 
     @abstractmethod
     def connect(self):
@@ -587,7 +609,7 @@ class TestProviderAPI(ProviderAPI):
         Allows developers to go back to a previous state.
 
         Args:
-            snapshot_ID (str): The snapshot ID.
+            snapshot_id (str): The snapshot ID.
         """
 
 
