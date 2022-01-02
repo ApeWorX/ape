@@ -13,6 +13,7 @@ from ape.utils import compute_checksum, get_all_files_in_directory, github_clien
 
 from .compilers import CompilerManager
 from .config import ConfigManager
+from .converters import ConversionManager
 
 
 def _create_source_dict(contracts_paths: Collection[Path]) -> Dict[str, Source]:
@@ -51,6 +52,7 @@ class ProjectManager:
 
     path: Path
     config: ConfigManager
+    converter: ConversionManager
     compilers: CompilerManager
     networks: NetworkManager
 
@@ -374,7 +376,9 @@ class ProjectManager:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
         return ContractContainer(  # type: ignore
-            contract_type=contract_type, _provider=self.networks.active_provider
+            contract_type=contract_type,
+            _provider=self.networks.active_provider,
+            _converter=self.converter,
         )
 
     @property

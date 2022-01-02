@@ -18,24 +18,12 @@ if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
-def _encode_address_args(*args):
-    # Convert higher level address types to str
-    return [arg.address if isinstance(arg, AddressAPI) else arg for arg in args]
-
-
-def _encode_address_kwargs(**kwargs):
-    # Convert higher level address types to str
-    return {
-        key: value.address if isinstance(value, AddressAPI) else value
-        for key, value in kwargs.items()
-    }
-
-
 @dataclass
 class ContractConstructor:
     deployment_bytecode: bytes
     abi: Optional[ABI]
     provider: ProviderAPI
+    converter: "ConversionManager"
 
     def __post_init__(self):
         if len(self.deployment_bytecode) == 0:
@@ -44,12 +32,20 @@ class ContractConstructor:
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
 
+    def _convert_tuple(self, v: tuple) -> tuple:
+        return self.converter.convert(v, tuple)
+
     def encode(self, *args, **kwargs) -> TransactionAPI:
+        args = self._convert_tuple(args)
+        kwargs = dict(
+            (k, v)
+            for k, v in zip(
+                kwargs.keys(),
+                self._convert_tuple(tuple(kwargs.values())),
+            )
+        )
         return self.provider.network.ecosystem.encode_deployment(
-            self.deployment_bytecode,
-            self.abi,
-            *_encode_address_args(*args),
-            **_encode_address_kwargs(**kwargs),
+            self.deployment_bytecode, self.abi, *args, **kwargs
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
@@ -67,13 +63,24 @@ class ContractCall:
     abi: ABI
     address: AddressType
     provider: ProviderAPI
+    converter: "ConversionManager"
 
     def __repr__(self) -> str:
         return self.abi.signature
 
+    def _convert_tuple(self, v: tuple) -> tuple:
+        return self.converter.convert(v, tuple)
+
     def encode(self, *args, **kwargs) -> TransactionAPI:
+        kwargs = dict(
+            (k, v)
+            for k, v in zip(
+                kwargs.keys(),
+                self._convert_tuple(tuple(kwargs.values())),
+            )
+        )
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *_encode_address_args(*args), **_encode_address_kwargs(**kwargs)
+            self.address, self.abi, *args, **kwargs
         )
 
     def __call__(self, *args, **kwargs) -> Any:
@@ -97,6 +104,7 @@ class ContractCall:
 @dataclass
 class ContractCallHandler:
     provider: ProviderAPI
+    converter: "ConversionManager"
     address: AddressType
     abis: List[ABI]
 
@@ -104,7 +112,11 @@ class ContractCallHandler:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs))
         return abis[-1].signature
 
+    def _convert_tuple(self, v: tuple) -> tuple:
+        return self.converter.convert(v, tuple)
+
     def __call__(self, *args, **kwargs) -> Any:
+        args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
             raise ArgumentsLengthError()
@@ -113,6 +125,7 @@ class ContractCallHandler:
             abi=selected_abi,
             address=self.address,
             provider=self.provider,
+            converter=self.converter,
         )(*args, **kwargs)
 
 
@@ -130,13 +143,24 @@ class ContractTransaction:
     abi: ABI
     address: AddressType
     provider: ProviderAPI
+    converter: "ConversionManager"
 
     def __repr__(self) -> str:
         return self.abi.signature
 
+    def _convert_tuple(self, v: tuple) -> tuple:
+        return self.converter.convert(v, tuple)
+
     def encode(self, *args, **kwargs) -> TransactionAPI:
+        kwargs = dict(
+            (k, v)
+            for k, v in zip(
+                kwargs.keys(),
+                self._convert_tuple(tuple(kwargs.values())),
+            )
+        )
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *_encode_address_args(*args), **_encode_address_kwargs(**kwargs)
+            self.address, self.abi, *args, **kwargs
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
@@ -151,6 +175,7 @@ class ContractTransaction:
 @dataclass
 class ContractTransactionHandler:
     provider: ProviderAPI
+    converter: "ConversionManager"
     address: AddressType
     abis: List[ABI]
 
@@ -158,7 +183,11 @@ class ContractTransactionHandler:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs))
         return abis[-1].signature
 
+    def _convert_tuple(self, v: tuple) -> tuple:
+        return self.converter.convert(v, tuple)
+
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
             raise ArgumentsLengthError()
@@ -167,6 +196,7 @@ class ContractTransactionHandler:
             abi=selected_abi,
             address=self.address,
             provider=self.provider,
+            converter=self.converter,
         )(*args, **kwargs)
 
 
@@ -179,6 +209,7 @@ class ContractLog:
 @dataclass
 class ContractEvent:
     provider: ProviderAPI
+    converter: "ConversionManager"
     address: str
     abis: List[ABI]
     cached_logs: List[ContractLog] = []
@@ -199,6 +230,7 @@ class ContractInstance(AddressAPI):
     """
 
     _address: AddressType
+    _converter: "ConversionManager"
     _contract_type: ContractType
 
     def __repr__(self) -> str:
@@ -256,6 +288,7 @@ class ContractInstance(AddressAPI):
 
             kwargs = {
                 "provider": self.provider,
+                "converter": self._converter,
                 "address": self.address,
                 "abis": selected_abis,
             }
@@ -298,6 +331,8 @@ class ContractContainer:
     _provider: Optional[ProviderAPI]
     # _provider is only None when a user is not connected to a provider.
 
+    _converter: "ConversionManager"
+
     def __repr__(self) -> str:
         return f"<{self.contract_type.contractName}>"
 
@@ -324,6 +359,7 @@ class ContractContainer:
         return ContractInstance(  # type: ignore
             _address=address,
             _provider=self._provider,
+            _converter=self._converter,
             _contract_type=self.contract_type,
         )
 
@@ -344,9 +380,11 @@ class ContractContainer:
             return b""
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
+        args = self._converter.convert(args, tuple)
         constructor = ContractConstructor(  # type: ignore
             abi=self.contract_type.constructor,
             provider=self._provider,
+            converter=self._converter,
             deployment_bytecode=self._deployment_bytecode,
         )
         return constructor.encode(*args, **kwargs)
@@ -388,6 +426,7 @@ def _Contract(
         return ContractInstance(  # type: ignore
             _address=converted_address,
             _provider=provider,
+            _converter=converters,
             _contract_type=contract_type,
         )
 
