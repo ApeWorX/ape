@@ -110,8 +110,7 @@ def valid_impl(api_class: Any) -> bool:
     if not hasattr(api_class, "__abstractmethods__"):
         return True  # not an abstract class
 
-    else:
-        return len(api_class.__abstractmethods__) == 0
+    return len(api_class.__abstractmethods__) == 0
 
 
 class PluginManager:
@@ -127,7 +126,7 @@ class PluginManager:
     def __repr__(self):
         return "<PluginManager>"
 
-    def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, tuple]]:
+    def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
         if not hasattr(plugin_manager.hook, attr_name):
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 

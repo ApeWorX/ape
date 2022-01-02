@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from ape.logging import logger
 from ape.utils import dataclass
@@ -16,12 +16,16 @@ class ConfigEnum(str, Enum):
 @dataclass(slots=True, kwargs=True)
 class ConfigItem:
     """
-    Each plugin must inherit from this Config base class.
+    A base plugin configuration class. Each plugin that includes
+    a config API must register a subclass of this class.
     """
 
     def serialize(self) -> Dict:
         """
         Serialize the config item into a raw dict format for storing on disk.
+
+        Returns:
+            Dict
         """
         data: Dict[str, Union[str, int, Dict, List, None]] = dict()
         for name in self.__slots__:
@@ -42,10 +46,43 @@ class ConfigItem:
         pass
 
     def __getitem__(self, attrname: str) -> Any:
+        """
+        Get a configuration setting property by name. Use
+        :meth:`~ape.api.config.ConfigItem.get` when it is ok for the key not to
+        exist in the config.
+
+        Raises:
+            KeyError: When the attribute name is not a key in the config.
+
+        Args:
+            attrname (str): The configuration setting key.
+
+        Returns:
+            Any: The value from the config.
+        """
+
         if attrname in self.__slots__:
             return getattr(self, attrname)
 
         raise KeyError(f"{attrname!r}")
+
+    def get(self, attrname: str, default_value: Optional[Any] = None) -> Optional[Any]:
+        """
+        Get a configuration setting property by name.
+
+        Args:
+            attrname (str): The configuration setting key.
+            default_value (Optional[Any]): The value to return if the key does
+              not exist. Defaults to ``None``.
+
+        Returns:
+            Optional[Any]: The default value if the key is not in the config, the value otherwise.
+        """
+
+        if attrname in self.__slots__:
+            return getattr(self, attrname)
+
+        return default_value
 
 
 class ConfigDict(ConfigItem):

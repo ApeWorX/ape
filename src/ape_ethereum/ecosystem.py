@@ -39,6 +39,7 @@ NETWORKS = {
 
 class NetworkConfig(ConfigItem):
     required_confirmations: int = 0
+    default_provider: str = "geth"
 
 
 class EthereumConfig(ConfigItem):
@@ -47,6 +48,9 @@ class EthereumConfig(ConfigItem):
     kovan: NetworkConfig = NetworkConfig(required_confirmations=3)  # type: ignore
     rinkeby: NetworkConfig = NetworkConfig(required_confirmations=3)  # type: ignore
     goerli: NetworkConfig = NetworkConfig(required_confirmations=10)  # type: ignore
+    development: NetworkConfig = NetworkConfig(
+        required_confirmations=0, default_provider="test"
+    )  # type: ignore
 
 
 class BaseTransaction(TransactionAPI):

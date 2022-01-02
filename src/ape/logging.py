@@ -166,4 +166,4 @@ def _get_logger(name: str) -> logging.Logger:
 logger = CliLogger()
 
 
-__all__ = ["logger"]
+__all__ = ["logger", "LogLevel"]
