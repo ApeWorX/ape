@@ -381,10 +381,6 @@ class ProviderAPI:
     def contract_deployments(self) -> Dict[str, List[AddressType]]:
         """
         A known list of contract deployments by contract name.
-
-        Returns:
-            Dict[str, List[AddressType]]: A dictionary of contract names to
-            a list of deployments.
         """
         deployments: Dict[str, List[Union[str, bytes]]] = (
             extract_nested_value(
