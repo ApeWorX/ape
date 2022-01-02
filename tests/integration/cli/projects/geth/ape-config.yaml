@@ -1,0 +1,3 @@
+ethereum:
+  development:
+    default_provider: geth
