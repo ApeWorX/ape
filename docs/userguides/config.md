@@ -11,11 +11,11 @@ Share deployments with teammates:
 deployments:
   ethereum:
     mainnet:
-      MyContract:
-      - 0xc123aAacCcbBbaAa444777000111222111222111
+      - contract_type: MyContract
+        address: 0xc123aAacCcbBbaAa444777000111222111222111
     ropsten:
-      MyContract:
-      - 0xc222000cCcbBbaAa444777000111222111222222
+      - contract_type: MyContract
+        address: 0xc222000cCcbBbaAa444777000111222111222222
 ```
 
 ## Networks
