@@ -149,7 +149,6 @@ Commands:
   ...
 ```
 
-
 ## Logging
 
 Use Ape's logger in your plugins or scripts by importing it from the `ape.logging` module or 
