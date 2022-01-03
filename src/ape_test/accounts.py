@@ -2,6 +2,7 @@ from typing import Iterator, List, Optional
 
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account.messages import SignableMessage
+from eth_utils import to_bytes
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
 from ape.convert import to_address
@@ -50,8 +51,16 @@ class TestAccount(TestAccountAPI):
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         signed_msg = EthAccount.sign_message(msg, self._private_key)
-        return MessageSignature(v=signed_msg.v, r=signed_msg.r, s=signed_msg.s)  # type: ignore
+        return MessageSignature(  # type: ignore
+            v=signed_msg.v,
+            r=to_bytes(signed_msg.r),
+            s=to_bytes(signed_msg.s),
+        )
 
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         signed_txn = EthAccount.sign_transaction(txn.as_dict(), self._private_key)
-        return TransactionSignature(v=signed_txn.v, r=signed_txn.r, s=signed_txn.s)  # type: ignore
+        return TransactionSignature(  # type: ignore
+            v=signed_txn.v,
+            r=to_bytes(signed_txn.r),
+            s=to_bytes(signed_txn.s),
+        )
