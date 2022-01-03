@@ -167,12 +167,10 @@ $ ape run deploy
 
 ### Logging
 
-If you want to enable debug logging you should appened
-`ape command_word -v [LVL]` or  `ape command_word --verbosity [LVL]` 
+To enable debug logging, run your command with the `--verbosity` flag using `DEBUG` as the value:
 
 ```bash
-ape run deploy --verbosity DEBUG
-ape run deploy -v ERROR
+ape run --verbosity DEBUG
 ```
 
 You can use `ape` as a package outside of scripts for the `ape run` command as well.
