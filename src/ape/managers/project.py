@@ -13,6 +13,7 @@ from ape.utils import compute_checksum, get_all_files_in_directory, github_clien
 
 from .compilers import CompilerManager
 from .config import ConfigManager
+from .converters import ConversionManager
 
 
 def _create_source_dict(contracts_paths: Collection[Path]) -> Dict[str, Source]:
@@ -37,6 +38,9 @@ class ProjectManager:
     Use ``ape.project`` to reference the current project and ``ape.Project`` to reference
     this class uninitialized.
 
+    Raises:
+        :class:`~ape.exceptions.ProjectError`: When the project's dependencies are invalid.
+
     Usage example::
 
         from ape import project  # "project" is the ProjectManager for the active project
@@ -48,6 +52,7 @@ class ProjectManager:
 
     path: Path
     config: ConfigManager
+    converter: ConversionManager
     compilers: CompilerManager
     networks: NetworkManager
 
@@ -99,7 +104,8 @@ class ProjectManager:
 
             if not package_contracts_path.exists():
                 raise ProjectError(
-                    "Dependency does not have a support structure. Expecting 'contracts/' path."
+                    "Dependency does not have a supported file structure. "
+                    "Expecting 'contracts/' path."
                 )
 
             manifest = PackageManifest()
@@ -175,7 +181,7 @@ class ProjectManager:
         Excludes files with extensions that don't have a registered compiler.
 
         Returns:
-            list[pathlib.Path]: A list of a source file paths in the project.
+            List[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
         for extension in self.compilers.registered_compilers:
@@ -198,11 +204,11 @@ class ProjectManager:
         that do not correspond to a registered compiler.
 
         Args:
-            extensions (list[str], optional): If provided, returns only extensions that
+            extensions (List[str], optional): If provided, returns only extensions that
                 are in this list. Useful for checking against a subset of source files.
 
         Returns:
-            list[str]: A list of file extensions found in the ``contracts/`` directory
+            List[str]: A list of file extensions found in the ``contracts/`` directory
             that do not have associated compilers installed.
         """
         exts = []
@@ -267,14 +273,14 @@ class ProjectManager:
         scripts or tests in ``ape``, such as from ``ape run`` or ``ape test``.
 
         Args:
-            file_paths (list[pathlib.Path] or pathlib.Path], optional):
+            file_paths (List[pathlib.Path] or pathlib.Path], optional):
               Provide one or more contract file-paths to load. If excluded,
               will load all the contracts.
             use_cache (bool, optional): Set to ``False`` to force a re-compile.
               Defaults to ``True``.
 
         Returns:
-            dict[str, :class:`~ape.types.contract.ContractType`]: A dictionary of contract names
+            Dict[str, :class:`~ape.types.contract.ContractType`]: A dictionary of contract names
             to their types for each compiled contract.
         """
 
@@ -337,7 +343,7 @@ class ProjectManager:
         See :meth:`~ape.managers.project.ProjectManager.load_contracts` for more information.
 
         Returns:
-            dict[str, :class:`~ape.types.contract.ContractType`]
+            Dict[str, :class:`~ape.types.contract.ContractType`]
         """
 
         return self.load_contracts()
@@ -370,7 +376,9 @@ class ProjectManager:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
         return ContractContainer(  # type: ignore
-            contract_type=contract_type, _provider=self.networks.active_provider
+            contract_type=contract_type,
+            _provider=self.networks.active_provider,
+            _converter=self.converter,
         )
 
     @property
@@ -413,7 +421,7 @@ class ProjectManager:
         A list of objects representing the raw-data specifics of a compiler.
 
         Returns:
-            list[:class:`~ape.types.contract.Compiler`]
+            List[:class:`~ape.types.contract.Compiler`]
         """
 
         compilers = []

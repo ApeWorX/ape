@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 from dataclassy import dataclass
 
@@ -37,17 +37,21 @@ class ConfigManager:
     PROJECT_FOLDER: Path
     name: str = ""
     version: str = ""
-    dependencies: List[str] = []
+    dependencies: Dict[str, str] = {}
     plugin_manager: PluginManager
-    _plugin_configs: Dict[str, ConfigItem] = dict()
 
-    def __post_init__(self):
+    _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
+
+    @property
+    def _plugin_configs(self) -> Dict[str, ConfigItem]:
+        # This property is cached per active project.
+        project_name = self.PROJECT_FOLDER.stem
+        if project_name in self._plugin_configs_by_project:
+            return self._plugin_configs_by_project[project_name]
+
+        configs = {}
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
-
-        if config_file.exists():
-            user_config = load_config(config_file)
-        else:
-            user_config = {}
+        user_config = load_config(config_file) if config_file.exists() else {}
 
         # Top level config items
         self.name = user_config.pop("name", "")
@@ -60,7 +64,7 @@ class ConfigManager:
 
             if config_class != ConfigDict:
                 # NOTE: Will raise if improperly provided keys
-                config = config_class(**user_override)
+                config = config_class(**user_override)  # type: ignore
 
                 # NOTE: Should raise if settings violate some sort of plugin requirement
                 config.validate_config()
@@ -69,10 +73,13 @@ class ConfigManager:
                 # NOTE: Just use it directly as a dict if `ConfigDict` is passed
                 config = user_override
 
-            self._plugin_configs[plugin_name] = config
+            configs[plugin_name] = config
 
         if len(user_config.keys()) > 0:
             raise ConfigError("Unprocessed config items.")
+
+        self._plugin_configs_by_project[project_name] = configs
+        return configs
 
     def __repr__(self):
         return "<ConfigManager>"

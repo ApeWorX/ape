@@ -10,7 +10,7 @@ from hexbytes import HexBytes
 from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
-from ape.exceptions import ProviderError, TransactionError
+from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import BlockID, TransactionSignature
 from ape.utils import abstractdataclass, abstractmethod
@@ -22,7 +22,7 @@ from .config import ConfigItem
 class TransactionType(Enum):
     """
     Transaction enumerables type constants defined by
-    `EIP-2718` <https://eips.ethereum.org/EIPS/eip-2718>`__.
+    `EIP-2718 <https://eips.ethereum.org/EIPS/eip-2718>`__.
     """
 
     STATIC = "0x0"
@@ -52,10 +52,6 @@ class TransactionAPI:
 
     signature: Optional[TransactionSignature] = None
 
-    def __post_init__(self):
-        if not self.is_valid:
-            raise ProviderError("Transaction is not valid.")
-
     @property
     def max_fee(self) -> int:
         """
@@ -65,18 +61,17 @@ class TransactionAPI:
 
         See :class:`~ape_ethereum.ecosystem.StaticFeeTransaction` and
         :class:`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
+
+        Raises:
+            NotImplementedError: When setting in a class that did not override the setter.
+
+        Returns:
+            int
         """
         return 0
 
     @max_fee.setter
     def max_fee(self, value: int):
-        """
-        Set the max fee.
-        Must be overriden or else raises `NotImplementedError`.
-
-        Args:
-            value (int): The number of the fee
-        """
         raise NotImplementedError("Max fee is not settable by default.")
 
     @property
@@ -87,13 +82,6 @@ class TransactionAPI:
         to submit the transaction.
         """
         return self.value + self.max_fee
-
-    @property
-    @abstractmethod
-    def is_valid(self):
-        """
-        Check if the transaction is valid.
-        """
 
     @abstractmethod
     def encode(self) -> bytes:
@@ -129,11 +117,17 @@ class TransactionAPI:
 
 class TransactionStatusEnum(IntEnum):
     """
-    Transaction enumerable constants to verify transactions.
+    An ``Enum`` class representing the status of a transaction.
     """
 
     FAILING = 0
+    """The transaction has failed or is in the process of failing."""
+
     NO_ERROR = 1
+    """
+    The transaction is successful and is confirmed or is in the process
+    of getting confirmed.
+    """
 
 
 class ConfirmationsProgressBar:
@@ -184,14 +178,15 @@ class ConfirmationsProgressBar:
 @abstractdataclass
 class ReceiptAPI:
     """
-    An Abstract class to represent :class:`~ape.api.providers.ReceiptAPI`.
-    It contains information about the transaction
-    such as the status and required confirmations.
+    An abstract class to represent a transaction receipt. The receipt
+    contains information about the transaction, such as the status
+    and required confirmations.
 
-    NOTE: Use a ``required_confirmations`` of ``0`` in your transaction
+    **NOTE**: Use a ``required_confirmations`` of ``0`` in your transaction
     to not wait for confirmations.
 
-    A receipt is returned after making a contract or account transfers.
+    Get a receipt by making transactions in ``ape``, such as interacting with
+    a :class:`ape.contracts.base.ContractInstance`.
     """
 
     provider: "ProviderAPI"
@@ -200,6 +195,7 @@ class ReceiptAPI:
     block_number: int
     gas_used: int
     gas_price: int
+    gas_limit: int
     logs: List[dict] = []
     contract_address: Optional[str] = None
     required_confirmations: int = 0
@@ -213,18 +209,25 @@ class ReceiptAPI:
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
-    def raise_for_status(self, txn: TransactionAPI):
+    def raise_for_status(self):
         """
         Handle provider-specific errors regarding a non-successful
         :class:`~api.providers.TransactionStatusEnum`.
         """
 
-    def ran_out_of_gas(self, gas_limit: int) -> bool:
+    @property
+    def ran_out_of_gas(self) -> bool:
         """
-        ``True`` when the transaction failed and used the
-        same amount of gas as the given ``gas_limit``.
+        Check if a transaction has ran out of gas and failed.
+
+        Args:
+            gas_limit (int): The gas limit of the transaction.
+
+        Returns:
+            bool:  ``True`` when the transaction failed and used the
+            same amount of gas as the given ``gas_limit``.
         """
-        return self.status == TransactionStatusEnum.FAILING and self.gas_used == gas_limit
+        return self.status == TransactionStatusEnum.FAILING and self.gas_used == self.gas_limit
 
     @classmethod
     @abstractmethod
@@ -353,21 +356,33 @@ class BlockAPI:
 @abstractdataclass
 class ProviderAPI:
     """
-    A provider must work with a particular network in a particular ecosystem.
-    An abstraction of a connection to the Ethereum Network.
+    An abstraction of a connection to a network in an ecosystem. Example ``ProviderAPI``
+    implementations include the `ape-infura <https://github.com/ApeWorX/ape-infura>`__
+    plugin or the `ape-hardhat <https://github.com/ApeWorX/ape-hardhat>`__ plugin.
     """
 
-    name: str  # Plugin name
+    name: str
+    """The name of the provider (should be the plugin name)."""
+
     network: networks.NetworkAPI
+    """A reference to the network this provider provides."""
+
     config: ConfigItem
+    """The provider's configuration."""
+
     provider_settings: dict
+    """The settings for the provider, as overrides to the configuration."""
+
     data_folder: Path
+    """The path to the  ``.ape`` directory."""
+
     request_header: str
+    """A header to set on HTTP/RPC requests."""
 
     @abstractmethod
     def connect(self):
         """
-        Connect a to a provider, such as start up a process or create an HTTP connection.
+        Connect a to a provider, such as start-up a process or create an HTTP connection.
         """
 
     @abstractmethod
@@ -476,7 +491,11 @@ class ProviderAPI:
         The minimum value required to get your transaction
         included on the next block.
         Only providers that implement `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__
-        will use this property, otherwise will raise ``NotImplementedError``.
+        will use this property.
+
+        Raises:
+            NotImplementedError: When this provider does not implement
+              `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
 
         Returns:
             int
@@ -540,11 +559,10 @@ class ProviderAPI:
         Get all logs matching a given set of filter parameters.
 
         Args:
-            `filter_params`: filter which logs
-                ex: logs certains or types.
+            `filter_params`: Filter which logs you get.
 
         Returns:
-            iter[dict]: A dictionary of events.
+            Iterator[dict]: A dictionary of events.
         """
 
 
@@ -575,58 +593,35 @@ class TestProviderAPI(ProviderAPI):
 
 class Web3Provider(ProviderAPI):
     """
-    A base provider that is web3 based.
+    A base provider mixin class that uses the
+    [web3.py](https://web3py.readthedocs.io/en/stable/) python package.
     """
 
     _web3: Web3 = None  # type: ignore
 
     def update_settings(self, new_settings: dict):
-        """
-        Update the provider settings and re-connect.
-        """
         self.disconnect()
         self.provider_settings.update(new_settings)
         self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        """
-        Generate and get an estimate of how much gas is necessary
-        to allow the transaction to complete.
-        The transaction will not be added to the blockchain.
-        """
         txn_dict = txn.as_dict()
         return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
 
     @property
     def chain_id(self) -> int:
-        """
-        The currently configured chain ID,
-        a value used in replay-protected transaction signing as introduced by EIP-155.
-        """
         return self._web3.eth.chain_id
 
     @property
     def gas_price(self) -> int:
-        """
-        The current price per gas in Wei.
-        """
         return self._web3.eth.generate_gas_price()  # type: ignore
 
     @property
     def priority_fee(self) -> int:
-        """
-        The current max priority fee per gas in Wei.
-        """
         return self._web3.eth.max_priority_fee
 
     @property
     def base_fee(self) -> int:
-        """
-        The current base fee from the latest block.
-
-        NOTE: If your chain does not support base_fees (EIP-1559),
-        this method will raise a ``NotImplementedError``.
-        """
         block = self.get_block("latest")
 
         if block.gas_data.base_fee is None:
@@ -636,19 +631,6 @@ class Web3Provider(ProviderAPI):
         return block.gas_data.base_fee
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
-        """
-        A block for the given ID.
-
-        Args:
-            block_id (:class:`~ape.types.BlockID`): The ID of the block to get. Set as
-              ``"latest"`` to get the latest block, to get the latest block,
-              ``"earliest"`` to get the earliest block,
-              ``"pending"`` to get the pending block,
-              or pass in a block number or hash.
-
-        Returns:
-            :class:`~ape.api.providers.BlockAPI`
-        """
         if isinstance(block_id, str):
             block_id = HexStr(block_id)
 
@@ -659,44 +641,18 @@ class Web3Provider(ProviderAPI):
         return self.network.ecosystem.block_class.decode(block_data)  # type: ignore
 
     def get_nonce(self, address: str) -> int:
-        """
-        The number of transactions sent from an address.
-        """
         return self._web3.eth.get_transaction_count(address)  # type: ignore
 
     def get_balance(self, address: str) -> int:
-        """
-        The balance of the account of a given address.
-        """
         return self._web3.eth.get_balance(address)  # type: ignore
 
     def get_code(self, address: str) -> bytes:
-        """
-        Code at a given address.
-        """
         return self._web3.eth.get_code(address)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
-        """
-        Execute a new message call immediately without creating a
-        transaction on the block chain.
-        """
         return self._web3.eth.call(txn.as_dict())
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
-        """
-        The information about a transaction requested by transaction hash.
-
-        Args:
-            txn_hash (str): The hash of the transaction to retrieve.
-            required_confirmations (int): If more than 0, waits for that many
-              confirmations before returning the receipt. This is to increase confidence
-              that your transaction is in its final position on the blockchain. Defaults
-              to 0.
-
-        Returns:
-            :class:`~ape.api.providers.ReceiptAPI`
-        """
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
 
@@ -713,17 +669,6 @@ class Web3Provider(ProviderAPI):
         return receipt.await_confirmations()
 
     def get_events(self, **filter_params) -> Iterator[dict]:
-        """
-        Get all logs matching a given set of filter parameters.
-
-        Args:
-            `filter_params`: filter which logs
-                ex: logs certains or types.
-
-        Returns:
-            iter[dict]: A dictionary of events.
-
-        """
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
@@ -748,4 +693,7 @@ class UpstreamProvider(ProviderAPI):
         """
         The str used by downstream providers to connect to this one.
         For example, the URL for HTTP-based providers.
+
+        Returns:
+            str
         """

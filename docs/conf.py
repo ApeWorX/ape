@@ -77,7 +77,7 @@ def fixpath(path: str) -> str:
     new = f"/{project}/latest/_static"
 
     if suffix:
-        new = f"{new}/{suffix}"
+        new = str(Path(new) / suffix.lstrip("/"))
 
     return new
 
@@ -88,8 +88,14 @@ def get_versions() -> List[str]:
         return []
 
     versions = [
-        d.name for d in build_dir.iterdir() if d.is_dir and re.match(r"v\d+.?\d?.?\d?", d.stem)
+        d.name
+        for d in build_dir.iterdir()
+        if d.is_dir
+        and re.match(r"v\d+.?\d?.?\d?", d.stem)
+        and "beta" not in d.name
+        and "alpha" not in d.name
     ]
+
     return versions
 
 

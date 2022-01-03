@@ -29,7 +29,7 @@ class AccountAPI(AddressAPI):
         Display methods to IPython on ``a.[TAB]`` tab completion.
 
         Returns:
-            list[str]: Method names that IPython uses for tab completion.
+            List[str]: Method names that IPython uses for tab completion.
         """
         return list(super(AddressAPI, self).__dir__()) + [
             "alias",
@@ -44,16 +44,22 @@ class AccountAPI(AddressAPI):
     def alias(self) -> Optional[str]:
         """
         A shortened-name for quicker access to the account.
+
+        Returns:
+            str (optional)
         """
         return None
 
     @abstractmethod
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         """
-        Signs the given message.
+        Sign a message.
 
         Args:
-          msg (:class:`~eth_account.messages.SignableMessage`): The message to sign.
+          msg (SignableMessage): The message to sign.
+            See these
+            `docs <https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage>`__  # noqa: E501
+            for more type information on this type.
 
         Returns:
           :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
@@ -62,7 +68,7 @@ class AccountAPI(AddressAPI):
     @abstractmethod
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         """
-        Signs the given transaction.
+        Sign a transaction.
 
         Args:
           txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to sign.
@@ -74,6 +80,12 @@ class AccountAPI(AddressAPI):
     def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
         """
         Make a transaction call.
+
+        Raises:
+            :class:`~ape.exceptions.AccountsError`: When the nonce is invalid or the sender does
+              not have enough funds.
+            :class:`~ape.exceptions.TransactionError`: When the required confirmations are negative.
+            :class:`~ape.exceptions.SignatureError`: When the user does not sign the transaction.
 
         Args:
             txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to submit in a call.
@@ -167,18 +179,15 @@ class AccountAPI(AddressAPI):
 
     def deploy(self, contract: "ContractContainer", *args, **kwargs) -> "ContractInstance":
         """
-        Create a smart contract on the blockchain.
-
-        Method Limitations:
-            The smart contract must compile before deploying.
-            A provider must be active.
+        Create a smart contract on the blockchain. The smart contract must compile before
+        deploying and a provider must be active.
 
         Args:
             contract (:class:`~ape.contracts.ContractContainer`):
                 The type of contract to deploy.
 
         Returns:
-            :class:`~ape.contracts.ContractInstance`
+            :class:`~ape.contracts.ContractInstance`: An instance of the deployed contract.
         """
 
         txn = contract(*args, **kwargs)
@@ -191,10 +200,12 @@ class AccountAPI(AddressAPI):
         address = click.style(receipt.contract_address, bold=True)
         logger.success(f"Contract '{contract.contract_type.contractName}' deployed to: {address}")
 
+        from ape import _converters
         from ape.contracts import ContractInstance
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,
+            _converter=_converters,
             _address=receipt.contract_address,
             _contract_type=contract.contract_type,
         )
@@ -203,7 +214,8 @@ class AccountAPI(AddressAPI):
 @abstractdataclass
 class AccountContainerAPI:
     """
-    An API class for managing accounts.
+    An API class representing a collection of :class:`~ape.api.accounts.AccountAPI`
+    instances.
     """
 
     data_folder: Path
@@ -214,10 +226,10 @@ class AccountContainerAPI:
     @abstractmethod
     def aliases(self) -> Iterator[str]:
         """
-        List all available aliases.
+        Iterate over all available aliases.
 
         Returns:
-            iter[str]: List of aliases.
+            Iterator[str]
         """
 
     @abstractmethod
@@ -232,12 +244,15 @@ class AccountContainerAPI:
         Iterate over all accounts.
 
         Returns:
-            iter[:class:`~ape.api.accounts.AccountAPI`]
+            Iterator[:class:`~ape.api.accounts.AccountAPI`]
         """
 
     def __getitem__(self, address: AddressType) -> AccountAPI:
         """
         Get an account by address.
+
+        Raises:
+            IndexError: When there is no local account with the given address.
 
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
@@ -251,6 +266,9 @@ class AccountContainerAPI:
     def append(self, account: AccountAPI):
         """
         Add an account to the container.
+
+        Raises:
+            :class:`~ape.exceptions.AccountsError`: When the account is already in the container.
 
         Args:
             account (:class:`~ape.api.accounts.AccountAPI`): The account to add.
@@ -270,7 +288,9 @@ class AccountContainerAPI:
     def remove(self, account: AccountAPI):
         """
         Delete an account.
-        Must be known to ``ape`` or else raises :class:`~ape.exceptions.AccountsError`.
+
+        Raises:
+            :class:`~ape.exceptions.AccountsError`: When the account is not known to ``ape``.
 
         Args:
             account (:class:`~ape.accounts.AccountAPI`): The account to remove.
@@ -285,10 +305,12 @@ class AccountContainerAPI:
     def __delitem__(self, address: AddressType):
         """
         Delete an account.
-        Must be overriden or else raises ``NotImplementedError``.
+
+        Raises:
+            NotImplementError: When not overridden within a plugin.
 
         Args:
-            address: (address :class:`~ape.types.AddressType`):
+            address (address :class:`~ape.types.AddressType`):
                         The address of the account to delete.
 
         """
@@ -297,10 +319,12 @@ class AccountContainerAPI:
     def __contains__(self, address: AddressType) -> bool:
         """
         Check if the address is an existing account in ``ape``.
-        Must be a valid address or else raises ``IndexError``.
+
+        Raises:
+            IndexError: When the given account address is not in this container.
 
         Args:
-            address :class:`~ape.types.AddressType`: An account address.
+            address (:class:`~ape.types.AddressType`): An account address.
 
         Returns:
             bool: ``True`` if ``ape`` manages the account with the given address.
@@ -327,15 +351,15 @@ class AccountContainerAPI:
 
 class TestAccountContainerAPI(AccountContainerAPI):
     """
-    Test account containers for ``ape test`` should implement
-    this API instead of ``AccountContainerAPI`` directly. This
-    is how they show up in the ``accounts`` test fixture.
+    Test account containers for ``ape test`` (such containers that generate accounts using
+    :class:`~ape.utils.GeneratedDevAccounts`) should implement this API instead of
+    ``AccountContainerAPI`` directly. This is how they show up in the ``accounts`` test fixture.
     """
 
 
 class TestAccountAPI(AccountAPI):
     """
-    Test accounts for ``ape test`` should implement this API
-    instead of ``AccountAPI`` directly. This is how they show
-    up in the ``accounts`` test fixture.
+    Test accounts for ``ape test`` (such accounts that use
+    :class:`~ape.utils.GeneratedDevAccounts`) should implement this API
+    instead of ``AccountAPI`` directly. This is how they show up in the ``accounts`` test fixture.
     """

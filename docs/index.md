@@ -6,12 +6,14 @@
    :maxdepth: 1
 
    userguides/quickstart
+   userguides/projects
    userguides/plugins
 ```
 
 ```{eval-rst}
 .. toctree::
    :caption: CLI Reference
+   :maxdepth: 1
 
    commands/accounts.rst
    commands/compile.rst
@@ -24,15 +26,16 @@
 
 ```{eval-rst}
 .. toctree::
-   :caption: User API Reference
+   :caption: Python Reference
    :maxdepth: 1
 
    methoddocs/ape.md
    methoddocs/api.md
+   methoddocs/cli.md
    methoddocs/contracts.md
    methoddocs/exceptions.md
    methoddocs/managers.md
-   methoddocs/cli.md
+   methoddocs/plugins.md
    methoddocs/types.md
    methoddocs/utils.md
 ```

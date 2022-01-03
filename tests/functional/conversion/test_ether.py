@@ -28,7 +28,9 @@ def test_bad_type():
     with pytest.raises(ConversionError) as err:
         convert(value="something", type=float)
 
-    expected = "Type '<class 'float'>' must be one of [ChecksumAddress, bytes, int]."
+    expected = (
+        "Type '<class 'float'>' must be one of [ChecksumAddress, bytes, int, Decimal, list, tuple]."
+    )
     assert str(err.value) == expected
 
 
@@ -37,3 +39,7 @@ def test_no_registered_converter():
         convert(value="something", type=ChecksumAddress)
 
     assert str(err.value) == "No conversion registered to handle 'something'."
+
+
+def test_lists():
+    assert convert(["1 ether"], list) == [int(1e18)]

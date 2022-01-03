@@ -19,8 +19,10 @@ class AddressAPI:
     def provider(self) -> ProviderAPI:
         """
         The current active provider if connected to one.
-        If there is no active provider at runtime, then this raises an
-        :class:`~ape.exceptions.AddressError`.
+
+        Raises:
+            :class:`~ape.exceptions.AddressError`: When there is no active
+               provider at runtime.
 
         Returns:
             :class:`~ape.api.providers.ProviderAPI`
@@ -72,7 +74,7 @@ class AddressAPI:
         Display methods to IPython on ``a.[TAB]`` tab completion.
 
         Returns:
-            list[str]: Method names that IPython uses for tab completion.
+            List[str]: Method names that IPython uses for tab completion.
         """
         return [
             "address",
