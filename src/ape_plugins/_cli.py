@@ -168,7 +168,40 @@ def install(cli_ctx, skip_confirmation):
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
-            subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", f"{package_name}"])
+            result = subprocess.call(
+                [sys.executable, "-m", "pip", "install", "--quiet", f"{package_name}"]
+            )
+            if result == 0:
+                cli_ctx.logger.success(f"Plugin '{package_name}' has been added.")
+            else:
+                cli_ctx.logger.error(f"Failed to add '{package_name}'.")
+                sys.exit(1)
+
+
+@cli.command(short_help="Uninstall all plugins in the local config file")
+@ape_cli_context()
+@skip_confirmation_option("Don't ask for confirmation to install the plugins")
+def uninstall(cli_ctx, skip_confirmation):
+    plugins = config.get_config("plugins") or []
+    for plugin in plugins:
+        module_name, package_name = extract_module_and_package_install_names(plugin)
+        if is_plugin_installed(module_name) and (
+            module_name in github_client.available_plugins
+            or skip_confirmation
+            or click.confirm(f"Uninstall unknown 3rd party plugin '{package_name}'?")
+        ):
+            cli_ctx.logger.info(f"Uninstalling {package_name}...")
+            # NOTE: Be *extremely careful* with this command, as it modifies the user's
+            #       installed packages, to potentially catastrophic results
+            # NOTE: This is not abstracted into another function *on purpose*
+            result = subprocess.call(
+                [sys.executable, "-m", "pip", "uninstall", "--quiet", f"{package_name}", "-y"]
+            )
+            if result == 0:
+                cli_ctx.logger.success(f"Plugin '{package_name}' has been removed.")
+            else:
+                cli_ctx.logger.error(f"Failed to remove '{package_name}'.")
+                sys.exit(1)
 
 
 @cli.command(short_help="Uninstall an ape plugin")
