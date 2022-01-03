@@ -148,3 +148,26 @@ Commands:
   my-plugin  Utilities for my plugin
   ...
 ```
+
+## Logging
+
+Use Ape's logger in your plugins or scripts by importing it from the `ape.logging` module or 
+by using it off the CLI context (from using the `@ape_cli_context` decorator).
+  
+### Import the logger from the logging module
+
+```python
+from ape.logging import logger
+
+logger.info("This is a log message")
+```
+
+### Use the logger from the `@ape_cli_context`
+
+```python
+from ape.cli import ape_cli_context
+
+@ape_cli_context()
+def my_command(cli_ctx)
+  cli_ctx.logger.info("my log message")
+```
