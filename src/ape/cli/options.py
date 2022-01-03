@@ -107,7 +107,7 @@ def ape_cli_context():
     return decorator
 
 
-def network_option(default: str = networks.default_ecosystem.name):
+def network_option(default: str = None):
     """
     A ``click.option`` for specifying a network.
 
@@ -116,7 +116,7 @@ def network_option(default: str = networks.default_ecosystem.name):
           use as the default. Defaults to how ``ape`` normally
           selects a default network.
     """
-
+    default = default or networks.default_ecosystem.name
     return click.option(
         "--network",
         type=NetworkChoice(case_sensitive=False),
@@ -189,6 +189,9 @@ def contract_option(help=None, required=False, multiple=False):
     """
     Contract(s) from the current project.
     If you pass ``multiple=True``, you will get a list of contract types from the callback.
+
+    Raises:
+        :class:`~ape.exceptions.ContractError`: In the callback when it fails to load the contracts.
     """
 
     help = help or "The name of a contract in the current project"

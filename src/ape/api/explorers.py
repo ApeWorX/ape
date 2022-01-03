@@ -9,7 +9,8 @@ from . import networks
 @abstractdataclass
 class ExplorerAPI:
     """
-    An Explorer must work with a particular Network in a particular Ecosystem.
+    An API class representing a blockchain explorer for a particular network
+    in a particular ecosystem.
     """
 
     name: str  # Plugin name
@@ -22,7 +23,8 @@ class ExplorerAPI:
         Get an address URL, such as for a transaction.
 
         Args:
-            address (str): The address to get the URL for.
+            address (:class:`~ape.types.AddressType`): The address to
+              get the URL for.
 
         Returns:
             str
@@ -49,5 +51,5 @@ class ExplorerAPI:
             address (str): The contract address.
 
         Returns:
-            class:`~ape.contracts.ContractType` if published, else ``None``.
+            :class:`~ape.contracts.ContractType` if published, else ``None``.
         """

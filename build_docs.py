@@ -63,16 +63,17 @@ def main():
         if not tag:
             raise DocsBuildError("Unable to find release tag.")
 
-        build_dir = DOCS_BUILD_PATH / tag
-        build_docs(build_dir)
+        if "beta" not in tag and "alpha" not in tag:
+            build_dir = DOCS_BUILD_PATH / tag
+            build_docs(build_dir)
 
-        # Clean-up unnecessary extra 'fonts/' directories to save space.
-        # There should still be one in 'latest/'
-        for font_dirs in build_dir.glob("**/fonts"):
-            if font_dirs.exists():
-                shutil.rmtree(font_dirs)
+            # Clean-up unnecessary extra 'fonts/' directories to save space.
+            # There should still be one in 'latest/'
+            for font_dirs in build_dir.glob("**/fonts"):
+                if font_dirs.exists():
+                    shutil.rmtree(font_dirs)
 
-        shutil.copytree(build_dir, STABLE_PATH)
+            shutil.copytree(build_dir, STABLE_PATH)
 
     # Set up the redirect at /index.html
     with open(DOCS_BUILD_PATH / "index.html", "w") as f:

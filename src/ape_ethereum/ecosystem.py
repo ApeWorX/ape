@@ -39,6 +39,7 @@ NETWORKS = {
 
 class NetworkConfig(ConfigItem):
     required_confirmations: int = 0
+    default_provider: str = "geth"
 
 
 class EthereumConfig(ConfigItem):
@@ -47,12 +48,12 @@ class EthereumConfig(ConfigItem):
     kovan: NetworkConfig = NetworkConfig(required_confirmations=3)  # type: ignore
     rinkeby: NetworkConfig = NetworkConfig(required_confirmations=3)  # type: ignore
     goerli: NetworkConfig = NetworkConfig(required_confirmations=10)  # type: ignore
+    development: NetworkConfig = NetworkConfig(
+        required_confirmations=0, default_provider="test"
+    )  # type: ignore
 
 
 class BaseTransaction(TransactionAPI):
-    def is_valid(self) -> bool:
-        return False
-
     def as_dict(self) -> dict:
         data = super().as_dict()
 
@@ -150,15 +151,18 @@ class DynamicFeeTransaction(BaseTransaction):
 
 
 class Receipt(ReceiptAPI):
-    def raise_for_status(self, txn: TransactionAPI):
+    def raise_for_status(self):
         """
-        Raises :class`~ape.exceptions.OutOfGasError` when the
-        transaction failed and consumed all the gas.
+        Raise an error for the given transaction, if the transaction has failed.
 
-        Raises :class:`~ape.exceptions.TransactionError`
-        when the transaction has a failing status otherwise.
+        Raises:
+            :class:`~ape.exceptions.OutOfGasError`: When the transaction failed
+              and ran out of gas.
+            :class:`~ape.exceptions.TransactionError`: When the transaction has a
+              failing status otherwise.
         """
-        if txn.gas_limit and self.ran_out_of_gas(txn.gas_limit):
+
+        if self.gas_limit and self.ran_out_of_gas:
             raise OutOfGasError()
         elif self.status != TransactionStatusEnum.NO_ERROR:
             txn_hash = HexBytes(self.txn_hash).hex()
@@ -174,6 +178,7 @@ class Receipt(ReceiptAPI):
             block_number=data["blockNumber"],
             gas_used=data["gasUsed"],
             gas_price=data["gasPrice"],
+            gas_limit=data.get("gas") or data.get("gasLimit"),
             logs=data["logs"],
             contract_address=data["contractAddress"],
             sender=data["from"],

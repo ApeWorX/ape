@@ -125,6 +125,12 @@ ape plugins add vyper
 ape plugins list -a
 ```
 
+**NOTE**: If a plugin does not originate from the 
+[ApeWorX GitHub organization](https://github.com/ApeWorX?q=ape&type=all), you will get a warning about installing 
+3rd-class plugins. Any plugin that is not an official plugin has the chance of not being trustworthy. Thus, you should 
+be mindful about which plugins you install. Additionally, plugins that come bundled with `ape` in the core installation 
+cannot be removed and are considered part of the `ape` core software.
+
 You can interact and compile contracts.
 Here is an example of a project with a contract you interact with: 
 

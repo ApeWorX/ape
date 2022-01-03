@@ -23,7 +23,7 @@ def existing_alias_argument(account_type: Optional[Type[AccountAPI]] = None):
     A ``click.argument`` for an existing account alias.
 
     Args:
-        account_type (type[:class:`~ape.api.accounts.AccountAPI`], optional):
+        account_type (Type[:class:`~ape.api.accounts.AccountAPI`], optional):
           If given, limits the type of account the user may choose from.
     """
 

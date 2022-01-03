@@ -1,6 +1,6 @@
 # ape.api
 
-## ape.api.accounts
+## Accounts
 
 ```{eval-rst}
 .. automodule:: ape.api.accounts
@@ -10,7 +10,7 @@
     :exclude-members: __repr__, __weakref__, __metaclass__
 ```
 
-## ape.api.address
+## Address
 
 ```{eval-rst}
 .. automodule:: ape.api.address
@@ -18,7 +18,7 @@
     :show-inheritance:
 ```
 
-## ape.api.compiler
+## Compiler
 
 ```{eval-rst}
 .. automodule:: ape.api.compiler
@@ -26,7 +26,7 @@
     :show-inheritance:
 ```
 
-## ape.api.config
+## Config
 
 ```{eval-rst}
 .. automodule:: ape.api.config
@@ -36,7 +36,7 @@
     :exclude-members: __repr__, __weakref__, __metaclass__
 ```
 
-## ape.api.convert
+## Convert
 
 ```{eval-rst}
 .. automodule:: ape.api.convert
@@ -44,7 +44,7 @@
     :show-inheritance:
 ```
 
-## ape.api.explorers
+## Explorers
 
 ```{eval-rst}
 .. automodule:: ape.api.explorers
@@ -52,7 +52,7 @@
     :show-inheritance:
 ```
 
-## ape.api.networks
+## Networks
 
 ```{eval-rst}
 .. automodule:: ape.api.networks
@@ -62,7 +62,7 @@
     :exclude-members: __repr__, __weakref__, __metaclass__
 ```
 
-## ape.api.providers
+## Providers
 
 ```{eval-rst}
 .. automodule:: ape.api.providers
