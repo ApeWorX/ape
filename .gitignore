@@ -2,4 +2,4 @@ dist/
 src/
 tests/
 build/
-.build/
+.hypothesis/
