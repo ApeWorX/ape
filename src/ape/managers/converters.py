@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type
+from decimal import Decimal
+from typing import Any, Dict, List, Tuple, Type, Union
 
 from dataclassy import dataclass
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
@@ -21,8 +22,8 @@ class HexConverter(ConverterAPI):
     A converter that converts ``str`` to ``HexBytes``.
     """
 
-    def is_convertible(self, value: str) -> bool:
-        return is_hex(value)
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, str) and is_hex(value)
 
     def convert(self, value: str) -> bytes:
         """
@@ -38,7 +39,7 @@ class HexConverter(ConverterAPI):
         return HexBytes(value)
 
 
-hex_converter = HexConverter(None, None)  # type: ignore
+hex_converter = HexConverter(None, None, None)  # type: ignore
 
 
 class AddressAPIConverter(ConverterAPI):
@@ -64,7 +65,7 @@ class AddressAPIConverter(ConverterAPI):
         return value.address
 
 
-address_api_converter = AddressAPIConverter(None, None)  # type: ignore
+address_api_converter = AddressAPIConverter(None, None, None)  # type: ignore
 
 
 class HexAddressConverter(ConverterAPI):
@@ -73,7 +74,7 @@ class HexAddressConverter(ConverterAPI):
     :class:`~ape.types.AddressType`.
     """
 
-    def is_convertible(self, value: str) -> bool:
+    def is_convertible(self, value: Any) -> bool:
         return isinstance(value, str) and is_hex_address(value) and not is_checksum_address(value)
 
     def convert(self, value: str) -> AddressType:
@@ -91,7 +92,55 @@ class HexAddressConverter(ConverterAPI):
         return to_checksum_address(value)
 
 
-hex_address_converter = HexAddressConverter(None, None)  # type: ignore
+hex_address_converter = HexAddressConverter(None, None, None)  # type: ignore
+
+
+class ListTupleConverter(ConverterAPI):
+    """
+    A converter that converts all items in a tuple or list recursively.
+    """
+
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, (list, tuple))
+
+    def convert(self, value: Union[List, Tuple]) -> Union[List, Tuple]:
+        """
+        Convert the items inside the given list or tuple.
+
+        Args:
+            value (Union[List, Tuple]): The collection to convert.
+
+        Returns:
+            Union[list, tuple]: Depending on the input
+        """
+
+        converted_value: List[Any] = []
+
+        for v in value:
+            # Try all of them to see if one converts it over (only use first one)
+            conversion_found = False
+            # NOTE: Double loop required because we might not know the exact type of the inner
+            #       items. The UX of having to specify all inner items seemed poor as well.
+            for typ in self.converter._converters:
+                for check_fn, convert_fn in map(
+                    lambda c: (c.is_convertible, c.convert), self.converter._converters[typ]
+                ):
+                    if check_fn(v):
+                        converted_value.append(convert_fn(v))
+                        conversion_found = True
+                        break
+
+                if conversion_found:
+                    break
+
+            if not conversion_found:
+                # NOTE: If no conversions found, just insert the original
+                converted_value.append(v)
+
+        return value.__class__(converted_value)
+
+
+list_tuple_converter = ListTupleConverter(None, None, None)  # type: ignore
 
 
 @dataclass
@@ -119,14 +168,18 @@ class ConversionManager:
 
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
+        list_tuple_converter.converter = self  # Splice this in (no need for the rest)
         converters: Dict[Type, List[ConverterAPI]] = {
             AddressType: [address_api_converter, hex_address_converter],
             bytes: [hex_converter],
             int: [],
+            Decimal: [],
+            list: [list_tuple_converter],
+            tuple: [list_tuple_converter],
         }
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
-            converter = converter_class(self.config.get_config(plugin_name), self.networks)
+            converter = converter_class(self.config.get_config(plugin_name), self.networks, self)
 
             if conversion_type not in converters:
                 options = ", ".join([t.__name__ for t in converters])
@@ -178,7 +231,8 @@ class ConversionManager:
             options = ", ".join([t.__name__ for t in self._converters])
             raise ConversionError(f"Type '{type}' must be one of [{options}].")
 
-        if self.is_type(value, type):
+        if self.is_type(value, type) and not isinstance(value, (list, tuple)):
+            # NOTE: Always process lists and tuples
             return value
 
         for converter in self._converters[type]:
