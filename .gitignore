@@ -1,0 +1,5 @@
+dist/
+src/
+tests/
+build/
+.build/
