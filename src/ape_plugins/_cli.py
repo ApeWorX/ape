@@ -144,7 +144,12 @@ def add(cli_ctx, plugin, version, skip_confirmation):
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
-        subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", plugin])
+        result = subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", plugin])
+        if result == 0:
+            cli_ctx.logger.success(f"Plugin '{plugin}' has been added.")
+        else:
+            cli_ctx.logger.error(f"Failed to add '{plugin}'.")
+            sys.exit(1)
 
 
 @cli.command(short_help="Install all plugins in the local config file")
@@ -189,4 +194,11 @@ def remove(cli_ctx, plugin, skip_confirmation):
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
-        subprocess.call([sys.executable, "-m", "pip", "uninstall", "--quiet", "-y", plugin])
+        result = subprocess.call(
+            [sys.executable, "-m", "pip", "uninstall", "--quiet", "-y", plugin]
+        )
+        if result == 0:
+            cli_ctx.logger.success(f"Plugin '{plugin}' has been removed.")
+        else:
+            cli_ctx.logger.error(f"Failed to remove '{plugin}'.")
+            sys.exit(1)
