@@ -165,6 +165,14 @@ If you want to run specific files in a `scripts/` directory, you can do it with 
 $ ape run deploy
 ```
 
+### Logging
+
+To enable debug logging, run your command with the `--verbosity` flag using `DEBUG` as the value:
+
+```bash
+ape run --verbosity DEBUG
+```
+
 You can use `ape` as a package outside of scripts for the `ape run` command as well.
 
 You can work with registered networks, providers, and blockchain ecosystems (like Ethereum):
