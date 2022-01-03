@@ -64,7 +64,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#via-docker">via <code class="docutils literal notranslate"><span class="pre">docker</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#quick-usage">Quick Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-usage">Quick Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#logging">Logging</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
@@ -284,6 +287,12 @@ The <code class="docutils literal notranslate"><span class="pre">--size</span></
 $ ape run deploy
 </pre></div>
 </div>
+<div class="section" id="logging">
+<h3>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h3>
+<p>To enable debug logging, run your command with the <code class="docutils literal notranslate"><span class="pre">--verbosity</span></code> flag using <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> as the value:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape run --verbosity DEBUG
+</pre></div>
+</div>
 <p>You can use <code class="docutils literal notranslate"><span class="pre">ape</span></code> as a package outside of scripts for the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> command as well.</p>
 <p>You can work with registered networks, providers, and blockchain ecosystems (like Ethereum):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
@@ -305,6 +314,7 @@ $ ape run deploy
 <span class="n">c</span><span class="o">.</span><span class="n">doThat</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">a</span><span class="p">)</span>  <span class="c1"># Make Web3 transactions</span>
 <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">MyEvent</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">caller</span> <span class="o">==</span> <span class="n">a</span>  <span class="c1"># Search through Web3 events</span>
 </pre></div>
+</div>
 </div>
 </div>
 </div>

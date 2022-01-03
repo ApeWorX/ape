@@ -66,6 +66,11 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#using-plugins">Using Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#logging">Logging</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#import-the-logger-from-the-logging-module">Import the logger from the logging module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#use-the-logger-from-the-ape-cli-context">Use the logger from the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -277,6 +282,29 @@ uses the <a class="reference external" href="../methoddocs/cli.html?highlight=ne
   <span class="n">my</span><span class="o">-</span><span class="n">plugin</span>  <span class="n">Utilities</span> <span class="k">for</span> <span class="n">my</span> <span class="n">plugin</span>
   <span class="o">...</span>
 </pre></div>
+</div>
+</div>
+<div class="section" id="logging">
+<h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
+<p>Use Ape’s logger in your plugins or scripts by importing it from the <code class="docutils literal notranslate"><span class="pre">ape.logging</span></code> module or
+by using it off the CLI context (from using the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code> decorator).</p>
+<div class="section" id="import-the-logger-from-the-logging-module">
+<h3>Import the logger from the logging module<a class="headerlink" href="#import-the-logger-from-the-logging-module" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.logging</span> <span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;This is a log message&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="use-the-logger-from-the-ape-cli-context">
+<h3>Use the logger from the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code><a class="headerlink" href="#use-the-logger-from-the-ape-cli-context" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">ape_cli_context</span>
+
+<span class="nd">@ape_cli_context</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">my_command</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">)</span>
+  <span class="n">cli_ctx</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;my log message&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
