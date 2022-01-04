@@ -197,5 +197,5 @@ class AddressError(ApeException):
 
 class ChainError(ApeException):
     """
-    Raised when problems occur in the :class:`~ape.manager.chain.ChainManager`.
+    Raised when problems occur in the :class:`~ape.managers.chain.ChainManager`.
     """

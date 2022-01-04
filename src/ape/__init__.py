@@ -70,6 +70,11 @@ convert = _converters.convert
 """Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
 
 chain = _ChainManager(networks)  # type: ignore
+"""
+The current connected blockchain; requires an active provider.
+Useful for development purposes, such as controlling the state of the blockchain.
+Also handy for querying data and managing local caches.
+"""
 
 
 __all__ = [

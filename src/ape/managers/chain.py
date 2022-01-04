@@ -21,6 +21,15 @@ class ChainManager:
 
     @property
     def provider(self) -> ProviderAPI:
+        """
+        The active :class:`~ape.api.providers.ProviderAPI`. Most often, this should
+        be a :class:`~ape.api.providers.TestProviderAPI`.
+
+        Raises:
+            :class:`~ape.exceptions.ProviderNotConnectedError`: When not connected
+              to a provider.
+        """
+
         provider = self._networks.active_provider
         if not provider:
             raise ProviderNotConnectedError()
@@ -29,6 +38,10 @@ class ChainManager:
 
     @property
     def block_number(self) -> int:
+        """
+        The current block number (int).
+        """
+
         return self.provider.get_block("latest").number
 
     def snapshot(self) -> SnapshotID:
