@@ -56,5 +56,5 @@ Also, specifying a `gas_price` will automatically trigger the usage of a static-
 
 ```python
 contract = deploy()  # Example from above, that returns a contract instance.
-contract.fundMyContract(value="1 gwei", gas_price=100000000000)
+contract.fundMyContract(value="1 gwei", gas_price="100 gwei")
 ```
