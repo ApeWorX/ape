@@ -2,6 +2,7 @@ import pytest
 from eth.exceptions import HeaderNotFound
 
 from ape import chain, networks
+from ape.exceptions import ChainError
 
 
 @pytest.hookimpl(trylast=True, hookwrapper=True)
@@ -17,7 +18,7 @@ def pytest_runtest_protocol(item, nextitem):
 
     try:
         chain.restore(snapshot_id)
-    except HeaderNotFound:
+    except (HeaderNotFound, ChainError):
         pass  # Not sure why this happens sometimes...
 
 
