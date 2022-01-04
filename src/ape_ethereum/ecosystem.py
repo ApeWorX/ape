@@ -296,8 +296,19 @@ class Ethereum(EcosystemAPI):
         Returns a tranaction using the given constructor kwargs.
         """
         if "type" in kwargs:
-            type_arg = HexStr(str(kwargs["type"]))
-            version_str = str(add_0x_prefix(type_arg))
+            type_kwarg = kwargs["type"]
+
+            if isinstance(type_kwarg, int):
+                type_kwarg = HexStr(str(type_kwarg))
+            elif isinstance(type_kwarg, HexBytes):
+                type_kwarg = HexStr(type_kwarg.hex())
+            elif isinstance(type_kwarg, bytes):
+                type_kwarg = type_kwarg.decode()
+
+            if type_kwarg == "0x00":
+                type_kwarg = "0x0"
+
+            version_str = str(add_0x_prefix(str(type_kwarg)))
             version = TransactionType(version_str)
         elif "gas_price" in kwargs:
             version = TransactionType.STATIC
