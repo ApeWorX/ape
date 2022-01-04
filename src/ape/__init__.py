@@ -73,7 +73,7 @@ chain = _ChainManager(networks)  # type: ignore
 """
 The current connected blockchain; requires an active provider.
 Useful for development purposes, such as controlling the state of the blockchain.
-Also handy for querying data and managing local caches.
+Also handy for querying data about the chain and managing local caches.
 """
 
 
