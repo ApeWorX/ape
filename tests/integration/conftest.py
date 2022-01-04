@@ -8,18 +8,26 @@ from ape.exceptions import ChainError
 @pytest.hookimpl(trylast=True, hookwrapper=True)
 def pytest_collection_finish(session):
     with networks.parse_network_choice("::test"):
+        # Sets the active provider
         yield
 
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_protocol(item, nextitem):
-    snapshot_id = chain.snapshot()
-    yield
+    module_name = item.module.__name__
+    prefix = "tests.integration"
 
-    try:
-        chain.restore(snapshot_id)
-    except (HeaderNotFound, ChainError):
-        pass  # Not sure why this happens sometimes...
+    # Only do snapshotting for non-functional and non-CLI tests.
+    if module_name.startswith(prefix) and not module_name.startswith(f"{prefix}.cli"):
+        snapshot_id = chain.snapshot()
+        yield
+
+        try:
+            chain.restore(snapshot_id)
+        except (HeaderNotFound, ChainError):
+            pass
+    else:
+        yield
 
 
 @pytest.fixture

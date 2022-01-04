@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from dataclassy import dataclass
 
-from ape.api import ProviderAPI, TestProviderAPI
+from ape.api import BlockAPI, ProviderAPI, TestProviderAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.types import SnapshotID
 
@@ -11,12 +11,43 @@ from .networks import NetworkManager
 
 @dataclass
 class BlockContainer:
+    """
+    A list of blocks on the chain.
+
+    Usages example::
+
+        from ape import chain
+
+        latest_block = chain.blocks[-1
+
+    """
+
     _provider: ProviderAPI
 
-    def __getitem__(self, item: int):
-        return self._provider.get_block(item)
+    def __getitem__(self, block_number: int) -> BlockAPI:
+        """
+        Get a block by number.
 
-    def __len__(self):
+        Args:
+            block_number (int): The number of the block to get.
+
+        Returns:
+            :class:`~ape.api.providers.BlockAPI`
+        """
+        if block_number < 0:
+            latest_block = self._provider.get_block("latest").number
+            block_number = latest_block + 1 + block_number
+
+        return self._provider.get_block(block_number)
+
+    def __len__(self) -> int:
+        """
+        The number of blocks in the chain.
+
+        Returns:
+            int
+        """
+
         return self._provider.get_block("latest").number
 
 
@@ -29,6 +60,9 @@ class ChainManager:
 
     _networks: NetworkManager
     _snapshots: List[SnapshotID] = []
+
+    blocks: BlockContainer = None  # type: ignore
+    """The list of blocks on the chain."""
 
     def __post_init__(self):
         self.blocks = BlockContainer(self._networks.active_provider)
