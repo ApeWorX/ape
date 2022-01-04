@@ -156,7 +156,7 @@ def add(cli_ctx, plugin, version, skip_confirmation):
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 def install(cli_ctx, skip_confirmation):
-    is_insall_fail = False
+    all_installs_failed = False
     plugins = config.get_config("plugins") or []
     for plugin in plugins:
         module_name, package_name = extract_module_and_package_install_names(plugin)
@@ -174,18 +174,16 @@ def install(cli_ctx, skip_confirmation):
             )
             if result != 0:
                 cli_ctx.logger.error(f"Failed to add '{package_name}'.")
-                is_insall_fail = True
-    if is_insall_fail:
+                all_installs_failed = True
+    if all_installs_failed:
         sys.exit(1)
-    else:
-        sys.exit(0)
 
 
 @cli.command(short_help="Uninstall all plugins in the local config file")
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 def uninstall(cli_ctx, skip_confirmation):
-    is_uninstall_fail = False
+    all_installs_succeeded = False
     plugins = config.get_config("plugins") or []
     for plugin in plugins:
         module_name, package_name = extract_module_and_package_install_names(plugin)
@@ -203,11 +201,9 @@ def uninstall(cli_ctx, skip_confirmation):
                 cli_ctx.logger.success(f"Plugin '{package_name}' has been removed.")
             else:
                 cli_ctx.logger.error(f"Failed to remove '{package_name}'.")
-                is_uninstall_fail = True
-    if is_uninstall_fail:
+                all_installs_succeeded = True
+    if all_installs_succeeded:
         sys.exit(1)
-    else:
-        sys.exit(0)
 
 
 @cli.command(short_help="Uninstall an ape plugin")
