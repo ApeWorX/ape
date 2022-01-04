@@ -211,9 +211,7 @@ def uninstall(cli_ctx, skip_confirmation):
             any_uninstall_failed = True
 
         # if plugin is installed and 2nd class. We should uninstall it
-        if is_plugin_installed(module_name) and (
-            module_name in github_client.available_plugins or skip_confirmation
-        ):
+        if installed_plugin and (available_plugin or skip_confirmation):
             cli_ctx.logger.info(f"Uninstalling {package_name}...")
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
