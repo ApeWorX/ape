@@ -194,17 +194,20 @@ def uninstall(cli_ctx, skip_confirmation):
             any_uninstall_failed = True
 
         module_name, package_name = extract_module_and_package_install_names(plugin)
-        # check for installed check the config.yaml
-        if not is_plugin_installed(module_name):
-            cli_ctx.logger.warning(f"Plugin '{plugin}' is not installed.")
-            any_uninstall_failed = True
+
+        available_plugin = module_name not in github_client.available_plugins
+        installed_plugin = is_plugin_installed(plugin)
 
         # if plugin is installed but not a 2nd class. It must be a third party
-        if module_name not in github_client.available_plugins and is_plugin_installed(plugin):
+        if not available_plugin and installed_plugin:
             cli_ctx.logger.warning(
                 f"Plugin '{module_name}' is installed but not in available plugins."
                 f" Please uninstall outside of Ape."
             )
+            any_uninstall_failed = True
+        # check for installed check the config.yaml
+        elif not installed_plugin:
+            cli_ctx.logger.warning(f"Plugin '{plugin}' is not installed.")
             any_uninstall_failed = True
 
         # if plugin is installed and 2nd class. We should uninstall it
