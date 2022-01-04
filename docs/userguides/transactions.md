@@ -1,13 +1,13 @@
 # Making Transactions
 
-Regardless of how you are using `ape`, you will likely be making transactions. There are some types of transactions
+Regardless of how you are using `ape`, you will likely be making transactions. There are various types of transactions
 you can make with `ape`. A simple example is deploying a contract.
 
 ## Deployment
 
 Deploying a smart contract is a unique type of transaction where we don't necessarily care about the receipt as much
-as we care about the contract instance. That is why the return value from a
-[ContractInstance](../methoddocs/api.html?highlight=accountapi#ape.api.accounts.AccountAPI.deploy) is a
+as we care about the contract instance. That is why the return value from
+[the deploy method](../methoddocs/api.html?highlight=accountapi#ape.api.accounts.AccountAPI.deploy) is a
 [ContractInstance](../methoddocs/contracts.html?highlight=contractinstance#ape.contracts.base.ContractInstance).
 
 The following example demonstrates a simple deployment script:
@@ -56,5 +56,5 @@ Also, specifying a `gas_price` will automatically trigger the usage of a static-
 
 ```python
 contract = deploy()  # Example from above, that returns a contract instance.
-contract.fundMyContract(value="1 gwei", gas_price=
+contract.fundMyContract(value="1 gwei", gas_price=100000000000)
 ```
