@@ -311,7 +311,7 @@ class Ethereum(EcosystemAPI):
             if type_kwarg == "0x00":
                 type_kwarg = "0x0"
 
-            version_str = str(add_0x_prefix(HexStr(str(type_kwarg))))
+            version_str = add_0x_prefix(HexStr(type_kwarg))
             version = TransactionType(version_str)
         elif "gas_price" in kwargs:
             version = TransactionType.STATIC
