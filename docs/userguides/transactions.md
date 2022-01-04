@@ -24,11 +24,11 @@ def deploy():
 ## Dynamic Fee Transactions
 
 Before [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)), all transactions used a `gas_price`. After the London fork
-of Etheruem, the `gas_price` got broken up into two values `max_fee` and `max_priority_fee`. The `ape` platform supports
-both types of transactions. By default, transactions use the dynamic fee model. Making contract calls without specifying
-any additional `kwargs` will use a dynamic-fee transaction.
+of Etheruem, the `gas_price` got broken up into two values, `max_fee` and `max_priority_fee`. The `ape` platform
+supports both types of transactions. By default, transactions use the dynamic fee model. Making contract calls without
+specifying any additional `kwargs` will use a dynamic-fee transaction.
 
-Calling certain methods on a deployed-contract is a way to transact.
+Calling certain methods on a deployed-contract is one way to transact.
 
 ```python
 contract = deploy()  # Example from above, that returns a contract instance.
@@ -39,22 +39,21 @@ In the example above, the call to `fundMyContract()` invokes a dynamic-fee trans
 fee-values, you can specify the `max_fee`, the `max_priority_fee`, or both.
 
 ```python
-contract = deploy()  # Example from above, that returns a contract instance.
 contract.fundMyContract(value="1 gwei", max_priority_fee="50 gwei", max_fee="100 gwei")
 ```
 
 ## Static Fee Transactions
 
-To use the original static fee transactions without having to specify `gas_price`, you just have to specify `type="0x0"`.
+One way to use a static-fee transaction is by specifying the `gas_price` as a key-value argument:
 
 ```python
-contract = deploy()  # Example from above, that returns a contract instance.
+contract.fundMyContract(value="1 gwei", gas_price="100 gwei")
+```
+
+Another way to use a static-fee transaction (without having to provide `gas_price`) is to set the key-value
+argument `type` equal to `0x00`.
+
+```python
 contract.fundMyContract(value="1 gwei", type="0x0")
 ```
 
-Also, specifying a `gas_price` will automatically trigger the usage of a static-fee transaction.
-
-```python
-contract = deploy()  # Example from above, that returns a contract instance.
-contract.fundMyContract(value="1 gwei", gas_price="100 gwei")
-```
