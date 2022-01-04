@@ -156,7 +156,7 @@ def add(cli_ctx, plugin, version, skip_confirmation):
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 def install(cli_ctx, skip_confirmation):
-    all_installs_failed = False
+    any_install_failed = False
     plugins = config.get_config("plugins") or []
     for plugin in plugins:
         module_name, package_name = extract_module_and_package_install_names(plugin)
@@ -174,8 +174,8 @@ def install(cli_ctx, skip_confirmation):
             )
             if result != 0:
                 cli_ctx.logger.error(f"Failed to add '{package_name}'.")
-                all_installs_failed = True
-    if all_installs_failed:
+                any_install_failed = True
+    if any_install_failed:
         sys.exit(1)
 
 
@@ -183,10 +183,31 @@ def install(cli_ctx, skip_confirmation):
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 def uninstall(cli_ctx, skip_confirmation):
-    all_installs_succeeded = False
+    any_uninstall_failed = False
     plugins = config.get_config("plugins") or []
     for plugin in plugins:
+        # name schema is wrong
+        if plugin.startswith("ape"):
+            cli_ctx.abort(
+                f"Namespace 'ape' in '{plugin}' is not required. Please remove the pre-fix ape."
+            )
+            any_uninstall_failed = True
+
         module_name, package_name = extract_module_and_package_install_names(plugin)
+        # check for installed check the config.yaml
+        if not is_plugin_installed(module_name):
+            cli_ctx.logger.warning(f"Plugin '{plugin}' is not installed.")
+            any_uninstall_failed = True
+
+        # if plugin is installed but not a 2nd class. It must be a third party
+        if module_name not in github_client.available_plugins and is_plugin_installed(plugin):
+            cli_ctx.logger.warning(
+                f"Plugin '{module_name}' is installed but not in available plugins."
+                f" Please uninstall outside of Ape."
+            )
+            any_uninstall_failed = True
+
+        # if plugin is installed and 2nd class. We should uninstall it
         if is_plugin_installed(module_name) and (
             module_name in github_client.available_plugins or skip_confirmation
         ):
@@ -201,8 +222,8 @@ def uninstall(cli_ctx, skip_confirmation):
                 cli_ctx.logger.success(f"Plugin '{package_name}' has been removed.")
             else:
                 cli_ctx.logger.error(f"Failed to remove '{package_name}'.")
-                all_installs_succeeded = True
-    if all_installs_succeeded:
+                any_uninstall_failed = True
+    if any_uninstall_failed:
         sys.exit(1)
 
 
