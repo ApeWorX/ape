@@ -40,7 +40,7 @@ fee-values, you can specify the `max_fee` and the `max_priority_fee`.
 
 ```python
 contract = deploy()  # Example from above, that returns a contract instance.
-contract.fundMyContract(value="1 gwei", max_priorty_fee=50000000000, max_fee=100000000000)
+contract.fundMyContract(value="1 gwei", max_priority_fee="50 gwei", max_fee="100 gwei")
 ```
 
 ## Static Fee Transactions
