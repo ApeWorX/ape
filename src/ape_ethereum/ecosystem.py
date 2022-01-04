@@ -300,6 +300,8 @@ class Ethereum(EcosystemAPI):
         """
         if "type" in kwargs:
             type_kwarg = kwargs["type"]
+            if type_kwarg is None:
+                type_kwarg = TransactionType.DYNAMIC.value
 
             if isinstance(type_kwarg, int):
                 type_kwarg = str(type_kwarg)
