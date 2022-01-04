@@ -25,7 +25,7 @@ SnapshotID = Union[str, int, bytes]
 """
 An ID representing a point in time on a blockchain, as used in the
 :meth:`~ape.managers.chain.ChainManager.snapshot` and
-:meth:`~ape.managers.chain.ChainManager.snapshot` methods. Can be a ``str`` or  an ``int``.
+:meth:`~ape.managers.chain.ChainManager.snapshot` methods. Can be a ``str``, ``int``, or ``bytes``.
 Providers will expect and handle snapshot IDs differently.
 """
 
