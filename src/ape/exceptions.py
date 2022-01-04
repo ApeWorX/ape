@@ -1,4 +1,9 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+from eth_utils import humanize_hash
+
+if TYPE_CHECKING:
+    from ape.types import SnapshotID
 
 
 class ApeException(Exception):
@@ -199,3 +204,16 @@ class ChainError(ApeException):
     """
     Raised when problems occur in the :class:`~ape.managers.chain.ChainManager`.
     """
+
+
+class UnknownSnapshotError(ChainError):
+    """
+    Raised when given an unknown snapshot ID.
+    """
+
+    def __init__(self, snapshot_id: "SnapshotID"):
+        if isinstance(snapshot_id, bytes):
+            # Is block hash
+            snapshot_id = humanize_hash(snapshot_id)  # type: ignore
+
+        super().__init__(f"Unknown snapshot_id '{str(snapshot_id)}'.")

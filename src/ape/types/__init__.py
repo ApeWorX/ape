@@ -21,7 +21,7 @@ An ID that can match a block, such as the literals ``"earliest"``, ``"latest"``,
 as well as a block number or hash (HexBytes).
 """
 
-SnapshotID = Union[str, int]
+SnapshotID = Union[str, int, bytes]
 """
 An ID representing a point in time on a blockchain, as used in the
 :meth:`~ape.managers.chain.ChainManager.snapshot` and

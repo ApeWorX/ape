@@ -68,7 +68,9 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
 
     def revert(self, snapshot_id: SnapshotID):
         if snapshot_id:
-            return self._tester.revert_to_snapshot(snapshot_id)
+            current_hash = self.get_block("latest").hash
+            if current_hash != snapshot_id:
+                return self._tester.revert_to_snapshot(snapshot_id)
 
 
 def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:

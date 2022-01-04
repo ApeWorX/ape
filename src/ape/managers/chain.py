@@ -3,7 +3,7 @@ from typing import List, Optional
 from dataclassy import dataclass
 
 from ape.api import ProviderAPI, TestProviderAPI
-from ape.exceptions import ChainError, ProviderNotConnectedError
+from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.types import SnapshotID
 
 from .networks import NetworkManager
@@ -74,7 +74,8 @@ class ChainManager:
         Raises:
             NotImplementedError: When the active provider does not support
               snapshotting.
-            ChainError: When the snapshot ID does not exist or there are
+            :class:`~ape.exceptions.UnknownSnapshotError`: When the snapshot ID is not cached.
+            :class:`~ape.exceptions.ChainError`: When the snapshot ID does not exist or there are
               no snapshot IDs to select from.
 
         Args:
@@ -87,7 +88,7 @@ class ChainManager:
         elif snapshot_id is None:
             snapshot_id = self._snapshots.pop()
         elif snapshot_id not in self._snapshots:
-            raise ChainError(f"Unknown snapshot_id '{snapshot_id}'.")
+            raise UnknownSnapshotError(snapshot_id)
         else:
             snapshot_index = self._snapshots.index(snapshot_id)
             self._snapshots = self._snapshots[:snapshot_index]
