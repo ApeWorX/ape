@@ -5,7 +5,7 @@ from ape.api import TransactionType
 
 
 @pytest.mark.parametrize(
-    "type_kwarg", (0, "0x0", b"0x0", b"0x00", "0", HexBytes("0x0"), HexBytes("0x00"))
+    "type_kwarg", (0, "0x0", b"0", b"0x0", b"0x00", "0", HexBytes("0x0"), HexBytes("0x00"))
 )
 def test_create_static_fee_transaction(ethereum, type_kwarg):
     txn = ethereum.create_transaction(type=type_kwarg)
