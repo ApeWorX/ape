@@ -2,7 +2,7 @@ from typing import List
 
 import pytest
 
-from ape.api import ProviderAPI, TestAccountAPI
+from ape.api import TestAccountAPI
 from ape.managers.accounts import AccountManager
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
@@ -23,16 +23,12 @@ class PytestApeFixtures:
         self._chain = chain
 
     @pytest.fixture
-    def accounts(self, provider) -> List[TestAccountAPI]:
+    def accounts(self) -> List[TestAccountAPI]:
         return self._accounts.test_accounts
 
     @pytest.fixture
     def chain(self) -> ChainManager:
         return self._chain
-
-    @pytest.fixture
-    def provider(self) -> ProviderAPI:
-        return self._chain.provider
 
     @pytest.fixture(scope="session")
     def project(self) -> ProjectManager:
