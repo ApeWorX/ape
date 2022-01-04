@@ -36,7 +36,7 @@ contract.fundMyContract(value="1 gwei")  # Assuming there is a method named 'fun
 ```
 
 In the example above, the call to `fundMyContract()` invokes a dynamic-fee transaction. To have more control of the 
-fee-values, you can specify the `max_fee` and the `max_priority_fee`.
+fee-values, you can specify the `max_fee`, the `max_priority_fee`, or both.
 
 ```python
 contract = deploy()  # Example from above, that returns a contract instance.
