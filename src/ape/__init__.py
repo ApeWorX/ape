@@ -8,6 +8,7 @@ from pathlib import Path as _Path
 
 from .contracts import _Contract
 from .managers.accounts import AccountManager as _AccountManager
+from .managers.chain import ChainManager as _ChainManager
 from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
 from .managers.converters import ConversionManager as _ConversionManager
@@ -68,8 +69,12 @@ Contract = _partial(_Contract, networks=networks, converters=_converters)
 convert = _converters.convert
 """Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
 
+chain = _ChainManager(networks)  # type: ignore
+
+
 __all__ = [
     "accounts",
+    "chain",
     "compilers",
     "config",
     "convert",

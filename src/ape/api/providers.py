@@ -12,7 +12,7 @@ from web3 import Web3
 
 from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import BlockID, TransactionSignature
+from ape.types import BlockID, SnapshotID, TransactionSignature
 from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
@@ -572,22 +572,25 @@ class TestProviderAPI(ProviderAPI):
     """
 
     @abstractmethod
-    def snapshot(self) -> str:
+    def snapshot(self) -> SnapshotID:
         """
-        Take a recording a state in a blockchain (for development only).
+        Record the current state of the blockchain with intent to later
+        call the method :meth:`~ape.managers.chain.ChainManager.revert`
+        to go back to this point. This method is for development networks
+        only.
 
         Returns:
-            str: The snapshot ID.
+            :class:`~ape.types.SnapshotID`: The snapshot ID.
         """
 
     @abstractmethod
-    def revert(self, snapshot_id: str):
+    def revert(self, snapshot_id: SnapshotID):
         """
         Regress the current call using the given snapshot ID.
         Allows developers to go back to a previous state.
 
         Args:
-            snapshot_ID (str): The snapshot ID.
+            snapshot_id (:class:`~ape.types.SnapshotID`): The snapshot ID.
         """
 
 

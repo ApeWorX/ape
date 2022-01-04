@@ -174,6 +174,15 @@ class ProviderError(ApeException):
     """
 
 
+class ProviderNotConnectedError(ProviderError):
+    """
+    Raised when not connected to a provider.
+    """
+
+    def __init__(self):
+        super().__init__("Not connected to a network provider.")
+
+
 class ConfigError(ApeException):
     """
     Raised when a problem occurs from the configuration file.
@@ -183,4 +192,10 @@ class ConfigError(ApeException):
 class AddressError(ApeException):
     """
     Raised when a problem occurs regarding an address.
+    """
+
+
+class ChainError(ApeException):
+    """
+    Raised when problems occur in the :class:`~ape.manager.chain.ChainManager`.
     """

@@ -21,6 +21,14 @@ An ID that can match a block, such as the literals ``"earliest"``, ``"latest"``,
 as well as a block number or hash (HexBytes).
 """
 
+SnapshotID = Union[str, int]
+"""
+An ID representing a point in time on a blockchain, as used in the
+:meth:`~ape.managers.chain.ChainManager.snapshot` and
+:meth:`~ape.managers.chain.ChainManager.snapshot` methods. Can be a ``str`` or  an ``int``.
+Providers will expect and handle snapshot IDs differently.
+"""
+
 AddressType = ChecksumAddress
 """A type representing a checksummed address."""
 
@@ -36,6 +44,7 @@ __all__ = [
     "PackageManifest",
     "PackageMeta",
     "SignableMessage",
+    "SnapshotID",
     "Source",
     "TransactionSignature",
 ]

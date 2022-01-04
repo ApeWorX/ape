@@ -1,55 +1,51 @@
-from typing import Optional
-
 import pytest
+from _pytest.config import Config as PytestConfig
 
 import ape
-from ape.api import TestProviderAPI
 from ape.logging import logger
+from ape.managers.chain import ChainManager
+from ape.managers.networks import NetworkManager
+from ape.managers.project import ProjectManager
 
 from .contextmanagers import RevertsContextManager
 
 
 class PytestApeRunner:
-    def __init__(self, config, project, networks):
+    def __init__(
+        self,
+        config: PytestConfig,
+        project: ProjectManager,
+        networks: NetworkManager,
+        chain: ChainManager,
+    ):
         self.config = config
         self.project = project
         self.networks = networks
+        self.chain = chain
         self._warned_for_missing_features = False
-        ape.reverts = RevertsContextManager
+        ape.reverts = RevertsContextManager  # type: ignore
 
     @property
     def _network_choice(self) -> str:
-        """
-        The option the user providers via --network (or the default).
-        """
+        # The option the user providers via --network (or the default).
         return self.config.getoption("network")
-
-    @property
-    def _provider(self) -> Optional[TestProviderAPI]:
-        """
-        The active provider.
-        """
-        return self.networks.active_provider
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_protocol(self, item, nextitem):
         snapshot_id = None
 
         # Try to snapshot if the provider supported it.
-        if hasattr(self._provider, "snapshot"):
-            try:
-                snapshot_id = self._provider.snapshot()
-            except NotImplementedError:
-                self._warn_for_unimplemented_snapshot()
-                pass
-        else:
+        try:
+            snapshot_id = self.chain.snapshot()
+        except NotImplementedError:
             self._warn_for_unimplemented_snapshot()
+            pass
 
         yield
 
         # Try to revert to the state before the test began.
         if snapshot_id:
-            self._provider.revert(snapshot_id)
+            self.chain.restore(snapshot_id)
 
     def _warn_for_unimplemented_snapshot(self):
         if self._warned_for_missing_features:
@@ -96,5 +92,5 @@ class PytestApeRunner:
         Called after whole test run finished, right before returning the exit
         status to the system.
         """
-        if self._provider is not None:
-            self._provider.disconnect()
+        if self.chain:
+            self.chain.provider.disconnect()
