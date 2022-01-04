@@ -48,7 +48,7 @@ def test_snapshot_and_restore_unknown_snapshot_id(chain_manager, sender, receive
     with pytest.raises(ChainError) as err:
         chain_manager.restore(snapshot_id_3)
 
-    assert "Unknown snapshot_id" in str(err.value)
+    assert "Unknown snapshot ID" in str(err.value)
 
 
 def test_snapshot_and_restore_no_snapshots(chain_manager, sender, receiver):
