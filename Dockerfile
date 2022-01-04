@@ -1,6 +1,7 @@
 FROM ubuntu:20.04
 RUN apt-get update && apt-get upgrade --yes && apt-get install git python3.8 python3-pip --yes
 COPY . .
+RUN pip install typing-extensions==3.10.0.2
 RUN python3 ./setup.py install
 RUN ape plugins add solidity --yes
 RUN ape plugins add vyper --yes
