@@ -5,8 +5,12 @@ from ape import networks
 
 @pytest.fixture
 def networks_connected_to_tester():
-    with networks.parse_network_choice("::test"):
+    if networks.active_provider:
         yield networks
+
+    else:
+        with networks.parse_network_choice("::test"):
+            yield networks
 
 
 @pytest.fixture

@@ -34,10 +34,12 @@ def test_snapshot_and_restore(chain_manager, sender, receiver):
     while chain_manager.block_number != 0:
         chain_manager.restore()
 
+    assert chain_manager.block_number == 0
     assert receiver.balance == initial_balance
 
 
 def test_snapshot_and_restore_unknown_snapshot_id(chain_manager, sender, receiver):
+    assert id(sender.provider) == id(chain_manager.provider)
     _ = chain_manager.snapshot()
     sender.transfer(receiver, "1 wei")
     snapshot_id_2 = chain_manager.snapshot()

@@ -293,7 +293,7 @@ class Ethereum(EcosystemAPI):
 
     def create_transaction(self, **kwargs) -> TransactionAPI:
         """
-        Returns a tranaction using the given constructor kwargs.
+        Returns a transaction using the given constructor kwargs.
         """
         if "type" in kwargs:
             type_arg = HexStr(str(kwargs["type"]))

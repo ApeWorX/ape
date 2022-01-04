@@ -47,7 +47,10 @@ class ChainManager:
         """
         provider = self._get_test_provider()
         snapshot_id = provider.snapshot()
-        self._snapshots.append(snapshot_id)
+
+        if snapshot_id not in self._snapshots:
+            self._snapshots.append(snapshot_id)
+
         return snapshot_id
 
     def restore(self, snapshot_id: Optional[SnapshotID] = None):
