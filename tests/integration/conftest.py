@@ -1,4 +1,5 @@
 import pytest
+from eth.exceptions import HeaderNotFound
 
 from ape import chain, networks
 
@@ -13,7 +14,11 @@ def pytest_collection_finish(session):
 def pytest_runtest_protocol(item, nextitem):
     snapshot_id = chain.snapshot()
     yield
-    chain.restore(snapshot_id)
+
+    try:
+        chain.restore(snapshot_id)
+    except HeaderNotFound:
+        pass  # Not sure why this happens sometimes...
 
 
 @pytest.fixture
