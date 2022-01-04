@@ -45,7 +45,7 @@ contract.fundMyContract(value="1 gwei", max_priority_fee="50 gwei", max_fee="100
 
 ## Static Fee Transactions
 
-To use the original static fee transactions, you can merely specify a `type="0x0"`.
+To use the original static fee transactions without having to specify `gas_price`, you just have to specify `type="0x0"`.
 
 ```python
 contract = deploy()  # Example from above, that returns a contract instance.
