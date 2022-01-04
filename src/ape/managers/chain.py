@@ -10,6 +10,17 @@ from .networks import NetworkManager
 
 
 @dataclass
+class BlockContainer:
+    _provider: ProviderAPI
+
+    def __getitem__(self, item: int):
+        return self._provider.get_block(item)
+
+    def __len__(self):
+        return self._provider.get_block("latest").number
+
+
+@dataclass
 class ChainManager:
     """
     A manager for controlling and manipulating development blockchains
@@ -18,6 +29,9 @@ class ChainManager:
 
     _networks: NetworkManager
     _snapshots: List[SnapshotID] = []
+
+    def __post_init__(self):
+        self.blocks = BlockContainer(self._networks.active_provider)
 
     @property
     def provider(self) -> ProviderAPI:
@@ -35,14 +49,6 @@ class ChainManager:
             raise ProviderNotConnectedError()
 
         return provider
-
-    @property
-    def block_number(self) -> int:
-        """
-        The current block number (int).
-        """
-
-        return self.provider.get_block("latest").number
 
     def snapshot(self) -> SnapshotID:
         """

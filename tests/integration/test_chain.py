@@ -20,17 +20,17 @@ def test_snapshot_and_restore(chain_manager, sender, receiver):
         snapshot_ids.append(snapshot_id)
         sender.transfer(receiver, "1 wei")  # Advance a block by transacting
 
-    assert chain_manager.block_number == end_range
+    assert chain_manager.blocks[-1] == end_range
 
     # Show that we can also provide the snapshot ID as an argument.
     chain_manager.restore(snapshot_ids[2])
-    assert chain_manager.block_number == 2
+    assert chain_manager.blocks[-1] == 2
 
     # Head back to the initial block.
-    while chain_manager.block_number != 0:
+    while chain_manager.blocks[-1] != 0:
         chain_manager.restore()
 
-    assert chain_manager.block_number == 0
+    assert chain_manager.blocks[-1] == 0
     assert receiver.balance == initial_balance
 
 
