@@ -4,3 +4,4 @@ tests/
 build/
 .hypothesis/
 docs/_build/
+.build/
