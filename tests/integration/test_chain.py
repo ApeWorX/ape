@@ -5,13 +5,9 @@ from ape.managers.chain import ChainManager
 
 
 @pytest.fixture
-def chain_manager(networks_connected_to_tester):
-    manager = ChainManager(networks_connected_to_tester)
+def chain_manager(networks):
+    manager = ChainManager(networks)
     yield manager
-
-    # Head back to the initial block.
-    while manager.block_number != 0:
-        manager.restore()
 
 
 def test_snapshot_and_restore(chain_manager, sender, receiver):
@@ -39,7 +35,6 @@ def test_snapshot_and_restore(chain_manager, sender, receiver):
 
 
 def test_snapshot_and_restore_unknown_snapshot_id(chain_manager, sender, receiver):
-    assert id(sender.provider) == id(chain_manager.provider)
     _ = chain_manager.snapshot()
     sender.transfer(receiver, "1 wei")
     snapshot_id_2 = chain_manager.snapshot()

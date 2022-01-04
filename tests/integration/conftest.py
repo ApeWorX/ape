@@ -1,21 +1,24 @@
 import pytest
 
-from ape import networks
+from ape import chain, networks
+
+
+@pytest.hookimpl(trylast=True, hookwrapper=True)
+def pytest_collection_finish(session):
+    with networks.parse_network_choice("::test"):
+        yield
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_protocol(item, nextitem):
+    snapshot_id = chain.snapshot()
+    yield
+    chain.restore(snapshot_id)
 
 
 @pytest.fixture
-def networks_connected_to_tester():
-    if networks.active_provider:
-        yield networks
-
-    else:
-        with networks.parse_network_choice("::test"):
-            yield networks
-
-
-@pytest.fixture
-def eth_tester_provider(networks_connected_to_tester):
-    yield networks_connected_to_tester.active_provider
+def eth_tester_provider(networks):
+    yield networks.active_provider
 
 
 @pytest.fixture
