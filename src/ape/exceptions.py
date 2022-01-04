@@ -216,4 +216,4 @@ class UnknownSnapshotError(ChainError):
             # Is block hash
             snapshot_id = humanize_hash(snapshot_id)  # type: ignore
 
-        super().__init__(f"Unknown snapshot_id '{str(snapshot_id)}'.")
+        super().__init__(f"Unknown snapshot ID '{str(snapshot_id)}'.")
