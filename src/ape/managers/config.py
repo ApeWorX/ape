@@ -76,8 +76,19 @@ class ConfigManager:
                 if network_name not in valid_network_names:
                     raise ConfigError(f"Invalid network '{network_name}' in deployments config.")
 
-                for deployment in [d for d in contract_deployments if "address" in d]:
-                    deployment["address"] = to_address(deployment["address"])
+                for deployment in [d for d in contract_deployments]:
+                    if "address" not in deployment:
+                        raise ConfigError(
+                            f"Missing 'address' field in deployment "
+                            f"(ecosystem={ecosystem_name}, network={network_name})"
+                        )
+
+                    address = deployment["address"]
+
+                    try:
+                        deployment["address"] = to_address(address)
+                    except ValueError as err:
+                        raise ConfigError(str(err)) from err
 
         self.deployments = deployments
 
