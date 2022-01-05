@@ -56,9 +56,9 @@ class BlockContainer:
 @dataclass
 class ChainManager:
     """
-    A chain-manager for development purposes, such as controlling the state of the blockchain.
-    Also handy for querying data about the chain and managing local caches. Access the
-    chain manager singleton from the root ``ape`` namespace.
+    A class for managing the state of the active blockchain.
+    Also handy for querying data about the chain and managing local caches.
+    Access the chain manager singleton from the root ``ape`` namespace.
 
     Usage example::
 
