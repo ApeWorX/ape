@@ -6,13 +6,10 @@ from ape import accounts, convert
 
 def test_sign_message(test_accounts):
     signer = test_accounts[2]
-    message = "Hello Apes!"
-    message_hash = encode_defunct(text=message)
+    message = encode_defunct(text="Hello Apes!")
 
     actual_signature = signer.sign_message(message_hash)
     actual_signature_bytes = actual_signature.encode_rsv()
-    expected_signature = Account.sign_message(message_hash, signer._private_key)
-    assert actual_signature_bytes == expected_signature.signature
 
     signer_address = Account.recover_message(message_hash, signature=actual_signature_bytes)
     assert signer_address == signer.address
