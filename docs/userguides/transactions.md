@@ -46,7 +46,7 @@ The `max_priority_fee` cannot exceed the `max_fee`, as the `max_fee` includes bo
 The `max_priority_fee`, when omitted, defaults to the return value from the
 [ProviderAPI.priority_fee](../methoddocs/api.html?highlight=accountapi#ape.api.providers.ProviderAPI.priority_fee)
 method property.
-The `max_fee`, when omitted, defaults to the `priority_fee` (which get it's default applied beforehand) plus the latest
+The `max_fee`, when omitted, defaults to the `priority_fee` (which gets its default applied beforehand) plus the latest
 the value returned from the
 [ProviderAPI.base_fee](../methoddocs/api.html?highlight=accountapi#ape.api.providers.ProviderAPI.base_fee) method
 property.
@@ -65,10 +65,9 @@ contract.fundMyContract(value="1 gwei", gas_price="100 gwei")
 
 **NOTE**: Miners prioritize static-fee transactions based on the highest `gas_price`.
 
-Another way to use a static-fee transactions (without having to provide `gas_price`) is to set the key-value
+Another way to use a static-fee transaction (without having to provide `gas_price`) is to set the key-value
 argument `type` equal to `0x00`.
 
 ```python
 contract.fundMyContract(value="1 gwei", type="0x0")
 ```
-
