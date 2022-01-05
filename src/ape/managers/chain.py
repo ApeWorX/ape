@@ -18,7 +18,7 @@ class BlockContainer:
 
         from ape import chain
 
-        latest_block = chain.blocks[-1
+        latest_block = chain.blocks[-1]
 
     """
 
