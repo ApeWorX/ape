@@ -50,7 +50,7 @@ class BlockContainer:
             int
         """
 
-        return self._provider.get_block("latest").number
+        return self._provider.get_block("latest").number + 1
 
 
 @dataclass
