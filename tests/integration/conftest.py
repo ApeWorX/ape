@@ -31,6 +31,12 @@ def pytest_runtest_protocol(item, nextitem):
 
 
 @pytest.fixture
+def networks_connected_to_tester():
+    with networks.parse_network_choice("::test"):
+        yield networks
+
+
+@pytest.fixture
 def ethereum(networks_connected_to_tester):
     return networks_connected_to_tester.ethereum
 
