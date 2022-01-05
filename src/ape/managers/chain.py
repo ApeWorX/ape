@@ -70,8 +70,7 @@ class ChainManager:
     @property
     def provider(self) -> ProviderAPI:
         """
-        The active :class:`~ape.api.providers.ProviderAPI`. Most often, this should
-        be a :class:`~ape.api.providers.TestProviderAPI`.
+        The active :class:`~ape.api.providers.ProviderAPI`.
 
         Raises:
             :class:`~ape.exceptions.ProviderNotConnectedError`: When not connected
