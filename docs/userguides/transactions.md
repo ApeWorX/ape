@@ -71,3 +71,5 @@ argument `type` equal to `0x00`.
 ```python
 contract.fundMyContract(value="1 gwei", type="0x0")
 ```
+
+When declaring `type="0x0"` and _not_ specifying a `gas_price`, the `gas_price` gets set using the provider's estimation.
