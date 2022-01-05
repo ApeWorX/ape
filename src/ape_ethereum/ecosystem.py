@@ -293,11 +293,25 @@ class Ethereum(EcosystemAPI):
 
     def create_transaction(self, **kwargs) -> TransactionAPI:
         """
-        Returns a tranaction using the given constructor kwargs.
+        Returns a transaction using the given constructor kwargs.
+
+        Returns:
+            :class:`~ape.api.providers.TransactionAPI`
         """
         if "type" in kwargs:
-            type_arg = HexStr(str(kwargs["type"]))
-            version_str = str(add_0x_prefix(type_arg))
+            type_kwarg = kwargs["type"]
+            if type_kwarg is None:
+                type_kwarg = TransactionType.DYNAMIC.value
+            elif isinstance(type_kwarg, int):
+                type_kwarg = f"0{type_kwarg}"
+            elif isinstance(type_kwarg, bytes):
+                type_kwarg = type_kwarg.hex()
+
+            suffix = type_kwarg.replace("0x", "")
+            if len(suffix) == 1:
+                type_kwarg = f"{type_kwarg.rstrip(suffix)}0{suffix}"
+
+            version_str = add_0x_prefix(HexStr(type_kwarg))
             version = TransactionType(version_str)
         elif "gas_price" in kwargs:
             version = TransactionType.STATIC

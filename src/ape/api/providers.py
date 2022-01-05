@@ -25,8 +25,8 @@ class TransactionType(Enum):
     `EIP-2718 <https://eips.ethereum.org/EIPS/eip-2718>`__.
     """
 
-    STATIC = "0x0"
-    DYNAMIC = "0x2"  # EIP-1559
+    STATIC = "0x00"
+    DYNAMIC = "0x02"  # EIP-1559
 
 
 @abstractdataclass
