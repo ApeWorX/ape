@@ -304,10 +304,8 @@ class Ethereum(EcosystemAPI):
                 type_kwarg = TransactionType.DYNAMIC.value
             elif isinstance(type_kwarg, int):
                 type_kwarg = f"0{type_kwarg}"
-            elif isinstance(type_kwarg, HexBytes):
-                type_kwarg = type_kwarg.hex()
             elif isinstance(type_kwarg, bytes):
-                type_kwarg = type_kwarg.decode()
+                type_kwarg = type_kwarg.hex()
 
             suffix = type_kwarg.replace("0x", "")
             if len(suffix) == 1:
