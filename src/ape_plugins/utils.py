@@ -1,3 +1,5 @@
+import subprocess
+import sys
 from typing import Dict, Tuple
 
 from ape.__modules__ import __modules__
@@ -8,11 +10,10 @@ CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
 
 
 def is_plugin_installed(plugin: str) -> bool:
-    try:
-        __import__(plugin)
-        return True
-    except ImportError:
-        return False
+    plugin = plugin.replace("_", "-")
+    reqs = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+    installed_packages = [r.decode().split("==")[0] for r in reqs.split()]
+    return plugin in installed_packages
 
 
 def extract_module_and_package_install_names(item: Dict) -> Tuple[str, str]:
