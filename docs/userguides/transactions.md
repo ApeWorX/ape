@@ -42,6 +42,15 @@ To have more control of the fee-values, you can specify the `max_fee`, the `max_
 contract.fundMyContract(value="1 gwei", max_priority_fee="50 gwei", max_fee="100 gwei")
 ```
 
+The `max_priority_fee` cannot exceed the `max_fee`, as the `max_fee` includes both the base fee and the priority fee.
+The `max_priority_fee`, when omitted, defaults to the return value from the
+[ProviderAPI.priority_fee](../methoddocs/api.html?highlight=accountapi#ape.api.providers.ProviderAPI.priority_fee)
+method property.
+The `max_fee`, when omitted, defaults to the `priority_fee` (which get it's default applied beforehand) plus the latest
+the value returned from the
+[ProviderAPI.priority_fee](../methoddocs/api.html?highlight=accountapi#ape.api.providers.ProviderAPI.base_fee) method
+property.
+
 ## Static Fee Transactions
 
 One way to use a static-fee transaction is by specifying the `gas_price` as a key-value argument:
@@ -56,4 +65,3 @@ argument `type` equal to `0x00`.
 ```python
 contract.fundMyContract(value="1 gwei", type="0x0")
 ```
-
