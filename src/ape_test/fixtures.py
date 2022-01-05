@@ -22,7 +22,7 @@ class PytestApeFixtures:
         self._project = project
         self._chain = chain
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def accounts(self) -> List[TestAccountAPI]:
         return self._accounts.test_accounts
 
