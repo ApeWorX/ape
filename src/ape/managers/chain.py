@@ -28,7 +28,7 @@ class BlockContainer:
         """
         Get a block by number. Negative numbers start at the chain head and
         move backwards. For example, ``-1`` would be the latest block and
-        ``-2`` would be the penultimate block, and so on.
+        ``-2`` would be the block prior to that one, and so on.
 
         Args:
             block_number (int): The number of the block to get.
