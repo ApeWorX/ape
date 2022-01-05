@@ -104,7 +104,7 @@ class ChainManager:
         Returns:
             :class:`~ape.types.SnapshotID`: The snapshot ID.
         """
-        provider = self._get_test_provider("snapshot")
+        provider = self._get_test_provider(TestProviderAPI.snapshot.__name__)
         snapshot_id = provider.snapshot()
 
         if snapshot_id not in self._snapshots:
@@ -127,7 +127,7 @@ class ChainManager:
             snapshot_id (Optional[:class:`~ape.types.SnapshotID`]): The snapshot ID. Defaults
               to the most recent snapshot ID.
         """
-        provider = self._get_test_provider("restore")
+        provider = self._get_test_provider(TestProviderAPI.revert.__name__)
         if not self._snapshots:
             raise ChainError("There are no snapshots to revert to.")
         elif snapshot_id is None:
