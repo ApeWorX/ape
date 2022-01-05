@@ -25,7 +25,7 @@ def deploy():
 
 Before [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)), all transactions used a `gas_price`.
 After the London fork of Etheruem, the `gas_price` got broken up into two values, `max_fee` and `max_priority_fee`.
-The `ape` framework supports both types of transactions. By default, transactions use the dynamic fee model.
+The `ape` framework supports both types of transactions. By default, transactions use the dynamic-fee model.
 Making contract calls without specifying any additional `kwargs` will use a dynamic-fee transaction.
 
 Calling certain methods on a deployed-contract is one way to transact.
