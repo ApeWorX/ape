@@ -121,8 +121,7 @@ class ChainManager:
             NotImplementedError: When the active provider does not support
               snapshotting.
             :class:`~ape.exceptions.UnknownSnapshotError`: When the snapshot ID is not cached.
-            :class:`~ape.exceptions.ChainError`: When the snapshot ID does not exist or there are
-              no snapshot IDs to select from.
+            :class:`~ape.exceptions.ChainError`: When there are no snapshot IDs to select from.
 
         Args:
             snapshot_id (Optional[:class:`~ape.types.SnapshotID`]): The snapshot ID. Defaults
