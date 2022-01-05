@@ -23,7 +23,7 @@ def deploy():
 
 ## Dynamic Fee Transactions
 
-Before [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)), all transactions used a `gas_price`.
+Before [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), all transactions used a `gas_price`.
 After the London fork of Etheruem, the `gas_price` got broken up into two values, `max_fee` and `max_priority_fee`.
 The `ape` framework supports both types of transactions. By default, transactions use the dynamic-fee model.
 Making contract calls without specifying any additional `kwargs` will use a dynamic-fee transaction.
@@ -48,7 +48,7 @@ The `max_priority_fee`, when omitted, defaults to the return value from the
 method property.
 The `max_fee`, when omitted, defaults to the `priority_fee` (which get it's default applied beforehand) plus the latest
 the value returned from the
-[ProviderAPI.priority_fee](../methoddocs/api.html?highlight=accountapi#ape.api.providers.ProviderAPI.base_fee) method
+[ProviderAPI.base_fee](../methoddocs/api.html?highlight=accountapi#ape.api.providers.ProviderAPI.base_fee) method
 property.
 
 ## Static Fee Transactions
