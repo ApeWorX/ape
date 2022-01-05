@@ -148,7 +148,8 @@ def add(cli_ctx, plugin, version, skip_confirmation):
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
         result = subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", plugin])
-        if result == 0:
+        plugin_got_installed = is_plugin_installed(plugin)
+        if result == 0 and plugin_got_installed:
             cli_ctx.logger.success(f"Plugin '{plugin}' has been added.")
         else:
             cli_ctx.logger.error(f"Failed to add '{plugin}'.")
@@ -188,10 +189,12 @@ def install(cli_ctx, skip_confirmation):
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
 
-            args = [sys.executable, "-m", "pip", "install", "--quiet", f"{package_name}"]
+            args = [sys.executable, "-m", "pip", "install", "--quiet", package_name]
             result = subprocess.call(args)
             plugin_got_installed = is_plugin_installed(module_name)
-            if result != 0 and not plugin_got_installed:
+            if result == 0 and plugin_got_installed:
+                cli_ctx.logger.success(f"Plugin '{module_name}' has been added.")
+            else:
                 cli_ctx.logger.error(f"Failed to add '{package_name}'.")
                 any_install_failed = True
     if any_install_failed:
@@ -279,7 +282,8 @@ def remove(cli_ctx, plugin, skip_confirmation):
         result = subprocess.call(
             [sys.executable, "-m", "pip", "uninstall", "--quiet", "-y", plugin]
         )
-        if result == 0:
+        plugin_still_installed = is_plugin_installed(plugin)
+        if result == 0 and not plugin_still_installed:
             cli_ctx.logger.success(f"Plugin '{plugin}' has been removed.")
         else:
             cli_ctx.logger.error(f"Failed to remove '{plugin}'.")
