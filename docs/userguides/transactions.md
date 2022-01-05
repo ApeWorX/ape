@@ -21,7 +21,7 @@ def deploy():
     return account.deploy(project.MyContract)
 ```
 
-## Dynamic Fee Transactions
+## Dynamic-Fee Transactions
 
 Before [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), all transactions used a `gas_price`.
 After the London fork of Etheruem, the `gas_price` got broken up into two values, `max_fee` and `max_priority_fee`.
@@ -51,7 +51,11 @@ the value returned from the
 [ProviderAPI.base_fee](../methoddocs/api.html?highlight=accountapi#ape.api.providers.ProviderAPI.base_fee) method
 property.
 
-## Static Fee Transactions
+## Static-Fee Transactions
+
+Static-fee transactions are the transactions that Ethereum used before the London-fork
+(before [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)).
+**However, some applications may still require using static-fee transactions.**
 
 One way to use a static-fee transaction is by specifying the `gas_price` as a key-value argument:
 
@@ -59,9 +63,12 @@ One way to use a static-fee transaction is by specifying the `gas_price` as a ke
 contract.fundMyContract(value="1 gwei", gas_price="100 gwei")
 ```
 
-Another way to use a static-fee transaction (without having to provide `gas_price`) is to set the key-value
+**NOTE**: Miners prioritize static-fee transactions based on the highest `gas_price`.
+
+Another way to use a static-fee transactions (without having to provide `gas_price`) is to set the key-value
 argument `type` equal to `0x00`.
 
 ```python
 contract.fundMyContract(value="1 gwei", type="0x0")
 ```
+
