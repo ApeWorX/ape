@@ -7,11 +7,8 @@ from ape import accounts, convert
 def test_sign_message(test_accounts):
     signer = test_accounts[2]
     message = encode_defunct(text="Hello Apes!")
-
-    actual_signature = signer.sign_message(message_hash)
-    actual_signature_bytes = actual_signature.encode_rsv()
-
-    signer_address = Account.recover_message(message_hash, signature=actual_signature_bytes)
+    signature = signer.sign_message(message).encode_rsv()
+    signer_address = Account.recover_message(message, signature=signature)
     assert signer_address == signer.address
 
 
