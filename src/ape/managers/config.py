@@ -66,8 +66,16 @@ class ConfigManager:
 
         # Sanitize deployment addresses.
         deployments = user_config.pop("deployments", {})
+        valid_ecosystem_names = [e[0] for e in self.plugin_manager.ecosystems]
         for ecosystem_name, networks in deployments.items():
+            if ecosystem_name not in valid_ecosystem_names:
+                raise ConfigError(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
+
+            valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
             for network_name, contract_deployments in networks.items():
+                if network_name not in valid_network_names:
+                    raise ConfigError(f"Invalid network '{network_name}' in deployments config.")
+
                 for deployment in [d for d in contract_deployments if "address" in d]:
                     deployment["address"] = to_address(deployment["address"])
 
