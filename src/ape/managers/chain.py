@@ -126,7 +126,7 @@ class ChainManager:
 
         Args:
             snapshot_id (Optional[:class:`~ape.types.SnapshotID`]): The snapshot ID. Defaults
-            to the most recent snapshot ID.
+              to the most recent snapshot ID.
         """
         provider = self._get_test_provider()
         if not self._snapshots:
