@@ -31,6 +31,11 @@ def pytest_runtest_protocol(item, nextitem):
 
 
 @pytest.fixture
+def ethereum(networks_connected_to_tester):
+    return networks_connected_to_tester.ethereum
+
+
+@pytest.fixture
 def eth_tester_provider(networks):
     yield networks.active_provider
 

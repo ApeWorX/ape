@@ -35,7 +35,6 @@ class HexConverter(ConverterAPI):
         Returns:
             bytes
         """
-
         return HexBytes(value)
 
 
