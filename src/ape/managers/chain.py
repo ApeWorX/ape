@@ -26,7 +26,9 @@ class BlockContainer:
 
     def __getitem__(self, block_number: int) -> BlockAPI:
         """
-        Get a block by number.
+        Get a block by number. Negative numbers start at the chain head and
+        move backwards. For example, ``-1`` would be the latest block and
+        ``-2`` would be the penultimate block, and so on.
 
         Args:
             block_number (int): The number of the block to get.
