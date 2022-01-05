@@ -5,7 +5,7 @@ in an `ape-config.yaml` file.
 
 ## Deployments
 
-Share deployments with teammates:
+Share import deployments to public networks with your teammates:
 
 ```yaml
 deployments:
