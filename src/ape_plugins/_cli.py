@@ -160,6 +160,20 @@ def install(cli_ctx, skip_confirmation):
     plugins = config.get_config("plugins") or []
     for plugin in plugins:
         module_name, package_name = extract_module_and_package_install_names(plugin)
+
+        available_plugin = module_name in github_client.available_plugins
+        installed_plugin = is_plugin_installed(module_name)
+        # if plugin is installed but not a 2nd class. It must be a third party
+        if not installed_plugin and not available_plugin:
+            cli_ctx.logger.warning(
+                f"Plugin '{module_name}' is available outside." f" Please install outside of Ape."
+            )
+            any_install_failed = True
+        # check for installed check the config.yaml
+        elif installed_plugin and available_plugin:
+            cli_ctx.logger.warning(f"Plugin '{module_name}' is trusted and already installed.")
+            pass
+
         if not is_plugin_installed(module_name) and (
             module_name in github_client.available_plugins
             or skip_confirmation
@@ -186,29 +200,24 @@ def uninstall(cli_ctx, skip_confirmation):
     any_uninstall_failed = False
     plugins = config.get_config("plugins") or []
     for plugin in plugins:
-        # name schema is wrong
-        if plugin.startswith("ape"):
-            cli_ctx.abort(
-                f"Namespace 'ape' in '{plugin}' is not required. Please remove the pre-fix ape."
-            )
-            any_uninstall_failed = True
-
         module_name, package_name = extract_module_and_package_install_names(plugin)
 
-        available_plugin = module_name not in github_client.available_plugins
-        installed_plugin = is_plugin_installed(plugin)
+        available_plugin = module_name in github_client.available_plugins
+        installed_plugin = is_plugin_installed(module_name)
 
         # if plugin is installed but not a 2nd class. It must be a third party
-        if not available_plugin and installed_plugin:
+        if installed_plugin and not available_plugin:
             cli_ctx.logger.warning(
-                f"Plugin '{module_name}' is installed but not in available plugins."
+                f"Plugin '{module_name}' is not installed but not in available plugins."
                 f" Please uninstall outside of Ape."
             )
             any_uninstall_failed = True
+            pass
         # check for installed check the config.yaml
         elif not installed_plugin:
-            cli_ctx.logger.warning(f"Plugin '{plugin}' is not installed.")
+            cli_ctx.logger.warning(f"Plugin '{module_name}' is not installed.")
             any_uninstall_failed = True
+            pass
 
         # if plugin is installed and 2nd class. We should uninstall it
         if installed_plugin and (available_plugin or skip_confirmation):
