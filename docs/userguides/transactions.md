@@ -1,7 +1,7 @@
 # Making Transactions
 
-Regardless of how you are using `ape`, you will likely be making transactions. There are various types of transactions
-you can make with `ape`. A simple example is deploying a contract.
+Regardless of how you are using `ape`, you will likely be making transactions.
+There are various types of transactions you can make with `ape`. A simple example is deploying a contract.
 
 ## Deployment
 
@@ -23,10 +23,10 @@ def deploy():
 
 ## Dynamic Fee Transactions
 
-Before [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)), all transactions used a `gas_price`. After the London fork
-of Etheruem, the `gas_price` got broken up into two values, `max_fee` and `max_priority_fee`. The `ape` framework
-supports both types of transactions. By default, transactions use the dynamic fee model. Making contract calls without
-specifying any additional `kwargs` will use a dynamic-fee transaction.
+Before [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)), all transactions used a `gas_price`.
+After the London fork of Etheruem, the `gas_price` got broken up into two values, `max_fee` and `max_priority_fee`.
+The `ape` framework supports both types of transactions. By default, transactions use the dynamic fee model.
+Making contract calls without specifying any additional `kwargs` will use a dynamic-fee transaction.
 
 Calling certain methods on a deployed-contract is one way to transact.
 
@@ -35,8 +35,8 @@ contract = deploy()  # Example from above, that returns a contract instance.
 contract.fundMyContract(value="1 gwei")  # Assuming there is a method named 'fundMyContract' on MyContract.
 ```
 
-In the example above, the call to `fundMyContract()` invokes a dynamic-fee transaction. To have more control of the 
-fee-values, you can specify the `max_fee`, the `max_priority_fee`, or both.
+In the example above, the call to `fundMyContract()` invokes a dynamic-fee transaction.
+To have more control of the fee-values, you can specify the `max_fee`, the `max_priority_fee`, or both.
 
 ```python
 contract.fundMyContract(value="1 gwei", max_priority_fee="50 gwei", max_fee="100 gwei")
