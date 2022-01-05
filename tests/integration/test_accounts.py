@@ -6,7 +6,7 @@ from ape import accounts, convert
 
 def test_sign_message(test_accounts):
     signer = test_accounts[2]
-    message = "I♥SF"
+    message = "Hello Apes!"
     message_hash = encode_defunct(text=message)
 
     actual_signature = signer.sign_message(message_hash)
