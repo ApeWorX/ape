@@ -588,6 +588,17 @@ class TestProviderAPI(ProviderAPI):
             snapshot_id (str): The snapshot ID.
         """
 
+    def sleep(self, seconds: int) -> int:
+        """
+        Increase the time of the chain.
+
+        Args:
+            seconds (int): Seconds to move the chain into the future.
+
+        Returns:
+            int: The new current timestamp.
+        """
+
 
 class Web3Provider(ProviderAPI):
     """

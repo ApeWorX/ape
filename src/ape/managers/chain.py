@@ -256,15 +256,14 @@ class ChainManager:
     _networks: NetworkManager
     _snapshots: List[SnapshotID] = []
     _chain_id_map: Dict[str, int] = {}
+    _time_offset: int = 0
 
     account_history: AccountHistory = AccountHistory()
     """A mapping of transactions from the active session to the account responsible."""
 
     def __repr__(self) -> str:
-        try:
-            return f"<ChainManager (chain_id={self.chain_id})>"
-        except ProviderNotConnectedError:
-            return "<ChainManager (disconnected)>"
+        props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
+        return f"<ChainManager ({props})>"
 
     @property
     def provider(self) -> ProviderAPI:
@@ -331,7 +330,18 @@ class ChainManager:
         The current epoch time of the chain, as an ``int``.
         """
 
-        return int(time.time())
+        return int(time.time() + self._time_offset)
+
+    def sleep(self, seconds: int):
+        """
+        Increase the time (development-chains only).
+
+        Args:
+            seconds (int): Seconds to move the chain into the future.
+        """
+
+        test_provider = self._get_test_provider("sleep")
+        self._time_offset = test_provider.sleep(seconds)
 
     def snapshot(self) -> SnapshotID:
         """

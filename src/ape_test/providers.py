@@ -73,6 +73,10 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
             if current_hash != snapshot_id:
                 return self._tester.revert_to_snapshot(snapshot_id)
 
+    def sleep(self, seconds: int) -> int:
+        new_timestamp = self.get_block("latest").timestamp + seconds
+        return self._tester.time_travel(new_timestamp)
+
 
 def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:
     err_message = str(web3_err).split("execution reverted: ")[-1] or None
