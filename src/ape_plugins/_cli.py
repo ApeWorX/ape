@@ -7,7 +7,7 @@ from typing import List, Set
 import click
 
 from ape import config
-from ape.cli import ape_cli_context, skip_confirmation_option
+from ape.cli import ape_cli_context, skip_confirmation_option, upgrade_confirmation_option
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import get_package_version, github_client
@@ -127,7 +127,8 @@ def _list(cli_ctx, display_all):
 @click.option("-v", "--version", help="Specify version (Default is latest)")
 @skip_confirmation_option(help="Don't ask for confirmation to add the plugin")
 @ape_cli_context()
-def add(cli_ctx, plugin, version, skip_confirmation):
+@upgrade_confirmation_option(help="Specify if user wants to update plugin")
+def add(cli_ctx, plugin, version, skip_confirmation, upgrade_confirmation):
     if plugin.startswith("ape"):
         cli_ctx.abort(f"Namespace 'ape' in '{plugin}' is not required")
 
@@ -152,7 +153,14 @@ def add(cli_ctx, plugin, version, skip_confirmation):
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
-        result = subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", plugin])
+
+        args = [sys.executable, "-m", "pip", "install", "--quiet"]
+        if upgrade_confirmation:
+            args.append("--upgrade")
+        args.append(plugin)
+        print(args)
+
+        result = subprocess.call(args)
         plugin_got_installed = is_plugin_installed(plugin)
         if result == 0 and plugin_got_installed:
             cli_ctx.logger.success(f"Plugin '{plugin}' has been added.")

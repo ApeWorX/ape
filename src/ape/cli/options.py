@@ -145,6 +145,24 @@ def skip_confirmation_option(help=""):
     )
 
 
+def upgrade_confirmation_option(help=""):
+    """
+    A ``click.option`` for upgrade plugin confirmation (``--upgrade``).
+
+    Args:
+        help (str): CLI option help text. Defaults to ``""``.
+    """
+
+    return click.option(
+        "-U",
+        "--upgrade",
+        "upgrade_confirmation",
+        default=False,
+        is_flag=True,
+        help=help,
+    )
+
+
 def _account_callback(ctx, param, value):
     if param and not value:
         return param.type.get_user_selected_account()
