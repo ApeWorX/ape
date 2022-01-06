@@ -226,4 +226,5 @@ class AccountManager:
         return any(address in container for container in self.containers.values())
 
     def _inject_provider(self, account: AccountAPI):
-        account._provider = self.network_manager.active_provider
+        if self.network_manager.active_provider is not None:
+            account.provider = self.network_manager.active_provider
