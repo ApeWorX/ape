@@ -91,7 +91,7 @@ class AccountManager:
         accounts_with_type = []
         for account in self:
             if isinstance(account, type_):
-                self._inject_chain(account)
+                self._inject_provider(account)
                 accounts_with_type.append(account)
 
         return accounts_with_type
@@ -109,7 +109,7 @@ class AccountManager:
     def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
             for account in container:
-                self._inject_chain(account)
+                self._inject_provider(account)
                 yield account
 
     def __repr__(self) -> str:
@@ -141,7 +141,7 @@ class AccountManager:
 
             container = container_type(None, account_type, self.config)
             for account in container:
-                self._inject_chain(account)
+                self._inject_provider(account)
                 accounts.append(account)
 
         return accounts
@@ -162,7 +162,7 @@ class AccountManager:
 
         for account in self:
             if account.alias and account.alias == alias:
-                self._inject_chain(account)
+                self._inject_provider(account)
                 return account
 
         raise IndexError(f"No account with alias '{alias}'.")
@@ -187,7 +187,7 @@ class AccountManager:
 
         for idx, account in enumerate(self.__iter__()):
             if account_id == idx:
-                self._inject_chain(account)
+                self._inject_provider(account)
                 return account
 
         raise IndexError(f"No account at index '{account_id}'.")
@@ -209,7 +209,7 @@ class AccountManager:
         for container in self.containers.values():
             if account_id in container:
                 account = container[account_id]
-                self._inject_chain(account)
+                self._inject_provider(account)
                 return account
 
         raise IndexError(f"No account with address '{account_id}'.")
@@ -227,5 +227,5 @@ class AccountManager:
 
         return any(address in container for container in self.containers.values())
 
-    def _inject_chain(self, account: AccountAPI):
-        account._chain = self.chain_manager
+    def _inject_provider(self, account: AccountAPI):
+        account._provider = self.network_manager.active_provider

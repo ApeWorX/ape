@@ -27,6 +27,7 @@ class TestReceipt:
             gas_price=0,
             block_number=0,
             sender="",
+            receiver="",
             nonce=0,
         )
         with pytest.raises(OutOfGasError):

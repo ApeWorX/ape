@@ -1,13 +1,10 @@
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional
 
 from ape.types import AddressType
 from ape.utils import abstractdataclass, abstractmethod
 
 from ..exceptions import AddressError
 from .providers import ProviderAPI
-
-if TYPE_CHECKING:
-    from ape.managers.chain import ChainManager
 
 
 @abstractdataclass
@@ -16,34 +13,25 @@ class AddressAPI:
     A base address API class. All account-types subclass this type.
     """
 
-    _chain: Optional["ChainManager"] = None
-
-    @property
-    def chain(self):
-        """
-        The current active blockchain, if connected to one.
-
-        Raises:
-            :class:`~ape.exceptions.AddressError`: When there is no active
-               chain at runtime.
-        """
-
-        if not self._chain:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class {type(self).__name__}. "
-                "Provider missing access to chain manager."
-            )
+    _provider: Optional[ProviderAPI] = None
 
     @property
     def provider(self) -> ProviderAPI:
         """
         The current active provider if connected to one.
-
         Raises:
             :class:`~ape.exceptions.AddressError`: When there is no active
                provider at runtime.
+        Returns:
+            :class:`~ape.api.providers.ProviderAPI`
         """
-        return self.chain.provider
+
+        if not self._provider:
+            raise AddressError(
+                f"Incorrectly implemented provider API for class {type(self).__name__}"
+            )
+
+        return self._provider
 
     @property
     @abstractmethod

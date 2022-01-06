@@ -1,7 +1,7 @@
 import time
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Dict, Iterator, List, Optional
 
 from dataclassy import as_dict
 from eth_typing import HexStr
@@ -17,6 +17,9 @@ from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
 from .config import ConfigItem
+
+if TYPE_CHECKING:
+    from ape.managers.chain import ChainManager
 
 
 class TransactionType(Enum):
@@ -359,6 +362,8 @@ class ProviderAPI:
     plugin or the `ape-hardhat <https://github.com/ApeWorX/ape-hardhat>`__ plugin.
     """
 
+    _chain: Optional["ChainManager"] = None
+
     name: str
     """The name of the provider (should be the plugin name)."""
 
@@ -669,6 +674,10 @@ class Web3Provider(ProviderAPI):
             else self.network.required_confirmations
         )
         receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
+
+        if self._chain:
+            self._chain.account_history.append(receipt)
+
         return receipt
 
 
@@ -683,7 +692,4 @@ class UpstreamProvider(ProviderAPI):
         """
         The str used by downstream providers to connect to this one.
         For example, the URL for HTTP-based providers.
-
-        Returns:
-            str
         """
