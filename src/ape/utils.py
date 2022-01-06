@@ -479,7 +479,6 @@ also abstract (meaning it has methods that **must** be implemented or else
 errors will occur. This class cannot be instantiated on its own.
 """
 
-
 __all__ = [
     "abstractdataclass",
     "abstractmethod",
