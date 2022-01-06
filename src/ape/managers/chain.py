@@ -116,7 +116,8 @@ class BlockContainer:
     ) -> Iterator[BlockAPI]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
-        **NOTE**: This is a deamon method; it does not terminate.
+        **NOTE**: This is a deamon method; it does not terminate unless an exception
+        occurrs.
 
         Usage example::
 
