@@ -1,11 +1,14 @@
 import subprocess
 import sys
+from os import getcwd
+from pathlib import Path
 from typing import List, Set
 
 import click
 
 from ape import config
 from ape.cli import ape_cli_context, skip_confirmation_option
+from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import get_package_version, github_client
 from ape_plugins.utils import (
@@ -145,7 +148,8 @@ def add(cli_ctx, plugin, version, skip_confirmation):
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
         result = subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", plugin])
-        if result == 0:
+        plugin_got_installed = is_plugin_installed(plugin)
+        if result == 0 and plugin_got_installed:
             cli_ctx.logger.success(f"Plugin '{plugin}' has been added.")
         else:
             cli_ctx.logger.error(f"Failed to add '{plugin}'.")
@@ -156,9 +160,25 @@ def add(cli_ctx, plugin, version, skip_confirmation):
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 def install(cli_ctx, skip_confirmation):
+    any_install_failed = False
+    cwd = getcwd()
+    config_path = Path(cwd) / CONFIG_FILE_NAME
+    cli_ctx.logger.info(f"Installing plugins from config file at {config_path}")
     plugins = config.get_config("plugins") or []
     for plugin in plugins:
         module_name, package_name = extract_module_and_package_install_names(plugin)
+
+        available_plugin = module_name in github_client.available_plugins
+        installed_plugin = is_plugin_installed(module_name)
+        # if plugin is installed but not a 2nd class. It must be a third party
+        if not installed_plugin and not available_plugin:
+            cli_ctx.logger.warning(f"Plugin '{module_name}' is not an trusted plugin.")
+            any_install_failed = True
+        # check for installed check the config.yaml
+        elif installed_plugin and available_plugin:
+            cli_ctx.logger.warning(f"Plugin '{module_name}' is trusted and already installed.")
+            pass
+
         if not is_plugin_installed(module_name) and (
             module_name in github_client.available_plugins
             or skip_confirmation
@@ -168,7 +188,72 @@ def install(cli_ctx, skip_confirmation):
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
-            subprocess.call([sys.executable, "-m", "pip", "install", "--quiet", f"{package_name}"])
+
+            args = [sys.executable, "-m", "pip", "install", "--quiet", package_name]
+            result = subprocess.call(args)
+            plugin_got_installed = is_plugin_installed(module_name)
+            if result == 0 and plugin_got_installed:
+                cli_ctx.logger.success(f"Plugin '{module_name}' has been added.")
+            else:
+                cli_ctx.logger.error(f"Failed to add '{package_name}'.")
+                any_install_failed = True
+    if any_install_failed:
+        sys.exit(1)
+
+
+@cli.command(short_help="Uninstall all plugins in the local config file")
+@ape_cli_context()
+@skip_confirmation_option("Don't ask for confirmation to install the plugins")
+def uninstall(cli_ctx, skip_confirmation):
+    any_uninstall_failed = False
+    cwd = getcwd()
+    config_path = Path(cwd) / CONFIG_FILE_NAME
+    cli_ctx.logger.info(f"Uninstalling plugins from config file at {config_path}")
+
+    plugins = config.get_config("plugins") or []
+    for plugin in plugins:
+        module_name, package_name = extract_module_and_package_install_names(plugin)
+
+        available_plugin = module_name in github_client.available_plugins
+        plugin_still_installed = is_plugin_installed(module_name)
+
+        # if plugin is installed but not a 2nd class. It must be a third party
+        if plugin_still_installed and not available_plugin:
+            cli_ctx.logger.warning(
+                f"Plugin '{module_name}' is not installed but not in available plugins."
+                f" Please uninstall outside of Ape."
+            )
+            any_uninstall_failed = True
+            pass
+        # check for installed check the config.yaml
+        elif not plugin_still_installed:
+            cli_ctx.logger.warning(f"Plugin '{module_name}' is not installed.")
+            any_uninstall_failed = True
+            pass
+
+        # if plugin is installed and 2nd class. We should uninstall it
+        if plugin_still_installed and (available_plugin or skip_confirmation):
+            cli_ctx.logger.info(f"Uninstalling {package_name}...")
+            # NOTE: Be *extremely careful* with this command, as it modifies the user's
+            #       installed packages, to potentially catastrophic results
+            # NOTE: This is not abstracted into another function *on purpose*
+
+            args = [sys.executable, "-m", "pip", "uninstall", "--quiet"]
+            if skip_confirmation:
+                args.append("-y")
+            args.append(package_name)
+
+            result = subprocess.call(args)
+            plugin_still_installed = is_plugin_installed(module_name)
+
+            if result == 0 and not plugin_still_installed:
+                cli_ctx.logger.success(f"Plugin '{package_name}' has been removed.")
+
+            else:
+                cli_ctx.logger.error(f"Failed to remove '{package_name}'.")
+                any_uninstall_failed = True
+    if any_uninstall_failed:
+        sys.exit(1)
 
 
 @cli.command(short_help="Uninstall an ape plugin")
@@ -197,7 +282,8 @@ def remove(cli_ctx, plugin, skip_confirmation):
         result = subprocess.call(
             [sys.executable, "-m", "pip", "uninstall", "--quiet", "-y", plugin]
         )
-        if result == 0:
+        plugin_still_installed = is_plugin_installed(plugin)
+        if result == 0 and not plugin_still_installed:
             cli_ctx.logger.success(f"Plugin '{plugin}' has been removed.")
         else:
             cli_ctx.logger.error(f"Failed to remove '{plugin}'.")
