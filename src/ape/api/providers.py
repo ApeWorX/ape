@@ -404,9 +404,7 @@ class ProviderAPI:
     def chain_id(self) -> int:
         """
         The blockchain ID.
-
-        Returns:
-            int: The value of the blockchain ID.
+        See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
         """
 
     @abstractmethod
@@ -462,24 +460,18 @@ class ProviderAPI:
     @abstractmethod
     def gas_price(self) -> int:
         """
-        The price for what it costs to transact.
-
-        Returns:
-            int
+        The price for what it costs to transact
+        (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
 
     @property
     def priority_fee(self) -> int:
         """
-        A miner tip to incentivize them
-        to include your transaction in a block.
+        A miner tip to incentivize them to include your transaction in a block.
 
         Raises:
             NotImplementedError: When the provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ typed transactions.
-
-        Returns:
-            int: The value of the fee.
         """
         raise NotImplementedError("priority_fee is not implemented by this provider")
 
@@ -494,9 +486,6 @@ class ProviderAPI:
         Raises:
             NotImplementedError: When this provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
-
-        Returns:
-            int
         """
         raise NotImplementedError("base_fee is not implemented by this provider")
 

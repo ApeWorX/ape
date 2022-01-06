@@ -138,6 +138,39 @@ class ChainManager:
 
         return provider
 
+    @property
+    def chain_id(self) -> int:
+        """
+        The blockchain ID.
+        See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
+        """
+
+        return self.provider.chain_id
+
+    @property
+    def gas_price(self) -> int:
+        """
+        The price for what it costs to transact
+        (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
+        """
+
+        return self.provider.gas_price
+
+    @property
+    def base_fee(self) -> int:
+        """
+        The minimum value required to get your transaction
+        included on the next block.
+        Only providers that implement `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__
+        will use this property.
+
+        Raises:
+            NotImplementedError: When this provider does not implement
+              `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
+        """
+
+        return self.provider.base_fee
+
     def snapshot(self) -> SnapshotID:
         """
         Record the current state of the blockchain with intent to later
