@@ -7,7 +7,17 @@ from ape.managers.chain import ChainManager
 @pytest.fixture
 def chain_manager(networks):
     manager = ChainManager(networks)
-    yield manager
+    return manager
+
+
+@pytest.fixture
+def chain_manager_up_5_blocks(chain_manager, sender, receiver):
+    snapshot_id = chain_manager.snapshot()
+    for i in range(5):
+        sender.transfer(receiver, "1 wei")
+
+    yield chain_manager
+    chain_manager.restore(snapshot_id)
 
 
 def test_snapshot_and_restore(chain_manager, sender, receiver):
@@ -15,7 +25,7 @@ def test_snapshot_and_restore(chain_manager, sender, receiver):
     end_range = 5
     snapshot_ids = []
 
-    for i in range(0, end_range):
+    for i in range(end_range):
         snapshot_id = chain_manager.snapshot()
         snapshot_ids.append(snapshot_id)
         sender.transfer(receiver, "1 wei")  # Advance a block by transacting
@@ -68,3 +78,25 @@ def test_account_history(sender, receiver, chain_manager):
     txn = transactions_from_cache[0]
     assert txn.sender == receipt.sender == sender
     assert txn.receiver == receipt.receiver == receiver
+
+
+def test_iterate_blocks(chain_manager_up_5_blocks):
+    expected_number_of_blocks = 6  # Including the 0th start block
+    blocks = [b for b in chain_manager_up_5_blocks.blocks]
+    assert len(blocks) == expected_number_of_blocks
+
+    expected_number = 0
+    for block in blocks:
+        assert block.number == expected_number
+        expected_number += 1
+
+
+def test_blocks_range(chain_manager_up_5_blocks):
+    expected_number_of_blocks = 3  # Expecting blocks [0, 1, 2]
+    blocks = [b for b in chain_manager_up_5_blocks.blocks.range(stop=3)]
+    assert len(blocks) == expected_number_of_blocks
+
+    expected_number = 0
+    for block in blocks:
+        assert block.number == expected_number
+        expected_number += 1
