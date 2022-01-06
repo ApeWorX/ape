@@ -54,8 +54,7 @@ class BlockContainer:
         return self.height + 1
 
     def __iter__(self) -> Iterator[BlockAPI]:
-        for i in range(len(self)):
-            yield self._get_block(i)
+        return self.range()
 
     @property
     def head(self) -> BlockAPI:
@@ -64,6 +63,13 @@ class BlockContainer:
     @property
     def height(self) -> int:
         return self.head.number
+
+    def range(self, start: int = 0, end: int = None) -> Iterator[BlockAPI]:
+        if end is None:
+            end = len(self)
+
+        for i in range(start, end):
+            yield self._get_block(i)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
         return self._provider.get_block(block_id)
