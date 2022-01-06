@@ -5,6 +5,7 @@ from dataclassy import dataclass
 
 from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI, TestProviderAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
+from ape.logging import logger
 from ape.types import AddressType, BlockID, SnapshotID
 
 from .networks import NetworkManager
@@ -23,7 +24,7 @@ class BlockContainer:
 
     """
 
-    provider: ProviderAPI
+    networks: NetworkManager
     _poll_wait_interval = 2  # Seconds
 
     def __getitem__(self, block_number: int) -> BlockAPI:
@@ -79,6 +80,17 @@ class BlockContainer:
 
         return self.head.number
 
+    @property
+    def _provider(self) -> ProviderAPI:
+        if not self.networks.active_provider:
+            raise ProviderNotConnectedError()
+
+        return self.networks.active_provider
+
+    @property
+    def _network_confirmations(self) -> int:
+        return self._provider.network.required_confirmations
+
     def range(self, start: int = 0, stop: Optional[int] = None) -> Iterator[BlockAPI]:
         """
         Iterate over blocks. Works similarly to python ``range()``.
@@ -99,7 +111,9 @@ class BlockContainer:
         for i in range(start, stop):
             yield self._get_block(i)
 
-    def poll_blocks(self, start: Optional[int] = None) -> Iterator[BlockAPI]:
+    def poll_blocks(
+        self, start: Optional[int] = None, required_confirmations: Optional[int] = None
+    ) -> Iterator[BlockAPI]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
         **NOTE**: This is a deamon method; it does not terminate.
@@ -107,29 +121,39 @@ class BlockContainer:
         Args:
             start (Optional[int]): The block number to start with. Defaults to the block
               of the ``+1`` the current block number.
+            required_confirmations (Optional[int]): The amount of confirmations to wait
+              before yielding the block.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
         """
+        if required_confirmations is None:
+            required_confirmations = self._network_confirmations
+
+        # Get number of last block with the necessary amount of confirmations.
+        latest_confirmed_block_number = self.height - required_confirmations
+
         if start is not None:
-            yield from self.range(start)
+            # Front-load historically confirmed blocks.
+            yield from self.range(start, latest_confirmed_block_number + 1)
+
+        time.sleep(self._poll_wait_interval)
 
         while True:
-            block = self.head
+            confirmable_block_number = self.height - latest_confirmed_block_number
+            if confirmable_block_number < latest_confirmed_block_number:
+                logger.error(
+                    "Chain has reorganized since returning the last block. "
+                    "Try adjusting the required network confirmations."
+                )
+            elif confirmable_block_number > latest_confirmed_block_number:
+                yield self._get_block(confirmable_block_number)
+                latest_confirmed_block_number = confirmable_block_number
+
             time.sleep(self._poll_wait_interval)
 
-            # Wait for the next block.
-            while block == self.head:
-                time.sleep(self._poll_wait_interval)
-
-            # TODO: Wait for confirmations
-            yield block
-
     def _get_block(self, block_id: BlockID) -> BlockAPI:
-        if not self.provider:
-            raise ProviderNotConnectedError()
-
-        return self.provider.get_block(block_id)
+        return self._provider.get_block(block_id)
 
 
 class AccountHistory:
@@ -222,8 +246,7 @@ class ChainManager:
         """
         The list of blocks on the chain.
         """
-
-        return BlockContainer(self._networks.active_provider)  # type: ignore
+        return BlockContainer(self._networks)  # type: ignore
 
     @property
     def chain_id(self) -> int:
