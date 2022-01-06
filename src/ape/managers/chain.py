@@ -54,21 +54,49 @@ class BlockContainer:
         return self.height + 1
 
     def __iter__(self) -> Iterator[BlockAPI]:
+        """
+        Iterate over all the current blocks.
+
+        Returns:
+            Iterator[:class:`~ape.api.providers.BlockAPI`]
+        """
+
         return self.range()
 
     @property
     def head(self) -> BlockAPI:
+        """
+        The latest block.
+        """
+
         return self._get_block("latest")
 
     @property
     def height(self) -> int:
+        """
+        The latest block number.
+        """
+
         return self.head.number
 
-    def range(self, start: int = 0, end: int = None) -> Iterator[BlockAPI]:
-        if end is None:
-            end = len(self)
+    def range(self, start: int = 0, stop: int = None) -> Iterator[BlockAPI]:
+        """
+        Iterate over blocks. Works similarly to python ``range()``.
 
-        for i in range(start, end):
+        Args:
+            start (int): The first block, by number, to include in the range.
+              Defaults to 0.
+            stop (int): The block number to stop before. Also the total
+             number of blocks to get.
+
+        Returns:
+            Iterator[:class:`~ape.api.providers.BlockAPI`]
+        """
+
+        if stop is None:
+            stop = len(self)
+
+        for i in range(start, stop):
             yield self._get_block(i)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
