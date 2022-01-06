@@ -5,7 +5,7 @@ from dataclassy import dataclass
 
 from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI, TestProviderAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
-from ape.types import AddressType, SnapshotID
+from ape.types import AddressType, BlockID, SnapshotID
 
 from .networks import NetworkManager
 
@@ -54,13 +54,19 @@ class BlockContainer:
         return self.height + 1
 
     def __iter__(self) -> Iterator[BlockAPI]:
-        for i in range(self.height):
-            yield self[i]
-        return (self[i] for i in range(self.height))
+        for i in range(len(self)):
+            yield self._get_block(i)
+
+    @property
+    def head(self) -> BlockAPI:
+        return self._get_block("latest")
 
     @property
     def height(self) -> int:
-        return self._provider.get_block("latest").number
+        return self.head.number
+
+    def _get_block(self, block_id: BlockID) -> BlockAPI:
+        return self._provider.get_block(block_id)
 
 
 class AccountHistory:
