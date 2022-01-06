@@ -24,6 +24,7 @@ class BlockContainer:
     """
 
     _provider: ProviderAPI
+    _poll_wait_interval = 2  # Seconds
 
     def __getitem__(self, block_number: int) -> BlockAPI:
         """
@@ -79,14 +80,14 @@ class BlockContainer:
 
         return self.head.number
 
-    def range(self, start: int = 0, stop: int = None) -> Iterator[BlockAPI]:
+    def range(self, start: int = 0, stop: Optional[int] = None) -> Iterator[BlockAPI]:
         """
         Iterate over blocks. Works similarly to python ``range()``.
 
         Args:
             start (int): The first block, by number, to include in the range.
               Defaults to 0.
-            stop (int): The block number to stop before. Also the total
+            stop (Optional[int]): The block number to stop before. Also the total
              number of blocks to get.
 
         Returns:
@@ -98,6 +99,32 @@ class BlockContainer:
 
         for i in range(start, stop):
             yield self._get_block(i)
+
+    def poll_blocks(self, start: Optional[int] = None) -> Iterator[BlockAPI]:
+        """
+        Poll new blocks. Optionally set a start block to include historical blocks.
+        **NOTE**: This is a deamon method; it does not terminate.
+
+        Args:
+            start (Optional[int]): The block number to start with. Defaults to the block
+              of the ``+1`` the current block number.
+
+        Returns:
+            Iterator[:class:`~ape.api.providers.BlockAPI`]
+        """
+        if start is not None:
+            yield from self.range(start)
+
+        while True:
+            block = self.head
+            time.sleep(self._poll_wait_interval)
+
+            # Wait for the next block.
+            while block == self.head:
+                time.sleep(self._poll_wait_interval)
+
+            # TODO: Wait for confirmations
+            yield block
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
         return self._provider.get_block(block_id)
