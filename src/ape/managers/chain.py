@@ -40,7 +40,7 @@ class BlockContainer:
             :class:`~ape.api.providers.BlockAPI`
         """
         if block_number < 0:
-            block_number = self.height + 1 + block_number
+            block_number = len(self) + block_number
 
         return self._get_block(block_number)
 
@@ -121,10 +121,10 @@ class BlockContainer:
 
         Usage example::
 
-                from ape import chain
+            from ape import chain
 
-                for new_block in chain.blocks.poll_blocks():
-                    print(f"New block found: number={new_block.number}")
+            for new_block in chain.blocks.poll_blocks():
+                print(f"New block found: number={new_block.number}")
 
         Args:
             start (Optional[int]): The block number to start with. Defaults to the block
