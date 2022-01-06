@@ -28,12 +28,23 @@ class NetworkManager:
 
     config: ConfigManager
     plugin_manager: PluginManager
-    active_provider: Optional[ProviderAPI] = None
+    _active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
     _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
 
     def __repr__(self):
         return f"<NetworkManager, active_provider={self.active_provider}>"
+
+    @property
+    def active_provider(self) -> Optional[ProviderAPI]:
+        return self._active_provider
+
+    @active_provider.setter
+    def active_provider(self, new_value: ProviderAPI):
+        from ape import chain
+
+        new_value._chain = chain
+        self._active_provider = new_value
 
     @property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:

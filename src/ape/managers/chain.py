@@ -152,7 +152,6 @@ class ChainManager:
         if not provider:
             raise ProviderNotConnectedError()
 
-        provider._chain = self
         return provider
 
     @property
