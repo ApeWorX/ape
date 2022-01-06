@@ -7,7 +7,6 @@ from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.types import AddressType
 from ape.utils import cached_property, singledispatchmethod
 
-from .chain import ChainManager
 from .config import ConfigManager
 from .converters import ConversionManager
 from .networks import NetworkManager
@@ -34,7 +33,6 @@ class AccountManager:
     converters: ConversionManager
     plugin_manager: PluginManager
     network_manager: NetworkManager
-    chain_manager: ChainManager
 
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
