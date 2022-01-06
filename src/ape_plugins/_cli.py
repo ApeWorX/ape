@@ -7,7 +7,7 @@ from typing import List, Set
 import click
 
 from ape import config
-from ape.cli import ape_cli_context, skip_confirmation_option, upgrade_confirmation_option
+from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import get_package_version, github_client
@@ -122,12 +122,30 @@ def _list(cli_ctx, display_all):
             click.echo()
 
 
+def upgrade_confirmation(help=""):
+    """
+    A ``click.option`` for upgrade plugin confirmation (``--upgrade``).
+
+    Args:
+        help (str): CLI option help text. Defaults to ``""``.
+    """
+
+    return click.option(
+        "-U",
+        "--upgrade",
+        "upgrade_confirmation",
+        default=False,
+        is_flag=True,
+        help=help,
+    )
+
+
 @cli.command(short_help="Install an ape plugin")
 @click.argument("plugin")
 @click.option("-v", "--version", help="Specify version (Default is latest)")
 @skip_confirmation_option(help="Don't ask for confirmation to add the plugin")
 @ape_cli_context()
-@upgrade_confirmation_option(help="Specify if user wants to update plugin")
+@upgrade_confirmation(help="Specify if user wants to update plugin")
 def add(cli_ctx, plugin, version, skip_confirmation, upgrade_confirmation):
     if plugin.startswith("ape"):
         cli_ctx.abort(f"Namespace 'ape' in '{plugin}' is not required")
@@ -170,7 +188,7 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade_confirmation):
 @cli.command(short_help="Install all plugins in the local config file")
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
-@upgrade_confirmation_option(help="Specify if user wants to update plugin")
+@upgrade_confirmation(help="Specify if user wants to update plugin")
 def install(cli_ctx, skip_confirmation, upgrade_confirmation):
     any_install_failed = False
     cwd = getcwd()

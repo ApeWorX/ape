@@ -19,7 +19,6 @@ from ape.cli.options import (
     network_option,
     output_format_option,
     skip_confirmation_option,
-    upgrade_confirmation_option,
 )
 from ape.cli.paramtype import AllFilePaths, Path
 from ape.cli.utils import Abort
@@ -44,5 +43,4 @@ __all__ = [
     "Path",
     "PromptChoice",
     "skip_confirmation_option",
-    "upgrade_confirmation_option",
 ]
