@@ -215,6 +215,7 @@ class ChainManager:
     _networks: NetworkManager
     _snapshots: List[SnapshotID] = []
     _time_offset: int = 0
+    _chain_id_map: Dict[str, int] = {}
 
     account_history: AccountHistory = AccountHistory()
     """A mapping of transactions from the active session to the account responsible."""
@@ -255,7 +256,11 @@ class ChainManager:
         See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
         """
 
-        return self.provider.chain_id
+        network_name = self.provider.network.name
+        if network_name not in self._chain_id_map:
+            self._chain_id_map[network_name] = self.provider.chain_id
+
+        return self._chain_id_map[network_name]
 
     @property
     def gas_price(self) -> int:
