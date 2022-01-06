@@ -39,6 +39,7 @@ class AddressAPI:
     def provider(self, value: ProviderAPI):
         """
         Set the active provider if connected to one.
+
         Args:
             value (:class:`~ape.api.providers.ProviderAPI`): The provider to set.
         """
