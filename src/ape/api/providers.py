@@ -557,6 +557,10 @@ class ProviderAPI:
             Iterator[dict]: A dictionary of events.
         """
 
+    def _try_track_receipt(self, receipt: ReceiptAPI):
+        if self._chain:
+            self._chain.account_history.append(receipt)
+
 
 class TestProviderAPI(ProviderAPI):
     """
@@ -674,10 +678,7 @@ class Web3Provider(ProviderAPI):
             else self.network.required_confirmations
         )
         receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
-
-        if self._chain:
-            self._chain.account_history.append(receipt)
-
+        self._try_track_receipt(receipt)
         return receipt
 
 

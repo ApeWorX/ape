@@ -61,6 +61,7 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
         if txn.gas_limit is not None and receipt.ran_out_of_gas:
             raise OutOfGasError()
 
+        self._try_track_receipt(receipt)
         return receipt
 
     def snapshot(self) -> SnapshotID:
