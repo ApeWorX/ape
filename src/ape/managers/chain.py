@@ -23,7 +23,7 @@ class BlockContainer:
 
     """
 
-    _provider: ProviderAPI
+    provider: ProviderAPI
     _poll_wait_interval = 2  # Seconds
 
     def __getitem__(self, block_number: int) -> BlockAPI:
@@ -39,10 +39,9 @@ class BlockContainer:
             :class:`~ape.api.providers.BlockAPI`
         """
         if block_number < 0:
-            latest_block = self._provider.get_block("latest").number
-            block_number = latest_block + 1 + block_number
+            block_number = self.height + 1 + block_number
 
-        return self._provider.get_block(block_number)
+        return self._get_block(block_number)
 
     def __len__(self) -> int:
         """
@@ -127,7 +126,10 @@ class BlockContainer:
             yield block
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
-        return self._provider.get_block(block_id)
+        if not self.provider:
+            raise ProviderNotConnectedError()
+
+        return self.provider.get_block(block_id)
 
 
 class AccountHistory:
@@ -190,14 +192,8 @@ class ChainManager:
     _snapshots: List[SnapshotID] = []
     _time_offset: int = 0
 
-    blocks: BlockContainer = None  # type: ignore
-    """The list of blocks on the chain."""
-
     account_history: AccountHistory = AccountHistory()
     """A mapping of transactions from the active session to the account responsible."""
-
-    def __post_init__(self):
-        self.blocks = BlockContainer(self._networks.active_provider)
 
     def __repr__(self) -> str:
         try:
@@ -220,6 +216,14 @@ class ChainManager:
             raise ProviderNotConnectedError()
 
         return provider
+
+    @property
+    def blocks(self) -> BlockContainer:
+        """
+        The list of blocks on the chain.
+        """
+
+        return BlockContainer(self._networks.active_provider)  # type: ignore
 
     @property
     def chain_id(self) -> int:
