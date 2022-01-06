@@ -1,11 +1,11 @@
-from typing import Dict, List, Optional, Union
+import time
+from typing import Dict, Iterator, List, Optional, Union
 
 from dataclassy import dataclass
 
 from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI, TestProviderAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.types import AddressType, SnapshotID
-from ape.utils import convert
 
 from .networks import NetworkManager
 
@@ -51,7 +51,16 @@ class BlockContainer:
             int
         """
 
-        return self._provider.get_block("latest").number + 1
+        return self.height + 1
+
+    def __iter__(self) -> Iterator[BlockAPI]:
+        for i in range(self.height):
+            yield self[i]
+        return (self[i] for i in range(self.height))
+
+    @property
+    def height(self) -> int:
+        return self._provider.get_block("latest").number
 
 
 class AccountHistory:
@@ -72,7 +81,7 @@ class AccountHistory:
             List[:class:`~ape.api.providers.TransactionAPI`]: The list of transactions. If there
             are no recorded transactions, returns the empty list.
         """
-        address_key: AddressType = convert(address, AddressType)
+        address_key: AddressType = _convert(address, AddressType)
         return self._map.get(address_key, [])
 
     def append(self, txn_receipt: ReceiptAPI):
@@ -87,7 +96,7 @@ class AccountHistory:
             txn_receipt (:class:`~ape.api.providers.ReceiptAPI`): The transaction receipt to append.
               **NOTE**: The receipt is accessible in the list returned from container[sender].
         """
-        address = convert(txn_receipt.sender, AddressType)
+        address = _convert(txn_receipt.sender, AddressType)
         if address not in self._map:
             self._map[address] = [txn_receipt]
             return
@@ -112,6 +121,7 @@ class ChainManager:
 
     _networks: NetworkManager
     _snapshots: List[SnapshotID] = []
+    _time_offset: int = 0
 
     blocks: BlockContainer = None  # type: ignore
     """The list of blocks on the chain."""
@@ -121,6 +131,12 @@ class ChainManager:
 
     def __post_init__(self):
         self.blocks = BlockContainer(self._networks.active_provider)
+
+    def __repr__(self) -> str:
+        try:
+            return f"<ChainManager (chain_id={self.chain_id})>"
+        except ProviderNotConnectedError:
+            return "<ChainManager (disconnected)>"
 
     @property
     def provider(self) -> ProviderAPI:
@@ -170,6 +186,14 @@ class ChainManager:
         """
 
         return self.provider.base_fee
+
+    @property
+    def pending_timestamp(self) -> int:
+        """
+        The current epoch time of the chain, as an ``int``.
+        """
+
+        return int(time.time() + self._time_offset)
 
     def snapshot(self) -> SnapshotID:
         """
@@ -229,3 +253,9 @@ class ChainManager:
             )
 
         return provider
+
+
+def _convert(*args, **kwargs):
+    from ape import convert
+
+    return convert(*args, **kwargs)
