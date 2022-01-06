@@ -1,9 +1,9 @@
 from typing import List, Optional
 
+from ape.exceptions import AddressError
 from ape.types import AddressType
 from ape.utils import abstractdataclass, abstractmethod
 
-from ..exceptions import AddressError
 from .providers import ProviderAPI
 
 
