@@ -483,8 +483,7 @@ class ProviderAPI:
     @property
     def base_fee(self) -> int:
         """
-        The minimum value required to get your transaction
-        included on the next block.
+        The minimum value required to get your transaction included on the next block.
         Only providers that implement `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__
         will use this property.
 

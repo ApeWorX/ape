@@ -180,7 +180,7 @@ class AccountHistory:
 
         Returns:
             List[:class:`~ape.api.providers.TransactionAPI`]: The list of transactions. If there
-            are no recorded transactions, returns the empty list.
+            are no recorded transactions, returns an empty list.
         """
         address_key: AddressType = _convert(address, AddressType)
         return self._map.get(address_key, [])
@@ -195,7 +195,8 @@ class AccountHistory:
 
         Args:
             txn_receipt (:class:`~ape.api.providers.ReceiptAPI`): The transaction receipt to append.
-              **NOTE**: The receipt is accessible in the list returned from container[sender].
+              **NOTE**: The receipt is accessible in the list returned from
+              :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
         address = _convert(txn_receipt.sender, AddressType)
         if address not in self._map:
@@ -222,7 +223,6 @@ class ChainManager:
 
     _networks: NetworkManager
     _snapshots: List[SnapshotID] = []
-    _time_offset: int = 0
     _chain_id_map: Dict[str, int] = {}
 
     account_history: AccountHistory = AccountHistory()
@@ -282,8 +282,7 @@ class ChainManager:
     @property
     def base_fee(self) -> int:
         """
-        The minimum value required to get your transaction
-        included on the next block.
+        The minimum value required to get your transaction included on the next block.
         Only providers that implement `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__
         will use this property.
 
@@ -300,7 +299,7 @@ class ChainManager:
         The current epoch time of the chain, as an ``int``.
         """
 
-        return int(time.time() + self._time_offset)
+        return int(time.time())
 
     def snapshot(self) -> SnapshotID:
         """
