@@ -118,6 +118,13 @@ class BlockContainer:
         Poll new blocks. Optionally set a start block to include historical blocks.
         **NOTE**: This is a deamon method; it does not terminate.
 
+        Usage example::
+
+                from ape import chain
+
+                for new_block in chain.blocks.poll_blocks():
+                    print(f"New block found: number={new_block.number}")
+
         Args:
             start (Optional[int]): The block number to start with. Defaults to the block
               of the ``+1`` the current block number.
