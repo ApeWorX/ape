@@ -158,8 +158,6 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade_confirmation):
         if upgrade_confirmation:
             args.append("--upgrade")
         args.append(plugin)
-        print(args)
-
         result = subprocess.call(args)
         plugin_got_installed = is_plugin_installed(plugin)
         if result == 0 and plugin_got_installed:
@@ -172,7 +170,8 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade_confirmation):
 @cli.command(short_help="Install all plugins in the local config file")
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
-def install(cli_ctx, skip_confirmation):
+@upgrade_confirmation_option(help="Specify if user wants to update plugin")
+def install(cli_ctx, skip_confirmation, upgrade_confirmation):
     any_install_failed = False
     cwd = getcwd()
     config_path = Path(cwd) / CONFIG_FILE_NAME
@@ -202,7 +201,10 @@ def install(cli_ctx, skip_confirmation):
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
 
-            args = [sys.executable, "-m", "pip", "install", "--quiet", package_name]
+            args = [sys.executable, "-m", "pip", "install", "--quiet"]
+            if upgrade_confirmation:
+                args.append("--upgrade")
+            args.append(package_name)
             result = subprocess.call(args)
             plugin_got_installed = is_plugin_installed(module_name)
             if result == 0 and plugin_got_installed:
