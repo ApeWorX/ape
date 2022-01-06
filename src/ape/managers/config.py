@@ -1,15 +1,21 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List, Union
 
 from dataclassy import dataclass
 
 from ape.api import ConfigDict, ConfigItem
+from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.plugins import PluginManager
 from ape.utils import load_config
 
 CONFIG_FILE_NAME = "ape-config.yaml"
+
+
+class DeploymentConfig(ConfigItem):
+    address: Union[str, bytes]
+    contract_type: str
 
 
 @dataclass
@@ -38,8 +44,8 @@ class ConfigManager:
     name: str = ""
     version: str = ""
     dependencies: Dict[str, str] = {}
+    deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
     plugin_manager: PluginManager
-
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
 
     @property
@@ -57,6 +63,34 @@ class ConfigManager:
         self.name = user_config.pop("name", "")
         self.version = user_config.pop("version", "")
         self.dependencies = user_config.pop("dependencies", {})
+
+        # Sanitize deployment addresses.
+        deployments = user_config.pop("deployments", {})
+        valid_ecosystem_names = [e[0] for e in self.plugin_manager.ecosystems]
+        for ecosystem_name, networks in deployments.items():
+            if ecosystem_name not in valid_ecosystem_names:
+                raise ConfigError(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
+
+            valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
+            for network_name, contract_deployments in networks.items():
+                if network_name not in valid_network_names:
+                    raise ConfigError(f"Invalid network '{network_name}' in deployments config.")
+
+                for deployment in [d for d in contract_deployments]:
+                    if "address" not in deployment:
+                        raise ConfigError(
+                            f"Missing 'address' field in deployment "
+                            f"(ecosystem={ecosystem_name}, network={network_name})"
+                        )
+
+                    address = deployment["address"]
+
+                    try:
+                        deployment["address"] = to_address(address)
+                    except ValueError as err:
+                        raise ConfigError(str(err)) from err
+
+        self.deployments = deployments
 
         for plugin_name, config_class in self.plugin_manager.config_class:
             # NOTE: `dict.pop()` is used for checking if all config was processed

@@ -10,6 +10,9 @@ project              # The root project directory
 └── ape-config.yaml  # The ape project configuration file
 ```
 
+See the [Configuration guide](config.md) for a more detailed explanation of settings you can
+use in your `ape-config.yaml` files.
+
 ## Compiling Contracts
 
 The project manager object is a representation of your current project. Access it from the root `ape` namespace:
