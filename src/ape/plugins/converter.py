@@ -8,7 +8,7 @@ from .pluggy_patch import PluginType, hookspec
 class ConversionPlugin(PluginType):
     """
     A plugin for converting values. The `ape-ens <https://github.com/ApeWorX/ape-ens>`__
-    plugin is an example of a convert-plugin.
+    plugin is an example of a conversion-plugin.
     """
 
     @hookspec
