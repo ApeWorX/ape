@@ -1,5 +1,5 @@
 import time
-from typing import Dict, Iterator, List, Optional, Union
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 from dataclassy import dataclass
 
@@ -185,6 +185,25 @@ class AccountHistory:
         address_key: AddressType = _convert(address, AddressType)
         return self._map.get(address_key, [])
 
+    def __iter__(self) -> Iterator[AddressType]:
+        """
+        Iterate through the accounts listed in the history map.
+
+        Returns:
+            List[str]
+        """
+
+        yield from self._map
+
+    def items(self) -> Iterator[Tuple[AddressType, List[ReceiptAPI]]]:
+        """
+        Iterate through the list of address-types to list of transactions.
+
+        Returns:
+            Iterator[Tuple[:class:`~ape.types.AddressType`, :class:`~ape.api.providers.ReceiptAPI`]]
+        """
+        yield from self._map.items()
+
     def append(self, txn_receipt: ReceiptAPI):
         """
         Add a transaction to the stored list for the given account address.
@@ -207,6 +226,19 @@ class AccountHistory:
             raise ChainError(f"Transaction '{txn_receipt.txn_hash}' already known.")
 
         self._map[address].append(txn_receipt)
+
+    def revert_to_block(self, block_number: int):
+        """
+        Remove all receipts past the given block number.
+
+        Args:
+            block_number (int): The block number to revert to.
+        """
+
+        self._map = {
+            a: [r for r in receipts if r.block_number <= block_number]
+            for a, receipts in self.items()
+        }
 
 
 @dataclass
@@ -350,6 +382,7 @@ class ChainManager:
             self._snapshots = self._snapshots[:snapshot_index]
 
         provider.revert(snapshot_id)
+        self.account_history.revert_to_block(self.blocks.height)
 
     def _get_test_provider(self, method_name: str) -> TestProviderAPI:
         provider = self.provider
