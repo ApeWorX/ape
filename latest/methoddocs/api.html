@@ -59,6 +59,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Making Transactions</a></li>
 </ul>
 <p class="caption"><span class="caption-text">CLI Reference</span></p>
@@ -1612,15 +1613,12 @@ a <a class="reference internal" href="contracts.html#ape.contracts.base.Contract
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">ran_out_of_gas</span></code><a class="headerlink" href="#ape.api.providers.ReceiptAPI.ran_out_of_gas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if a transaction has ran out of gas and failed.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>gas_limit</strong> (<em>int</em>) – The gas limit of the transaction.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the transaction failed and used the
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the transaction failed and used the
 same amount of gas as the given <code class="docutils literal notranslate"><span class="pre">gas_limit</span></code>.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1639,7 +1637,7 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 Allows developers to go back to a previous state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>snapshot_ID</strong> (<em>str</em>) – The snapshot ID.</p>
+<dd class="field-odd"><p><strong>snapshot_id</strong> (<em>str</em>) – The snapshot ID.</p>
 </dd>
 </dl>
 </dd></dl>
