@@ -57,9 +57,14 @@ def _list(cli_ctx, display_all):
     installed_second_class_plugins_no_version = set()
     installed_third_class_plugins = set()
 
-    for name, plugin in plugin_manager.list_name_plugin():
-        version = get_package_version(name)
+    plugin_list = plugin_manager.list_name_plugin()
+    plugin_names = [p[0] for p in plugin_list]
+    longest_plugin_name = len(max(plugin_names, key=len))
+    space_buffer = 4
 
+    for name, _ in plugin_list:
+        version = get_package_version(name)
+        spacing = (longest_plugin_name - len(name) + space_buffer) * " "
         if name in CORE_PLUGINS:
             if not display_all:
                 continue  # NOTE: Skip 1st class plugins unless specified
@@ -67,11 +72,11 @@ def _list(cli_ctx, display_all):
             installed_first_class_plugins.add(name)
 
         elif name in github_client.available_plugins:
-            installed_second_class_plugins.add(f"{name}     {version}")
+            installed_second_class_plugins.add(f"{name}{spacing}{version}")
             installed_second_class_plugins_no_version.add(name)
 
         elif name not in CORE_PLUGINS or name not in github_client.available_plugins:
-            installed_third_class_plugins.add(f"{name}      {version})")
+            installed_third_class_plugins.add(f"{name}{spacing}{version})")
         else:
             cli_ctx.logger.error(f"{name} is not a plugin.")
 
