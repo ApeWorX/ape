@@ -56,3 +56,15 @@ def test_snapshot_and_restore_no_snapshots(chain_manager, sender, receiver):
         chain_manager.restore("{}")
 
     assert "There are no snapshots to revert to." in str(err.value)
+
+
+def test_account_history(sender, receiver, chain_manager):
+    history = chain_manager.account_history
+    assert not history[sender]
+    receipt = sender.transfer(receiver, "1 wei")
+    transactions_from_cache = history[sender]
+    assert len(transactions_from_cache) == 1
+
+    txn = transactions_from_cache[0]
+    assert txn.sender == receipt.sender == sender
+    assert txn.receiver == receipt.receiver == receiver

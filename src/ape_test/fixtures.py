@@ -26,7 +26,7 @@ class PytestApeFixtures:
     def accounts(self) -> List[TestAccountAPI]:
         return self._accounts.test_accounts
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def chain(self) -> ChainManager:
         return self._chain
 

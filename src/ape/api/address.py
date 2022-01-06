@@ -1,10 +1,12 @@
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
-from ape.exceptions import AddressError
 from ape.types import AddressType
 from ape.utils import abstractdataclass, abstractmethod
 
 from .providers import ProviderAPI
+
+if TYPE_CHECKING:
+    from ape.managers.chain import ChainManager
 
 
 @abstractdataclass
@@ -13,7 +15,7 @@ class AddressAPI:
     A base address API class. All account-types subclass this type.
     """
 
-    _provider: Optional[ProviderAPI] = None
+    _chain: Optional["ChainManager"] = None
 
     @property
     def provider(self) -> ProviderAPI:
@@ -28,23 +30,7 @@ class AddressAPI:
             :class:`~ape.api.providers.ProviderAPI`
         """
 
-        if not self._provider:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class {type(self).__name__}"
-            )
-
-        return self._provider
-
-    @provider.setter
-    def provider(self, value: ProviderAPI):
-        """
-        Set the active provider if connected to one.
-
-        Args:
-            value (:class:`~ape.api.providers.ProviderAPI`): The provider to set.
-        """
-
-        self._provider = value
+        return self._chain.provider
 
     @property
     @abstractmethod

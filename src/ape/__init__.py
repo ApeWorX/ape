@@ -47,7 +47,14 @@ networks = _NetworkManager(config, plugin_manager)  # type: ignore
 
 _converters = _ConversionManager(config, plugin_manager, networks)  # type: ignore
 
-accounts = _AccountManager(config, _converters, plugin_manager, networks)  # type: ignore
+chain = _ChainManager(networks)  # type: ignore
+"""
+The current connected blockchain; requires an active provider.
+Useful for development purposes, such as controlling the state of the blockchain.
+Also handy for querying data about the chain and managing local caches.
+"""
+
+accounts = _AccountManager(config, _converters, plugin_manager, networks, chain)  # type: ignore
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
 Project = _partial(
@@ -68,13 +75,6 @@ Contract = _partial(_Contract, networks=networks, converters=_converters)
 
 convert = _converters.convert
 """Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
-
-chain = _ChainManager(networks)  # type: ignore
-"""
-The current connected blockchain; requires an active provider.
-Useful for development purposes, such as controlling the state of the blockchain.
-Also handy for querying data about the chain and managing local caches.
-"""
 
 
 __all__ = [

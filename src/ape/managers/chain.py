@@ -1,10 +1,11 @@
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 
 from dataclassy import dataclass
 
-from ape.api import BlockAPI, ProviderAPI, TestProviderAPI
+from ape.api import AddressAPI, BlockAPI, ProviderAPI, TestProviderAPI, TransactionAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
-from ape.types import SnapshotID
+from ape.types import AddressType, SnapshotID
+from ape.utils import convert
 
 from .networks import NetworkManager
 
@@ -53,6 +54,50 @@ class BlockContainer:
         return self._provider.get_block("latest").number + 1
 
 
+class AccountHistory:
+    """
+    A container mapping account addresses to the transaction from the active session.
+    """
+
+    _map: Dict[AddressType, List] = {}
+
+    def __getitem__(self, address: Union[AddressAPI, AddressType, str]) -> List[TransactionAPI]:
+        """
+        Get the list of transactions from the active session for the given address.
+
+        Args:
+            address (:class:`~ape.types.AddressType`): The sender of the desired transactions.
+
+        Returns:
+            List[:class:`~ape.api.providers.TransactionAPI`]: The list of transactions. If there
+            are no recorded transactions, returns the empty list.
+        """
+        address = convert(address, AddressType)
+        return self._map.get(address, [])
+
+    def append_transaction(self, txn: TransactionAPI):
+        """
+        Add a transaction to the stored list for the given account address.
+
+        Raises:
+            :class:`~ape.exceptions.ChainError`: When trying to append a transaction
+              that is already in the list.
+
+        Args:
+            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to append.
+              **NOTE**: The transaction is accessible in the list returned from container[sender].
+        """
+        address = convert(txn.sender, AddressType)
+        if address not in self._map:
+            self._map[address] = [txn]
+            return
+
+        if txn.hash in [t.hash for t in self._map[address]]:
+            raise ChainError(f"Transaction '{txn.hash}' already known.")
+
+        self._map[address].append(txn)
+
+
 @dataclass
 class ChainManager:
     """
@@ -62,7 +107,7 @@ class ChainManager:
 
     Usage example::
 
-        from ape import  chain
+        from ape import chain
     """
 
     _networks: NetworkManager
@@ -70,6 +115,9 @@ class ChainManager:
 
     blocks: BlockContainer = None  # type: ignore
     """The list of blocks on the chain."""
+
+    account_history: AccountHistory = AccountHistory()
+    """A mapping of transactions from the active session to the account responsible."""
 
     def __post_init__(self):
         self.blocks = BlockContainer(self._networks.active_provider)

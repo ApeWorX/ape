@@ -182,6 +182,7 @@ class Receipt(ReceiptAPI):
             logs=data["logs"],
             contract_address=data["contractAddress"],
             sender=data["from"],
+            receiver=data["to"],
             nonce=data["nonce"],
         )
 

@@ -238,4 +238,4 @@ class ConversionManager:
             if converter.is_convertible(value):
                 return converter.convert(value)
 
-        raise ConversionError(f"No conversion registered to handle '{value}'.")
+        raise ConversionError(f"No convert registered to handle '{value}'.")

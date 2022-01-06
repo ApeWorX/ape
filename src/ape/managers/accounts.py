@@ -7,6 +7,7 @@ from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.types import AddressType
 from ape.utils import cached_property, singledispatchmethod
 
+from .chain import ChainManager
 from .config import ConfigManager
 from .converters import ConversionManager
 from .networks import NetworkManager
@@ -33,6 +34,7 @@ class AccountManager:
     converters: ConversionManager
     plugin_manager: PluginManager
     network_manager: NetworkManager
+    chain_manager: ChainManager
 
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
@@ -89,7 +91,7 @@ class AccountManager:
         accounts_with_type = []
         for account in self:
             if isinstance(account, type_):
-                self._inject_provider(account)
+                self._inject_chain(account)
                 accounts_with_type.append(account)
 
         return accounts_with_type
@@ -107,7 +109,7 @@ class AccountManager:
     def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
             for account in container:
-                self._inject_provider(account)
+                self._inject_chain(account)
                 yield account
 
     def __repr__(self) -> str:
@@ -139,7 +141,7 @@ class AccountManager:
 
             container = container_type(None, account_type, self.config)
             for account in container:
-                self._inject_provider(account)
+                self._inject_chain(account)
                 accounts.append(account)
 
         return accounts
@@ -160,7 +162,7 @@ class AccountManager:
 
         for account in self:
             if account.alias and account.alias == alias:
-                self._inject_provider(account)
+                self._inject_chain(account)
                 return account
 
         raise IndexError(f"No account with alias '{alias}'.")
@@ -185,7 +187,7 @@ class AccountManager:
 
         for idx, account in enumerate(self.__iter__()):
             if account_id == idx:
-                self._inject_provider(account)
+                self._inject_chain(account)
                 return account
 
         raise IndexError(f"No account at index '{account_id}'.")
@@ -207,7 +209,7 @@ class AccountManager:
         for container in self.containers.values():
             if account_id in container:
                 account = container[account_id]
-                self._inject_provider(account)
+                self._inject_chain(account)
                 return account
 
         raise IndexError(f"No account with address '{account_id}'.")
@@ -225,6 +227,5 @@ class AccountManager:
 
         return any(address in container for container in self.containers.values())
 
-    def _inject_provider(self, account: AccountAPI):
-        if self.network_manager.active_provider is not None:
-            account.provider = self.network_manager.active_provider
+    def _inject_chain(self, account: AccountAPI):
+        account._chain = self.chain_manager

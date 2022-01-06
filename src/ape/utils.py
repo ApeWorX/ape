@@ -479,11 +479,19 @@ also abstract (meaning it has methods that **must** be implemented or else
 errors will occur. This class cannot be instantiated on its own.
 """
 
+
+def convert(*args, **kwargs):
+    from ape import convert
+
+    return convert(*args, **kwargs)
+
+
 __all__ = [
     "abstractdataclass",
     "abstractmethod",
     "AbstractDataClassMeta",
     "cached_property",
+    "convert",
     "dataclass",
     "deep_merge",
     "expand_environment_variables",

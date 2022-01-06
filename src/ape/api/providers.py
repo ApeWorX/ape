@@ -200,6 +200,7 @@ class ReceiptAPI:
     contract_address: Optional[str] = None
     required_confirmations: int = 0
     sender: str
+    receiver: str
     nonce: int
 
     def __post_init__(self):

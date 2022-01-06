@@ -137,7 +137,9 @@ class AccountAPI(AddressAPI):
         if not txn.signature:
             raise SignatureError("The transaction was not signed.")
 
-        return self.provider.send_transaction(txn)
+        receipt = self.provider.send_transaction(txn)
+        self._chain.account_history.append_transaction(txn)
+        return receipt
 
     @cached_property
     def _convert(self) -> Callable:
