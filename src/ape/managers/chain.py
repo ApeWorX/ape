@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Union
 
 from dataclassy import dataclass
 
-from ape.api import AddressAPI, BlockAPI, ProviderAPI, TestProviderAPI, TransactionAPI
+from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI, TestProviderAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.types import AddressType, SnapshotID
 from ape.utils import convert
@@ -59,9 +59,9 @@ class AccountHistory:
     A container mapping account addresses to the transaction from the active session.
     """
 
-    _map: Dict[AddressType, List] = {}
+    _map: Dict[AddressType, List[ReceiptAPI]] = {}
 
-    def __getitem__(self, address: Union[AddressAPI, AddressType, str]) -> List[TransactionAPI]:
+    def __getitem__(self, address: Union[AddressAPI, AddressType, str]) -> List[ReceiptAPI]:
         """
         Get the list of transactions from the active session for the given address.
 
@@ -72,10 +72,10 @@ class AccountHistory:
             List[:class:`~ape.api.providers.TransactionAPI`]: The list of transactions. If there
             are no recorded transactions, returns the empty list.
         """
-        address = convert(address, AddressType)
-        return self._map.get(address, [])
+        address_key: AddressType = convert(address, AddressType)
+        return self._map.get(address_key, [])
 
-    def append_transaction(self, txn: TransactionAPI):
+    def append(self, txn_receipt: ReceiptAPI):
         """
         Add a transaction to the stored list for the given account address.
 
@@ -84,18 +84,18 @@ class AccountHistory:
               that is already in the list.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to append.
-              **NOTE**: The transaction is accessible in the list returned from container[sender].
+            txn_receipt (:class:`~ape.api.providers.ReceiptAPI`): The transaction receipt to append.
+              **NOTE**: The receipt is accessible in the list returned from container[sender].
         """
-        address = convert(txn.sender, AddressType)
+        address = convert(txn_receipt.sender, AddressType)
         if address not in self._map:
-            self._map[address] = [txn]
+            self._map[address] = [txn_receipt]
             return
 
-        if txn.hash in [t.hash for t in self._map[address]]:
-            raise ChainError(f"Transaction '{txn.hash}' already known.")
+        if txn_receipt.txn_hash in [r.txn_hash for r in self._map[address]]:
+            raise ChainError(f"Transaction '{txn_receipt.txn_hash}' already known.")
 
-        self._map[address].append(txn)
+        self._map[address].append(txn_receipt)
 
 
 @dataclass

@@ -221,9 +221,6 @@ class ReceiptAPI:
         """
         Check if a transaction has ran out of gas and failed.
 
-        Args:
-            gas_limit (int): The gas limit of the transaction.
-
         Returns:
             bool:  ``True`` when the transaction failed and used the
             same amount of gas as the given ``gas_limit``.
@@ -591,7 +588,7 @@ class TestProviderAPI(ProviderAPI):
         Allows developers to go back to a previous state.
 
         Args:
-            snapshot_id (:class:`~ape.types.SnapshotID`): The snapshot ID.
+            snapshot_id (str): The snapshot ID.
         """
 
 

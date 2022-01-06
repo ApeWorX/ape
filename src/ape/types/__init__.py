@@ -1,5 +1,5 @@
 import sys
-from typing import TypeAlias, Union
+from typing import NewType, Union
 
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
@@ -31,7 +31,7 @@ providers when using this feature, so there should not be confusion over this ty
 cases.
 """
 
-AddressType: TypeAlias = ChecksumAddress
+AddressType = NewType("AddressType", ChecksumAddress)  # type: ignore
 """A type representing a checksummed address."""
 
 __all__ = [

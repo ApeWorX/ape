@@ -138,7 +138,7 @@ class AccountAPI(AddressAPI):
             raise SignatureError("The transaction was not signed.")
 
         receipt = self.provider.send_transaction(txn)
-        self._chain.account_history.append_transaction(txn)
+        self.chain.account_history.append(receipt)
         return receipt
 
     @cached_property

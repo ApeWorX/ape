@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, List, Optional
 from ape.types import AddressType
 from ape.utils import abstractdataclass, abstractmethod
 
+from ..exceptions import AddressError
 from .providers import ProviderAPI
 
 if TYPE_CHECKING:
@@ -18,6 +19,22 @@ class AddressAPI:
     _chain: Optional["ChainManager"] = None
 
     @property
+    def chain(self):
+        """
+        The current active blockchain, if connected to one.
+
+        Raises:
+            :class:`~ape.exceptions.AddressError`: When there is no active
+               chain at runtime.
+        """
+
+        if not self._chain:
+            raise AddressError(
+                f"Incorrectly implemented provider API for class {type(self).__name__}. "
+                "Provider missing access to chain manager."
+            )
+
+    @property
     def provider(self) -> ProviderAPI:
         """
         The current active provider if connected to one.
@@ -25,21 +42,14 @@ class AddressAPI:
         Raises:
             :class:`~ape.exceptions.AddressError`: When there is no active
                provider at runtime.
-
-        Returns:
-            :class:`~ape.api.providers.ProviderAPI`
         """
-
-        return self._chain.provider
+        return self.chain.provider
 
     @property
     @abstractmethod
     def address(self) -> AddressType:
         """
         The address of this account. Subclasses must override and provide this value.
-
-        Returns:
-            :class:`~ape.types.AddressType`
         """
 
     def __eq__(self, other: object) -> bool:
@@ -89,9 +99,6 @@ class AddressAPI:
     def nonce(self) -> int:
         """
         The number of transactions associated with the address.
-
-        Returns:
-            int
         """
 
         return self.provider.get_nonce(self.address)
@@ -100,9 +107,6 @@ class AddressAPI:
     def balance(self) -> int:
         """
         The total balance of the account.
-
-        Returns:
-            int
         """
 
         return self.provider.get_balance(self.address)
@@ -110,10 +114,7 @@ class AddressAPI:
     @property
     def code(self) -> bytes:
         """
-        The smart-contract code at the address.
-
-        Returns:
-            bytes: The raw bytes of the contract.
+        The raw bytes of the smart-contract code at the address.
         """
 
         # TODO: Explore caching this (based on `self.provider.network` and examining code)
@@ -122,10 +123,7 @@ class AddressAPI:
     @property
     def codesize(self) -> int:
         """
-        The size of the smart-contract.
-
-        Returns:
-            int: The number of bytes in the smart contract.
+        The number of bytes in the smart contract.
         """
 
         return len(self.code)
@@ -134,9 +132,6 @@ class AddressAPI:
     def is_contract(self) -> bool:
         """
         ``True`` when there is code associated with the address.
-
-        Returns:
-            bool
         """
 
         return len(self.code) > 0
