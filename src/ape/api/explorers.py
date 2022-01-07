@@ -1,10 +1,10 @@
 from typing import Iterator, Optional
 
-from ape.api import ReceiptAPI
 from ape.types import AddressType, ContractType
 from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
+from .providers import ReceiptAPI
 
 
 @abstractdataclass

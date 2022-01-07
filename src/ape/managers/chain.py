@@ -269,6 +269,7 @@ class ChainManager(ConnectedChain):
 
     _snapshots: List[SnapshotID] = []
     _chain_id_map: Dict[str, int] = {}
+    _account_history_map: Dict[int, AccountHistory] = {}
 
     @property
     def blocks(self) -> BlockContainer:
@@ -282,7 +283,11 @@ class ChainManager(ConnectedChain):
         """
         A mapping of transactions from the active session to the account responsible.
         """
-        return AccountHistory(self._networks)  # type: ignore
+        if self.chain_id not in self._account_history_map:
+            history = AccountHistory(self._networks)  # type: ignore
+            self._account_history_map[self.chain_id] = history
+
+        return self._account_history_map[self.chain_id]
 
     @property
     def chain_id(self) -> int:
