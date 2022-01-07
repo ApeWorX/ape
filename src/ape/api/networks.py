@@ -407,7 +407,7 @@ class NetworkAPI:
 
             ethereum:
               mainnet:
-                approximxate_block_time: 15
+                block_time: 15
 
         Returns:
             int
