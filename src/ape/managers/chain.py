@@ -113,6 +113,12 @@ class BlockContainer(ConnectedChain):
         if stop is None:
             stop = len(self)
 
+        if stop > len(self):
+            raise ChainError(
+                f"'stop={stop}' cannot be greater than the chain length ({len(self)}). "
+                f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
+            )
+
         for i in range(start, stop):
             yield self._get_block(i)
 
@@ -274,6 +280,7 @@ class ChainManager(ConnectedChain):
 
     _snapshots: List[SnapshotID] = []
     _chain_id_map: Dict[str, int] = {}
+    _block_container_map: Dict[int, BlockContainer] = {}
     _account_history_map: Dict[int, AccountHistory] = {}
 
     @property
@@ -281,7 +288,11 @@ class ChainManager(ConnectedChain):
         """
         The list of blocks on the chain.
         """
-        return BlockContainer(self._networks)  # type: ignore
+        if self.chain_id not in self._block_container_map:
+            blocks = BlockContainer(self._networks)  # type: ignore
+            self._block_container_map[self.chain_id] = blocks
+
+        return self._block_container_map[self.chain_id]
 
     @property
     def account_history(self) -> AccountHistory:

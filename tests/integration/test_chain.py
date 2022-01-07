@@ -4,7 +4,7 @@ from ape.exceptions import ChainError
 
 
 @pytest.fixture
-def chain_up_5_blocks(chain, sender, receiver):
+def chain_at_block_5(chain, sender, receiver):
     snapshot_id = chain.snapshot()
     for i in range(5):
         sender.transfer(receiver, "1 wei")
@@ -73,9 +73,9 @@ def test_account_history(sender, receiver, chain):
     assert txn.receiver == receipt.receiver == receiver
 
 
-def test_iterate_blocks(chain_up_5_blocks):
-    expected_number_of_blocks = 6  # Including the 0th start block
-    blocks = [b for b in chain_up_5_blocks.blocks]
+def test_iterate_blocks(chain_at_block_5):
+    expected_number_of_blocks = 6  # chain_at_block_5: [0, 1, 2, 3, 4, 5] (len=6)
+    blocks = [b for b in chain_at_block_5.blocks]
     assert len(blocks) == expected_number_of_blocks
 
     expected_number = 0
@@ -84,12 +84,24 @@ def test_iterate_blocks(chain_up_5_blocks):
         expected_number += 1
 
 
-def test_blocks_range(chain_up_5_blocks):
+def test_blocks_range(chain_at_block_5):
     expected_number_of_blocks = 3  # Expecting blocks [0, 1, 2]
-    blocks = [b for b in chain_up_5_blocks.blocks.range(stop=3)]
+    blocks = [b for b in chain_at_block_5.blocks.range(stop=3)]
     assert len(blocks) == expected_number_of_blocks
 
     expected_number = 0
     for block in blocks:
         assert block.number == expected_number
         expected_number += 1
+
+
+def test_blocks_range_too_high_stop(chain_at_block_5):
+    len_plus_1 = len(chain_at_block_5.blocks) + 1
+    with pytest.raises(ChainError) as err:
+        # Have to run through generator to trigger code in definition.
+        _ = [_ for _ in chain_at_block_5.blocks.range(stop=len_plus_1)]
+
+    assert str(err.value) == (
+        f"'stop={len_plus_1}' cannot be greater than the chain length (6). "
+        f"Use 'poll_blocks()' to wait for future blocks."
+    )
