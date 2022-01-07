@@ -44,9 +44,6 @@ class AccountAPI(AddressAPI):
     def alias(self) -> Optional[str]:
         """
         A shortened-name for quicker access to the account.
-
-        Returns:
-            str (optional)
         """
         return None
 
@@ -56,7 +53,7 @@ class AccountAPI(AddressAPI):
         Sign a message.
 
         Args:
-          msg (SignableMessage): The message to sign.
+          msg (:class:`~ape.types.signatures.SignableMessage`): The message to sign.
             See these
             `docs <https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage>`__  # noqa: E501
             for more type information on this type.

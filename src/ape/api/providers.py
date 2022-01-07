@@ -1,7 +1,7 @@
 import time
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Dict, Iterator, List, Optional
 
 from dataclassy import as_dict
 from eth_typing import HexStr
@@ -12,11 +12,14 @@ from web3 import Web3
 
 from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import BlockID, TransactionSignature
+from ape.types import BlockID, SnapshotID, TransactionSignature
 from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
 from .config import ConfigItem
+
+if TYPE_CHECKING:
+    from ape.managers.chain import ChainManager
 
 
 class TransactionType(Enum):
@@ -200,6 +203,7 @@ class ReceiptAPI:
     contract_address: Optional[str] = None
     required_confirmations: int = 0
     sender: str
+    receiver: str
     nonce: int
 
     def __post_init__(self):
@@ -358,6 +362,8 @@ class ProviderAPI:
     plugin or the `ape-hardhat <https://github.com/ApeWorX/ape-hardhat>`__ plugin.
     """
 
+    _chain: Optional["ChainManager"] = None
+
     name: str
     """The name of the provider (should be the plugin name)."""
 
@@ -403,9 +409,7 @@ class ProviderAPI:
     def chain_id(self) -> int:
         """
         The blockchain ID.
-
-        Returns:
-            int: The value of the blockchain ID.
+        See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
         """
 
     @abstractmethod
@@ -461,41 +465,31 @@ class ProviderAPI:
     @abstractmethod
     def gas_price(self) -> int:
         """
-        The price for what it costs to transact.
-
-        Returns:
-            int
+        The price for what it costs to transact
+        (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
 
     @property
     def priority_fee(self) -> int:
         """
-        A miner tip to incentivize them
-        to include your transaction in a block.
+        A miner tip to incentivize them to include your transaction in a block.
 
         Raises:
             NotImplementedError: When the provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ typed transactions.
-
-        Returns:
-            int: The value of the fee.
         """
         raise NotImplementedError("priority_fee is not implemented by this provider")
 
     @property
     def base_fee(self) -> int:
         """
-        The minimum value required to get your transaction
-        included on the next block.
+        The minimum value required to get your transaction included on the next block.
         Only providers that implement `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__
         will use this property.
 
         Raises:
             NotImplementedError: When this provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
-
-        Returns:
-            int
         """
         raise NotImplementedError("base_fee is not implemented by this provider")
 
@@ -562,6 +556,10 @@ class ProviderAPI:
             Iterator[dict]: A dictionary of events.
         """
 
+    def _try_track_receipt(self, receipt: ReceiptAPI):
+        if self._chain:
+            self._chain.account_history.append(receipt)
+
 
 class TestProviderAPI(ProviderAPI):
     """
@@ -569,16 +567,19 @@ class TestProviderAPI(ProviderAPI):
     """
 
     @abstractmethod
-    def snapshot(self) -> str:
+    def snapshot(self) -> SnapshotID:
         """
-        Take a recording a state in a blockchain (for development only).
+        Record the current state of the blockchain with intent to later
+        call the method :meth:`~ape.managers.chain.ChainManager.revert`
+        to go back to this point. This method is for development networks
+        only.
 
         Returns:
-            str: The snapshot ID.
+            :class:`~ape.types.SnapshotID`: The snapshot ID.
         """
 
     @abstractmethod
-    def revert(self, snapshot_id: str):
+    def revert(self, snapshot_id: SnapshotID):
         """
         Regress the current call using the given snapshot ID.
         Allows developers to go back to a previous state.
@@ -676,6 +677,7 @@ class Web3Provider(ProviderAPI):
             else self.network.required_confirmations
         )
         receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
+        self._try_track_receipt(receipt)
         return receipt
 
 
@@ -690,7 +692,4 @@ class UpstreamProvider(ProviderAPI):
         """
         The str used by downstream providers to connect to this one.
         For example, the URL for HTTP-based providers.
-
-        Returns:
-            str
         """

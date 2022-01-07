@@ -6,7 +6,7 @@ from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     ArgumentsLengthError,
     ContractDeployError,
-    ProviderError,
+    ProviderNotConnectedError,
     TransactionError,
 )
 from ape.logging import logger
@@ -403,7 +403,8 @@ def _Contract(
     """
     provider = networks.active_provider
     if not provider:
-        raise ProviderError("Not connected to a network")
+        raise ProviderNotConnectedError()
+
     converted_address: AddressType = converters.convert(address, AddressType)
 
     # Check contract cache (e.g. previously deployed/downloaded contracts)

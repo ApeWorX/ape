@@ -5,6 +5,7 @@ from web3 import EthereumTesterProvider, Web3
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, VirtualMachineError
+from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
 
 
@@ -60,14 +61,17 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
         if txn.gas_limit is not None and receipt.ran_out_of_gas:
             raise OutOfGasError()
 
+        self._try_track_receipt(receipt)
         return receipt
 
-    def snapshot(self) -> str:
+    def snapshot(self) -> SnapshotID:
         return self._tester.take_snapshot()
 
-    def revert(self, snapshot_id: str):
+    def revert(self, snapshot_id: SnapshotID):
         if snapshot_id:
-            return self._tester.revert_to_snapshot(snapshot_id)
+            current_hash = self.get_block("latest").hash
+            if current_hash != snapshot_id:
+                return self._tester.revert_to_snapshot(snapshot_id)
 
 
 def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:

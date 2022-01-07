@@ -8,6 +8,7 @@ from pathlib import Path as _Path
 
 from .contracts import _Contract
 from .managers.accounts import AccountManager as _AccountManager
+from .managers.chain import ChainManager as _ChainManager
 from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
 from .managers.converters import ConversionManager as _ConversionManager
@@ -46,6 +47,13 @@ networks = _NetworkManager(config, plugin_manager)  # type: ignore
 
 _converters = _ConversionManager(config, plugin_manager, networks)  # type: ignore
 
+chain = _ChainManager(networks)  # type: ignore
+"""
+The current connected blockchain; requires an active provider.
+Useful for development purposes, such as controlling the state of the blockchain.
+Also handy for querying data about the chain and managing local caches.
+"""
+
 accounts = _AccountManager(config, _converters, plugin_manager, networks)  # type: ignore
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
@@ -68,8 +76,10 @@ Contract = _partial(_Contract, networks=networks, converters=_converters)
 convert = _converters.convert
 """Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
 
+
 __all__ = [
     "accounts",
+    "chain",
     "compilers",
     "config",
     "convert",

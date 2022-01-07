@@ -28,12 +28,23 @@ class NetworkManager:
 
     config: ConfigManager
     plugin_manager: PluginManager
-    active_provider: Optional[ProviderAPI] = None
+    _active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
     _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
 
     def __repr__(self):
         return f"<NetworkManager, active_provider={self.active_provider}>"
+
+    @property
+    def active_provider(self) -> Optional[ProviderAPI]:
+        return self._active_provider
+
+    @active_provider.setter
+    def active_provider(self, new_value: ProviderAPI):
+        from ape import chain
+
+        new_value._chain = chain
+        self._active_provider = new_value
 
     @property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
@@ -58,13 +69,17 @@ class NetworkManager:
             if ecosystem_config:
                 for network_name, network in ecosystem.networks.items():
                     network_config = ecosystem_config.get(network_name)
-                    if network_config:
-                        default_provider = network_config.get("default_provider")
-                        if default_provider:
-                            if default_provider in network.providers:
-                                network.set_default_provider(default_provider)
-                            else:
-                                raise ConfigError(f"No provider named '{default_provider}'.")
+                    if not network_config:
+                        continue
+
+                    default_provider = network_config.get("default_provider")
+                    if not default_provider:
+                        continue
+
+                    if default_provider in network.providers:
+                        network.set_default_provider(default_provider)
+                    else:
+                        raise ConfigError(f"No provider named '{default_provider}'.")
 
             ecosystem_dict[plugin_name] = ecosystem
 

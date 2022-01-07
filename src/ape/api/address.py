@@ -51,9 +51,6 @@ class AddressAPI:
     def address(self) -> AddressType:
         """
         The address of this account. Subclasses must override and provide this value.
-
-        Returns:
-            :class:`~ape.types.AddressType`
         """
 
     def __eq__(self, other: object) -> bool:
@@ -103,9 +100,6 @@ class AddressAPI:
     def nonce(self) -> int:
         """
         The number of transactions associated with the address.
-
-        Returns:
-            int
         """
 
         return self.provider.get_nonce(self.address)
@@ -114,9 +108,6 @@ class AddressAPI:
     def balance(self) -> int:
         """
         The total balance of the account.
-
-        Returns:
-            int
         """
 
         return self.provider.get_balance(self.address)
@@ -124,10 +115,7 @@ class AddressAPI:
     @property
     def code(self) -> bytes:
         """
-        The smart-contract code at the address.
-
-        Returns:
-            bytes: The raw bytes of the contract.
+        The raw bytes of the smart-contract code at the address.
         """
 
         # TODO: Explore caching this (based on `self.provider.network` and examining code)
@@ -136,10 +124,7 @@ class AddressAPI:
     @property
     def codesize(self) -> int:
         """
-        The size of the smart-contract.
-
-        Returns:
-            int: The number of bytes in the smart contract.
+        The number of bytes in the smart contract.
         """
 
         return len(self.code)
@@ -148,9 +133,6 @@ class AddressAPI:
     def is_contract(self) -> bool:
         """
         ``True`` when there is code associated with the address.
-
-        Returns:
-            bool
         """
 
         return len(self.code) > 0

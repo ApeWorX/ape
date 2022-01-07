@@ -40,17 +40,16 @@ NETWORKS = {
 class NetworkConfig(ConfigItem):
     required_confirmations: int = 0
     default_provider: str = "geth"
+    block_time: int = 0
 
 
 class EthereumConfig(ConfigItem):
-    mainnet: NetworkConfig = NetworkConfig(required_confirmations=7)  # type: ignore
-    ropsten: NetworkConfig = NetworkConfig(required_confirmations=12)  # type: ignore
-    kovan: NetworkConfig = NetworkConfig(required_confirmations=3)  # type: ignore
-    rinkeby: NetworkConfig = NetworkConfig(required_confirmations=3)  # type: ignore
-    goerli: NetworkConfig = NetworkConfig(required_confirmations=10)  # type: ignore
-    development: NetworkConfig = NetworkConfig(
-        required_confirmations=0, default_provider="test"
-    )  # type: ignore
+    mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
+    ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
+    kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
+    rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
+    goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
+    development: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
 
 
 class BaseTransaction(TransactionAPI):
@@ -170,19 +169,27 @@ class Receipt(ReceiptAPI):
 
     @classmethod
     def decode(cls, data: dict) -> ReceiptAPI:
+        status = data.get("status")
+        if status:
+            if isinstance(status, str) and status.isnumeric():
+                status = int(status)
+
+            status = TransactionStatusEnum(status)
+
         return cls(  # type: ignore
-            provider=data["provider"],
+            provider=data.get("provider"),
             required_confirmations=data.get("required_confirmations", 0),
             txn_hash=data["hash"],
-            status=TransactionStatusEnum(data["status"]),
+            status=status,
             block_number=data["blockNumber"],
             gas_used=data["gasUsed"],
             gas_price=data["gasPrice"],
             gas_limit=data.get("gas") or data.get("gasLimit"),
-            logs=data["logs"],
-            contract_address=data["contractAddress"],
+            logs=data.get("logs"),
+            contract_address=data.get("contractAddress"),
             sender=data["from"],
-            nonce=data["nonce"],
+            receiver=data["to"],
+            nonce=data.get("nonce"),
         )
 
 
