@@ -55,6 +55,7 @@ def test_snapshot_and_restore_unknown_snapshot_id(chain, sender, receiver):
 
 
 def test_snapshot_and_restore_no_snapshots(chain, sender, receiver):
+    chain._snapshots = []  # Ensure empty (gets set in test setup)
     with pytest.raises(ChainError) as err:
         chain.restore("{}")
 
