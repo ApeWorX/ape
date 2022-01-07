@@ -13,7 +13,7 @@ from .networks import NetworkManager
 
 
 @dataclass
-class ConnectedChain:
+class _ConnectedChain:
     _networks: NetworkManager
 
     @property
@@ -24,7 +24,7 @@ class ConnectedChain:
         return self._networks.active_provider
 
 
-class BlockContainer(ConnectedChain):
+class BlockContainer(_ConnectedChain):
     """
     A list of blocks on the chain.
 
@@ -185,7 +185,7 @@ class BlockContainer(ConnectedChain):
         return self.provider.get_block(block_id)
 
 
-class AccountHistory(ConnectedChain):
+class AccountHistory(_ConnectedChain):
     """
     A container mapping account addresses to the transaction from the active session.
     """
@@ -277,7 +277,7 @@ class AccountHistory(ConnectedChain):
         }
 
 
-class ChainManager(ConnectedChain):
+class ChainManager(_ConnectedChain):
     """
     A class for managing the state of the active blockchain.
     Also handy for querying data about the chain and managing local caches.
