@@ -164,7 +164,7 @@ class BlockContainer(_ConnectedChain):
             yield from self.range(start, latest_confirmed_block_number + 1)
             has_yielded = True
 
-        time.sleep(self.provider.network.approximate_block_time)
+        time.sleep(self.provider.network.block_time)
 
         while True:
             confirmable_block_number = self.height - required_confirmations
@@ -184,7 +184,7 @@ class BlockContainer(_ConnectedChain):
                 has_yielded = True
                 latest_confirmed_block_number = confirmable_block_number
 
-            time.sleep(self.provider.network.approximate_block_time)
+            time.sleep(self.provider.network.block_time)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
         return self.provider.get_block(block_id)

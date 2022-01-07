@@ -398,7 +398,7 @@ class NetworkAPI:
         return self._network_config.get("required_confirmations", 0)  # type: ignore
 
     @property
-    def approximate_block_time(self) -> int:
+    def block_time(self) -> int:
         """
         The approximate amount of time it takes for a new block to get mined to the chain.
         Configure in your ``ape-config.yaml`` file.
@@ -413,7 +413,7 @@ class NetworkAPI:
             int
         """
 
-        return self._network_config.get("approximate_block_time", 0)  # type: ignore
+        return self._network_config.get("block_time", 0)  # type: ignore
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:

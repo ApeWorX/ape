@@ -40,25 +40,15 @@ NETWORKS = {
 class NetworkConfig(ConfigItem):
     required_confirmations: int = 0
     default_provider: str = "geth"
-    approximate_block_time: int = 0
+    block_time: int = 0
 
 
 class EthereumConfig(ConfigItem):
-    mainnet: NetworkConfig = NetworkConfig(
-        required_confirmations=7, approximate_block_time=13
-    )  # type: ignore
-    ropsten: NetworkConfig = NetworkConfig(
-        required_confirmations=12, approximate_block_time=15
-    )  # type: ignore
-    kovan: NetworkConfig = NetworkConfig(
-        required_confirmations=3, approximate_block_time=4
-    )  # type: ignore
-    rinkeby: NetworkConfig = NetworkConfig(
-        required_confirmations=3, approximate_block_time=15
-    )  # type: ignore
-    goerli: NetworkConfig = NetworkConfig(
-        required_confirmations=10, approximate_block_time=15
-    )  # type: ignore
+    mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
+    ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
+    kovan: NetworkConfig = NetworkConfig(required_confirmations=3, block_time=4)  # type: ignore
+    rinkeby: NetworkConfig = NetworkConfig(required_confirmations=3, block_time=15)  # type: ignore
+    goerli: NetworkConfig = NetworkConfig(required_confirmations=10, block_time=15)  # type: ignore
     development: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
 
 
