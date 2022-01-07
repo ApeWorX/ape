@@ -221,7 +221,7 @@ class AccountHistory(_ConnectedChain):
             [r for r in explorer.get_account_transactions(address_key)] if explorer else []
         )
         for receipt in explorer_receipts:
-            if receipt.txn_hash not in self._map.get(address_key, []):
+            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(address_key, [])]:
                 self.append(receipt)
 
         return self._map.get(address_key, [])
