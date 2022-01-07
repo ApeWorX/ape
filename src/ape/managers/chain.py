@@ -330,8 +330,7 @@ class ChainManager(_ConnectedChain):
     @property
     def gas_price(self) -> int:
         """
-        The price for what it costs to transact
-        (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
+        The price for what it costs to transact.
         """
 
         return self.provider.gas_price
