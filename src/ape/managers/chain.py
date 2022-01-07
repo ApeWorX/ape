@@ -36,8 +36,6 @@ class BlockContainer(ConnectedChain):
 
     """
 
-    _poll_wait_interval = 2  # Seconds
-
     @property
     def head(self) -> BlockAPI:
         """
@@ -123,7 +121,10 @@ class BlockContainer(ConnectedChain):
             yield self._get_block(i)
 
     def poll_blocks(
-        self, start: Optional[int] = None, required_confirmations: Optional[int] = None
+        self,
+        start: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
+        poll_wait_interval: int = 2,
     ) -> Iterator[BlockAPI]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
@@ -142,6 +143,8 @@ class BlockContainer(ConnectedChain):
               of the ``+1`` the current block number.
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block.
+            poll_wait_interval (int): The amount of seconds to wait before checking for
+              new blocks. Defaults to ``2``.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
@@ -156,7 +159,7 @@ class BlockContainer(ConnectedChain):
             # Front-load historically confirmed blocks.
             yield from self.range(start, latest_confirmed_block_number + 1)
 
-        time.sleep(self._poll_wait_interval)
+        time.sleep(poll_wait_interval)
 
         while True:
             confirmable_block_number = self.height - latest_confirmed_block_number
@@ -166,10 +169,11 @@ class BlockContainer(ConnectedChain):
                     "Try adjusting the required network confirmations."
                 )
             elif confirmable_block_number > latest_confirmed_block_number:
-                yield self._get_block(confirmable_block_number)
+                block = self._get_block(confirmable_block_number)
+                yield block
                 latest_confirmed_block_number = confirmable_block_number
 
-            time.sleep(self._poll_wait_interval)
+            time.sleep(poll_wait_interval)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
         return self.provider.get_block(block_id)
