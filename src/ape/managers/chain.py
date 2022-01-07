@@ -38,6 +38,26 @@ class BlockContainer(ConnectedChain):
 
     _poll_wait_interval = 2  # Seconds
 
+    @property
+    def head(self) -> BlockAPI:
+        """
+        The latest block.
+        """
+
+        return self._get_block("latest")
+
+    @property
+    def height(self) -> int:
+        """
+        The latest block number.
+        """
+
+        return self.head.number
+
+    @property
+    def network_confirmations(self) -> int:
+        return self.provider.network.required_confirmations
+
     def __getitem__(self, block_number: int) -> BlockAPI:
         """
         Get a block by number. Negative numbers start at the chain head and
@@ -75,26 +95,6 @@ class BlockContainer(ConnectedChain):
         """
 
         return self.range()
-
-    @property
-    def head(self) -> BlockAPI:
-        """
-        The latest block.
-        """
-
-        return self._get_block("latest")
-
-    @property
-    def height(self) -> int:
-        """
-        The latest block number.
-        """
-
-        return self.head.number
-
-    @property
-    def network_confirmations(self) -> int:
-        return self.provider.network.required_confirmations
 
     def range(self, start: int = 0, stop: Optional[int] = None) -> Iterator[BlockAPI]:
         """
@@ -176,6 +176,12 @@ class AccountHistory(ConnectedChain):
 
     _map: Dict[AddressType, List[ReceiptAPI]] = {}
 
+    @cached_property
+    def _convert(self) -> Callable:
+        from ape import convert
+
+        return convert
+
     def __getitem__(self, address: Union[AddressAPI, AddressType, str]) -> List[ReceiptAPI]:
         """
         Get the list of transactions from the active session for the given address.
@@ -249,12 +255,6 @@ class AccountHistory(ConnectedChain):
             for a, receipts in self.items()
         }
 
-    @cached_property
-    def _convert(self) -> Callable:
-        from ape import convert
-
-        return convert
-
 
 class ChainManager(ConnectedChain):
     """
@@ -269,10 +269,6 @@ class ChainManager(ConnectedChain):
 
     _snapshots: List[SnapshotID] = []
     _chain_id_map: Dict[str, int] = {}
-
-    def __repr__(self) -> str:
-        props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
-        return f"<ChainManager ({props})>"
 
     @property
     def blocks(self) -> BlockContainer:
@@ -331,6 +327,10 @@ class ChainManager(ConnectedChain):
         """
 
         return int(time.time())
+
+    def __repr__(self) -> str:
+        props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
+        return f"<ChainManager ({props})>"
 
     def snapshot(self) -> SnapshotID:
         """
