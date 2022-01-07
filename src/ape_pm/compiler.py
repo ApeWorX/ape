@@ -2,9 +2,10 @@ import json
 from pathlib import Path
 from typing import List, Set
 
+from ethpm_types.contract_type import ContractType
+
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
-from ape.types import ContractType
 
 
 class InterfaceCompiler(CompilerAPI):
@@ -29,9 +30,9 @@ class InterfaceCompiler(CompilerAPI):
             else:
                 contract_types.append(
                     ContractType(  # type: ignore
-                        contractName=path.stem,
+                        name=path.stem,
                         abi=data,
-                        sourceId=str(path),
+                        source_id=str(path),
                     )
                 )
 

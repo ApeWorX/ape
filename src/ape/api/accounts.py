@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
 
 import click
+from ethpm_types.contract_type import ContractInstance
 
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
@@ -12,7 +13,7 @@ from .address import AddressAPI
 from .providers import ReceiptAPI, TransactionAPI, TransactionType
 
 if TYPE_CHECKING:
-    from ape.contracts import ContractContainer, ContractInstance
+    from ape.contracts import ContractContainer
     from ape.managers.config import ConfigManager
 
 
@@ -174,7 +175,7 @@ class AccountAPI(AddressAPI):
 
         return self.call(txn, send_everything=value is None)
 
-    def deploy(self, contract: "ContractContainer", *args, **kwargs) -> "ContractInstance":
+    def deploy(self, contract: "ContractContainer", *args, **kwargs) -> ContractInstance:
         """
         Create a smart contract on the blockchain. The smart contract must compile before
         deploying and a provider must be active.
@@ -184,7 +185,8 @@ class AccountAPI(AddressAPI):
                 The type of contract to deploy.
 
         Returns:
-            :class:`~ape.contracts.ContractInstance`: An instance of the deployed contract.
+            :class:`ethpm_types.contract_type.ContractInstance`: An instance
+            of the deployed contract.
         """
 
         txn = contract(*args, **kwargs)
@@ -195,10 +197,9 @@ class AccountAPI(AddressAPI):
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
         address = click.style(receipt.contract_address, bold=True)
-        logger.success(f"Contract '{contract.contract_type.contractName}' deployed to: {address}")
+        logger.success(f"Contract '{contract.contract_type.name}' deployed to: {address}")
 
         from ape import _converters
-        from ape.contracts import ContractInstance
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,

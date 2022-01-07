@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from eth_utils import to_bytes
+from ethpm_types.abi import ABI
+from ethpm_types.contract_type import ContractType
 
 from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.exceptions import (
@@ -10,7 +12,7 @@ from ape.exceptions import (
     TransactionError,
 )
 from ape.logging import logger
-from ape.types import ABI, AddressType, ContractType
+from ape.types import AddressType
 from ape.utils import dataclass
 
 if TYPE_CHECKING:
@@ -234,7 +236,7 @@ class ContractInstance(AddressAPI):
     _contract_type: ContractType
 
     def __repr__(self) -> str:
-        return f"<{self._contract_type.contractName} {self.address}>"
+        return f"<{self._contract_type.name} {self.address}>"
 
     @property
     def address(self) -> AddressType:
@@ -334,7 +336,7 @@ class ContractContainer:
     _converter: "ConversionManager"
 
     def __repr__(self) -> str:
-        return f"<{self.contract_type.contractName}>"
+        return f"<{self.contract_type.name}>"
 
     def at(self, address: str) -> ContractInstance:
         """

@@ -2,12 +2,12 @@ from pathlib import Path
 from typing import Dict, List, Set
 
 from dataclassy import dataclass
+from ethpm_types.contract_type import ContractType
 
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
 from ape.plugins import PluginManager
-from ape.types import ContractType
 from ape.utils import cached_property
 
 from .config import ConfigManager
@@ -71,12 +71,11 @@ class CompilerManager:
               as ``pathlib.Path`` objects.
 
         Returns:
-            Dict[str, :class:`~ape.types.contract.ContractType`]: A mapping of
+            Dict[str, :class:`ethpm_types.contract_type.ContractType`]: A mapping of
             contract names to their type.
         """
 
         extensions = self._get_contract_extensions(contract_filepaths)
-
         contract_types = {}
         for extension in extensions:
             paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
@@ -85,10 +84,10 @@ class CompilerManager:
 
             for contract_type in self.registered_compilers[extension].compile(paths_to_compile):
 
-                if contract_type.contractName in contract_types:
+                if contract_type.name in contract_types:
                     raise CompilerError("ContractType collision across compiler plugins.")
 
-                contract_types[contract_type.contractName] = contract_type
+                contract_types[contract_type.name] = contract_type
 
         return contract_types
 

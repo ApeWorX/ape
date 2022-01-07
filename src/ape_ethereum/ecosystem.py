@@ -10,6 +10,7 @@ from eth_account._utils.legacy_transactions import (
 )
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak, to_bytes, to_checksum_address, to_int
+from ethpm_types.abi import ABI
 from hexbytes import HexBytes
 
 from ape.api import (
@@ -25,7 +26,7 @@ from ape.api import (
 )
 from ape.contracts import ContractLog
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
-from ape.types import ABI, AddressType
+from ape.types import AddressType
 
 NETWORKS = {
     # chain_id, network_id

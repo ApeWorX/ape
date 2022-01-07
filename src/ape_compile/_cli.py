@@ -1,9 +1,9 @@
 from typing import Dict
 
 import click
+from ethpm_types.contract_type import ContractType
 
 from ape.cli import ape_cli_context, contract_file_paths_argument
-from ape.types import ContractType
 
 
 @click.command(short_help="Compile select contract source files")
@@ -61,7 +61,7 @@ def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
         bytecode = contract.deploymentBytecode.bytecode
 
         if bytecode:
-            code_size.append((contract.contractName, len(bytecode) // 2))
+            code_size.append((contract.name, len(bytecode) // 2))
 
     if not code_size:
         cli_ctx.logger.info("No contracts with bytecode to display")
