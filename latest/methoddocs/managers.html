@@ -82,6 +82,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ape.managers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.accounts">Accounts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.compilers">Compilers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.chain">Chain</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.config">Config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.converters">Converters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.networks">Networks</a></li>
@@ -324,6 +325,294 @@ to compiler API classes.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>Dict[str, <a class="reference internal" href="api.html#ape.api.compiler.CompilerAPI" title="ape.api.compiler.CompilerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompilerAPI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.managers.chain">
+<span id="chain"></span><h2>Chain<a class="headerlink" href="#module-ape.managers.chain" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.managers.chain.AccountHistory">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.managers.chain.</span></code><code class="sig-name descname"><span class="pre">AccountHistory</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_networks</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.managers.networks.NetworkManager" title="ape.managers.networks.NetworkManager"><span class="pre">ape.managers.networks.NetworkManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">_map</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container mapping account addresses to the transaction from the active session.</p>
+<dl class="py method">
+<dt id="ape.managers.chain.AccountHistory.__getitem__">
+<code class="sig-name descname"><span class="pre">__getitem__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.address.AddressAPI" title="ape.api.address.AddressAPI"><span class="pre">ape.api.address.AddressAPI</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of transactions from the active session for the given address.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The sender of the desired transactions.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The list of transactions. If there
+are no recorded transactions, returns an empty list.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="api.html#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.AccountHistory.__iter__">
+<code class="sig-name descname"><span class="pre">__iter__</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate through the accounts listed in the history map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.AccountHistory.append">
+<code class="sig-name descname"><span class="pre">append</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_receipt</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a transaction to the stored list for the given account address.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ChainError" title="ape.exceptions.ChainError"><strong>ChainError</strong></a> – When trying to append a transaction
+    receipt that is already in the list.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>txn_receipt</strong> (<a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>) – The transaction receipt to append.
+<strong>NOTE</strong>: The receipt is accessible in the list returned from
+<a class="reference internal" href="#ape.managers.chain.AccountHistory.__getitem__" title="ape.managers.chain.AccountHistory.__getitem__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__getitem__()</span></code></a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.AccountHistory.items">
+<code class="sig-name descname"><span class="pre">items</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate through the list of address-types to list of transaction receipts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Iterator[Tuple[<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>, <a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.AccountHistory.revert_to_block">
+<code class="sig-name descname"><span class="pre">revert_to_block</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory.revert_to_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all receipts past the given block number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>block_number</strong> (<em>int</em>) – The block number to revert to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.managers.chain.BlockContainer">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.managers.chain.</span></code><code class="sig-name descname"><span class="pre">BlockContainer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_networks</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.managers.networks.NetworkManager" title="ape.managers.networks.NetworkManager"><span class="pre">ape.managers.networks.NetworkManager</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.BlockContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of blocks on the chain.</p>
+<p>Usages example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="n">latest_block</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="ape.managers.chain.BlockContainer.__getitem__">
+<code class="sig-name descname"><span class="pre">__getitem__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">ape.api.providers.BlockAPI</span></a><a class="headerlink" href="#ape.managers.chain.BlockContainer.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a block by number. Negative numbers start at the chain head and
+move backwards. For example, <code class="docutils literal notranslate"><span class="pre">-1</span></code> would be the latest block and
+<code class="docutils literal notranslate"><span class="pre">-2</span></code> would be the block prior to that one, and so on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>block_number</strong> (<em>int</em>) – The number of the block to get.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.BlockContainer.__iter__">
+<code class="sig-name descname"><span class="pre">__iter__</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">ape.api.providers.BlockAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.chain.BlockContainer.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all the current blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Iterator[<a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockAPI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.BlockContainer.__len__">
+<code class="sig-name descname"><span class="pre">__len__</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.managers.chain.BlockContainer.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of blocks in the chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.BlockContainer.head">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">head</span></code><a class="headerlink" href="#ape.managers.chain.BlockContainer.head" title="Permalink to this definition">¶</a></dt>
+<dd><p>The latest block.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.BlockContainer.height">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">height</span></code><a class="headerlink" href="#ape.managers.chain.BlockContainer.height" title="Permalink to this definition">¶</a></dt>
+<dd><p>The latest block number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.BlockContainer.poll_blocks">
+<code class="sig-name descname"><span class="pre">poll_blocks</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_confirmations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">ape.api.providers.BlockAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.chain.BlockContainer.poll_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Poll new blocks. Optionally set a start block to include historical blocks.
+<strong>NOTE</strong>: This is a daemon method; it does not terminate unless an exception occurrs.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="k">for</span> <span class="n">new_block</span> <span class="ow">in</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">poll_blocks</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New block found: number=</span><span class="si">{</span><span class="n">new_block</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The block number to start with. Defaults to the pending
+block number.</p></li>
+<li><p><strong>required_confirmations</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – <p>The amount of confirmations to wait
+before yielding the block. The more confirmations, the less likely a reorg</p>
+<blockquote>
+<div><p>will occur.</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Iterator[<a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockAPI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.BlockContainer.range">
+<code class="sig-name descname"><span class="pre">range</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">ape.api.providers.BlockAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.chain.BlockContainer.range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over blocks. Works similarly to python <code class="docutils literal notranslate"><span class="pre">range()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>int</em>) – The first block, by number, to include in the range.
+Defaults to 0.</p></li>
+<li><p><strong>stop</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The block number to stop before. Also the total
+number of blocks to get.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Iterator[<a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockAPI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.managers.chain.ChainManager">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.managers.chain.</span></code><code class="sig-name descname"><span class="pre">ChainManager</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_networks</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.managers.networks.NetworkManager" title="ape.managers.networks.NetworkManager"><span class="pre">ape.managers.networks.NetworkManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">_snapshots</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_chain_id_map</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_block_container_map</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="#ape.managers.chain.BlockContainer" title="ape.managers.chain.BlockContainer"><span class="pre">ape.managers.chain.BlockContainer</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_account_history_map</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="#ape.managers.chain.AccountHistory" title="ape.managers.chain.AccountHistory"><span class="pre">ape.managers.chain.AccountHistory</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ChainManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for managing the state of the active blockchain.
+Also handy for querying data about the chain and managing local caches.
+Access the chain manager singleton from the root <code class="docutils literal notranslate"><span class="pre">ape</span></code> namespace.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="ape.managers.chain.ChainManager.account_history">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">account_history</span></code><a class="headerlink" href="#ape.managers.chain.ChainManager.account_history" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mapping of transactions from the active session to the account responsible.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.ChainManager.base_fee">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">base_fee</span></code><a class="headerlink" href="#ape.managers.chain.ChainManager.base_fee" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum value required to get your transaction included on the next block.
+Only providers that implement <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>
+will use this property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – When this provider does not implement
+    <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.ChainManager.blocks">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">blocks</span></code><a class="headerlink" href="#ape.managers.chain.ChainManager.blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of blocks on the chain.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.ChainManager.chain_id">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">chain_id</span></code><a class="headerlink" href="#ape.managers.chain.ChainManager.chain_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>The blockchain ID.
+See <a class="reference external" href="https://chainlist.org/">ChainList</a> for a comprehensive list of IDs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.ChainManager.gas_price">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">gas_price</span></code><a class="headerlink" href="#ape.managers.chain.ChainManager.gas_price" title="Permalink to this definition">¶</a></dt>
+<dd><p>The price for what it costs to transact.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.ChainManager.pending_timestamp">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">pending_timestamp</span></code><a class="headerlink" href="#ape.managers.chain.ChainManager.pending_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current epoch time of the chain, as an <code class="docutils literal notranslate"><span class="pre">int</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.ChainManager.restore">
+<code class="sig-name descname"><span class="pre">restore</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snapshot_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ChainManager.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regress the current call using the given snapshot ID.
+Allows developers to go back to a previous state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NotImplementedError</strong> – When the active provider does not support
+    snapshotting.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.UnknownSnapshotError" title="ape.exceptions.UnknownSnapshotError"><strong>UnknownSnapshotError</strong></a> – When the snapshot ID is not cached.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.ChainError" title="ape.exceptions.ChainError"><strong>ChainError</strong></a> – When there are no snapshot IDs to select from.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>snapshot_id</strong> (Optional[<code class="xref py py-class docutils literal notranslate"><span class="pre">SnapshotID</span></code>]) – The snapshot ID. Defaults
+to the most recent snapshot ID.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.chain.ChainManager.snapshot">
+<code class="sig-name descname"><span class="pre">snapshot</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.chain.ChainManager.snapshot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record the current state of the blockchain with intent to later
+call the method <code class="xref py py-meth docutils literal notranslate"><span class="pre">revert()</span></code>
+to go back to this point. This method is for development networks
+only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – When the active provider does not support
+    snapshotting.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The snapshot ID.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SnapshotID</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -621,7 +910,7 @@ that it is checksummed.</p>
 <span id="networks"></span><h2>Networks<a class="headerlink" href="#module-ape.managers.networks" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="ape.managers.networks.NetworkManager">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.managers.networks.</span></code><code class="sig-name descname"><span class="pre">NetworkManager</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.managers.config.ConfigManager" title="ape.managers.config.ConfigManager"><span class="pre">ape.managers.config.ConfigManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugin_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pluggy.manager.PluginManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ape.api.providers.ProviderAPI</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_ecosystems_by_project</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="api.html#ape.api.networks.EcosystemAPI" title="ape.api.networks.EcosystemAPI"><span class="pre">ape.api.networks.EcosystemAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.networks.NetworkManager" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.managers.networks.</span></code><code class="sig-name descname"><span class="pre">NetworkManager</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.managers.config.ConfigManager" title="ape.managers.config.ConfigManager"><span class="pre">ape.managers.config.ConfigManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugin_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pluggy.manager.PluginManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_active_provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ape.api.providers.ProviderAPI</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_ecosystems_by_project</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="api.html#ape.api.networks.EcosystemAPI" title="ape.api.networks.EcosystemAPI"><span class="pre">ape.api.networks.EcosystemAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.networks.NetworkManager" title="Permalink to this definition">¶</a></dt>
 <dd><p>The set of all blockchain network ecosystems registered from the plugin system.
 Typically, you set the provider via the <code class="docutils literal notranslate"><span class="pre">--network</span></code> command line option.
 However, use this singleton for more granular access to networks.</p>

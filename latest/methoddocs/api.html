@@ -177,11 +177,6 @@
 <dt id="ape.api.accounts.AccountAPI.alias">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">alias</span></code><a class="headerlink" href="#ape.api.accounts.AccountAPI.alias" title="Permalink to this definition">¶</a></dt>
 <dd><p>A shortened-name for quicker access to the account.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>str (optional)</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -233,7 +228,7 @@ deploying and a provider must be active.</p>
 <dd><p>Sign a message.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>msg</strong> (<em>SignableMessage</em>) – The message to sign.
+<dd class="field-odd"><p><strong>msg</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">SignableMessage</span></code>) – The message to sign.
 See these
 <a class="reference external" href="https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage">docs</a>  # noqa: E501
 for more type information on this type.</p>
@@ -446,72 +441,36 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <dt id="ape.api.address.AddressAPI.address">
 <em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">address</span></code><a class="headerlink" href="#ape.api.address.AddressAPI.address" title="Permalink to this definition">¶</a></dt>
 <dd><p>The address of this account. Subclasses must override and provide this value.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.address.AddressAPI.balance">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">balance</span></code><a class="headerlink" href="#ape.api.address.AddressAPI.balance" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total balance of the account.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.address.AddressAPI.code">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">code</span></code><a class="headerlink" href="#ape.api.address.AddressAPI.code" title="Permalink to this definition">¶</a></dt>
-<dd><p>The smart-contract code at the address.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The raw bytes of the contract.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>bytes</p>
-</dd>
-</dl>
+<dd><p>The raw bytes of the smart-contract code at the address.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.address.AddressAPI.codesize">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">codesize</span></code><a class="headerlink" href="#ape.api.address.AddressAPI.codesize" title="Permalink to this definition">¶</a></dt>
-<dd><p>The size of the smart-contract.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The number of bytes in the smart contract.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>int</p>
-</dd>
-</dl>
+<dd><p>The number of bytes in the smart contract.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.address.AddressAPI.is_contract">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_contract</span></code><a class="headerlink" href="#ape.api.address.AddressAPI.is_contract" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when there is code associated with the address.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.address.AddressAPI.nonce">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">nonce</span></code><a class="headerlink" href="#ape.api.address.AddressAPI.nonce" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of transactions associated with the address.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -709,6 +668,20 @@ when the item fails to convert properly.</p>
 <p>An API class representing a blockchain explorer for a particular network
 in a particular ecosystem.</p>
 <dl class="py method">
+<dt id="ape.api.explorers.ExplorerAPI.get_account_transactions">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_account_transactions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.get_account_transactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of list of transactions performed by an address.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The account address.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Iterator[<a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.explorers.ExplorerAPI.get_address_url">
 <em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_address_url</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.get_address_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an address URL, such as for a transaction.</p>
@@ -729,10 +702,13 @@ get the URL for.</p>
 <dd><p>Get the contract type for a given address if it has been published in an explorer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<em>str</em>) – The contract address.</p>
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The contract address.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code> if published, else <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dd class="field-even"><p>If not published, returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -956,6 +932,24 @@ translating into <code class="docutils literal notranslate"><span class="pre">ya
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></code><code class="sig-name descname"><span class="pre">NetworkAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ecosystem</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.networks.EcosystemAPI" title="ape.api.networks.EcosystemAPI"><span class="pre">ape.api.networks.EcosystemAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ConfigManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugin_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pluggy.manager.PluginManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_default_provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.NetworkAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A wrapper around a provider for a specific ecosystem.</p>
+<dl class="py method">
+<dt id="ape.api.networks.NetworkAPI.block_time">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">block_time</span></code><a class="headerlink" href="#ape.api.networks.NetworkAPI.block_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>The approximate amount of time it takes for a new block to get mined to the chain.
+Configure in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<p>Config example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ethereum</span><span class="p">:</span>
+  <span class="n">mainnet</span><span class="p">:</span>
+    <span class="n">block_time</span><span class="p">:</span> <span class="mi">15</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="ape.api.networks.NetworkAPI.chain_id">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">chain_id</span></code><a class="headerlink" href="#ape.api.networks.NetworkAPI.chain_id" title="Permalink to this definition">¶</a></dt>
@@ -1284,7 +1278,7 @@ such as PoW-related information regarding the block.
 
 <dl class="py class">
 <dt id="ape.api.providers.ProviderAPI">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">ProviderAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ProviderAPI" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">ProviderAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_chain</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ChainManager</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ProviderAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>An abstraction of a connection to a network in an ecosystem. Example <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code>
 implementations include the <a class="reference external" href="https://github.com/ApeWorX/ape-infura">ape-infura</a>
@@ -1292,8 +1286,7 @@ plugin or the <a class="reference external" href="https://github.com/ApeWorX/ape
 <dl class="py method">
 <dt id="ape.api.providers.ProviderAPI.base_fee">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">base_fee</span></code><a class="headerlink" href="#ape.api.providers.ProviderAPI.base_fee" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum value required to get your transaction
-included on the next block.
+<dd><p>The minimum value required to get your transaction included on the next block.
 Only providers that implement <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>
 will use this property.</p>
 <dl class="field-list simple">
@@ -1301,24 +1294,14 @@ will use this property.</p>
 <dd class="field-odd"><p><strong>NotImplementedError</strong> – When this provider does not implement
     <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>int</p>
-</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.providers.ProviderAPI.chain_id">
 <em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">chain_id</span></code><a class="headerlink" href="#ape.api.providers.ProviderAPI.chain_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>The blockchain ID.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The value of the blockchain ID.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>int</p>
-</dd>
-</dl>
+<dd><p>The blockchain ID.
+See <a class="reference external" href="https://chainlist.org/">ChainList</a> for a comprehensive list of IDs.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1365,12 +1348,8 @@ will use this property.</p>
 <dl class="py method">
 <dt id="ape.api.providers.ProviderAPI.gas_price">
 <em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">gas_price</span></code><a class="headerlink" href="#ape.api.providers.ProviderAPI.gas_price" title="Permalink to this definition">¶</a></dt>
-<dd><p>The price for what it costs to transact.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
+<dd><p>The price for what it costs to transact
+(pre-<a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1488,18 +1467,11 @@ Can be <code class="docutils literal notranslate"><span class="pre">&quot;latest
 <dl class="py method">
 <dt id="ape.api.providers.ProviderAPI.priority_fee">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">priority_fee</span></code><a class="headerlink" href="#ape.api.providers.ProviderAPI.priority_fee" title="Permalink to this definition">¶</a></dt>
-<dd><p>A miner tip to incentivize them
-to include your transaction in a block.</p>
+<dd><p>A miner tip to incentivize them to include your transaction in a block.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><p><strong>NotImplementedError</strong> – When the provider does not implement
     <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> typed transactions.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The value of the fee.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1564,7 +1536,7 @@ May require a reconnect.</p>
 
 <dl class="py class">
 <dt id="ape.api.providers.ReceiptAPI">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">ReceiptAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ProviderAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.TransactionStatusEnum" title="ape.api.providers.TransactionStatusEnum"><span class="pre">ape.api.providers.TransactionStatusEnum</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_used</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_price</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_limit</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sender</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonce</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_confirmations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ReceiptAPI" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">ReceiptAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ProviderAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.TransactionStatusEnum" title="ape.api.providers.TransactionStatusEnum"><span class="pre">ape.api.providers.TransactionStatusEnum</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_used</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_price</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_limit</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sender</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receiver</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonce</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_confirmations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ReceiptAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>An abstract class to represent a transaction receipt. The receipt
 contains information about the transaction, such as the status
@@ -1627,12 +1599,12 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 
 <dl class="py class">
 <dt id="ape.api.providers.TestProviderAPI">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">TestProviderAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">TestProviderAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_chain</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ChainManager</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI</span></code></a></p>
 <p>An API for providers that have development functionality, such as snapshotting.</p>
 <dl class="py method">
 <dt id="ape.api.providers.TestProviderAPI.revert">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">revert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snapshot_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.revert" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">revert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snapshot_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.revert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regress the current call using the given snapshot ID.
 Allows developers to go back to a previous state.</p>
 <dl class="field-list simple">
@@ -1644,14 +1616,17 @@ Allows developers to go back to a previous state.</p>
 
 <dl class="py method">
 <dt id="ape.api.providers.TestProviderAPI.snapshot">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">snapshot</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.snapshot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Take a recording a state in a blockchain (for development only).</p>
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">snapshot</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.snapshot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record the current state of the blockchain with intent to later
+call the method <code class="xref py py-meth docutils literal notranslate"><span class="pre">revert()</span></code>
+to go back to this point. This method is for development networks
+only.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The snapshot ID.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>str</p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SnapshotID</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1741,7 +1716,7 @@ of getting confirmed.</p>
 
 <dl class="py class">
 <dt id="ape.api.providers.UpstreamProvider">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">UpstreamProvider</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.UpstreamProvider" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">UpstreamProvider</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_chain</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ChainManager</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.UpstreamProvider" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI</span></code></a></p>
 <p>A provider that can also be set as another provider’s upstream.</p>
 <dl class="py method">
@@ -1749,26 +1724,20 @@ of getting confirmed.</p>
 <em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">connection_str</span></code><a class="headerlink" href="#ape.api.providers.UpstreamProvider.connection_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>The str used by downstream providers to connect to this one.
 For example, the URL for HTTP-based providers.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="ape.api.providers.Web3Provider">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">Web3Provider</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_web3</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">web3.main.Web3</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.Web3Provider" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">Web3Provider</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_chain</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ChainManager</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_web3</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">web3.main.Web3</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.Web3Provider" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI</span></code></a></p>
 <p>A base provider mixin class that uses the
 [web3.py](<a class="reference external" href="https://web3py.readthedocs.io/en/stable/">https://web3py.readthedocs.io/en/stable/</a>) python package.</p>
 <dl class="py method">
 <dt id="ape.api.providers.Web3Provider.base_fee">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">base_fee</span></code><a class="headerlink" href="#ape.api.providers.Web3Provider.base_fee" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum value required to get your transaction
-included on the next block.
+<dd><p>The minimum value required to get your transaction included on the next block.
 Only providers that implement <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>
 will use this property.</p>
 <dl class="field-list simple">
@@ -1776,24 +1745,14 @@ will use this property.</p>
 <dd class="field-odd"><p><strong>NotImplementedError</strong> – When this provider does not implement
     <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>int</p>
-</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ape.api.providers.Web3Provider.chain_id">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">chain_id</span></code><a class="headerlink" href="#ape.api.providers.Web3Provider.chain_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>The blockchain ID.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The value of the blockchain ID.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>int</p>
-</dd>
-</dl>
+<dd><p>The blockchain ID.
+See <a class="reference external" href="https://chainlist.org/">ChainList</a> for a comprehensive list of IDs.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1816,12 +1775,8 @@ will use this property.</p>
 <dl class="py method">
 <dt id="ape.api.providers.Web3Provider.gas_price">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">gas_price</span></code><a class="headerlink" href="#ape.api.providers.Web3Provider.gas_price" title="Permalink to this definition">¶</a></dt>
-<dd><p>The price for what it costs to transact.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
+<dd><p>The price for what it costs to transact
+(pre-<a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1927,18 +1882,11 @@ Can be <code class="docutils literal notranslate"><span class="pre">&quot;latest
 <dl class="py method">
 <dt id="ape.api.providers.Web3Provider.priority_fee">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">priority_fee</span></code><a class="headerlink" href="#ape.api.providers.Web3Provider.priority_fee" title="Permalink to this definition">¶</a></dt>
-<dd><p>A miner tip to incentivize them
-to include your transaction in a block.</p>
+<dd><p>A miner tip to incentivize them to include your transaction in a block.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><p><strong>NotImplementedError</strong> – When the provider does not implement
     <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> typed transactions.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The value of the fee.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
 </dd></dl>
