@@ -173,8 +173,13 @@ class BlockContainer(_ConnectedChain):
                     "Try adjusting the required network confirmations."
                 )
             elif confirmable_block_number > latest_confirmed_block_number:
-                block = self._get_block(confirmable_block_number)
-                yield block
+                # Yield all missed confirmable blocks
+                new_blocks_count = confirmable_block_number - latest_confirmed_block_number
+                for i in range(new_blocks_count):
+                    block_num = latest_confirmed_block_number + i
+                    block = self._get_block(block_num)
+                    yield block
+
                 has_yielded = True
                 latest_confirmed_block_number = confirmable_block_number
 
