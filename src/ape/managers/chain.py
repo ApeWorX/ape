@@ -130,7 +130,6 @@ class BlockContainer(_ConnectedChain):
         self,
         start: Optional[int] = None,
         required_confirmations: Optional[int] = None,
-        poll_wait_interval: int = 2,
     ) -> Iterator[BlockAPI]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
@@ -148,8 +147,6 @@ class BlockContainer(_ConnectedChain):
               of the ``+1`` the current block number when this method was called.
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
-            poll_wait_interval (int): The amount of seconds to wait before checking for
-              new blocks. Defaults to ``2``.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
@@ -159,16 +156,18 @@ class BlockContainer(_ConnectedChain):
 
         # Get number of last block with the necessary amount of confirmations.
         latest_confirmed_block_number = self.height - required_confirmations
+        has_yielded = False
 
         if start is not None:
             # Front-load historically confirmed blocks.
             yield from self.range(start, latest_confirmed_block_number + 1)
+            has_yielded = True
 
-        time.sleep(poll_wait_interval)
+        time.sleep(self.provider.network.approximate_block_time)
 
         while True:
-            confirmable_block_number = self.height - latest_confirmed_block_number
-            if confirmable_block_number < latest_confirmed_block_number:
+            confirmable_block_number = self.height - required_confirmations
+            if confirmable_block_number < latest_confirmed_block_number and has_yielded:
                 logger.error(
                     "Chain has reorganized since returning the last block. "
                     "Try adjusting the required network confirmations."
@@ -176,9 +175,10 @@ class BlockContainer(_ConnectedChain):
             elif confirmable_block_number > latest_confirmed_block_number:
                 block = self._get_block(confirmable_block_number)
                 yield block
+                has_yielded = True
                 latest_confirmed_block_number = confirmable_block_number
 
-            time.sleep(poll_wait_interval)
+            time.sleep(self.provider.network.approximate_block_time)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
         return self.provider.get_block(block_id)
