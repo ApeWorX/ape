@@ -1,5 +1,5 @@
 import time
-from typing import Dict, Iterator, List, Optional, Tuple, Union
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 from dataclassy import dataclass
 
@@ -7,12 +7,24 @@ from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI, TestProviderA
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import logger
 from ape.types import AddressType, BlockID, SnapshotID
+from ape.utils import cached_property
 
 from .networks import NetworkManager
 
 
 @dataclass
-class BlockContainer:
+class ConnectedChain:
+    _networks: NetworkManager
+
+    @property
+    def _provider(self) -> ProviderAPI:
+        if not self._networks.active_provider:
+            raise ProviderNotConnectedError()
+
+        return self._networks.active_provider
+
+
+class BlockContainer(ConnectedChain):
     """
     A list of blocks on the chain.
 
@@ -24,7 +36,6 @@ class BlockContainer:
 
     """
 
-    networks: NetworkManager
     _poll_wait_interval = 2  # Seconds
 
     def __getitem__(self, block_number: int) -> BlockAPI:
@@ -39,6 +50,7 @@ class BlockContainer:
         Returns:
             :class:`~ape.api.providers.BlockAPI`
         """
+
         if block_number < 0:
             block_number = len(self) + block_number
 
@@ -79,13 +91,6 @@ class BlockContainer:
         """
 
         return self.head.number
-
-    @property
-    def _provider(self) -> ProviderAPI:
-        if not self.networks.active_provider:
-            raise ProviderNotConnectedError()
-
-        return self.networks.active_provider
 
     @property
     def _network_confirmations(self) -> int:
@@ -164,7 +169,7 @@ class BlockContainer:
         return self._provider.get_block(block_id)
 
 
-class AccountHistory:
+class AccountHistory(ConnectedChain):
     """
     A container mapping account addresses to the transaction from the active session.
     """
@@ -182,7 +187,7 @@ class AccountHistory:
             List[:class:`~ape.api.providers.TransactionAPI`]: The list of transactions. If there
             are no recorded transactions, returns an empty list.
         """
-        address_key: AddressType = _convert(address, AddressType)
+        address_key: AddressType = self._convert(address, AddressType)
         return self._map.get(address_key, [])
 
     def __iter__(self) -> Iterator[AddressType]:
@@ -217,7 +222,7 @@ class AccountHistory:
               **NOTE**: The receipt is accessible in the list returned from
               :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
-        address = _convert(txn_receipt.sender, AddressType)
+        address = self._convert(txn_receipt.sender, AddressType)
         if address not in self._map:
             self._map[address] = [txn_receipt]
             return
@@ -240,9 +245,14 @@ class AccountHistory:
             for a, receipts in self.items()
         }
 
+    @cached_property
+    def _convert(self) -> Callable:
+        from ape import convert
 
-@dataclass
-class ChainManager:
+        return convert
+
+
+class ChainManager(ConnectedChain):
     """
     A class for managing the state of the active blockchain.
     Also handy for querying data about the chain and managing local caches.
@@ -253,10 +263,8 @@ class ChainManager:
         from ape import chain
     """
 
-    _networks: NetworkManager
     _snapshots: List[SnapshotID] = []
     _chain_id_map: Dict[str, int] = {}
-    _time_offset: int = 0
 
     account_history: AccountHistory = AccountHistory()
     """A mapping of transactions from the active session to the account responsible."""
@@ -330,18 +338,7 @@ class ChainManager:
         The current epoch time of the chain, as an ``int``.
         """
 
-        return int(time.time() + self._time_offset)
-
-    def sleep(self, seconds: int):
-        """
-        Increase the time (development-chains only).
-
-        Args:
-            seconds (int): Seconds to move the chain into the future.
-        """
-
-        test_provider = self._get_test_provider("sleep")
-        self._time_offset = test_provider.sleep(seconds)
+        return int(time.time())
 
     def snapshot(self) -> SnapshotID:
         """
@@ -402,9 +399,3 @@ class ChainManager:
             )
 
         return provider
-
-
-def _convert(*args, **kwargs):
-    from ape import convert
-
-    return convert(*args, **kwargs)
