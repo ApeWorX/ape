@@ -144,7 +144,7 @@ def upgrade_option(help=""):
 @click.option("-v", "--version", help="Specify version (Default is latest)")
 @skip_confirmation_option(help="Don't ask for confirmation to add the plugin")
 @ape_cli_context()
-@upgrade_option(help="Upgrade the plugin to to the newest available version")
+@upgrade_option(help="Upgrade the plugin to the newest available version")
 def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
     if plugin.startswith("ape"):
         cli_ctx.abort(f"Namespace 'ape' in '{plugin}' is not required")
@@ -191,7 +191,7 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
 @cli.command(short_help="Install all plugins in the local config file")
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
-@upgrade_option(help="Upgrade the plugin to to the newest available version")
+@upgrade_option(help="Upgrade the plugin to the newest available version")
 def install(cli_ctx, skip_confirmation, upgrade):
     any_install_failed = False
     cwd = getcwd()
