@@ -346,12 +346,7 @@ class NetworkAPI:
         return self.config_manager.get_config(self.ecosystem.name)
 
     @cached_property
-    def network_config(self) -> ConfigItem:
-        """
-        The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
-        for more information on plugin configurations.
-        """
-
+    def _network_config(self) -> ConfigItem:
         return self.config.get(self.name, {})  # type: ignore
 
     @property
@@ -400,13 +395,13 @@ class NetworkAPI:
         Returns:
             int
         """
-        return self.network_config.get("required_confirmations", 0)  # type: ignore
+        return self._network_config.get("required_confirmations", 0)  # type: ignore
 
     @property
     def approximate_block_time(self) -> int:
         """
         The approximate amount of time it takes for a new block to get mined to the chain.
-        Configure in your ``ape-config.yaml`` file via.
+        Configure in your ``ape-config.yaml`` file.
 
         Config example::
 
@@ -418,7 +413,7 @@ class NetworkAPI:
             int
         """
 
-        return self.network_config.get("approximate_block_time", 0)  # type: ignore
+        return self._network_config.get("approximate_block_time", 0)  # type: ignore
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:
