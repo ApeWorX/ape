@@ -170,20 +170,27 @@ class Receipt(ReceiptAPI):
 
     @classmethod
     def decode(cls, data: dict) -> ReceiptAPI:
+        status = data.get("status")
+        if status:
+            if isinstance(status, str) and status.isnumeric():
+                status = int(status)
+
+            status = TransactionStatusEnum(status)
+
         return cls(  # type: ignore
-            provider=data["provider"],
+            provider=data.get("provider"),
             required_confirmations=data.get("required_confirmations", 0),
             txn_hash=data["hash"],
-            status=TransactionStatusEnum(data["status"]),
+            status=status,
             block_number=data["blockNumber"],
             gas_used=data["gasUsed"],
             gas_price=data["gasPrice"],
             gas_limit=data.get("gas") or data.get("gasLimit"),
-            logs=data["logs"],
-            contract_address=data["contractAddress"],
+            logs=data.get("logs"),
+            contract_address=data.get("contractAddress"),
             sender=data["from"],
             receiver=data["to"],
-            nonce=data["nonce"],
+            nonce=data.get("nonce"),
         )
 
 

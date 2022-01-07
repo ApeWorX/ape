@@ -195,10 +195,15 @@ class AccountHistory(ConnectedChain):
         """
 
         address_key: AddressType = self._convert(address, AddressType)
-        transactions = self._map.get(address_key, [])
+        explorer = self.provider.network.explorer
+        explorer_receipts = (
+            [r for r in explorer.get_account_transactions(address_key)] if explorer else []
+        )
+        for receipt in explorer_receipts:
+            if receipt.txn_hash not in self._map.get(address_key, []):
+                self.append(receipt)
 
-        # TODO: Use explorerAPI to get more transaction if possible
-        return transactions
+        return self._map.get(address_key, [])
 
     def __iter__(self) -> Iterator[AddressType]:
         """
