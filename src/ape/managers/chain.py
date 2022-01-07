@@ -17,7 +17,7 @@ class ConnectedChain:
     _networks: NetworkManager
 
     @property
-    def _provider(self) -> ProviderAPI:
+    def provider(self) -> ProviderAPI:
         if not self._networks.active_provider:
             raise ProviderNotConnectedError()
 
@@ -94,7 +94,7 @@ class BlockContainer(ConnectedChain):
 
     @property
     def _network_confirmations(self) -> int:
-        return self._provider.network.required_confirmations
+        return self.provider.network.required_confirmations
 
     def range(self, start: int = 0, stop: Optional[int] = None) -> Iterator[BlockAPI]:
         """
@@ -166,7 +166,7 @@ class BlockContainer(ConnectedChain):
             time.sleep(self._poll_wait_interval)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
-        return self._provider.get_block(block_id)
+        return self.provider.get_block(block_id)
 
 
 class AccountHistory(ConnectedChain):
@@ -295,9 +295,9 @@ class ChainManager(ConnectedChain):
         See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
         """
 
-        network_name = self._provider.network.name
+        network_name = self.provider.network.name
         if network_name not in self._chain_id_map:
-            self._chain_id_map[network_name] = self._provider.chain_id
+            self._chain_id_map[network_name] = self.provider.chain_id
 
         return self._chain_id_map[network_name]
 
@@ -308,7 +308,7 @@ class ChainManager(ConnectedChain):
         (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
 
-        return self._provider.gas_price
+        return self.provider.gas_price
 
     @property
     def base_fee(self) -> int:
@@ -322,7 +322,7 @@ class ChainManager(ConnectedChain):
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
         """
 
-        return self._provider.base_fee
+        return self.provider.base_fee
 
     @property
     def pending_timestamp(self) -> int:
@@ -384,7 +384,7 @@ class ChainManager(ConnectedChain):
         self.account_history.revert_to_block(self.blocks.height)
 
     def _get_test_provider(self, method_name: str) -> TestProviderAPI:
-        provider = self._provider
+        provider = self.provider
         if not isinstance(provider, TestProviderAPI):
             raise NotImplementedError(
                 f"Provider '{provider.name}' does not support method '{method_name}'."
