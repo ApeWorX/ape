@@ -124,7 +124,7 @@ def _list(cli_ctx, display_all):
 
 def upgrade_option(help=""):
     """
-    A ``click.option`` for upgrade plugin confirmation (``--upgrade``).
+    A ``click.option`` for upgrading plugins (``--upgrade``).
 
     Args:
         help (str): CLI option help text. Defaults to ``""``.
@@ -133,7 +133,6 @@ def upgrade_option(help=""):
     return click.option(
         "-U",
         "--upgrade",
-        "upgrade_option",
         default=False,
         is_flag=True,
         help=help,
@@ -145,8 +144,8 @@ def upgrade_option(help=""):
 @click.option("-v", "--version", help="Specify version (Default is latest)")
 @skip_confirmation_option(help="Don't ask for confirmation to add the plugin")
 @ape_cli_context()
-@upgrade_option(help="Specify if user wants to update plugin")
-def add(cli_ctx, plugin, version, skip_confirmation, upgrade_option):
+@upgrade_option(help="Upgrade the plugin to to the newest available version")
+def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
     if plugin.startswith("ape"):
         cli_ctx.abort(f"Namespace 'ape' in '{plugin}' is not required")
 
@@ -173,7 +172,7 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade_option):
         # NOTE: This is not abstracted into another function *on purpose*
 
         args = [sys.executable, "-m", "pip", "install", "--quiet"]
-        if upgrade_option:
+        if upgrade:
             args.append("--upgrade")
         args.append(plugin)
         result = subprocess.call(args)
@@ -188,8 +187,8 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade_option):
 @cli.command(short_help="Install all plugins in the local config file")
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
-@upgrade_option(help="Specify if user wants to update plugin")
-def install(cli_ctx, skip_confirmation, upgrade_option):
+@upgrade_option(help="Upgrade the plugin to to the newest available version")
+def install(cli_ctx, skip_confirmation, upgrade):
     any_install_failed = False
     cwd = getcwd()
     config_path = Path(cwd) / CONFIG_FILE_NAME
@@ -220,7 +219,7 @@ def install(cli_ctx, skip_confirmation, upgrade_option):
             # NOTE: This is not abstracted into another function *on purpose*
 
             args = [sys.executable, "-m", "pip", "install", "--quiet"]
-            if upgrade_option:
+            if upgrade:
                 args.append("--upgrade")
             args.append(package_name)
             result = subprocess.call(args)
