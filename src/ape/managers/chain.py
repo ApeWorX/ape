@@ -146,7 +146,7 @@ class BlockContainer(_ConnectedChain):
 
         Args:
             start (Optional[int]): The block number to start with. Defaults to the block
-              of the ``+1`` the current block number.
+              of the ``+1`` the current block number when this method was called.
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
             poll_wait_interval (int): The amount of seconds to wait before checking for
