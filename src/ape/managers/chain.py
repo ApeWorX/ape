@@ -238,7 +238,7 @@ class AccountHistory(_ConnectedChain):
 
     def items(self) -> Iterator[Tuple[AddressType, List[ReceiptAPI]]]:
         """
-        Iterate through the list of address-types to list of transactions.
+        Iterate through the list of address-types to list of transaction receipts.
 
         Returns:
             Iterator[Tuple[:class:`~ape.types.AddressType`, :class:`~ape.api.providers.ReceiptAPI`]]
@@ -251,7 +251,7 @@ class AccountHistory(_ConnectedChain):
 
         Raises:
             :class:`~ape.exceptions.ChainError`: When trying to append a transaction
-              that is already in the list.
+              receipt that is already in the list.
 
         Args:
             txn_receipt (:class:`~ape.api.providers.ReceiptAPI`): The transaction receipt to append.
