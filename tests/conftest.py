@@ -41,6 +41,11 @@ def networks():
 
 
 @pytest.fixture(scope="session")
+def chain():
+    yield ape.chain
+
+
+@pytest.fixture(scope="session")
 def project_folder(config):
     yield config.PROJECT_FOLDER
 
