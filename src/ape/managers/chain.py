@@ -93,7 +93,7 @@ class BlockContainer(ConnectedChain):
         return self.head.number
 
     @property
-    def _network_confirmations(self) -> int:
+    def network_confirmations(self) -> int:
         return self.provider.network.required_confirmations
 
     def range(self, start: int = 0, stop: Optional[int] = None) -> Iterator[BlockAPI]:
@@ -141,7 +141,7 @@ class BlockContainer(ConnectedChain):
             Iterator[:class:`~ape.api.providers.BlockAPI`]
         """
         if required_confirmations is None:
-            required_confirmations = self._network_confirmations
+            required_confirmations = self.network_confirmations
 
         # Get number of last block with the necessary amount of confirmations.
         latest_confirmed_block_number = self.height - required_confirmations
