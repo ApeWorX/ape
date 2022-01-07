@@ -187,8 +187,12 @@ class AccountHistory(ConnectedChain):
             List[:class:`~ape.api.providers.TransactionAPI`]: The list of transactions. If there
             are no recorded transactions, returns an empty list.
         """
+
         address_key: AddressType = self._convert(address, AddressType)
-        return self._map.get(address_key, [])
+        transactions = self._map.get(address_key, [])
+
+        # TODO: Use explorerAPI to get more transaction if possible
+        return transactions
 
     def __iter__(self) -> Iterator[AddressType]:
         """
@@ -266,28 +270,9 @@ class ChainManager(ConnectedChain):
     _snapshots: List[SnapshotID] = []
     _chain_id_map: Dict[str, int] = {}
 
-    account_history: AccountHistory = AccountHistory()
-    """A mapping of transactions from the active session to the account responsible."""
-
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
         return f"<ChainManager ({props})>"
-
-    @property
-    def provider(self) -> ProviderAPI:
-        """
-        The active :class:`~ape.api.providers.ProviderAPI`.
-
-        Raises:
-            :class:`~ape.exceptions.ProviderNotConnectedError`: When not connected
-              to a provider.
-        """
-
-        provider = self._networks.active_provider
-        if not provider:
-            raise ProviderNotConnectedError()
-
-        return provider
 
     @property
     def blocks(self) -> BlockContainer:
@@ -297,15 +282,22 @@ class ChainManager(ConnectedChain):
         return BlockContainer(self._networks)  # type: ignore
 
     @property
+    def account_history(self) -> AccountHistory:
+        """
+        A mapping of transactions from the active session to the account responsible.
+        """
+        return AccountHistory(self._networks)  # type: ignore
+
+    @property
     def chain_id(self) -> int:
         """
         The blockchain ID.
         See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
         """
 
-        network_name = self.provider.network.name
+        network_name = self._provider.network.name
         if network_name not in self._chain_id_map:
-            self._chain_id_map[network_name] = self.provider.chain_id
+            self._chain_id_map[network_name] = self._provider.chain_id
 
         return self._chain_id_map[network_name]
 
@@ -316,7 +308,7 @@ class ChainManager(ConnectedChain):
         (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
 
-        return self.provider.gas_price
+        return self._provider.gas_price
 
     @property
     def base_fee(self) -> int:
@@ -330,7 +322,7 @@ class ChainManager(ConnectedChain):
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
         """
 
-        return self.provider.base_fee
+        return self._provider.base_fee
 
     @property
     def pending_timestamp(self) -> int:
@@ -392,7 +384,7 @@ class ChainManager(ConnectedChain):
         self.account_history.revert_to_block(self.blocks.height)
 
     def _get_test_provider(self, method_name: str) -> TestProviderAPI:
-        provider = self.provider
+        provider = self._provider
         if not isinstance(provider, TestProviderAPI):
             raise NotImplementedError(
                 f"Provider '{provider.name}' does not support method '{method_name}'."

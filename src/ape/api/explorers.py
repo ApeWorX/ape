@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Iterator, Optional
 
+from ape.api import ReceiptAPI
 from ape.types import AddressType, ContractType
 from ape.utils import abstractdataclass, abstractmethod
 
@@ -48,8 +49,20 @@ class ExplorerAPI:
         Get the contract type for a given address if it has been published in an explorer.
 
         Args:
-            address (str): The contract address.
+            address (:class:`~ape.types.AddressType`): The contract address.
 
         Returns:
-            :class:`~ape.contracts.ContractType` if published, else ``None``.
+            Optional[:class:`~ape.contracts.ContractType`]: If not published, returns ``None``.
+        """
+
+    @abstractmethod
+    def get_account_transactions(self, address: AddressType) -> Iterator[ReceiptAPI]:
+        """
+        Get a list of list of transactions performed by an address.
+
+        Args:
+            address (:class:`~ape.types.AddressType`): The account address.
+
+        Returns:
+            Iterator[:class:`~ape.api.providers.ReceiptAPI`]
         """
