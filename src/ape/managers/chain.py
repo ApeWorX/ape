@@ -116,6 +116,12 @@ class BlockContainer(ConnectedChain):
                 f"'stop={stop}' cannot be greater than the chain length ({len(self)}). "
                 f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
             )
+        elif stop < start:
+            raise ValueError(f"stop '{stop}' cannot be less than start '{start}'.")
+        elif stop < 0:
+            raise ValueError(f"start '{start}' cannot be negative.")
+        elif start < 0:
+            raise ValueError(f"stop '{stop}' cannot be negative.")
 
         for i in range(start, stop):
             yield self._get_block(i)
