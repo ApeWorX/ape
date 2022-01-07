@@ -151,7 +151,6 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
 
     # NOTE: Add namespace prefix (prevents arbitrary installs)
     plugin = f"ape_{clean_plugin_name(plugin)}"
-
     if version:
         plugin = f"{plugin}=={version}"
 
@@ -159,25 +158,30 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
         cli_ctx.abort(f"Cannot add 1st class plugin '{plugin}'")
 
     elif is_plugin_installed(plugin):
-        cli_ctx.abort(f"Plugin '{plugin}' already installed")
+        cli_ctx.logger.info(f"Plugin '{plugin}' already installed.")
+        if upgrade:
+            cli_ctx.logger.info(f"Updating {plugin} plugin.")
+            args = [sys.executable, "-m", "pip", "install", "--quiet", "--upgrade", plugin]
+            result = subprocess.call(args)
+            if result == 0 and is_plugin_installed(plugin):
+                cli_ctx.logger.success(f"Plugin '{plugin}' has been added.")
+            else:
+                cli_ctx.logger.error(f"Failed to add '{plugin}'.")
+                sys.exit(1)
 
     elif (
         plugin in github_client.available_plugins
         or skip_confirmation
         or click.confirm(f"Install unknown 3rd party plugin '{plugin}'?")
     ):
-        cli_ctx.logger.info(f"Installing {plugin}...")
+        cli_ctx.logger.info(f"Installing '{plugin}'...")
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
 
-        args = [sys.executable, "-m", "pip", "install", "--quiet"]
-        if upgrade:
-            args.append("--upgrade")
-        args.append(plugin)
+        args = [sys.executable, "-m", "pip", "install", "--quiet", plugin]
         result = subprocess.call(args)
-        plugin_got_installed = is_plugin_installed(plugin)
-        if result == 0 and plugin_got_installed:
+        if result == 0 and is_plugin_installed(plugin):
             cli_ctx.logger.success(f"Plugin '{plugin}' has been added.")
         else:
             cli_ctx.logger.error(f"Failed to add '{plugin}'.")
@@ -205,8 +209,16 @@ def install(cli_ctx, skip_confirmation, upgrade):
             any_install_failed = True
         # check for installed check the config.yaml
         elif installed_plugin and available_plugin:
-            cli_ctx.logger.warning(f"Plugin '{module_name}' is trusted and already installed.")
-            pass
+            cli_ctx.logger.info(f"Plugin '{module_name}' is trusted and already installed.")
+            if upgrade:
+                cli_ctx.logger.info(f"Updating {module_name} plugin.")
+                args = [sys.executable, "-m", "pip", "install", "--quiet", "--upgrade", module_name]
+                result = subprocess.call(args)
+                if result == 0 and is_plugin_installed(module_name):
+                    cli_ctx.logger.success(f"Plugin '{module_name}' has been added.")
+                else:
+                    cli_ctx.logger.error(f"Failed to add '{module_name}'.")
+                    sys.exit(1)
 
         if not is_plugin_installed(module_name) and (
             module_name in github_client.available_plugins
