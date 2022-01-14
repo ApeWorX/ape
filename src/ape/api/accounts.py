@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
 
 import click
-from ethpm_types.contract_type import ContractInstance
 
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
@@ -13,7 +12,7 @@ from .address import AddressAPI
 from .providers import ReceiptAPI, TransactionAPI, TransactionType
 
 if TYPE_CHECKING:
-    from ape.contracts import ContractContainer
+    from ape.contracts import ContractContainer, ContractInstance
     from ape.managers.config import ConfigManager
 
 
@@ -175,7 +174,7 @@ class AccountAPI(AddressAPI):
 
         return self.call(txn, send_everything=value is None)
 
-    def deploy(self, contract: "ContractContainer", *args, **kwargs) -> ContractInstance:
+    def deploy(self, contract: "ContractContainer", *args, **kwargs) -> "ContractInstance":
         """
         Create a smart contract on the blockchain. The smart contract must compile before
         deploying and a provider must be active.
