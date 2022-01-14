@@ -146,6 +146,7 @@ def upgrade_option(help=""):
 @ape_cli_context()
 @upgrade_option(help="Upgrade the plugin to the newest available version")
 def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
+    args = [sys.executable, "-m", "pip", "install", "--quiet"]
     if plugin.startswith("ape"):
         cli_ctx.abort(f"Namespace 'ape' in '{plugin}' is not required")
 
@@ -161,7 +162,8 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
         cli_ctx.logger.info(f"Plugin '{plugin}' already installed.")
         if upgrade:
             cli_ctx.logger.info(f"Updating {plugin} plugin.")
-            args = [sys.executable, "-m", "pip", "install", "--quiet", "--upgrade", plugin]
+            args.append("--upgrade")
+            args.append(plugin)
             result = subprocess.call(args)
             if result == 0 and is_plugin_installed(plugin):
                 cli_ctx.logger.success(f"Plugin '{plugin}' has been added.")
@@ -179,7 +181,7 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
 
-        args = [sys.executable, "-m", "pip", "install", "--quiet", plugin]
+        args.append(plugin)
         result = subprocess.call(args)
         if result == 0 and is_plugin_installed(plugin):
             cli_ctx.logger.success(f"Plugin '{plugin}' has been added.")
@@ -199,6 +201,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
     cli_ctx.logger.info(f"Installing plugins from config file at {config_path}")
     plugins = config.get_config("plugins") or []
     for plugin in plugins:
+        args = [sys.executable, "-m", "pip", "install", "--quiet"]
         module_name, package_name = extract_module_and_package_install_names(plugin)
 
         available_plugin = module_name in github_client.available_plugins
@@ -212,7 +215,8 @@ def install(cli_ctx, skip_confirmation, upgrade):
             cli_ctx.logger.info(f"Plugin '{module_name}' is trusted and already installed.")
             if upgrade:
                 cli_ctx.logger.info(f"Updating {module_name} plugin.")
-                args = [sys.executable, "-m", "pip", "install", "--quiet", "--upgrade", module_name]
+                args.append("--upgrade")
+                args.append(module_name)
                 result = subprocess.call(args)
                 if result == 0 and is_plugin_installed(module_name):
                     cli_ctx.logger.success(f"Plugin '{module_name}' has been added.")
