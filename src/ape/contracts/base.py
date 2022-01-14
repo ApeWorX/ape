@@ -255,9 +255,11 @@ class ContractInstance(AddressAPI):
         Returns:
             List[str]
         """
-        return list(super(AddressAPI, self).__dir__()) + [
-            abi.name for abi in self._contract_type.abi
-        ]
+        if self._contract_type.abi:
+            return list(super(AddressAPI, self).__dir__()) + [
+                abi.name for abi in self._contract_type.abi
+            ]
+        return []
 
     def __getattr__(self, attr_name: str) -> Any:
         """
@@ -367,16 +369,19 @@ class ContractContainer:
 
     @property
     def _deployment_bytecode(self) -> bytes:
-        if self.contract_type.deploymentBytecode and self.contract_type.deploymentBytecode.bytecode:
-            return to_bytes(hexstr=self.contract_type.deploymentBytecode.bytecode)
+        if (
+            self.contract_type.deployment_bytecode
+            and self.contract_type.deployment_bytecode.bytecode
+        ):
+            return to_bytes(hexstr=self.contract_type.deployment_bytecode.bytecode)
 
         else:
             return b""
 
     @property
     def _runtime_bytecode(self) -> bytes:
-        if self.contract_type.runtimeBytecode and self.contract_type.runtimeBytecode.bytecode:
-            return to_bytes(hexstr=self.contract_type.runtimeBytecode.bytecode)
+        if self.contract_type.runtime_bytecode and self.contract_type.runtime_bytecode.bytecode:
+            return to_bytes(hexstr=self.contract_type.runtime_bytecode.bytecode)
 
         else:
             return b""

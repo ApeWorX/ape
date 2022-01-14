@@ -55,10 +55,10 @@ def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
     # Display bytecode size for *all* contract types (not just ones we compiled)
     code_size = []
     for contract in contract_types.values():
-        if not contract.deploymentBytecode:
+        if not contract.deployment_bytecode:
             continue  # Skip if not bytecode to display
 
-        bytecode = contract.deploymentBytecode.bytecode
+        bytecode = contract.deployment_bytecode.bytecode
 
         if bytecode:
             code_size.append((contract.name, len(bytecode) // 2))
