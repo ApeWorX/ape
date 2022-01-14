@@ -435,17 +435,16 @@ class ProjectManager:
 
         return compilers
 
+    # @property
+    # def meta(self) -> PackageMeta:
+    #     return PackageMeta(**self.config.get_config("ethpm").serialize())
 
-# @property
-# def meta(self) -> PackageMeta:
-#     return PackageMeta(**self.config.get_config("ethpm").serialize())
-
-# def publish_manifest(self):
-#     manifest = self.manifest.dict()
-#     if not manifest["name"]:
-#         raise ProjectError("Need name to release manifest")
-#     if not manifest["version"]:
-#         raise ProjectError("Need version to release manifest")
-#     TODO: Clean up manifest and minify it
-#     TODO: Publish sources to IPFS and replace with CIDs
-#     TODO: Publish to IPFS
+    # def publish_manifest(self):
+    #     manifest = self.manifest.dict()
+    #     if not manifest["name"]:
+    #         raise ProjectError("Need name to release manifest")
+    #     if not manifest["version"]:
+    #         raise ProjectError("Need version to release manifest")
+    #     TODO: Clean up manifest and minify it
+    #     TODO: Publish sources to IPFS and replace with CIDs
+    #     TODO: Publish to IPFS

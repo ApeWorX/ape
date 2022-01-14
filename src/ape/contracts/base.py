@@ -4,12 +4,7 @@ from eth_utils import to_bytes
 from ethpm_types import ABI, ContractType
 
 from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
-from ape.exceptions import (
-    ArgumentsLengthError,
-    ContractDeployError,
-    ProviderNotConnectedError,
-    TransactionError,
-)
+from ape.exceptions import ArgumentsLengthError, ProviderNotConnectedError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import dataclass
@@ -28,7 +23,7 @@ class ContractConstructor:
 
     def __post_init__(self):
         if len(self.deployment_bytecode) == 0:
-            raise ContractDeployError(message="No bytecode to deploy.")
+            logger.warning("Deploying an empty contract (no bytecode)")
 
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
@@ -235,7 +230,8 @@ class ContractInstance(AddressAPI):
     _contract_type: ContractType
 
     def __repr__(self) -> str:
-        return f"<{self._contract_type.name} {self.address}>"
+        contract_name = self._contract_type.name or "<Unnamed Contract>"
+        return f"<{contract_name} {self.address}>"
 
     @property
     def address(self) -> AddressType:
