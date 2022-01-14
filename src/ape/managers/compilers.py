@@ -81,9 +81,9 @@ class CompilerManager:
             for path in paths_to_compile:
                 logger.info(f"Compiling '{self._get_contract_path(path)}'.")
 
-            compiler_list = self.registered_compilers[extension].compile(paths_to_compile)
+            compiled_contracts = self.registered_compilers[extension].compile(paths_to_compile)
 
-            for contract_type in compiler_list:
+            for contract_type in compiled_contracts:
 
                 if contract_type.name in contract_types_dict:
                     raise CompilerError("ContractType collision across compiler plugins.")
