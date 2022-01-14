@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from eth_utils import to_bytes
-from ethpm_types.abi import ABI
-from ethpm_types.contract_type import ContractType
+from ethpm_types import ABI, ContractType
 
 from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.exceptions import (

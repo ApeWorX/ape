@@ -1,6 +1,6 @@
 from typing import Iterator, Optional
 
-from ethpm_types.contract_type import ContractType
+from ethpm_types import ContractType
 
 from ape.types import AddressType
 from ape.utils import abstractdataclass, abstractmethod

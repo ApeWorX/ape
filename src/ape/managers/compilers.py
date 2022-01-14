@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Dict, List, Set
 
 from dataclassy import dataclass
-from ethpm_types.contract_type import ContractType
+from ethpm_types import ContractType
 
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError

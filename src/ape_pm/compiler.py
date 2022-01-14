@@ -2,8 +2,7 @@ import json
 from pathlib import Path
 from typing import List, Set
 
-from ethpm_types.abi import ABI
-from ethpm_types.contract_type import ContractType
+from ethpm_types import ABI, ContractType
 from pydantic import parse_obj_as
 
 from ape.api import CompilerAPI

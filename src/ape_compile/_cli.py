@@ -1,7 +1,7 @@
 from typing import Dict
 
 import click
-from ethpm_types.contract_type import ContractType
+from ethpm_types import ContractType
 
 from ape.cli import ape_cli_context, contract_file_paths_argument
 

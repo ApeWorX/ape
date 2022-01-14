@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 
 import click
-from ethpm_types.contract_type import ContractType
+from ethpm_types import ContractType
 
 from ape import networks, project
 from ape.cli.choices import (

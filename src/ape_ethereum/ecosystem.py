@@ -10,7 +10,7 @@ from eth_account._utils.legacy_transactions import (
 )
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak, to_bytes, to_checksum_address, to_int
-from ethpm_types.abi import ABI
+from ethpm_types import ABI
 from hexbytes import HexBytes
 
 from ape.api import (

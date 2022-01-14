@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Set
 
-from ethpm_types.contract_type import ContractType
+from ethpm_types import ContractType
 
 from ape.utils import abstractdataclass, abstractmethod
 

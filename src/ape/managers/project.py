@@ -4,9 +4,7 @@ from typing import Collection, Dict, List, Optional, Union
 
 import requests
 from dataclassy import dataclass
-from ethpm_types.contract_type import ContractType
-from ethpm_types.manifest import PackageManifest
-from ethpm_types.source import Checksum, Compiler, Source
+from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.utils import compute_checksum
 
 from ape.contracts import ContractContainer

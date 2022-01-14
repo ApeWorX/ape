@@ -2,10 +2,16 @@ import sys
 from typing import Union
 
 from eth_typing import ChecksumAddress
-from ethpm_types.abi import ABI
-from ethpm_types.contract_type import Bytecode, ContractType
-from ethpm_types.manifest import PackageManifest, PackageMeta
-from ethpm_types.source import Checksum, Compiler, Source
+from ethpm_types import (
+    ABI,
+    Bytecode,
+    Checksum,
+    Compiler,
+    ContractType,
+    PackageManifest,
+    PackageMeta,
+    Source,
+)
 from hexbytes import HexBytes
 
 from .signatures import MessageSignature, SignableMessage, TransactionSignature
