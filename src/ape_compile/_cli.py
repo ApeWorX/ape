@@ -69,7 +69,7 @@ def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
 
     click.echo()
     click.echo("============ Deployment Bytecode Sizes ============")
-    indent = max(len(i[0]) for i in code_size)
+    indent = max(len(i[0]) for i in code_size)  # type: ignore
     for name, size in sorted(code_size, key=lambda k: k[1], reverse=True):
         pct = size / 24577
         # pct_color = color(next((i[1] for i in CODESIZE_COLORS if pct >= i[0]), ""))

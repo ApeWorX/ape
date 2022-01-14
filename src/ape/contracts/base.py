@@ -111,7 +111,7 @@ class ContractCallHandler:
     abis: List[ABI]
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -182,7 +182,7 @@ class ContractTransactionHandler:
     abis: List[ABI]
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -256,7 +256,7 @@ class ContractInstance(AddressAPI):
             List[str]
         """
         return list(super(AddressAPI, self).__dir__()) + [
-            abi.name for abi in self._contract_type.abi
+            abi.name for abi in self._contract_type.abi  # type: ignore
         ]
 
     def __getattr__(self, attr_name: str) -> Any:

@@ -91,7 +91,7 @@ class CompilerManager:
 
                 contract_types_dict[contract_type.name] = contract_type
 
-        return contract_types_dict
+        return contract_types_dict  # type: ignore
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = set(path.suffix for path in contract_filepaths)

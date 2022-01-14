@@ -250,7 +250,7 @@ class Ethereum(EcosystemAPI):
             return HexBytes(b"")
 
     def decode_calldata(self, abi: ABI, raw_data: bytes) -> Tuple[Any, ...]:
-        output_types = [o.canonical_type for o in abi.outputs]
+        output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
         try:
             vm_return_values = abi_decode(output_types, raw_data)
             if not vm_return_values:
@@ -343,7 +343,8 @@ class Ethereum(EcosystemAPI):
     def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
         filter_id = keccak(to_bytes(text=abi.selector))
         event_data = next(log for log in receipt.logs if log["filter_id"] == filter_id)
+
         return ContractLog(  # type: ignore
             name=abi.name,
-            inputs={i.name: event_data[i.name] for i in abi.inputs},
+            inputs={i.name: event_data[i.name] for i in abi.inputs},  # type: ignore
         )
