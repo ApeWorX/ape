@@ -184,8 +184,7 @@ class AccountAPI(AddressAPI):
                 The type of contract to deploy.
 
         Returns:
-            :class:`~ape.contracts.ContractInstance`: An instance
-            of the deployed contract.
+            :class:`~ape.contracts.ContractInstance`: An instance of the deployed contract.
         """
 
         txn = contract(*args, **kwargs)

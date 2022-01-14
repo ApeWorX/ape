@@ -255,11 +255,9 @@ class ContractInstance(AddressAPI):
         Returns:
             List[str]
         """
-        if self._contract_type.abi:
-            return list(super(AddressAPI, self).__dir__()) + [
-                abi.name for abi in self._contract_type.abi
-            ]
-        return []
+        return list(super(AddressAPI, self).__dir__()) + [
+            abi.name for abi in self._contract_type.abi
+        ]
 
     def __getattr__(self, attr_name: str) -> Any:
         """
