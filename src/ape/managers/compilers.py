@@ -71,8 +71,7 @@ class CompilerManager:
               as ``pathlib.Path`` objects.
 
         Returns:
-            Dict[str, :class:`ethpm_types.contract_type.ContractType`]: A mapping of
-            contract names to their type.
+            Dict[str, ``ContractType``]: A mapping of contract names to their type.
         """
 
         extensions = self._get_contract_extensions(contract_filepaths)

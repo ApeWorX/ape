@@ -198,6 +198,7 @@ class AccountAPI(AddressAPI):
         logger.success(f"Contract '{contract.contract_type.name}' deployed to: {address}")
 
         from ape import _converters
+        from ape.contracts import ContractInstance
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,

@@ -54,7 +54,7 @@ class ExplorerAPI:
             address (:class:`~ape.types.AddressType`): The contract address.
 
         Returns:
-            Optional[:class:`ethpm_types.contract_type.ContractType` if published, else ``None``.
+            Optional[``ContractType``] if published, else ``None``.
         """
 
     @abstractmethod

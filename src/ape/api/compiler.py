@@ -48,7 +48,7 @@ class CompilerAPI:
             contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
 
         Returns:
-            List[:class:`ethpm_types.contract_type.ContractType`]
+            List[``ContractType``]
         """
 
     def __repr__(self) -> str:

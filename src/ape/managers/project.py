@@ -149,7 +149,7 @@ class ProjectManager:
     @property
     def cached_manifest(self) -> Optional[PackageManifest]:
         """
-        The cached :class:`ethpm_types.manifest.PackageManifest`.
+        The cached ``PackageManifest``.
         If nothing has been compiled, then no manifest will exist, and
         this will return ``None``.
         """
@@ -283,8 +283,8 @@ class ProjectManager:
               Defaults to ``True``.
 
         Returns:
-            Dict[str, :class:`ethpm_types.contract_type.ContractType`]: A
-            dictionary of contract names to their types for each compiled contract.
+            Dict[str, ``ContractType``]: A dictionary of contract names to their
+            types for each compiled contract.
         """
 
         if isinstance(file_paths, Path):
@@ -346,7 +346,7 @@ class ProjectManager:
         See :meth:`~ape.managers.project.ProjectManager.load_contracts` for more information.
 
         Returns:
-            Dict[str, :class:`ethpm_types.contract_type.ContractType`]
+            Dict[str, ``ContractType``]
         """
 
         return self.load_contracts()
@@ -424,7 +424,7 @@ class ProjectManager:
         A list of objects representing the raw-data specifics of a compiler.
 
         Returns:
-            List[:class:`ethpm_types.source.Compiler`]
+            List[``Compiler``]
         """
 
         compilers = []

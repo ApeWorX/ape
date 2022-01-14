@@ -189,7 +189,7 @@ class ReceiptAPI:
     to not wait for confirmations.
 
     Get a receipt by making transactions in ``ape``, such as interacting with
-    a :class:`ethpm_types.contract_type.ContractInstance`.
+    a ``ContractInstance``.
     """
 
     provider: "ProviderAPI"
