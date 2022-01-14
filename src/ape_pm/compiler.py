@@ -2,7 +2,9 @@ import json
 from pathlib import Path
 from typing import List, Set
 
+from ethpm_types.abi import ABI
 from ethpm_types.contract_type import ContractType
+from pydantic import parse_obj_as
 
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
@@ -28,12 +30,12 @@ class InterfaceCompiler(CompilerAPI):
                 raise CompilerError("Not a valid ABI interface JSON file.")
 
             else:
-                contract_types.append(
-                    ContractType(  # type: ignore
-                        name=path.stem,
-                        abi=data,
-                        source_id=str(path),
-                    )
+                contract = ContractType(  # type: ignore
+                    contractName=path.stem,
+                    abi=parse_obj_as(List[ABI], data),
+                    sourceId=str(path),
                 )
+
+                contract_types.append(contract)
 
         return contract_types

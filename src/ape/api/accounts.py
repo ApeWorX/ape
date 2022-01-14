@@ -185,7 +185,7 @@ class AccountAPI(AddressAPI):
                 The type of contract to deploy.
 
         Returns:
-            :class:`ethpm_types.contract_type.ContractInstance`: An instance
+            :class:`~ape.contracts.ContractInstance`: An instance
             of the deployed contract.
         """
 

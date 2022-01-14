@@ -76,20 +76,22 @@ class CompilerManager:
         """
 
         extensions = self._get_contract_extensions(contract_filepaths)
-        contract_types = {}
+        contract_types_dict = {}
         for extension in extensions:
             paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
             for path in paths_to_compile:
                 logger.info(f"Compiling '{self._get_contract_path(path)}'.")
 
-            for contract_type in self.registered_compilers[extension].compile(paths_to_compile):
+            compiler_list = self.registered_compilers[extension].compile(paths_to_compile)
 
-                if contract_type.name in contract_types:
+            for contract_type in compiler_list:
+
+                if contract_type.name in contract_types_dict:
                     raise CompilerError("ContractType collision across compiler plugins.")
 
-                contract_types[contract_type.name] = contract_type
+                contract_types_dict[contract_type.name] = contract_type
 
-        return contract_types
+        return contract_types_dict
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = set(path.suffix for path in contract_filepaths)
