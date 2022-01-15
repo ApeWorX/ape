@@ -505,14 +505,14 @@ the <a class="reference external" href="https://github.com/ApeWorX/ape-vyper">ap
 this API.</p>
 <dl class="py method">
 <dt id="ape.api.compiler.CompilerAPI.compile">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><span class="pre">ape.types.contract.ContractType</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.compile" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.compile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compile the given source files. All compiler plugins must implement this function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>contract_filepaths</strong> (<em>List</em><em>[</em><em>pathlib.Path</em><em>]</em>) – A list of source file paths to compile.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
+<dd class="field-even"><p>List[<code class="docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -698,7 +698,7 @@ get the URL for.</p>
 
 <dl class="py method">
 <dt id="ape.api.explorers.ExplorerAPI.get_contract_type">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_contract_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.contract.ContractType" title="ape.types.contract.ContractType"><span class="pre">ape.types.contract.ContractType</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.get_contract_type" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_contract_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.get_contract_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the contract type for a given address if it has been published in an explorer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -708,7 +708,7 @@ get the URL for.</p>
 <dd class="field-even"><p>If not published, returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optional[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
+<dd class="field-odd"><p>Optional[<code class="docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
