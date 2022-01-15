@@ -10,6 +10,7 @@ from eth_account._utils.legacy_transactions import (
 )
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak, to_bytes, to_checksum_address, to_int
+from ethpm_types import ABI
 from hexbytes import HexBytes
 
 from ape.api import (
@@ -25,7 +26,7 @@ from ape.api import (
 )
 from ape.contracts import ContractLog
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
-from ape.types import ABI, AddressType
+from ape.types import AddressType
 
 NETWORKS = {
     # chain_id, network_id
@@ -249,7 +250,7 @@ class Ethereum(EcosystemAPI):
             return HexBytes(b"")
 
     def decode_calldata(self, abi: ABI, raw_data: bytes) -> Tuple[Any, ...]:
-        output_types = [o.canonical_type for o in abi.outputs]
+        output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
         try:
             vm_return_values = abi_decode(output_types, raw_data)
             if not vm_return_values:
@@ -342,7 +343,8 @@ class Ethereum(EcosystemAPI):
     def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
         filter_id = keccak(to_bytes(text=abi.selector))
         event_data = next(log for log in receipt.logs if log["filter_id"] == filter_id)
+
         return ContractLog(  # type: ignore
             name=abi.name,
-            inputs={i.name: event_data[i.name] for i in abi.inputs},
+            inputs={i.name: event_data[i.name] for i in abi.inputs},  # type: ignore
         )

@@ -1,6 +1,8 @@
 from typing import Iterator, Optional
 
-from ape.types import AddressType, ContractType
+from ethpm_types import ContractType
+
+from ape.types import AddressType
 from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
@@ -52,7 +54,7 @@ class ExplorerAPI:
             address (:class:`~ape.types.AddressType`): The contract address.
 
         Returns:
-            Optional[:class:`~ape.contracts.ContractType`]: If not published, returns ``None``.
+            Optional[``ContractType``]: If not published, returns ``None``.
         """
 
     @abstractmethod

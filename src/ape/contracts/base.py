@@ -1,16 +1,12 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from eth_utils import to_bytes
+from ethpm_types import ABI, ContractType
 
 from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
-from ape.exceptions import (
-    ArgumentsLengthError,
-    ContractDeployError,
-    ProviderNotConnectedError,
-    TransactionError,
-)
+from ape.exceptions import ArgumentsLengthError, ProviderNotConnectedError, TransactionError
 from ape.logging import logger
-from ape.types import ABI, AddressType, ContractType
+from ape.types import AddressType
 from ape.utils import dataclass
 
 if TYPE_CHECKING:
@@ -27,7 +23,7 @@ class ContractConstructor:
 
     def __post_init__(self):
         if len(self.deployment_bytecode) == 0:
-            raise ContractDeployError(message="No bytecode to deploy.")
+            logger.warning("Deploying an empty contract (no bytecode)")
 
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
@@ -109,7 +105,7 @@ class ContractCallHandler:
     abis: List[ABI]
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -180,7 +176,7 @@ class ContractTransactionHandler:
     abis: List[ABI]
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -234,7 +230,8 @@ class ContractInstance(AddressAPI):
     _contract_type: ContractType
 
     def __repr__(self) -> str:
-        return f"<{self._contract_type.contractName} {self.address}>"
+        contract_name = self._contract_type.name or "<Unnamed Contract>"
+        return f"<{contract_name} {self.address}>"
 
     @property
     def address(self) -> AddressType:
@@ -254,7 +251,7 @@ class ContractInstance(AddressAPI):
             List[str]
         """
         return list(super(AddressAPI, self).__dir__()) + [
-            abi.name for abi in self._contract_type.abi
+            abi.name for abi in self._contract_type.abi  # type: ignore
         ]
 
     def __getattr__(self, attr_name: str) -> Any:
@@ -334,7 +331,7 @@ class ContractContainer:
     _converter: "ConversionManager"
 
     def __repr__(self) -> str:
-        return f"<{self.contract_type.contractName}>"
+        return f"<{self.contract_type.name}>"
 
     def at(self, address: str) -> ContractInstance:
         """
@@ -365,16 +362,19 @@ class ContractContainer:
 
     @property
     def _deployment_bytecode(self) -> bytes:
-        if self.contract_type.deploymentBytecode and self.contract_type.deploymentBytecode.bytecode:
-            return to_bytes(hexstr=self.contract_type.deploymentBytecode.bytecode)
+        if (
+            self.contract_type.deployment_bytecode
+            and self.contract_type.deployment_bytecode.bytecode
+        ):
+            return to_bytes(hexstr=self.contract_type.deployment_bytecode.bytecode)
 
         else:
             return b""
 
     @property
     def _runtime_bytecode(self) -> bytes:
-        if self.contract_type.runtimeBytecode and self.contract_type.runtimeBytecode.bytecode:
-            return to_bytes(hexstr=self.contract_type.runtimeBytecode.bytecode)
+        if self.contract_type.runtime_bytecode and self.contract_type.runtime_bytecode.bytecode:
+            return to_bytes(hexstr=self.contract_type.runtime_bytecode.bytecode)
 
         else:
             return b""
