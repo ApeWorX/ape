@@ -588,6 +588,15 @@ class TestProviderAPI(ProviderAPI):
             snapshot_id (str): The snapshot ID.
         """
 
+    @abstractmethod
+    def increase_time(self, seconds: int):
+        """
+        Increase the time into the future for testing purposes.
+
+        Args:
+            seconds (int): The amount of seconds to increase time.
+        """
+
 
 class Web3Provider(ProviderAPI):
     """
