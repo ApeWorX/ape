@@ -13,7 +13,7 @@ from web3 import Web3
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
-from ape.utils import abstractdataclass, abstractmethod
+from ape.utils import abstractdataclass, abstractmethod, raises_not_implemented
 
 from . import networks
 from .config import ConfigItem
@@ -354,13 +354,6 @@ class BlockAPI:
         """
 
 
-def not_implemented(fn):
-    def inner(*args, **kwargs):
-        raise NotImplementedError(fn.__name__)
-
-    return inner
-
-
 @abstractdataclass
 class ProviderAPI:
     """
@@ -563,15 +556,15 @@ class ProviderAPI:
             Iterator[dict]: A dictionary of events.
         """
 
-    @not_implemented
+    @raises_not_implemented
     def snapshot(self) -> SnapshotID:
         pass
 
-    @not_implemented
+    @raises_not_implemented
     def revert(self, snapshot_id: SnapshotID):
         pass
 
-    @not_implemented
+    @raises_not_implemented
     def set_timestamp(self, new_timestamp: int):
         pass
 
