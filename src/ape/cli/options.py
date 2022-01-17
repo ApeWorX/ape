@@ -1,6 +1,7 @@
 from typing import List, Optional, Union
 
 import click
+from ethpm_types import ContractType
 
 from ape import networks, project
 from ape.cli.choices import (
@@ -13,7 +14,6 @@ from ape.cli.utils import Abort
 from ape.exceptions import ContractError
 from ape.logging import LogLevel, logger
 from ape.managers.project import ProjectManager
-from ape.types import ContractType
 
 
 class ApeCliContextObject:

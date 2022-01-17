@@ -195,7 +195,8 @@ class AccountAPI(AddressAPI):
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
         address = click.style(receipt.contract_address, bold=True)
-        logger.success(f"Contract '{contract.contract_type.contractName}' deployed to: {address}")
+        contract_name = contract.contract_type.name or "<Unnamed Contract>"
+        logger.success(f"Contract '{contract_name}' deployed to: {address}")
 
         from ape import _converters
         from ape.contracts import ContractInstance

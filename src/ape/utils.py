@@ -8,7 +8,6 @@ import zipfile
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from functools import lru_cache, partial
-from hashlib import md5
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Set
@@ -213,24 +212,6 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
 
     else:
         return {}
-
-
-def compute_checksum(source: bytes, algorithm: str = "md5") -> str:
-    """
-    Compute the checksum for the given bytes.
-
-    Args:
-        source (bytes): The bytes to checksum.
-        algorithm (str): Message-Digest Algorithm 5
-                            cryptographic hash function.
-                        Defaults to md5.
-    """
-    if algorithm == "md5":
-        hasher = md5
-    else:
-        raise ValueError(f"Unknown algorithm `{algorithm}`.")
-
-    return hasher(source).hexdigest()
 
 
 GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", "private_key"))

@@ -6,7 +6,7 @@ from .utils import skip_projects, skip_projects_except
 @skip_projects(["unregistered-contracts", "one-interface", "geth"])
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "WARNING" in result.output
     assert "No 'contracts/' directory detected" in result.output
 
@@ -14,13 +14,16 @@ def test_compile_missing_contracts_dir(ape_cli, runner, project):
 @skip_projects_except(["unregistered-contracts"])
 def test_missing_extensions(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "WARNING: No compilers detected for the " "following extensions:" in result.output
     assert ".test" in result.output
     assert ".foobar" in result.output
 
+
+@skip_projects_except(["unregistered-contracts"])
+def test_no_compiler_for_extension(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile", "contracts/Contract.test"])
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert (
         "WARNING: No compilers detected for the " "following extensions: .test"
     ) in result.output
@@ -33,9 +36,8 @@ def test_compile(ape_cli, runner, project):
     # First time it compiles, it compiles fully
     for file in project.path.glob("contracts/**/*"):
         assert file.stem in result.output
-
     result = runner.invoke(ape_cli, ["compile"])
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     # First time it compiles, it caches
     for file in project.path.glob("contracts/**/*"):
         assert file.stem not in result.output
@@ -62,7 +64,7 @@ def test_compile_partial_extension_does_not_compile(ape_cli, runner, project, cl
 @skip_projects_except([])
 def test_compile_contracts(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile", "--size"])
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     # Still caches but displays bytecode size
     for file in project.path.glob("contracts/**/*"):
         assert file.stem in result.output
