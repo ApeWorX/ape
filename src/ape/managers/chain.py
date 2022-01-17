@@ -369,7 +369,8 @@ class ChainManager(_ConnectedChain):
             chain.pending_timestamp += 3600
         """
 
-        return int(time.time() + self._time_offset)
+        pending_block = self.provider.get_block("pending")
+        return int(pending_block.timestamp + self._time_offset)
 
     @pending_timestamp.setter
     def pending_timestamp(self, new_value: int):
