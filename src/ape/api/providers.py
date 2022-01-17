@@ -558,15 +558,36 @@ class ProviderAPI:
 
     @raises_not_implemented
     def snapshot(self) -> SnapshotID:
-        pass
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overriden.
+        """
 
     @raises_not_implemented
     def revert(self, snapshot_id: SnapshotID):
-        pass
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overriden.
+        """
 
     @raises_not_implemented
     def set_timestamp(self, new_timestamp: int):
-        pass
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overriden.
+        """
 
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self._chain:
