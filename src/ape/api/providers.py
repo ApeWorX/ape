@@ -205,6 +205,7 @@ class ReceiptAPI:
     sender: str
     receiver: str
     nonce: int
+    _block_time: int
 
     def __post_init__(self):
         txn_hash = self.txn_hash.hex() if isinstance(self.txn_hash, HexBytes) else self.txn_hash
@@ -272,7 +273,7 @@ class ReceiptAPI:
                 if confirmations_occurred == self.required_confirmations:
                     break
 
-                time.sleep(5)
+                time.sleep(self._block_time)
 
         return self
 
@@ -660,6 +661,7 @@ class Web3Provider(ProviderAPI):
             {
                 "provider": self,
                 "required_confirmations": required_confirmations,
+                "block_time": self.network.block_time,
                 **txn,
                 **receipt_data,
             }
