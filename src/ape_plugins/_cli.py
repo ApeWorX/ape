@@ -172,8 +172,8 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
                 sys.exit(1)
         else:
             cli_ctx.logger.warning(
-                f"{plugin} has already installed."
-                f"Please type --upgrade if you want to update {plugin}"
+                f"{plugin} is already installed. "
+                f"Use the '--upgrade' if you want to update '{plugin}'."
             )
 
     elif (
@@ -217,7 +217,6 @@ def install(cli_ctx, skip_confirmation, upgrade):
             any_install_failed = True
         # check for installed check the config.yaml
         elif installed_plugin and available_plugin:
-            cli_ctx.logger.info(f"Plugin '{module_name}' is trusted and already installed.")
             if upgrade:
                 cli_ctx.logger.info(f"Updating {module_name} plugin.")
                 args.append("--upgrade")
@@ -226,12 +225,12 @@ def install(cli_ctx, skip_confirmation, upgrade):
                 if result == 0 and is_plugin_installed(module_name):
                     cli_ctx.logger.success(f"Plugin '{module_name}' has been upgraded.")
                 else:
-                    cli_ctx.logger.error(f"Failed to add '{module_name}'.")
-                    sys.exit(1)
+                    cli_ctx.logger.error(f"Failed to upgrade '{module_name}'.")
+                    any_install_failed = True
             else:
                 cli_ctx.logger.warning(
-                    f"{module_name} has already installed."
-                    f"Please type --upgrade if you want to update {module_name}"
+                    f"{module_name} is already installed. "
+                    f"Use the '--upgrade' option if you want to update '{plugin}'"
                 )
 
         if not is_plugin_installed(module_name) and (
