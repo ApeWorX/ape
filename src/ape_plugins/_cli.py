@@ -234,8 +234,6 @@ def install(cli_ctx, skip_confirmation, upgrade):
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
-
-            args = [sys.executable, "-m", "pip", "install", "--quiet"]
             if upgrade:
                 args.append("--upgrade")
             args.append(package_name)
