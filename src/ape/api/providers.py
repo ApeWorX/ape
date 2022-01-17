@@ -382,6 +382,14 @@ class ProviderAPI:
     request_header: str
     """A header to set on HTTP/RPC requests."""
 
+    def __getattr__(self, item):
+        # Check if trying to use a 'TestProvierAPI' method.
+        test_provider_api_members = [m for m in dir(TestProviderAPI) if m not in dir(ProviderAPI)]
+        if item in test_provider_api_members:
+            raise NotImplementedError(f"{self.name} is not a 'TestProviderAPI' implementation.")
+
+        raise NotImplementedError(f"ProviderAPI has no member '{item}'.")
+
     @abstractmethod
     def connect(self):
         """
