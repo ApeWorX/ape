@@ -20,7 +20,7 @@ from .utils import skip_projects_except
 )
 def test_invocation(ape_cli, runner, args):
     result = runner.invoke(ape_cli, args)
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
 
 
 # Only run these tests once (limited to single arbitrary project).

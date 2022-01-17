@@ -77,6 +77,7 @@ setup(
         "click>=8.0.0",
         "dataclassy==0.10.4",  # NOTE: Pinned due to issue with `Type[<nothing>]`
         "eth-account>=0.5.6,<0.6.0",
+        "ethpm-types>=0.1.0b2",
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
         "pyyaml>=0.2.5",

@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import List, Set
 
-from ape.types import ContractType
+from ethpm_types import ContractType
+
 from ape.utils import abstractdataclass, abstractmethod
 
 from .config import ConfigItem
@@ -47,7 +48,7 @@ class CompilerAPI:
             contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
 
         Returns:
-            List[:class:`~ape.type.contract.ContractType`]
+            List[``ContractType``]
         """
 
     def __repr__(self) -> str:
