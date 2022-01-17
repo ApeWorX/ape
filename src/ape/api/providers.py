@@ -589,7 +589,7 @@ class TestProviderAPI(ProviderAPI):
         """
 
     @abstractmethod
-    def set_timestamp(self, new_timestamp: int) -> int:
+    def set_timestamp(self, new_timestamp: int):
         """
         Change the pending timestamp.
 
