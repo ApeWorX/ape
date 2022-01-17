@@ -372,7 +372,7 @@ class ChainManager(_ConnectedChain):
 
     @pending_timestamp.setter
     def pending_timestamp(self, new_value: int):
-        self.provider.set_timestamp(new_value)
+        self.provider.set_timestamp(new_value)  # type: ignore
 
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
@@ -392,7 +392,7 @@ class ChainManager(_ConnectedChain):
         Returns:
             :class:`~ape.types.SnapshotID`: The snapshot ID.
         """
-        snapshot_id = self.provider.snapshot()
+        snapshot_id = self.provider.snapshot()  # type: ignore
 
         if snapshot_id not in self._snapshots:
             self._snapshots.append(snapshot_id)
@@ -424,5 +424,5 @@ class ChainManager(_ConnectedChain):
             snapshot_index = self._snapshots.index(snapshot_id)
             self._snapshots = self._snapshots[:snapshot_index]
 
-        self.provider.revert(snapshot_id)
+        self.provider.revert(snapshot_id)  # type: ignore
         self.account_history.revert_to_block(self.blocks.height)

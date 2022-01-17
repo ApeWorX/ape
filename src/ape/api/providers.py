@@ -382,14 +382,6 @@ class ProviderAPI:
     request_header: str
     """A header to set on HTTP/RPC requests."""
 
-    def __getattr__(self, item):
-        # Check if trying to use a 'TestProvierAPI' method.
-        test_provider_api_members = [m for m in dir(TestProviderAPI) if m not in dir(ProviderAPI)]
-        if item in test_provider_api_members:
-            raise NotImplementedError(f"{self.name} is not a 'TestProviderAPI' implementation.")
-
-        raise NotImplementedError(f"ProviderAPI has no member '{item}'.")
-
     @abstractmethod
     def connect(self):
         """
@@ -564,9 +556,24 @@ class ProviderAPI:
             Iterator[dict]: A dictionary of events.
         """
 
+    def snapshot(self) -> SnapshotID:
+        raise self._get_not_test_api_error(ProviderAPI.snapshot.__name__)
+
+    def revert(self, snapshot_id: SnapshotID):
+        raise self._get_not_test_api_error(ProviderAPI.revert.__name__)
+
+    def set_timestamp(self, new_timestamp: int):
+        raise self._get_not_test_api_error(ProviderAPI.set_timestamp.__name__)
+
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self._chain:
             self._chain.account_history.append(receipt)
+
+    def _get_not_test_api_error(self, method_name: str) -> NotImplementedError:
+        return NotImplementedError(
+            f"Propvider '{self.name}' is not a 'TestProviderAPI' "
+            f"and thus method '{method_name}' is not implemented."
+        )
 
 
 class TestProviderAPI(ProviderAPI):
