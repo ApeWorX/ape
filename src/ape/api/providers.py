@@ -338,7 +338,7 @@ class BlockAPI:
     number: int
     parent_hash: HexBytes
     size: int
-    timestamp: float
+    timestamp: int
 
     @classmethod
     @abstractmethod
