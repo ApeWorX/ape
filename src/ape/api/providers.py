@@ -589,12 +589,15 @@ class TestProviderAPI(ProviderAPI):
         """
 
     @abstractmethod
-    def increase_time(self, seconds: int):
+    def fast_forward_time(self, new_timestamp: int) -> int:
         """
         Increase the time into the future for testing purposes.
 
         Args:
-            seconds (int): The amount of seconds to increase time.
+            new_timestamp (int): The timestamp to set.
+
+        Returns:
+            int: The new timestamp.
         """
 
 

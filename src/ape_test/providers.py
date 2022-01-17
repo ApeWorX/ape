@@ -73,10 +73,8 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
             if current_hash != snapshot_id:
                 return self._tester.revert_to_snapshot(snapshot_id)
 
-    def increase_time(self, seconds: int):
-        current_timestamp = self.get_block("latest").timestamp
-        requested_timestamp = current_timestamp + seconds
-        self._tester.time_travel(requested_timestamp)
+    def fast_forward_time(self, new_timestamp: int) -> int:
+        return self._tester.time_travel(new_timestamp)
 
 
 def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:

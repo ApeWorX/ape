@@ -297,6 +297,7 @@ class ChainManager(_ConnectedChain):
     _chain_id_map: Dict[str, int] = {}
     _block_container_map: Dict[int, BlockContainer] = {}
     _account_history_map: Dict[int, AccountHistory] = {}
+    _time_offset = 0
 
     @property
     def blocks(self) -> BlockContainer:
@@ -359,9 +360,22 @@ class ChainManager(_ConnectedChain):
     def pending_timestamp(self) -> int:
         """
         The current epoch time of the chain, as an ``int``.
+        Set the timestamp to fast-forward time into the future.
+
+        Usage example::
+
+            from ape import chain
+
+            chain.pending_timestamp += 3600
         """
 
-        return int(time.time())
+        return int(time.time() + self._time_offset)
+
+    @pending_timestamp.setter
+    def pending_timestamp(self, new_value: int):
+        provider = self._get_test_provider(TestProviderAPI.fast_forward_time.__name__)
+        new_timestamp = provider.fast_forward_time(new_value)
+        self._time_offset = new_timestamp - self.pending_timestamp
 
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
