@@ -159,7 +159,6 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
         cli_ctx.abort(f"Cannot add 1st class plugin '{plugin}'")
 
     elif is_plugin_installed(plugin):
-        cli_ctx.logger.info(f"Plugin '{plugin}' already installed.")
         if upgrade:
             cli_ctx.logger.info(f"Updating {plugin} plugin.")
             args.append("--upgrade")
@@ -171,6 +170,11 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
             else:
                 cli_ctx.logger.error(f"Failed to add '{plugin}'.")
                 sys.exit(1)
+        else:
+            cli_ctx.logger.warning(
+                f"{plugin} has already installed."
+                f"Please type --upgrade if you want to update {plugin}"
+            )
 
     elif (
         plugin in github_client.available_plugins
@@ -220,10 +224,15 @@ def install(cli_ctx, skip_confirmation, upgrade):
                 args.append(module_name)
                 result = subprocess.call(args)
                 if result == 0 and is_plugin_installed(module_name):
-                    cli_ctx.logger.success(f"Plugin '{module_name}' has been added.")
+                    cli_ctx.logger.success(f"Plugin '{module_name}' has been upgraded.")
                 else:
                     cli_ctx.logger.error(f"Failed to add '{module_name}'.")
                     sys.exit(1)
+            else:
+                cli_ctx.logger.warning(
+                    f"{module_name} has already installed."
+                    f"Please type --upgrade if you want to update {module_name}"
+                )
 
         if not is_plugin_installed(module_name) and (
             module_name in github_client.available_plugins
