@@ -269,7 +269,8 @@ class ReceiptAPI:
                 if confirmations_occurred == self.required_confirmations:
                     break
 
-                time.sleep(self._block_time)
+                time_to_sleep = int(self._block_time / 2)
+                time.sleep(time_to_sleep)
 
         return self
 
