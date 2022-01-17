@@ -122,7 +122,7 @@ def _list(cli_ctx, display_all):
             click.echo()
 
 
-def upgrade_option(help=""):
+def upgrade_option(help: str = ""):
     """
     A ``click.option`` for upgrading plugins (``--upgrade``).
 
@@ -141,7 +141,7 @@ def upgrade_option(help=""):
 
 @cli.command(short_help="Install an ape plugin")
 @click.argument("plugin")
-@click.option("-v", "--version", help="Specify version (Default is latest)")
+@click.option("--version", help="Specify version (Default is latest)")
 @skip_confirmation_option(help="Don't ask for confirmation to add the plugin")
 @ape_cli_context()
 @upgrade_option(help="Upgrade the plugin to the newest available version")
@@ -165,8 +165,9 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
             args.append("--upgrade")
             args.append(plugin)
             result = subprocess.call(args)
+
             if result == 0 and is_plugin_installed(plugin):
-                cli_ctx.logger.success(f"Plugin '{plugin}' has been added.")
+                cli_ctx.logger.success(f"Plugin '{plugin}' has been upgraded.")
             else:
                 cli_ctx.logger.error(f"Failed to add '{plugin}'.")
                 sys.exit(1)
