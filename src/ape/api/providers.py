@@ -557,13 +557,13 @@ class ProviderAPI:
         """
 
     def snapshot(self) -> SnapshotID:
-        raise self._get_not_test_api_error(ProviderAPI.snapshot.__name__)
+        raise self._get_not_test_api_error(self.snapshot.__name__)
 
     def revert(self, snapshot_id: SnapshotID):
-        raise self._get_not_test_api_error(ProviderAPI.revert.__name__)
+        raise self._get_not_test_api_error(self.revert.__name__)
 
     def set_timestamp(self, new_timestamp: int):
-        raise self._get_not_test_api_error(ProviderAPI.set_timestamp.__name__)
+        raise self._get_not_test_api_error(self.set_timestamp.__name__)
 
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self._chain:
