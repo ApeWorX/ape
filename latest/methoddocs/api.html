@@ -1192,7 +1192,7 @@ an instance of this context manager.</p>
 <span id="providers"></span><h2>Providers<a class="headerlink" href="#module-ape.api.providers" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="ape.api.providers.BlockAPI">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">BlockAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gas_data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.BlockGasAPI" title="ape.api.providers.BlockGasAPI"><span class="pre">ape.api.providers.BlockGasAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">consensus_data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.BlockConsensusAPI" title="ape.api.providers.BlockConsensusAPI"><span class="pre">ape.api.providers.BlockConsensusAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">hexbytes.main.HexBytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">hexbytes.main.HexBytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.BlockAPI" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></code><code class="sig-name descname"><span class="pre">BlockAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gas_data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.BlockGasAPI" title="ape.api.providers.BlockGasAPI"><span class="pre">ape.api.providers.BlockGasAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">consensus_data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.api.providers.BlockConsensusAPI" title="ape.api.providers.BlockConsensusAPI"><span class="pre">ape.api.providers.BlockConsensusAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">hexbytes.main.HexBytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_hash</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">hexbytes.main.HexBytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.BlockAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>An abstract class representing a block and its attributes.</p>
 <dl class="py method">
@@ -1610,6 +1610,23 @@ Allows developers to go back to a previous state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>snapshot_id</strong> (<em>str</em>) – The snapshot ID.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.providers.TestProviderAPI.set_timestamp">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">set_timestamp</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_timestamp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.set_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the pending timestamp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>new_timestamp</strong> (<em>int</em>) – The timestamp to set.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The new timestamp.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
 </dd></dl>

@@ -571,7 +571,14 @@ See <a class="reference external" href="https://chainlist.org/">ChainList</a> fo
 <dl class="py method">
 <dt id="ape.managers.chain.ChainManager.pending_timestamp">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">pending_timestamp</span></code><a class="headerlink" href="#ape.managers.chain.ChainManager.pending_timestamp" title="Permalink to this definition">¶</a></dt>
-<dd><p>The current epoch time of the chain, as an <code class="docutils literal notranslate"><span class="pre">int</span></code>.</p>
+<dd><p>The current epoch time of the chain, as an <code class="docutils literal notranslate"><span class="pre">int</span></code>.
+You can also set the timestamp for development purposes.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">3600</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
