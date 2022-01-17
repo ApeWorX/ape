@@ -105,3 +105,10 @@ def test_blocks_range_too_high_stop(chain_at_block_5):
         f"'stop={len_plus_1}' cannot be greater than the chain length (6). "
         f"Use 'poll_blocks()' to wait for future blocks."
     )
+
+
+def test_set_pending_timestamp(chain):
+    start_timestamp = chain.pending_timestamp
+    chain.pending_timestamp += 3600
+    new_timestamp = chain.pending_timestamp
+    assert new_timestamp - start_timestamp == 3600

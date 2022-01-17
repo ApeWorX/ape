@@ -338,7 +338,7 @@ class BlockAPI:
     number: int
     parent_hash: HexBytes
     size: int
-    timestamp: float
+    timestamp: int
 
     @classmethod
     @abstractmethod
@@ -586,6 +586,18 @@ class TestProviderAPI(ProviderAPI):
 
         Args:
             snapshot_id (str): The snapshot ID.
+        """
+
+    @abstractmethod
+    def set_timestamp(self, new_timestamp: int):
+        """
+        Change the pending timestamp.
+
+        Args:
+            new_timestamp (int): The timestamp to set.
+
+        Returns:
+            int: The new timestamp.
         """
 
 
