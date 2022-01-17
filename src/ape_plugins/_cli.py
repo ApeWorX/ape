@@ -160,7 +160,7 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
 
     elif is_plugin_installed(plugin):
         if upgrade:
-            cli_ctx.logger.info(f"Updating {plugin} plugin.")
+            cli_ctx.logger.info(f"Updating '{plugin}'...")
             args.append("--upgrade")
             args.append(plugin)
             result = subprocess.call(args)
@@ -218,7 +218,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
         # check for installed check the config.yaml
         elif installed_plugin and available_plugin:
             if upgrade:
-                cli_ctx.logger.info(f"Updating {module_name} plugin.")
+                cli_ctx.logger.info(f"Updating '{module_name}'...")
                 args.append("--upgrade")
                 args.append(module_name)
                 result = subprocess.call(args)
