@@ -354,6 +354,13 @@ class BlockAPI:
         """
 
 
+def not_implemented(fn):
+    def inner(*args, **kwargs):
+        raise NotImplementedError(fn.__name__)
+
+    return inner
+
+
 @abstractdataclass
 class ProviderAPI:
     """
@@ -556,24 +563,21 @@ class ProviderAPI:
             Iterator[dict]: A dictionary of events.
         """
 
+    @not_implemented
     def snapshot(self) -> SnapshotID:
-        raise self._get_not_test_api_error(self.snapshot.__name__)
+        pass
 
+    @not_implemented
     def revert(self, snapshot_id: SnapshotID):
-        raise self._get_not_test_api_error(self.revert.__name__)
+        pass
 
+    @not_implemented
     def set_timestamp(self, new_timestamp: int):
-        raise self._get_not_test_api_error(self.set_timestamp.__name__)
+        pass
 
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self._chain:
             self._chain.account_history.append(receipt)
-
-    def _get_not_test_api_error(self, method_name: str) -> NotImplementedError:
-        return NotImplementedError(
-            f"Propvider '{self.name}' is not a 'TestProviderAPI' "
-            f"and thus method '{method_name}' is not implemented."
-        )
 
 
 class TestProviderAPI(ProviderAPI):
