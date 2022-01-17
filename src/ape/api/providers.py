@@ -591,7 +591,7 @@ class TestProviderAPI(ProviderAPI):
     @abstractmethod
     def set_timestamp(self, new_timestamp: int) -> int:
         """
-        Increase the time into the future for testing purposes.
+        Change the pending timestamp.
 
         Args:
             new_timestamp (int): The timestamp to set.
