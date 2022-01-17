@@ -373,8 +373,8 @@ class ChainManager(_ConnectedChain):
 
     @pending_timestamp.setter
     def pending_timestamp(self, new_value: int):
-        provider = self._get_test_provider(TestProviderAPI.fast_forward_time.__name__)
-        new_timestamp = provider.fast_forward_time(new_value)
+        provider = self._get_test_provider(TestProviderAPI.set_timestamp.__name__)
+        new_timestamp = provider.set_timestamp(new_value)
         self._time_offset = new_timestamp - self.pending_timestamp
 
     def __repr__(self) -> str:
