@@ -207,10 +207,6 @@ class ReceiptAPI:
     nonce: int
     _block_time: int
 
-    def __post_init__(self):
-        txn_hash = self.txn_hash.hex() if isinstance(self.txn_hash, HexBytes) else self.txn_hash
-        logger.info(f"Submitted {txn_hash} (gas_used={self.gas_used})")
-
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
@@ -679,6 +675,7 @@ class Web3Provider(ProviderAPI):
             else self.network.required_confirmations
         )
         receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
+        logger.info(f"Submitted {receipt.txn_hash} (gas_used={receipt.gas_used})")
         self._try_track_receipt(receipt)
         return receipt
 
