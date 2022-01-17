@@ -359,9 +359,21 @@ class ChainManager(_ConnectedChain):
     def pending_timestamp(self) -> int:
         """
         The current epoch time of the chain, as an ``int``.
+        You can also set the timestamp for development purposes.
+
+        Usage example::
+
+            from ape import chain
+
+            chain.pending_timestamp += 3600
         """
 
-        return int(time.time())
+        return self.provider.get_block("pending").timestamp
+
+    @pending_timestamp.setter
+    def pending_timestamp(self, new_value: int):
+        provider = self._get_test_provider(TestProviderAPI.set_timestamp.__name__)
+        provider.set_timestamp(new_value)
 
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
