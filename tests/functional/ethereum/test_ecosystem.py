@@ -29,6 +29,7 @@ class TestReceipt:
             sender="",
             receiver="",
             nonce=0,
+            _block_time=0,
         )
         with pytest.raises(OutOfGasError):
             receipt.raise_for_status()
