@@ -34,7 +34,7 @@ NETWORKS = {
     "ropsten": (3, 3),
     "kovan": (42, 42),
     "rinkeby": (4, 4),
-    "goerli": (420, 420),
+    "goerli": (5, 5),
 }
 
 
