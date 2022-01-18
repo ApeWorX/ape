@@ -282,6 +282,9 @@ class ProjectManager:
         if isinstance(file_paths, Path):
             file_paths = [file_paths]
 
+        if file_paths:
+            file_paths = [get_relative_path(f, self.contracts_folder) for f in file_paths]
+
         # Load a cached or clean manifest (to use for caching)
         manifest = use_cache and self.cached_manifest or PackageManifest()
         cached_sources = manifest.sources or {}
