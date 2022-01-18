@@ -293,7 +293,8 @@ class ProjectManager:
         }
 
         def file_needs_compiling(source: Path) -> bool:
-            path = str(source)
+            path = str(get_relative_path(source, self.contracts_folder))
+
             # New file added?
             if path not in cached_sources:
                 return True
