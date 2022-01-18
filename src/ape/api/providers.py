@@ -276,7 +276,9 @@ class ReceiptAPI:
             # the user is aware of this. Or, this is a development environment.
             return self
 
-        confirmations_occurred = 0
+        confirmations_occurred = self._get_confirmations_occurred()
+        if confirmations_occurred >= self.required_confirmations:
+            return self
 
         # If we get here, that means the transaction has been recently submitted.
         log_message = f"Submitted {self.txn_hash}"
@@ -289,8 +291,7 @@ class ReceiptAPI:
 
         with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
             while confirmations_occurred < self.required_confirmations:
-                latest_block = self.provider.get_block("latest")
-                confirmations_occurred = latest_block.number - self.block_number  # type: ignore
+                confirmations_occurred = self._get_confirmations_occurred()
                 progress_bar.confs = confirmations_occurred
 
                 if confirmations_occurred == self.required_confirmations:
@@ -300,6 +301,10 @@ class ReceiptAPI:
                 time.sleep(time_to_sleep)
 
         return self
+
+    def _get_confirmations_occurred(self) -> int:
+        latest_block = self.provider.get_block("latest")
+        return latest_block.number - self.block_number
 
 
 @abstractdataclass
