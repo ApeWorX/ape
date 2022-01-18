@@ -10,7 +10,7 @@ from ape.exceptions import CompilerError
 
 
 class InterfaceCompilerConfig(ConfigItem):
-    base_path: Path = Path("contracts")
+    contracts_path: Path = Path("contracts")
 
 
 class InterfaceCompiler(CompilerAPI):
@@ -28,7 +28,7 @@ class InterfaceCompiler(CompilerAPI):
     def compile(self, filepaths: List[Path]) -> List[ContractType]:
         contract_types: List[ContractType] = []
         for path in filepaths:
-            path_to_file = self.config.base_path / path
+            path_to_file = self.config.contracts_path / path
             with path_to_file.open() as f:
                 data = json.load(f)
 
