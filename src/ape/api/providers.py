@@ -260,6 +260,15 @@ class ReceiptAPI:
 
         confirmations_occurred = 0
 
+        # If we get here, that means the transaction has been recently submitted.
+        log_message = f"Submitted {receipt.txn_hash}"
+        if self.network.explorer:
+            explorer_url = self.network.explorer.get_transaction_url(receipt.txn_hash)
+            if explorer_url:
+                log_message = f"{log_message} {explorer_url}"
+
+        logger.info(log_message)
+
         with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
             while confirmations_occurred < self.required_confirmations:
                 latest_block = self.provider.get_block("latest")
@@ -687,8 +696,9 @@ class Web3Provider(ProviderAPI):
             if txn.required_confirmations is not None
             else self.network.required_confirmations
         )
+
         receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
-        logger.info(f"Submitted {receipt.txn_hash} (gas_used={receipt.gas_used})")
+        logger.info(f"Confirmed {receipt.txn_hash} (gas_used={receipt.gas_used})")
         self._try_track_receipt(receipt)
         return receipt
 
