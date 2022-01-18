@@ -1,11 +1,6 @@
 from ape import plugins
 
-from .compiler import InterfaceCompiler, InterfaceCompilerConfig
-
-
-@plugins.register(plugins.Config)
-def config_class():
-    return InterfaceCompilerConfig
+from .compiler import InterfaceCompiler
 
 
 @plugins.register(plugins.CompilerPlugin)

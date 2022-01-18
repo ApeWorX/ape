@@ -5,17 +5,13 @@ from typing import List, Set
 from ethpm_types import ABI, ContractType
 from pydantic import parse_obj_as
 
-from ape.api import CompilerAPI, ConfigItem
+from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 
-
-class InterfaceCompilerConfig(ConfigItem):
-    contracts_path: Path = Path("contracts")
+CONTRACTS_DIRECTORY = Path("contracts")
 
 
 class InterfaceCompiler(CompilerAPI):
-    config: InterfaceCompilerConfig
-
     @property
     def name(self) -> str:
         return "ethpm"
@@ -28,7 +24,7 @@ class InterfaceCompiler(CompilerAPI):
     def compile(self, filepaths: List[Path]) -> List[ContractType]:
         contract_types: List[ContractType] = []
         for path in filepaths:
-            path_to_file = self.config.contracts_path / path
+            path_to_file = CONTRACTS_DIRECTORY / path
             with path_to_file.open() as f:
                 data = json.load(f)
 
