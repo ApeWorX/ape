@@ -10,7 +10,7 @@ from ethpm_types.utils import compute_checksum
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.managers.networks import NetworkManager
-from ape.utils import get_all_files_in_directory, github_client
+from ape.utils import get_all_files_in_directory, get_relative_path, github_client
 
 from .compilers import CompilerManager
 from .config import ConfigManager
@@ -187,8 +187,12 @@ class ProjectManager:
         files: List[Path] = []
         base_path = self.contracts_folder.parent
         for extension in self.compilers.registered_compilers:
-            src_files = self.contracts_folder.rglob("*" + extension)
-            files.extend([Path(str(s).split(str(base_path))[-1].strip("/")) for s in src_files])
+            files.extend(
+                map(
+                    lambda f: get_relative_path(f, base_path),
+                    self.contracts_folder.rglob("*" + extension),
+                )
+            )
 
         return files
 
