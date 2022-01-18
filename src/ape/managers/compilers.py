@@ -106,6 +106,6 @@ class CompilerManager:
 
     def _get_contract_path(self, path: Path):
         try:
-            return path.relative_to(self.config.PROJECT_FOLDER)
+            return path.relative_to(self.config.PROJECT_FOLDER / "contracts")
         except ValueError:
             return path
