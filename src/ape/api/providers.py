@@ -19,6 +19,7 @@ from . import networks
 from .config import ConfigItem
 
 if TYPE_CHECKING:
+    from ape.api.explorers import ExplorerAPI
     from ape.managers.chain import ChainManager
 
 
@@ -216,10 +217,6 @@ class ReceiptAPI:
     receiver: str
     nonce: int
 
-    def __post_init__(self):
-        txn_hash = self.txn_hash.hex() if isinstance(self.txn_hash, HexBytes) else self.txn_hash
-        logger.info(f"Submitted {txn_hash} (gas_used={self.gas_used})")
-
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
@@ -253,6 +250,19 @@ class ReceiptAPI:
             :class:`~ape.api.ReceiptAPI`
         """
 
+    @property
+    def _explorer(self) -> Optional["ExplorerAPI"]:
+        return self.provider.network.explorer
+
+    @property
+    def _block_time(self) -> int:
+        return self.provider.network.block_time
+
+    @property
+    def _confirmations_occurred(self) -> int:
+        latest_block = self.provider.get_block("latest")
+        return latest_block.number - self.block_number
+
     def await_confirmations(self) -> "ReceiptAPI":
         """
         Wait for a transaction to be considered confirmed.
@@ -271,18 +281,29 @@ class ReceiptAPI:
             # the user is aware of this. Or, this is a development environment.
             return self
 
-        confirmations_occurred = 0
+        confirmations_occurred = self._confirmations_occurred
+        if confirmations_occurred >= self.required_confirmations:
+            return self
+
+        # If we get here, that means the transaction has been recently submitted.
+        log_message = f"Submitted {self.txn_hash}"
+        if self._explorer:
+            explorer_url = self._explorer.get_transaction_url(self.txn_hash)
+            if explorer_url:
+                log_message = f"{log_message}\n{self._explorer.name} URL: {explorer_url}"
+
+        logger.info(log_message)
 
         with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
             while confirmations_occurred < self.required_confirmations:
-                latest_block = self.provider.get_block("latest")
-                confirmations_occurred = latest_block.number - self.block_number  # type: ignore
+                confirmations_occurred = self._confirmations_occurred
                 progress_bar.confs = confirmations_occurred
 
                 if confirmations_occurred == self.required_confirmations:
                     break
 
-                time.sleep(5)
+                time_to_sleep = int(self._block_time / 2)
+                time.sleep(time_to_sleep)
 
         return self
 
@@ -731,7 +752,9 @@ class Web3Provider(ProviderAPI):
             if txn.required_confirmations is not None
             else self.network.required_confirmations
         )
+
         receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
+        logger.info(f"Confirmed {receipt.txn_hash} (gas_used={receipt.gas_used})")
         self._try_track_receipt(receipt)
         return receipt
 

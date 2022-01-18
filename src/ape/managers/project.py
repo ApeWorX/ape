@@ -285,11 +285,15 @@ class ProjectManager:
         # If a file is deleted from ``sources`` but is in
         # ``cached_sources``, remove its corresponding ``contract_types`` by
         # using ``ContractType.source_id`` and ``ContractType.sourcePath``
-        deleted_sources = cached_sources.keys() - set(map(str, sources))
+        deleted_source_ids = cached_sources.keys() - set(
+            map(str, [get_relative_path(s, self.contracts_folder) for s in sources])
+        )
 
         # Filter out deleted sources
         contract_types = {
-            n: ct for n, ct in cached_contract_types.items() if ct.source_id not in deleted_sources
+            n: ct
+            for n, ct in cached_contract_types.items()
+            if ct.source_id not in deleted_source_ids
         }
 
         def file_needs_compiling(source: Path) -> bool:
@@ -316,7 +320,8 @@ class ProjectManager:
         # NOTE: filter by checksum, etc., and compile what's needed
         #       to bring our cached manifest up-to-date
         needs_compiling = filter(file_needs_compiling, sources)
-        contract_types.update(self.compilers.compile(list(needs_compiling)))
+        compiled_contract_types = self.compilers.compile(list(needs_compiling))
+        contract_types.update(compiled_contract_types)
 
         # Update cached contract types & source code entries in cached manifest
         manifest.contract_types = contract_types
@@ -358,7 +363,6 @@ class ProjectManager:
         """
 
         contracts = self.load_contracts()
-
         if attr_name in contracts:
             contract_type = contracts[attr_name]
         elif attr_name in self.dependencies:
