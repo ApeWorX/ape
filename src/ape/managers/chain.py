@@ -3,7 +3,7 @@ from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 from dataclassy import dataclass
 
-from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI, TestProviderAPI
+from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import logger
 from ape.types import AddressType, BlockID, SnapshotID
@@ -372,8 +372,7 @@ class ChainManager(_ConnectedChain):
 
     @pending_timestamp.setter
     def pending_timestamp(self, new_value: int):
-        provider = self._get_test_provider(TestProviderAPI.set_timestamp.__name__)
-        provider.set_timestamp(new_value)
+        self.provider.set_timestamp(new_value)
 
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
@@ -393,8 +392,7 @@ class ChainManager(_ConnectedChain):
         Returns:
             :class:`~ape.types.SnapshotID`: The snapshot ID.
         """
-        provider = self._get_test_provider(TestProviderAPI.snapshot.__name__)
-        snapshot_id = provider.snapshot()
+        snapshot_id = self.provider.snapshot()
 
         if snapshot_id not in self._snapshots:
             self._snapshots.append(snapshot_id)
@@ -416,7 +414,6 @@ class ChainManager(_ConnectedChain):
             snapshot_id (Optional[:class:`~ape.types.SnapshotID`]): The snapshot ID. Defaults
               to the most recent snapshot ID.
         """
-        provider = self._get_test_provider(TestProviderAPI.revert.__name__)
         if not self._snapshots:
             raise ChainError("There are no snapshots to revert to.")
         elif snapshot_id is None:
@@ -427,14 +424,5 @@ class ChainManager(_ConnectedChain):
             snapshot_index = self._snapshots.index(snapshot_id)
             self._snapshots = self._snapshots[:snapshot_index]
 
-        provider.revert(snapshot_id)
+        self.provider.revert(snapshot_id)
         self.account_history.revert_to_block(self.blocks.height)
-
-    def _get_test_provider(self, method_name: str) -> TestProviderAPI:
-        provider = self.provider
-        if not isinstance(provider, TestProviderAPI):
-            raise NotImplementedError(
-                f"Provider '{provider.name}' does not support method '{method_name}'."
-            )
-
-        return provider
