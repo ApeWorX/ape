@@ -13,13 +13,23 @@ from web3 import Web3
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
-from ape.utils import abstractdataclass, abstractmethod, raises_not_implemented
+from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
 from .config import ConfigItem
 
 if TYPE_CHECKING:
     from ape.managers.chain import ChainManager
+
+
+def raises_not_implemented(fn):
+    def inner(*args, **kwargs):
+        raise NotImplementedError(
+            f"Attempted to call method '{fn.__name__}' in 'ProviderAPI', "
+            f"which is only available in 'TestProviderAPI'."
+        )
+
+    return inner
 
 
 class TransactionType(Enum):

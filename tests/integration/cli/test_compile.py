@@ -50,6 +50,7 @@ def test_compile(ape_cli, runner, project):
 )
 def test_compile_specified_contracts(ape_cli, runner, project, contract_path, clean_cache):
     result = runner.invoke(ape_cli, ["compile", contract_path])
+    breakpoint()
     assert result.exit_code == 0, result.output
     assert "Compiling 'contracts/Interface.json'" in result.output
 

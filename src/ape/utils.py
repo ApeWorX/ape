@@ -460,23 +460,6 @@ also abstract (meaning it has methods that **must** be implemented or else
 errors will occur. This class cannot be instantiated on its own.
 """
 
-
-def raises_not_implemented(fn):
-    """
-    A decorator to use over API methods that you want to be callable
-    but that are not actually implemented.
-
-    An example is when calling abstracts methods from the
-    :class:`~ape.api.providers.TestProviderAPI` mixin but when using a
-    provider that is not for testing.
-    """
-
-    def inner(*args, **kwargs):
-        raise NotImplementedError(fn.__name__)
-
-    return inner
-
-
 __all__ = [
     "abstractdataclass",
     "abstractmethod",
@@ -494,7 +477,6 @@ __all__ = [
     "generate_dev_accounts",
     "get_all_files_in_directory",
     "load_config",
-    "raises_not_implemented",
     "singledispatchmethod",
     "USER_AGENT",
 ]
