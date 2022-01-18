@@ -44,6 +44,13 @@ def test_compile(ape_cli, runner, project):
 
 
 @skip_projects_except(["one-interface"])
+def test_can_access_contracts(project):
+    # This test does not use the CLI but still requires a project or run off of.
+    assert project.Interface, "Unable to access contract when needing to compile"
+    assert project.Interface, "Unable to access contract when not needing to compile"
+
+
+@skip_projects_except(["one-interface"])
 @pytest.mark.parametrize(
     "contract_path",
     ("Interface", "Interface.json", "contracts/Interface", "contracts/Interface.json"),
