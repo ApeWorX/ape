@@ -19,6 +19,7 @@ from . import networks
 from .config import ConfigItem
 
 if TYPE_CHECKING:
+    from ape.api.explorers import ExplorerAPI
     from ape.managers.chain import ChainManager
 
 
@@ -205,7 +206,6 @@ class ReceiptAPI:
     sender: str
     receiver: str
     nonce: int
-    _block_time: int
 
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
@@ -240,6 +240,14 @@ class ReceiptAPI:
             :class:`~ape.api.ReceiptAPI`
         """
 
+    @property
+    def _explorer(self) -> Optional["ExplorerAPI"]:
+        return self.provider.network.explorer
+
+    @property
+    def _block_time(self) -> int:
+        return self.provider.network.block_time
+
     def await_confirmations(self) -> "ReceiptAPI":
         """
         Wait for a transaction to be considered confirmed.
@@ -261,9 +269,9 @@ class ReceiptAPI:
         confirmations_occurred = 0
 
         # If we get here, that means the transaction has been recently submitted.
-        log_message = f"Submitted {receipt.txn_hash}"
-        if self.network.explorer:
-            explorer_url = self.network.explorer.get_transaction_url(receipt.txn_hash)
+        log_message = f"Submitted {self.txn_hash}"
+        if self._explorer:
+            explorer_url = self._explorer.get_transaction_url(self.txn_hash)
             if explorer_url:
                 log_message = f"{log_message} {explorer_url}"
 

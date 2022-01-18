@@ -192,7 +192,6 @@ class Receipt(ReceiptAPI):
             sender=data["from"],
             receiver=data["to"],
             nonce=data.get("nonce"),
-            _block_time=data.get("block_time", 0),
         )
 
 
