@@ -600,6 +600,15 @@ class TestProviderAPI(ProviderAPI):
             int: The new timestamp.
         """
 
+    @abstractmethod
+    def mine(self, num_blocks: int):
+        """
+        Args:
+            num_blocks (int): The number of blocks allotted to mine
+        Returns:
+            str: Snapshot of number of blocks and timestamp
+        """
+
 
 class Web3Provider(ProviderAPI):
     """

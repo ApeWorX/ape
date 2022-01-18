@@ -76,6 +76,11 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
     def set_timestamp(self, new_timestamp: int):
         self._tester.time_travel(new_timestamp)
 
+    def mine(self, num_blocks: int):
+        for i in range(num_blocks):
+            txn = TransactionAPI()
+            self.send_transaction(txn)
+
 
 def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:
     err_message = str(web3_err).split("execution reverted: ")[-1] or None
