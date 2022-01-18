@@ -358,7 +358,6 @@ class ProjectManager:
         """
 
         contracts = self.load_contracts()
-
         if attr_name in contracts:
             contract_type = contracts[attr_name]
         elif attr_name in self.dependencies:
