@@ -31,12 +31,12 @@ def test_no_compiler_for_extension(ape_cli, runner, project):
 
 @skip_projects(["empty-config", "no-config", "script", "unregistered-contracts", "test", "geth"])
 def test_compile(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["compile"])
+    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     # First time it compiles, it compiles fully
     for file in project.path.glob("contracts/**/*"):
         assert file.stem in result.output
-    result = runner.invoke(ape_cli, ["compile"])
+    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     # First time it compiles, it caches
     for file in project.path.glob("contracts/**/*"):
@@ -49,21 +49,23 @@ def test_compile(ape_cli, runner, project):
     ("Interface", "Interface.json", "contracts/Interface", "contracts/Interface.json"),
 )
 def test_compile_specified_contracts(ape_cli, runner, project, contract_path, clean_cache):
-    result = runner.invoke(ape_cli, ["compile", contract_path])
+    result = runner.invoke(ape_cli, ["compile", contract_path], catch_exceptions=False)
     assert result.exit_code == 0, result.output
-    assert "Compiling 'contracts/Interface.json'" in result.output
+    assert "Compiling 'Interface.json'" in result.output
 
 
 @skip_projects_except(["one-interface"])
 def test_compile_partial_extension_does_not_compile(ape_cli, runner, project, clean_cache):
-    result = runner.invoke(ape_cli, ["compile", "Interface.js"])  # Suffix to existing extension
+    result = runner.invoke(
+        ape_cli, ["compile", "Interface.js"], catch_exceptions=False
+    )  # Suffix to existing extension
     assert result.exit_code == 2, result.output
     assert "Error: Contract 'Interface.js' not found." in result.output
 
 
 @skip_projects_except([])
 def test_compile_contracts(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["compile", "--size"])
+    result = runner.invoke(ape_cli, ["compile", "--size"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     # Still caches but displays bytecode size
     for file in project.path.glob("contracts/**/*"):
