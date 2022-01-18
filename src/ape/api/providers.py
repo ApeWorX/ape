@@ -22,6 +22,16 @@ if TYPE_CHECKING:
     from ape.managers.chain import ChainManager
 
 
+def raises_not_implemented(fn):
+    def inner(*args, **kwargs):
+        raise NotImplementedError(
+            f"Attempted to call method '{fn.__name__}' in 'ProviderAPI', "
+            f"which is only available in 'TestProviderAPI'."
+        )
+
+    return inner
+
+
 class TransactionType(Enum):
     """
     Transaction enumerables type constants defined by
@@ -554,6 +564,39 @@ class ProviderAPI:
 
         Returns:
             Iterator[dict]: A dictionary of events.
+        """
+
+    @raises_not_implemented
+    def snapshot(self) -> SnapshotID:
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overriden.
+        """
+
+    @raises_not_implemented
+    def revert(self, snapshot_id: SnapshotID):
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overriden.
+        """
+
+    @raises_not_implemented
+    def set_timestamp(self, new_timestamp: int):
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overriden.
         """
 
     def _try_track_receipt(self, receipt: ReceiptAPI):
