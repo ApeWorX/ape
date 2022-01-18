@@ -270,15 +270,6 @@ class ReceiptAPI:
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
-        # If we get here, that means the transaction has been recently submitted.
-        log_message = f"Submitted {self.txn_hash}"
-        if self._explorer:
-            explorer_url = self._explorer.get_transaction_url(self.txn_hash)
-            if explorer_url:
-                log_message = f"{log_message}\n{self._explorer.name} URL: {explorer_url}"
-
-        logger.info(log_message)
-
         # Wait for nonce from provider to increment.
         sender_nonce = self.provider.get_nonce(self.sender)
         while sender_nonce == self.nonce:  # type: ignore
@@ -293,6 +284,15 @@ class ReceiptAPI:
         confirmations_occurred = self._confirmations_occurred
         if confirmations_occurred >= self.required_confirmations:
             return self
+
+        # If we get here, that means the transaction has been recently submitted.
+        log_message = f"Submitted {self.txn_hash}"
+        if self._explorer:
+            explorer_url = self._explorer.get_transaction_url(self.txn_hash)
+            if explorer_url:
+                log_message = f"{log_message}\n{self._explorer.name} URL: {explorer_url}"
+
+        logger.info(log_message)
 
         with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
             while confirmations_occurred < self.required_confirmations:
