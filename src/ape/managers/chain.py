@@ -439,14 +439,7 @@ class ChainManager(_ConnectedChain):
 
         return provider
 
-    def mine(self, num_blocks: int = 1, timestamp: Optional[int] = None) -> str:
+    def mine(self, num_blocks: int = 1, timestamp: Optional[int] = None) -> None:
         if timestamp:
             self.pending_timestamp = timestamp
         self.provider.mine(num_blocks)
-        return f'Mining: {num_blocks}, {timestamp}'
-
-    def enable_automining(self):
-        pass
-
-    def disable_automining(self):
-        pass
