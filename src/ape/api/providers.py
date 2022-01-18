@@ -735,7 +735,6 @@ class Web3Provider(ProviderAPI):
             {
                 "provider": self,
                 "required_confirmations": required_confirmations,
-                "block_time": self.network.block_time,
                 **txn,
                 **receipt_data,
             }
