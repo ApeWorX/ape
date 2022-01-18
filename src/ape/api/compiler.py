@@ -48,9 +48,9 @@ class CompilerAPI:
 
         Args:
             contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
-            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as
-              the project ``contracts/`` directory. Defaults to ``None``. When used with
-              ``ape compile`` in a project, gets set to the project's ``contracts/`` directory.
+            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
+              project ``contracts/`` directory. Defaults to ``None``. When using in a project
+              via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
             List[:class:`~ape.type.contract.ContractType`]
