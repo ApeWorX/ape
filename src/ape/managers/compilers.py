@@ -81,7 +81,10 @@ class CompilerManager:
             for path in paths_to_compile:
                 logger.info(f"Compiling '{self._get_contract_path(path)}'.")
 
-            compiled_contracts = self.registered_compilers[extension].compile(paths_to_compile)
+            base_path = self.config.PROJECT_FOLDER / Path("contracts")
+            compiled_contracts = self.registered_compilers[extension].compile(
+                paths_to_compile, base_path=base_path
+            )
 
             for contract_type in compiled_contracts:
 

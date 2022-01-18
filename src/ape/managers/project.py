@@ -173,14 +173,8 @@ class ProjectManager:
             List[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
-        base_path = self.contracts_folder
         for extension in self.compilers.registered_compilers:
-            files.extend(
-                map(
-                    lambda f: get_relative_path(f, base_path),
-                    self.contracts_folder.rglob("*" + extension),
-                )
-            )
+            files.extend(self.contracts_folder.rglob("*" + extension))
 
         return files
 
@@ -435,10 +429,10 @@ class ProjectManager:
 
     def _create_source_dict(self, contracts_paths: Collection[Path]) -> Dict[str, Source]:
         return {
-            str(source): Source(  # type: ignore
+            str(get_relative_path(source, self.contracts_folder)): Source(  # type: ignore
                 checksum=Checksum(  # type: ignore
                     algorithm="md5",
-                    hash=compute_checksum((self.contracts_folder / source).read_bytes()),
+                    hash=compute_checksum(source.read_bytes()),
                 ),
                 urls=[],
             )
