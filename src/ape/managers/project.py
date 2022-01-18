@@ -10,23 +10,11 @@ from ethpm_types.utils import compute_checksum
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.managers.networks import NetworkManager
-from ape.utils import get_all_files_in_directory, github_client
+from ape.utils import get_all_files_in_directory, get_relative_path, github_client
 
 from .compilers import CompilerManager
 from .config import ConfigManager
 from .converters import ConversionManager
-
-
-def _create_source_dict(contracts_paths: Collection[Path]) -> Dict[str, Source]:
-    return {
-        str(source): Source(  # type: ignore
-            checksum=Checksum(  # type: ignore
-                algorithm="md5", hash=compute_checksum(source.read_bytes())
-            ),
-            urls=[],
-        )
-        for source in contracts_paths
-    }
 
 
 @dataclass
@@ -116,7 +104,7 @@ class ProjectManager:
                 if s.name not in ("package.json", "package-lock.json")
                 and s.suffix in self.compilers.registered_compilers
             ]
-            manifest.sources = _create_source_dict(sources)
+            manifest.sources = self._create_source_dict(sources)
             manifest.contract_types = self.compilers.compile(sources)
             return manifest
 
@@ -305,7 +293,8 @@ class ProjectManager:
         }
 
         def file_needs_compiling(source: Path) -> bool:
-            path = str(source)
+            path = str(get_relative_path(source, self.contracts_folder))
+
             # New file added?
             if path not in cached_sources:
                 return True
@@ -317,8 +306,9 @@ class ProjectManager:
             assert cached.checksum  # to tell mypy this can't be None
 
             # File contents changed in source code folder?
+            source_file = self.contracts_folder / source
             checksum = compute_checksum(
-                source.read_bytes(),
+                source_file.read_bytes(),
                 algorithm=cached.checksum.algorithm,
             )
             return checksum != cached.checksum.hash
@@ -330,7 +320,7 @@ class ProjectManager:
 
         # Update cached contract types & source code entries in cached manifest
         manifest.contract_types = contract_types
-        manifest.sources = _create_source_dict(sources)
+        manifest.sources = self._create_source_dict(sources)
 
         # NOTE: Cache the updated manifest to disk (so ``self.cached_manifest`` reads next time)
         self.manifest_cachefile.write_text(json.dumps(manifest.dict()))
@@ -434,6 +424,18 @@ class ProjectManager:
                 compilers.append(Compiler(compiler.name, version))  # type: ignore
 
         return compilers
+
+    def _create_source_dict(self, contracts_paths: Collection[Path]) -> Dict[str, Source]:
+        return {
+            str(get_relative_path(source, self.contracts_folder)): Source(  # type: ignore
+                checksum=Checksum(  # type: ignore
+                    algorithm="md5",
+                    hash=compute_checksum(source.read_bytes()),
+                ),
+                urls=[],
+            )
+            for source in contracts_paths
+        }
 
     # @property
     # def meta(self) -> PackageMeta:
