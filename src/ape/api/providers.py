@@ -258,6 +258,11 @@ class ReceiptAPI:
     def _block_time(self) -> int:
         return self.provider.network.block_time
 
+    @property
+    def _confirmations_occurred(self) -> int:
+        latest_block = self.provider.get_block("latest")
+        return latest_block.number - self.block_number
+
     def await_confirmations(self) -> "ReceiptAPI":
         """
         Wait for a transaction to be considered confirmed.
@@ -276,7 +281,7 @@ class ReceiptAPI:
             # the user is aware of this. Or, this is a development environment.
             return self
 
-        confirmations_occurred = self._get_confirmations_occurred()
+        confirmations_occurred = self._confirmations_occurred
         if confirmations_occurred >= self.required_confirmations:
             return self
 
@@ -291,7 +296,7 @@ class ReceiptAPI:
 
         with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
             while confirmations_occurred < self.required_confirmations:
-                confirmations_occurred = self._get_confirmations_occurred()
+                confirmations_occurred = self._confirmations_occurred
                 progress_bar.confs = confirmations_occurred
 
                 if confirmations_occurred == self.required_confirmations:
@@ -301,10 +306,6 @@ class ReceiptAPI:
                 time.sleep(time_to_sleep)
 
         return self
-
-    def _get_confirmations_occurred(self) -> int:
-        latest_block = self.provider.get_block("latest")
-        return latest_block.number - self.block_number
 
 
 @abstractdataclass
