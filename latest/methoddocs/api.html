@@ -505,14 +505,19 @@ the <a class="reference external" href="https://github.com/ApeWorX/ape-vyper">ap
 this API.</p>
 <dl class="py method">
 <dt id="ape.api.compiler.CompilerAPI.compile">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.compile" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.compile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compile the given source files. All compiler plugins must implement this function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>contract_filepaths</strong> (<em>List</em><em>[</em><em>pathlib.Path</em><em>]</em>) – A list of source file paths to compile.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract_filepaths</strong> (<em>List</em><em>[</em><em>pathlib.Path</em><em>]</em>) – A list of source file paths to compile.</p></li>
+<li><p><strong>base_path</strong> (<em>Optional</em><em>[</em><em>pathlib.Path</em><em>]</em>) – Optionally provide the base path, such as the
+project <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>. When using in a project
+via <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>, gets set to the project’s <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List[<code class="docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
+<dd class="field-even"><p>List[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
