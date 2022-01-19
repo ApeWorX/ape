@@ -1608,6 +1608,17 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 <dd><p>Bases: <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI</span></code></a></p>
 <p>An API for providers that have development functionality, such as snapshotting.</p>
 <dl class="py method">
+<dt id="ape.api.providers.TestProviderAPI.mine">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">mine</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_blocks</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.mine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Advance by the given number of blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>num_blocks</strong> (<em>int</em>) – The number of blocks allotted to mine. Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.providers.TestProviderAPI.revert">
 <em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">revert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snapshot_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.revert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regress the current call using the given snapshot ID.
