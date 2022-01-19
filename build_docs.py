@@ -74,6 +74,8 @@ def main():
                     shutil.rmtree(font_dirs)
 
             shutil.copytree(build_dir, STABLE_PATH)
+        else:
+            build_docs(STABLE_PATH)
 
     # Set up the redirect at /index.html
     DOCS_BUILD_PATH.mkdir(exist_ok=True, parents=True)
