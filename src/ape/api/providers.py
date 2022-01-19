@@ -604,10 +604,7 @@ class TestProviderAPI(ProviderAPI):
     def mine(self, num_blocks: int = 1):
         """
         Args:
-            num_blocks (int): The number of blocks allotted to mine
-
-        Returns:
-            str: Snapshot of number of blocks and timestamp
+            num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
         """
 
 
