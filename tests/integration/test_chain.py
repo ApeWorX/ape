@@ -6,9 +6,7 @@ from ape.exceptions import ChainError
 @pytest.fixture
 def chain_at_block_5(chain, sender, receiver):
     snapshot_id = chain.snapshot()
-    for i in range(5):
-        sender.transfer(receiver, "1 wei")
-
+    chain.mine(5)
     yield chain
     chain.restore(snapshot_id)
 
@@ -21,7 +19,7 @@ def test_snapshot_and_restore(chain, sender, receiver):
     for i in range(end_range):
         snapshot_id = chain.snapshot()
         snapshot_ids.append(snapshot_id)
-        sender.transfer(receiver, "1 wei")  # Advance a block by transacting
+        chain.mine()
 
     assert chain.blocks[-1].number == end_range
 
@@ -39,11 +37,11 @@ def test_snapshot_and_restore(chain, sender, receiver):
 
 def test_snapshot_and_restore_unknown_snapshot_id(chain, sender, receiver):
     _ = chain.snapshot()
-    sender.transfer(receiver, "1 wei")
+    chain.mine()
     snapshot_id_2 = chain.snapshot()
-    sender.transfer(receiver, "1 wei")
+    chain.mine()
     snapshot_id_3 = chain.snapshot()
-    sender.transfer(receiver, "1 wei")
+    chain.mine()
 
     # After restoring to the second ID, the third ID is now invalid.
     chain.restore(snapshot_id_2)
