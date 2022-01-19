@@ -426,3 +426,8 @@ class ChainManager(_ConnectedChain):
 
         self.provider.revert(snapshot_id)
         self.account_history.revert_to_block(self.blocks.height)
+
+    def mine(self, num_blocks: int = 1, timestamp: Optional[int] = None) -> None:
+        if timestamp:
+            self.pending_timestamp = timestamp
+        self.provider.mine(num_blocks)
