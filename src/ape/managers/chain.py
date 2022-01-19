@@ -146,8 +146,7 @@ class BlockContainer(_ConnectedChain):
             start (Optional[int]): The block number to start with. Defaults to the pending
               block number.
             required_confirmations (Optional[int]): The amount of confirmations to wait
-              before yielding the block. The more confirmations, the less likely a reorg
-                will occur.
+              before yielding the block. The more confirmations, the less likely a reorg will occur.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
