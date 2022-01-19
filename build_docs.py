@@ -76,6 +76,7 @@ def main():
             shutil.copytree(build_dir, STABLE_PATH)
 
     # Set up the redirect at /index.html
+    DOCS_BUILD_PATH.mkdir(exist_ok=True, parents=True)
     with open(DOCS_BUILD_PATH / "index.html", "w") as f:
         redirect = "latest" if is_ephemeral else "stable"
         f.write(REDIRECT_HTML.format(redirect))
