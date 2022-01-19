@@ -603,6 +603,8 @@ class TestProviderAPI(ProviderAPI):
     @abstractmethod
     def mine(self, num_blocks: int = 1):
         """
+        Advance by the given number of blocks.
+
         Args:
             num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
         """
