@@ -595,7 +595,7 @@ class ProviderAPI:
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overriden.
+            NotImplementedError: Unless overridden.
         """
 
     @raises_not_implemented
@@ -606,7 +606,7 @@ class ProviderAPI:
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overriden.
+            NotImplementedError: Unless overridden.
         """
 
     @raises_not_implemented
@@ -617,7 +617,18 @@ class ProviderAPI:
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overriden.
+            NotImplementedError: Unless overridden.
+        """
+
+    @raises_not_implemented
+    def mine(self, num_blocks: int = 1):
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overridden.
         """
 
     def _try_track_receipt(self, receipt: ReceiptAPI):
