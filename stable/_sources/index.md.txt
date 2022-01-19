@@ -8,6 +8,8 @@
    userguides/quickstart
    userguides/projects
    userguides/plugins
+   userguides/config
+   userguides/transactions
 ```
 
 ```{eval-rst}

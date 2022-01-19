@@ -43,7 +43,6 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
-                <option value="v0.1.1">v0.1.1</option>
             </select>
           </div>
 <div role="search">
@@ -75,6 +74,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
 </ul>
 <p class="caption"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -164,6 +165,8 @@
 └── ape-config.yaml  # The ape project configuration file
 </pre></div>
 </div>
+<p>See the <a class="reference internal" href="config.html"><span class="doc std std-doc">Configuration guide</span></a> for a more detailed explanation of settings you can
+use in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> files.</p>
 <div class="section" id="compiling-contracts">
 <h2>Compiling Contracts<a class="headerlink" href="#compiling-contracts" title="Permalink to this headline">¶</a></h2>
 <p>The project manager object is a representation of your current project. Access it from the root <code class="docutils literal notranslate"><span class="pre">ape</span></code> namespace:</p>
@@ -196,9 +199,9 @@ ape plugins add vyper
 <p>The default provider for the development network is the
 <a class="reference external" href="https://github.com/ethereum/eth-testers">Ethereum Tester provider</a>. However, you can change the default provider per
 network using the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">development</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hardhat</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span>
+  <span class="nt">development</span><span class="p">:</span>
+    <span class="nt">default_provider</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hardhat</span>
 </pre></div>
 </div>
 <p>For specifying the network in an ad-hoc fashion, commands such as <code class="docutils literal notranslate"><span class="pre">run</span></code>, <code class="docutils literal notranslate"><span class="pre">test</span></code>, and <code class="docutils literal notranslate"><span class="pre">console</span></code> offer a <code class="docutils literal notranslate"><span class="pre">--network</span></code>
@@ -261,9 +264,9 @@ index from the <code class="docutils literal notranslate"><span class="pre">acco
 </div>
 <p>You can configure your accounts by changing the <code class="docutils literal notranslate"><span class="pre">mnemonic</span></code> or <code class="docutils literal notranslate"><span class="pre">number_of_accounts</span></code> settings in the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of
 your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span><span class="w"></span>
-<span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
+  <span class="nt">mnemonic</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
+  <span class="nt">number_of_accounts</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5</span>
 </pre></div>
 </div>
 </div>
