@@ -1,8 +1,8 @@
 import json
 import sys
-from importlib import import_module, reload
+from importlib import import_module
 from pathlib import Path
-from typing import Any, Collection, Dict, List, Optional, Union
+from typing import Collection, Dict, List, Optional, Union
 
 import requests
 from dataclassy import dataclass
@@ -49,7 +49,6 @@ class ProjectManager:
     networks: NetworkManager
 
     dependencies: Dict[str, PackageManifest] = dict()
-    _import_cache: Dict[str, Any] = {}
 
     def __post_init__(self):
         if isinstance(self.path, str):
@@ -482,13 +481,7 @@ class ProjectManager:
         # Load the python module to find our hook functions
         try:
             import_str = ".".join(self.scripts_folder.absolute().parts[1:] + (script_path.stem,))
-            if import_str in self._import_cache:
-                reload(self._import_cache[import_str])
-            else:
-                self._import_cache[import_str] = import_module(import_str)
-
-            py_module = self._import_cache[import_str]
-
+            py_module = import_module(import_str)
         except Exception as err:
             logger.error_from_exception(err, f"Exception while executing script: {script_path}")
             sys.exit(1)
