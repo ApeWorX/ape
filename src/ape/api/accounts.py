@@ -215,6 +215,18 @@ class AccountAPI(AddressAPI):
         data: Union[SignableMessage, TransactionAPI],
         signature: Optional[_Signature] = None,  # TransactionAPI doesn't need it
     ) -> bool:
+        """
+        Verify a message or transaction was signed by this account.
+
+        Args:
+            data (Union[:class:`~ape.types.signatures.SignableMessage`, :class:`~ape.api.providers.TransactionAPI`]):  # noqa: E501
+              The message or transaction to verify.
+            signature (Optional[``_Signature``]): The :class:`~ape.types.signatures.MessageSignature` or the
+              :class:`~ape.types.signatures.TransactionSignature`.
+
+        Returns:
+            bool: ``True`` if the data was signed by this account. ``False`` otherwise.
+        """
         if isinstance(data, SignableMessage):
             if signature:
                 return self.address == Account.recover_message(data, vrs=signature)
