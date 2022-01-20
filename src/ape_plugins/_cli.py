@@ -230,7 +230,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
             else:
                 cli_ctx.logger.warning(
                     f"{module_name} is already installed. "
-                    f"Use the '--upgrade' option if you want to update '{plugin}'"
+                    f"Use the '--upgrade' option if you want to update '{module_name}'"
                 )
 
         if not is_plugin_installed(module_name) and (
