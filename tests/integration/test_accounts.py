@@ -6,7 +6,7 @@ from ape import convert
 def test_sign_message(test_accounts):
     signer = test_accounts[2]
     message = encode_defunct(text="Hello Apes!")
-    signature = signer.sign_message(message).encode_rsv()
+    signature = signer.sign_message(message)
     assert signer.check_signature(message, signature)
 
 

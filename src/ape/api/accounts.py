@@ -216,7 +216,13 @@ class AccountAPI(AddressAPI):
         signature: Optional[_Signature] = None,  # TransactionAPI doesn't need it
     ) -> bool:
         if isinstance(data, SignableMessage):
-            return self.address == Account.recover_message(data, vrs=signature)
+            if signature:
+                signature_bytes = signature.encode_rsv()
+                return self.address == Account.recover_message(data, signature=signature_bytes)
+            else:
+                raise ValueError(
+                    "Parameter 'signature' required when verifying a 'SignableMessage'."
+                )
         elif isinstance(data, TransactionAPI):
             return self.address == Account.recover_transaction(data.encode())
         else:
