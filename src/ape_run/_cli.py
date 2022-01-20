@@ -3,8 +3,6 @@ import click
 from ape import project
 from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 
-# TODO: Migrate this to a CLI toolkit under ``ape``
-
 
 @click.command(cls=NetworkBoundCommand, short_help="Run scripts from the `scripts` folder")
 @click.argument("scripts", nargs=-1)
@@ -27,6 +25,8 @@ def cli(cli_ctx, scripts, interactive, network):
     will be injected dynamically during script execution. The dynamically injected objects are
     the exports from the ``ape`` top-level package (similar to how the console works)
     """
+    _ = network  # Not used directly but required.
+
     if not scripts:
         cli_ctx.abort("Must provide at least one script name or path.")
 
