@@ -10,3 +10,9 @@ from tests.integration.cli.utils import skip_projects
 def test_console(ape_cli, runner, item):
     result = runner.invoke(ape_cli, ["console"], input=f"{item}\nexit\n")
     assert result.exit_code == 0, result.output
+
+
+@skip_projects(["geth"])
+def test_console_verbose(ape_cli, runner):
+    result = runner.invoke(ape_cli, ["console", "-v", "debug"])
+    assert result.exit_code == 0, result.output

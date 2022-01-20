@@ -6,6 +6,7 @@ import IPython  # type: ignore
 
 from ape import project as default_project
 from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
+from ape.utils import _python_version
 from ape.version import version as ape_version  # type: ignore
 
 
@@ -39,7 +40,7 @@ def console(project=None, verbose=None, extra_locals=None):
 
     Are you ready to Ape, anon?
     """.format(
-            python_version=ape._python_version,
+            python_version=_python_version,
             ipython_version=IPython.__version__,
             ape_version=ape_version,
             project_path=project.path,
