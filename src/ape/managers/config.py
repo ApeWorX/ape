@@ -7,6 +7,7 @@ from dataclassy import dataclass
 from ape.api import ConfigDict, ConfigItem
 from ape.convert import to_address
 from ape.exceptions import ConfigError
+from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.utils import load_config
 
@@ -110,7 +111,11 @@ class ConfigManager:
             configs[plugin_name] = config
 
         if len(user_config.keys()) > 0:
-            raise ConfigError("Unprocessed config items.")
+            logger.warning(
+                "Not all config items have been processed yet. "
+                "If warning persists after 'ape plugins install', "
+                "there are unrecognized config keys."
+            )
 
         self._plugin_configs_by_project[project_name] = configs
         return configs
