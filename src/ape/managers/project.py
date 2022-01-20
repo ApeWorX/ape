@@ -475,11 +475,14 @@ class ProjectManager:
             raise ProjectError("Cannot execute script from outside current directory")
 
         # Add to Python path so we can search for the given script to import
-        sys.path.append(str(script_path.parent.resolve()))
+        scripts_path = str(script_path.parent.resolve())
+        sys.path.append(scripts_path)
 
         # Load the python module to find our hook functions
         try:
-            py_module = import_module(script_path.stem)
+            import_str = ".".join(self.scripts_folder.absolute().parts[1:] + (script_path.stem,))
+            print(import_str)
+            py_module = import_module(import_str, package="scripts")
         except Exception as err:
             logger.error_from_exception(err, f"Exception while executing script: {script_path}")
             sys.exit(1)
