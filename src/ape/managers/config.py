@@ -110,8 +110,7 @@ class ConfigManager:
 
             configs[plugin_name] = config
 
-        remaining_keys = list(user_config.keys())
-
+        remaining_keys = user_config.keys()
         if len(remaining_keys) > 0:
             remaining_keys_str = ", ".join(remaining_keys)
             logger.warning(
