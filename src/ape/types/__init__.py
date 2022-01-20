@@ -2,10 +2,18 @@ import sys
 from typing import Union
 
 from eth_typing import ChecksumAddress
+from ethpm_types import (
+    ABI,
+    Bytecode,
+    Checksum,
+    Compiler,
+    ContractType,
+    PackageManifest,
+    PackageMeta,
+    Source,
+)
 from hexbytes import HexBytes
 
-from .contract import ABI, Bytecode, Checksum, Compiler, ContractType, Source
-from .manifest import PackageManifest, PackageMeta
 from .signatures import MessageSignature, SignableMessage, TransactionSignature
 
 # We can remove this once we stop supporting python3.7.
@@ -21,7 +29,17 @@ An ID that can match a block, such as the literals ``"earliest"``, ``"latest"``,
 as well as a block number or hash (HexBytes).
 """
 
-AddressType = ChecksumAddress
+SnapshotID = Union[str, int, bytes]
+"""
+An ID representing a point in time on a blockchain, as used in the
+:meth:`~ape.managers.chain.ChainManager.snapshot` and
+:meth:`~ape.managers.chain.ChainManager.snapshot` methods. Can be a ``str``, ``int``, or ``bytes``.
+Providers will expect and handle snapshot IDs differently. There shouldn't be a need to change
+providers when using this feature, so there should not be confusion over this type in practical use
+cases.
+"""
+
+AddressType = ChecksumAddress  # type: ignore
 """A type representing a checksummed address."""
 
 __all__ = [
@@ -36,6 +54,7 @@ __all__ = [
     "PackageManifest",
     "PackageMeta",
     "SignableMessage",
+    "SnapshotID",
     "Source",
     "TransactionSignature",
 ]

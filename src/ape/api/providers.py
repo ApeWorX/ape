@@ -1,7 +1,7 @@
 import time
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Dict, Iterator, List, Optional
 
 from dataclassy import as_dict
 from eth_typing import HexStr
@@ -12,11 +12,25 @@ from web3 import Web3
 
 from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import BlockID, TransactionSignature
+from ape.types import BlockID, SnapshotID, TransactionSignature
 from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
 from .config import ConfigItem
+
+if TYPE_CHECKING:
+    from ape.api.explorers import ExplorerAPI
+    from ape.managers.chain import ChainManager
+
+
+def raises_not_implemented(fn):
+    def inner(*args, **kwargs):
+        raise NotImplementedError(
+            f"Attempted to call method '{fn.__name__}' in 'ProviderAPI', "
+            f"which is only available in 'TestProviderAPI'."
+        )
+
+    return inner
 
 
 class TransactionType(Enum):
@@ -25,8 +39,8 @@ class TransactionType(Enum):
     `EIP-2718 <https://eips.ethereum.org/EIPS/eip-2718>`__.
     """
 
-    STATIC = "0x0"
-    DYNAMIC = "0x2"  # EIP-1559
+    STATIC = "0x00"
+    DYNAMIC = "0x02"  # EIP-1559
 
 
 @abstractdataclass
@@ -200,11 +214,8 @@ class ReceiptAPI:
     contract_address: Optional[str] = None
     required_confirmations: int = 0
     sender: str
+    receiver: str
     nonce: int
-
-    def __post_init__(self):
-        txn_hash = self.txn_hash.hex() if isinstance(self.txn_hash, HexBytes) else self.txn_hash
-        logger.info(f"Submitted {txn_hash} (gas_used={self.gas_used})")
 
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
@@ -219,9 +230,6 @@ class ReceiptAPI:
     def ran_out_of_gas(self) -> bool:
         """
         Check if a transaction has ran out of gas and failed.
-
-        Args:
-            gas_limit (int): The gas limit of the transaction.
 
         Returns:
             bool:  ``True`` when the transaction failed and used the
@@ -242,6 +250,19 @@ class ReceiptAPI:
             :class:`~ape.api.ReceiptAPI`
         """
 
+    @property
+    def _explorer(self) -> Optional["ExplorerAPI"]:
+        return self.provider.network.explorer
+
+    @property
+    def _block_time(self) -> int:
+        return self.provider.network.block_time
+
+    @property
+    def _confirmations_occurred(self) -> int:
+        latest_block = self.provider.get_block("latest")
+        return latest_block.number - self.block_number
+
     def await_confirmations(self) -> "ReceiptAPI":
         """
         Wait for a transaction to be considered confirmed.
@@ -260,18 +281,29 @@ class ReceiptAPI:
             # the user is aware of this. Or, this is a development environment.
             return self
 
-        confirmations_occurred = 0
+        confirmations_occurred = self._confirmations_occurred
+        if confirmations_occurred >= self.required_confirmations:
+            return self
+
+        # If we get here, that means the transaction has been recently submitted.
+        log_message = f"Submitted {self.txn_hash}"
+        if self._explorer:
+            explorer_url = self._explorer.get_transaction_url(self.txn_hash)
+            if explorer_url:
+                log_message = f"{log_message}\n{self._explorer.name} URL: {explorer_url}"
+
+        logger.info(log_message)
 
         with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
             while confirmations_occurred < self.required_confirmations:
-                latest_block = self.provider.get_block("latest")
-                confirmations_occurred = latest_block.number - self.block_number  # type: ignore
+                confirmations_occurred = self._confirmations_occurred
                 progress_bar.confs = confirmations_occurred
 
                 if confirmations_occurred == self.required_confirmations:
                     break
 
-                time.sleep(5)
+                time_to_sleep = int(self._block_time / 2)
+                time.sleep(time_to_sleep)
 
         return self
 
@@ -337,7 +369,7 @@ class BlockAPI:
     number: int
     parent_hash: HexBytes
     size: int
-    timestamp: float
+    timestamp: int
 
     @classmethod
     @abstractmethod
@@ -360,6 +392,8 @@ class ProviderAPI:
     implementations include the `ape-infura <https://github.com/ApeWorX/ape-infura>`__
     plugin or the `ape-hardhat <https://github.com/ApeWorX/ape-hardhat>`__ plugin.
     """
+
+    _chain: Optional["ChainManager"] = None
 
     name: str
     """The name of the provider (should be the plugin name)."""
@@ -406,9 +440,7 @@ class ProviderAPI:
     def chain_id(self) -> int:
         """
         The blockchain ID.
-
-        Returns:
-            int: The value of the blockchain ID.
+        See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
         """
 
     @abstractmethod
@@ -464,41 +496,31 @@ class ProviderAPI:
     @abstractmethod
     def gas_price(self) -> int:
         """
-        The price for what it costs to transact.
-
-        Returns:
-            int
+        The price for what it costs to transact
+        (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
 
     @property
     def priority_fee(self) -> int:
         """
-        A miner tip to incentivize them
-        to include your transaction in a block.
+        A miner tip to incentivize them to include your transaction in a block.
 
         Raises:
             NotImplementedError: When the provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ typed transactions.
-
-        Returns:
-            int: The value of the fee.
         """
         raise NotImplementedError("priority_fee is not implemented by this provider")
 
     @property
     def base_fee(self) -> int:
         """
-        The minimum value required to get your transaction
-        included on the next block.
+        The minimum value required to get your transaction included on the next block.
         Only providers that implement `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__
         will use this property.
 
         Raises:
             NotImplementedError: When this provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
-
-        Returns:
-            int
         """
         raise NotImplementedError("base_fee is not implemented by this provider")
 
@@ -565,6 +587,54 @@ class ProviderAPI:
             Iterator[dict]: A dictionary of events.
         """
 
+    @raises_not_implemented
+    def snapshot(self) -> SnapshotID:
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overridden.
+        """
+
+    @raises_not_implemented
+    def revert(self, snapshot_id: SnapshotID):
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overridden.
+        """
+
+    @raises_not_implemented
+    def set_timestamp(self, new_timestamp: int):
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overridden.
+        """
+
+    @raises_not_implemented
+    def mine(self, num_blocks: int = 1):
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overridden.
+        """
+
+    def _try_track_receipt(self, receipt: ReceiptAPI):
+        if self._chain:
+            self._chain.account_history.append(receipt)
+
 
 class TestProviderAPI(ProviderAPI):
     """
@@ -572,22 +642,46 @@ class TestProviderAPI(ProviderAPI):
     """
 
     @abstractmethod
-    def snapshot(self) -> str:
+    def snapshot(self) -> SnapshotID:
         """
-        Take a recording a state in a blockchain (for development only).
+        Record the current state of the blockchain with intent to later
+        call the method :meth:`~ape.managers.chain.ChainManager.revert`
+        to go back to this point. This method is for development networks
+        only.
 
         Returns:
-            str: The snapshot ID.
+            :class:`~ape.types.SnapshotID`: The snapshot ID.
         """
 
     @abstractmethod
-    def revert(self, snapshot_id: str):
+    def revert(self, snapshot_id: SnapshotID):
         """
         Regress the current call using the given snapshot ID.
         Allows developers to go back to a previous state.
 
         Args:
-            snapshot_ID (str): The snapshot ID.
+            snapshot_id (str): The snapshot ID.
+        """
+
+    @abstractmethod
+    def set_timestamp(self, new_timestamp: int):
+        """
+        Change the pending timestamp.
+
+        Args:
+            new_timestamp (int): The timestamp to set.
+
+        Returns:
+            int: The new timestamp.
+        """
+
+    @abstractmethod
+    def mine(self, num_blocks: int = 1):
+        """
+        Advance by the given number of blocks.
+
+        Args:
+            num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
         """
 
 
@@ -678,7 +772,10 @@ class Web3Provider(ProviderAPI):
             if txn.required_confirmations is not None
             else self.network.required_confirmations
         )
+
         receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
+        logger.info(f"Confirmed {receipt.txn_hash} (gas_used={receipt.gas_used})")
+        self._try_track_receipt(receipt)
         return receipt
 
 
@@ -693,7 +790,4 @@ class UpstreamProvider(ProviderAPI):
         """
         The str used by downstream providers to connect to this one.
         For example, the URL for HTTP-based providers.
-
-        Returns:
-            str
         """

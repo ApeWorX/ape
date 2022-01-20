@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import List, Set
+from typing import List, Optional, Set
 
-from ape.types import ContractType
+from ethpm_types import ContractType
+
 from ape.utils import abstractdataclass, abstractmethod
 
 from .config import ConfigItem
@@ -39,12 +40,17 @@ class CompilerAPI:
         """
 
     @abstractmethod
-    def compile(self, contract_filepaths: List[Path]) -> List[ContractType]:
+    def compile(
+        self, contract_filepaths: List[Path], base_path: Optional[Path]
+    ) -> List[ContractType]:
         """
         Compile the given source files. All compiler plugins must implement this function.
 
         Args:
             contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
+            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
+              project ``contracts/`` directory. Defaults to ``None``. When using in a project
+              via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
             List[:class:`~ape.type.contract.ContractType`]

@@ -16,6 +16,15 @@
     :members:
 ```
 
+## Chain
+
+```{eval-rst}
+.. automodule:: ape.managers.chain
+    :members:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__
+```
+
 ## Config
 
 ```{eval-rst}

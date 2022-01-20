@@ -4,28 +4,17 @@ from typing import Collection, Dict, List, Optional, Union
 
 import requests
 from dataclassy import dataclass
+from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
+from ethpm_types.utils import compute_checksum
 
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.managers.networks import NetworkManager
-from ape.types import Checksum, Compiler, ContractType, PackageManifest, Source
-from ape.utils import compute_checksum, get_all_files_in_directory, github_client
+from ape.utils import get_all_files_in_directory, get_relative_path, github_client
 
 from .compilers import CompilerManager
 from .config import ConfigManager
 from .converters import ConversionManager
-
-
-def _create_source_dict(contracts_paths: Collection[Path]) -> Dict[str, Source]:
-    return {
-        str(source): Source(  # type: ignore
-            checksum=Checksum(  # type: ignore
-                algorithm="md5", hash=compute_checksum(source.read_bytes())
-            ),
-            urls=[],
-        )
-        for source in contracts_paths
-    }
 
 
 @dataclass
@@ -88,7 +77,7 @@ class ProjectManager:
             if "name" not in manifest_dict:
                 raise ProjectError("Dependencies must have a name.")
 
-            return PackageManifest.from_dict(manifest_dict)
+            return PackageManifest(**manifest_dict)
         else:
             # Github dependency (format: <org>/<repo>@<version>)
             try:
@@ -115,8 +104,8 @@ class ProjectManager:
                 if s.name not in ("package.json", "package-lock.json")
                 and s.suffix in self.compilers.registered_compilers
             ]
-            manifest.sources = _create_source_dict(sources)
-            manifest.contractTypes = self.compilers.compile(sources)
+            manifest.sources = self._create_source_dict(sources)
+            manifest.contract_types = self.compilers.compile(sources)
             return manifest
 
     def __str__(self) -> str:
@@ -146,7 +135,7 @@ class ProjectManager:
     @property
     def cached_manifest(self) -> Optional[PackageManifest]:
         """
-        The cached :class:`~ape.types.manifest.PackageManifest`.
+        The cached ``PackageManifest``.
         If nothing has been compiled, then no manifest will exist, and
         this will return ``None``.
         """
@@ -157,7 +146,7 @@ class ProjectManager:
             if "manifest" not in manifest_json:
                 raise ProjectError("Corrupted manifest.")
 
-            return PackageManifest.from_dict(manifest_json)
+            return PackageManifest(**manifest_json)
 
         else:
             return None
@@ -280,8 +269,8 @@ class ProjectManager:
               Defaults to ``True``.
 
         Returns:
-            Dict[str, :class:`~ape.types.contract.ContractType`]: A dictionary of contract names
-            to their types for each compiled contract.
+            Dict[str, ``ContractType``]: A dictionary of contract names to their
+            types for each compiled contract.
         """
 
         if isinstance(file_paths, Path):
@@ -290,21 +279,26 @@ class ProjectManager:
         # Load a cached or clean manifest (to use for caching)
         manifest = use_cache and self.cached_manifest or PackageManifest()
         cached_sources = manifest.sources or {}
-        cached_contract_types = manifest.contractTypes or {}
+        cached_contract_types = manifest.contract_types or {}
         sources = {s for s in self.sources if s in file_paths} if file_paths else self.sources
 
         # If a file is deleted from ``sources`` but is in
         # ``cached_sources``, remove its corresponding ``contract_types`` by
-        # using ``ContractType.sourceId`` and ``ContractType.sourcePath``
-        deleted_sources = cached_sources.keys() - set(map(str, sources))
+        # using ``ContractType.source_id`` and ``ContractType.sourcePath``
+        deleted_source_ids = cached_sources.keys() - set(
+            map(str, [get_relative_path(s, self.contracts_folder) for s in sources])
+        )
 
         # Filter out deleted sources
         contract_types = {
-            n: ct for n, ct in cached_contract_types.items() if ct.sourceId not in deleted_sources
+            n: ct
+            for n, ct in cached_contract_types.items()
+            if ct.source_id not in deleted_source_ids
         }
 
         def file_needs_compiling(source: Path) -> bool:
-            path = str(source)
+            path = str(get_relative_path(source, self.contracts_folder))
+
             # New file added?
             if path not in cached_sources:
                 return True
@@ -316,8 +310,9 @@ class ProjectManager:
             assert cached.checksum  # to tell mypy this can't be None
 
             # File contents changed in source code folder?
+            source_file = self.contracts_folder / source
             checksum = compute_checksum(
-                source.read_bytes(),
+                source_file.read_bytes(),
                 algorithm=cached.checksum.algorithm,
             )
             return checksum != cached.checksum.hash
@@ -325,14 +320,15 @@ class ProjectManager:
         # NOTE: filter by checksum, etc., and compile what's needed
         #       to bring our cached manifest up-to-date
         needs_compiling = filter(file_needs_compiling, sources)
-        contract_types.update(self.compilers.compile(list(needs_compiling)))
+        compiled_contract_types = self.compilers.compile(list(needs_compiling))
+        contract_types.update(compiled_contract_types)
 
         # Update cached contract types & source code entries in cached manifest
-        manifest.contractTypes = contract_types
-        manifest.sources = _create_source_dict(sources)
+        manifest.contract_types = contract_types
+        manifest.sources = self._create_source_dict(sources)
 
         # NOTE: Cache the updated manifest to disk (so ``self.cached_manifest`` reads next time)
-        self.manifest_cachefile.write_text(json.dumps(manifest.to_dict()))
+        self.manifest_cachefile.write_text(json.dumps(manifest.dict()))
 
         return contract_types
 
@@ -343,7 +339,7 @@ class ProjectManager:
         See :meth:`~ape.managers.project.ProjectManager.load_contracts` for more information.
 
         Returns:
-            Dict[str, :class:`~ape.types.contract.ContractType`]
+            Dict[str, ``ContractType``]
         """
 
         return self.load_contracts()
@@ -367,7 +363,6 @@ class ProjectManager:
         """
 
         contracts = self.load_contracts()
-
         if attr_name in contracts:
             contract_type = contracts[attr_name]
         elif attr_name in self.dependencies:
@@ -421,7 +416,7 @@ class ProjectManager:
         A list of objects representing the raw-data specifics of a compiler.
 
         Returns:
-            List[:class:`~ape.types.contract.Compiler`]
+            List[``Compiler``]
         """
 
         compilers = []
@@ -434,16 +429,28 @@ class ProjectManager:
 
         return compilers
 
+    def _create_source_dict(self, contracts_paths: Collection[Path]) -> Dict[str, Source]:
+        return {
+            str(get_relative_path(source, self.contracts_folder)): Source(  # type: ignore
+                checksum=Checksum(  # type: ignore
+                    algorithm="md5",
+                    hash=compute_checksum(source.read_bytes()),
+                ),
+                urls=[],
+            )
+            for source in contracts_paths
+        }
+
     # @property
     # def meta(self) -> PackageMeta:
     #     return PackageMeta(**self.config.get_config("ethpm").serialize())
 
     # def publish_manifest(self):
-    #     manifest = self.manifest.to_dict()  # noqa: F841
+    #     manifest = self.manifest.dict()
     #     if not manifest["name"]:
     #         raise ProjectError("Need name to release manifest")
     #     if not manifest["version"]:
     #         raise ProjectError("Need version to release manifest")
-    #     # TODO: Clean up manifest and minify it
-    #     # TODO: Publish sources to IPFS and replace with CIDs
-    #     # TODO: Publish to IPFS
+    #     TODO: Clean up manifest and minify it
+    #     TODO: Publish sources to IPFS and replace with CIDs
+    #     TODO: Publish to IPFS

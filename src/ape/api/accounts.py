@@ -2,10 +2,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
 
 import click
+from eth_account import Account
 
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
+from ape.types.signatures import _Signature
 from ape.utils import abstractdataclass, abstractmethod, cached_property
 
 from .address import AddressAPI
@@ -44,9 +46,6 @@ class AccountAPI(AddressAPI):
     def alias(self) -> Optional[str]:
         """
         A shortened-name for quicker access to the account.
-
-        Returns:
-            str (optional)
         """
         return None
 
@@ -56,7 +55,7 @@ class AccountAPI(AddressAPI):
         Sign a message.
 
         Args:
-          msg (SignableMessage): The message to sign.
+          msg (:class:`~ape.types.signatures.SignableMessage`): The message to sign.
             See these
             `docs <https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage>`__  # noqa: E501
             for more type information on this type.
@@ -198,7 +197,8 @@ class AccountAPI(AddressAPI):
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
         address = click.style(receipt.contract_address, bold=True)
-        logger.success(f"Contract '{contract.contract_type.contractName}' deployed to: {address}")
+        contract_name = contract.contract_type.name or "<Unnamed Contract>"
+        logger.success(f"Contract '{contract_name}' deployed to: {address}")
 
         from ape import _converters
         from ape.contracts import ContractInstance
@@ -209,6 +209,18 @@ class AccountAPI(AddressAPI):
             _address=receipt.contract_address,
             _contract_type=contract.contract_type,
         )
+
+    def check_signature(
+        self,
+        data: Union[SignableMessage, TransactionAPI],
+        signature: Optional[_Signature] = None,  # TransactionAPI doesn't need it
+    ) -> bool:
+        if isinstance(data, SignableMessage):
+            return self.address == Account.recover_message(data, vrs=signature)
+        elif isinstance(data, TransactionAPI):
+            return self.address == Account.recover_transaction(data.encode())
+        else:
+            raise ValueError(f"Unsupported Message type: {type(data)}.")
 
 
 @abstractdataclass
