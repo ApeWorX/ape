@@ -2,10 +2,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
 
 import click
+from eth_account import Account
 
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
+from ape.types.signatures import _Signature
 from ape.utils import abstractdataclass, abstractmethod, cached_property
 
 from .address import AddressAPI
@@ -207,6 +209,35 @@ class AccountAPI(AddressAPI):
             _address=receipt.contract_address,
             _contract_type=contract.contract_type,
         )
+
+    def check_signature(
+        self,
+        data: Union[SignableMessage, TransactionAPI],
+        signature: Optional[_Signature] = None,  # TransactionAPI doesn't need it
+    ) -> bool:
+        """
+        Verify a message or transaction was signed by this account.
+
+        Args:
+            data (Union[:class:`~ape.types.signatures.SignableMessage`, :class:`~ape.api.providers.TransactionAPI`]):  # noqa: E501
+              The message or transaction to verify.
+            signature (Optional[``_Signature``]): The :class:`~ape.types.signatures.MessageSignature` or the
+              :class:`~ape.types.signatures.TransactionSignature`.
+
+        Returns:
+            bool: ``True`` if the data was signed by this account. ``False`` otherwise.
+        """
+        if isinstance(data, SignableMessage):
+            if signature:
+                return self.address == Account.recover_message(data, vrs=signature)
+            else:
+                raise ValueError(
+                    "Parameter 'signature' required when verifying a 'SignableMessage'."
+                )
+        elif isinstance(data, TransactionAPI):
+            return self.address == Account.recover_transaction(data.encode())
+        else:
+            raise ValueError(f"Unsupported Message type: {type(data)}.")
 
 
 @abstractdataclass
