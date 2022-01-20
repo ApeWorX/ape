@@ -1,4 +1,13 @@
+from eth_account.messages import encode_defunct
+
 from ape import convert
+
+
+def test_sign_message(test_accounts):
+    signer = test_accounts[2]
+    message = encode_defunct(text="Hello Apes!")
+    signature = signer.sign_message(message)
+    assert signer.check_signature(message, signature)
 
 
 def test_transfer(sender, receiver):

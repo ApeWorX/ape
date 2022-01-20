@@ -39,4 +39,4 @@ class TransactionSignature(_Signature):
     """
 
 
-_ = SignableMessage
+__all__ = ["MessageSignature", "TransactionSignature", "SignableMessage"]
