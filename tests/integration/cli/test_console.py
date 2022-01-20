@@ -8,5 +8,9 @@ from tests.integration.cli.utils import skip_projects
 @skip_projects(["geth"])
 @pytest.mark.parametrize("item", __all__)
 def test_console(ape_cli, runner, item):
-    result = runner.invoke(ape_cli, ["console"], input=f"{item}\nexit\n")
+    result = runner.invoke(ape_cli, ["console"], input=f"{item}\nexit\n", catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    result = runner.invoke(
+        ape_cli, ["console", "-v", "debug"], input=f"{item}\nexit\n", catch_exceptions=False
+    )
     assert result.exit_code == 0, result.output
