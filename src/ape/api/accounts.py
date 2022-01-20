@@ -217,8 +217,7 @@ class AccountAPI(AddressAPI):
     ) -> bool:
         if isinstance(data, SignableMessage):
             if signature:
-                signature_bytes = signature.encode_rsv()
-                return self.address == Account.recover_message(data, signature=signature_bytes)
+                return self.address == Account.recover_message(data, vrs=signature)
             else:
                 raise ValueError(
                     "Parameter 'signature' required when verifying a 'SignableMessage'."
