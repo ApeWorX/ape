@@ -11,10 +11,10 @@ from ethpm_types.utils import compute_checksum
 
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
+from ape.logging import logger
 from ape.managers.networks import NetworkManager
 from ape.utils import get_all_files_in_directory, get_relative_path, github_client
 
-from ..logging import logger
 from .compilers import CompilerManager
 from .config import ConfigManager
 from .converters import ConversionManager
