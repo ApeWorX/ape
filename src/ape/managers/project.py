@@ -1,8 +1,8 @@
 import json
 import sys
-from importlib import import_module
+from importlib import import_module, reload
 from pathlib import Path
-from typing import Collection, Dict, List, Optional, Union
+from typing import Any, Collection, Dict, List, Optional, Union
 
 import requests
 from dataclassy import dataclass
@@ -49,6 +49,7 @@ class ProjectManager:
     networks: NetworkManager
 
     dependencies: Dict[str, PackageManifest] = dict()
+    _import_cache: Dict[str, Any] = {}
 
     def __post_init__(self):
         if isinstance(self.path, str):
@@ -475,21 +476,26 @@ class ProjectManager:
             raise ProjectError("Cannot execute script from outside current directory")
 
         # Add to Python path so we can search for the given script to import
-        scripts_path = str(script_path.parent.resolve())
-        sys.path.append(scripts_path)
+        root_path = Path(".").resolve().root
+        sys.path.append(root_path)
 
         # Load the python module to find our hook functions
         try:
             import_str = ".".join(self.scripts_folder.absolute().parts[1:] + (script_path.stem,))
-            print(import_str)
-            py_module = import_module(import_str, package="scripts")
+            if import_str in self._import_cache:
+                reload(self._import_cache[import_str])
+            else:
+                self._import_cache[import_str] = import_module(import_str)
+
+            py_module = self._import_cache[import_str]
+
         except Exception as err:
             logger.error_from_exception(err, f"Exception while executing script: {script_path}")
             sys.exit(1)
 
         finally:
             # Undo adding the path to make sure it's not permanent
-            sys.path.remove(str(script_path.parent.resolve()))
+            sys.path.remove(root_path)
 
         # Execute the hooks
         if hasattr(py_module, "cli"):
