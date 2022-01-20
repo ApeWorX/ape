@@ -34,7 +34,7 @@ NETWORKS = {
     "ropsten": (3, 3),
     "kovan": (42, 42),
     "rinkeby": (4, 4),
-    "goerli": (420, 420),
+    "goerli": (5, 5),
 }
 
 
@@ -177,10 +177,11 @@ class Receipt(ReceiptAPI):
 
             status = TransactionStatusEnum(status)
 
+        txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
         return cls(  # type: ignore
             provider=data.get("provider"),
             required_confirmations=data.get("required_confirmations", 0),
-            txn_hash=data["hash"],
+            txn_hash=txn_hash,
             status=status,
             block_number=data["blockNumber"],
             gas_used=data["gasUsed"],

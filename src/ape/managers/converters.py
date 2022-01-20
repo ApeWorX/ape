@@ -7,7 +7,6 @@ from hexbytes import HexBytes
 
 from ape.api import AddressAPI, ConverterAPI
 from ape.exceptions import ConversionError
-from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.types import AddressType
 from ape.utils import cached_property
@@ -87,7 +86,6 @@ class HexAddressConverter(ConverterAPI):
             :class:`~ape.types.AddressType`
         """
 
-        logger.warning(f"The value '{value}' is not in checksummed form.")
         return to_checksum_address(value)
 
 
