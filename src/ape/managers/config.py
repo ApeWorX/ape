@@ -115,7 +115,7 @@ class ConfigManager:
             remaining_keys_str = ", ".join(remaining_keys)
             logger.warning(
                 f"Unprocessed plugin config(s): {remaining_keys_str}. "
-                "Plugins may not be installed yet or may be mis-spelled."
+                "Plugins may not be installed yet or keys may be mis-spelled."
             )
 
         self._plugin_configs_by_project[project_name] = configs
