@@ -110,11 +110,13 @@ class ConfigManager:
 
             configs[plugin_name] = config
 
-        if len(user_config.keys()) > 0:
+        remaining_keys = list(user_config.keys())
+
+        if len(remaining_keys) > 0:
+            remaining_keys_str = ", ".join(remaining_keys)
             logger.warning(
-                "Not all config items have been processed yet. "
-                "If warning persists after 'ape plugins install', "
-                "there are unrecognized config keys."
+                f"Unprocessed plugin config(s): {remaining_keys_str}. "
+                "Plugins may not be installed yet or may be mis-spelled."
             )
 
         self._plugin_configs_by_project[project_name] = configs
