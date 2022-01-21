@@ -66,6 +66,13 @@ class NetworkManager:
                 request_header=self.config.REQUEST_HEADER,
             )
             ecosystem_config = self.config.get_config(plugin_name)
+            default_network = ecosystem_config.default_network  # type: ignore
+
+            if default_network and default_network in ecosystem.networks:
+                ecosystem.set_default_network(default_network)
+            else:
+                raise ConfigError(f"No network named '{default_network}'.")
+
             if ecosystem_config:
                 for network_name, network in ecosystem.networks.items():
                     network_config = ecosystem_config.get(network_name)
