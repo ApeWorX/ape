@@ -51,6 +51,7 @@ class EthereumConfig(ConfigItem):
     rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
     goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
     development: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
+    default_network: str = "development"
 
 
 class BaseTransaction(TransactionAPI):
