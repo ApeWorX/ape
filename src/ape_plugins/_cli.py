@@ -168,7 +168,7 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
             if result == 0 and is_plugin_installed(plugin):
                 cli_ctx.logger.success(f"Plugin '{plugin}' has been upgraded.")
             else:
-                cli_ctx.logger.error(f"Failed to add '{plugin}'.")
+                cli_ctx.logger.error(f"Error occurs when updating '{plugin}'.")
                 sys.exit(1)
         else:
             cli_ctx.logger.warning(
@@ -191,7 +191,7 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
         if result == 0 and is_plugin_installed(plugin):
             cli_ctx.logger.success(f"Plugin '{plugin}' has been added.")
         else:
-            cli_ctx.logger.error(f"Failed to add '{plugin}'.")
+            cli_ctx.logger.error(f"Errors occurred when adding '{plugin}'.")
             sys.exit(1)
 
 
@@ -225,12 +225,12 @@ def install(cli_ctx, skip_confirmation, upgrade):
                 if result == 0 and is_plugin_installed(module_name):
                     cli_ctx.logger.success(f"Plugin '{module_name}' has been upgraded.")
                 else:
-                    cli_ctx.logger.error(f"Failed to upgrade '{module_name}'.")
+                    cli_ctx.logger.error(f"Errors occurred when upgrading '{module_name}'.")
                     any_install_failed = True
             else:
                 cli_ctx.logger.warning(
                     f"{module_name} is already installed. "
-                    f"Use the '--upgrade' option if you want to update '{plugin}'"
+                    f"Use the '--upgrade' option if you want to update '{module_name}'"
                 )
 
         if not is_plugin_installed(module_name) and (
@@ -250,7 +250,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
             if result == 0 and plugin_got_installed:
                 cli_ctx.logger.success(f"Plugin '{module_name}' has been added.")
             else:
-                cli_ctx.logger.error(f"Failed to add '{package_name}'.")
+                cli_ctx.logger.error(f"Errors occurred when adding '{package_name}'.")
                 any_install_failed = True
     if any_install_failed:
         sys.exit(1)
