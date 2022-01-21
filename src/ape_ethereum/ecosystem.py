@@ -223,9 +223,9 @@ class Block(BlockAPI):
         return cls(  # type: ignore
             gas_data=BlockGasFee.decode(data),
             consensus_data=BlockConsensus.decode(data),
-            number=data["number"],
-            size=data.get("size"),
-            timestamp=data.get("timestamp"),
+            number=int(data["number"]),
+            size=int(data["size"]) if "size" in data else None,
+            timestamp=int(data["timestamp"]) if "timestamp" in data else None,
             hash=data.get("hash"),
             parent_hash=data.get("hash"),
         )
