@@ -26,7 +26,7 @@ Set default network and network providers:
 ethereum:
   default_network: mainnet-fork
   mainnet-fork:
-    default_provider: alchemy
+    default_provider: hardhat
 ```
 
 ## Plugins
