@@ -1,6 +1,5 @@
 import click
 
-from ape import project
 from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 
 
@@ -31,4 +30,4 @@ def cli(cli_ctx, scripts, interactive, network):
         cli_ctx.abort("Must provide at least one script name or path.")
 
     for name in scripts:
-        project.run_script(name, interactive)
+        cli_ctx.project.run_script(name, interactive)
