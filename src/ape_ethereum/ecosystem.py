@@ -217,15 +217,23 @@ class BlockConsensus(BlockConsensusAPI):
         )  # type: ignore
 
 
+def _get_int(data: Dict, key: str) -> Optional[int]:
+    number = data.get("number")
+    if number is not None and isinstance(number, str) and number.isnumeric():
+        number = int(number)
+
+    return number
+
+
 class Block(BlockAPI):
     @classmethod
     def decode(cls, data: Dict) -> BlockAPI:
         return cls(  # type: ignore
             gas_data=BlockGasFee.decode(data),
             consensus_data=BlockConsensus.decode(data),
-            number=int(data["number"]),
-            size=int(data["size"]) if "size" in data else None,
-            timestamp=int(data["timestamp"]) if "timestamp" in data else None,
+            number=_get_int(data, "number"),
+            size=_get_int(data, "size"),
+            timestamp=_get_int(data, "timestamp"),
             hash=data.get("hash"),
             parent_hash=data.get("hash"),
         )
