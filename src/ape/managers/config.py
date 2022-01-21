@@ -7,6 +7,7 @@ from dataclassy import dataclass
 from ape.api import ConfigDict, ConfigItem
 from ape.convert import to_address
 from ape.exceptions import ConfigError
+from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.utils import load_config
 
@@ -109,8 +110,13 @@ class ConfigManager:
 
             configs[plugin_name] = config
 
-        if len(user_config.keys()) > 0:
-            raise ConfigError("Unprocessed config items.")
+        remaining_keys = user_config.keys()
+        if len(remaining_keys) > 0:
+            remaining_keys_str = ", ".join(remaining_keys)
+            logger.warning(
+                f"Unprocessed plugin config(s): {remaining_keys_str}. "
+                "Plugins may not be installed yet or keys may be mis-spelled."
+            )
 
         self._plugin_configs_by_project[project_name] = configs
         return configs
