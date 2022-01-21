@@ -20,12 +20,13 @@ deployments:
 
 ## Networks
 
-Set default networks:
+Set default network and network providers:
 
 ```yaml
 ethereum:
-  development:
-    default_provider: hardhat
+  default_network: mainnet-fork
+  mainnet-fork:
+    default_provider: alchemy
 ```
 
 ## Plugins
