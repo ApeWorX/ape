@@ -1,4 +1,6 @@
 import json
+import sys
+from importlib import import_module
 from pathlib import Path
 from typing import Collection, Dict, List, Optional, Union
 
@@ -9,6 +11,7 @@ from ethpm_types.utils import compute_checksum
 
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
+from ape.logging import logger
 from ape.managers.networks import NetworkManager
 from ape.utils import get_all_files_in_directory, get_relative_path, github_client
 
@@ -440,6 +443,69 @@ class ProjectManager:
             )
             for source in contracts_paths
         }
+
+    def run_script(self, name: str, interactive: bool = False):
+        """
+        Run a script from the project ``scripts/`` directory.
+
+        Args:
+            name (str): The script name.
+            interactive (bool): Whether to launch the console as well. Defaults to ``False``.
+        """
+        # Generate the lookup based on all the scripts defined in the project's ``scripts/`` folder
+        # NOTE: If folder does not exist, this will be empty (same as if there are no files)
+        available_scripts = {p.stem: p.resolve() for p in self.scripts_folder.glob("*.py")}
+
+        if Path(name).exists():
+            script_file = Path(name).resolve()
+
+        elif not self.scripts_folder.exists():
+            raise ProjectError("No 'scripts/' directory detected to run script.")
+
+        elif name not in available_scripts:
+            raise ProjectError(f"No script named '{name}' detected in scripts folder.")
+
+        else:
+            script_file = self.scripts_folder / name
+
+        script_path = get_relative_path(script_file, Path.cwd())
+        script_parts = script_path.parts[:-1]
+
+        if any(p == ".." for p in script_parts):
+            raise ProjectError("Cannot execute script from outside current directory")
+
+        # Add to Python path so we can search for the given script to import
+        root_path = Path(".").resolve().root
+        sys.path.append(root_path)
+
+        # Load the python module to find our hook functions
+        try:
+            import_str = ".".join(self.scripts_folder.absolute().parts[1:] + (script_path.stem,))
+            py_module = import_module(import_str)
+        except Exception as err:
+            logger.error_from_exception(err, f"Exception while executing script: {script_path}")
+            sys.exit(1)
+
+        finally:
+            # Undo adding the path to make sure it's not permanent
+            sys.path.remove(root_path)
+
+        # Execute the hooks
+        if hasattr(py_module, "cli"):
+            # TODO: Pass context to ``cli`` before calling it
+            py_module.cli()  # type: ignore
+
+        elif hasattr(py_module, "main"):
+            # NOTE: ``main()`` accepts no arguments
+            py_module.main()  # type: ignore
+
+        else:
+            raise ProjectError("No `main` or `cli` method detected")
+
+        if interactive:
+            from ape_console._cli import console
+
+            return console()
 
     # @property
     # def meta(self) -> PackageMeta:
