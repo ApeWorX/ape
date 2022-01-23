@@ -65,8 +65,7 @@ class ProjectManager:
         return "<ProjectManager>"
 
     def _extract_manifest(self, name: str, download_path: str) -> PackageManifest:
-        dependencies_path = self.contracts_folder / ".dependencies"
-        target_path = dependencies_path / name
+        target_path = self._dependencies_folder / name
         target_path.mkdir(exist_ok=True, parents=True)
 
         if download_path.startswith("https://") or download_path.startswith("http://"):
@@ -197,7 +196,7 @@ class ProjectManager:
                 d
                 for d in self.contracts_folder.iterdir()
                 if d.is_dir()
-                if d.name != ".dependencies"
+                if d.name != self._dependencies_folder.name
             ]:
                 files.extend(sub_contract_dir.glob(f"*{extension}"))
 
@@ -211,6 +210,10 @@ class ProjectManager:
         """
 
         return not self.contracts_folder.exists() or not self.contracts_folder.iterdir()
+
+    @property
+    def _dependencies_folder(self) -> Path:
+        return self.contracts_folder / ".dependencies"
 
     def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
         """
