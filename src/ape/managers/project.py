@@ -190,8 +190,16 @@ class ProjectManager:
             List[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
+
         for extension in self.compilers.registered_compilers:
-            files.extend(self.contracts_folder.rglob("*" + extension))
+            files.extend(self.contracts_folder.glob(f"*{extension}"))
+            for sub_contract_dir in [
+                d
+                for d in self.contracts_folder.iterdir()
+                if d.is_dir()
+                if d.name != ".dependencies"
+            ]:
+                files.extend(sub_contract_dir.glob(f"*{extension}"))
 
         return files
 
