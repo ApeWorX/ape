@@ -189,6 +189,8 @@ class ProjectManager:
             List[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
+        if not self.contracts_folder.exists():
+            return files
 
         for extension in self.compilers.registered_compilers:
             files.extend(self.contracts_folder.glob(f"*{extension}"))
