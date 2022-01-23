@@ -15,62 +15,11 @@ from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.managers.networks import NetworkManager
-from ape.utils import get_relative_path, github_client
+from ape.utils import get_all_files_in_directory, get_relative_path, github_client
 
 from .compilers import CompilerManager
 from .config import ConfigManager
 from .converters import ConversionManager
-
-
-def _download_manifest(download_path: str, manifest_target_path: Path) -> Dict:
-    manifest_dict = {}
-
-    if download_path.startswith("https://") or download_path.startswith("http://"):
-        response = requests.get(download_path)
-        manifest_dict = response.json()
-    else:
-        # Github dependency (format: <org>/<repo>@<version>)
-        try:
-            path, version = download_path.split("@")
-        except ValueError:
-            raise ValueError("Invalid Github ID. Must be given as <org>/<repo>@<version>")
-
-        # Download manifest
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_project_path = Path(temp_dir) / "dep"
-            temp_project_path.mkdir(exist_ok=True, parents=True)
-            github_client.download_package(path, version, temp_project_path)
-
-            temp_contracts_path = temp_project_path / "contracts"
-            if not temp_contracts_path.exists():
-                raise ProjectError(
-                    "Dependency does not have a supported file structure. "
-                    "Expecting 'contracts/' path."
-                )
-
-            # Clear up common, unneeded files.
-            for key in ("package.json", "package-lock.json"):
-                unneeded_file_path = temp_contracts_path / key
-                if unneeded_file_path.exists():
-                    unneeded_file_path.unlink()
-
-            # Using a Project class to compile ensures we don't re-use the
-            # current project's 'ape-config.yaml' specifications.
-            from ape import Project
-
-            dependency_project = Project(temp_project_path)
-            dependency_project.load_contracts()
-
-            manifest: PackageManifest = dependency_project.cached_manifest
-
-            if not manifest:
-                # Appeases 'mypy' but is unlikely to ever happen.
-                raise ProjectError(f"Failed to produce a dependency manifest for '{download_path}'")
-
-            manifest_dict = manifest.dict()
-
-    manifest_target_path.write_text(json.dumps(manifest_dict))
-    return manifest_dict
 
 
 @dataclass
@@ -107,9 +56,6 @@ class ProjectManager:
         if isinstance(self.path, str):
             self.path = Path(self.path)
 
-        if self.config.PROJECT_FOLDER != self.path:
-            self.config.PROJECT_FOLDER = self.path
-
         config = self.config.load()
         self.dependencies = {
             n: self._extract_dependency_manifest(n, dep_id)
@@ -133,12 +79,58 @@ class ProjectManager:
                 manifest_dict = None
 
         if not manifest_dict:
-            manifest_dict = _download_manifest(download_path, manifest_file_path)
+            manifest_dict = self._download_manifest(name, download_path, manifest_file_path)
 
         if "name" not in manifest_dict:
             manifest_dict["name"] = name.replace("_", "").replace("-", "")
 
         return PackageManifest(**manifest_dict)
+
+    def _download_manifest(self, name: str, download_path: str, manifest_target_path: Path) -> Dict:
+        manifest_dict = {}
+
+        if download_path.startswith("https://") or download_path.startswith("http://"):
+            response = requests.get(download_path)
+            manifest_dict = response.json()
+        else:
+            # Github dependency (format: <org>/<repo>@<version>)
+            try:
+                path, version = download_path.split("@")
+            except ValueError:
+                raise ValueError("Invalid Github ID. Must be given as <org>/<repo>@<version>")
+
+            # Download manifest
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_project_path = Path(temp_dir) / name
+                temp_project_path.mkdir(exist_ok=True, parents=True)
+                github_client.download_package(path, version, temp_project_path)
+
+                temp_contracts_path = temp_project_path / "contracts"
+                if not temp_contracts_path.exists():
+                    raise ProjectError(
+                        "Dependency does not have a supported file structure. "
+                        "Expecting 'contracts/' path."
+                    )
+
+                manifest = PackageManifest()
+                sources = [
+                    s
+                    for s in get_all_files_in_directory(temp_contracts_path)
+                    if s.name not in ("package.json", "package-lock.json")
+                    and s.suffix in self.compilers.registered_compilers
+                ]
+                manifest.name = name.lower().replace("_", "").replace("-", "")
+                manifest.sources = self._create_source_dict(sources, base_path=temp_contracts_path)
+                manifest.contract_types = self.compilers.compile(
+                    sources, base_path=temp_contracts_path
+                )
+                manifest_dict = manifest.dict()
+
+                # Validates manifest dict
+                _ = PackageManifest(**manifest_dict)
+
+        manifest_target_path.write_text(json.dumps(manifest_dict))
+        return manifest_dict
 
     def __str__(self) -> str:
         return f'Project("{self.path}")'
@@ -173,15 +165,14 @@ class ProjectManager:
         """
 
         manifest_file = self.manifest_cachefile
-        if manifest_file.exists():
-            manifest_json = json.loads(manifest_file.read_text())
-            if "manifest" not in manifest_json:
-                raise ProjectError("Corrupted manifest.")
-
-            return PackageManifest(**manifest_json)
-
-        else:
+        if not manifest_file.exists():
             return None
+
+        manifest_json = json.loads(manifest_file.read_text())
+        if "manifest" not in manifest_json:
+            raise ProjectError("Corrupted manifest.")
+
+        return PackageManifest(**manifest_json)
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
     @property
@@ -209,14 +200,7 @@ class ProjectManager:
             return files
 
         for extension in self.compilers.registered_compilers:
-            files.extend(self.contracts_folder.glob(f"*{extension}"))
-            for sub_contract_dir in [
-                d
-                for d in self.contracts_folder.iterdir()
-                if d.is_dir()
-                if d.name != self._dependencies_cache_folder.name
-            ]:
-                files.extend(sub_contract_dir.rglob(f"*{extension}"))
+            files.extend(self.contracts_folder.rglob(f"*{extension}"))
 
         return files
 
@@ -318,7 +302,6 @@ class ProjectManager:
             Dict[str, ``ContractType``]: A dictionary of contract names to their
             types for each compiled contract.
         """
-
         if isinstance(file_paths, Path):
             file_paths = [file_paths]
 
@@ -374,6 +357,9 @@ class ProjectManager:
             needs_compiling, base_path=self.contracts_folder
         )
         contract_types.update(compiled_contract_types)
+
+        # Re-calculate sources in case there are generated files (such as from 'ape-solidity').
+        sources = {s for s in self.sources if s in file_paths} if file_paths else self.sources
 
         # Update cached contract types & source code entries in cached manifest
         manifest.contract_types = contract_types
@@ -481,14 +467,18 @@ class ProjectManager:
 
         return compilers
 
-    def _create_source_dict(self, contracts_paths: Collection[Path]) -> Dict[str, Source]:
+    def _create_source_dict(
+        self, contracts_paths: Collection[Path], base_path: Optional[Path] = None
+    ) -> Dict[str, Source]:
+        base_path = base_path or self.contracts_folder
         return {
-            str(get_relative_path(source, self.contracts_folder)): Source(  # type: ignore
+            str(get_relative_path(source, base_path)): Source(  # type: ignore
                 checksum=Checksum(  # type: ignore
                     algorithm="md5",
                     hash=compute_checksum(source.read_bytes()),
                 ),
                 urls=[],
+                content=source.read_text(),
             )
             for source in contracts_paths
         }
