@@ -1,5 +1,7 @@
 import json
+import shutil
 import sys
+import tempfile
 from importlib import import_module
 from pathlib import Path
 from typing import Collection, Dict, List, Optional, Union
@@ -54,17 +56,17 @@ class ProjectManager:
         if isinstance(self.path, str):
             self.path = Path(self.path)
 
+        config = self.config.load()
         self.dependencies = {
-            n: self._extract_manifest(n, dep_id) for n, dep_id in self.config.dependencies.items()
+            n: self._extract_manifest(n, dep_id) for n, dep_id in config.dependencies.items()
         }
 
     def __repr__(self):
         return "<ProjectManager>"
 
     def _extract_manifest(self, name: str, download_path: str) -> PackageManifest:
-        packages_path = self.config.DATA_FOLDER / "packages"
-        packages_path.mkdir(exist_ok=True, parents=True)
-        target_path = packages_path / name
+        dependencies_path = self.contracts_folder / ".dependencies"
+        target_path = dependencies_path / name
         target_path.mkdir(exist_ok=True, parents=True)
 
         if download_path.startswith("https://") or download_path.startswith("http://"):
@@ -88,13 +90,26 @@ class ProjectManager:
             except ValueError:
                 raise ValueError("Invalid Github ID. Must be given as <org>/<repo>@<version>")
 
-            package_contracts_path = target_path / "contracts"
             is_cached = len([p for p in target_path.iterdir()]) > 0
 
             if not is_cached:
                 github_client.download_package(path, version, target_path)
+                contracts_path = target_path / "contracts"
+                if contracts_path.exists():
+                    with tempfile.TemporaryDirectory() as temp_dir:
+                        temp_contracts_path = Path(temp_dir) / "contracts"
+                        shutil.copytree(contracts_path, temp_contracts_path)
 
-            if not package_contracts_path.exists():
+                        # Delete common files that are unneeded and cause problems.
+                        for key in ("package.json", "package-lock.json"):
+                            unneeded_file_path = temp_contracts_path / key
+                            if unneeded_file_path.exists():
+                                unneeded_file_path.unlink()
+
+                        shutil.rmtree(target_path)
+                        shutil.copytree(temp_contracts_path, target_path)
+
+            if not target_path.exists():
                 raise ProjectError(
                     "Dependency does not have a supported file structure. "
                     "Expecting 'contracts/' path."
@@ -103,9 +118,8 @@ class ProjectManager:
             manifest = PackageManifest()
             sources = [
                 s
-                for s in get_all_files_in_directory(package_contracts_path)
-                if s.name not in ("package.json", "package-lock.json")
-                and s.suffix in self.compilers.registered_compilers
+                for s in get_all_files_in_directory(target_path)
+                if s.suffix in self.compilers.registered_compilers
             ]
             manifest.sources = self._create_source_dict(sources)
             manifest.contract_types = self.compilers.compile(sources)

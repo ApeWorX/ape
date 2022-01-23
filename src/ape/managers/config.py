@@ -124,6 +124,14 @@ class ConfigManager:
     def __repr__(self):
         return "<ConfigManager>"
 
+    def load(self) -> "ConfigManager":
+        """
+        Load the user config file and return this class.
+        """
+
+        _ = self._plugin_configs
+        return self
+
     def get_config(self, plugin_name: str) -> ConfigItem:
         """
         Get a plugin config.
