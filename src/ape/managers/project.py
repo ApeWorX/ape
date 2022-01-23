@@ -1,5 +1,4 @@
 import json
-import shutil
 import sys
 import tempfile
 from importlib import import_module
@@ -65,11 +64,11 @@ class ProjectManager:
         return "<ProjectManager>"
 
     def _extract_manifest(self, name: str, download_path: str) -> PackageManifest:
-        target_path = self._dependencies_cache_folder / name
+        target_path = self.config.packages_folder / name
         target_path.mkdir(exist_ok=True, parents=True)
+        manifest_file_path = target_path / "manifest.json"
 
         if download_path.startswith("https://") or download_path.startswith("http://"):
-            manifest_file_path = target_path / "manifest.json"
             if manifest_file_path.exists():
                 manifest_dict = json.loads(manifest_file_path.read_text())
             else:
@@ -89,40 +88,42 @@ class ProjectManager:
             except ValueError:
                 raise ValueError("Invalid Github ID. Must be given as <org>/<repo>@<version>")
 
-            is_cached = len([p for p in target_path.iterdir()]) > 0
+            if manifest_file_path.exists():
+                manifest_dict = json.loads(manifest_file_path.read_text())
+                if isinstance(manifest_dict, dict):
+                    return PackageManifest(**manifest_dict)
+                else:
+                    logger.warning(
+                        f"Existing manifest file for '{name}' corrupted. Re-downloading."
+                    )
+                    manifest_file_path.unlink()
 
-            if not is_cached:
-                github_client.download_package(path, version, target_path)
-                contracts_path = target_path / "contracts"
-                if contracts_path.exists():
-                    with tempfile.TemporaryDirectory() as temp_dir:
-                        temp_contracts_path = Path(temp_dir) / "contracts"
-                        shutil.copytree(contracts_path, temp_contracts_path)
-
-                        # Delete common files that are unneeded and cause problems.
-                        for key in ("package.json", "package-lock.json"):
-                            unneeded_file_path = temp_contracts_path / key
-                            if unneeded_file_path.exists():
-                                unneeded_file_path.unlink()
-
-                        shutil.rmtree(target_path)
-                        shutil.copytree(temp_contracts_path, target_path)
-
-            if not target_path.exists():
-                raise ProjectError(
-                    "Dependency does not have a supported file structure. "
-                    "Expecting 'contracts/' path."
+            # Download manifest
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_download_path = Path(temp_dir) / name
+                temp_download_path.mkdir(exist_ok=True, parents=True)
+                github_client.download_package(path, version, temp_download_path)
+                inner_contracts_path = temp_download_path / "contracts"
+                contracts_path = (
+                    inner_contracts_path if inner_contracts_path.exists() else temp_download_path
                 )
 
-            manifest = PackageManifest()
-            sources = [
-                s
-                for s in get_all_files_in_directory(target_path)
-                if s.suffix in self.compilers.registered_compilers
-            ]
-            manifest.sources = self._create_source_dict(sources)
-            manifest.contract_types = self.compilers.compile(sources)
-            return manifest
+                for key in ("package.json", "package-lock.json"):
+                    unneeded_file_path = contracts_path / key
+                    if unneeded_file_path.exists():
+                        unneeded_file_path.unlink()
+
+                # Build and cache manifest file
+                dependency_manifest = PackageManifest()
+                sources = [
+                    s
+                    for s in get_all_files_in_directory(contracts_path)
+                    if s.suffix in self.compilers.registered_compilers
+                ]
+                dependency_manifest.sources = self._create_source_dict(sources)
+                dependency_manifest.contract_types = self.compilers.compile(sources)
+                manifest_file_path.write_text(dependency_manifest.json())
+                return dependency_manifest
 
     def __str__(self) -> str:
         return f'Project("{self.path}")'
@@ -202,6 +203,7 @@ class ProjectManager:
             ]:
                 files.extend(sub_contract_dir.glob(f"*{extension}"))
 
+        breakpoint()
         return files
 
     @property

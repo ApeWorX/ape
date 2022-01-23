@@ -50,6 +50,12 @@ class ConfigManager:
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
 
     @property
+    def packages_folder(self) -> Path:
+        path = self.DATA_FOLDER / "packages"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
     def _plugin_configs(self) -> Dict[str, ConfigItem]:
         # This property is cached per active project.
         project_name = self.PROJECT_FOLDER.stem
