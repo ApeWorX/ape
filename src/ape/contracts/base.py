@@ -238,7 +238,7 @@ class ContractInstance(AddressAPI):
         if not self.is_contract:
             network = self.provider.network.name
             raise ContractError(
-                f"Address '{self._address}' is not a contract on network '{network}'. "
+                f"Address '{self._address}' is not a contract on network '{network}'."
             )
 
     def __repr__(self) -> str:
