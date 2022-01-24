@@ -93,7 +93,7 @@ setup(
         "web3[tester]==5.26.0",
         "eth_abi==2.1.1",
         "eth-utils==1.10.0",
-        "eth-rlp==0.2.1"
+        "eth-rlp==0.2.1",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
