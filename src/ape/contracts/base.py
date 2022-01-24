@@ -126,9 +126,11 @@ class ContractCallHandler:
 
 
 def _select_abi(abis, args):
+    args = args or []
     selected_abi = None
     for abi in abis:
-        if len(args) == len(abi.inputs):
+        inputs = abi.inputs or []
+        if len(args) == len(inputs):
             selected_abi = abi
 
     return selected_abi
