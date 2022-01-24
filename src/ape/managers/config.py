@@ -44,6 +44,7 @@ class ConfigManager:
     PROJECT_FOLDER: Path
     name: str = ""
     version: str = ""
+    contracts_folder: Path = None  # type: ignore
     dependencies: Dict[str, str] = {}
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
     plugin_manager: PluginManager
@@ -63,6 +64,18 @@ class ConfigManager:
         # Top level config items
         self.name = user_config.pop("name", "")
         self.version = user_config.pop("version", "")
+
+        if "contracts_folder" in user_config:
+            contracts_folder_value = Path(user_config.pop("contracts_folder")).expanduser()
+
+            # Attempt to resolve the path in the case it is relative to the project directory.
+            contracts_folder = Path(contracts_folder_value).resolve()
+            if not contracts_folder.exists():
+                raise ConfigError(f"Contracts path '{contracts_folder}' does not exist.")
+        else:
+            contracts_folder = self.PROJECT_FOLDER / "contracts"
+
+        self.contracts_folder = contracts_folder
         self.dependencies = user_config.pop("dependencies", {})
 
         # Sanitize deployment addresses.
