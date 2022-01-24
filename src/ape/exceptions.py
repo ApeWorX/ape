@@ -11,11 +11,6 @@ class ApeException(Exception):
     An exception raised by ape.
     """
 
-    def __init__(self, message):
-        if not message.endswith("."):
-            message = f"{message}."
-        super().__init__(message)
-
 
 class AccountsError(ApeException):
     """
