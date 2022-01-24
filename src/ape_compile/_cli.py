@@ -34,7 +34,8 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
     Note that ape automatically recompiles any changed contracts each time
     a project is loaded. You do not have to manually trigger a recompile.
     """
-    if not file_paths and cli_ctx.project.sources_missing:
+    project = cli_ctx.project
+    if not file_paths and project.sources_missing:
         cli_ctx.logger.warning("No 'contracts/' directory detected")
         return
 
