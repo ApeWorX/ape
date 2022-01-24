@@ -68,8 +68,14 @@ class ProjectManager:
 
     def _extract_dependency_manifest(self, name: str, download_path: str) -> PackageManifest:
         target_path = self.config.packages_folder / name
-        target_path.mkdir(exist_ok=True, parents=True)
         manifest_file_path = target_path / "manifest.json"
+
+        # Handles migrating older ape when we cached the entire project
+        # rather than just the manifest file.
+        if target_path.exists() and not manifest_file_path.exists():
+            shutil.rmtree(target_path)
+
+        target_path.mkdir(exist_ok=True, parents=True)
 
         manifest_dict = None
         if manifest_file_path.exists():
