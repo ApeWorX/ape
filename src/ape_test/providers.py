@@ -47,7 +47,13 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
         data = txn.as_dict()
         if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)
-        return self._web3.eth.call(data)
+
+        try:
+            return self._web3.eth.call(data)
+        except ValidationError as err:
+            raise VirtualMachineError(base_err=err) from err
+        except TransactionFailed as err:
+            raise _get_vm_err(err) from err
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
@@ -84,4 +90,7 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
 
 def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:
     err_message = str(web3_err).split("execution reverted: ")[-1] or None
+    if err_message == "b''":
+        err_message = None
+
     return ContractLogicError(revert_message=err_message)

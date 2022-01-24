@@ -210,11 +210,6 @@ class GethProvider(Web3Provider, UpstreamProvider):
         self._web3 = None  # type: ignore
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        """
-        Generates and returns an estimate of how much gas is necessary
-        to allow the transaction to complete.
-        The transaction will not be added to the blockchain.
-        """
         try:
             return super().estimate_gas_cost(txn)
         except ValueError as err:
@@ -236,11 +231,13 @@ class GethProvider(Web3Provider, UpstreamProvider):
             # Unsupported API in user's geth.
             return None
 
+    def send_call(self, txn: TransactionAPI) -> bytes:
+        try:
+            return super().send_call(txn)
+        except ValueError as err:
+            raise _get_vm_error(err) from err
+
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        """
-        Creates a new message call transaction or a contract creation
-        for signed transactions.
-        """
         try:
             receipt = super().send_transaction(txn)
         except ValueError as err:

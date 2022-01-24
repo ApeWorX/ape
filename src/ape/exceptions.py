@@ -72,7 +72,7 @@ class TransactionError(ContractError):
     Raised when issues occur related to transactions.
     """
 
-    DEFAULT_MESSAGE = "Tranaction failed."
+    DEFAULT_MESSAGE = "Transaction failed."
 
     def __init__(
         self,
