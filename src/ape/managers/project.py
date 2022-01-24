@@ -9,6 +9,7 @@ from typing import Collection, Dict, List, Optional, Union
 import requests
 from dataclassy import dataclass
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
+from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
 
 from ape.contracts import ContractContainer
@@ -119,7 +120,7 @@ class ProjectManager:
                     if s.name not in ("package.json", "package-lock.json")
                     and s.suffix in self.compilers.registered_compilers
                 ]
-                manifest.name = name.lower().replace("_", "").replace("-", "")
+                manifest.name = PackageName(name.lower().replace("_", "-"))
                 manifest.sources = self._create_source_dict(sources, base_path=temp_contracts_path)
                 manifest.contract_types = self.compilers.compile(
                     sources, base_path=temp_contracts_path
