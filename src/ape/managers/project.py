@@ -68,7 +68,7 @@ class ProjectManager:
     networks: NetworkManager
     """
     The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
-    To get the actie provide, use
+    To get the active provide, use
     :py:attr:`ape.managers.networks.NetworkManager.active_provider`.
     """
 
