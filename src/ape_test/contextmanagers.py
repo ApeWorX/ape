@@ -16,7 +16,8 @@ class RevertsContextManager:
 
         if not isinstance(exc_value, ContractLogicError):
             raise AssertionError(
-                f"Transaction did not revert.\nHowever, an exception occurred: {exc_value}"
+                f"Transaction did not revert.\n"
+                f"However, an exception of type {type(exc_value)} occurred: {exc_value}"
             ) from exc_value
 
         actual = exc_value.revert_message

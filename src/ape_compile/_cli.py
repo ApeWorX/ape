@@ -1,9 +1,9 @@
 from typing import Dict
 
 import click
+from ethpm_types import ContractType
 
 from ape.cli import ape_cli_context, contract_file_paths_argument
-from ape.types import ContractType
 
 
 @click.command(short_help="Compile select contract source files")
@@ -55,13 +55,13 @@ def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
     # Display bytecode size for *all* contract types (not just ones we compiled)
     code_size = []
     for contract in contract_types.values():
-        if not contract.deploymentBytecode:
+        if not contract.deployment_bytecode:
             continue  # Skip if not bytecode to display
 
-        bytecode = contract.deploymentBytecode.bytecode
+        bytecode = contract.deployment_bytecode.bytecode
 
         if bytecode:
-            code_size.append((contract.contractName, len(bytecode) // 2))
+            code_size.append((contract.name, len(bytecode) // 2))
 
     if not code_size:
         cli_ctx.logger.info("No contracts with bytecode to display")
@@ -69,7 +69,7 @@ def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
 
     click.echo()
     click.echo("============ Deployment Bytecode Sizes ============")
-    indent = max(len(i[0]) for i in code_size)
+    indent = max(len(i[0]) for i in code_size)  # type: ignore
     for name, size in sorted(code_size, key=lambda k: k[1], reverse=True):
         pct = size / 24577
         # pct_color = color(next((i[1] for i in CODESIZE_COLORS if pct >= i[0]), ""))

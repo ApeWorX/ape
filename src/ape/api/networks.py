@@ -1,11 +1,12 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
 
+from ethpm_types import ABI
 from pluggy import PluginManager  # type: ignore
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
-from ape.types import ABI, AddressType
+from ape.types import AddressType
 from ape.utils import abstractdataclass, abstractmethod, cached_property, dataclass
 
 from .config import ConfigItem
@@ -22,28 +23,61 @@ if TYPE_CHECKING:
 @abstractdataclass
 class EcosystemAPI:
     """
-    An Ecosystem is a set of related Networks
+    A set of related networks, such as Ethereum.
     """
 
-    name: str  # Set as plugin name
+    name: str
+    """
+    The name of the ecosystem. This should be set the same name as the plugin.
+    """
+
     network_manager: "NetworkManager"
+    """A reference to the global network manager."""
+
     config_manager: "ConfigManager"
+    """A reference to the global config manager."""
+
     plugin_manager: PluginManager
+    """A reference to the global plugin manager."""
+
     data_folder: Path
+    """The path to the ``.ape`` directory."""
+
     request_header: str
+    """A shareable HTTP header for network requests."""
 
     transaction_types: Dict["TransactionType", Type["TransactionAPI"]]
+    """The available types of transaction API this ecosystem supports."""
+
     receipt_class: Type["ReceiptAPI"]
+    """The receipt class for this ecosystem."""
+
     block_class: Type["BlockAPI"]
+    """The block class for this ecosystem."""
 
     _default_network: str = "development"
 
     @cached_property
     def config(self) -> ConfigItem:
+        """
+        The configuration of the ecosystem. See :class:`ape.managers.config.ConfigManager`
+        for more information on plugin configurations.
+
+        Returns:
+            :class:`ape.api.config.ConfigItem`
+        """
+
         return self.config_manager.get_config(self.name)
 
     @cached_property
     def networks(self) -> Dict[str, "NetworkAPI"]:
+        """
+        A dictionary of network names mapped to their API implementation.
+
+        Returns:
+            Dict[str, :class:`~ape.api.networks.NetworkAPI`]
+        """
+
         networks = {}
         for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks:
             if ecosystem_name == self.name:
@@ -70,35 +104,97 @@ class EcosystemAPI:
 
     def __iter__(self) -> Iterator[str]:
         """
-        Provides the set of all valid Network names in the ecosystem
+        Iterate over the set of all valid network names in the ecosystem.
+
+        Returns:
+            Iterator[str]
         """
         yield from self.networks
 
     def __getitem__(self, network_name: str) -> "NetworkAPI":
+        """
+        Get a network by name.
+
+        Raises:
+            :class:`~ape.exceptions.NetworkNotFoundError`:
+              When there is no network with the given name.
+
+        Args:
+            network_name (str): The name of the network to retrieve.
+
+        Returns:
+            :class:`~ape.api.networks.NetworkAPI`
+        """
+
         return self._try_get_network(network_name)
 
     def __getattr__(self, network_name: str) -> "NetworkAPI":
+        """
+        Get a network by name using ``.`` access.
+
+        Usage example::
+
+            from ape import networks
+            mainnet = networks.ecosystem.mainnet
+
+        Raises:
+            :class:`~ape.exceptions.NetworkNotFoundError`:
+              When there is no network with the given name.
+
+        Args:
+            network_name (str): The name of the network to retrieve.
+
+        Returns:
+            :class:`~ape.api.networks.NetworkAPI`
+        """
+
         network_name = network_name.replace("_", "-")
         return self._try_get_network(network_name)
 
     def add_network(self, network_name: str, network: "NetworkAPI"):
         """
-        Used to attach new networks to an ecosystem (e.g. L2 networks like Optimism)
+        Attach a new network to an ecosystem (e.g. L2 networks like Optimism).
+
+        Raises:
+            :class:`ape.exceptions.NetworkError`: When the network already exists.
+
+        Args:
+            network_name (str): The name of the network to add.
+
+        Returns:
+            :class:`~ape.api.networks.NetworkAPI`
         """
         if network_name in self.networks:
-            raise NetworkError(f"Unable to overwrite existing network '{network_name}'")
+            raise NetworkError(f"Unable to overwrite existing network '{network_name}'.")
         else:
             self.networks[network_name] = network
 
     @property
     def default_network(self) -> str:
+        """
+        The name of the default network in this ecosystem.
+
+        Returns:
+            str
+        """
+
         return self._default_network
 
     def set_default_network(self, network_name: str):
+        """
+        Change the default network.
+
+        Raises:
+            :class:`~ape.exceptions.NetworkError`: When the network does not exist.
+
+        Args:
+            network_name (str): The name of the default network to switch to.
+        """
+
         if network_name in self.networks:
             self._default_network = network_name
         else:
-            message = f"'{network_name}' is not a valid network for ecosystem '{self.name}'"
+            message = f"'{network_name}' is not a valid network for ecosystem '{self.name}'."
             raise NetworkError(message)
 
     @abstractmethod
@@ -127,14 +223,20 @@ class EcosystemAPI:
         else:
             raise NetworkNotFoundError(network_name)
 
-    def get_network_data(self, network_name) -> Dict:
+    def get_network_data(self, network_name: str) -> Dict:
         """
-        Creates a dictionary of data about providers in the network.
+        Get a dictionary of data about providers in the network.
 
-        Note: The keys are added in an opinionated order for nicely
-        translating into yaml.
+        **NOTE**: The keys are added in an opinionated order for nicely
+        translating into ``yaml``.
+
+        Args:
+            network_name (str): The name of the network to get provider data from.
+
+        Returns:
+            dict: A dictionary containing the providers in a network.
         """
-        data = {"name": network_name}
+        data: Dict[str, Any] = {"name": network_name}
 
         # Only add isDefault key when True
         if network_name == self.default_network:
@@ -158,6 +260,24 @@ class EcosystemAPI:
 
 
 class ProviderContextManager:
+    """
+    A context manager for temporarily connecting to a network.
+    When entering the context, calls the :meth:`ape.api.providers.ProviderAPI.connect` method.
+    And conversely, when exiting, calls the :meth:`ape.api.providers.ProviderPAI.disconnect`
+    method.
+
+    The method :meth:`ape.api.networks.NetworkAPI.use_provider` returns
+    an instance of this context manager.
+
+    Usage example::
+
+        from ape import networks
+
+        mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
+        with mainnet.use_provider("infura"):
+            ...
+    """
+
     # NOTE: Class variable, so it will manage stack across instances of this object
     _connected_providers: List["ProviderAPI"] = []
 
@@ -194,24 +314,54 @@ class ProviderContextManager:
 @dataclass
 class NetworkAPI:
     """
-    A Network is a wrapper around a Provider for a specific Ecosystem.
+    A wrapper around a provider for a specific ecosystem.
     """
 
     name: str  # Name given when registered in ecosystem
+    """The name of the network."""
+
     ecosystem: EcosystemAPI
+    """The ecosystem of the network."""
+
     config_manager: "ConfigManager"
+    """A reference to the global config manager."""
+
     plugin_manager: PluginManager
+    """A reference to the global plugin manager."""
+
     data_folder: Path  # For caching any data that might need caching
+    """The path to the ``.ape`` directory."""
+
     request_header: str
+    """A shareable network HTTP header."""
+
     _default_provider: str = ""
 
     @cached_property
     def config(self) -> ConfigItem:
+        """
+        The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
+        for more information on plugin configurations.
+        """
+
         return self.config_manager.get_config(self.ecosystem.name)
+
+    @cached_property
+    def _network_config(self) -> ConfigItem:
+        return self.config.get(self.name, {})  # type: ignore
 
     @property
     def chain_id(self) -> int:
-        # NOTE: Unless overridden, returns same as `provider.chain_id`
+        """
+        The ID of the blockchain.
+
+        **NOTE**: Unless overridden, returns same as
+        :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
+
+        Returns:
+            int
+        """
+
         provider = self.ecosystem.network_manager.active_provider
 
         if not provider:
@@ -224,23 +374,57 @@ class NetworkAPI:
 
     @property
     def network_id(self) -> int:
-        # NOTE: Unless overridden, returns same as chain_id
+        """
+        The ID of the network.
+
+        **NOTE**: Unless overridden, returns same as
+        :py:attr:`~ape.api.networks.NetworkAPI.chain_id`.
+
+        Returns:
+            int
+        """
         return self.chain_id
 
     @property
     def required_confirmations(self) -> int:
         """
         The default amount of confirmations recommended to wait
-        before considering a transaction "confirmed".
+        before considering a transaction "confirmed". Confirmations
+        refer to the number of blocks that have been added since the
+        transaction's block.
+
+        Returns:
+            int
         """
-        try:
-            return self.config[self.name]["required_confirmations"]
-        except KeyError:
-            # Is likely a 'development' network.
-            return 0
+        return self._network_config.get("required_confirmations", 0)  # type: ignore
+
+    @property
+    def block_time(self) -> int:
+        """
+        The approximate amount of time it takes for a new block to get mined to the chain.
+        Configure in your ``ape-config.yaml`` file.
+
+        Config example::
+
+            ethereum:
+              mainnet:
+                block_time: 15
+
+        Returns:
+            int
+        """
+
+        return self._network_config.get("block_time", 0)  # type: ignore
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:
+        """
+        The block-explorer for the given network.
+
+        Returns:
+            :class:`ape.api.explorers.ExplorerAPI`, optional
+        """
+
         for plugin_name, plugin_tuple in self.plugin_manager.explorers:
             ecosystem_name, network_name, explorer_class = plugin_tuple
 
@@ -256,6 +440,13 @@ class NetworkAPI:
 
     @cached_property
     def providers(self):  # -> Dict[str, Partial[ProviderAPI]]
+        """
+        The providers of the network, such as Infura, Alchemy, or Geth.
+
+        Returns:
+            Dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
+        """
+
         providers = {}
 
         for plugin_name, plugin_tuple in self.plugin_manager.providers:
@@ -280,6 +471,19 @@ class NetworkAPI:
         provider_name: Optional[str] = None,
         provider_settings: dict = None,
     ):
+        """
+        Get a provider for the given name. If given ``None``, returns the default provider.
+
+        Args:
+            provider_name (str, optional): The name of the provider to get. Defaults to ``None``.
+              When ``None``, returns the default provider.
+            provider_settings dict, optional): Settings to apply to the provider. Defaults to
+              ``None``.
+
+        Returns:
+            :class:`~ape.api.providers.ProviderAPI`
+        """
+
         provider_name = provider_name or self.default_provider
         provider_settings = provider_settings or {}
 
@@ -302,6 +506,28 @@ class NetworkAPI:
         provider_name: str,
         provider_settings: dict = None,
     ) -> ProviderContextManager:
+        """
+        Use and connect to a provider in a temporary context. When entering the context, it calls
+        method :meth:`ape.api.providers.ProviderAPI.connect` and when exiting, it calls
+        method :meth:`ape.api.providers.ProviderAPI.disconnect`.
+
+        Usage example::
+
+            from ape import networks
+
+            mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
+            with mainnet.use_provider("infura"):
+                ...
+
+        Args:
+            provider_name (str): The name of the provider to use.
+            provider_settings (dict, optional): Settings to apply to the provider.
+              Defaults to ``None``.
+
+        Returns:
+            :class:`ape.api.networks.ProviderContextManager`
+        """
+
         return ProviderContextManager(
             self.ecosystem.network_manager,
             self.get_provider(provider_name=provider_name, provider_settings=provider_settings),
@@ -309,22 +535,58 @@ class NetworkAPI:
 
     @property
     def default_provider(self) -> str:
+        """
+        The name of the default provider.
+
+        Returns:
+            str
+        """
+
         return self._default_provider or list(self.providers)[0]
 
     def set_default_provider(self, provider_name: str):
+        """
+        Change the default provider.
+
+        Raises:
+            :class:`~ape.exceptions.NetworkError`: When the given provider is not found.
+
+        Args:
+            provider_name (str): The name of the provider to switch to.
+        """
+
         if provider_name in self.providers:
             self._default_provider = provider_name
         else:
             raise NetworkError(f"No providers found for network '{self.name}'")
 
     def use_default_provider(self, provider_settings: Optional[Dict]) -> ProviderContextManager:
-        # NOTE: If multiple providers, use whatever is "first" registered
+        """
+        Temporarily connect and use the default provider. When entering the context, it calls
+        method :meth:`ape.api.providers.ProviderAPI.connect` and when exiting, it calls
+        method :meth:`ape.api.providers.ProviderAPI.disconnect`.
+
+        **NOTE**: If multiple providers exist, uses whatever was "first" registered.
+
+        Usage example::
+
+            from ape import networks
+            mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
+            with mainnet.use_default_provider():
+                ...
+
+        Args:
+            provider_settings (dict, optional): Settings to override the provider.
+
+        Returns:
+            :class:`~ape.api.networks.ProviderContextManager`
+        """
         return self.use_provider(self.default_provider, provider_settings=provider_settings)
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
     """
-    Helper function that allows creating a :class:`NetworkAPI` subclass easily.
+    Easily create a :class:`ape.api.networks.NetworkAPI` subclass.
     """
 
     class network_def(NetworkAPI):

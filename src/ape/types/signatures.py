@@ -1,7 +1,7 @@
 from typing import Iterator, Union
 
 from dataclassy import dataclass
-from eth_account.messages import SignableMessage  # type: ignore
+from eth_account.messages import SignableMessage
 from eth_utils import to_bytes
 
 
@@ -28,11 +28,15 @@ class _Signature:
 
 
 class MessageSignature(_Signature):
-    pass
+    """
+    A ECDSA signature (vrs) of a message.
+    """
 
 
 class TransactionSignature(_Signature):
-    pass
+    """
+    A ECDSA signature (vrs) of a transaction.
+    """
 
 
-_ = SignableMessage
+__all__ = ["MessageSignature", "TransactionSignature", "SignableMessage"]

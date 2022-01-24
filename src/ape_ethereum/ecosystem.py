@@ -10,6 +10,7 @@ from eth_account._utils.legacy_transactions import (
 )
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak, to_bytes, to_checksum_address, to_int
+from ethpm_types import ABI
 from hexbytes import HexBytes
 
 from ape.api import (
@@ -25,7 +26,7 @@ from ape.api import (
 )
 from ape.contracts import ContractLog
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
-from ape.types import ABI, AddressType
+from ape.types import AddressType
 
 NETWORKS = {
     # chain_id, network_id
@@ -33,26 +34,27 @@ NETWORKS = {
     "ropsten": (3, 3),
     "kovan": (42, 42),
     "rinkeby": (4, 4),
-    "goerli": (420, 420),
+    "goerli": (5, 5),
 }
 
 
 class NetworkConfig(ConfigItem):
     required_confirmations: int = 0
+    default_provider: str = "geth"
+    block_time: int = 0
 
 
 class EthereumConfig(ConfigItem):
-    mainnet: NetworkConfig = NetworkConfig(required_confirmations=7)  # type: ignore
-    ropsten: NetworkConfig = NetworkConfig(required_confirmations=12)  # type: ignore
-    kovan: NetworkConfig = NetworkConfig(required_confirmations=3)  # type: ignore
-    rinkeby: NetworkConfig = NetworkConfig(required_confirmations=3)  # type: ignore
-    goerli: NetworkConfig = NetworkConfig(required_confirmations=10)  # type: ignore
+    mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
+    ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
+    kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
+    rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
+    goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
+    development: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
+    default_network: str = "development"
 
 
 class BaseTransaction(TransactionAPI):
-    def is_valid(self) -> bool:
-        return False
-
     def as_dict(self) -> dict:
         data = super().as_dict()
 
@@ -150,15 +152,18 @@ class DynamicFeeTransaction(BaseTransaction):
 
 
 class Receipt(ReceiptAPI):
-    def raise_for_status(self, txn: TransactionAPI):
+    def raise_for_status(self):
         """
-        Raises :class`~ape.exceptions.OutOfGasError` when the
-        transaction failed and consumed all the gas.
+        Raise an error for the given transaction, if the transaction has failed.
 
-        Raises :class:`~ape.exceptions.TransactionError`
-        when the transaction has a failing status otherwise.
+        Raises:
+            :class:`~ape.exceptions.OutOfGasError`: When the transaction failed
+              and ran out of gas.
+            :class:`~ape.exceptions.TransactionError`: When the transaction has a
+              failing status otherwise.
         """
-        if txn.gas_limit and self.ran_out_of_gas(txn.gas_limit):
+
+        if self.gas_limit and self.ran_out_of_gas:
             raise OutOfGasError()
         elif self.status != TransactionStatusEnum.NO_ERROR:
             txn_hash = HexBytes(self.txn_hash).hex()
@@ -166,18 +171,28 @@ class Receipt(ReceiptAPI):
 
     @classmethod
     def decode(cls, data: dict) -> ReceiptAPI:
+        status = data.get("status")
+        if status:
+            if isinstance(status, str) and status.isnumeric():
+                status = int(status)
+
+            status = TransactionStatusEnum(status)
+
+        txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
         return cls(  # type: ignore
-            provider=data["provider"],
+            provider=data.get("provider"),
             required_confirmations=data.get("required_confirmations", 0),
-            txn_hash=data["hash"],
-            status=TransactionStatusEnum(data["status"]),
+            txn_hash=txn_hash,
+            status=status,
             block_number=data["blockNumber"],
             gas_used=data["gasUsed"],
             gas_price=data["gasPrice"],
-            logs=data["logs"],
-            contract_address=data["contractAddress"],
+            gas_limit=data.get("gas") or data.get("gasLimit"),
+            logs=data.get("logs"),
+            contract_address=data.get("contractAddress"),
             sender=data["from"],
-            nonce=data["nonce"],
+            receiver=data["to"],
+            nonce=data.get("nonce"),
         )
 
 
@@ -237,7 +252,7 @@ class Ethereum(EcosystemAPI):
             return HexBytes(b"")
 
     def decode_calldata(self, abi: ABI, raw_data: bytes) -> Tuple[Any, ...]:
-        output_types = [o.canonical_type for o in abi.outputs]
+        output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
         try:
             vm_return_values = abi_decode(output_types, raw_data)
             if not vm_return_values:
@@ -288,11 +303,25 @@ class Ethereum(EcosystemAPI):
 
     def create_transaction(self, **kwargs) -> TransactionAPI:
         """
-        Returns a tranaction using the given constructor kwargs.
+        Returns a transaction using the given constructor kwargs.
+
+        Returns:
+            :class:`~ape.api.providers.TransactionAPI`
         """
         if "type" in kwargs:
-            type_arg = HexStr(str(kwargs["type"]))
-            version_str = str(add_0x_prefix(type_arg))
+            type_kwarg = kwargs["type"]
+            if type_kwarg is None:
+                type_kwarg = TransactionType.DYNAMIC.value
+            elif isinstance(type_kwarg, int):
+                type_kwarg = f"0{type_kwarg}"
+            elif isinstance(type_kwarg, bytes):
+                type_kwarg = type_kwarg.hex()
+
+            suffix = type_kwarg.replace("0x", "")
+            if len(suffix) == 1:
+                type_kwarg = f"{type_kwarg.rstrip(suffix)}0{suffix}"
+
+            version_str = add_0x_prefix(HexStr(type_kwarg))
             version = TransactionType(version_str)
         elif "gas_price" in kwargs:
             version = TransactionType.STATIC
@@ -316,7 +345,8 @@ class Ethereum(EcosystemAPI):
     def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
         filter_id = keccak(to_bytes(text=abi.selector))
         event_data = next(log for log in receipt.logs if log["filter_id"] == filter_id)
+
         return ContractLog(  # type: ignore
             name=abi.name,
-            inputs={i.name: event_data[i.name] for i in abi.inputs},
+            inputs={i.name: event_data[i.name] for i in abi.inputs},  # type: ignore
         )

@@ -5,6 +5,7 @@ from web3 import EthereumTesterProvider, Web3
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, VirtualMachineError
+from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
 
 
@@ -46,7 +47,13 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
         data = txn.as_dict()
         if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)
-        return self._web3.eth.call(data)
+
+        try:
+            return self._web3.eth.call(data)
+        except ValidationError as err:
+            raise VirtualMachineError(base_err=err) from err
+        except TransactionFailed as err:
+            raise _get_vm_err(err) from err
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
@@ -56,20 +63,34 @@ class LocalNetwork(TestProviderAPI, Web3Provider):
         except TransactionFailed as err:
             raise _get_vm_err(err) from err
 
-        receipt = self.get_transaction(txn_hash.hex())
-        if txn.gas_limit is not None and receipt.ran_out_of_gas(txn.gas_limit):
+        receipt = self.get_transaction(
+            txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
+        )
+        if txn.gas_limit is not None and receipt.ran_out_of_gas:
             raise OutOfGasError()
 
+        self._try_track_receipt(receipt)
         return receipt
 
-    def snapshot(self) -> str:
+    def snapshot(self) -> SnapshotID:
         return self._tester.take_snapshot()
 
-    def revert(self, snapshot_id: str):
+    def revert(self, snapshot_id: SnapshotID):
         if snapshot_id:
-            return self._tester.revert_to_snapshot(snapshot_id)
+            current_hash = self.get_block("latest").hash
+            if current_hash != snapshot_id:
+                return self._tester.revert_to_snapshot(snapshot_id)
+
+    def set_timestamp(self, new_timestamp: int):
+        self._tester.time_travel(new_timestamp)
+
+    def mine(self, num_blocks: int = 1):
+        self._tester.mine_blocks(num_blocks)
 
 
 def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:
     err_message = str(web3_err).split("execution reverted: ")[-1] or None
+    if err_message == "b''":
+        err_message = None
+
     return ContractLogicError(revert_message=err_message)

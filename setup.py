@@ -28,11 +28,12 @@ extras_require = {
         "isort>=5.9.3,<6.0",  # Import sorting linter
     ],
     "doc": [
+        "myst-parser==0.16.0",  # Tools for parsing markdown files in the docs
+        "sphinx-click>=3.0.0,<4.0",  # For documenting CLI
         "Sphinx>=3.4.3,<4",  # Documentation generator
+        "sphinx-click>=3.0.0",  # Allows autodoc to work for click CLI commands
         "sphinx_rtd_theme>=0.1.9,<1",  # Readthedocs.org theme
-        "towncrier>=19.2.0, <20",  # Generate release notes
-        "sphinx-multiversion>=0.2.4,<0.3.0",  # build multiple versions of docs from tags & branches
-        "sphinx-autoapi<=1.9.0",  # for better generation of docs beyond the built-in `autogen`
+        "sphinxcontrib-napoleon>=0.7",  # Allow Google-style documentation
     ],
     "release": [  # `release` GitHub Action job uses this
         "setuptools",  # Installation tool
@@ -40,7 +41,7 @@ extras_require = {
         "twine",  # Package upload tool
     ],
     "dev": [
-        "commitizen",  # Manage commits and publishing releases
+        "commitizen>=2.19,<2.20",  # Manage commits and publishing releases
         "pre-commit",  # Ensure that linters are run prior to committing
         "pytest-watch",  # `ptw` test watcher/runner
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
@@ -76,6 +77,7 @@ setup(
         "click>=8.0.0",
         "dataclassy==0.10.4",  # NOTE: Pinned due to issue with `Type[<nothing>]`
         "eth-account>=0.5.6,<0.6.0",
+        "ethpm-types>=0.1.0b2",
         "pluggy>=0.13.1,<1.0",
         "PyGithub>=1.54,<2.0",
         "pyyaml>=0.2.5",
@@ -103,7 +105,7 @@ setup(
             "ape_test=ape_test._cli:cli",
         ],
     },
-    python_requires=">=3.7,<3.10",
+    python_requires=">=3.7,<3.11",
     extras_require=extras_require,
     py_modules=packages_data["__modules__"],
     license="Apache-2.0",
@@ -113,7 +115,7 @@ setup(
     package_dir={"": "src"},
     package_data={p: ["py.typed"] for p in packages_data["__modules__"]},
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
@@ -123,5 +125,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
 )

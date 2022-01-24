@@ -19,8 +19,10 @@ class AddressAPI:
     def provider(self) -> ProviderAPI:
         """
         The current active provider if connected to one.
-        If there is no active provider at runtime, then this raises an
-        :class:`~ape.exceptions.AddressError`.
+
+        Raises:
+            :class:`~ape.exceptions.AddressError`: When there is no active
+               provider at runtime.
 
         Returns:
             :class:`~ape.api.providers.ProviderAPI`
@@ -49,17 +51,27 @@ class AddressAPI:
     def address(self) -> AddressType:
         """
         The address of this account. Subclasses must override and provide this value.
+        """
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Compares :class:`~ape.api.AddressAPI`/``str`` objects by converting to
+        :class:`~ape.types.AddressType`.
 
         Returns:
-            :class:`~ape.types.AddressType`
+            bool: comparison result
         """
+        # Circular import
+        from ape import convert
+
+        return convert(self, AddressType) == convert(other, AddressType)
 
     def __dir__(self) -> List[str]:
         """
         Display methods to IPython on ``a.[TAB]`` tab completion.
 
         Returns:
-            list[str]: Method names that IPython uses for tab completion.
+            List[str]: Method names that IPython uses for tab completion.
         """
         return [
             "address",
@@ -88,9 +100,6 @@ class AddressAPI:
     def nonce(self) -> int:
         """
         The number of transactions associated with the address.
-
-        Returns:
-            int
         """
 
         return self.provider.get_nonce(self.address)
@@ -99,9 +108,6 @@ class AddressAPI:
     def balance(self) -> int:
         """
         The total balance of the account.
-
-        Returns:
-            int
         """
 
         return self.provider.get_balance(self.address)
@@ -109,10 +115,7 @@ class AddressAPI:
     @property
     def code(self) -> bytes:
         """
-        The smart-contract code at the address.
-
-        Returns:
-            bytes: The raw bytes of the contract.
+        The raw bytes of the smart-contract code at the address.
         """
 
         # TODO: Explore caching this (based on `self.provider.network` and examining code)
@@ -121,10 +124,7 @@ class AddressAPI:
     @property
     def codesize(self) -> int:
         """
-        The size of the smart-contract.
-
-        Returns:
-            int: The number of bytes in the smart contract.
+        The number of bytes in the smart contract.
         """
 
         return len(self.code)
@@ -133,9 +133,6 @@ class AddressAPI:
     def is_contract(self) -> bool:
         """
         ``True`` when there is code associated with the address.
-
-        Returns:
-            bool
         """
 
         return len(self.code) > 0

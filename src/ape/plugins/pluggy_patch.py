@@ -7,7 +7,13 @@ hookimpl = cast(Callable[[F], F], pluggy.HookimplMarker("ape"))
 hookspec = pluggy.HookspecMarker("ape")
 
 plugin_manager = pluggy.PluginManager("ape")
+"""A manager responsbile for registering and accessing plugins (singleton)."""
 
 
 class PluginType:
-    pass
+    """
+    The base plugin class in ape. There are several types of plugins available in ape, such
+    as the :class:`~ape.plugins.config.Config` or :class:`~ape.plugins.network.EcosystemPlugin`.
+    Each one of them subclass this class. It is used to namespace the plugin hooks for the
+    registration process, and to ensure overall conformance to type interfaces as much as possible.
+    """

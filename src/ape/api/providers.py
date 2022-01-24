@@ -1,7 +1,7 @@
 import time
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Dict, Iterator, List, Optional
 
 from dataclassy import as_dict
 from eth_typing import HexStr
@@ -10,22 +10,48 @@ from hexbytes import HexBytes
 from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
-from ape.exceptions import ProviderError, TransactionError
+from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import BlockID, TransactionSignature
+from ape.types import BlockID, SnapshotID, TransactionSignature
 from ape.utils import abstractdataclass, abstractmethod
 
 from . import networks
 from .config import ConfigItem
 
+if TYPE_CHECKING:
+    from ape.api.explorers import ExplorerAPI
+    from ape.managers.chain import ChainManager
+
+
+def raises_not_implemented(fn):
+    def inner(*args, **kwargs):
+        raise NotImplementedError(
+            f"Attempted to call method '{fn.__name__}' in 'ProviderAPI', "
+            f"which is only available in 'TestProviderAPI'."
+        )
+
+    return inner
+
 
 class TransactionType(Enum):
-    STATIC = "0x0"
-    DYNAMIC = "0x2"  # EIP-1559
+    """
+    Transaction enumerables type constants defined by
+    `EIP-2718 <https://eips.ethereum.org/EIPS/eip-2718>`__.
+    """
+
+    STATIC = "0x00"
+    DYNAMIC = "0x02"  # EIP-1559
 
 
 @abstractdataclass
 class TransactionAPI:
+    """
+    An API class representing a transaction.
+    Ecosystem plugins implement one or more of transaction APIs
+    depending on which schemas they permit,
+    such as typed-transactions from `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
+    """
+
     chain_id: int = 0
     sender: str = ""
     receiver: str = ""
@@ -40,23 +66,26 @@ class TransactionAPI:
 
     signature: Optional[TransactionSignature] = None
 
-    def __post_init__(self):
-        if not self.is_valid:
-            raise ProviderError("Transaction is not valid.")
-
     @property
     def max_fee(self) -> int:
         """
         The total amount in fees willing to be spent on a transaction.
-        Override this property as needed, such as for EIP-1559 differences.
+        Override this property as needed, such as for
+        `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ differences.
 
         See :class:`~ape_ethereum.ecosystem.StaticFeeTransaction` and
-        :class`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
+        :class:`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
+
+        Raises:
+            NotImplementedError: When setting in a class that did not override the setter.
+
+        Returns:
+            int
         """
         return 0
 
     @max_fee.setter
-    def max_fee(self, value):
+    def max_fee(self, value: int):
         raise NotImplementedError("Max fee is not settable by default.")
 
     @property
@@ -68,11 +97,6 @@ class TransactionAPI:
         """
         return self.value + self.max_fee
 
-    @property
-    @abstractmethod
-    def is_valid(self):
-        ...
-
     @abstractmethod
     def encode(self) -> bytes:
         """
@@ -80,6 +104,12 @@ class TransactionAPI:
         """
 
     def as_dict(self) -> dict:
+        """
+        Create a ``dict`` representation of the transaction.
+
+        Returns:
+            dict
+        """
         return as_dict(self)
 
     def __repr__(self) -> str:
@@ -100,8 +130,18 @@ class TransactionAPI:
 
 
 class TransactionStatusEnum(IntEnum):
+    """
+    An ``Enum`` class representing the status of a transaction.
+    """
+
     FAILING = 0
+    """The transaction has failed or is in the process of failing."""
+
     NO_ERROR = 1
+    """
+    The transaction is successful and is confirmed or is in the process
+    of getting confirmed.
+    """
 
 
 class ConfirmationsProgressBar:
@@ -123,6 +163,12 @@ class ConfirmationsProgressBar:
 
     @property
     def confs(self) -> int:
+        """
+        The number of confirmations that have occurred.
+
+        Returns:
+            int: The total number of confirmations that have occurred.
+        """
         return self._confs
 
     @confs.setter
@@ -145,47 +191,84 @@ class ConfirmationsProgressBar:
 
 @abstractdataclass
 class ReceiptAPI:
+    """
+    An abstract class to represent a transaction receipt. The receipt
+    contains information about the transaction, such as the status
+    and required confirmations.
+
+    **NOTE**: Use a ``required_confirmations`` of ``0`` in your transaction
+    to not wait for confirmations.
+
+    Get a receipt by making transactions in ``ape``, such as interacting with
+    a :class:`ape.contracts.base.ContractInstance`.
+    """
+
     provider: "ProviderAPI"
     txn_hash: str
     status: TransactionStatusEnum
     block_number: int
     gas_used: int
     gas_price: int
+    gas_limit: int
     logs: List[dict] = []
     contract_address: Optional[str] = None
     required_confirmations: int = 0
     sender: str
+    receiver: str
     nonce: int
-
-    def __post_init__(self):
-        txn_hash = self.txn_hash.hex() if isinstance(self.txn_hash, HexBytes) else self.txn_hash
-        logger.info(f"Submitted {txn_hash} (gas_used={self.gas_used})")
 
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
-    def raise_for_status(self, txn: TransactionAPI):
+    def raise_for_status(self):
         """
         Handle provider-specific errors regarding a non-successful
         :class:`~api.providers.TransactionStatusEnum`.
         """
 
-    def ran_out_of_gas(self, gas_limit: int) -> bool:
+    @property
+    def ran_out_of_gas(self) -> bool:
         """
-        Returns ``True`` when the transaction failed and used the
-        same amount of gas as the given ``gas_limit``.
+        Check if a transaction has ran out of gas and failed.
+
+        Returns:
+            bool:  ``True`` when the transaction failed and used the
+            same amount of gas as the given ``gas_limit``.
         """
-        return self.status == TransactionStatusEnum.FAILING and self.gas_used == gas_limit
+        return self.status == TransactionStatusEnum.FAILING and self.gas_used == self.gas_limit
 
     @classmethod
     @abstractmethod
     def decode(cls, data: dict) -> "ReceiptAPI":
-        ...
+        """
+        Convert data to :class:`~ape.api.ReceiptAPI`.
+
+        Args:
+            data (dict): A dictionary of Receipt properties.
+
+        Returns:
+            :class:`~ape.api.ReceiptAPI`
+        """
+
+    @property
+    def _explorer(self) -> Optional["ExplorerAPI"]:
+        return self.provider.network.explorer
+
+    @property
+    def _block_time(self) -> int:
+        return self.provider.network.block_time
+
+    @property
+    def _confirmations_occurred(self) -> int:
+        latest_block = self.provider.get_block("latest")
+        return latest_block.number - self.block_number
 
     def await_confirmations(self) -> "ReceiptAPI":
         """
-        Waits for a transaction to be considered confirmed.
-        Returns the confirmed receipt.
+        Wait for a transaction to be considered confirmed.
+
+        Returns:
+            :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
         # Wait for nonce from provider to increment.
         sender_nonce = self.provider.get_nonce(self.sender)
@@ -198,24 +281,39 @@ class ReceiptAPI:
             # the user is aware of this. Or, this is a development environment.
             return self
 
-        confirmations_occurred = 0
+        confirmations_occurred = self._confirmations_occurred
+        if confirmations_occurred >= self.required_confirmations:
+            return self
+
+        # If we get here, that means the transaction has been recently submitted.
+        log_message = f"Submitted {self.txn_hash}"
+        if self._explorer:
+            explorer_url = self._explorer.get_transaction_url(self.txn_hash)
+            if explorer_url:
+                log_message = f"{log_message}\n{self._explorer.name} URL: {explorer_url}"
+
+        logger.info(log_message)
 
         with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
             while confirmations_occurred < self.required_confirmations:
-                latest_block = self.provider.get_block("latest")
-                confirmations_occurred = latest_block.number - self.block_number  # type: ignore
+                confirmations_occurred = self._confirmations_occurred
                 progress_bar.confs = confirmations_occurred
 
                 if confirmations_occurred == self.required_confirmations:
                     break
 
-                time.sleep(5)
+                time_to_sleep = int(self._block_time / 2)
+                time.sleep(time_to_sleep)
 
         return self
 
 
 @abstractdataclass
 class BlockGasAPI:
+    """
+    An abstract class for representing gas data for a block.
+    """
+
     gas_limit: int
     gas_used: int
     base_fee: Optional[int] = None
@@ -223,114 +321,319 @@ class BlockGasAPI:
     @classmethod
     @abstractmethod
     def decode(cls, data: Dict) -> "BlockGasAPI":
-        ...
+        """
+        Decode data to a :class:`~ape.api.BlockGasAPI`.
+
+        Args:
+            data (dict): A dictionary of block-gas properties.
+
+        Returns:
+            :class:`~ape.api.BlockGasAPI`
+        """
 
 
 @abstractdataclass
 class BlockConsensusAPI:
+    """
+    An abstract class representing block consensus-data,
+    such as PoW-related information regarding the block.
+    `EIP-3675 <https://eips.ethereum.org/EIPS/eip-3675>`__.
+    """
+
     difficulty: Optional[int] = None
     total_difficulty: Optional[int] = None
 
     @classmethod
     @abstractmethod
     def decode(cls, data: Dict) -> "BlockConsensusAPI":
-        ...
+        """
+        Decode data to a :class:`~ape.api.BlockConsensusAPI`.
+
+        Args:
+            data (dict): A dictionary of data to decode.
+
+        Returns:
+            :class:`~ape.api.BlockConsensusAPI`
+        """
 
 
 @abstractdataclass
 class BlockAPI:
+    """
+    An abstract class representing a block and its attributes.
+    """
+
     gas_data: BlockGasAPI
     consensus_data: BlockConsensusAPI
     hash: HexBytes
     number: int
     parent_hash: HexBytes
     size: int
-    timestamp: float
+    timestamp: int
 
     @classmethod
     @abstractmethod
     def decode(cls, data: Dict) -> "BlockAPI":
-        ...
+        """
+        Decode data to a :class:`~ape.api.BlockAPI`.
+
+        Args:
+            data (dict): A dictionary of data to decode.
+
+        Returns:
+            :class:`~ape.api.BlockAPI`
+        """
 
 
 @abstractdataclass
 class ProviderAPI:
     """
-    A Provider must work with a particular Network in a particular Ecosystem
+    An abstraction of a connection to a network in an ecosystem. Example ``ProviderAPI``
+    implementations include the `ape-infura <https://github.com/ApeWorX/ape-infura>`__
+    plugin or the `ape-hardhat <https://github.com/ApeWorX/ape-hardhat>`__ plugin.
     """
 
-    name: str  # Plugin name
+    _chain: Optional["ChainManager"] = None
+
+    name: str
+    """The name of the provider (should be the plugin name)."""
+
     network: networks.NetworkAPI
+    """A reference to the network this provider provides."""
+
     config: ConfigItem
+    """The provider's configuration."""
+
     provider_settings: dict
+    """The settings for the provider, as overrides to the configuration."""
+
     data_folder: Path
+    """The path to the  ``.ape`` directory."""
+
     request_header: str
+    """A header to set on HTTP/RPC requests."""
 
     @abstractmethod
     def connect(self):
-        ...
+        """
+        Connect a to a provider, such as start-up a process or create an HTTP connection.
+        """
 
     @abstractmethod
     def disconnect(self):
-        ...
+        """
+        Disconnect from a provider, such as tear-down a process or quit an HTTP session.
+        """
 
     @abstractmethod
     def update_settings(self, new_settings: dict):
-        ...
+        """
+        Change a provider's setting, such as configure a new port to run on.
+        May require a reconnect.
+
+        Args:
+            new_settings (dict): The new provider settings.
+        """
 
     @property
     @abstractmethod
     def chain_id(self) -> int:
-        ...
+        """
+        The blockchain ID.
+        See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
+        """
 
     @abstractmethod
     def get_balance(self, address: str) -> int:
-        ...
+        """
+        Get the balance of an account.
+
+        Args:
+            address (str): The address of the account.
+
+        Returns:
+            int: The account balance.
+        """
 
     @abstractmethod
     def get_code(self, address: str) -> bytes:
-        ...
+        """
+        Get the bytes a contract.
+
+        Args:
+            address (str): The address of the contract.
+
+        Returns:
+            bytes: The contract byte-code.
+        """
 
     @abstractmethod
     def get_nonce(self, address: str) -> int:
-        ...
+        """
+        Get the number of times an account has transacted.
+
+        Args:
+            address (str): The address of the account.
+
+        Returns:
+            int
+        """
 
     @abstractmethod
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        ...
+        """
+        Estimate the cost of gas for a transaction.
+
+        Args:
+            txn (:class:`~ape.api.providers.TransactionAPI`):
+                The transaction to estimate the gas for.
+
+        Returns:
+            int: The estimated cost of gas.
+        """
 
     @property
     @abstractmethod
     def gas_price(self) -> int:
-        ...
+        """
+        The price for what it costs to transact
+        (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
+        """
 
     @property
     def priority_fee(self) -> int:
+        """
+        A miner tip to incentivize them to include your transaction in a block.
+
+        Raises:
+            NotImplementedError: When the provider does not implement
+              `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ typed transactions.
+        """
         raise NotImplementedError("priority_fee is not implemented by this provider")
 
     @property
     def base_fee(self) -> int:
+        """
+        The minimum value required to get your transaction included on the next block.
+        Only providers that implement `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__
+        will use this property.
+
+        Raises:
+            NotImplementedError: When this provider does not implement
+              `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
+        """
         raise NotImplementedError("base_fee is not implemented by this provider")
 
     @abstractmethod
     def get_block(self, block_id: BlockID) -> BlockAPI:
-        ...
+        """
+        Get a block.
+
+        Args:
+            block_id (:class:`~ape.types.BlockID`): The ID of the block to get.
+                Can be ``"latest"``, ``"earliest"``, ``"pending"``, a block hash or a block number.
+
+        Returns:
+            :class:`~ape.types.BlockID`: The block for the given ID.
+        """
 
     @abstractmethod
     def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
-        ...
+        """
+        Execute a new transaction call immediately without creating a
+        transaction on the block chain.
+
+        Args:
+            txn: :class:`~ape.api.providers.TransactionAPI`
+
+        Returns:
+            str: The result of the transaction call.
+        """
 
     @abstractmethod
     def get_transaction(self, txn_hash: str) -> ReceiptAPI:
-        ...
+        """
+        Get the information about a transaction from a transaction hash.
+
+        Args:
+            txn_hash (str): The hash of the transaction to retrieve.
+
+        Returns:
+            :class:`~api.providers.ReceiptAPI`:
+            The receipt of the transaction with the given hash.
+        """
 
     @abstractmethod
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        ...
+        """
+        Send a transaction to the network.
+
+        Args:
+            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to send.
+
+        Returns:
+            :class:`~ape.api.providers.ReceiptAPI`
+        """
 
     @abstractmethod
     def get_events(self, **filter_params) -> Iterator[dict]:
-        ...
+        """
+        Get all logs matching a given set of filter parameters.
+
+        Args:
+            `filter_params`: Filter which logs you get.
+
+        Returns:
+            Iterator[dict]: A dictionary of events.
+        """
+
+    @raises_not_implemented
+    def snapshot(self) -> SnapshotID:
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overridden.
+        """
+
+    @raises_not_implemented
+    def revert(self, snapshot_id: SnapshotID):
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overridden.
+        """
+
+    @raises_not_implemented
+    def set_timestamp(self, new_timestamp: int):
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overridden.
+        """
+
+    @raises_not_implemented
+    def mine(self, num_blocks: int = 1):
+        """
+        Defined to make the ``ProviderAPI`` interchangeable with a
+        :class:`~ape.api.providers.TestProviderAPI`, as in
+        :class:`ape.managers.chain.ChainManager`.
+
+        Raises:
+            NotImplementedError: Unless overridden.
+        """
+
+    def _try_track_receipt(self, receipt: ReceiptAPI):
+        if self._chain:
+            self._chain.account_history.append(receipt)
 
 
 class TestProviderAPI(ProviderAPI):
@@ -339,68 +642,80 @@ class TestProviderAPI(ProviderAPI):
     """
 
     @abstractmethod
-    def snapshot(self) -> str:
-        ...
+    def snapshot(self) -> SnapshotID:
+        """
+        Record the current state of the blockchain with intent to later
+        call the method :meth:`~ape.managers.chain.ChainManager.revert`
+        to go back to this point. This method is for development networks
+        only.
+
+        Returns:
+            :class:`~ape.types.SnapshotID`: The snapshot ID.
+        """
 
     @abstractmethod
-    def revert(self, snapshot_id: str):
-        ...
+    def revert(self, snapshot_id: SnapshotID):
+        """
+        Regress the current call using the given snapshot ID.
+        Allows developers to go back to a previous state.
+
+        Args:
+            snapshot_id (str): The snapshot ID.
+        """
+
+    @abstractmethod
+    def set_timestamp(self, new_timestamp: int):
+        """
+        Change the pending timestamp.
+
+        Args:
+            new_timestamp (int): The timestamp to set.
+
+        Returns:
+            int: The new timestamp.
+        """
+
+    @abstractmethod
+    def mine(self, num_blocks: int = 1):
+        """
+        Advance by the given number of blocks.
+
+        Args:
+            num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
+        """
 
 
 class Web3Provider(ProviderAPI):
     """
-    A base provider that is web3 based.
+    A base provider mixin class that uses the
+    [web3.py](https://web3py.readthedocs.io/en/stable/) python package.
     """
 
     _web3: Web3 = None  # type: ignore
 
     def update_settings(self, new_settings: dict):
-        """
-        Update the provider settings and re-connect.
-        """
         self.disconnect()
         self.provider_settings.update(new_settings)
         self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        """
-        Generates and returns an estimate of how much gas is necessary
-        to allow the transaction to complete.
-        The transaction will not be added to the blockchain.
-        """
         txn_dict = txn.as_dict()
         return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
 
     @property
     def chain_id(self) -> int:
-        """
-        Returns the currently configured chain ID,
-        a value used in replay-protected transaction signing as introduced by EIP-155.
-        """
         return self._web3.eth.chain_id
 
     @property
     def gas_price(self) -> int:
-        """
-        Returns the current price per gas in wei.
-        """
         return self._web3.eth.generate_gas_price()  # type: ignore
 
     @property
     def priority_fee(self) -> int:
-        """
-        Returns the current max priority fee per gas in wei.
-        """
         return self._web3.eth.max_priority_fee
 
     @property
     def base_fee(self) -> int:
-        """
-        Returns the current base fee from the latest block.
-
-        NOTE: If your chain does not support base_fees (EIP-1559),
-        this method will raise a not-implemented error.
-        """
         block = self.get_block("latest")
 
         if block.gas_data.base_fee is None:
@@ -410,19 +725,6 @@ class Web3Provider(ProviderAPI):
         return block.gas_data.base_fee
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
-        """
-        Returns a block for the given ID.
-
-        Args:
-            block_id: The ID of the block to get. Set as
-              "latest" to get the latest block,
-              "earliest" to get the earliest block,
-              "pending" to get the pending block,
-              or pass in a block number or hash.
-
-        Returns:
-            The block for the given block ID.
-        """
         if isinstance(block_id, str):
             block_id = HexStr(block_id)
 
@@ -433,44 +735,18 @@ class Web3Provider(ProviderAPI):
         return self.network.ecosystem.block_class.decode(block_data)  # type: ignore
 
     def get_nonce(self, address: str) -> int:
-        """
-        Returns the number of transactions sent from an address.
-        """
         return self._web3.eth.get_transaction_count(address)  # type: ignore
 
     def get_balance(self, address: str) -> int:
-        """
-        Returns the balance of the account of a given address.
-        """
         return self._web3.eth.get_balance(address)  # type: ignore
 
     def get_code(self, address: str) -> bytes:
-        """
-        Returns code at a given address.
-        """
         return self._web3.eth.get_code(address)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
-        """
-        Executes a new message call immediately without creating a
-        transaction on the block chain.
-        """
         return self._web3.eth.call(txn.as_dict())
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
-        """
-        Returns the information about a transaction requested by transaction hash.
-
-        Params:
-            txn_hash (str): The hash of the transaction to retrieve.
-            required_confirmations (int): If more than 0, waits for that many
-                confirmations before returning the receipt. This is to increase confidence
-                that your transaction is in its final position on the blockchain. Defaults
-                to 0.
-
-        Returns:
-            The receipt of the transaction with the given hash.
-        """
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
 
@@ -487,9 +763,6 @@ class Web3Provider(ProviderAPI):
         return receipt.await_confirmations()
 
     def get_events(self, **filter_params) -> Iterator[dict]:
-        """
-        Returns an array of all logs matching a given set of filter parameters.
-        """
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
@@ -499,7 +772,10 @@ class Web3Provider(ProviderAPI):
             if txn.required_confirmations is not None
             else self.network.required_confirmations
         )
+
         receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
+        logger.info(f"Confirmed {receipt.txn_hash} (gas_used={receipt.gas_used})")
+        self._try_track_receipt(receipt)
         return receipt
 
 

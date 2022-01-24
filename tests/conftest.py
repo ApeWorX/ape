@@ -6,8 +6,8 @@ import pytest
 import ape
 
 # NOTE: Ensure that we don't use local paths for these
-ape.config.DATA_FOLDER = Path(mkdtemp())
-ape.config.PROJECT_FOLDER = Path(mkdtemp())
+ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
+ape.config.PROJECT_FOLDER = Path(mkdtemp()).resolve()
 
 
 @pytest.fixture(scope="session")
@@ -38,6 +38,11 @@ def compilers():
 @pytest.fixture(scope="session")
 def networks():
     yield ape.networks
+
+
+@pytest.fixture(scope="session")
+def chain():
+    yield ape.chain
 
 
 @pytest.fixture(scope="session")
