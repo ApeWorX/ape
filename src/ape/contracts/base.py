@@ -236,13 +236,6 @@ class ContractInstance(AddressAPI):
     _converter: "ConversionManager"
     _contract_type: ContractType
 
-    def __post_init__(self):
-        if not self.is_contract:
-            network = self.provider.network.name
-            raise ContractError(
-                f"Address '{self._address}' is not a contract on network '{network}'."
-            )
-
     def __repr__(self) -> str:
         contract_name = self._contract_type.name or "<Unnamed Contract>"
         return f"<{contract_name} {self.address}>"
@@ -282,6 +275,13 @@ class ContractInstance(AddressAPI):
         Returns:
             any: The return value from the contract call, or a transaction receipt.
         """
+
+        if not self.is_contract:
+            network = self.provider.network.name
+            raise ContractError(
+                f"Unable to access '{attr_name}' on contract '{self._address}' "
+                f"because it does not exist on network '{network}'."
+            )
 
         handlers = {
             "events": ContractEvent,
