@@ -371,6 +371,40 @@ class ProjectManager:
 
         return self.load_contracts()
 
+    def __getattr__(self, attr_name: str) -> ContractContainer:
+        """
+        Get a contract container from an existing contract type or dependency
+        name using ``.`` access.
+
+        Usage example::
+
+            from ape import project
+
+            contract = project.MyContract
+
+        Args:
+            attr_name (str): The name of the contract or dependency.
+
+        Returns:
+            :class:`~ape.contracts.ContractContainer`
+        """
+
+        contracts = self.load_contracts()
+        if attr_name in contracts:
+            contract_type = contracts[attr_name]
+        elif attr_name in self.dependencies:
+            contract_type = self.dependencies[attr_name]  # type: ignore
+        else:
+            # Fixes anomaly when accessing non-ContractType attributes.
+            # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
+            return self.__getattribute__(attr_name)  # type: ignore
+
+        return ContractContainer(  # type: ignore
+            contract_type=contract_type,
+            _provider=self.networks.active_provider,
+            _converter=self.converter,
+        )
+
     @property
     def interfaces_folder(self) -> Path:
         """
@@ -423,40 +457,6 @@ class ProjectManager:
                 compilers.append(Compiler(compiler.name, version))  # type: ignore
 
         return compilers
-
-    def __getattr__(self, attr_name: str) -> ContractContainer:
-        """
-        Get a contract container from an existing contract type or dependency
-        name using ``.`` access.
-
-        Usage example::
-
-            from ape import project
-
-            contract = project.MyContract
-
-        Args:
-            attr_name (str): The name of the contract or dependency.
-
-        Returns:
-            :class:`~ape.contracts.ContractContainer`
-        """
-
-        contracts = self.load_contracts()
-        if attr_name in contracts:
-            contract_type = contracts[attr_name]
-        elif attr_name in self.dependencies:
-            contract_type = self.dependencies[attr_name]  # type: ignore
-        else:
-            # Fixes anomaly when accessing non-ContractType attributes.
-            # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
-            return self.__getattribute__(attr_name)  # type: ignore
-
-        return ContractContainer(  # type: ignore
-            contract_type=contract_type,
-            _provider=self.networks.active_provider,
-            _converter=self.converter,
-        )
 
     def _create_source_dict(self, contracts_paths: Collection[Path]) -> Dict[str, Source]:
         return {
