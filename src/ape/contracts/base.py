@@ -4,7 +4,12 @@ from eth_utils import to_bytes
 from ethpm_types import ABI, ContractType
 
 from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
-from ape.exceptions import ArgumentsLengthError, ProviderNotConnectedError, TransactionError
+from ape.exceptions import (
+    ArgumentsLengthError,
+    ContractError,
+    ProviderNotConnectedError,
+    TransactionError,
+)
 from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import dataclass
@@ -228,6 +233,13 @@ class ContractInstance(AddressAPI):
     _address: AddressType
     _converter: "ConversionManager"
     _contract_type: ContractType
+
+    def __post_init__(self):
+        if not self.is_contract:
+            network = self.provider.network.name
+            raise ContractError(
+                f"Address '{self._address}' is not a contract on network '{network}'. "
+            )
 
     def __repr__(self) -> str:
         contract_name = self._contract_type.name or "<Unnamed Contract>"
