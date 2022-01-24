@@ -86,8 +86,10 @@ def project_folder(request, config):
     copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
     previous_project_folder = config.PROJECT_FOLDER
     config.PROJECT_FOLDER = project_dest_dir
+    config.contracts_folder = project_dest_dir / "contracts"
     yield project_dest_dir
     config.PROJECT_FOLDER = previous_project_folder
+    config.contracts_folder = previous_project_folder / "contracts"
 
 
 @pytest.fixture
