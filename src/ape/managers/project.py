@@ -83,7 +83,7 @@ class ProjectManager:
             manifest_dict = self._download_manifest(name, download_path, manifest_file_path)
 
         if "name" not in manifest_dict:
-            manifest_dict["name"] = name.replace("_", "").replace("-", "")
+            manifest_dict["name"] = name.replace("_", "-")
 
         return PackageManifest(**manifest_dict)
 
