@@ -25,7 +25,6 @@ python3 --version
 ## Installation
 
 **Suggestion**: Create a virtual environment using `virtualenv` or `venv.`
-After creation and activating a virtual env.
 
 You may skip this creating a virtual environment if you know you don\'t
 require one for your use case.
