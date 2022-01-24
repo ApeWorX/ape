@@ -120,6 +120,7 @@ class ProjectManager:
                     if s.name not in ("package.json", "package-lock.json")
                     and s.suffix in self.compilers.registered_compilers
                 ]
+
                 manifest.name = PackageName(name.lower().replace("_", "-"))
                 manifest.sources = self._create_source_dict(sources, base_path=temp_contracts_path)
                 manifest.contract_types = self.compilers.compile(
