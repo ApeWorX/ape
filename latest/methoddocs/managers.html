@@ -290,7 +290,7 @@ which uses the <a class="reference internal" href="api.html#ape.api.compiler.Com
 </div>
 <dl class="py method">
 <dt id="ape.managers.compilers.CompilerManager.compile">
-<code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.compile" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.compile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invoke <code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.ape.compiler.CompilerAPI.compile()</span></code> for each of the given files.
 For example, use the <a class="reference external" href="https://github.com/ApeWorX/ape-solidity">ape-solidity plugin</a>
 to compile <code class="docutils literal notranslate"><span class="pre">'.sol'</span></code> files.</p>
@@ -664,6 +664,12 @@ is how you can access those settings at runtime.</p>
 <dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigItem</span></code></a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.config.ConfigManager.load">
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.managers.config.ConfigManager" title="ape.managers.config.ConfigManager"><span class="pre">ape.managers.config.ConfigManager</span></a><a class="headerlink" href="#ape.managers.config.ConfigManager.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the user config file and return this class.</p>
 </dd></dl>
 
 <dl class="py method">
