@@ -106,11 +106,11 @@ class ContractCall:
 class ContractCallHandler:
     provider: ProviderAPI
     converter: "ConversionManager"
-    address: AddressAPI
+    address: "ContractInstance"
     abis: List[ABI]
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))  # type: ignore
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -183,11 +183,11 @@ class ContractTransaction:
 class ContractTransactionHandler:
     provider: ProviderAPI
     converter: "ConversionManager"
-    address: AddressAPI
+    address: "ContractInstance"
     abis: List[ABI]
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))  # type: ignore
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -221,7 +221,7 @@ class ContractLog:
 class ContractEvent:
     provider: ProviderAPI
     converter: "ConversionManager"
-    address: AddressAPI
+    address: "ContractInstance"
     abis: List[ABI]
     cached_logs: List[ContractLog] = []
 
