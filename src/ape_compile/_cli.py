@@ -36,7 +36,7 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
     """
     if not file_paths and cli_ctx.project.sources_missing:
         contracts_dir_name = cli_ctx.project.config.contracts_folder.name
-        cli_ctx.logger.warning(f"No '{contracts_dir_name}/' directory detected")
+        cli_ctx.logger.warning(f"No contracts found in '{contracts_dir_name}/'.")
         return
 
     ext_given = [p.suffix for p in file_paths if p]
