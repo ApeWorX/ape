@@ -208,7 +208,8 @@ class NetworkManager:
         """
 
         if network_choice is None:
-            return self.default_ecosystem["development"].get_provider(
+            default_network = self.default_ecosystem.default_network
+            return self.default_ecosystem[default_network].get_provider(
                 provider_settings=provider_settings
             )
 
@@ -224,7 +225,8 @@ class NetworkManager:
             ecosystem = self.__getattr__(selections[0] or self.default_ecosystem.name)
             # By default, the "development" network should be specified for
             # any ecosystem (this should not correspond to a production chain)
-            return ecosystem["development"].get_provider(provider_settings=provider_settings)
+            default_network = ecosystem.default_network
+            return ecosystem[default_network].get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 2:
             # Only ecosystem and network were specified, not provider
