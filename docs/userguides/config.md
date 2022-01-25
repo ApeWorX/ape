@@ -3,6 +3,22 @@
 An `ape-config.yaml` file allows you to configure ape. This guide serves as an index of the settings you can include 
 in an `ape-config.yaml` file.
 
+## Contracts Folder
+
+Specify a different path to your `contracts/` directory.
+This is useful when using a different naming convention, such as `src/` rather than `contracts/`.
+
+```yaml
+contracts_folder: src
+```
+
+You can also use an absolute path.
+This is useful for projects that compile contracts outside their directory.
+
+```yaml
+contracts_folder: "~/GlobalContracts"
+```
+
 ## Deployments
 
 Share import deployments to public networks with your teammates:

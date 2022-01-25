@@ -46,10 +46,34 @@ class ProjectManager:
     """
 
     path: Path
+    """The project path."""
+
     config: ConfigManager
+    """
+    A reference to :class:`~ape.managers.config.ConfigManager`, which
+    manages project and plugin configurations.
+    """
+
     converter: ConversionManager
+    """
+    A reference to the conversion utilities in
+    :class:`~ape.managers.converters.ConversionManager`.
+    """
+
     compilers: CompilerManager
+    """
+    The group of compiler plugins for compiling source files. See
+    :class:`~ape.managers.compilers.CompilerManager` for more information.
+    Call method :meth:`~ape.managers.project.ProjectManager.load_contracts` in this class
+    to more easily compile sources.
+    """
+
     networks: NetworkManager
+    """
+    The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
+    To get the active provide, use
+    :py:attr:`ape.managers.networks.NetworkManager.active_provider`.
+    """
 
     dependencies: Dict[str, PackageManifest] = dict()
 
@@ -192,7 +216,7 @@ class ProjectManager:
             pathlib.Path
         """
 
-        return self.path / "contracts"
+        return self.config.contracts_folder
 
     @property
     def sources(self) -> List[Path]:
@@ -414,7 +438,9 @@ class ProjectManager:
         elif attr_name in self.dependencies:
             contract_type = self.dependencies[attr_name]  # type: ignore
         else:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
+            # Fixes anomaly when accessing non-ContractType attributes.
+            # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
+            return self.__getattribute__(attr_name)  # type: ignore
 
         return ContractContainer(  # type: ignore
             contract_type=contract_type,
