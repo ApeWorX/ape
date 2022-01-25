@@ -13,5 +13,6 @@ class NetworkBoundCommand(click.Command):
     """
 
     def invoke(self, ctx: Context) -> Any:
-        with networks.parse_network_choice(ctx.params["network"]):
+        value = ctx.params["network"]
+        with networks.parse_network_choice(value):
             super().invoke(ctx)
