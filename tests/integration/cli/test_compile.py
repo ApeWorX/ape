@@ -8,7 +8,7 @@ def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
     assert result.exit_code == 0, result.output
     assert "WARNING" in result.output
-    assert "No contracts found in 'contracts/'." in result.output
+    assert "No source files found in" in result.output
 
 
 @skip_projects_except(["unregistered-contracts"])

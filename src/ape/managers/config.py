@@ -76,8 +76,8 @@ class ConfigManager:
 
             # Attempt to resolve the path in the case it is relative to the project directory.
             contracts_folder = Path(contracts_folder_value).resolve()
-            if not contracts_folder.exists():
-                raise ConfigError(f"Contracts path '{contracts_folder}' does not exist.")
+            if not contracts_folder.exists() or not list(contracts_folder.iterdir()):
+                logger.warning(f"No sources file found in '{contracts_folder}'.")
         else:
             contracts_folder = self.PROJECT_FOLDER / "contracts"
 
