@@ -50,6 +50,12 @@ class ConfigManager:
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
 
     @property
+    def packages_folder(self) -> Path:
+        path = self.DATA_FOLDER / "packages"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
     def _plugin_configs(self) -> Dict[str, ConfigItem]:
         # This property is cached per active project.
         project_name = self.PROJECT_FOLDER.stem
@@ -123,6 +129,14 @@ class ConfigManager:
 
     def __repr__(self):
         return "<ConfigManager>"
+
+    def load(self) -> "ConfigManager":
+        """
+        Load the user config file and return this class.
+        """
+
+        _ = self._plugin_configs
+        return self
 
     def get_config(self, plugin_name: str) -> ConfigItem:
         """

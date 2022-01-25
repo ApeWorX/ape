@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 
 from dataclassy import dataclass
 from ethpm_types import ContractType
@@ -56,7 +56,9 @@ class CompilerManager:
 
         return registered_compilers
 
-    def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
+    def compile(
+        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
+    ) -> Dict[str, ContractType]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
         For example, use the `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__
@@ -81,11 +83,10 @@ class CompilerManager:
             for path in paths_to_compile:
                 logger.info(f"Compiling '{self._get_contract_path(path)}'.")
 
-            base_path = self.config.PROJECT_FOLDER / Path("contracts")
+            base_path = base_path or self.config.PROJECT_FOLDER / Path("contracts")
             compiled_contracts = self.registered_compilers[extension].compile(
                 paths_to_compile, base_path=base_path
             )
-
             for contract_type in compiled_contracts:
 
                 if contract_type.name in contract_types_dict:
