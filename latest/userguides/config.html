@@ -60,6 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configure Ape</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#contracts-folder">Contracts Folder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#deployments">Deployments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#networks">Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plugins">Plugins</a></li>
@@ -150,6 +151,19 @@
 <h1>Configure Ape<a class="headerlink" href="#configure-ape" title="Permalink to this headline">¶</a></h1>
 <p>An <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file allows you to configure ape. This guide serves as an index of the settings you can include
 in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<div class="section" id="contracts-folder">
+<h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Permalink to this headline">¶</a></h2>
+<p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
+This is useful when using a different naming convention, such as <code class="docutils literal notranslate"><span class="pre">src/</span></code> rather than <code class="docutils literal notranslate"><span class="pre">contracts/</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span><span class="w"></span>
+</pre></div>
+</div>
+<p>You can also use an absolute path.
+This is useful for projects that compile contracts outside their directory.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;~/GlobalContracts&quot;</span><span class="w"></span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="deployments">
 <h2>Deployments<a class="headerlink" href="#deployments" title="Permalink to this headline">¶</a></h2>
 <p>Share import deployments to public networks with your teammates:</p>
