@@ -6,7 +6,7 @@ from ethpm_types import ABI, ContractType
 from pydantic import parse_obj_as
 
 from ape.api import CompilerAPI
-from ape.exceptions import CompilerError
+from ape.logging import logger
 from ape.utils import get_relative_path
 
 
@@ -34,7 +34,7 @@ class InterfaceCompiler(CompilerAPI):
                 else str(path)
             )
             if not isinstance(data, list):
-                raise CompilerError("Not a valid ABI interface JSON file.")
+                logger.warning(f"Not a valid ABI interface JSON file (sourceID={source_id}).")
 
             else:
                 contract = ContractType(  # type: ignore

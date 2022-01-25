@@ -36,7 +36,7 @@ def new_dir(path: Path) -> Path:
 
 def build_docs(path: Path) -> Path:
     path = new_dir(path)
-    run("sphinx-build", "docs", path)
+    run("sphinx-build", "docs", str(path))
     return path
 
 

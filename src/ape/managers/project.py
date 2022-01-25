@@ -1,5 +1,7 @@
 import json
+import shutil
 import sys
+import tempfile
 from importlib import import_module
 from pathlib import Path
 from typing import Collection, Dict, List, Optional, Union
@@ -7,6 +9,7 @@ from typing import Collection, Dict, List, Optional, Union
 import requests
 from dataclassy import dataclass
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
+from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
 
 from ape.contracts import ContractContainer
@@ -54,33 +57,48 @@ class ProjectManager:
         if isinstance(self.path, str):
             self.path = Path(self.path)
 
+        config = self.config.load()
         self.dependencies = {
-            n: self._extract_manifest(n, dep_id) for n, dep_id in self.config.dependencies.items()
+            n: self._extract_dependency_manifest(n, dep_id)
+            for n, dep_id in config.dependencies.items()
         }
 
     def __repr__(self):
         return "<ProjectManager>"
 
-    def _extract_manifest(self, name: str, download_path: str) -> PackageManifest:
-        packages_path = self.config.DATA_FOLDER / "packages"
-        packages_path.mkdir(exist_ok=True, parents=True)
-        target_path = packages_path / name
+    def _extract_dependency_manifest(self, name: str, download_path: str) -> PackageManifest:
+        target_path = self.config.packages_folder / name
+        manifest_file_path = target_path / "manifest.json"
+
+        # Handles migrating older ape when we cached the entire project
+        # rather than just the manifest file.
+        if target_path.exists() and not manifest_file_path.exists():
+            shutil.rmtree(target_path)
+
         target_path.mkdir(exist_ok=True, parents=True)
 
+        manifest_dict = None
+        if manifest_file_path.exists():
+            manifest_dict = json.loads(manifest_file_path.read_text())
+            if not isinstance(manifest_dict, dict):
+                logger.warning(f"Existing manifest file for '{name}' corrupted. Re-downloading.")
+                manifest_file_path.unlink()
+                manifest_dict = None
+
+        if not manifest_dict:
+            manifest_dict = self._download_manifest(name, download_path, manifest_file_path)
+
+        if "name" not in manifest_dict:
+            manifest_dict["name"] = name.replace("_", "-")
+
+        return PackageManifest(**manifest_dict)
+
+    def _download_manifest(self, name: str, download_path: str, manifest_target_path: Path) -> Dict:
+        manifest_dict = {}
+
         if download_path.startswith("https://") or download_path.startswith("http://"):
-            manifest_file_path = target_path / "manifest.json"
-            if manifest_file_path.exists():
-                manifest_dict = json.loads(manifest_file_path.read_text())
-            else:
-                # Download manifest
-                response = requests.get(download_path)
-                manifest_file_path.write_text(response.text)
-                manifest_dict = response.json()
-
-            if "name" not in manifest_dict:
-                raise ProjectError("Dependencies must have a name.")
-
-            return PackageManifest(**manifest_dict)
+            response = requests.get(download_path)
+            manifest_dict = response.json()
         else:
             # Github dependency (format: <org>/<repo>@<version>)
             try:
@@ -88,28 +106,39 @@ class ProjectManager:
             except ValueError:
                 raise ValueError("Invalid Github ID. Must be given as <org>/<repo>@<version>")
 
-            package_contracts_path = target_path / "contracts"
-            is_cached = len([p for p in target_path.iterdir()]) > 0
+            # Download manifest
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_project_path = Path(temp_dir) / name
+                temp_project_path.mkdir(exist_ok=True, parents=True)
+                github_client.download_package(path, version, temp_project_path)
 
-            if not is_cached:
-                github_client.download_package(path, version, target_path)
+                temp_contracts_path = temp_project_path / "contracts"
+                if not temp_contracts_path.exists():
+                    raise ProjectError(
+                        "Dependency does not have a supported file structure. "
+                        "Expecting 'contracts/' path."
+                    )
 
-            if not package_contracts_path.exists():
-                raise ProjectError(
-                    "Dependency does not have a supported file structure. "
-                    "Expecting 'contracts/' path."
+                manifest = PackageManifest()
+                sources = [
+                    s
+                    for s in get_all_files_in_directory(temp_contracts_path)
+                    if s.name not in ("package.json", "package-lock.json")
+                    and s.suffix in self.compilers.registered_compilers
+                ]
+
+                manifest.name = PackageName(name.lower().replace("_", "-"))
+                manifest.sources = self._create_source_dict(sources, base_path=temp_contracts_path)
+                manifest.contract_types = self.compilers.compile(
+                    sources, base_path=temp_contracts_path
                 )
+                manifest_dict = manifest.dict()
 
-            manifest = PackageManifest()
-            sources = [
-                s
-                for s in get_all_files_in_directory(package_contracts_path)
-                if s.name not in ("package.json", "package-lock.json")
-                and s.suffix in self.compilers.registered_compilers
-            ]
-            manifest.sources = self._create_source_dict(sources)
-            manifest.contract_types = self.compilers.compile(sources)
-            return manifest
+                # Validates manifest dict
+                _ = PackageManifest(**manifest_dict)
+
+        manifest_target_path.write_text(json.dumps(manifest_dict))
+        return manifest_dict
 
     def __str__(self) -> str:
         return f'Project("{self.path}")'
@@ -144,15 +173,14 @@ class ProjectManager:
         """
 
         manifest_file = self.manifest_cachefile
-        if manifest_file.exists():
-            manifest_json = json.loads(manifest_file.read_text())
-            if "manifest" not in manifest_json:
-                raise ProjectError("Corrupted manifest.")
-
-            return PackageManifest(**manifest_json)
-
-        else:
+        if not manifest_file.exists():
             return None
+
+        manifest_json = json.loads(manifest_file.read_text())
+        if "manifest" not in manifest_json:
+            raise ProjectError("Corrupted manifest.")
+
+        return PackageManifest(**manifest_json)
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
     @property
@@ -176,8 +204,11 @@ class ProjectManager:
             List[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
+        if not self.contracts_folder.exists():
+            return files
+
         for extension in self.compilers.registered_compilers:
-            files.extend(self.contracts_folder.rglob("*" + extension))
+            files.extend(self.contracts_folder.rglob(f"*{extension}"))
 
         return files
 
@@ -189,6 +220,10 @@ class ProjectManager:
         """
 
         return not self.contracts_folder.exists() or not self.contracts_folder.iterdir()
+
+    @property
+    def _dependencies_cache_folder(self) -> Path:
+        return self.contracts_folder / ".cache"
 
     def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
         """
@@ -275,9 +310,12 @@ class ProjectManager:
             Dict[str, ``ContractType``]: A dictionary of contract names to their
             types for each compiled contract.
         """
-
         if isinstance(file_paths, Path):
             file_paths = [file_paths]
+
+        # Clear dependencies cache if needed
+        if not use_cache and self._dependencies_cache_folder.exists():
+            shutil.rmtree(self._dependencies_cache_folder)
 
         # Load a cached or clean manifest (to use for caching)
         manifest = use_cache and self.cached_manifest or PackageManifest()
@@ -322,9 +360,14 @@ class ProjectManager:
 
         # NOTE: filter by checksum, etc., and compile what's needed
         #       to bring our cached manifest up-to-date
-        needs_compiling = filter(file_needs_compiling, sources)
-        compiled_contract_types = self.compilers.compile(list(needs_compiling))
+        needs_compiling = list(filter(file_needs_compiling, sources))
+        compiled_contract_types = self.compilers.compile(
+            needs_compiling, base_path=self.contracts_folder
+        )
         contract_types.update(compiled_contract_types)
+
+        # Re-calculate sources in case there are generated files (such as from 'ape-solidity').
+        sources = {s for s in self.sources if s in file_paths} if file_paths else self.sources
 
         # Update cached contract types & source code entries in cached manifest
         manifest.contract_types = contract_types
@@ -432,14 +475,18 @@ class ProjectManager:
 
         return compilers
 
-    def _create_source_dict(self, contracts_paths: Collection[Path]) -> Dict[str, Source]:
+    def _create_source_dict(
+        self, contracts_paths: Collection[Path], base_path: Optional[Path] = None
+    ) -> Dict[str, Source]:
+        base_path = base_path or self.contracts_folder
         return {
-            str(get_relative_path(source, self.contracts_folder)): Source(  # type: ignore
+            str(get_relative_path(source, base_path)): Source(  # type: ignore
                 checksum=Checksum(  # type: ignore
                     algorithm="md5",
                     hash=compute_checksum(source.read_bytes()),
                 ),
                 urls=[],
+                content=source.read_text(),
             )
             for source in contracts_paths
         }
