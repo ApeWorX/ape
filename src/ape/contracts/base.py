@@ -106,7 +106,7 @@ class ContractCall:
 class ContractCallHandler:
     provider: ProviderAPI
     converter: "ConversionManager"
-    address: AddressType
+    address: AddressAPI
     abis: List[ABI]
 
     def __repr__(self) -> str:
@@ -117,6 +117,10 @@ class ContractCallHandler:
         return self.converter.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> Any:
+        if not self.address.is_contract:
+            network = self.provider.network.name
+            raise _get_non_contract_error(self.address.address, network)
+
         args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
@@ -124,7 +128,7 @@ class ContractCallHandler:
 
         return ContractCall(  # type: ignore
             abi=selected_abi,
-            address=self.address,
+            address=self.address.address,
             provider=self.provider,
             converter=self.converter,
         )(*args, **kwargs)
@@ -179,7 +183,7 @@ class ContractTransaction:
 class ContractTransactionHandler:
     provider: ProviderAPI
     converter: "ConversionManager"
-    address: AddressType
+    address: AddressAPI
     abis: List[ABI]
 
     def __repr__(self) -> str:
@@ -190,6 +194,10 @@ class ContractTransactionHandler:
         return self.converter.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        if not self.address.is_contract:
+            network = self.provider.network.name
+            raise _get_non_contract_error(self.address.address, network)
+
         args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
@@ -197,7 +205,7 @@ class ContractTransactionHandler:
 
         return ContractTransaction(  # type: ignore
             abi=selected_abi,
-            address=self.address,
+            address=self.address.address,
             provider=self.provider,
             converter=self.converter,
         )(*args, **kwargs)
@@ -213,7 +221,7 @@ class ContractLog:
 class ContractEvent:
     provider: ProviderAPI
     converter: "ConversionManager"
-    address: str
+    address: AddressAPI
     abis: List[ABI]
     cached_logs: List[ContractLog] = []
 
@@ -276,13 +284,6 @@ class ContractInstance(AddressAPI):
             any: The return value from the contract call, or a transaction receipt.
         """
 
-        if not self.is_contract:
-            network = self.provider.network.name
-            raise ContractError(
-                f"Unable to access '{attr_name}' on contract '{self._address}' "
-                f"because it does not exist on network '{network}'."
-            )
-
         handlers = {
             "events": ContractEvent,
             "calls": ContractCallHandler,
@@ -300,7 +301,7 @@ class ContractInstance(AddressAPI):
             kwargs = {
                 "provider": self.provider,
                 "converter": self._converter,
-                "address": self.address,
+                "address": self,
                 "abis": selected_abis,
             }
 
@@ -452,3 +453,10 @@ def _Contract(
             _address=converted_address,
             _provider=provider,
         )
+
+
+def _get_non_contract_error(address: str, network_name: str) -> ContractError:
+    raise ContractError(
+        f"Unable to make contract call. "
+        f"'{address}' is not a contract on network '{network_name}'."
+    )
