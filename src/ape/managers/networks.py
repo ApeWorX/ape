@@ -1,16 +1,15 @@
-from typing import Dict, Iterator, Optional
+from typing import ClassVar, Dict, Iterator, Optional
 
 import yaml
-from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.exceptions import ConfigError, NetworkError
+from ape.utils import dependency
 
 from .config import ConfigManager
 
 
-@dataclass
 class NetworkManager:
     """
     The set of all blockchain network ecosystems registered from the plugin system.
@@ -26,8 +25,8 @@ class NetworkManager:
            ...
     """
 
-    config: ConfigManager
-    plugin_manager: PluginManager
+    config: ClassVar[ConfigManager] = dependency()  # type: ignore
+    plugin_manager: ClassVar[PluginManager] = dependency()  # type: ignore
     _active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
     _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
@@ -57,11 +56,14 @@ class NetworkManager:
 
         ecosystem_dict = {}
         for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
+
+            # dependency injection
+            ecosystem_class.network_manager = self
+            ecosystem_class.config_manager = self.config
+            ecosystem_class.plugin_manager = self.plugin_manager
+
             ecosystem = ecosystem_class(
                 name=plugin_name,
-                network_manager=self,
-                config_manager=self.config,
-                plugin_manager=self.plugin_manager,
                 data_folder=self.config.DATA_FOLDER / plugin_name,
                 request_header=self.config.REQUEST_HEADER,
             )

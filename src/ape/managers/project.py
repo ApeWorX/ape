@@ -4,10 +4,9 @@ import sys
 import tempfile
 from importlib import import_module
 from pathlib import Path
-from typing import Collection, Dict, List, Optional, Union
+from typing import ClassVar, Collection, Dict, List, Optional, Union
 
 import requests
-from dataclassy import dataclass
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
@@ -16,14 +15,13 @@ from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.managers.networks import NetworkManager
-from ape.utils import get_all_files_in_directory, get_relative_path, github_client
+from ape.utils import dependency, get_all_files_in_directory, get_relative_path, github_client
 
 from .compilers import CompilerManager
 from .config import ConfigManager
 from .converters import ConversionManager
 
 
-@dataclass
 class ProjectManager:
     """
     A manager for accessing contract-types, dependencies, and other project resources.
@@ -48,19 +46,19 @@ class ProjectManager:
     path: Path
     """The project path."""
 
-    config: ConfigManager
+    config: ClassVar[ConfigManager] = dependency()  # type: ignore
     """
     A reference to :class:`~ape.managers.config.ConfigManager`, which
     manages project and plugin configurations.
     """
 
-    converter: ConversionManager
+    converter: ClassVar[ConversionManager] = dependency()  # type: ignore
     """
     A reference to the conversion utilities in
     :class:`~ape.managers.converters.ConversionManager`.
     """
 
-    compilers: CompilerManager
+    compilers: ClassVar[CompilerManager] = dependency()  # type: ignore
     """
     The group of compiler plugins for compiling source files. See
     :class:`~ape.managers.compilers.CompilerManager` for more information.
@@ -68,7 +66,7 @@ class ProjectManager:
     to more easily compile sources.
     """
 
-    networks: NetworkManager
+    networks: ClassVar[NetworkManager] = dependency()  # type: ignore
     """
     The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
     To get the active provide, use

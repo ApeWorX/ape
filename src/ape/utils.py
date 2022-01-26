@@ -444,6 +444,16 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     return [path]
 
 
+class dependency(property):
+    """
+    Dependencies are injected class variables that must be set before use
+    NOTE: do not appear in a Pydantic model's set of properties
+    """
+
+    def __get__(self, *args):
+        raise ValueError("Value not set. Please inject this property before calling.")
+
+
 class AbstractDataClassMeta(DataClassMeta, ABCMeta):
     """
     A `data class <https://docs.python.org/3/library/dataclasses.html>`__ that

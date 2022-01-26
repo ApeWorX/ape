@@ -1,18 +1,16 @@
-from typing import Dict, Iterator, List, Type
+from typing import ClassVar, Dict, Iterator, List, Type
 
-from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.types import AddressType
-from ape.utils import cached_property, singledispatchmethod
+from ape.utils import cached_property, dependency, singledispatchmethod
 
 from .config import ConfigManager
 from .converters import ConversionManager
 from .networks import NetworkManager
 
 
-@dataclass
 class AccountManager:
     """
     The ``AccountManager`` is a container of containers for
@@ -29,10 +27,10 @@ class AccountManager:
         my_accounts = accounts.load("dev")
     """
 
-    config: ConfigManager
-    converters: ConversionManager
-    plugin_manager: PluginManager
-    network_manager: NetworkManager
+    config: ClassVar[ConfigManager] = dependency()  # type: ignore
+    converters: ClassVar[ConversionManager] = dependency()  # type: ignore
+    plugin_manager: ClassVar[PluginManager] = dependency()  # type: ignore
+    network_manager: ClassVar[NetworkManager] = dependency()  # type: ignore
 
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
@@ -55,7 +53,12 @@ class AccountManager:
 
             accounts_folder = data_folder / plugin_name
             accounts_folder.mkdir(exist_ok=True)
-            containers[plugin_name] = container_type(accounts_folder, account_type, self.config)
+
+            # dependency injection
+            container_type.account_type = account_type
+            container_type.config_manager = self.config
+
+            containers[plugin_name] = container_type(accounts_folder)
 
         return containers
 
@@ -86,7 +89,7 @@ class AccountManager:
             List[:class:`~ape.api.accounts.AccountAPI`]
         """
 
-        accounts_with_type = []
+        accounts_with_type: List[AccountAPI] = []
         for account in self:
             if isinstance(account, type_):
                 self._inject_provider(account)
@@ -137,7 +140,11 @@ class AccountManager:
             if not issubclass(account_type, TestAccountAPI):
                 continue
 
-            container = container_type(None, account_type, self.config)
+            # dependency injection
+            container_type.account_type = account_type
+            container_type.config_manager = self.config
+
+            container = container_type(None)
             for account in container:
                 self._inject_provider(account)
                 accounts.append(account)
@@ -227,4 +234,4 @@ class AccountManager:
 
     def _inject_provider(self, account: AccountAPI):
         if self.network_manager.active_provider is not None:
-            account.provider = self.network_manager.active_provider
+            account.provider = self.network_manager.active_provider  # type: ignore

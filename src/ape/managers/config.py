@@ -1,15 +1,13 @@
 import json
 from pathlib import Path
-from typing import Dict, List, Union
-
-from dataclassy import dataclass
+from typing import ClassVar, Dict, List, Union
 
 from ape.api import ConfigDict, ConfigItem
 from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.plugins import PluginManager
-from ape.utils import load_config
+from ape.utils import dependency, load_config
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 
@@ -19,7 +17,6 @@ class DeploymentConfig(ConfigItem):
     contract_type: str
 
 
-@dataclass
 class ConfigManager:
     """
     The singleton responsible for managing the ``ape-config.yaml`` project file.
@@ -47,7 +44,7 @@ class ConfigManager:
     contracts_folder: Path = None  # type: ignore
     dependencies: Dict[str, str] = {}
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
-    plugin_manager: PluginManager
+    plugin_manager: ClassVar[PluginManager] = dependency()  # type: ignore
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
 
     @property

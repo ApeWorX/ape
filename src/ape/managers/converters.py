@@ -1,7 +1,6 @@
 from decimal import Decimal
-from typing import Any, Dict, List, Tuple, Type, Union
+from typing import Any, ClassVar, Dict, List, Tuple, Type, Union
 
-from dataclassy import dataclass
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
 from hexbytes import HexBytes
 
@@ -9,7 +8,7 @@ from ape.api import AddressAPI, ConverterAPI
 from ape.exceptions import ConversionError
 from ape.plugins import PluginManager
 from ape.types import AddressType
-from ape.utils import cached_property
+from ape.utils import cached_property, dependency
 
 from .config import ConfigManager
 from .networks import NetworkManager
@@ -140,7 +139,6 @@ class ListTupleConverter(ConverterAPI):
 list_tuple_converter = ListTupleConverter(None, None, None)  # type: ignore
 
 
-@dataclass
 class ConversionManager:
     """
     A singleton that manages all the converters.
@@ -156,9 +154,9 @@ class ConversionManager:
         amount = convert("1 gwei", int)
     """
 
-    config: ConfigManager
-    plugin_manager: PluginManager
-    networks: NetworkManager
+    config: ClassVar[ConfigManager] = dependency()  # type: ignore
+    plugin_manager: ClassVar[PluginManager] = dependency()  # type: ignore
+    networks: ClassVar[NetworkManager] = dependency()  # type: ignore
 
     def __repr__(self):
         return "<ConversionManager>"
@@ -176,7 +174,13 @@ class ConversionManager:
         }
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
-            converter = converter_class(self.config.get_config(plugin_name), self.networks, self)
+
+            # dependency injection
+            converter_class.config = self.config.get_config(plugin_name)
+            converter_class.networks = self.networks
+            converter_class.converter = self
+
+            converter = converter_class()
 
             if conversion_type not in converters:
                 options = ", ".join([t.__name__ for t in converters])

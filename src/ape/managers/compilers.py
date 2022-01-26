@@ -1,19 +1,17 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import ClassVar, Dict, List, Optional, Set
 
-from dataclassy import dataclass
 from ethpm_types import ContractType
 
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
 from ape.plugins import PluginManager
-from ape.utils import cached_property
+from ape.utils import cached_property, dependency
 
 from .config import ConfigManager
 
 
-@dataclass
 class CompilerManager:
     """
     The singleton that manages :class:`~ape.api.compiler.CompilerAPI` instances.
@@ -27,8 +25,8 @@ class CompilerManager:
         from ape import compilers  # "compilers" is the CompilerManager singleton
     """
 
-    config: ConfigManager
-    plugin_manager: PluginManager
+    config: ClassVar[ConfigManager] = dependency()  # type: ignore
+    plugin_manager: ClassVar[PluginManager] = dependency()  # type: ignore
 
     def __repr__(self):
         return f"<CompilerManager len(registered_compilers)={len(self.registered_compilers)}>"
@@ -47,8 +45,11 @@ class CompilerManager:
         registered_compilers = {}
 
         for plugin_name, (extensions, compiler_class) in self.plugin_manager.register_compiler:
-            config = self.config.get_config(plugin_name)
-            compiler = compiler_class(config=config)
+
+            # dependency injection
+            compiler_class.config = self.config.get_config(plugin_name)
+
+            compiler = compiler_class()
 
             for extension in extensions:
                 if extension not in registered_compilers:

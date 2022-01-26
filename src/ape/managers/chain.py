@@ -1,20 +1,17 @@
 import time
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
-
-from dataclassy import dataclass
+from typing import Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Union
 
 from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import logger
 from ape.types import AddressType, BlockID, SnapshotID
-from ape.utils import cached_property
+from ape.utils import cached_property, dependency
 
 from .networks import NetworkManager
 
 
-@dataclass
 class _ConnectedChain:
-    _networks: NetworkManager
+    _networks: ClassVar[NetworkManager] = dependency()  # type: ignore
 
     @property
     def provider(self) -> ProviderAPI:
