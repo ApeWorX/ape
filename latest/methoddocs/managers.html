@@ -913,6 +913,39 @@ that it is checksummed.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt id="ape.managers.converters.TimestampConverter">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.managers.converters.</span></code><code class="sig-name descname"><span class="pre">TimestampConverter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="api.html#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">networks</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">NetworkManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.managers.converters.ConversionManager" title="ape.managers.converters.ConversionManager"><span class="pre">ConversionManager</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.converters.TimestampConverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts string of <code class="docutils literal notranslate"><span class="pre">&quot;%m-%d-%Y</span> <span class="pre">%H:%M:%S&quot;</span></code> format to a timestamp.
+Must be UTC timezone</p>
+<dl class="py method">
+<dt id="ape.managers.converters.TimestampConverter.convert">
+<code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#ape.managers.converters.TimestampConverter.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the given value to the type specified as the generic for this class.
+Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
+when the item fails to convert properly.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.converters.TimestampConverter.is_convertible">
+<code class="sig-name descname"><span class="pre">is_convertible</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.managers.converters.TimestampConverter.is_convertible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if string value provided by <code class="docutils literal notranslate"><span class="pre">value</span></code> is convertible using
+<a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-ape.managers.networks">
 <span id="networks"></span><h2>Networks<a class="headerlink" href="#module-ape.managers.networks" title="Permalink to this headline">¶</a></h2>
