@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Tuple, Type, Union
 
@@ -158,7 +158,11 @@ class TimestampConverter(ConverterAPI):
         return True
 
     def convert(self, value: str) -> int:
-        return int(datetime.strptime(value, "%m-%d-%Y %H:%M:%S").strftime("%s"))
+        return int(
+            datetime.strptime(value, "%m-%d-%Y %H:%M:%S")
+            .replace(tzinfo=timezone.utc)
+            .strftime("%s")
+        )
 
 
 timestamp_converter = TimestampConverter(None, None, None)  # type: ignore
