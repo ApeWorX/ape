@@ -85,7 +85,7 @@ setup(
         "requests>=2.25.1,<3.0",
         "importlib-metadata",
         "singledispatchmethod ; python_version<'3.8'",
-        "IPython>=7.25",
+        "IPython>=7.31.1",
         "pytest>=6.0,<7.0",
         "rich>=10.14,<11",
         "tqdm>=4.62.3,<5.0",
