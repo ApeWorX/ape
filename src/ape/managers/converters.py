@@ -143,7 +143,8 @@ list_tuple_converter = ListTupleConverter(None, None, None)  # type: ignore
 
 class TimestampConverter(ConverterAPI):
     """
-    Converts string of ``"%m-%d-%Y %H:%M:%S"`` format to a timestamp
+    Converts string of ``"%m-%d-%Y %H:%M:%S"`` format to a timestamp.
+    Must be UTC timezone
     """
 
     def is_convertible(self, value: str) -> bool:
