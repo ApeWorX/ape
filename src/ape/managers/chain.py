@@ -6,10 +6,9 @@ from dataclassy import dataclass
 from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import logger
+from ape.managers.networks import NetworkManager
 from ape.types import AddressType, BlockID, SnapshotID
 from ape.utils import cached_property
-
-from .networks import NetworkManager
 
 
 @dataclass
@@ -196,6 +195,7 @@ class AccountHistory(_ConnectedChain):
 
     _map: Dict[AddressType, List[ReceiptAPI]] = {}
 
+    # TODO: Inject ConversionManager into AccountHistory
     @cached_property
     def _convert(self) -> Callable:
         from ape import convert
@@ -370,8 +370,11 @@ class ChainManager(_ConnectedChain):
         return self.provider.get_block("pending").timestamp
 
     @pending_timestamp.setter
-    def pending_timestamp(self, new_value: int):
-        self.provider.set_timestamp(new_value)
+    def pending_timestamp(self, new_value: str):
+        # TODO: inject ConversionManager into ChainManager
+        from ape import convert
+
+        self.provider.set_timestamp(convert(value=new_value, type=int))
 
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"

@@ -4,7 +4,12 @@ from eth_utils import to_bytes
 from ethpm_types import ABI, ContractType
 
 from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
-from ape.exceptions import ArgumentsLengthError, ProviderNotConnectedError, TransactionError
+from ape.exceptions import (
+    ArgumentsLengthError,
+    ContractError,
+    ProviderNotConnectedError,
+    TransactionError,
+)
 from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import dataclass
@@ -101,17 +106,21 @@ class ContractCall:
 class ContractCallHandler:
     provider: ProviderAPI
     converter: "ConversionManager"
-    address: AddressType
+    contract: "ContractInstance"
     abis: List[ABI]
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))  # type: ignore
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.converter.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> Any:
+        if not self.contract.is_contract:
+            network = self.provider.network.name
+            raise _get_non_contract_error(self.contract.address, network)
+
         args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
@@ -119,7 +128,7 @@ class ContractCallHandler:
 
         return ContractCall(  # type: ignore
             abi=selected_abi,
-            address=self.address,
+            address=self.contract.address,
             provider=self.provider,
             converter=self.converter,
         )(*args, **kwargs)
@@ -174,17 +183,21 @@ class ContractTransaction:
 class ContractTransactionHandler:
     provider: ProviderAPI
     converter: "ConversionManager"
-    address: AddressType
+    contract: "ContractInstance"
     abis: List[ABI]
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs))  # type: ignore
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.converter.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        if not self.contract.is_contract:
+            network = self.provider.network.name
+            raise _get_non_contract_error(self.contract.address, network)
+
         args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
@@ -192,7 +205,7 @@ class ContractTransactionHandler:
 
         return ContractTransaction(  # type: ignore
             abi=selected_abi,
-            address=self.address,
+            address=self.contract.address,
             provider=self.provider,
             converter=self.converter,
         )(*args, **kwargs)
@@ -208,7 +221,7 @@ class ContractLog:
 class ContractEvent:
     provider: ProviderAPI
     converter: "ConversionManager"
-    address: str
+    contract: "ContractInstance"
     abis: List[ABI]
     cached_logs: List[ContractLog] = []
 
@@ -288,7 +301,7 @@ class ContractInstance(AddressAPI):
             kwargs = {
                 "provider": self.provider,
                 "converter": self._converter,
-                "address": self.address,
+                "contract": self,
                 "abis": selected_abis,
             }
 
@@ -440,3 +453,10 @@ def _Contract(
             _address=converted_address,
             _provider=provider,
         )
+
+
+def _get_non_contract_error(address: str, network_name: str) -> ContractError:
+    raise ContractError(
+        f"Unable to make contract call. "
+        f"'{address}' is not a contract on network '{network_name}'."
+    )
