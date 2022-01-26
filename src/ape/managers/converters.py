@@ -159,9 +159,7 @@ class TimestampConverter(ConverterAPI):
 
     def convert(self, value: str) -> int:
         return int(
-            datetime.strptime(value, "%m-%d-%Y %H:%M:%S")
-            .replace(tzinfo=timezone.utc)
-            .strftime("%s")
+            datetime.strptime(value, "%m-%d-%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
         )
 
 
