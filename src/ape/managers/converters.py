@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Tuple, Type, Union
 
@@ -140,6 +141,32 @@ class ListTupleConverter(ConverterAPI):
 list_tuple_converter = ListTupleConverter(None, None, None)  # type: ignore
 
 
+class TimestampConverter(ConverterAPI):
+    """
+    Converts string of ``"%m-%d-%Y %H:%M:%S"`` format to a timestamp.
+    Must be UTC timezone
+    """
+
+    def is_convertible(self, value: str) -> bool:
+        if not isinstance(value, str):
+            return False
+        if " " not in value or len(value.split(" ")) > 2:
+            return False
+        try:
+            datetime.strptime(value, "%m-%d-%Y %H:%M:%S")
+        except ValueError:
+            return False
+        return True
+
+    def convert(self, value: str) -> int:
+        return int(
+            datetime.strptime(value, "%m-%d-%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
+        )
+
+
+timestamp_converter = TimestampConverter(None, None, None)  # type: ignore
+
+
 @dataclass
 class ConversionManager:
     """
@@ -169,7 +196,7 @@ class ConversionManager:
         converters: Dict[Type, List[ConverterAPI]] = {
             AddressType: [address_api_converter, hex_address_converter],
             bytes: [hex_converter],
-            int: [],
+            int: [timestamp_converter],
             Decimal: [],
             list: [list_tuple_converter],
             tuple: [list_tuple_converter],
