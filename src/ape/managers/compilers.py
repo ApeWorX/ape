@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
-from dataclassy import dataclass
 from ethpm_types import ContractType
 
 from ape.api import CompilerAPI
@@ -13,7 +12,6 @@ from ape.utils import cached_property
 from .config import ConfigManager
 
 
-@dataclass
 class CompilerManager:
     """
     The singleton that manages :class:`~ape.api.compiler.CompilerAPI` instances.
@@ -29,6 +27,10 @@ class CompilerManager:
 
     config: ConfigManager
     plugin_manager: PluginManager
+
+    def __init__(self, *, config: ConfigManager, plugin_manager: PluginManager) -> None:
+        self.config = config
+        self.plugin_manager = plugin_manager
 
     def __repr__(self):
         return f"<CompilerManager len(registered_compilers)={len(self.registered_compilers)}>"

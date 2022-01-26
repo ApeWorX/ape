@@ -22,39 +22,41 @@ from .utils import USER_AGENT
 plugin_manager = _PluginManager()
 """Manages plugins for the current project. See :class:`ape.plugins.PluginManager`."""
 
-config = _ConfigManager(  # type: ignore
+config = _ConfigManager(
     # Store all globally-cached files
-    DATA_FOLDER=_Path.home().joinpath(".ape"),
+    data_folder=_Path.home().joinpath(".ape"),
     # NOTE: For all HTTP requests we make
-    REQUEST_HEADER={
+    request_header={
         "User-Agent": USER_AGENT,
     },
     # What we are considering to be the starting project directory
-    PROJECT_FOLDER=_Path.cwd(),
+    project_folder=_Path.cwd(),
     plugin_manager=plugin_manager,
 )
 """The active configs for the current project. See :class:`ape.managers.config.ConfigManager`."""
 
 # Main types we export for the user
 
-compilers = _CompilerManager(config, plugin_manager)  # type: ignore
+compilers = _CompilerManager(config=config, plugin_manager=plugin_manager)
 """Manages compilers for the current project. See
 :class:`ape.managers.compilers.CompilerManager`."""
 
-networks = _NetworkManager(config, plugin_manager)  # type: ignore
+networks = _NetworkManager(config=config, plugin_manager=plugin_manager)
 """Manages the networks for the current project. See
 :class:`ape.managers.networks.NetworkManager`."""
 
-_converters = _ConversionManager(config, plugin_manager, networks)  # type: ignore
+_converters = _ConversionManager(config=config, plugin_manager=plugin_manager, networks=networks)
 
-chain = _ChainManager(networks)  # type: ignore
+chain = _ChainManager(networks=networks, converters=_converters)
 """
 The current connected blockchain; requires an active provider.
 Useful for development purposes, such as controlling the state of the blockchain.
 Also handy for querying data about the chain and managing local caches.
 """
 
-accounts = _AccountManager(config, _converters, plugin_manager, networks)  # type: ignore
+accounts = _AccountManager(
+    config=config, converters=_converters, plugin_manager=plugin_manager, network_manager=networks
+)
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
 Project = _partial(
@@ -67,7 +69,7 @@ Project = _partial(
 """User-facing class for instantiating Projects (in addition to the currently
 active ``project``). See :class:`ape.managers.project.ProjectManager`."""
 
-project = Project(config.PROJECT_FOLDER)
+project = Project(path=config.PROJECT_FOLDER)
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
 Contract = _partial(_Contract, networks=networks, converters=_converters)

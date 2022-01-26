@@ -1,7 +1,6 @@
 from typing import Dict, Iterator, Optional
 
 import yaml
-from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
@@ -10,7 +9,6 @@ from ape.exceptions import ConfigError, NetworkError
 from .config import ConfigManager
 
 
-@dataclass
 class NetworkManager:
     """
     The set of all blockchain network ecosystems registered from the plugin system.
@@ -31,6 +29,10 @@ class NetworkManager:
     _active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
     _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
+
+    def __init__(self, *, config: ConfigManager, plugin_manager: PluginManager) -> None:
+        self.config = config
+        self.plugin_manager = plugin_manager
 
     def __repr__(self):
         return f"<NetworkManager, active_provider={self.active_provider}>"

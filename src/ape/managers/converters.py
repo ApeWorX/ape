@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Tuple, Type, Union
 
-from dataclassy import dataclass
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
 from hexbytes import HexBytes
 
@@ -166,7 +165,6 @@ class TimestampConverter(ConverterAPI):
 timestamp_converter = TimestampConverter(None, None, None)  # type: ignore
 
 
-@dataclass
 class ConversionManager:
     """
     A singleton that manages all the converters.
@@ -185,6 +183,13 @@ class ConversionManager:
     config: ConfigManager
     plugin_manager: PluginManager
     networks: NetworkManager
+
+    def __init__(
+        self, *, config: ConfigManager, plugin_manager: PluginManager, networks: NetworkManager
+    ) -> None:
+        self.config = config
+        self.plugin_manager = plugin_manager
+        self.networks = networks
 
     def __repr__(self):
         return "<ConversionManager>"

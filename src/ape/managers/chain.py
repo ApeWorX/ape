@@ -1,19 +1,22 @@
 import time
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
-from dataclassy import dataclass
-
 from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import logger
+from ape.managers.converters import ConversionManager
 from ape.managers.networks import NetworkManager
 from ape.types import AddressType, BlockID, SnapshotID
 from ape.utils import cached_property
 
 
-@dataclass
 class _ConnectedChain:
     _networks: NetworkManager
+    _converters: ConversionManager
+
+    def __init__(self, *, networks: NetworkManager, converters: ConversionManager) -> None:
+        self._networks = networks
+        self._converters = converters
 
     @property
     def provider(self) -> ProviderAPI:
@@ -195,12 +198,9 @@ class AccountHistory(_ConnectedChain):
 
     _map: Dict[AddressType, List[ReceiptAPI]] = {}
 
-    # TODO: Inject ConversionManager into AccountHistory
     @cached_property
     def _convert(self) -> Callable:
-        from ape import convert
-
-        return convert
+        return self._converters.convert
 
     def __getitem__(self, address: Union[AddressAPI, AddressType, str]) -> List[ReceiptAPI]:
         """
@@ -303,7 +303,7 @@ class ChainManager(_ConnectedChain):
         The list of blocks on the chain.
         """
         if self.chain_id not in self._block_container_map:
-            blocks = BlockContainer(self._networks)  # type: ignore
+            blocks = BlockContainer(networks=self._networks, converters=self._converters)
             self._block_container_map[self.chain_id] = blocks
 
         return self._block_container_map[self.chain_id]
@@ -314,7 +314,7 @@ class ChainManager(_ConnectedChain):
         A mapping of transactions from the active session to the account responsible.
         """
         if self.chain_id not in self._account_history_map:
-            history = AccountHistory(self._networks)  # type: ignore
+            history = AccountHistory(networks=self._networks, converters=self._converters)
             self._account_history_map[self.chain_id] = history
 
         return self._account_history_map[self.chain_id]
@@ -371,10 +371,7 @@ class ChainManager(_ConnectedChain):
 
     @pending_timestamp.setter
     def pending_timestamp(self, new_value: str):
-        # TODO: inject ConversionManager into ChainManager
-        from ape import convert
-
-        self.provider.set_timestamp(convert(value=new_value, type=int))
+        self.provider.set_timestamp(self._converters.convert(value=new_value, type=int))
 
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"

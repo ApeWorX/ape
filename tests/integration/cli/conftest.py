@@ -95,7 +95,7 @@ def project_folder(request, config):
 @pytest.fixture
 def project(project_folder):
     previous_project = ape.project
-    project = Project(project_folder)
+    project = Project(path=project_folder)
     ape.project = project
     yield project
     ape.project = previous_project

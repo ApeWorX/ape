@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Collection, Dict, List, Optional, Union
 
 import requests
-from dataclassy import dataclass
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
@@ -16,14 +15,13 @@ from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.managers.networks import NetworkManager
-from ape.utils import get_all_files_in_directory, get_relative_path, github_client
+from ape.utils import cached_property, get_all_files_in_directory, get_relative_path, github_client
 
 from .compilers import CompilerManager
 from .config import ConfigManager
 from .converters import ConversionManager
 
 
-@dataclass
 class ProjectManager:
     """
     A manager for accessing contract-types, dependencies, and other project resources.
@@ -75,17 +73,20 @@ class ProjectManager:
     :py:attr:`ape.managers.networks.NetworkManager.active_provider`.
     """
 
-    dependencies: Dict[str, PackageManifest] = dict()
-
-    def __post_init__(self):
-        if isinstance(self.path, str):
-            self.path = Path(self.path)
-
-        config = self.config.load()
-        self.dependencies = {
-            n: self._extract_dependency_manifest(n, dep_id)
-            for n, dep_id in config.dependencies.items()
-        }
+    def __init__(
+        self,
+        *,
+        path: Path,
+        config: ConfigManager,
+        converter: ConversionManager,
+        compilers: CompilerManager,
+        networks: NetworkManager,
+    ) -> None:
+        self.path = Path(path) if isinstance(path, str) else path
+        self.config = config
+        self.converter = converter
+        self.compilers = compilers
+        self.networks = networks
 
     def __repr__(self):
         return "<ProjectManager>"
@@ -166,6 +167,14 @@ class ProjectManager:
 
     def __str__(self) -> str:
         return f'Project("{self.path}")'
+
+    @cached_property
+    def dependencies(self) -> Dict[str, PackageManifest]:
+        config = self.config.load()
+        return {
+            n: self._extract_dependency_manifest(n, dep_id)
+            for n, dep_id in config.dependencies.items()
+        }
 
     @property
     def _cache_folder(self) -> Path:

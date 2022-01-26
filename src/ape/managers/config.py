@@ -2,8 +2,6 @@ import json
 from pathlib import Path
 from typing import Dict, List, Union
 
-from dataclassy import dataclass
-
 from ape.api import ConfigDict, ConfigItem
 from ape.convert import to_address
 from ape.exceptions import ConfigError
@@ -19,7 +17,6 @@ class DeploymentConfig(ConfigItem):
     contract_type: str
 
 
-@dataclass
 class ConfigManager:
     """
     The singleton responsible for managing the ``ape-config.yaml`` project file.
@@ -49,6 +46,19 @@ class ConfigManager:
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
     plugin_manager: PluginManager
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
+
+    def __init__(
+        self,
+        *,
+        data_folder: Path,
+        request_header: Dict,
+        project_folder: Path,
+        plugin_manager: PluginManager,
+    ) -> None:
+        self.DATA_FOLDER = data_folder
+        self.REQUEST_HEADER = request_header
+        self.PROJECT_FOLDER = project_folder
+        self.plugin_manager = plugin_manager
 
     @property
     def packages_folder(self) -> Path:

@@ -1,6 +1,5 @@
 from typing import Dict, Iterator, List, Type
 
-from dataclassy import dataclass
 from pluggy import PluginManager  # type: ignore
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
@@ -12,7 +11,6 @@ from .converters import ConversionManager
 from .networks import NetworkManager
 
 
-@dataclass
 class AccountManager:
     """
     The ``AccountManager`` is a container of containers for
@@ -33,6 +31,19 @@ class AccountManager:
     converters: ConversionManager
     plugin_manager: PluginManager
     network_manager: NetworkManager
+
+    def __init__(
+        self,
+        *,
+        config: ConfigManager,
+        converters: ConversionManager,
+        plugin_manager: PluginManager,
+        network_manager: NetworkManager,
+    ) -> None:
+        self.config = config
+        self.converters = converters
+        self.plugin_manager = plugin_manager
+        self.network_manager = network_manager
 
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
