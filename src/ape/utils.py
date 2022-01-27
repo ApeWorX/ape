@@ -460,6 +460,17 @@ also abstract (meaning it has methods that **must** be implemented or else
 errors will occur. This class cannot be instantiated on its own.
 """
 
+
+class injected_before_use(property):
+    """
+    Injected properties are injected class variables that must be set before use
+    NOTE: do not appear in a Pydantic model's set of properties
+    """
+
+    def __get__(self, *args):
+        raise ValueError("Value not set. Please inject this property before calling.")
+
+
 __all__ = [
     "abstractdataclass",
     "abstractmethod",
@@ -476,6 +487,7 @@ __all__ = [
     "GeneratedDevAccount",
     "generate_dev_accounts",
     "get_all_files_in_directory",
+    "injected_before_use",
     "load_config",
     "singledispatchmethod",
     "USER_AGENT",

@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any, Dict, List, Tuple, Type, Union
+from typing import Any, ClassVar, Dict, List, Tuple, Type, Union
 
-from dataclassy import dataclass
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
 from hexbytes import HexBytes
 
@@ -10,7 +9,7 @@ from ape.api import AddressAPI, ConverterAPI
 from ape.exceptions import ConversionError
 from ape.plugins import PluginManager
 from ape.types import AddressType
-from ape.utils import cached_property
+from ape.utils import cached_property, injected_before_use
 
 from .config import ConfigManager
 from .networks import NetworkManager
@@ -166,7 +165,6 @@ class TimestampConverter(ConverterAPI):
 timestamp_converter = TimestampConverter(None, None, None)  # type: ignore
 
 
-@dataclass
 class ConversionManager:
     """
     A singleton that manages all the converters.
@@ -182,9 +180,9 @@ class ConversionManager:
         amount = convert("1 gwei", int)
     """
 
-    config: ConfigManager
-    plugin_manager: PluginManager
-    networks: NetworkManager
+    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
+    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
+    networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
 
     def __repr__(self):
         return "<ConversionManager>"

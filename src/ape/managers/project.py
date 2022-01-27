@@ -4,10 +4,9 @@ import sys
 import tempfile
 from importlib import import_module
 from pathlib import Path
-from typing import Collection, Dict, List, Optional, Union
+from typing import ClassVar, Collection, Dict, List, Optional, Union
 
 import requests
-from dataclassy import dataclass
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
@@ -16,14 +15,19 @@ from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.managers.networks import NetworkManager
-from ape.utils import get_all_files_in_directory, get_relative_path, github_client
+from ape.utils import (
+    cached_property,
+    get_all_files_in_directory,
+    get_relative_path,
+    github_client,
+    injected_before_use,
+)
 
 from .compilers import CompilerManager
 from .config import ConfigManager
 from .converters import ConversionManager
 
 
-@dataclass
 class ProjectManager:
     """
     A manager for accessing contract-types, dependencies, and other project resources.
@@ -48,19 +52,19 @@ class ProjectManager:
     path: Path
     """The project path."""
 
-    config: ConfigManager
+    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
     """
     A reference to :class:`~ape.managers.config.ConfigManager`, which
     manages project and plugin configurations.
     """
 
-    converter: ConversionManager
+    converter: ClassVar[ConversionManager] = injected_before_use()  # type: ignore
     """
     A reference to the conversion utilities in
     :class:`~ape.managers.converters.ConversionManager`.
     """
 
-    compilers: CompilerManager
+    compilers: ClassVar[CompilerManager] = injected_before_use()  # type: ignore
     """
     The group of compiler plugins for compiling source files. See
     :class:`~ape.managers.compilers.CompilerManager` for more information.
@@ -68,24 +72,18 @@ class ProjectManager:
     to more easily compile sources.
     """
 
-    networks: NetworkManager
+    networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
     """
     The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
     To get the active provide, use
     :py:attr:`ape.managers.networks.NetworkManager.active_provider`.
     """
 
-    dependencies: Dict[str, PackageManifest] = dict()
-
-    def __post_init__(self):
-        if isinstance(self.path, str):
-            self.path = Path(self.path)
-
-        config = self.config.load()
-        self.dependencies = {
-            n: self._extract_dependency_manifest(n, dep_id)
-            for n, dep_id in config.dependencies.items()
-        }
+    def __init__(
+        self,
+        path: Path,
+    ) -> None:
+        self.path = Path(path) if isinstance(path, str) else path
 
     def __repr__(self):
         return "<ProjectManager>"
@@ -166,6 +164,14 @@ class ProjectManager:
 
     def __str__(self) -> str:
         return f'Project("{self.path}")'
+
+    @cached_property
+    def dependencies(self) -> Dict[str, PackageManifest]:
+        config = self.config.load()
+        return {
+            n: self._extract_dependency_manifest(n, dep_id)
+            for n, dep_id in config.dependencies.items()
+        }
 
     @property
     def _cache_folder(self) -> Path:

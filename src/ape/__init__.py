@@ -13,7 +13,7 @@ from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
 from .managers.converters import ConversionManager as _ConversionManager
 from .managers.networks import NetworkManager as _NetworkManager
-from .managers.project import ProjectManager as _ProjectManager
+from .managers.project import ProjectManager as Project
 from .plugins import PluginManager as _PluginManager
 from .utils import USER_AGENT
 
@@ -22,52 +22,62 @@ from .utils import USER_AGENT
 plugin_manager = _PluginManager()
 """Manages plugins for the current project. See :class:`ape.plugins.PluginManager`."""
 
-config = _ConfigManager(  # type: ignore
+_ConfigManager.plugin_manager = plugin_manager
+config = _ConfigManager(
     # Store all globally-cached files
-    DATA_FOLDER=_Path.home().joinpath(".ape"),
+    data_folder=_Path.home().joinpath(".ape"),
     # NOTE: For all HTTP requests we make
-    REQUEST_HEADER={
+    request_header={
         "User-Agent": USER_AGENT,
     },
     # What we are considering to be the starting project directory
-    PROJECT_FOLDER=_Path.cwd(),
-    plugin_manager=plugin_manager,
+    project_folder=_Path.cwd(),
 )
 """The active configs for the current project. See :class:`ape.managers.config.ConfigManager`."""
 
 # Main types we export for the user
 
-compilers = _CompilerManager(config, plugin_manager)  # type: ignore
+_CompilerManager.config = config
+_CompilerManager.plugin_manager = plugin_manager
+compilers = _CompilerManager()
 """Manages compilers for the current project. See
 :class:`ape.managers.compilers.CompilerManager`."""
 
-networks = _NetworkManager(config, plugin_manager)  # type: ignore
+_NetworkManager.config = config
+_NetworkManager.plugin_manager = plugin_manager
+networks = _NetworkManager()
 """Manages the networks for the current project. See
 :class:`ape.managers.networks.NetworkManager`."""
 
-_converters = _ConversionManager(config, plugin_manager, networks)  # type: ignore
+_ConversionManager.config = config
+_ConversionManager.plugin_manager = plugin_manager
+_ConversionManager.networks = networks
+_converters = _ConversionManager()
 
-chain = _ChainManager(networks)  # type: ignore
+_ChainManager._networks = networks
+_ChainManager._converters = _converters
+chain = _ChainManager()
 """
 The current connected blockchain; requires an active provider.
 Useful for development purposes, such as controlling the state of the blockchain.
 Also handy for querying data about the chain and managing local caches.
 """
 
-accounts = _AccountManager(config, _converters, plugin_manager, networks)  # type: ignore
+_AccountManager.config = config
+_AccountManager.converters = _converters
+_AccountManager.plugin_manager = plugin_manager
+_AccountManager.network_manager = networks
+accounts = _AccountManager()
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
-Project = _partial(
-    _ProjectManager,
-    config=config,
-    compilers=compilers,
-    networks=networks,
-    converter=_converters,
-)
+Project.config = config
+Project.compilers = compilers
+Project.networks = networks
+Project.converter = _converters
 """User-facing class for instantiating Projects (in addition to the currently
 active ``project``). See :class:`ape.managers.project.ProjectManager`."""
 
-project = Project(config.PROJECT_FOLDER)
+project = Project(path=config.PROJECT_FOLDER)
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
 Contract = _partial(_Contract, networks=networks, converters=_converters)
