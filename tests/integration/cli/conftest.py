@@ -77,15 +77,6 @@ def pytest_collection_modifyitems(session, config, items):
 
 
 @pytest.fixture(params=project_names)
-def project_folder(request, config):
-    project_source_dir = projects_directory / request.param
-    project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
-    copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
-    with config.using_project(project_dest_dir, project_dest_dir / "contracts"):
-        yield project_dest_dir
-
-
-@pytest.fixture(params=project_names)
 def project(request, config):
     project_source_dir = projects_directory / request.param
     project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
