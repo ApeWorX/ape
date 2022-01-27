@@ -18,6 +18,7 @@ class LogLevel(Enum):
 
 logging.addLevelName(LogLevel.SUCCESS.value, LogLevel.SUCCESS.name)
 logging.SUCCESS = LogLevel.SUCCESS.value  # type: ignore
+DEFAULT_LOG_LEVEL = LogLevel.INFO.name
 
 
 def success(self, message, *args, **kws):
@@ -102,6 +103,7 @@ class CliLogger:
         self._logger = _logger
         self._web3_request_manager_logger = _get_logger("web3.RequestManager")
         self._web3_http_provider_logger = _get_logger("web3.providers.HTTPProvider")
+        self.set_level(DEFAULT_LOG_LEVEL)
 
     @property
     def level(self) -> int:
@@ -166,4 +168,4 @@ def _get_logger(name: str) -> logging.Logger:
 logger = CliLogger()
 
 
-__all__ = ["logger", "LogLevel"]
+__all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel"]
