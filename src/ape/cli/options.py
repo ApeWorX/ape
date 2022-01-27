@@ -12,7 +12,7 @@ from ape.cli.choices import (
 )
 from ape.cli.utils import Abort
 from ape.exceptions import ContractError
-from ape.logging import LogLevel, logger
+from ape.logging import DEFAULT_LOG_LEVEL, LogLevel, logger
 from ape.managers.project import ProjectManager
 
 
@@ -82,7 +82,7 @@ def verbosity_option(cli_logger):
             "--verbosity",
             "-v",
             callback=_set_level,
-            default=LogLevel.INFO.name,
+            default=DEFAULT_LOG_LEVEL,
             metavar="LVL",
             expose_value=False,
             help=f"One of {names_str}",
