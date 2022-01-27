@@ -34,6 +34,14 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
     Note that ape automatically recompiles any changed contracts each time
     a project is loaded. You do not have to manually trigger a recompile.
     """
+
+    try:
+        raise ValueError("Test")
+    except Exception as err:
+        from ape.exceptions import ApeException
+
+        raise ApeException("ok") from err
+
     if not file_paths and cli_ctx.project.sources_missing:
         contracts_dir = cli_ctx.project.config.contracts_folder
         cli_ctx.logger.warning(f"No source files found in '{contracts_dir}'.")
