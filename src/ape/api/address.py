@@ -55,8 +55,7 @@ class AddressAPI:
 
     def __eq__(self, other: object) -> bool:
         """
-        Compares :class:`~ape.api.AddressAPI`/``str`` objects by converting to
-        :class:`~ape.types.AddressType`.
+        Compares :class:`~ape.api.AddressAPI`/``str`` objects by converting to ``AddressType``.
 
         Returns:
             bool: comparison result
@@ -153,7 +152,8 @@ class Address(AddressAPI):
         The raw address type.
 
         Returns:
-            :class:`~ape.types.AddressType`
+            ``AddressType``: An alias to
+            `ChecksumAddress <https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress>`__.  # noqa: E501
         """
 
         return self._address

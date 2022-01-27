@@ -254,7 +254,7 @@ class ContractInstance(AddressAPI):
         The address of the contract.
 
         Returns:
-            :class:`~ape.types.AddressType`
+            ``AddressType``
         """
         return self._address
 

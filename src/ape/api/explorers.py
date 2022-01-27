@@ -26,8 +26,7 @@ class ExplorerAPI:
         Get an address URL, such as for a transaction.
 
         Args:
-            address (:class:`~ape.types.AddressType`): The address to
-              get the URL for.
+            address (``AddressType``): The address to get the URL for.
 
         Returns:
             str
@@ -51,7 +50,7 @@ class ExplorerAPI:
         Get the contract type for a given address if it has been published in an explorer.
 
         Args:
-            address (:class:`~ape.types.AddressType`): The contract address.
+            address (``AddressType``): The contract address.
 
         Returns:
             Optional[``ContractType``]: If not published, returns ``None``.
@@ -63,7 +62,7 @@ class ExplorerAPI:
         Get a list of list of transactions performed by an address.
 
         Args:
-            address (:class:`~ape.types.AddressType`): The account address.
+            address (``AddressType``): The account address.
 
         Returns:
             Iterator[:class:`~ape.api.providers.ReceiptAPI`]

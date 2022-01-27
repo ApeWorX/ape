@@ -280,6 +280,10 @@ class AccountContainerAPI:
         """
         Get an account by address.
 
+        Args:
+            address (``AddressType``): The address to get. The type is an alias to
+              `ChecksumAddress <https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress>`__.  # noqa: E501
+
         Raises:
             IndexError: When there is no local account with the given address.
 
@@ -339,8 +343,7 @@ class AccountContainerAPI:
             NotImplementError: When not overridden within a plugin.
 
         Args:
-            address (address :class:`~ape.types.AddressType`):
-                        The address of the account to delete.
+            address (``AddressType``): The address of the account to delete.
 
         """
         raise NotImplementedError("Must define this method to use `container.remove(acct)`.")
@@ -353,7 +356,7 @@ class AccountContainerAPI:
             IndexError: When the given account address is not in this container.
 
         Args:
-            address (:class:`~ape.types.AddressType`): An account address.
+            address (``AddressType``): An account address.
 
         Returns:
             bool: ``True`` if ``ape`` manages the account with the given address.
