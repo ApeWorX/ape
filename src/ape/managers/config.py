@@ -188,11 +188,24 @@ class ConfigManager:
     def using_project(self, project_folder: Path, contracts_folder: Path) -> Generator:
         """
         Temporarily change the project context.
+
+        Usage example::
+
+            from pathlib import Path
+            from ape import config, Project
+
+            project_path = Path("path/to/project")
+            contracts_path = project_path / "contracts"
+
+            with config.using_project(project_path, contracts_path):
+                my_project = Project(project_path)
+
         Args:
             project_folder (pathlib.Path): The path of the context's project.
             contracts_folder (pathlib.Path): The path to the context's source files.
+
         Returns:
-            ContextManager
+            Generator
         """
 
         initial_project_path = self.PROJECT_FOLDER
