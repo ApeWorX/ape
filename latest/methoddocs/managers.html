@@ -173,7 +173,7 @@ and are treated as singletons.</p>
 <dd><p>Determine if the given address matches an account in <code class="docutils literal notranslate"><span class="pre">ape</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address to check.</p>
+<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address to check.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given address is found.</p>
@@ -343,7 +343,7 @@ to compiler API classes.</p>
 <dd><p>Get the list of transactions from the active session for the given address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The sender of the desired transactions.</p>
+<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The sender of the desired transactions.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The list of transactions. If there
@@ -389,7 +389,7 @@ are no recorded transactions, returns an empty list.</p>
 <dd><p>Iterate through the list of address-types to list of transaction receipts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Iterator[Tuple[<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>, <a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>]]</p>
+<dd class="field-odd"><p>Iterator[Tuple[<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>, <a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -696,18 +696,21 @@ is how you can access those settings at runtime.</p>
 <dl class="py class">
 <dt id="ape.managers.converters.AddressAPIConverter">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.managers.converters.</span></code><code class="sig-name descname"><span class="pre">AddressAPIConverter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="api.html#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">networks</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">NetworkManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.managers.converters.ConversionManager" title="ape.managers.converters.ConversionManager"><span class="pre">ConversionManager</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.converters.AddressAPIConverter" title="Permalink to this definition">¶</a></dt>
-<dd><p>A converter that converts an <a class="reference internal" href="api.html#ape.api.address.AddressAPI" title="ape.api.address.AddressAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressAPI</span></code></a> to a
-<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>.</p>
+<dd><p>A converter that converts an <a class="reference internal" href="api.html#ape.api.address.AddressAPI" title="ape.api.address.AddressAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressAPI</span></code></a> to a <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>.</p>
 <dl class="py method">
 <dt id="ape.managers.converters.AddressAPIConverter.convert">
 <code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="api.html#ape.api.address.AddressAPI" title="ape.api.address.AddressAPI"><span class="pre">ape.api.address.AddressAPI</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ChecksumAddress</span><a class="headerlink" href="#ape.managers.converters.AddressAPIConverter.convert" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert the given value to <a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>.</p>
+<dd><p>Convert the given value to <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to convert.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
+<dd class="field-even"><p>An alias to
+<a class="reference external" href="https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress">ChecksumAddress</a>.  # noqa: E501</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -775,7 +778,7 @@ all <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" t
 <dt id="ape.managers.converters.ConversionManager.is_type">
 <code class="sig-name descname"><span class="pre">is_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Type</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.managers.converters.ConversionManager.is_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the value is the given type.
-If given an <a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>, will also check
+If given an <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>, will also check
 that it is checksummed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -798,18 +801,17 @@ that it is checksummed.</p>
 <dl class="py class">
 <dt id="ape.managers.converters.HexAddressConverter">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.managers.converters.</span></code><code class="sig-name descname"><span class="pre">HexAddressConverter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="api.html#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">networks</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">NetworkManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#ape.managers.converters.ConversionManager" title="ape.managers.converters.ConversionManager"><span class="pre">ConversionManager</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.converters.HexAddressConverter" title="Permalink to this definition">¶</a></dt>
-<dd><p>A converter that converts a checksummed address <code class="docutils literal notranslate"><span class="pre">str</span></code> to a
-<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>.</p>
+<dd><p>A converter that converts a checksummed address <code class="docutils literal notranslate"><span class="pre">str</span></code> to a <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>.</p>
 <dl class="py method">
 <dt id="ape.managers.converters.HexAddressConverter.convert">
 <code class="sig-name descname"><span class="pre">convert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ChecksumAddress</span><a class="headerlink" href="#ape.managers.converters.HexAddressConverter.convert" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert the given value to a <a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>.</p>
+<dd><p>Convert the given value to a <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The address <code class="docutils literal notranslate"><span class="pre">str</span></code> to convert.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></p>
 </dd>
 </dl>
 </dd></dl>

@@ -316,7 +316,7 @@ instances.</p>
 <dd class="field-odd"><p><strong>IndexError</strong> – When the given account address is not in this container.</p>
 </dd>
 <dt class="field-even">Parameters</dt>
-<dd class="field-even"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – An account address.</p>
+<dd class="field-even"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – An account address.</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if <code class="docutils literal notranslate"><span class="pre">ape</span></code> manages the account with the given address.</p>
@@ -336,7 +336,7 @@ instances.</p>
 <dd class="field-odd"><p><strong>NotImplementError</strong> – When not overridden within a plugin.</p>
 </dd>
 <dt class="field-even">Parameters</dt>
-<dd class="field-even"><p><strong>address</strong> (address <a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the account to delete.</p>
+<dd class="field-even"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the account to delete.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -346,11 +346,15 @@ instances.</p>
 <code class="sig-name descname"><span class="pre">__getitem__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an account by address.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
-<dd class="field-odd"><p><strong>IndexError</strong> – When there is no local account with the given address.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address to get. The type is an alias to
+<a class="reference external" href="https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress">ChecksumAddress</a>.  # noqa: E501</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>IndexError</strong> – When there is no local account with the given address.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -447,7 +451,11 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <dd><p>The raw address type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
+<dd class="field-odd"><p>An alias to
+<a class="reference external" href="https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress">ChecksumAddress</a>.  # noqa: E501</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -700,7 +708,7 @@ in a particular ecosystem.</p>
 <dd><p>Get a list of list of transactions performed by an address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The account address.</p>
+<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The account address.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Iterator[<a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>]</p>
@@ -714,8 +722,7 @@ in a particular ecosystem.</p>
 <dd><p>Get an address URL, such as for a transaction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address to
-get the URL for.</p>
+<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address to get the URL for.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>str</p>
@@ -729,7 +736,7 @@ get the URL for.</p>
 <dd><p>Get the contract type for a given address if it has been published in an explorer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The contract address.</p>
+<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The contract address.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>If not published, returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
