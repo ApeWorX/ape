@@ -463,7 +463,7 @@ errors will occur. This class cannot be instantiated on its own.
 
 class injected_before_use(property):
     """
-    Dependencies are injected class variables that must be set before use
+    Injected properties are injected class variables that must be set before use
     NOTE: do not appear in a Pydantic model's set of properties
     """
 
@@ -487,6 +487,7 @@ __all__ = [
     "GeneratedDevAccount",
     "generate_dev_accounts",
     "get_all_files_in_directory",
+    "injected_before_use",
     "load_config",
     "singledispatchmethod",
     "USER_AGENT",
