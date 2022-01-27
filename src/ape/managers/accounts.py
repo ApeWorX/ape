@@ -217,7 +217,7 @@ class AccountManager:
         Determine if the given address matches an account in ``ape``.
 
         Args:
-            address (:class:`~ape.types.AddressType`): The address to check.
+            address (``AddressType``): The address to check.
 
         Returns:
             bool: ``True`` when the given address is found.

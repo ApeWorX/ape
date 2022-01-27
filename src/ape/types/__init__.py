@@ -1,7 +1,7 @@
 import sys
 from typing import Union
 
-from eth_typing import ChecksumAddress
+from eth_typing import ChecksumAddress as AddressType
 from ethpm_types import (
     ABI,
     Bytecode,
@@ -38,9 +38,6 @@ Providers will expect and handle snapshot IDs differently. There shouldn't be a 
 providers when using this feature, so there should not be confusion over this type in practical use
 cases.
 """
-
-AddressType = ChecksumAddress  # type: ignore
-"""A type representing a checksummed address."""
 
 __all__ = [
     "ABI",

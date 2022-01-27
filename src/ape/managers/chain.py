@@ -207,7 +207,7 @@ class AccountHistory(_ConnectedChain):
         Get the list of transactions from the active session for the given address.
 
         Args:
-            address (:class:`~ape.types.AddressType`): The sender of the desired transactions.
+            address (``AddressType``): The sender of the desired transactions.
 
         Returns:
             List[:class:`~ape.api.providers.TransactionAPI`]: The list of transactions. If there
@@ -240,7 +240,7 @@ class AccountHistory(_ConnectedChain):
         Iterate through the list of address-types to list of transaction receipts.
 
         Returns:
-            Iterator[Tuple[:class:`~ape.types.AddressType`, :class:`~ape.api.providers.ReceiptAPI`]]
+            Iterator[Tuple[``AddressType``, :class:`~ape.api.providers.ReceiptAPI`]]
         """
         yield from self._map.items()
 
