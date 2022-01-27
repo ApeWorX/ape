@@ -22,6 +22,7 @@ from .utils import USER_AGENT
 plugin_manager = _PluginManager()
 """Manages plugins for the current project. See :class:`ape.plugins.PluginManager`."""
 
+_ConfigManager.plugin_manager = plugin_manager
 config = _ConfigManager(
     # Store all globally-cached files
     data_folder=_Path.home().joinpath(".ape"),
@@ -31,40 +32,50 @@ config = _ConfigManager(
     },
     # What we are considering to be the starting project directory
     project_folder=_Path.cwd(),
-    plugin_manager=plugin_manager,
 )
 """The active configs for the current project. See :class:`ape.managers.config.ConfigManager`."""
 
 # Main types we export for the user
 
-compilers = _CompilerManager(config=config, plugin_manager=plugin_manager)
+_CompilerManager.config = config
+_CompilerManager.plugin_manager = plugin_manager
+compilers = _CompilerManager()
 """Manages compilers for the current project. See
 :class:`ape.managers.compilers.CompilerManager`."""
 
-networks = _NetworkManager(config=config, plugin_manager=plugin_manager)
+_NetworkManager.config = config
+_NetworkManager.plugin_manager = plugin_manager
+networks = _NetworkManager()
 """Manages the networks for the current project. See
 :class:`ape.managers.networks.NetworkManager`."""
 
-_converters = _ConversionManager(config=config, plugin_manager=plugin_manager, networks=networks)
+_ConversionManager.config = config
+_ConversionManager.plugin_manager = plugin_manager
+_ConversionManager.networks = networks
+_converters = _ConversionManager()
 
-chain = _ChainManager(networks=networks, converters=_converters)
+_ChainManager._networks = networks
+_ChainManager._converters = _converters
+chain = _ChainManager()
 """
 The current connected blockchain; requires an active provider.
 Useful for development purposes, such as controlling the state of the blockchain.
 Also handy for querying data about the chain and managing local caches.
 """
 
-accounts = _AccountManager(
-    config=config, converters=_converters, plugin_manager=plugin_manager, network_manager=networks
-)
+_AccountManager.config = config
+_AccountManager.converters = _converters
+_AccountManager.plugin_manager = plugin_manager
+_AccountManager.network_manager = networks
+accounts = _AccountManager()
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
+_ProjectManager.config = config
+_ProjectManager.compilers = compilers
+_ProjectManager.networks = networks
+_ProjectManager.converter = _converters
 Project = _partial(
     _ProjectManager,
-    config=config,
-    compilers=compilers,
-    networks=networks,
-    converter=_converters,
 )
 """User-facing class for instantiating Projects (in addition to the currently
 active ``project``). See :class:`ape.managers.project.ProjectManager`."""

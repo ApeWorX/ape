@@ -4,7 +4,7 @@ import sys
 import tempfile
 from importlib import import_module
 from pathlib import Path
-from typing import Collection, Dict, List, Optional, Union
+from typing import ClassVar, Collection, Dict, List, Optional, Union
 
 import requests
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
@@ -15,7 +15,13 @@ from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.managers.networks import NetworkManager
-from ape.utils import cached_property, get_all_files_in_directory, get_relative_path, github_client
+from ape.utils import (
+    cached_property,
+    get_all_files_in_directory,
+    get_relative_path,
+    github_client,
+    injected_before_use,
+)
 
 from .compilers import CompilerManager
 from .config import ConfigManager
@@ -46,19 +52,19 @@ class ProjectManager:
     path: Path
     """The project path."""
 
-    config: ConfigManager
+    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
     """
     A reference to :class:`~ape.managers.config.ConfigManager`, which
     manages project and plugin configurations.
     """
 
-    converter: ConversionManager
+    converter: ClassVar[ConversionManager] = injected_before_use()  # type: ignore
     """
     A reference to the conversion utilities in
     :class:`~ape.managers.converters.ConversionManager`.
     """
 
-    compilers: CompilerManager
+    compilers: ClassVar[CompilerManager] = injected_before_use()  # type: ignore
     """
     The group of compiler plugins for compiling source files. See
     :class:`~ape.managers.compilers.CompilerManager` for more information.
@@ -66,7 +72,7 @@ class ProjectManager:
     to more easily compile sources.
     """
 
-    networks: NetworkManager
+    networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
     """
     The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
     To get the active provide, use
@@ -77,16 +83,8 @@ class ProjectManager:
         self,
         *,
         path: Path,
-        config: ConfigManager,
-        converter: ConversionManager,
-        compilers: CompilerManager,
-        networks: NetworkManager,
     ) -> None:
         self.path = Path(path) if isinstance(path, str) else path
-        self.config = config
-        self.converter = converter
-        self.compilers = compilers
-        self.networks = networks
 
     def __repr__(self):
         return "<ProjectManager>"

@@ -1,5 +1,5 @@
 import time
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Union
 
 from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
@@ -7,16 +7,12 @@ from ape.logging import logger
 from ape.managers.converters import ConversionManager
 from ape.managers.networks import NetworkManager
 from ape.types import AddressType, BlockID, SnapshotID
-from ape.utils import cached_property
+from ape.utils import cached_property, injected_before_use
 
 
 class _ConnectedChain:
-    _networks: NetworkManager
-    _converters: ConversionManager
-
-    def __init__(self, *, networks: NetworkManager, converters: ConversionManager) -> None:
-        self._networks = networks
-        self._converters = converters
+    _networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
+    _converters: ClassVar[ConversionManager] = injected_before_use()  # type: ignore
 
     @property
     def provider(self) -> ProviderAPI:
@@ -303,7 +299,9 @@ class ChainManager(_ConnectedChain):
         The list of blocks on the chain.
         """
         if self.chain_id not in self._block_container_map:
-            blocks = BlockContainer(networks=self._networks, converters=self._converters)
+            BlockContainer._networks = self._networks
+            BlockContainer._converters = self._converters
+            blocks = BlockContainer()
             self._block_container_map[self.chain_id] = blocks
 
         return self._block_container_map[self.chain_id]
@@ -314,7 +312,9 @@ class ChainManager(_ConnectedChain):
         A mapping of transactions from the active session to the account responsible.
         """
         if self.chain_id not in self._account_history_map:
-            history = AccountHistory(networks=self._networks, converters=self._converters)
+            AccountHistory._networks = self._networks
+            AccountHistory._converters = self._converters
+            history = AccountHistory()
             self._account_history_map[self.chain_id] = history
 
         return self._account_history_map[self.chain_id]

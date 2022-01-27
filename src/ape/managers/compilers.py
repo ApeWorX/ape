@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import ClassVar, Dict, List, Optional, Set
 
 from ethpm_types import ContractType
 
@@ -7,7 +7,7 @@ from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
 from ape.plugins import PluginManager
-from ape.utils import cached_property
+from ape.utils import cached_property, injected_before_use
 
 from .config import ConfigManager
 
@@ -25,12 +25,8 @@ class CompilerManager:
         from ape import compilers  # "compilers" is the CompilerManager singleton
     """
 
-    config: ConfigManager
-    plugin_manager: PluginManager
-
-    def __init__(self, *, config: ConfigManager, plugin_manager: PluginManager) -> None:
-        self.config = config
-        self.plugin_manager = plugin_manager
+    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
+    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
 
     def __repr__(self):
         return f"<CompilerManager len(registered_compilers)={len(self.registered_compilers)}>"

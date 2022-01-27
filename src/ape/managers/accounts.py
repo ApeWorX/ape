@@ -1,10 +1,10 @@
-from typing import Dict, Iterator, List, Type
+from typing import ClassVar, Dict, Iterator, List, Type
 
 from pluggy import PluginManager  # type: ignore
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.types import AddressType
-from ape.utils import cached_property, singledispatchmethod
+from ape.utils import cached_property, injected_before_use, singledispatchmethod
 
 from .config import ConfigManager
 from .converters import ConversionManager
@@ -27,23 +27,10 @@ class AccountManager:
         my_accounts = accounts.load("dev")
     """
 
-    config: ConfigManager
-    converters: ConversionManager
-    plugin_manager: PluginManager
-    network_manager: NetworkManager
-
-    def __init__(
-        self,
-        *,
-        config: ConfigManager,
-        converters: ConversionManager,
-        plugin_manager: PluginManager,
-        network_manager: NetworkManager,
-    ) -> None:
-        self.config = config
-        self.converters = converters
-        self.plugin_manager = plugin_manager
-        self.network_manager = network_manager
+    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
+    converters: ClassVar[ConversionManager] = injected_before_use()  # type: ignore
+    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
+    network_manager: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
 
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
