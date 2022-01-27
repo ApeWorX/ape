@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Set
 
 from dataclassy import dataclass
 from ethpm_types import ContractType
@@ -56,9 +56,7 @@ class CompilerManager:
 
         return registered_compilers
 
-    def compile(
-        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
-    ) -> Dict[str, ContractType]:
+    def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
         For example, use the `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__
@@ -83,9 +81,8 @@ class CompilerManager:
             for path in paths_to_compile:
                 logger.info(f"Compiling '{self._get_contract_path(path)}'.")
 
-            base_path = base_path or self.config.contracts_folder
             compiled_contracts = self.registered_compilers[extension].compile(
-                paths_to_compile, base_path=base_path
+                paths_to_compile, base_path=self.config.contracts_folder
             )
             for contract_type in compiled_contracts:
 
@@ -95,6 +92,31 @@ class CompilerManager:
                 contract_types_dict[contract_type.name] = contract_type
 
         return contract_types_dict  # type: ignore
+
+    def compile_project(
+        self, contract_filepaths: List[Path], project_path: Path, contracts_path: Path
+    ) -> Dict[str, ContractType]:
+        """
+        Temporarily change the project context and compile the project.
+        Args:
+            contract_filepaths (List[pathlib.Path]): The list of files to compile,
+              as ``pathlib.Path`` objects. **NOTE**: The source files must be
+              present in the given ``contracts_path`` directory.
+            project_path (pathlib.Path): The root project path.
+            contracts_path (pathlib.Path): The project contracts source directory.
+        Returns:
+            Dict[str, ``ContractType``]: A mapping of contract names to their type.
+        """
+        compilers = None
+        if "registered_compilers" in self.__dict__:
+            compilers = self.__dict__.pop("registered_compilers")
+
+        try:
+            with self.config.using_project(project_path, contracts_path):
+                return self.compile(contract_filepaths)
+        finally:
+            if compilers:
+                self.__dict__["registered_compilers"] = compilers
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = set(path.suffix for path in contract_filepaths)

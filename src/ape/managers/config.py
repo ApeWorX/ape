@@ -1,6 +1,7 @@
 import json
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, Generator, List, Union
 
 from dataclassy import dataclass
 
@@ -182,6 +183,28 @@ class ConfigManager:
             project_config[name] = config.serialize() if isinstance(config, ConfigItem) else config
 
         return project_config
+
+    @contextmanager
+    def using_project(self, project_folder: Path, contracts_folder: Path) -> Generator:
+        """
+        Temporarily change the project context.
+        Args:
+            project_folder (pathlib.Path): The path of the context's project.
+            contracts_folder (pathlib.Path): The path to the context's source files.
+        Returns:
+            ContextManager
+        """
+
+        initial_project_path = self.PROJECT_FOLDER
+        initial_contracts_path = self.contracts_folder
+
+        self.PROJECT_FOLDER = project_folder
+        self.contracts_folder = contracts_folder
+
+        yield
+
+        self.PROJECT_FOLDER = initial_project_path
+        self.contracts_folder = initial_contracts_path
 
     def __str__(self) -> str:
         """
