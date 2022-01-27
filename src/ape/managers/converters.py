@@ -57,7 +57,8 @@ class AddressAPIConverter(ConverterAPI):
             value (str): The value to convert.
 
         Returns:
-            ``AddressType``
+            ``AddressType``: An alias to
+            `ChecksumAddress <https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress>`__.  # noqa: E501
         """
 
         return value.address

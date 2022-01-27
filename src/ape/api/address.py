@@ -152,7 +152,8 @@ class Address(AddressAPI):
         The raw address type.
 
         Returns:
-            ``AddressType``
+            ``AddressType``: An alias to
+            `ChecksumAddress <https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress>`__.  # noqa: E501
         """
 
         return self._address

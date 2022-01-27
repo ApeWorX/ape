@@ -280,6 +280,10 @@ class AccountContainerAPI:
         """
         Get an account by address.
 
+        Args:
+            address (``AddressType``): The address to get. The type is an alias to
+              `ChecksumAddress <https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress>`__.  # noqa: E501
+
         Raises:
             IndexError: When there is no local account with the given address.
 
