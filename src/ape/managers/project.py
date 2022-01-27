@@ -81,7 +81,6 @@ class ProjectManager:
 
     def __init__(
         self,
-        *,
         path: Path,
     ) -> None:
         self.path = Path(path) if isinstance(path, str) else path

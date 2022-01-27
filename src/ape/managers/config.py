@@ -49,7 +49,6 @@ class ConfigManager:
 
     def __init__(
         self,
-        *,
         data_folder: Path,
         request_header: Dict,
         project_folder: Path,
