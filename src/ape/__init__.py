@@ -13,7 +13,7 @@ from .managers.compilers import CompilerManager as _CompilerManager
 from .managers.config import ConfigManager as _ConfigManager
 from .managers.converters import ConversionManager as _ConversionManager
 from .managers.networks import NetworkManager as _NetworkManager
-from .managers.project import ProjectManager as _ProjectManager
+from .managers.project import ProjectManager as Project
 from .plugins import PluginManager as _PluginManager
 from .utils import USER_AGENT
 
@@ -70,13 +70,10 @@ _AccountManager.network_manager = networks
 accounts = _AccountManager()
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
-_ProjectManager.config = config
-_ProjectManager.compilers = compilers
-_ProjectManager.networks = networks
-_ProjectManager.converter = _converters
-Project = _partial(
-    _ProjectManager,
-)
+Project.config = config
+Project.compilers = compilers
+Project.networks = networks
+Project.converter = _converters
 """User-facing class for instantiating Projects (in addition to the currently
 active ``project``). See :class:`ape.managers.project.ProjectManager`."""
 

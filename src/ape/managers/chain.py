@@ -293,14 +293,19 @@ class ChainManager(_ConnectedChain):
     _block_container_map: Dict[int, BlockContainer] = {}
     _account_history_map: Dict[int, AccountHistory] = {}
 
+    def __init__(self) -> None:
+        BlockContainer._networks = self._networks
+        BlockContainer._converters = self._converters
+
+        AccountHistory._networks = self._networks
+        AccountHistory._converters = self._converters
+
     @property
     def blocks(self) -> BlockContainer:
         """
         The list of blocks on the chain.
         """
         if self.chain_id not in self._block_container_map:
-            BlockContainer._networks = self._networks
-            BlockContainer._converters = self._converters
             blocks = BlockContainer()
             self._block_container_map[self.chain_id] = blocks
 
@@ -312,8 +317,6 @@ class ChainManager(_ConnectedChain):
         A mapping of transactions from the active session to the account responsible.
         """
         if self.chain_id not in self._account_history_map:
-            AccountHistory._networks = self._networks
-            AccountHistory._converters = self._converters
             history = AccountHistory()
             self._account_history_map[self.chain_id] = history
 
