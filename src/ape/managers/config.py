@@ -1,7 +1,7 @@
 import json
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Generator, List, Union
+from typing import TYPE_CHECKING, Dict, Generator, List, Union
 
 from dataclassy import dataclass
 
@@ -11,6 +11,10 @@ from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.utils import load_config
+
+if TYPE_CHECKING:
+    from .project import ProjectManager
+
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 
@@ -185,7 +189,9 @@ class ConfigManager:
         return project_config
 
     @contextmanager
-    def using_project(self, project_folder: Path, contracts_folder: Path) -> Generator:
+    def using_project(
+        self, project_folder: Path, contracts_folder: Path
+    ) -> Generator["ProjectManager", None, None]:
         """
         Temporarily change the project context.
 
@@ -207,6 +213,7 @@ class ConfigManager:
         Returns:
             Generator
         """
+        import ape
 
         initial_project_path = self.PROJECT_FOLDER
         initial_contracts_path = self.contracts_folder
@@ -214,7 +221,11 @@ class ConfigManager:
         self.PROJECT_FOLDER = project_folder
         self.contracts_folder = contracts_folder
 
-        yield
+        previous_project = ape.project
+        project = ape.Project(project_folder)
+        ape.project = project
+        yield project
+        ape.project = previous_project
 
         self.PROJECT_FOLDER = initial_project_path
         self.contracts_folder = initial_contracts_path

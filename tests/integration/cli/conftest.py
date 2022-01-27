@@ -6,9 +6,6 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-import ape
-from ape import Project
-
 from .utils import NodeId, project_names, project_skipper, projects_directory
 
 
@@ -88,19 +85,19 @@ def project_folder(request, config):
         yield project_dest_dir
 
 
-@pytest.fixture
-def project(project_folder):
-    previous_project = ape.project
-    project = Project(project_folder)
-    ape.project = project
-    yield project
-    ape.project = previous_project
+@pytest.fixture(params=project_names)
+def project(request, config):
+    project_source_dir = projects_directory / request.param
+    project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
+    copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
+    with config.using_project(project_dest_dir, project_dest_dir / "contracts") as project:
+        yield project
 
 
 @pytest.fixture
-def runner(project_folder):
+def runner(project):
     previous_cwd = str(Path.cwd())
-    os.chdir(str(project_folder))
+    os.chdir(str(project.path))
     runner = CliRunner()
     yield runner
     os.chdir(previous_cwd)
