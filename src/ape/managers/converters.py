@@ -181,16 +181,9 @@ class ConversionManager:
         """
         Handles the injected properties for ConverterAPI classes
         """
-        for converter in (
-            AddressAPIConverter,
-            HexAddressConverter,
-            HexConverter,
-            ListTupleConverter,
-            TimestampConverter,
-        ):
-            converter.config = self.config  # type: ignore
-            converter.networks = self.networks  # type: ignore
-            converter.converter = self  # type: ignore
+        ConverterAPI.config = self.config  # type: ignore
+        ConverterAPI.networks = self.networks  # type: ignore
+        ConverterAPI.converter = self  # type: ignore
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
