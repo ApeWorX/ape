@@ -167,10 +167,9 @@ class ProjectManager:
 
     @cached_property
     def dependencies(self) -> Dict[str, PackageManifest]:
-        config = self.config.load()
         return {
             n: self._extract_dependency_manifest(n, dep_id)
-            for n, dep_id in config.dependencies.items()
+            for n, dep_id in self.config.dependencies.items()
         }
 
     @property
@@ -340,6 +339,9 @@ class ProjectManager:
             Dict[str, ``ContractType``]: A dictionary of contract names to their
             types for each compiled contract.
         """
+
+        _ = self.dependencies  # Force the loading of dependencies
+
         if isinstance(file_paths, Path):
             file_paths = [file_paths]
 
