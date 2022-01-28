@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar
 
-from ape.utils import abstractdataclass, abstractmethod
+from ape.utils import AbstractBaseModel, abstractmethod, injected_before_use
 
 from .config import ConfigItem
 
@@ -11,15 +11,14 @@ if TYPE_CHECKING:
 ConvertedType = TypeVar("ConvertedType")
 
 
-@abstractdataclass
-class ConverterAPI(Generic[ConvertedType]):
+class ConverterAPI(Generic[ConvertedType], AbstractBaseModel):
     # NOTE: In case we need to store info e.g. tokenlists
-    config: ConfigItem
+    config: ClassVar[ConfigItem] = injected_before_use()  # type: ignore
 
     # NOTE: In case we need access to a network e.g. ENS
-    networks: "NetworkManager"
+    networks: ClassVar["NetworkManager"] = injected_before_use()  # type: ignore
 
-    converter: "ConversionManager"
+    converter: ClassVar["ConversionManager"] = injected_before_use()  # type: ignore
 
     @abstractmethod
     def is_convertible(self, value: Any) -> bool:

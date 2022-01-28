@@ -1,15 +1,14 @@
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import ClassVar, List, Optional, Set
 
 from ethpm_types import ContractType
 
-from ape.utils import abstractdataclass, abstractmethod
+from ape.utils import AbstractBaseModel, abstractmethod, injected_before_use
 
 from .config import ConfigItem
 
 
-@abstractdataclass
-class CompilerAPI:
+class CompilerAPI(AbstractBaseModel):
     """
     Compiler plugins, such as for languages like
     `Solidity <https://docs.soliditylang.org/en/v0.8.11/>`__ or
@@ -19,7 +18,7 @@ class CompilerAPI:
     this API.
     """
 
-    config: ConfigItem
+    config: ClassVar[ConfigItem] = injected_before_use()  # type: ignore
     """The :class:`ape.api.config.ConfigItem` for this compiler plugin."""
 
     @property
