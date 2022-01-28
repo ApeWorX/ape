@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import ClassVar, Dict, List, Set
+from typing import ClassVar, Dict, List, Optional, Set
 
 from ethpm_types import ContractType
 
@@ -96,6 +96,33 @@ class CompilerManager:
                 contract_types_dict[contract_type.name] = contract_type
 
         return contract_types_dict  # type: ignore
+
+    def compile_external_project(
+        self,
+        contract_filepaths: List[Path],
+        project_path: Path,
+        contracts_path: Optional[Path] = None,
+    ) -> Dict[str, ContractType]:
+        """
+        Compile an external project.
+
+        Raises:
+            :class:`~ape.exceptions.CompilerError`: When there is no compiler found for the given
+              extension as well as when there is a contract-type collision across compilers.
+
+        Args:
+            contract_filepaths (List[pathlib.Path]): The list of files to compile,
+              as ``pathlib.Path`` objects.
+            project_path (pathlib.Path): The path to the project to compile.
+            contracts_path (pathlib.Path): The path to the project's contracts.
+              Defaults to the ``project-path/contracts``.
+
+        Returns:
+            Dict[str, ``ContractType``]: A mapping of contract names to their type.
+        """
+
+        with self.config.using_project(project_path, contracts_folder=contracts_path):
+            return self.compile(contract_filepaths)
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = set(path.suffix for path in contract_filepaths)
