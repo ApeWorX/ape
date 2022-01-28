@@ -340,6 +340,8 @@ class ProjectManager:
             types for each compiled contract.
         """
 
+        _ = self.dependencies  # Force the loading of dependencies
+
         if isinstance(file_paths, Path):
             file_paths = [file_paths]
 
