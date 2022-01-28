@@ -290,7 +290,7 @@ which uses the <a class="reference internal" href="api.html#ape.api.compiler.Com
 </div>
 <dl class="py method">
 <dt id="ape.managers.compilers.CompilerManager.compile">
-<code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.compile" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">compile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.compile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invoke <code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.ape.compiler.CompilerAPI.compile()</span></code> for each of the given files.
 For example, use the <a class="reference external" href="https://github.com/ApeWorX/ape-solidity">ape-solidity plugin</a>
 to compile <code class="docutils literal notranslate"><span class="pre">'.sol'</span></code> files.</p>
@@ -302,6 +302,33 @@ to compile <code class="docutils literal notranslate"><span class="pre">'.sol'</
 <dt class="field-even">Parameters</dt>
 <dd class="field-even"><p><strong>contract_filepaths</strong> (<em>List</em><em>[</em><em>pathlib.Path</em><em>]</em>) – The list of files to compile,
 as <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> objects.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A mapping of contract names to their type.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Dict[str, <code class="docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.compilers.CompilerManager.compile_external_project">
+<code class="sig-name descname"><span class="pre">compile_external_project</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contracts_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.compile_external_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile an external project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.CompilerError" title="ape.exceptions.CompilerError"><strong>CompilerError</strong></a> – When there is no compiler found for the given
+    extension as well as when there is a contract-type collision across compilers.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>contract_filepaths</strong> (<em>List</em><em>[</em><em>pathlib.Path</em><em>]</em>) – The list of files to compile,
+as <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> objects.</p></li>
+<li><p><strong>project_path</strong> (<em>pathlib.Path</em>) – The path to the project to compile.</p></li>
+<li><p><strong>contracts_path</strong> (<em>pathlib.Path</em>) – The path to the project’s contracts.
+Defaults to the <code class="docutils literal notranslate"><span class="pre">&lt;project_path&gt;/contracts</span></code>.</p></li>
+</ul>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A mapping of contract names to their type.</p>
@@ -691,6 +718,35 @@ is how you can access those settings at runtime.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.config.ConfigManager.using_project">
+<code class="sig-name descname"><span class="pre">using_project</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contracts_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">ProjectManager</span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.config.ConfigManager.using_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Temporarily change the project context.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">Project</span>
+
+<span class="n">project_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/project&quot;</span><span class="p">)</span>
+<span class="n">contracts_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;contracts&quot;</span>
+
+<span class="k">with</span> <span class="n">config</span><span class="o">.</span><span class="n">using_project</span><span class="p">(</span><span class="n">project_path</span><span class="p">):</span>
+    <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">project_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>project_folder</strong> (<em>pathlib.Path</em>) – The path of the context’s project.</p></li>
+<li><p><strong>contracts_folder</strong> (<em>Optional</em><em>[</em><em>pathlib.Path</em><em>]</em>) – The path to the context’s source files.
+Defaults to <code class="docutils literal notranslate"><span class="pre">&lt;project_path&gt;/contracts</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Generator</p>
 </dd>
 </dl>
 </dd></dl>
