@@ -1,7 +1,7 @@
 import json
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar, Dict, Generator, List, Union
+from typing import TYPE_CHECKING, ClassVar, Dict, Generator, List, Optional, Union
 
 from ape.api import ConfigDict, ConfigItem
 from ape.convert import to_address
@@ -197,7 +197,7 @@ class ConfigManager:
 
     @contextmanager
     def using_project(
-        self, project_folder: Path, contracts_folder: Path
+        self, project_folder: Path, contracts_folder: Optional[Path] = None
     ) -> Generator["ProjectManager", None, None]:
         """
         Temporarily change the project context.
@@ -210,7 +210,7 @@ class ConfigManager:
             project_path = Path("path/to/project")
             contracts_path = project_path / "contracts"
 
-            with config.using_project(project_path, contracts_path):
+            with config.using_project(project_path):
                 my_project = Project(project_path)
 
         Args:
@@ -220,6 +220,9 @@ class ConfigManager:
         Returns:
             Generator
         """
+
+        contracts_folder = contracts_folder or project_folder / "contracts"
+
         import ape
 
         initial_project_path = self.PROJECT_FOLDER
