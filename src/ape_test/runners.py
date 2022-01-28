@@ -13,22 +13,22 @@ from .contextmanagers import RevertsContextManager
 class PytestApeRunner:
     def __init__(
         self,
-        config: PytestConfig,
+        config_manager: PytestConfig,
         project: ProjectManager,
-        networks: NetworkManager,
-        chain: ChainManager,
+        network_manager: NetworkManager,
+        chain_manager: ChainManager,
     ):
-        self.config = config
+        self.config_manager = config_manager
         self.project = project
-        self.networks = networks
-        self.chain = chain
+        self.network_manager = network_manager
+        self.chain_manager = chain_manager
         self._warned_for_missing_features = False
         ape.reverts = RevertsContextManager  # type: ignore
 
     @property
     def _network_choice(self) -> str:
         # The option the user providers via --network (or the default).
-        return self.config.getoption("network")
+        return self.config_manager.getoption("network")
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_protocol(self, item, nextitem):
@@ -36,7 +36,7 @@ class PytestApeRunner:
 
         # Try to snapshot if the provider supported it.
         try:
-            snapshot_id = self.chain.snapshot()
+            snapshot_id = self.chain_manager.snapshot()
         except NotImplementedError:
             self._warn_for_unimplemented_snapshot()
             pass
@@ -45,7 +45,7 @@ class PytestApeRunner:
 
         # Try to revert to the state before the test began.
         if snapshot_id:
-            self.chain.restore(snapshot_id)
+            self.chain_manager.restore(snapshot_id)
 
     def _warn_for_unimplemented_snapshot(self):
         if self._warned_for_missing_features:
@@ -67,10 +67,10 @@ class PytestApeRunner:
         so related assertions cannot be rewritten". The warning is not relevant
         for end users who are performing tests with ape.
         """
-        reporter = self.config.pluginmanager.get_plugin("terminalreporter")
+        reporter = self.config_manager.pluginmanager.get_plugin("terminalreporter")
         warnings = reporter.stats.pop("warnings", [])
         warnings = [i for i in warnings if "PytestAssertRewriteWarning" not in i.message]
-        if warnings and not self.config.getoption("--disable-warnings"):
+        if warnings and not self.config_manager.getoption("--disable-warnings"):
             reporter.stats["warnings"] = warnings
 
     @pytest.hookimpl(trylast=True, hookwrapper=True)
@@ -81,16 +81,16 @@ class PytestApeRunner:
         outcome = yield
 
         # Only start provider if collected tests.
-        if not outcome.get_result() and session.items and not self.networks.active_provider:
-            self.networks.active_provider = self.networks.get_provider_from_choice(
+        if not outcome.get_result() and session.items and not self.network_manager.active_provider:
+            self.network_manager.active_provider = self.network_manager.get_provider_from_choice(
                 self._network_choice
             )
-            self.networks.active_provider.connect()
+            self.network_manager.active_provider.connect()
 
     def pytest_sessionfinish(self):
         """
         Called after whole test run finished, right before returning the exit
         status to the system.
         """
-        if self.chain:
-            self.chain.provider.disconnect()
+        if self.chain_manager:
+            self.chain_manager.provider.disconnect()

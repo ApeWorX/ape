@@ -1,11 +1,9 @@
 from pathlib import Path
-from typing import ClassVar, List, Optional, Set
+from typing import List, Optional, Set
 
 from ethpm_types import ContractType
 
-from ape.utils import AbstractBaseModel, abstractmethod, injected_before_use
-
-from .config import ConfigItem
+from ape.utils import AbstractBaseModel, abstractmethod
 
 
 class CompilerAPI(AbstractBaseModel):
@@ -17,9 +15,6 @@ class CompilerAPI(AbstractBaseModel):
     the `ape-vyper <https://github.com/ApeWorX/ape-vyper>`__ plugin as example implementations of
     this API.
     """
-
-    config: ClassVar[ConfigItem] = injected_before_use()  # type: ignore
-    """The :class:`ape.api.config.ConfigItem` for this compiler plugin."""
 
     @property
     @abstractmethod

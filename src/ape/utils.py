@@ -10,7 +10,7 @@ from collections import namedtuple
 from functools import lru_cache, partial
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Set
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Mapping, Optional, Set
 
 import pygit2  # type: ignore
 import requests
@@ -41,6 +41,17 @@ try:
     from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
+
+if TYPE_CHECKING:
+    from ape.managers.accounts import AccountManager
+    from ape.managers.chain import ChainManager
+    from ape.managers.compilers import CompilerManager
+    from ape.managers.config import ConfigManager
+    from ape.managers.converters import ConversionManager
+    from ape.managers.networks import NetworkManager
+    from ape.managers.query import QueryManager
+    from ape.plugins import PluginManager
+
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -520,7 +531,28 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     return [path]
 
 
-class AbstractBaseModel(ABC, BaseModel):
+class injected_before_use(property):
+    """
+    Injected properties are injected class variables that must be set before use
+    NOTE: do not appear in a Pydantic model's set of properties
+    """
+
+    def __get__(self, *args):
+        raise ValueError("Value not set. Please inject this property before calling.")
+
+
+class ManagerAccessBase:
+    account_manager: ClassVar["AccountManager"] = injected_before_use()  # type: ignore
+    chain_manager: ClassVar["ChainManager"] = injected_before_use()  # type: ignore
+    compiler_manager: ClassVar["CompilerManager"] = injected_before_use()  # type: ignore
+    config_manager: ClassVar["ConfigManager"] = injected_before_use()  # type: ignore
+    conversion_manager: ClassVar["ConversionManager"] = injected_before_use()  # type: ignore
+    network_manager: ClassVar["NetworkManager"] = injected_before_use()  # type: ignore
+    plugin_manager: ClassVar["PluginManager"] = injected_before_use()  # type: ignore
+    query_manager: ClassVar["QueryManager"] = injected_before_use()  # type: ignore
+
+
+class AbstractBaseModel(ManagerAccessBase, ABC, BaseModel):
     class Config:
         keep_untouched = (cached_property,)
         arbitrary_types_allowed = True
@@ -554,16 +586,6 @@ A `data class <https://docs.python.org/3/library/dataclasses.html>`__ that is
 also abstract (meaning it has methods that **must** be implemented or else
 errors will occur. This class cannot be instantiated on its own.
 """
-
-
-class injected_before_use(property):
-    """
-    Injected properties are injected class variables that must be set before use
-    NOTE: do not appear in a Pydantic model's set of properties
-    """
-
-    def __get__(self, *args):
-        raise ValueError("Value not set. Please inject this property before calling.")
 
 
 __all__ = [

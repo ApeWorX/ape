@@ -8,8 +8,9 @@ from ape.api import ConfigDict, ConfigItem, DependencyAPI
 from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.logging import logger
-from ape.plugins import PluginManager
 from ape.utils import injected_before_use, load_config
+
+from .base import ManagerBase
 
 if TYPE_CHECKING:
     from .project import ProjectManager, _DependencyManager
@@ -23,7 +24,7 @@ class DeploymentConfig(ConfigItem):
     contract_type: str
 
 
-class ConfigManager:
+class ConfigManager(ManagerBase):
     """
     The singleton responsible for managing the ``ape-config.yaml`` project file.
     The config manager is useful for loading plugin configurations which contain
@@ -68,7 +69,6 @@ class ConfigManager:
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
     """A dict of contract deployments by address and contract type."""
 
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
     _dependency_manager: ClassVar["_DependencyManager"] = injected_before_use()  # type: ignore
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
 
