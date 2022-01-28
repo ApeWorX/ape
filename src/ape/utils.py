@@ -531,6 +531,10 @@ class AbstractBaseModel(ABC, BaseModel):
     #           TypeError: cannot pickle '_thread.RLock' object
 
     def __dir__(self) -> List[str]:
+        """
+        NOTE: Integrates with IPython
+        https://ipython.readthedocs.io/en/stable/config/integrating.html
+        """
         # Filter out protected/private members
         return [member for member in super().__dir__() if not member.startswith("_")]
 

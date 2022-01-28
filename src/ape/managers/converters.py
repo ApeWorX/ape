@@ -190,7 +190,6 @@ class ConversionManager:
 
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
-        ListTupleConverter.converter = self  # Splice this in (no need for the rest)
         converters: Dict[Type, List[ConverterAPI]] = {
             AddressType: [AddressAPIConverter(), HexAddressConverter()],
             bytes: [HexConverter()],
