@@ -5,7 +5,7 @@ import shutil
 import sys
 import tempfile
 import zipfile
-from abc import ABCMeta, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from collections import namedtuple
 from functools import lru_cache, partial
 from io import BytesIO
@@ -26,6 +26,7 @@ from github.Repository import Repository as GithubRepository
 from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
+from pydantic import BaseModel
 from pygit2 import Repository as GitRepository
 from tqdm import tqdm  # type: ignore
 
@@ -519,6 +520,21 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     return [path]
 
 
+class AbstractBaseModel(ABC, BaseModel):
+    class Config:
+        keep_untouched = (cached_property,)
+        arbitrary_types_allowed = True
+
+    # NOTE: Due to https://github.com/samuelcolvin/pydantic/issues/1241
+    #       we have to add this cached property workaround in order to avoid this error:
+    #
+    #           TypeError: cannot pickle '_thread.RLock' object
+
+    def __dir__(self) -> List[str]:
+        # Filter out protected/private members
+        return [member for member in super().__dir__() if not member.startswith("_")]
+
+
 class AbstractDataClassMeta(DataClassMeta, ABCMeta):
     """
     A `data class <https://docs.python.org/3/library/dataclasses.html>`__ that
@@ -549,6 +565,7 @@ class injected_before_use(property):
 __all__ = [
     "abstractdataclass",
     "abstractmethod",
+    "AbstractBaseModel",
     "AbstractDataClassMeta",
     "cached_property",
     "dataclass",

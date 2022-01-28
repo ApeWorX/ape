@@ -366,11 +366,12 @@ class ChainManager(_ConnectedChain):
     _account_history_map: Dict[int, AccountHistory] = {}
 
     def __init__(self) -> None:
-        BlockContainer._networks = self._networks
-        BlockContainer._converters = self._converters
-
-        AccountHistory._networks = self._networks
-        AccountHistory._converters = self._converters
+        """
+        Handles injected properties for _ConnectedChain classes
+        """
+        for chain_class in (AccountHistory, BlockContainer):
+            chain_class._networks = self._networks
+            chain_class._converters = self._converters
 
     @property
     def blocks(self) -> BlockContainer:

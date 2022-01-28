@@ -38,9 +38,6 @@ class HexConverter(ConverterAPI):
         return HexBytes(value)
 
 
-hex_converter = HexConverter(None, None, None)  # type: ignore
-
-
 class AddressAPIConverter(ConverterAPI):
     """
     A converter that converts an :class:`~ape.api.address.AddressAPI` to a ``AddressType``.
@@ -64,9 +61,6 @@ class AddressAPIConverter(ConverterAPI):
         return value.address
 
 
-address_api_converter = AddressAPIConverter(None, None, None)  # type: ignore
-
-
 class HexAddressConverter(ConverterAPI):
     """
     A converter that converts a checksummed address ``str`` to a ``AddressType``.
@@ -87,9 +81,6 @@ class HexAddressConverter(ConverterAPI):
         """
 
         return to_checksum_address(value)
-
-
-hex_address_converter = HexAddressConverter(None, None, None)  # type: ignore
 
 
 class ListTupleConverter(ConverterAPI):
@@ -137,9 +128,6 @@ class ListTupleConverter(ConverterAPI):
         return value.__class__(converted_value)
 
 
-list_tuple_converter = ListTupleConverter(None, None, None)  # type: ignore
-
-
 class TimestampConverter(ConverterAPI):
     """
     Converts either a string, datetime object, or a timedelta object to a timestamp.
@@ -170,9 +158,6 @@ class TimestampConverter(ConverterAPI):
             raise ConversionError
 
 
-timestamp_converter = TimestampConverter(None, None, None)  # type: ignore
-
-
 class ConversionManager:
     """
     A singleton that manages all the converters.
@@ -192,23 +177,39 @@ class ConversionManager:
     plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
     networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
 
+    def __init__(self) -> None:
+        """
+        Handles the injected properties for ConverterAPI classes
+        """
+        for converter in (
+            AddressAPIConverter,
+            HexAddressConverter,
+            HexConverter,
+            ListTupleConverter,
+            TimestampConverter,
+        ):
+            converter.config = self.config  # type: ignore
+            converter.networks = self.networks  # type: ignore
+            converter.converter = self  # type: ignore
+
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
 
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
-        list_tuple_converter.converter = self  # Splice this in (no need for the rest)
+        ListTupleConverter.converter = self  # Splice this in (no need for the rest)
         converters: Dict[Type, List[ConverterAPI]] = {
-            AddressType: [address_api_converter, hex_address_converter],
-            bytes: [hex_converter],
-            int: [timestamp_converter],
+            AddressType: [AddressAPIConverter(), HexAddressConverter()],
+            bytes: [HexConverter()],
+            int: [TimestampConverter()],
             Decimal: [],
-            list: [list_tuple_converter],
-            tuple: [list_tuple_converter],
+            list: [ListTupleConverter()],
+            tuple: [ListTupleConverter()],
         }
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
-            converter = converter_class(self.config.get_config(plugin_name), self.networks, self)
+
+            converter = converter_class()
 
             if conversion_type not in converters:
                 options = ", ".join([t.__name__ for t in converters])
