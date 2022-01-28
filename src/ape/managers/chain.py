@@ -369,9 +369,8 @@ class ChainManager(_ConnectedChain):
         """
         Handles injected properties for _ConnectedChain classes
         """
-        for chain_class in (AccountHistory, BlockContainer):
-            chain_class._networks = self._networks
-            chain_class._converters = self._converters
+        _ConnectedChain._networks = self._networks
+        _ConnectedChain._converters = self._converters
 
     @property
     def blocks(self) -> BlockContainer:
