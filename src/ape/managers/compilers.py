@@ -8,7 +8,6 @@ from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
 from ape.plugins import PluginManager
-from ape.utils import cached_property
 
 from .config import ConfigManager
 
@@ -29,11 +28,12 @@ class CompilerManager:
 
     config: ConfigManager
     plugin_manager: PluginManager
+    _registered_compilers_cache: Dict[Path, Dict[str, CompilerAPI]] = {}
 
     def __repr__(self):
         return f"<CompilerManager len(registered_compilers)={len(self.registered_compilers)}>"
 
-    @cached_property
+    @property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
         """
         Each compile-able file extension mapped to its respective
@@ -43,6 +43,10 @@ class CompilerManager:
             Dict[str, :class:`~ape.api.compiler.CompilerAPI`]: The mapping of file-extensions
             to compiler API classes.
         """
+
+        cache_key = self.config.PROJECT_FOLDER
+        if cache_key in self._registered_compilers_cache:
+            return self._registered_compilers_cache[cache_key]
 
         registered_compilers = {}
 
@@ -54,6 +58,7 @@ class CompilerManager:
                 if extension not in registered_compilers:
                     registered_compilers[extension] = compiler
 
+        self._registered_compilers_cache[cache_key] = registered_compilers
         return registered_compilers
 
     def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
@@ -92,31 +97,6 @@ class CompilerManager:
                 contract_types_dict[contract_type.name] = contract_type
 
         return contract_types_dict  # type: ignore
-
-    def compile_project(
-        self, contract_filepaths: List[Path], project_path: Path, contracts_path: Path
-    ) -> Dict[str, ContractType]:
-        """
-        Temporarily change the project context and compile the project.
-        Args:
-            contract_filepaths (List[pathlib.Path]): The list of files to compile,
-              as ``pathlib.Path`` objects. **NOTE**: The source files must be
-              present in the given ``contracts_path`` directory.
-            project_path (pathlib.Path): The root project path.
-            contracts_path (pathlib.Path): The project contracts source directory.
-        Returns:
-            Dict[str, ``ContractType``]: A mapping of contract names to their type.
-        """
-        compilers = None
-        if "registered_compilers" in self.__dict__:
-            compilers = self.__dict__.pop("registered_compilers")
-
-        try:
-            with self.config.using_project(project_path, contracts_path):
-                return self.compile(contract_filepaths)
-        finally:
-            if compilers:
-                self.__dict__["registered_compilers"] = compilers
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = set(path.suffix for path in contract_filepaths)
