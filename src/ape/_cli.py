@@ -1,5 +1,6 @@
 import difflib
 import re
+import traceback
 from typing import Any, Dict
 
 import click
@@ -7,7 +8,7 @@ import yaml
 
 from ape.cli import Abort, ape_cli_context
 from ape.exceptions import ApeException
-from ape.logging import logger
+from ape.logging import LogLevel, logger
 from ape.plugins import clean_plugin_name
 
 try:
@@ -40,7 +41,13 @@ class ApeCLI(click.MultiCommand):
         except click.UsageError as err:
             self._suggest_cmd(err)
         except ApeException as err:
-            raise Abort(f"({type(err).__name__}) {err}") from err
+            if logger.level == LogLevel.DEBUG.value:
+                tb = traceback.format_exc()
+                err_message = tb or str(err)
+            else:
+                err_message = str(err)
+
+            raise Abort(f"({type(err).__name__}) {err_message}") from err
 
     @staticmethod
     def _suggest_cmd(usage_error):

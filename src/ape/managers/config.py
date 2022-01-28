@@ -1,16 +1,14 @@
 import json
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Generator, List, Union
-
-from dataclassy import dataclass
+from typing import TYPE_CHECKING, ClassVar, Dict, Generator, List, Union
 
 from ape.api import ConfigDict, ConfigItem
 from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.plugins import PluginManager
-from ape.utils import load_config
+from ape.utils import injected_before_use, load_config
 
 if TYPE_CHECKING:
     from .project import ProjectManager
@@ -24,7 +22,6 @@ class DeploymentConfig(ConfigItem):
     contract_type: str
 
 
-@dataclass
 class ConfigManager:
     """
     The singleton responsible for managing the ``ape-config.yaml`` project file.
@@ -52,8 +49,18 @@ class ConfigManager:
     contracts_folder: Path = None  # type: ignore
     dependencies: Dict[str, str] = {}
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
-    plugin_manager: PluginManager
+    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
+
+    def __init__(
+        self,
+        data_folder: Path,
+        request_header: Dict,
+        project_folder: Path,
+    ) -> None:
+        self.DATA_FOLDER = data_folder
+        self.REQUEST_HEADER = request_header
+        self.PROJECT_FOLDER = project_folder
 
     @property
     def packages_folder(self) -> Path:

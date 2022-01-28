@@ -1,18 +1,17 @@
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import ClassVar, Dict, List, Set
 
-from dataclassy import dataclass
 from ethpm_types import ContractType
 
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
 from ape.plugins import PluginManager
+from ape.utils import injected_before_use
 
 from .config import ConfigManager
 
 
-@dataclass
 class CompilerManager:
     """
     The singleton that manages :class:`~ape.api.compiler.CompilerAPI` instances.
@@ -26,8 +25,8 @@ class CompilerManager:
         from ape import compilers  # "compilers" is the CompilerManager singleton
     """
 
-    config: ConfigManager
-    plugin_manager: PluginManager
+    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
+    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
     _registered_compilers_cache: Dict[Path, Dict[str, CompilerAPI]] = {}
 
     def __repr__(self):

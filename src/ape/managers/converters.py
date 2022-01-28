@@ -1,8 +1,8 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Any, Dict, List, Tuple, Type, Union
+from typing import Any, ClassVar, Dict, List, Tuple, Type, Union
 
-from dataclassy import dataclass
+from dateutil.parser import parse  # type: ignore
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
 from hexbytes import HexBytes
 
@@ -10,7 +10,7 @@ from ape.api import AddressAPI, ConverterAPI
 from ape.exceptions import ConversionError
 from ape.plugins import PluginManager
 from ape.types import AddressType
-from ape.utils import cached_property
+from ape.utils import cached_property, injected_before_use
 
 from .config import ConfigManager
 from .networks import NetworkManager
@@ -142,31 +142,37 @@ list_tuple_converter = ListTupleConverter(None, None, None)  # type: ignore
 
 class TimestampConverter(ConverterAPI):
     """
-    Converts string of ``"%m-%d-%Y %H:%M:%S"`` format to a timestamp.
-    Must be UTC timezone
+    Converts either a string, datetime object, or a timedelta object to a timestamp.
+    No timezone required, but should be formatted to UTC.
     """
 
-    def is_convertible(self, value: str) -> bool:
-        if not isinstance(value, str):
+    def is_convertible(self, value: Union[str, datetime, timedelta]) -> bool:
+        if not isinstance(value, (str, datetime, timedelta)):
             return False
-        if " " not in value or len(value.split(" ")) > 2:
-            return False
-        try:
-            datetime.strptime(value, "%m-%d-%Y %H:%M:%S")
-        except ValueError:
-            return False
+        if isinstance(value, str):
+            if " " not in value and len(value.split(" ")) > 2:
+                return False
+            else:
+                try:
+                    parse(value)
+                except ValueError:
+                    return False
         return True
 
-    def convert(self, value: str) -> int:
-        return int(
-            datetime.strptime(value, "%m-%d-%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
-        )
+    def convert(self, value: Union[str, datetime, timedelta]) -> int:
+        if isinstance(value, str):
+            return int(parse(value).replace(tzinfo=timezone.utc).timestamp())
+        elif isinstance(value, datetime):
+            return int(value.replace(tzinfo=timezone.utc).timestamp())
+        elif isinstance(value, timedelta):
+            return int((datetime.now(timezone.utc) + value).timestamp())
+        else:
+            raise ConversionError
 
 
 timestamp_converter = TimestampConverter(None, None, None)  # type: ignore
 
 
-@dataclass
 class ConversionManager:
     """
     A singleton that manages all the converters.
@@ -182,9 +188,9 @@ class ConversionManager:
         amount = convert("1 gwei", int)
     """
 
-    config: ConfigManager
-    plugin_manager: PluginManager
-    networks: NetworkManager
+    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
+    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
+    networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
 
     def __repr__(self):
         return "<ConversionManager>"

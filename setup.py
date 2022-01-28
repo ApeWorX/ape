@@ -94,6 +94,7 @@ setup(
         "eth_abi==2.1.1",
         "eth-utils==1.10.0",
         "eth-rlp==0.2.1",
+        "python-dateutil>=2.8.2,<3.0",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
