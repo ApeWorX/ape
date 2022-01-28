@@ -1,6 +1,7 @@
 import json
+from contextlib import contextmanager
 from pathlib import Path
-from typing import ClassVar, Dict, List, Union
+from typing import TYPE_CHECKING, ClassVar, Dict, Generator, List, Optional, Union
 
 from ape.api import ConfigDict, ConfigItem
 from ape.convert import to_address
@@ -8,6 +9,10 @@ from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.utils import injected_before_use, load_config
+
+if TYPE_CHECKING:
+    from .project import ProjectManager
+
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 
@@ -189,6 +194,52 @@ class ConfigManager:
             project_config[name] = config.serialize() if isinstance(config, ConfigItem) else config
 
         return project_config
+
+    @contextmanager
+    def using_project(
+        self, project_folder: Path, contracts_folder: Optional[Path] = None
+    ) -> Generator["ProjectManager", None, None]:
+        """
+        Temporarily change the project context.
+
+        Usage example::
+
+            from pathlib import Path
+            from ape import config, Project
+
+            project_path = Path("path/to/project")
+            contracts_path = project_path / "contracts"
+
+            with config.using_project(project_path):
+                my_project = Project(project_path)
+
+        Args:
+            project_folder (pathlib.Path): The path of the context's project.
+            contracts_folder (Optional[pathlib.Path]): The path to the context's source files.
+              Defaults to ``<project_path>/contracts``.
+
+        Returns:
+            Generator
+        """
+
+        contracts_folder = contracts_folder or project_folder / "contracts"
+
+        import ape
+
+        initial_project_path = self.PROJECT_FOLDER
+        initial_contracts_path = self.contracts_folder
+
+        self.PROJECT_FOLDER = project_folder
+        self.contracts_folder = contracts_folder
+
+        previous_project = ape.project
+        project = ape.Project(project_folder)
+        ape.project = project
+        yield project
+        ape.project = previous_project
+
+        self.PROJECT_FOLDER = initial_project_path
+        self.contracts_folder = initial_contracts_path
 
     def __str__(self) -> str:
         """

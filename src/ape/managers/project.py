@@ -151,9 +151,7 @@ class ProjectManager:
 
                 manifest.name = PackageName(name.lower().replace("_", "-"))
                 manifest.sources = self._create_source_dict(sources, base_path=temp_contracts_path)
-                manifest.contract_types = self.compilers.compile(
-                    sources, base_path=temp_contracts_path
-                )
+                manifest.contract_types = self.compilers.compile(sources)
                 manifest_dict = manifest.dict()
 
                 # Validates manifest dict
@@ -393,9 +391,7 @@ class ProjectManager:
         # NOTE: filter by checksum, etc., and compile what's needed
         #       to bring our cached manifest up-to-date
         needs_compiling = list(filter(file_needs_compiling, sources))
-        compiled_contract_types = self.compilers.compile(
-            needs_compiling, base_path=self.contracts_folder
-        )
+        compiled_contract_types = self.compilers.compile(needs_compiling)
         contract_types.update(compiled_contract_types)
 
         # Re-calculate sources in case there are generated files (such as from 'ape-solidity').

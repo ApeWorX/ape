@@ -7,7 +7,7 @@ from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
 from ape.plugins import PluginManager
-from ape.utils import cached_property, injected_before_use
+from ape.utils import injected_before_use
 
 from .config import ConfigManager
 
@@ -27,11 +27,12 @@ class CompilerManager:
 
     config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
     plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
+    _registered_compilers_cache: Dict[Path, Dict[str, CompilerAPI]] = {}
 
     def __repr__(self):
         return f"<CompilerManager len(registered_compilers)={len(self.registered_compilers)}>"
 
-    @cached_property
+    @property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
         """
         Each compile-able file extension mapped to its respective
@@ -41,6 +42,10 @@ class CompilerManager:
             Dict[str, :class:`~ape.api.compiler.CompilerAPI`]: The mapping of file-extensions
             to compiler API classes.
         """
+
+        cache_key = self.config.PROJECT_FOLDER
+        if cache_key in self._registered_compilers_cache:
+            return self._registered_compilers_cache[cache_key]
 
         registered_compilers = {}
 
@@ -52,11 +57,10 @@ class CompilerManager:
                 if extension not in registered_compilers:
                     registered_compilers[extension] = compiler
 
+        self._registered_compilers_cache[cache_key] = registered_compilers
         return registered_compilers
 
-    def compile(
-        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
-    ) -> Dict[str, ContractType]:
+    def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
         For example, use the `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__
@@ -81,9 +85,8 @@ class CompilerManager:
             for path in paths_to_compile:
                 logger.info(f"Compiling '{self._get_contract_path(path)}'.")
 
-            base_path = base_path or self.config.contracts_folder
             compiled_contracts = self.registered_compilers[extension].compile(
-                paths_to_compile, base_path=base_path
+                paths_to_compile, base_path=self.config.contracts_folder
             )
             for contract_type in compiled_contracts:
 
@@ -93,6 +96,33 @@ class CompilerManager:
                 contract_types_dict[contract_type.name] = contract_type
 
         return contract_types_dict  # type: ignore
+
+    def compile_external_project(
+        self,
+        contract_filepaths: List[Path],
+        project_path: Path,
+        contracts_path: Optional[Path] = None,
+    ) -> Dict[str, ContractType]:
+        """
+        Compile an external project.
+
+        Raises:
+            :class:`~ape.exceptions.CompilerError`: When there is no compiler found for the given
+              extension as well as when there is a contract-type collision across compilers.
+
+        Args:
+            contract_filepaths (List[pathlib.Path]): The list of files to compile,
+              as ``pathlib.Path`` objects.
+            project_path (pathlib.Path): The path to the project to compile.
+            contracts_path (pathlib.Path): The path to the project's contracts.
+              Defaults to the ``<project_path>/contracts``.
+
+        Returns:
+            Dict[str, ``ContractType``]: A mapping of contract names to their type.
+        """
+
+        with self.config.using_project(project_path, contracts_folder=contracts_path):
+            return self.compile(contract_filepaths)
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = set(path.suffix for path in contract_filepaths)
