@@ -41,6 +41,7 @@ class ApeCliContextObject:
             from ape import project
 
             self._project = project
+            self._project.config.load()
 
         return self._project
 
