@@ -17,10 +17,8 @@ from ape.logging import logger
 from ape.plugins import PluginManager
 from ape.utils import cached_property, get_relative_path, github_client, injected_before_use
 
-from .compilers import CompilerManager
-from .config import CONFIG_FILE_NAME, ConfigManager
-from .converters import ConversionManager
-from .networks import NetworkManager
+from .base import ManagerBase
+from .config import CONFIG_FILE_NAME
 
 
 class ApeProject(ProjectAPI):
@@ -125,9 +123,11 @@ class ApeProject(ProjectAPI):
         needs_compiling = list(filter(file_needs_compiling, sources))
 
         # Set the context in case compiling a dependency (or anything outside the root project).
-        with self.compilers.config.using_project(self.path, contracts_folder=self.contracts_folder):
-            self.compilers.config.PROJECT_FOLDER = self.path
-            self.compilers.config.contracts_folder = self.contracts_folder
+        with self.compilers.config_manager.using_project(
+            self.path, contracts_folder=self.contracts_folder
+        ):
+            self.compilers.config_manager.PROJECT_FOLDER = self.path
+            self.compilers.config_manager.contracts_folder = self.contracts_folder
             compiled_contract_types = self.compilers.compile(needs_compiling)
             contract_types.update(compiled_contract_types)
 
@@ -232,7 +232,7 @@ class GithubDependency(DependencyAPI):
             return self._extract_local_manifest(temp_project_path)
 
 
-class ProjectManager:
+class ProjectManager(ManagerBase):
     """
     A manager for accessing contract-types, dependencies, and other project resources.
     Additionally, compile contracts using the
@@ -255,35 +255,6 @@ class ProjectManager:
 
     path: Path
     """The project path."""
-
-    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
-    """
-    A reference to :class:`~ape.managers.config.ConfigManager`, which
-    manages project and plugin configurations.
-    """
-
-    converter: ClassVar[ConversionManager] = injected_before_use()  # type: ignore
-    """
-    A reference to the conversion utilities in
-    :class:`~ape.managers.converters.ConversionManager`.
-    """
-
-    compilers: ClassVar[CompilerManager] = injected_before_use()  # type: ignore
-    """
-    The group of compiler plugins for compiling source files. See
-    :class:`~ape.managers.compilers.CompilerManager` for more information.
-    Call method :meth:`~ape.managers.project.ProjectManager.load_contracts` in this class
-    to more easily compile sources.
-    """
-
-    networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
-    """
-    The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
-    To get the active provide, use
-    :py:attr:`ape.managers.networks.NetworkManager.active_provider`.
-    """
-
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
 
     def __init__(
         self,
@@ -313,7 +284,7 @@ class ProjectManager:
             pathlib.Path
         """
 
-        return self.config.contracts_folder
+        return self.config_manager.contracts_folder
 
     @property
     def sources(self) -> List[Path]:
@@ -328,7 +299,7 @@ class ProjectManager:
         if not self.contracts_folder.exists():
             return files
 
-        for extension in self.compilers.registered_compilers:
+        for extension in self.compiler_manager.registered_compilers:
             files.extend(self.contracts_folder.rglob(f"*{extension}"))
 
         return files
@@ -387,7 +358,7 @@ class ProjectManager:
 
         compilers = []
 
-        for extension, compiler in self.compilers.registered_compilers.items():
+        for extension, compiler in self.compiler_manager.registered_compilers.items():
             for version in compiler.get_versions(
                 [p for p in self.sources if p.suffix == extension]
             ):
@@ -439,11 +410,11 @@ class ProjectManager:
         """
 
         def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
-            with self.config.using_project(
+            with self.config_manager.using_project(
                 path, contracts_folder=contracts_folder
             ) as project_manager:
                 proj = proj_cls(
-                    compilers=project_manager.compilers,
+                    compilers=project_manager.compiler_manager,
                     contracts_folder=contracts_folder,
                     name=name,
                     path=path,
@@ -510,8 +481,8 @@ class ProjectManager:
 
         return ContractContainer(  # type: ignore
             contract_type=contract_type,
-            _provider=self.networks.active_provider,
-            _converter=self.converter,
+            _provider=self.network_manager.active_provider,
+            _converter=self.conversion_manager,
         )
 
     def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
@@ -536,7 +507,7 @@ class ProjectManager:
                 elif (
                     file.suffix
                     and file.suffix not in extensions_found
-                    and file.suffix not in self.compilers.registered_compilers
+                    and file.suffix not in self.compiler_manager.registered_compilers
                 ):
                     extensions_found.append(file.suffix)
 
@@ -680,11 +651,11 @@ class ProjectManager:
             return console()
 
     def _load_dependencies(self) -> Dict[str, PackageManifest]:
-        return {d.name: d.extract_manifest() for d in self.config.dependencies}
+        return {d.name: d.extract_manifest() for d in self.config_manager.dependencies}
 
     # @property
     # def meta(self) -> PackageMeta:
-    #     return PackageMeta(**self.config.get_config("ethpm").serialize())
+    #     return PackageMeta(**self.config_manager.get_config("ethpm").serialize())
 
     # def publish_manifest(self):
     #     manifest = self.manifest.dict()

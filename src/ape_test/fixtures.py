@@ -12,23 +12,23 @@ from ape.managers.project import ProjectManager
 class PytestApeFixtures:
     def __init__(
         self,
-        accounts: AccountManager,
-        networks: NetworkManager,
-        project: ProjectManager,
-        chain: ChainManager,
+        account_manager: AccountManager,
+        network_manager: NetworkManager,
+        project_manager: ProjectManager,
+        chain_manager: ChainManager,
     ):
-        self._accounts = accounts
-        self._networks = networks
-        self._project = project
-        self._chain = chain
+        self.account_manager = account_manager
+        self.network_manager = network_manager
+        self._project = project_manager
+        self.chain_manager = chain_manager
 
     @pytest.fixture(scope="session")
     def accounts(self) -> List[TestAccountAPI]:
-        return self._accounts.test_accounts
+        return self.account_manager.test_accounts
 
     @pytest.fixture(scope="session")
     def chain(self) -> ChainManager:
-        return self._chain
+        return self.chain_manager
 
     @pytest.fixture(scope="session")
     def project(self) -> ProjectManager:

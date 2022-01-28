@@ -1,16 +1,14 @@
-from typing import ClassVar, Dict, Iterator, Optional
+from typing import Dict, Iterator, Optional
 
 import yaml
-from pluggy import PluginManager  # type: ignore
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.exceptions import ConfigError, NetworkError
-from ape.utils import injected_before_use
 
-from .config import ConfigManager
+from .base import ManagerBase
 
 
-class NetworkManager:
+class NetworkManager(ManagerBase):
     """
     The set of all blockchain network ecosystems registered from the plugin system.
     Typically, you set the provider via the ``--network`` command line option.
@@ -25,8 +23,6 @@ class NetworkManager:
            ...
     """
 
-    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
     _active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
     _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
@@ -50,21 +46,21 @@ class NetworkManager:
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
-        project_name = self.config.PROJECT_FOLDER.stem
+        project_name = self.config_manager.PROJECT_FOLDER.stem
         if project_name in self._ecosystems_by_project:
             return self._ecosystems_by_project[project_name]
 
         ecosystem_dict = {}
         for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
-            ecosystem = ecosystem_class(
+            ecosystem = ecosystem_class(  # type: ignore
                 name=plugin_name,
                 network_manager=self,
-                config_manager=self.config,
+                config_manager=self.config_manager,
                 plugin_manager=self.plugin_manager,
-                data_folder=self.config.DATA_FOLDER / plugin_name,
-                request_header=self.config.REQUEST_HEADER,
+                data_folder=self.config_manager.DATA_FOLDER / plugin_name,
+                request_header=self.config_manager.REQUEST_HEADER,
             )
-            ecosystem_config = self.config.get_config(plugin_name)
+            ecosystem_config = self.config_manager.get_config(plugin_name)
             default_network = ecosystem_config.default_network  # type: ignore
 
             if default_network and default_network in ecosystem.networks:

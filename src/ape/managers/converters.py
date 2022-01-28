@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Any, ClassVar, Dict, List, Tuple, Type, Union
+from typing import Any, Dict, List, Tuple, Type, Union
 
 from dateutil.parser import parse  # type: ignore
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
@@ -8,12 +8,10 @@ from hexbytes import HexBytes
 
 from ape.api import AddressAPI, ConverterAPI
 from ape.exceptions import ConversionError
-from ape.plugins import PluginManager
 from ape.types import AddressType
-from ape.utils import cached_property, injected_before_use
+from ape.utils import cached_property
 
-from .config import ConfigManager
-from .networks import NetworkManager
+from .base import ManagerBase
 
 
 # NOTE: This utility converter ensures that all bytes args can accept hex too
@@ -109,9 +107,10 @@ class ListTupleConverter(ConverterAPI):
             conversion_found = False
             # NOTE: Double loop required because we might not know the exact type of the inner
             #       items. The UX of having to specify all inner items seemed poor as well.
-            for typ in self.converter._converters:
+            for typ in self.conversion_manager._converters:
                 for check_fn, convert_fn in map(
-                    lambda c: (c.is_convertible, c.convert), self.converter._converters[typ]
+                    lambda c: (c.is_convertible, c.convert),
+                    self.conversion_manager._converters[typ],
                 ):
                     if check_fn(v):
                         converted_value.append(convert_fn(v))
@@ -158,7 +157,7 @@ class TimestampConverter(ConverterAPI):
             raise ConversionError
 
 
-class ConversionManager:
+class ConversionManager(ManagerBase):
     """
     A singleton that manages all the converters.
 
@@ -172,18 +171,6 @@ class ConversionManager:
 
         amount = convert("1 gwei", int)
     """
-
-    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
-    networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
-
-    def __init__(self) -> None:
-        """
-        Handles the injected properties for ConverterAPI classes
-        """
-        ConverterAPI.config = self.config  # type: ignore
-        ConverterAPI.networks = self.networks  # type: ignore
-        ConverterAPI.converter = self  # type: ignore
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
