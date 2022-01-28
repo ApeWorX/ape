@@ -215,7 +215,8 @@ class ConfigManager:
 
         Args:
             project_folder (pathlib.Path): The path of the context's project.
-            contracts_folder (pathlib.Path): The path to the context's source files.
+            contracts_folder (Optional[pathlib.Path]): The path to the context's source files.
+              Defaults to ``<project_path>/contracts``.
 
         Returns:
             Generator

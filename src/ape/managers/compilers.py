@@ -115,7 +115,7 @@ class CompilerManager:
               as ``pathlib.Path`` objects.
             project_path (pathlib.Path): The path to the project to compile.
             contracts_path (pathlib.Path): The path to the project's contracts.
-              Defaults to the ``project-path/contracts``.
+              Defaults to the ``<project_path>/contracts``.
 
         Returns:
             Dict[str, ``ContractType``]: A mapping of contract names to their type.
