@@ -47,8 +47,13 @@ class ArgumentsLengthError(ContractError):
     Raised when calling a contract method with the wrong number of arguments.
     """
 
-    def __init__(self):
-        message = "The number of the given arguments do not match what is defined in the ABI."
+    def __init__(self, arguments_length: int, inputs_length: Optional[int] = None):
+        abi_suffix = f" ({inputs_length})" if inputs_length else ""
+        message = (
+            f"The number of the given arguments ({arguments_length}) "
+            f"do not match what is defined in the "
+            f"ABI{abi_suffix}."
+        )
         super().__init__(message)
 
 
