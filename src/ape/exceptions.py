@@ -48,14 +48,11 @@ class ArgumentsLengthError(ContractError):
     """
 
     def __init__(self, arguments_length: Optional[int] = None, inputs_length: Optional[int] = None):
-        def _get_len_str(length: Optional[int]):
-            return f"({length}) " if length is not None else ""
-
         message = (
             f"The number of the given arguments "
             f"{f'({arguments_length}) ' if arguments_length else ''}"
             f"do not match what is defined in the "
-            f"ABI{f' ({inputs_length})' if inputs_length else ''}.".strip()
+            f"ABI{f' ({inputs_length})' if inputs_length else ''}."
         )
         super().__init__(message)
 
