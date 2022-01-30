@@ -52,8 +52,10 @@ class ArgumentsLengthError(ContractError):
             return f"({length}) " if length is not None else ""
 
         message = (
-            f"The number of the given arguments {_get_len_str(arguments_length)}"
-            f"do not match what is defined in the ABI {_get_len_str(inputs_length).strip()}."
+            f"The number of the given arguments "
+            f"{f'({arguments_length}) ' if arguments_length else ''}"
+            f"do not match what is defined in the "
+            f"ABI{f' ({inputs_length})' if inputs_length else ''}.".strip()
         )
         super().__init__(message)
 
