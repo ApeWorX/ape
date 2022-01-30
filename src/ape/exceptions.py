@@ -47,7 +47,7 @@ class ArgumentsLengthError(ContractError):
     Raised when calling a contract method with the wrong number of arguments.
     """
 
-    def __init__(self, arguments_length: Optional[int] = None, inputs_length: Optional[int] = None):
+    def __init__(self, arguments_length: int, inputs_length: Optional[int] = None):
         message = (
             f"The number of the given arguments "
             f"{f'({arguments_length}) ' if arguments_length else ''}"

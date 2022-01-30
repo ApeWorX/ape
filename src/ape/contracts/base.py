@@ -124,7 +124,7 @@ class ContractCallHandler:
         args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
-            raise ArgumentsLengthError(arguments_length=len(args))
+            raise ArgumentsLengthError(len(args))
 
         return ContractCall(  # type: ignore
             abi=selected_abi,
@@ -201,7 +201,7 @@ class ContractTransactionHandler:
         args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
         if not selected_abi:
-            raise ArgumentsLengthError(arguments_length=len(args))
+            raise ArgumentsLengthError(len(args))
 
         return ContractTransaction(  # type: ignore
             abi=selected_abi,
@@ -408,7 +408,7 @@ class ContractContainer:
             len(constructor.abi.inputs) if constructor.abi and constructor.abi.inputs else 0
         )
         if inputs_length != args_length:
-            raise ArgumentsLengthError(arguments_length=args_length, inputs_length=inputs_length)
+            raise ArgumentsLengthError(args_length, inputs_length=inputs_length)
 
         return constructor.encode(*args, **kwargs)
 
