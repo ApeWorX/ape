@@ -48,11 +48,11 @@ class ArgumentsLengthError(ContractError):
     """
 
     def __init__(self, arguments_length: int, inputs_length: Optional[int] = None):
+        abi_suffix = f" ({inputs_length})" if inputs_length else ""
         message = (
-            f"The number of the given arguments "
-            f"{f'({arguments_length}) ' if arguments_length else ''}"
+            f"The number of the given arguments ({arguments_length}) "
             f"do not match what is defined in the "
-            f"ABI{f' ({inputs_length})' if inputs_length else ''}."
+            f"ABI{abi_suffix}."
         )
         super().__init__(message)
 
