@@ -1,24 +1,23 @@
 from pathlib import Path as _Path
 
-from ape.plugins import PluginManager as _PluginManager
+from ape.plugins import PluginManager
 from ape.utils import USER_AGENT, ManagerAccessBase
 
-from .accounts import AccountManager as _AccountManager
-from .chain import ChainManager as _ChainManager
-from .compilers import CompilerManager as _CompilerManager
-from .config import ConfigManager as _ConfigManager
-from .converters import ConversionManager as _ConversionManager
-from .networks import NetworkManager as _NetworkManager
+from .accounts import AccountManager
+from .chain import ChainManager
+from .compilers import CompilerManager
+from .config import ConfigManager
+from .converters import ConversionManager
+from .networks import NetworkManager
 from .project import ProjectManager as Project
 from .query import QueryManager as _QueryManager
 
 # Wiring together the application
 
-plugin_manager = _PluginManager()
-"""Manages plugins for the current project. See :class:`ape.plugins.PluginManager`."""
-ManagerAccessBase.plugin_manager = plugin_manager
+_plugin_manager = PluginManager()
+ManagerAccessBase.plugin_manager = _plugin_manager
 
-config = _ConfigManager(
+_config_manager = ConfigManager(
     # Store all globally-cached files
     data_folder=_Path.home().joinpath(".ape"),
     # NOTE: For all HTTP requests we make
@@ -28,47 +27,35 @@ config = _ConfigManager(
     # What we are considering to be the starting project directory
     project_folder=_Path.cwd(),
 )
-"""The active configs for the current project. See :class:`ape.managers.config.ConfigManager`."""
-ManagerAccessBase.config_manager = config
+ManagerAccessBase.config_manager = _config_manager
 
-# Main types we export for the user
-compilers = _CompilerManager()
-"""Manages compilers for the current project. See
-:class:`ape.managers.compilers.CompilerManager`."""
-ManagerAccessBase.compiler_manager = compilers
 
-networks = _NetworkManager()
-"""Manages the networks for the current project. See
-:class:`ape.managers.networks.NetworkManager`."""
-ManagerAccessBase.network_manager = networks
+_compiler_manager = CompilerManager()
+ManagerAccessBase.compiler_manager = _compiler_manager
 
-query = _QueryManager()
-"""Manages query actions for the current project. See
-:class:`ape.managers.query.QueryManager`."""
-ManagerAccessBase.query_manager = query
+_network_manager = NetworkManager()
+ManagerAccessBase.network_manager = _network_manager
 
-converters = _ConversionManager()
-ManagerAccessBase.conversion_manager = converters
+_query_manager = _QueryManager()
+ManagerAccessBase.query_manager = _query_manager
 
-chain = _ChainManager()
-"""
-The current connected blockchain; requires an active provider.
-Useful for development purposes, such as controlling the state of the blockchain.
-Also handy for querying data about the chain and managing local caches.
-"""
-ManagerAccessBase.chain_manager = chain
+_conversion_manager = ConversionManager()
+ManagerAccessBase.conversion_manager = _conversion_manager
 
-accounts = _AccountManager()
-"""Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
-ManagerAccessBase.account_manager = accounts
+_chain_manager = ChainManager()
+ManagerAccessBase.chain_manager = _chain_manager
+
+_account_manager = AccountManager()
+ManagerAccessBase.account_manager = _account_manager
 
 
 __all__ = [
-    "accounts",
-    "chain",
-    "config",
-    "converters",
-    "networks",
+    "_account_manager",
+    "_chain_manager",
+    "_compiler_manager",
+    "_config_manager",
+    "_conversion_manager",
+    "_network_manager",
     "Project",
     "query",
 ]

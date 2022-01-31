@@ -200,12 +200,12 @@ class AccountAPI(AddressAPI):
         contract_name = contract.contract_type.name or "<Unnamed Contract>"
         logger.success(f"Contract '{contract_name}' deployed to: {address}")
 
-        from ape import converters
+        from ape import _conversion_manager
         from ape.contracts import ContractInstance
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,
-            _converter=converters,
+            _converter=_conversion_manager,
             _address=receipt.contract_address,
             _contract_type=contract.contract_type,
         )
