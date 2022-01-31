@@ -546,11 +546,34 @@ class ManagerAccessBase:
     account_manager: ClassVar["AccountManager"] = cast("AccountManager", injected_before_use())
     chain_manager: ClassVar["ChainManager"] = cast("ChainManager", injected_before_use())
     compiler_manager: ClassVar["CompilerManager"] = cast("CompilerManager", injected_before_use())
+    """
+    The group of compiler plugins for compiling source files. See
+    :class:`~ape.managers.compilers.CompilerManager` for more information.
+    Call method :meth:`~ape.managers.project.ProjectManager.load_contracts` in this class
+    to more easily compile sources.
+    """
+
     config_manager: ClassVar["ConfigManager"] = cast("ConfigManager", injected_before_use())
+    """
+    A reference to :class:`~ape.managers.config.ConfigManager`, which
+    manages project and plugin configurations.
+    """
+
     conversion_manager: ClassVar["ConversionManager"] = cast(
         "ConversionManager", injected_before_use()
     )
+    """
+    A reference to the conversion utilities in
+    :class:`~ape.managers.converters.ConversionManager`.
+    """
+
     network_manager: ClassVar["NetworkManager"] = cast("NetworkManager", injected_before_use())
+    """
+    The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
+    To get the active provide, use
+    :py:attr:`ape.managers.networks.NetworkManager.active_provider`.
+    """
+
     plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
     query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
 
