@@ -13,10 +13,11 @@ from ape.cli.choices import (
 from ape.cli.utils import Abort
 from ape.exceptions import ContractError
 from ape.logging import DEFAULT_LOG_LEVEL, LogLevel, logger
+from ape.managers.base import ManagerAccessBase
 from ape.managers.project import ProjectManager
 
 
-class ApeCliContextObject:
+class ApeCliContextObject(ManagerAccessBase):
     """
     A ``click`` context object class. Use via :meth:`~ape.cli.options.ape_cli_context()`.
     It provides common CLI utilities for ape, such as logging or

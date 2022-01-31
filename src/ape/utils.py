@@ -10,7 +10,7 @@ from collections import namedtuple
 from functools import lru_cache, partial
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Mapping, Optional, Set
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Mapping, Optional, Set, cast
 
 import pygit2  # type: ignore
 import requests
@@ -542,14 +542,17 @@ class injected_before_use(property):
 
 
 class ManagerAccessBase:
-    account_manager: ClassVar["AccountManager"] = injected_before_use()  # type: ignore
-    chain_manager: ClassVar["ChainManager"] = injected_before_use()  # type: ignore
-    compiler_manager: ClassVar["CompilerManager"] = injected_before_use()  # type: ignore
-    config_manager: ClassVar["ConfigManager"] = injected_before_use()  # type: ignore
-    conversion_manager: ClassVar["ConversionManager"] = injected_before_use()  # type: ignore
-    network_manager: ClassVar["NetworkManager"] = injected_before_use()  # type: ignore
-    plugin_manager: ClassVar["PluginManager"] = injected_before_use()  # type: ignore
-    query_manager: ClassVar["QueryManager"] = injected_before_use()  # type: ignore
+    # NOTE: cast is used to update the class type returned to mypy
+    account_manager: ClassVar["AccountManager"] = cast("AccountManager", injected_before_use())
+    chain_manager: ClassVar["ChainManager"] = cast("ChainManager", injected_before_use())
+    compiler_manager: ClassVar["CompilerManager"] = cast("CompilerManager", injected_before_use())
+    config_manager: ClassVar["ConfigManager"] = cast("ConfigManager", injected_before_use())
+    conversion_manager: ClassVar["ConversionManager"] = cast(
+        "ConversionManager", injected_before_use()
+    )
+    network_manager: ClassVar["NetworkManager"] = cast("NetworkManager", injected_before_use())
+    plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
+    query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
 
 
 class AbstractBaseModel(ManagerAccessBase, ABC, BaseModel):
@@ -564,7 +567,7 @@ class AbstractBaseModel(ManagerAccessBase, ABC, BaseModel):
 
     def __dir__(self) -> List[str]:
         """
-        NOTE: Integrates with IPython
+        NOTE: Integrates with IPython tab-completion
         https://ipython.readthedocs.io/en/stable/config/integrating.html
         """
         # Filter out protected/private members
