@@ -11,7 +11,7 @@ body {
   font-family: "Rubik";
   background-color: #d3e0d1;
   min-height: 100%;
-  background: #9b9b9b;
+  background: #f2f3f8;
 }
 
 p {
@@ -59,7 +59,7 @@ a:hover {
 
 .wy-nav-content-wrap {
   margin-left: 300px;
-  background: ##7cffb4;
+  background: #fff;
   min-height: 100%;
 }
 
@@ -67,11 +67,21 @@ a:hover {
 
 .wy-side-scroll {
   width: 320px;
-  background-color: #ffffff;
+  background-color: #f2f3f8;
   position: relative;
   overflow-x: hidden;
   overflow-y: scroll;
   height: 100%;
+}
+
+.wy-nav-top {
+  display: block;
+  background-color: #000;
+  padding: 0.4045em 0.809em;
+  position: relative;
+  line-height: 50px;
+  text-align: center;
+  font-size: 100%;
 }
 
 .wy-side-nav-search {
@@ -82,7 +92,7 @@ a:hover {
   z-index: 200;
   background-color: #000000;
   text-align: center;
-  color: #fcfcfc;
+  color: #fafafa;
 }
 
 .wy-menu-vertical header,
@@ -139,8 +149,7 @@ footer {
   overflow-x: hidden;
   overflow-y: hidden;
   min-height: 100%;
-  color: #9b9b9b;
-  background: #fff;
+  background-color: #f2f3f8;
   z-index: 200;
 }
 
@@ -148,14 +157,16 @@ footer {
   .wy-nav-side {
     display: none;
   }
+  .wy-nav-side.shift {
+    display: block;
+  }
   .wy-nav-content-wrap {
     margin-left: 0px;
-    background: ##7cffb4;
+    background-color: #f2f3f8;
     min-height: 100%;
   }
   .wy-nav-top {
     display: block;
-    background: #000000;
     color: #fff;
     padding: 0.4045em 0.809em;
     position: relative;
@@ -163,6 +174,18 @@ footer {
     text-align: center;
     font-size: 100%;
   }
+
+  .wy-side-nav-search {
+    display: block;
+    width: 300px;
+    padding: 0.809em;
+    margin-bottom: 0.809em;
+    z-index: 200;
+    background-color: #000000;
+    text-align: center;
+    color: #fafafa;
+  }
+
   h1 {
     font-size: 40px;
     line-height: 40px;
@@ -177,5 +200,19 @@ footer {
     line-height: 34px;
     font-family: "Space Mono";
     letter-spacing: -0.05em;
+  }
+
+  a {
+    color: #c2006b;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  a:visited {
+    color: #c2006b;
+  }
+
+  a:hover {
+    color: rgb(0, 0, 0);
   }
 }
