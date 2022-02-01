@@ -1,4 +1,3 @@
-import os
 from distutils.dir_util import copy_tree
 from importlib import import_module
 from pathlib import Path
@@ -88,11 +87,7 @@ def project(request, config):
 
 @pytest.fixture
 def runner(project):
-    previous_cwd = str(Path.cwd())
-    os.chdir(str(project.path))
-    runner = CliRunner()
-    yield runner
-    os.chdir(previous_cwd)
+    yield CliRunner()
 
 
 @pytest.fixture(scope="session")
@@ -115,7 +110,7 @@ def clean_cache(project):
     Use this fixture to ensure a project
     does not have a cached compilation.
     """
-    cache_file = project.manifest_cachefile
+    cache_file = project._project.manifest_cachefile
     if cache_file.exists():
         cache_file.unlink()
 

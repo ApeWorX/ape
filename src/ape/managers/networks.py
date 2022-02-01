@@ -32,7 +32,7 @@ class NetworkManager:
     _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
 
     def __repr__(self):
-        return f"<NetworkManager, active_provider={self.active_provider}>"
+        return f"<{self.__class__.__name__} active_provider={self.active_provider}>"
 
     @property
     def active_provider(self) -> Optional[ProviderAPI]:

@@ -1,9 +1,10 @@
 import json
+import os
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, Dict, Generator, List, Optional, Union
 
-from ape.api import ConfigDict, ConfigItem
+from ape.api import ConfigDict, ConfigItem, DependencyAPI
 from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.logging import logger
@@ -11,7 +12,7 @@ from ape.plugins import PluginManager
 from ape.utils import injected_before_use, load_config
 
 if TYPE_CHECKING:
-    from .project import ProjectManager
+    from .project import ProjectManager, _DependencyManager
 
 
 CONFIG_FILE_NAME = "ape-config.yaml"
@@ -42,14 +43,33 @@ class ConfigManager:
     """
 
     DATA_FOLDER: Path
+    """The path to the ``ape`` directory such as ``$HOME/.ape``."""
+
     REQUEST_HEADER: Dict
+
     PROJECT_FOLDER: Path
+    """The path to the ``ape`` project."""
+
     name: str = ""
+    """The name of the project."""
+
     version: str = ""
+    """The project's version."""
+
     contracts_folder: Path = None  # type: ignore
-    dependencies: Dict[str, str] = {}
+    """
+    The path to the project's ``contracts/`` directory
+    (differs by project structure).
+    """
+
+    dependencies: List[DependencyAPI] = []
+    """A list of project dependencies."""
+
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
+    """A list of contract deployments by address and contract type."""
+
     plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
+    _dependency_manager: ClassVar["_DependencyManager"] = injected_before_use()  # type: ignore
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
 
     def __init__(
@@ -83,6 +103,14 @@ class ConfigManager:
         self.name = user_config.pop("name", "")
         self.version = user_config.pop("version", "")
 
+        dependencies = user_config.pop("dependencies", []) or []
+        if not isinstance(dependencies, list):
+            raise ConfigError("'dependencies' config item must be a list of dicts.")
+
+        self.dependencies = [
+            self._dependency_manager.decode_dependency(dep) for dep in dependencies
+        ]  # type: ignore
+
         if "contracts_folder" in user_config:
             contracts_folder_value = Path(user_config.pop("contracts_folder")).expanduser()
 
@@ -93,7 +121,6 @@ class ConfigManager:
             contracts_folder = self.PROJECT_FOLDER / "contracts"
 
         self.contracts_folder = contracts_folder
-        self.dependencies = user_config.pop("dependencies", {})
 
         # Sanitize deployment addresses.
         deployments = user_config.pop("deployments", {})
@@ -152,7 +179,7 @@ class ConfigManager:
         return configs
 
     def __repr__(self):
-        return "<ConfigManager>"
+        return f"<{self.__class__.__name__} project={self.PROJECT_FOLDER.name}>"
 
     def load(self) -> "ConfigManager":
         """
@@ -226,20 +253,22 @@ class ConfigManager:
 
         import ape
 
-        initial_project_path = self.PROJECT_FOLDER
-        initial_contracts_path = self.contracts_folder
+        initial_project_folder = self.PROJECT_FOLDER
+        initial_contracts_folder = self.contracts_folder
 
         self.PROJECT_FOLDER = project_folder
         self.contracts_folder = contracts_folder
-
         previous_project = ape.project
-        project = ape.Project(project_folder)
-        ape.project = project
-        yield project
-        ape.project = previous_project
-
-        self.PROJECT_FOLDER = initial_project_path
-        self.contracts_folder = initial_contracts_path
+        os.chdir(project_folder)
+        try:
+            project = ape.Project(project_folder)
+            ape.project = project
+            yield project
+        finally:
+            self.PROJECT_FOLDER = initial_project_folder
+            self.contracts_folder = initial_contracts_folder
+            ape.project = previous_project
+            os.chdir(initial_project_folder)
 
     def __str__(self) -> str:
         """
