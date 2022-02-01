@@ -2,30 +2,22 @@ from pathlib import Path
 
 import click
 import pytest
-from _pytest.config import Config as PytestConfig
 
 import ape
 from ape.logging import logger
-from ape.managers.chain import ChainManager
-from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
+from ape.utils import ManagerAccessBase
 from ape_console._cli import console
 
 from .contextmanagers import RevertsContextManager
 
 
-class PytestApeRunner:
+class PytestApeRunner(ManagerAccessBase):
     def __init__(
         self,
-        config_manager: PytestConfig,
-        project: ProjectManager,
-        network_manager: NetworkManager,
-        chain_manager: ChainManager,
+        project_manager: ProjectManager,
     ):
-        self.config_manager = config_manager
-        self.project = project
-        self.network_manager = network_manager
-        self.chain_manager = chain_manager
+        self.project = project_manager
         self._warned_for_missing_features = False
         ape.reverts = RevertsContextManager  # type: ignore
 
