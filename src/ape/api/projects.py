@@ -24,7 +24,7 @@ class ProjectAPI:
     """
 
     compilers: "CompilerManager"
-    """Compilers for creating the    manifest."""
+    """Compilers for creating the manifest."""
 
     path: Path
     """The project path."""

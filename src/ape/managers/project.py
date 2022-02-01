@@ -292,7 +292,7 @@ class ProjectManager:
     :class:`~ape.managers.converters.ConversionManager`.
     """
 
-    compilers: ClassVar["CompilerManager"] = injected_before_use()  # type: ignore
+    compilers: ClassVar[CompilerManager] = injected_before_use()  # type: ignore
     """
     The group of compiler plugins for compiling source files. See
     :class:`~ape.managers.compilers.CompilerManager` for more information.
