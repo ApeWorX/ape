@@ -15,13 +15,7 @@ from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.plugins import PluginManager
-from ape.utils import (
-    cached_property,
-    get_all_files_in_directory,
-    get_relative_path,
-    github_client,
-    injected_before_use,
-)
+from ape.utils import cached_property, get_relative_path, github_client, injected_before_use
 
 from .compilers import CompilerManager
 from .config import CONFIG_FILE_NAME, ConfigManager
@@ -143,6 +137,35 @@ class ApeProject(ProjectAPI):
             return manifest
 
 
+class LocalDependency(DependencyAPI):
+    """
+    A dependency that is already downloaded on the local machine.
+
+    Config example::
+
+        dependencies:
+          - name: Dependency
+            local: path/to/dependency
+    """
+
+    local: str
+
+    @property
+    def path(self) -> Path:
+        given_path = Path(self.local)
+        if not given_path.exists():
+            raise ProjectError(f"No project exists at path '{given_path}'.")
+
+        return given_path
+
+    @property
+    def version_id(self) -> str:
+        return "local"
+
+    def extract_manifest(self) -> PackageManifest:
+        return self._extract_local_manifest(self.path)
+
+
 class GithubDependency(DependencyAPI):
     """
     A dependency from Github. Use the ``github`` key in your ``dependencies:``
@@ -160,11 +183,6 @@ class GithubDependency(DependencyAPI):
     """
     The Github repo ID e.g. the organization name followed by the repo name,
     such as ``dapphub/erc20``.
-    """
-
-    version: Optional[str] = None
-    """
-    The version of the dependency. Omit to use the latest.
     """
 
     branch: Optional[str] = None
@@ -203,25 +221,7 @@ class GithubDependency(DependencyAPI):
                     self.github, self.version or "latest", temp_project_path
                 )
 
-            temp_contracts_path = temp_project_path / self.contracts_folder
-            project = self.project_manager.get_project(
-                temp_project_path,
-                contracts_folder=temp_contracts_path,
-                name=self.name,
-                version=self.version,
-            )
-            sources = [
-                s
-                for s in get_all_files_in_directory(project.contracts_folder)
-                if s.name.lower() not in ("package.json", "package-lock.json")
-            ]
-            project_manifest = project.create_manifest(file_paths=sources)
-
-            # Cache the manifest for future use outside of this tempdir.
-            self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
-            self._target_manifest_cache_file.write_text(json.dumps(project_manifest.dict()))
-
-            return project_manifest
+            return self._extract_local_manifest(temp_project_path)
 
 
 class _DependencyManager:
@@ -241,6 +241,7 @@ class _DependencyManager:
             dependency_classes[config_key] = dependency_class
 
         dependency_classes["github"] = GithubDependency
+        dependency_classes["local"] = LocalDependency
         return dependency_classes
 
     def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
@@ -490,7 +491,7 @@ class ProjectManager:
         if ape_project:
             return ape_project
 
-        raise ProjectError(f"'{self.path.name}' not recognized as a project.")
+        raise ProjectError(f"'{self.path.name}' is not recognized as a project.")
 
     @property
     def contracts(self) -> Dict[str, ContractType]:

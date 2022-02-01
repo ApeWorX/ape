@@ -70,7 +70,6 @@
     :show-inheritance:
 ```
 
-
 ## Providers
 
 ```{eval-rst}

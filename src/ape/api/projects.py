@@ -9,7 +9,12 @@ from packaging import version as version_util
 from pydantic import ValidationError
 
 from ape.logging import logger
-from ape.utils import abstractdataclass, abstractmethod, get_relative_path
+from ape.utils import (
+    abstractdataclass,
+    abstractmethod,
+    get_all_files_in_directory,
+    get_relative_path,
+)
 
 if TYPE_CHECKING:
     from ape.managers.compilers import CompilerManager
@@ -146,6 +151,11 @@ class DependencyAPI:
     name: str
     """The name of the dependency."""
 
+    version: Optional[str] = None
+    """
+    The version of the dependency. Omit to use the latest.
+    """
+
     contracts_folder: str = "contracts"
     """
     The name of the dependency's ``contracts/`` directory.
@@ -201,6 +211,27 @@ class DependencyAPI:
         """
 
         return _load_manifest_from_file(self._target_manifest_cache_file)
+
+    def _extract_local_manifest(self, project_path: Path):
+        contracts_folder = project_path / self.contracts_folder
+        project = self.project_manager.get_project(
+            project_path,
+            contracts_folder=contracts_folder,
+            name=self.name,
+            version=self.version,
+        )
+        sources = [
+            s
+            for s in get_all_files_in_directory(project.contracts_folder)
+            if s.name.lower() not in ("package.json", "package-lock.json")
+        ]
+        project_manifest = project.create_manifest(file_paths=sources)
+
+        # Cache the manifest for future use outside of this tempdir.
+        self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
+        self._target_manifest_cache_file.write_text(json.dumps(project_manifest.dict()))
+
+        return project_manifest
 
 
 def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:

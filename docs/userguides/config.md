@@ -22,7 +22,7 @@ contracts_folder: "~/GlobalContracts"
 ## Dependencies
 
 Configure dependencies for your ape project.
-Ape downloads and caches dependencies in the `.ape/packages/<name>` directory where `<name>` refers to the name of the dependency.
+Ape downloads and caches dependencies in the `.ape/packages/<name>/<version-id>` directory where `<name>` refers to the name of the dependency and `<version-id>` refers to the version or branch of the package.
 
 For example:
 
@@ -30,17 +30,17 @@ For example:
 dependencies:
   - name: OpenZeppelin
     github: OpenZeppelin/openzeppelin-contracts
-    version: 4.4.0
+    version: 4.4.2
 ```
 
-will download the [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) package with version `4.4.0`.
+will download the [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) package with version `4.4.2`.
 
-To use your dependencies in the `ape-solidity` plugin, configure `import_remappings`:
+To use dependencies in the `ape-solidity` plugin, configure `import_remappings`:
 
 ```yaml
 solidity: 
   import_remapping:
-    - "@openzeppelin=OpenZeppelin/4.4.0"
+    - "@openzeppelin=OpenZeppelin/4.4.2"
 ```
 
 Now, in your solidity files, import `OpenZeppelin` sources via:
@@ -49,7 +49,7 @@ Now, in your solidity files, import `OpenZeppelin` sources via:
 import "@openzeppelin/token/ERC721/ERC721.sol";
 ```
 
-You can also set the branch and name of the dependency's contract path, e.g.:
+You can also set the branch and name of the dependency's contracts folder, e.g.:
 
 ```yaml
 dependencies:
@@ -58,6 +58,17 @@ dependencies:
     branch: dappnix
     contracts_folder: src
 ```
+
+When working with dependencies you already have downloaded, use `local` dependencies.
+
+```yaml
+dependencies:
+  - name: MyDependency
+    local: local/path/to/MyDependency
+    contracts_folder: src/contracts
+```
+
+This also is a work-around when there does not yet exist a plugin for downloading dependencies.
 
 ## Deployments
 
