@@ -1,34 +1,21 @@
 import pytest
-from _pytest.config import Config as PytestConfig
 
 import ape
 from ape.logging import logger
-from ape.managers.chain import ChainManager
-from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
+from ape.utils import ManagerAccessBase
 
 from .contextmanagers import RevertsContextManager
 
 
-class PytestApeRunner:
+class PytestApeRunner(ManagerAccessBase):
     def __init__(
         self,
-        config_manager: PytestConfig,
-        project: ProjectManager,
-        network_manager: NetworkManager,
-        chain_manager: ChainManager,
+        project_manager: ProjectManager,
     ):
-        self.config_manager = config_manager
-        self.project = project
-        self.network_manager = network_manager
-        self.chain_manager = chain_manager
+        self.project = project_manager
         self._warned_for_missing_features = False
         ape.reverts = RevertsContextManager  # type: ignore
-
-    @property
-    def _network_choice(self) -> str:
-        # The option the user providers via --network (or the default).
-        return self.config_manager.getoption("network")
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_protocol(self, item, nextitem):
