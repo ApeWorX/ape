@@ -59,7 +59,7 @@ dependencies:
     contracts_folder: src
 ```
 
-When working with dependencies you already have downloaded, use `local` dependencies.
+You can also use local dependencies:
 
 ```yaml
 dependencies:
@@ -68,7 +68,10 @@ dependencies:
     contracts_folder: src/contracts
 ```
 
-This also is a work-around when there does not yet exist a plugin for downloading dependencies.
+This is helpful when:
+
+* Working on multiple packages at once
+* When there is not a suitable `DependencyAPI` implementation available for downloading your dependency.
 
 ## Deployments
 
