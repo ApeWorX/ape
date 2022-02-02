@@ -17,6 +17,7 @@ from web3.middleware import geth_poa_middleware
 from web3.types import NodeInfo
 
 from ape.api import ConfigItem, ReceiptAPI, TransactionAPI, UpstreamProvider, Web3Provider
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import ContractLogicError, ProviderError, TransactionError, VirtualMachineError
 from ape.logging import logger
 from ape.utils import extract_nested_value, gas_estimation_error_message, generate_dev_accounts
@@ -115,7 +116,7 @@ class GethNetworkConfig(ConfigItem):
     kovan: dict = DEFAULT_SETTINGS.copy()
     goerli: dict = DEFAULT_SETTINGS.copy()
     # Make sure to run via `geth --dev` (or similar)
-    development: dict = DEFAULT_SETTINGS.copy()
+    local: dict = DEFAULT_SETTINGS.copy()
 
 
 class NetworkConfig(ConfigItem):
@@ -195,7 +196,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
         if self._web3.eth.chain_id in (4, 5, 42) or is_poa():
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
-        if self.network.name != "development" and self.network.chain_id != self.chain_id:
+        if self.network.name != LOCAL_NETWORK_NAME and self.network.chain_id != self.chain_id:
             raise ProviderError(
                 "HTTP Connection does not match expected chain ID. "
                 f"Are you connected to '{self.network.name}'?"
