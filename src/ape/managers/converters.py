@@ -193,7 +193,7 @@ class ConversionManager:
     networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
 
     def __repr__(self):
-        return "<ConversionManager>"
+        return f"<{self.__class__.__name__}>"
 
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:

@@ -1,6 +1,7 @@
 import collections
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -12,18 +13,24 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Set
 
+import pygit2  # type: ignore
 import requests
 import yaml
 from dataclassy import dataclass
 from dataclassy.dataclass import DataClassMeta
 from eth_account import Account
 from eth_account.hdaccount import HDPath, seed_from_mnemonic
-from github import Github
+from github import Github, UnknownObjectException
+from github.GitRelease import GitRelease
+from github.Organization import Organization
+from github.Repository import Repository as GithubRepository
 from hexbytes import HexBytes
-from importlib_metadata import PackageNotFoundError, packages_distributions, version
+from importlib_metadata import PackageNotFoundError, packages_distributions
+from importlib_metadata import version as version_metadata
+from pygit2 import Repository as GitRepository
 from tqdm import tqdm  # type: ignore
 
-from ape.exceptions import CompilerError
+from ape.exceptions import CompilerError, ProjectError
 from ape.logging import logger
 
 try:
@@ -132,7 +139,7 @@ def get_package_version(obj: Any) -> str:
         pkg_name = dists[pkg_name][0]
 
     try:
-        return version(pkg_name)
+        return str(version_metadata(pkg_name))
 
     except PackageNotFoundError:
         # NOTE: Must handle empty string result here
@@ -338,6 +345,7 @@ class GithubClient:
     """
 
     TOKEN_KEY = "GITHUB_ACCESS_TOKEN"
+    _repo_cache: Dict[str, GithubRepository] = {}
 
     def __init__(self):
         token = None
@@ -348,7 +356,7 @@ class GithubClient:
         self._client = Github(login_or_token=token, user_agent=USER_AGENT)
 
     @cached_property
-    def ape_org(self):
+    def ape_org(self) -> Organization:
         """
         The ``ApeWorX`` organization on ``Github`` (https://github.com/ApeWorX).
         """
@@ -368,21 +376,108 @@ class GithubClient:
             if repo.name.startswith("ape-")
         }
 
-    def get_release(self, repo_path: str, version: str):
+    def get_release(self, repo_path: str, version: str) -> GitRelease:
         """
         Get a release from Github.
 
         Args:
             repo_path (str): The path on Github to the repository,
-                            e.g. ``OpenZeppelin/openzeppelin-contracts``.
-            version (str): The version of the release to get.
+              e.g. ``OpenZeppelin/openzeppelin-contracts``.
+            version (str): The version of the release to get. Pass in ``"latest"``
+              to get the latest release.
+
+        Returns:
+            github.GitRelease.GitRelease
         """
         repo = self._client.get_repo(repo_path)
+
+        if version == "latest":
+            return repo.get_latest_release()
 
         if not version.startswith("v"):
             version = f"v{version}"
 
-        return repo.get_release(version)
+        try:
+            return repo.get_release(version)
+        except UnknownObjectException:
+            raise ProjectError(f"Unknown version '{version.lstrip('v')}' for repo '{repo.name}'.")
+
+    def get_repo(self, repo_path: str) -> GithubRepository:
+        """
+        Get a repository from GitHub.
+
+        Args:
+            repo_path (str): The path to the repository, such as
+              ``OpenZeppelin/openzeppelin-contracts``.
+
+        Returns:
+            github.Repository.Repository
+        """
+
+        if repo_path not in self._repo_cache:
+            self._repo_cache[repo_path] = self._client.get_repo(repo_path)
+
+        return self._repo_cache[repo_path]
+
+    def clone_repo(
+        self, repo_path: str, target_path: Path, branch: Optional[str] = None
+    ) -> GitRepository:
+        """
+        Clone a repository from Github.
+
+        Args:
+            repo_path (str): The path on Github to the repository,
+              e.g. ``OpenZeppelin/openzeppelin-contracts``.
+            target_path (Path): The local path to store the repo.
+            branch (Optional[str]): The branch to clone. Defaults to the default branch.
+
+        Returns:
+            pygit2.repository.Repository
+        """
+
+        repo = self.get_repo(repo_path)
+        branch = branch or repo.default_branch
+        logger.info(f"Cloning branch '{branch}' from '{repo.name}'.")
+
+        class GitRemoteCallbacks(pygit2.RemoteCallbacks):
+            PERCENTAGE_PATTERN = r"[1-9]{1,2}% \([1-9]*/[1-9]*\)"  # e.g. '75% (324/432)'
+            total_objects: int = 0
+            current_objects_cloned: int = 0
+            _progress_bar = None
+
+            def sideband_progress(self, string: str):
+                # Parse a line like 'Compressing objects:   0% (1/432)'
+                string = string.lower()
+                expected_prefix = "compressing objects:"
+                if expected_prefix not in string:
+                    return
+
+                progress_str = string.split(expected_prefix)[-1].strip()
+
+                if not re.match(self.PERCENTAGE_PATTERN, progress_str):
+                    return None
+
+                progress_parts = progress_str.split(" ")
+                fraction_str = progress_parts[1].lstrip("(").rstrip(")")
+                fraction = fraction_str.split("/")
+
+                GitRemoteCallbacks.total_objects = int(fraction[1])
+                previous_value = GitRemoteCallbacks.current_objects_cloned
+                new_value = int(fraction[0])
+                GitRemoteCallbacks.current_objects_cloned = new_value
+
+                if GitRemoteCallbacks.total_objects and not GitRemoteCallbacks._progress_bar:
+                    GitRemoteCallbacks._progress_bar = tqdm(range(GitRemoteCallbacks.total_objects))
+
+                difference = new_value - previous_value
+                if difference > 0:
+                    GitRemoteCallbacks._progress_bar.update(difference)  # type: ignore
+                    GitRemoteCallbacks._progress_bar.refresh()  # type: ignore
+
+        clone = pygit2.clone_repository(
+            repo.git_url, str(target_path), checkout_branch=branch, callbacks=GitRemoteCallbacks()
+        )
+        return clone
 
     def download_package(self, repo_path: str, version: str, target_path: Path):
         """
@@ -412,6 +507,7 @@ class GithubClient:
             downloaded_packages = [f for f in temp_path.iterdir() if f.is_dir()]
             if len(downloaded_packages) < 1:
                 raise CompilerError(f"Unable to download package at '{repo_path}'.")
+
             package_path = temp_path / downloaded_packages[0]
             for source_file in package_path.iterdir():
                 shutil.move(str(source_file), str(target_path))
@@ -490,5 +586,6 @@ __all__ = [
     "injected_before_use",
     "load_config",
     "singledispatchmethod",
+    "stream_response",
     "USER_AGENT",
 ]
