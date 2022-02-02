@@ -384,8 +384,7 @@ class ChainManager(_ConnectedChain):
         """
         Record the current state of the blockchain with intent to later
         call the method :meth:`~ape.managers.chain.ChainManager.revert`
-        to go back to this point. This method is for development networks
-        only.
+        to go back to this point. This method is for local networks only.
 
         Raises:
             NotImplementedError: When the active provider does not support

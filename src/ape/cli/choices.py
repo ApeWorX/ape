@@ -85,7 +85,7 @@ def get_user_selected_account(
     Prompt the user to pick from their accounts and return that account.
     Use this method if you want to prompt users to select accounts _outside_
     of CLI options. For CLI options, use
-    :meth:`~ape.cli.options.account_option_that_prompts_when_not_given`.
+    :meth:`~ape.cli.options.account_option`.
 
     Args:
         account_type (type[:class:`~ape.api.accounts.AccountAPI`], optional):

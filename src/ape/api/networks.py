@@ -20,6 +20,9 @@ if TYPE_CHECKING:
     from .providers import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI, TransactionType
 
 
+LOCAL_NETWORK_NAME = "local"
+
+
 @abstractdataclass
 class EcosystemAPI:
     """
@@ -55,7 +58,7 @@ class EcosystemAPI:
     block_class: Type["BlockAPI"]
     """The block class for this ecosystem."""
 
-    _default_network: str = "development"
+    _default_network: str = LOCAL_NETWORK_NAME
 
     @cached_property
     def config(self) -> ConfigItem:

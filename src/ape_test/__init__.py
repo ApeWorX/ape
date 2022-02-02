@@ -1,8 +1,9 @@
 from ape import plugins
 from ape.api import ConfigItem
+from ape.api.networks import LOCAL_NETWORK_NAME
 
 from .accounts import TestAccount, TestAccountContainer
-from .providers import LocalNetwork
+from .providers import LocalProvider
 
 
 class Config(ConfigItem):
@@ -22,4 +23,4 @@ def account_types():
 
 @plugins.register(plugins.ProviderPlugin)
 def providers():
-    yield "ethereum", "development", LocalNetwork
+    yield "ethereum", LOCAL_NETWORK_NAME, LocalProvider
