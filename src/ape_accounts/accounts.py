@@ -48,7 +48,7 @@ class KeyfileAccount(AccountAPI):
         self.__cached_key = None
 
     def __repr__(self):
-        return f"<KeyfileAccount, address={self.address}, alias={self.alias}>"
+        return f"<{self.__class__.__name__} address={self.address} alias={self.alias}>"
 
     @property
     def alias(self) -> str:

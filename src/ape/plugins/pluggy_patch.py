@@ -7,7 +7,7 @@ hookimpl = cast(Callable[[F], F], pluggy.HookimplMarker("ape"))
 hookspec = pluggy.HookspecMarker("ape")
 
 plugin_manager = pluggy.PluginManager("ape")
-"""A manager responsbile for registering and accessing plugins (singleton)."""
+"""A manager responsible for registering and accessing plugins (singleton)."""
 
 
 class PluginType:
