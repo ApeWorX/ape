@@ -147,7 +147,7 @@ class NetworkManager:
         e.g. ``--network [ECOSYSTEM:NETWORK:PROVIDER]``.
 
         Each value is in the form ``ecosystem:network:provider`` and shortened options also
-        appear in the list. For example, ``::geth`` would default to ``:ethereum:development:geth``
+        appear in the list. For example, ``::geth`` would default to ``:ethereum:local:geth``
         and both will be in the returned list. The values come from each
         :class:`~ape.api.providers.ProviderAPI` that is installed.
 

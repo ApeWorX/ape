@@ -48,6 +48,7 @@ ecosystems:
     - name: test
       isDefault: true
   - name: mainnet-fork
+    providers: []
 """
 _GETH_NETWORKS_YAML = """
 ethereum  (default)
@@ -93,7 +94,7 @@ def test_list(ape_cli, runner):
 def test_list_yaml(ape_cli, runner):
     result = runner.invoke(ape_cli, ["networks", "list", "--format", "yaml"])
     expected = _DEFAULT_NETWORKS_YAML.strip()
-    assert expected in result.output
+    assert expected in result.output, result.output
 
 
 @skip_projects_except(["geth"])

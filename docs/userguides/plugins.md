@@ -134,7 +134,7 @@ my_trezor_account = accounts.load("trezor_0")  # Created using the 'ape-trezor' 
 Similarly, if you implemented a `ProviderAPI`, that provider is now accessible in the CLI via the `--network` option:
 
 ```bash
-ape run my_script --network ethereum:development:my_provider_plugin
+ape run my_script --network ethereum:local:my_provider_plugin
 ```
 
 **NOTE**: The `--network` option is available on the commands `run`, `test`, and `console` or any CLI command that 

@@ -116,7 +116,7 @@ class GethNetworkConfig(ConfigItem):
     kovan: dict = DEFAULT_SETTINGS.copy()
     goerli: dict = DEFAULT_SETTINGS.copy()
     # Make sure to run via `geth --dev` (or similar)
-    development: dict = DEFAULT_SETTINGS.copy()
+    local: dict = DEFAULT_SETTINGS.copy()
 
 
 class NetworkConfig(ConfigItem):
