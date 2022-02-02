@@ -636,8 +636,7 @@ to the most recent snapshot ID.</p>
 <code class="sig-name descname"><span class="pre">snapshot</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.chain.ChainManager.snapshot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Record the current state of the blockchain with intent to later
 call the method <code class="xref py py-meth docutils literal notranslate"><span class="pre">revert()</span></code>
-to go back to this point. This method is for development networks
-only.</p>
+to go back to this point. This method is for local networks only.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><p><strong>NotImplementedError</strong> – When the active provider does not support
@@ -1082,7 +1081,7 @@ Defaults to the default ecosystem, network, and provider combination.</p></li>
 <dd><p>The set of all possible network choices available as a “network selection”
 e.g. <code class="docutils literal notranslate"><span class="pre">--network</span> <span class="pre">[ECOSYSTEM:NETWORK:PROVIDER]</span></code>.</p>
 <p>Each value is in the form <code class="docutils literal notranslate"><span class="pre">ecosystem:network:provider</span></code> and shortened options also
-appear in the list. For example, <code class="docutils literal notranslate"><span class="pre">::geth</span></code> would default to <code class="docutils literal notranslate"><span class="pre">:ethereum:development:geth</span></code>
+appear in the list. For example, <code class="docutils literal notranslate"><span class="pre">::geth</span></code> would default to <code class="docutils literal notranslate"><span class="pre">:ethereum:local:geth</span></code>
 and both will be in the returned list. The values come from each
 <a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a> that is installed.</p>
 <p>Use the CLI command <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">list</span></code> to list all the possible network

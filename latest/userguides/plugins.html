@@ -206,7 +206,7 @@ will fail to work properly if you do not implement all the abstract methods.</p>
 <span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">ProviderPlugin</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">providers</span><span class="p">():</span>
     <span class="c1"># NOTE: &#39;MyProvider&#39; defined in a prior code-block.</span>
-    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;development&quot;</span><span class="p">,</span> <span class="n">MyProvider</span>
+    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">MyProvider</span>
 </pre></div>
 </div>
 <p>This decorator hooks into ape core and ties everything together by looking for all local installed site-packages that
@@ -273,7 +273,7 @@ classes are indifferent about the source of the plugin.</p>
 </pre></div>
 </div>
 <p>Similarly, if you implemented a <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code>, that provider is now accessible in the CLI via the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape run my_script --network ethereum:development:my_provider_plugin
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape run my_script --network ethereum:local:my_provider_plugin
 </pre></div>
 </div>
 <p><strong>NOTE</strong>: The <code class="docutils literal notranslate"><span class="pre">--network</span></code> option is available on the commands <code class="docutils literal notranslate"><span class="pre">run</span></code>, <code class="docutils literal notranslate"><span class="pre">test</span></code>, and <code class="docutils literal notranslate"><span class="pre">console</span></code> or any CLI command that
