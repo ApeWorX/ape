@@ -235,7 +235,10 @@ class _DependencyManager:
 
     @cached_property
     def dependency_types(self) -> Dict[str, Type[DependencyAPI]]:
-        dependency_classes = {}
+        dependency_classes = {
+            "github": GithubDependency,
+            "local": LocalDependency,
+        }
 
         for _, (config_key, dependency_class) in self.plugin_manager.dependencies:
             dependency_classes[config_key] = dependency_class
