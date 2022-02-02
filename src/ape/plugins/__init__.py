@@ -11,6 +11,7 @@ from .config import Config
 from .converter import ConversionPlugin
 from .network import EcosystemPlugin, ExplorerPlugin, NetworkPlugin, ProviderPlugin
 from .pluggy_patch import PluginType, hookimpl, plugin_manager
+from .project import DependencyPlugin, ProjectPlugin
 
 
 class PluginError(Exception):
@@ -23,9 +24,11 @@ class AllPluginHooks(
     AccountPlugin,
     CompilerPlugin,
     ConversionPlugin,
+    DependencyPlugin,
     EcosystemPlugin,
     ExplorerPlugin,
     NetworkPlugin,
+    ProjectPlugin,
     ProviderPlugin,
 ):
     pass
@@ -124,7 +127,7 @@ class PluginManager:
                     logger.warn_from_exception(err, f"Error loading plugin package '{name}'.")
 
     def __repr__(self):
-        return "<PluginManager>"
+        return f"<{self.__class__.__name__}>"
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
         if not hasattr(plugin_manager.hook, attr_name):

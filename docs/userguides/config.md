@@ -19,6 +19,60 @@ This is useful for projects that compile contracts outside their directory.
 contracts_folder: "~/GlobalContracts"
 ```
 
+## Dependencies
+
+Configure dependencies for your ape project.
+Ape downloads and caches dependencies in the `.ape/packages/<name>/<version-id>` directory where `<name>` refers to the name of the dependency and `<version-id>` refers to the version or branch of the package.
+
+For example:
+
+```yaml
+dependencies:
+  - name: OpenZeppelin
+    github: OpenZeppelin/openzeppelin-contracts
+    version: 4.4.2
+```
+
+will download the [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) package with version `4.4.2`.
+
+To use dependencies in the `ape-solidity` plugin, configure `import_remappings`:
+
+```yaml
+solidity: 
+  import_remapping:
+    - "@openzeppelin=OpenZeppelin/4.4.2"
+```
+
+Now, in your solidity files, import `OpenZeppelin` sources via:
+
+```solidity
+import "@openzeppelin/token/ERC721/ERC721.sol";
+```
+
+You can also set the branch and name of the dependency's contracts folder, e.g.:
+
+```yaml
+dependencies:
+  - name: DappToolsERC20
+    github: dapphub/erc20
+    branch: dappnix
+    contracts_folder: src
+```
+
+You can also use local dependencies:
+
+```yaml
+dependencies:
+  - name: MyDependency
+    local: local/path/to/MyDependency
+    contracts_folder: src/contracts
+```
+
+This is helpful when:
+
+* Working on multiple packages at once
+* When there is not a suitable `DependencyAPI` implementation available for downloading your dependency
+
 ## Deployments
 
 Share import deployments to public networks with your teammates:

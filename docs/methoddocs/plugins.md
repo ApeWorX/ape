@@ -53,3 +53,11 @@
     :members:
     :show-inheritance:
 ```
+
+## Project
+
+```{eval-rst}
+.. automodule:: ape.plugins.project
+    :members:
+    :show-inheritance:
+```
