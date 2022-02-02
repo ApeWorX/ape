@@ -80,7 +80,16 @@ class ApeProject(ProjectAPI):
                     yaml.safe_dump(config_data, f)
 
         # Load a cached or clean manifest (to use for caching)
-        manifest = use_cache and self.cached_manifest or PackageManifest()
+        if self.cached_manifest:
+            manifest = self.cached_manifest
+        else:
+            manifest = PackageManifest()
+
+            if self.manifest_cachefile.exists():
+                # The file exists but we didn't get a manifest.
+                # Thus, it must be corrupted.
+                self.manifest_cachefile.unlink()
+
         cached_sources = manifest.sources or {}
         cached_contract_types = manifest.contract_types or {}
         sources = {s for s in self.sources if s in file_paths} if file_paths else self.sources

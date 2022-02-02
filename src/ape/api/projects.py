@@ -238,22 +238,13 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
     if not file_path.exists():
         return None
 
-    def handle_corrupt_manifest():
-        logger.warning(f"Existing manifest file '{file_path}' corrupted (re-building).")
-        file_path.unlink()
-
     try:
         manifest_dict = json.loads(file_path.read_text())
         if not isinstance(manifest_dict, dict) or "manifest" not in manifest_dict:
-            handle_corrupt_manifest()
-            return None
+            raise AssertionError()  # To reach except block
 
-    except json.JSONDecodeError:
-        handle_corrupt_manifest()
-        return None
-
-    try:
         return PackageManifest(**manifest_dict)
-    except ValidationError:
-        handle_corrupt_manifest()
+
+    except (AssertionError, json.JSONDecodeError, ValidationError):
+        logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
         return None
