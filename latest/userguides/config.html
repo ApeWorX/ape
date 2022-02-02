@@ -61,6 +61,7 @@
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configure Ape</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#contracts-folder">Contracts Folder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#deployments">Deployments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#networks">Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plugins">Plugins</a></li>
@@ -163,6 +164,49 @@ This is useful for projects that compile contracts outside their directory.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;~/GlobalContracts&quot;</span><span class="w"></span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>Configure dependencies for your ape project.
+Ape downloads and caches dependencies in the <code class="docutils literal notranslate"><span class="pre">.ape/packages/&lt;name&gt;/&lt;version-id&gt;</span></code> directory where <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> refers to the name of the dependency and <code class="docutils literal notranslate"><span class="pre">&lt;version-id&gt;</span></code> refers to the version or branch of the package.</p>
+<p>For example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin</span><span class="w"></span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin/openzeppelin-contracts</span><span class="w"></span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span><span class="w"></span>
+</pre></div>
+</div>
+<p>will download the <a class="reference external" href="https://github.com/OpenZeppelin/openzeppelin-contracts">Open Zeppelin</a> package with version <code class="docutils literal notranslate"><span class="pre">4.4.2</span></code>.</p>
+<p>To use dependencies in the <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> plugin, configure <code class="docutils literal notranslate"><span class="pre">import_remappings</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">solidity</span><span class="p">:</span><span class="w"> </span>
+<span class="w">  </span><span class="nt">import_remapping</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@openzeppelin=OpenZeppelin/4.4.2&quot;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Now, in your solidity files, import <code class="docutils literal notranslate"><span class="pre">OpenZeppelin</span></code> sources via:</p>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">import</span><span class="w"> </span><span class="s2">&quot;@openzeppelin/token/ERC721/ERC721.sol&quot;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>You can also set the branch and name of the dependency’s contracts folder, e.g.:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DappToolsERC20</span><span class="w"></span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dapphub/erc20</span><span class="w"></span>
+<span class="w">    </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dappnix</span><span class="w"></span>
+<span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span><span class="w"></span>
+</pre></div>
+</div>
+<p>You can also use local dependencies:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDependency</span><span class="w"></span>
+<span class="w">    </span><span class="nt">local</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local/path/to/MyDependency</span><span class="w"></span>
+<span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src/contracts</span><span class="w"></span>
+</pre></div>
+</div>
+<p>This is helpful when:</p>
+<ul class="simple">
+<li><p>Working on multiple packages at once</p></li>
+<li><p>When there is not a suitable <code class="docutils literal notranslate"><span class="pre">DependencyAPI</span></code> implementation available for downloading your dependency</p></li>
+</ul>
 </div>
 <div class="section" id="deployments">
 <h2>Deployments<a class="headerlink" href="#deployments" title="Permalink to this headline">¶</a></h2>

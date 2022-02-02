@@ -83,6 +83,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.convert">Convert</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.explorers">Explorers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.networks">Networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.api.projects">Projects</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.providers">Providers</a></li>
 </ul>
 </li>
@@ -1219,6 +1220,156 @@ an instance of this context manager.</p>
 <dt id="ape.api.networks.create_network_type">
 <code class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></code><code class="sig-name descname"><span class="pre">create_network_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.networks.create_network_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Easily create a <a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.networks.NetworkAPI</span></code></a> subclass.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.api.projects">
+<span id="projects"></span><h2>Projects<a class="headerlink" href="#module-ape.api.projects" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.api.projects.DependencyAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.projects.</span></code><code class="sig-name descname"><span class="pre">DependencyAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ProjectManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contracts_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'contracts'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.projects.DependencyAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A base-class for dependency sources, such as GitHub or IPFS.</p>
+<dl class="py method">
+<dt id="ape.api.projects.DependencyAPI.cached_manifest">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">cached_manifest</span></code><a class="headerlink" href="#ape.api.projects.DependencyAPI.cached_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>The manifest from the <code class="docutils literal notranslate"><span class="pre">.ape/packages/&lt;dependency-name&gt;/&lt;version-id&gt;</span></code>
+if it exists and is valid.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.DependencyAPI.contracts_folder">
+<code class="sig-name descname"><span class="pre">contracts_folder</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">'contracts'</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.contracts_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dependency’s <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
+This is where <code class="docutils literal notranslate"><span class="pre">ape</span></code> will look for source files when compiling
+the manifest for this dependency. <strong>NOTE</strong>: This must be the name
+of a directory in the project.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.projects.DependencyAPI.extract_manifest">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">extract_manifest</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">ethpm_types.manifest.PackageManifest</span><a class="headerlink" href="#ape.api.projects.DependencyAPI.extract_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <a class="reference internal" href="#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a> implementation,
+presumably by downloading and compiling the dependency.</p>
+<p>Implementations may use <code class="docutils literal notranslate"><span class="pre">self.project_manager</span></code> to call method
+<a class="reference internal" href="managers.html#ape.managers.project.ProjectManager.get_project" title="ape.managers.project.ProjectManager.get_project"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_project()</span></code></a>
+to dynamically get the correct <a class="reference internal" href="#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a>.
+based on the project’s structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.DependencyAPI.name">
+<code class="sig-name descname"><span class="pre">name</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dependency.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.DependencyAPI.project_manager">
+<code class="sig-name descname"><span class="pre">project_manager</span></code><em class="property"><span class="pre">:</span> <span class="pre">ProjectManager</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.project_manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>The root project manager.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.DependencyAPI.version">
+<code class="sig-name descname"><span class="pre">version</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The version of the dependency. Omit to use the latest.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.projects.DependencyAPI.version_id">
+<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">version_id</span></code><a class="headerlink" href="#ape.api.projects.DependencyAPI.version_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ID to use as the sub-directory in the download cache.
+Most often, this is either a version number or a branch name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.projects.ProjectAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.projects.</span></code><code class="sig-name descname"><span class="pre">ProjectAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compilers</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">CompilerManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contracts_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.projects.ProjectAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An abstract base-class for working with projects.
+This class can also be extended to a plugin for supporting non-ape projects.</p>
+<dl class="py method">
+<dt id="ape.api.projects.ProjectAPI.cached_manifest">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">cached_manifest</span></code><a class="headerlink" href="#ape.api.projects.ProjectAPI.cached_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code> at <a class="reference internal" href="#ape.api.projects.ProjectAPI.manifest_cachefile" title="ape.api.projects.ProjectAPI.manifest_cachefile"><code class="xref py py-attr docutils literal notranslate"><span class="pre">manifest_cachefile</span></code></a>
+if it exists and is valid.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.ProjectAPI.compilers">
+<code class="sig-name descname"><span class="pre">compilers</span></code><em class="property"><span class="pre">:</span> <span class="pre">CompilerManager</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.compilers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compilers for creating the manifest.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.ProjectAPI.contracts_folder">
+<code class="sig-name descname"><span class="pre">contracts_folder</span></code><em class="property"><span class="pre">:</span> <span class="pre">pathlib.Path</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.contracts_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>The path to the contracts in the project.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.projects.ProjectAPI.create_manifest">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">create_manifest</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_paths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ethpm_types.manifest.PackageManifest</span><a class="headerlink" href="#ape.api.projects.ProjectAPI.create_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a manifest from the project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_paths</strong> (<em>Optional</em><em>[</em><em>List</em><em>]</em>) – An optional list of paths to compile
+from this project.</p></li>
+<li><p><strong>use_cache</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to clear caches and force a re-compile.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.projects.ProjectAPI.is_valid">
+<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_valid</span></code><a class="headerlink" href="#ape.api.projects.ProjectAPI.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the project at the given path matches this project type.
+Useful for figuring out the best <code class="docutils literal notranslate"><span class="pre">ProjectAPI</span></code> to use when compiling a project.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.projects.ProjectAPI.manifest_cachefile">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">manifest_cachefile</span></code><a class="headerlink" href="#ape.api.projects.ProjectAPI.manifest_cachefile" title="Permalink to this definition">¶</a></dt>
+<dd><p>The path to the project’s cached manifest. The manifest
+is a cached file representing the project and is useful
+for sharing, such as uploading to IPFS.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>pathlib.Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.ProjectAPI.name">
+<code class="sig-name descname"><span class="pre">name</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of this project when another project uses it as a dependency.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.ProjectAPI.path">
+<code class="sig-name descname"><span class="pre">path</span></code><em class="property"><span class="pre">:</span> <span class="pre">pathlib.Path</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.path" title="Permalink to this definition">¶</a></dt>
+<dd><p>The project path.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.ProjectAPI.version">
+<code class="sig-name descname"><span class="pre">version</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The version of the project whe another project uses it as a dependency.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>

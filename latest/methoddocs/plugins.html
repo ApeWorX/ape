@@ -87,6 +87,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.plugins.config">Config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.plugins.converter">Converter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.plugins.network">Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.plugins.project">Project</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
@@ -190,7 +191,7 @@ registration process, and to ensure overall conformance to type interfaces as mu
 <dl class="py data">
 <dt id="ape.plugins.pluggy_patch.plugin_manager">
 <code class="sig-prename descclassname"><span class="pre">ape.plugins.pluggy_patch.</span></code><code class="sig-name descname"><span class="pre">plugin_manager</span></code><em class="property"> <span class="pre">=</span> <span class="pre">&lt;pluggy.manager.PluginManager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#ape.plugins.pluggy_patch.plugin_manager" title="Permalink to this definition">¶</a></dt>
-<dd><p>A manager responsbile for registering and accessing plugins (singleton).</p>
+<dd><p>A manager responsible for registering and accessing plugins (singleton).</p>
 </dd></dl>
 
 </div>
@@ -432,6 +433,54 @@ include <a class="reference external" href="https://github.com/ApeWorX/ape-infur
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Iterator[tuple[str, str, Type[<a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a>]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.plugins.project">
+<span id="project"></span><h2>Project<a class="headerlink" href="#module-ape.plugins.project" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.plugins.project.DependencyPlugin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.plugins.project.</span></code><code class="sig-name descname"><span class="pre">DependencyPlugin</span></code><a class="headerlink" href="#ape.plugins.project.DependencyPlugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.plugins.pluggy_patch.PluginType" title="ape.plugins.pluggy_patch.PluginType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.plugins.pluggy_patch.PluginType</span></code></a></p>
+<p>A plugin for downloading packages and creating
+<a class="reference internal" href="#ape.plugins.project.ProjectPlugin" title="ape.plugins.project.ProjectPlugin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectPlugin</span></code></a> implementations.</p>
+<dl class="py method">
+<dt id="ape.plugins.project.DependencyPlugin.dependencies">
+<code class="sig-name descname"><span class="pre">dependencies</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><span class="pre">ape.api.projects.DependencyAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.plugins.project.DependencyPlugin.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>A hook that returns a <a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">DependencyAPI</span></code></a> mapped
+to its <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file dependencies special key. For example,
+when configuring GitHub dependencies, you set the <code class="docutils literal notranslate"><span class="pre">github</span></code> key in
+the <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code> block of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file and it
+will automatically use this <code class="docutils literal notranslate"><span class="pre">DependencyAPI</span></code> implementation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">DependencyAPI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.plugins.project.ProjectPlugin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.plugins.project.</span></code><code class="sig-name descname"><span class="pre">ProjectPlugin</span></code><a class="headerlink" href="#ape.plugins.project.ProjectPlugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.plugins.pluggy_patch.PluginType" title="ape.plugins.pluggy_patch.PluginType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.plugins.pluggy_patch.PluginType</span></code></a></p>
+<p>A plugin for converting files to a <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code>.
+The default project plugin is the <code class="xref py py-class docutils literal notranslate"><span class="pre">ApeProject</span></code>.
+Otherwise, you can define your own project implementation for converting
+a set of files to a <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code>, such as one that resolves dependencies
+via <code class="docutils literal notranslate"><span class="pre">.gitmodules</span></code>.</p>
+<dl class="py method">
+<dt id="ape.plugins.project.ProjectPlugin.projects">
+<code class="sig-name descname"><span class="pre">projects</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><span class="pre">ape.api.projects.ProjectAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.plugins.project.ProjectPlugin.projects" title="Permalink to this definition">¶</a></dt>
+<dd><p>A hook that returns a <a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a> subclass type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
