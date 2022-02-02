@@ -35,7 +35,9 @@ class ApeProject(ProjectAPI):
         if (self.path / CONFIG_FILE_NAME).exists():
             return True
 
-        logger.warning(f"'{self.path.name}' is not an 'ApeProject', but attempting to process as one.")
+        logger.warning(
+            f"'{self.path.name}' is not an 'ApeProject', but attempting to process as one."
+        )
 
         # NOTE: We always return True as a last-chance attempt because it often
         # works anyway and prevents unnecessary plugin requirements.
