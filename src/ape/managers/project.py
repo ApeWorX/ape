@@ -590,10 +590,10 @@ class ProjectManager:
         Figure out the full path of the contract from the given ``key_contract_path``.
 
         For example, give it ``HelloWorld`` and it returns
-        ``<absolute-project-path>/contracts/HelloWorld.sol``.
+        ``<absolute-project-path>/<contracts-folder>/HelloWorld.sol``.
 
         Another example is to give it ``contracts/HelloWorld.sol`` and it also
-        returns ``<absolute-project-path>/contracts/HelloWorld.sol``.
+        returns ``<absolute-project-path>/<contracts-folder>/HelloWorld.sol``.
 
         Args:
             key_contract_path (pathlib.Path): A sub-path to a contract.
