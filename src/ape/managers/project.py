@@ -82,14 +82,11 @@ class ApeProject(ProjectAPI):
                     yaml.safe_dump(config_data, f)
 
         # Load a cached or clean manifest (to use for caching)
-        if self.cached_manifest:
+        if self.cached_manifest and use_cache:
             manifest = self.cached_manifest
         else:
             manifest = PackageManifest()
-
             if self.manifest_cachefile.exists():
-                # The file exists but we didn't get a manifest.
-                # Thus, it must be corrupted.
                 self.manifest_cachefile.unlink()
 
         cached_sources = manifest.sources or {}
@@ -233,42 +230,6 @@ class GithubDependency(DependencyAPI):
                 )
 
             return self._extract_local_manifest(temp_project_path)
-
-
-class _DependencyManager:
-    DATA_FOLDER: Path
-
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
-    project_manager: ClassVar["ProjectManager"] = injected_before_use()  # type: ignore
-
-    def __init__(self, data_folder: Path):
-        self.DATA_FOLDER = data_folder
-
-    @cached_property
-    def dependency_types(self) -> Dict[str, Type[DependencyAPI]]:
-        dependency_classes = {
-            "github": GithubDependency,
-            "local": LocalDependency,
-        }
-
-        for _, (config_key, dependency_class) in self.plugin_manager.dependencies:
-            dependency_classes[config_key] = dependency_class
-
-        dependency_classes["github"] = GithubDependency
-        dependency_classes["local"] = LocalDependency
-        return dependency_classes
-
-    def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
-        for key, dependency_cls in self.dependency_types.items():
-            if key in config_dependency_data:
-                return dependency_cls(
-                    **config_dependency_data,
-                    project_manager=self.project_manager,
-                    _data_folder=self.DATA_FOLDER,
-                )  # type: ignore
-
-        dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))
-        raise ProjectError(f"No installed dependency API that supports '{dep_id}'.")
 
 
 class ProjectManager:
@@ -732,3 +693,39 @@ class ProjectManager:
     #     TODO: Clean up manifest and minify it
     #     TODO: Publish sources to IPFS and replace with CIDs
     #     TODO: Publish to IPFS
+
+
+class _DependencyManager:
+    DATA_FOLDER: Path
+
+    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
+    project_manager: ClassVar[ProjectManager] = injected_before_use()  # type: ignore
+
+    def __init__(self, data_folder: Path):
+        self.DATA_FOLDER = data_folder
+
+    @cached_property
+    def dependency_types(self) -> Dict[str, Type[DependencyAPI]]:
+        dependency_classes = {
+            "github": GithubDependency,
+            "local": LocalDependency,
+        }
+
+        for _, (config_key, dependency_class) in self.plugin_manager.dependencies:
+            dependency_classes[config_key] = dependency_class
+
+        dependency_classes["github"] = GithubDependency
+        dependency_classes["local"] = LocalDependency
+        return dependency_classes
+
+    def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
+        for key, dependency_cls in self.dependency_types.items():
+            if key in config_dependency_data:
+                return dependency_cls(
+                    **config_dependency_data,
+                    project_manager=self.project_manager,
+                    _data_folder=self.DATA_FOLDER,
+                )  # type: ignore
+
+        dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))
+        raise ProjectError(f"No installed dependency API that supports '{dep_id}'.")

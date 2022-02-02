@@ -71,7 +71,7 @@ dependencies:
 This is helpful when:
 
 * Working on multiple packages at once
-* When there is not a suitable `DependencyAPI` implementation available for downloading your dependency.
+* When there is not a suitable `DependencyAPI` implementation available for downloading your dependency
 
 ## Deployments
 
