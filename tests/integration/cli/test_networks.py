@@ -12,7 +12,7 @@ ethereum  (default)
 │   └── geth  (default)
 ├── goerli
 │   └── geth  (default)
-└── development  (default)
+└── local  (default)
     ├── geth
     └── test  (default)
 """
@@ -41,7 +41,7 @@ ecosystems:
     providers:
     - name: geth
       isDefault: true
-  - name: development
+  - name: local
     isDefault: true
     providers:
     - name: geth
@@ -61,7 +61,7 @@ ethereum  (default)
 │   └── geth  (default)
 ├── goerli
 │   └── geth  (default)
-└── development  (default)
+└── local  (default)
     ├── geth  (default)
     └── test
 """

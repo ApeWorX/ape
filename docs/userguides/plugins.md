@@ -56,7 +56,7 @@ from ape import plugins
 @plugins.register(plugins.ProviderPlugin)
 def providers():
     # NOTE: 'MyProvider' defined in a prior code-block.
-    yield "ethereum", "development", MyProvider
+    yield "ethereum", "local", MyProvider
 ```
 
 This decorator hooks into ape core and ties everything together by looking for all local installed site-packages that 

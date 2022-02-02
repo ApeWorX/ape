@@ -9,7 +9,7 @@ from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
 
 
-class LocalNetwork(TestProviderAPI, Web3Provider):
+class LocalProvider(TestProviderAPI, Web3Provider):
     def connect(self):
         pass
 
