@@ -147,7 +147,7 @@ class NetworkManager:
         e.g. ``--network [ECOSYSTEM:NETWORK:PROVIDER]``.
 
         Each value is in the form ``ecosystem:network:provider`` and shortened options also
-        appear in the list. For example, ``::geth`` would default to ``:ethereum:development:geth``
+        appear in the list. For example, ``::geth`` would default to ``:ethereum:local:geth``
         and both will be in the returned list. The values come from each
         :class:`~ape.api.providers.ProviderAPI` that is installed.
 
@@ -222,7 +222,7 @@ class NetworkManager:
             # Either split didn't work (in which case it matches the start)
             # or there was nothing after the ``:`` (e.g. "ethereum:")
             ecosystem = self.__getattr__(selections[0] or self.default_ecosystem.name)
-            # By default, the "development" network should be specified for
+            # By default, the "local" network should be specified for
             # any ecosystem (this should not correspond to a production chain)
             default_network = ecosystem.default_network
             return ecosystem[default_network].get_provider(provider_settings=provider_settings)

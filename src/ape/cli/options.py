@@ -117,6 +117,7 @@ def network_option(default: str = None):
           use as the default. Defaults to how ``ape`` normally
           selects a default network.
     """
+
     default = default or networks.default_ecosystem.name
     return click.option(
         "--network",
@@ -153,9 +154,9 @@ def _account_callback(ctx, param, value):
     return value
 
 
-def account_option_that_prompts_when_not_given():
+def account_option():
     """
-    Accepts either the account alias or the account number.
+    A CLI option that accepts either the account alias or the account number.
     If not given anything, it will prompt the user to select an account.
     """
 

@@ -77,7 +77,7 @@ class ProviderPlugin(PluginType):
 
             @plugins.register(plugins.ProviderPlugin)
             def providers():
-                yield "ethereum", "development", MyProvider
+                yield "ethereum", "local", MyProvider
 
         Returns:
             Iterator[tuple[str, str, Type[:class:`~ape.api.providers.ProviderAPI`]]]
