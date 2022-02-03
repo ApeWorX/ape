@@ -3,8 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from ape import accounts, chain, networks, project
-from ape.managers import ManagerAccessBase
+from ape import networks, project
 from ape_test.fixtures import PytestApeFixtures
 from ape_test.runners import PytestApeRunner
 
@@ -38,14 +37,7 @@ def pytest_configure(config):
     # Enable verbose output if stdout capture is disabled
     config.option.verbose = config.getoption("capture") == "no"
 
-    # Inject the runner plugin (must happen before fixtures registration)
-    ManagerAccessBase.config_manager = config
-    ManagerAccessBase.project_manager = project
-    ManagerAccessBase.network_manager = networks
-    ManagerAccessBase.chain_manager = chain
-    ManagerAccessBase.account_manager = accounts
-
-    session = PytestApeRunner()
+    session = PytestApeRunner(pytest_config=config)
 
     config.pluginmanager.register(session, "ape-test")
 

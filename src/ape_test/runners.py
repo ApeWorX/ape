@@ -1,5 +1,5 @@
 import pytest
-from _pytest.config import Config, PytestPluginManager
+from _pytest.config import Config as PytestConfig
 
 import ape
 from ape.logging import logger
@@ -9,17 +9,15 @@ from .contextmanagers import RevertsContextManager
 
 
 class PytestApeRunner(ManagerAccessBase):
-    def __init__(self):
+    def __init__(self, pytest_config: PytestConfig):
+        self.pytest_config = pytest_config
         self._warned_for_missing_features = False
         ape.reverts = RevertsContextManager  # type: ignore
 
     @property
     def _network_choice(self) -> str:
         # The option the user providers via --network (or the default).
-
-        pluginmanager = PytestPluginManager()
-
-        return Config(pluginmanager=pluginmanager).getoption("network")
+        return self.pytest_config.getoption("network")
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_protocol(self, item, nextitem):
@@ -58,10 +56,10 @@ class PytestApeRunner(ManagerAccessBase):
         so related assertions cannot be rewritten". The warning is not relevant
         for end users who are performing tests with ape.
         """
-        reporter = self.config_manager.pluginmanager.get_plugin("terminalreporter")
+        reporter = self.pytest_config.pluginmanager.get_plugin("terminalreporter")
         warnings = reporter.stats.pop("warnings", [])
         warnings = [i for i in warnings if "PytestAssertRewriteWarning" not in i.message]
-        if warnings and not self.config_manager.getoption("--disable-warnings"):
+        if warnings and not self.pytest_config.getoption("--disable-warnings"):
             reporter.stats["warnings"] = warnings
 
     @pytest.hookimpl(trylast=True, hookwrapper=True)
