@@ -399,7 +399,7 @@ class ContractContainer:
         constructor = ContractConstructor(  # type: ignore
             abi=self.contract_type.constructor,
             provider=self._provider,
-            converter=self._converter,
+            converter=self._conversion_manager,
             deployment_bytecode=self.contract_type.get_deployment_bytecode() or b"",
         )
 

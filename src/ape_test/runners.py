@@ -1,13 +1,9 @@
-from pathlib import Path
-
-import click
 import pytest
-from _pytest.config import Config
+from _pytest.config import Config, PytestPluginManager
 
 import ape
 from ape.logging import logger
 from ape.utils import ManagerAccessBase
-from ape_console._cli import console
 
 from .contextmanagers import RevertsContextManager
 
@@ -20,62 +16,10 @@ class PytestApeRunner(ManagerAccessBase):
     @property
     def _network_choice(self) -> str:
         # The option the user providers via --network (or the default).
-        return self.config_manager.getoption("network")
 
-    def pytest_exception_interact(self, report, call):
-        """
-        A ``-I`` option triggers when an exception is raised which can be interactively handled.
-        Outputs the full ``repr`` of the failed test and opens an interactive shell using the
-        same console as the ``ape console`` command.
-        """
+        pluginmanager = PytestPluginManager()
 
-        if self.config.getoption("interactive") and report.failed:
-
-            capman = self.config.pluginmanager.get_plugin("capturemanager")
-            if capman:
-                capman.suspend_global_capture(in_=True)
-
-            # find the last traceback frame within the active project
-            traceback = call.excinfo.traceback[-1]
-            for tb_frame in call.excinfo.traceback[::-1]:
-                try:
-                    Path(tb_frame.path).relative_to(self.project.path)
-                    traceback = tb_frame
-                    click.echo()
-                    click.echo(f"Traceback:{traceback}")
-                    break
-                except ValueError as err:
-                    click.echo()
-                    logger.warn_from_exception(err, tb_frame)
-                    pass
-
-            # get global namespace
-            globals_dict = traceback.frame.f_globals
-
-            # filter python internals and pytest internals
-            globals_dict = {
-                k: v
-                for k, v in globals_dict.items()
-                if not k.startswith("__") and not k.startswith("@")
-            }
-
-            # filter fixtures
-            globals_dict = {
-                k: v for k, v in globals_dict.items() if not hasattr(v, "_pytestfixturefunction")
-            }
-
-            # get local namespace
-            locals_dict = traceback.locals
-            locals_dict = {k: v for k, v in locals_dict.items() if not k.startswith("@")}
-
-            click.echo("Starting interactive mode. Type `exit` fail and halt current test.")
-
-            namespace = {"_callinfo": call, **globals_dict, **locals_dict}
-            console(extra_locals=namespace, project=self.project)
-
-            # launch ipdb instead of console
-            if capman:
-                capman.resume_global_capture()
+        return Config(pluginmanager=pluginmanager).getoption("network")
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_protocol(self, item, nextitem):
@@ -103,11 +47,6 @@ class PytestApeRunner(ManagerAccessBase):
             "Tests will not be completely isolated."
         )
         self._warned_for_missing_features = True
-
-    @property
-    def _network_choice(self) -> str:
-        # The option the user providers via --network (or the default).
-        return Config.getoption("network")
 
     def pytest_sessionstart(self):
         """
