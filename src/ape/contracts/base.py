@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from pydantic.dataclasses import dataclass
 
 from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.exceptions import (
@@ -12,19 +13,17 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType
-from ape.utils import dataclass
+from ape.utils import AbstractBaseModel
 
 if TYPE_CHECKING:
     from ape.managers.converters import ConversionManager
     from ape.managers.networks import NetworkManager
 
 
-@dataclass
-class ContractConstructor:
+class ContractConstructor(AbstractBaseModel):
     deployment_bytecode: bytes
     abi: ConstructorABI
     provider: ProviderAPI
-    conversion_manager: "ConversionManager"
 
     def __post_init__(self):
         if len(self.deployment_bytecode) == 0:
@@ -59,12 +58,10 @@ class ContractConstructor:
         return self.provider.send_transaction(txn)
 
 
-@dataclass
-class ContractCall:
+class ContractCall(AbstractBaseModel):
     abi: MethodABI
     address: AddressType
     provider: ProviderAPI
-    conversion_manager: "ConversionManager"
 
     def __repr__(self) -> str:
         return self.abi.signature
@@ -102,10 +99,8 @@ class ContractCall:
         return tuple_output
 
 
-@dataclass
-class ContractCallHandler:
+class ContractCallHandler(AbstractBaseModel):
     provider: ProviderAPI
-    conversion_manager: "ConversionManager"
     contract: "ContractInstance"
     abis: List[MethodABI]
 
@@ -145,12 +140,10 @@ def _select_abi(abis, args):
     return selected_abi
 
 
-@dataclass
-class ContractTransaction:
+class ContractTransaction(AbstractBaseModel):
     abi: MethodABI
     address: AddressType
     provider: ProviderAPI
-    conversion_manager: "ConversionManager"
 
     def __repr__(self) -> str:
         return self.abi.signature
@@ -179,10 +172,8 @@ class ContractTransaction:
         raise TransactionError(message="Must specify a `sender`.")
 
 
-@dataclass
-class ContractTransactionHandler:
+class ContractTransactionHandler(AbstractBaseModel):
     provider: ProviderAPI
-    conversion_manager: "ConversionManager"
     contract: "ContractInstance"
     abis: List[MethodABI]
 
@@ -207,7 +198,6 @@ class ContractTransactionHandler:
             abi=selected_abi,
             address=self.contract.address,
             provider=self.provider,
-            conversion_manager=self.conversion_manager,
         )(*args, **kwargs)
 
 
@@ -217,10 +207,8 @@ class ContractLog:
     data: Dict[str, Any]
 
 
-@dataclass
-class ContractEvent:
+class ContractEvent(AbstractBaseModel):
     provider: ProviderAPI
-    conversion_manager: "ConversionManager"
     contract: "ContractInstance"
     abis: List[EventABI]
     cached_logs: List[ContractLog] = []
@@ -317,7 +305,7 @@ class ContractInstance(AddressAPI):
 
         kwargs = {
             "provider": self.provider,
-            "converter": self._converter,
+            "conversion_manager": self._conversion_manager,
             "contract": self,
         }
 
@@ -342,8 +330,7 @@ class ContractInstance(AddressAPI):
             raise AttributeError(str(e)) from e
 
 
-@dataclass
-class ContractContainer:
+class ContractContainer(AbstractBaseModel):
     """
     A wrapper around the contract type that has access to the provider.
     When you import your contracts from the :class:`ape.managers.project.ProjectManager`, you
@@ -361,8 +348,6 @@ class ContractContainer:
 
     _provider: Optional[ProviderAPI]
     # _provider is only None when a user is not connected to a provider.
-
-    _conversion_manager: "ConversionManager"
 
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
@@ -390,16 +375,15 @@ class ContractContainer:
         return ContractInstance(  # type: ignore
             _address=address,
             _provider=self._provider,
-            _conversion_manager=self._conversion_manager,
+            _conversion_manager=self.conversion_manager,
             _contract_type=self.contract_type,
         )
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
-        args = self._conversion_manager.convert(args, tuple)
+        args = self.conversion_manager.convert(args, tuple)
         constructor = ContractConstructor(  # type: ignore
             abi=self.contract_type.constructor,
             provider=self._provider,
-            converter=self._conversion_manager,
             deployment_bytecode=self.contract_type.get_deployment_bytecode() or b"",
         )
 
