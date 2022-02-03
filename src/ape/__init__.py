@@ -1,5 +1,4 @@
 import signal
-from sqlite3 import converters
 
 signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
 
@@ -36,6 +35,8 @@ networks = _network_manager
 """Manages the networks for the current project. See
 :class:`ape.managers.networks.NetworkManager`."""
 
+_converters = _conversion_manager
+
 chain = _chain_manager
 """
 The current connected blockchain; requires an active provider.
@@ -49,7 +50,7 @@ accounts = _account_manager
 project = _project_manager
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
-Contract = partial(_Contract, networks=networks, converters=converters)
+Contract = partial(_Contract, networks=networks, converters=_converters)
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 
 convert = _conversion_manager.convert
