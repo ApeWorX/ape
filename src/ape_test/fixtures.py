@@ -9,12 +9,6 @@ from ape.utils import ManagerAccessBase
 
 
 class PytestApeFixtures(ManagerAccessBase):
-    def __init__(
-        self,
-        project_manager: ProjectManager,
-    ):
-        self._project = project_manager
-
     @pytest.fixture(scope="session")
     def accounts(self) -> List[TestAccountAPI]:
         return self.account_manager.test_accounts
@@ -25,4 +19,4 @@ class PytestApeFixtures(ManagerAccessBase):
 
     @pytest.fixture(scope="session")
     def project(self) -> ProjectManager:
-        return self._project
+        return self.project_manager

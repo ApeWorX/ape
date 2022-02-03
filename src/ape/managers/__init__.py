@@ -10,25 +10,30 @@ from .config import ConfigManager
 from .converters import ConversionManager
 from .networks import NetworkManager
 from .project import ProjectManager as Project
+from .project import _DependencyManager
 from .query import QueryManager as _QueryManager
 
 # Wiring together the application
+_data_folder = _Path.home().joinpath(".ape")
+_project_folder = _Path.cwd()
 
 _plugin_manager = PluginManager()
 ManagerAccessBase.plugin_manager = _plugin_manager
 
+_dependency_manager = _DependencyManager(data_folder=_data_folder)
+ManagerAccessBase.dependency_manager = _dependency_manager
+
 _config_manager = ConfigManager(
     # Store all globally-cached files
-    data_folder=_Path.home().joinpath(".ape"),
+    data_folder=_data_folder,
     # NOTE: For all HTTP requests we make
     request_header={
         "User-Agent": USER_AGENT,
     },
     # What we are considering to be the starting project directory
-    project_folder=_Path.cwd(),
+    project_folder=_project_folder,
 )
 ManagerAccessBase.config_manager = _config_manager
-
 
 _compiler_manager = CompilerManager()
 ManagerAccessBase.compiler_manager = _compiler_manager
@@ -48,6 +53,8 @@ ManagerAccessBase.chain_manager = _chain_manager
 _account_manager = AccountManager()
 ManagerAccessBase.account_manager = _account_manager
 
+_project_manager = Project(path=_project_folder)
+ManagerAccessBase.project_manager = _project_manager
 
 __all__ = [
     "_account_manager",
@@ -56,6 +63,7 @@ __all__ = [
     "_config_manager",
     "_conversion_manager",
     "_network_manager",
+    "_project_manager",
     "Project",
     "query",
 ]

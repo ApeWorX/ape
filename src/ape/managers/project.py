@@ -4,7 +4,7 @@ import sys
 import tempfile
 from importlib import import_module
 from pathlib import Path
-from typing import ClassVar, Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Type, Union
 
 import yaml
 from ethpm_types import Compiler, ContractType, PackageManifest
@@ -14,8 +14,7 @@ from ape.api.projects import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import logger
-from ape.plugins import PluginManager
-from ape.utils import cached_property, get_relative_path, github_client, injected_before_use
+from ape.utils import ManagerAccessBase, cached_property, get_relative_path, github_client
 
 from .base import ManagerBase
 from .config import CONFIG_FILE_NAME
@@ -668,11 +667,8 @@ class ProjectManager(ManagerBase):
     #     TODO: Publish to IPFS
 
 
-class _DependencyManager:
+class _DependencyManager(ManagerAccessBase):
     DATA_FOLDER: Path
-
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
-    project_manager: ClassVar[ProjectManager] = injected_before_use()  # type: ignore
 
     def __init__(self, data_folder: Path):
         self.DATA_FOLDER = data_folder
