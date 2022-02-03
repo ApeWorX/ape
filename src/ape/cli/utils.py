@@ -1,3 +1,5 @@
+from typing import Optional
+
 import click
 
 from ape.logging import logger
@@ -10,10 +12,8 @@ class Abort(click.ClickException):
     useful for all user-facing errors.
     """
 
-    def __init__(self, message):
-        if not message.endswith("."):
-            message = f"{message}."
-
+    def __init__(self, message: Optional[str] = None):
+        message = message or "Operation aborted."
         super().__init__(message)
 
     def show(self, file=None):
