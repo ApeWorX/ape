@@ -1,5 +1,5 @@
 import pytest
-from _pytest.config import Config
+from _pytest.config import Config, PytestPluginManager
 
 import ape
 from ape.logging import logger
@@ -12,6 +12,14 @@ class PytestApeRunner(ManagerAccessBase):
     def __init__(self):
         self._warned_for_missing_features = False
         ape.reverts = RevertsContextManager  # type: ignore
+
+    @property
+    def _network_choice(self) -> str:
+        # The option the user providers via --network (or the default).
+
+        pluginmanager = PytestPluginManager()
+
+        return Config(pluginmanager=pluginmanager).getoption("network")
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_protocol(self, item, nextitem):
@@ -39,11 +47,6 @@ class PytestApeRunner(ManagerAccessBase):
             "Tests will not be completely isolated."
         )
         self._warned_for_missing_features = True
-
-    @property
-    def _network_choice(self) -> str:
-        # The option the user providers via --network (or the default).
-        return Config.getoption("network")
 
     def pytest_sessionstart(self):
         """
