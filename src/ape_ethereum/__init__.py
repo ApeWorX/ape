@@ -1,5 +1,6 @@
 from ape import plugins
 from ape.api import NetworkAPI, create_network_type
+from ape.api.networks import LOCAL_NETWORK_NAME
 
 from ._converters import WeiConversions
 from .ecosystem import NETWORKS, Ethereum, EthereumConfig
@@ -26,5 +27,5 @@ def networks():
         yield "ethereum", network_name, create_network_type(*network_params)
 
     # NOTE: This works for development providers, as they get chain_id from themselves
-    yield "ethereum", "development", NetworkAPI
+    yield "ethereum", LOCAL_NETWORK_NAME, NetworkAPI
     yield "ethereum", "mainnet-fork", NetworkAPI

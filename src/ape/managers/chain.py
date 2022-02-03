@@ -378,14 +378,13 @@ class ChainManager(_ConnectedChain):
 
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
-        return f"<ChainManager ({props})>"
+        return f"<{self.__class__.__name__} ({props})>"
 
     def snapshot(self) -> SnapshotID:
         """
         Record the current state of the blockchain with intent to later
         call the method :meth:`~ape.managers.chain.ChainManager.revert`
-        to go back to this point. This method is for development networks
-        only.
+        to go back to this point. This method is for local networks only.
 
         Raises:
             NotImplementedError: When the active provider does not support

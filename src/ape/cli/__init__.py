@@ -13,7 +13,7 @@ from ape.cli.choices import (
 )
 from ape.cli.commands import NetworkBoundCommand
 from ape.cli.options import (
-    account_option_that_prompts_when_not_given,
+    account_option,
     ape_cli_context,
     contract_option,
     network_option,
@@ -25,7 +25,7 @@ from ape.cli.utils import Abort
 
 __all__ = [
     "Abort",
-    "account_option_that_prompts_when_not_given",
+    "account_option",
     "AccountAliasPromptChoice",
     "Alias",
     "AllFilePaths",

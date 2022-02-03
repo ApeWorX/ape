@@ -22,7 +22,6 @@ if sys.version_info >= (3, 8):
 else:
     from typing_extensions import Literal
 
-
 BlockID = Union[str, int, HexBytes, Literal["earliest", "latest", "pending"]]
 """
 An ID that can match a block, such as the literals ``"earliest"``, ``"latest"``, or ``"pending"``

@@ -64,7 +64,7 @@ For specifying the network in an ad-hoc fashion, commands such as `run`, `test`,
 option:
 
 ```bash
-ape run deploy --network ethereum:development:hardhat
+ape run deploy --network ethereum:local:hardhat
 ```
 
 **NOTE**: If you are using the default ecosystem or network, you can omit them from the option:
@@ -185,7 +185,7 @@ Out-of-the-box, your tests run using the `eth-tester` provider, which comes bund
 installed, you can use the `ape-geth` plugin that also comes with ape.
 
 ```bash
-ape test --network ethereum:development:geth
+ape test --network ethereum:local:geth
 ```
 
 Each testing plugin should work the same way. You will have access to the same test accounts.

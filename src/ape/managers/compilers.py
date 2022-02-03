@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import ClassVar, Dict, List, Optional, Set
+from typing import ClassVar, Dict, List, Set
 
 from ethpm_types import ContractType
 
@@ -10,6 +10,13 @@ from ape.plugins import PluginManager
 from ape.utils import injected_before_use
 
 from .config import ConfigManager
+
+
+def _get_contract_path(path: Path, base_path: Path):
+    try:
+        return path.relative_to(base_path)
+    except ValueError:
+        return path
 
 
 class CompilerManager:
@@ -30,7 +37,8 @@ class CompilerManager:
     _registered_compilers_cache: Dict[Path, Dict[str, CompilerAPI]] = {}
 
     def __repr__(self):
-        return f"<CompilerManager len(registered_compilers)={len(self.registered_compilers)}>"
+        num_compilers = len(self.registered_compilers)
+        return f"<{self.__class__.__name__} len(registered_compilers)={num_compilers}>"
 
     @property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
@@ -82,8 +90,10 @@ class CompilerManager:
         contract_types_dict = {}
         for extension in extensions:
             paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
+
             for path in paths_to_compile:
-                logger.info(f"Compiling '{self._get_contract_path(path)}'.")
+                contract_path = _get_contract_path(path, self.config.contracts_folder)
+                logger.info(f"Compiling '{contract_path}'.")
 
             compiled_contracts = self.registered_compilers[extension].compile(
                 paths_to_compile, base_path=self.config.contracts_folder
@@ -97,33 +107,6 @@ class CompilerManager:
 
         return contract_types_dict  # type: ignore
 
-    def compile_external_project(
-        self,
-        contract_filepaths: List[Path],
-        project_path: Path,
-        contracts_path: Optional[Path] = None,
-    ) -> Dict[str, ContractType]:
-        """
-        Compile an external project.
-
-        Raises:
-            :class:`~ape.exceptions.CompilerError`: When there is no compiler found for the given
-              extension as well as when there is a contract-type collision across compilers.
-
-        Args:
-            contract_filepaths (List[pathlib.Path]): The list of files to compile,
-              as ``pathlib.Path`` objects.
-            project_path (pathlib.Path): The path to the project to compile.
-            contracts_path (pathlib.Path): The path to the project's contracts.
-              Defaults to the ``<project_path>/contracts``.
-
-        Returns:
-            Dict[str, ``ContractType``]: A mapping of contract names to their type.
-        """
-
-        with self.config.using_project(project_path, contracts_folder=contracts_path):
-            return self.compile(contract_filepaths)
-
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = set(path.suffix for path in contract_filepaths)
         unhandled_extensions = extensions - set(self.registered_compilers)
@@ -132,9 +115,3 @@ class CompilerManager:
             raise CompilerError(f"No compiler found for extensions [{unhandled_extensions_str}].")
 
         return extensions
-
-    def _get_contract_path(self, path: Path):
-        try:
-            return path.relative_to(self.config.contracts_folder)
-        except ValueError:
-            return path

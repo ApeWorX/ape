@@ -24,6 +24,7 @@ from ape.api import (
     TransactionStatusEnum,
     TransactionType,
 )
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractLog
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
 from ape.types import AddressType
@@ -50,8 +51,8 @@ class EthereumConfig(ConfigItem):
     kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
     rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
     goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    development: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
-    default_network: str = "development"
+    local: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
+    default_network: str = LOCAL_NETWORK_NAME
 
 
 class BaseTransaction(TransactionAPI):

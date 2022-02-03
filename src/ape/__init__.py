@@ -14,18 +14,24 @@ from .managers.config import ConfigManager as _ConfigManager
 from .managers.converters import ConversionManager as _ConversionManager
 from .managers.networks import NetworkManager as _NetworkManager
 from .managers.project import ProjectManager as Project
+from .managers.project import _DependencyManager
 from .plugins import PluginManager as _PluginManager
 from .utils import USER_AGENT
 
 # Wiring together the application
+_data_folder = _Path.home().joinpath(".ape")
 
 plugin_manager = _PluginManager()
 """Manages plugins for the current project. See :class:`ape.plugins.PluginManager`."""
 
+_DependencyManager.plugin_manager = plugin_manager
+_dependency_manager = _DependencyManager(data_folder=_data_folder)
+
 _ConfigManager.plugin_manager = plugin_manager
+_ConfigManager._dependency_manager = _dependency_manager
 config = _ConfigManager(
     # Store all globally-cached files
-    data_folder=_Path.home().joinpath(".ape"),
+    data_folder=_data_folder,
     # NOTE: For all HTTP requests we make
     request_header={
         "User-Agent": USER_AGENT,
@@ -74,18 +80,20 @@ Project.config = config
 Project.compilers = compilers
 Project.networks = networks
 Project.converter = _converters
+Project.plugin_manager = plugin_manager
 """User-facing class for instantiating Projects (in addition to the currently
 active ``project``). See :class:`ape.managers.project.ProjectManager`."""
 
 project = Project(path=config.PROJECT_FOLDER)
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
+_DependencyManager.project_manager = project
+
 Contract = _partial(_Contract, networks=networks, converters=_converters)
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 
 convert = _converters.convert
 """Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
-
 
 __all__ = [
     "accounts",
