@@ -1,3 +1,4 @@
+from inspect import getframeinfo, stack
 from typing import Optional
 
 import click
@@ -13,7 +14,11 @@ class Abort(click.ClickException):
     """
 
     def __init__(self, message: Optional[str] = None):
-        message = message or "Operation aborted."
+        caller = getframeinfo(stack()[1][0])
+        message = (
+            message
+            or f"Operation aborted in {caller.filename}::{caller.function} on line {caller.lineno}."
+        )
         super().__init__(message)
 
     def show(self, file=None):
