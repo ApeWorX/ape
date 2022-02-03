@@ -24,7 +24,7 @@ class ContractConstructor:
     deployment_bytecode: bytes
     abi: ConstructorABI
     provider: ProviderAPI
-    converter: "ConversionManager"
+    conversion_manager: "ConversionManager"
 
     def __post_init__(self):
         if len(self.deployment_bytecode) == 0:
@@ -34,7 +34,7 @@ class ContractConstructor:
         return self.abi.signature if self.abi else "constructor()"
 
     def _convert_tuple(self, v: tuple) -> tuple:
-        return self.converter.convert(v, tuple)
+        return self.conversion_manager.convert(v, tuple)
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
         args = self._convert_tuple(args)
@@ -64,13 +64,13 @@ class ContractCall:
     abi: MethodABI
     address: AddressType
     provider: ProviderAPI
-    converter: "ConversionManager"
+    conversion_manager: "ConversionManager"
 
     def __repr__(self) -> str:
         return self.abi.signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
-        return self.converter.convert(v, tuple)
+        return self.conversion_manager.convert(v, tuple)
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
         kwargs = dict(
@@ -105,7 +105,7 @@ class ContractCall:
 @dataclass
 class ContractCallHandler:
     provider: ProviderAPI
-    converter: "ConversionManager"
+    conversion_manager: "ConversionManager"
     contract: "ContractInstance"
     abis: List[MethodABI]
 
@@ -114,7 +114,7 @@ class ContractCallHandler:
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
-        return self.converter.convert(v, tuple)
+        return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> Any:
         if not self.contract.is_contract:
@@ -130,7 +130,7 @@ class ContractCallHandler:
             abi=selected_abi,
             address=self.contract.address,
             provider=self.provider,
-            converter=self.converter,
+            conversion_manager=self.conversion_manager,
         )(*args, **kwargs)
 
 
@@ -150,13 +150,13 @@ class ContractTransaction:
     abi: MethodABI
     address: AddressType
     provider: ProviderAPI
-    converter: "ConversionManager"
+    conversion_manager: "ConversionManager"
 
     def __repr__(self) -> str:
         return self.abi.signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
-        return self.converter.convert(v, tuple)
+        return self.conversion_manager.convert(v, tuple)
 
     def encode(self, *args, **kwargs) -> TransactionAPI:
         kwargs = dict(
@@ -182,7 +182,7 @@ class ContractTransaction:
 @dataclass
 class ContractTransactionHandler:
     provider: ProviderAPI
-    converter: "ConversionManager"
+    conversion_manager: "ConversionManager"
     contract: "ContractInstance"
     abis: List[MethodABI]
 
@@ -191,7 +191,7 @@ class ContractTransactionHandler:
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
-        return self.converter.convert(v, tuple)
+        return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         if not self.contract.is_contract:
@@ -207,7 +207,7 @@ class ContractTransactionHandler:
             abi=selected_abi,
             address=self.contract.address,
             provider=self.provider,
-            converter=self.converter,
+            conversion_manager=self.conversion_manager,
         )(*args, **kwargs)
 
 
@@ -220,7 +220,7 @@ class ContractLog:
 @dataclass
 class ContractEvent:
     provider: ProviderAPI
-    converter: "ConversionManager"
+    conversion_manager: "ConversionManager"
     contract: "ContractInstance"
     abis: List[EventABI]
     cached_logs: List[ContractLog] = []
@@ -241,7 +241,7 @@ class ContractInstance(AddressAPI):
     """
 
     _address: AddressType
-    _converter: "ConversionManager"
+    _conversion_manager: "ConversionManager"
     _contract_type: ContractType
 
     def __repr__(self) -> str:
@@ -362,7 +362,7 @@ class ContractContainer:
     _provider: Optional[ProviderAPI]
     # _provider is only None when a user is not connected to a provider.
 
-    _converter: "ConversionManager"
+    _conversion_manager: "ConversionManager"
 
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
@@ -390,12 +390,12 @@ class ContractContainer:
         return ContractInstance(  # type: ignore
             _address=address,
             _provider=self._provider,
-            _converter=self._converter,
+            _conversion_manager=self._conversion_manager,
             _contract_type=self.contract_type,
         )
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
-        args = self._converter.convert(args, tuple)
+        args = self._conversion_manager.convert(args, tuple)
         constructor = ContractConstructor(  # type: ignore
             abi=self.contract_type.constructor,
             provider=self._provider,
@@ -416,7 +416,7 @@ class ContractContainer:
 def _Contract(
     address: Union[str, AddressAPI, AddressType],
     networks: "NetworkManager",
-    converters: "ConversionManager",
+    conversion_manager: "ConversionManager",
     contract_type: Optional[ContractType] = None,
 ) -> AddressAPI:
     """
@@ -428,7 +428,7 @@ def _Contract(
     if not provider:
         raise ProviderNotConnectedError()
 
-    converted_address: AddressType = converters.convert(address, AddressType)
+    converted_address: AddressType = conversion_manager.convert(address, AddressType)
 
     # Check contract cache (e.g. previously deployed/downloaded contracts)
     # TODO: Add ``contract_cache`` dict-like object to ``NetworkAPI``
@@ -450,7 +450,7 @@ def _Contract(
         return ContractInstance(  # type: ignore
             _address=converted_address,
             _provider=provider,
-            _converter=converters,
+            _conversion_manager=conversion_manager,
             _contract_type=contract_type,
         )
 
