@@ -205,7 +205,7 @@ class AccountAPI(AddressAPI):
 
         return ContractInstance(  # type: ignore
             _provider=self.provider,
-            _converter=_conversion_manager,
+            _conversion_manager=_conversion_manager,
             _address=receipt.contract_address,
             _contract_type=contract.contract_type,
         )
