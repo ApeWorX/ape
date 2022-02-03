@@ -2,18 +2,18 @@ import json
 import os
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar, Dict, Generator, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, Generator, List, Optional, Union
 
 from ape.api import ConfigDict, ConfigItem, DependencyAPI
 from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.logging import logger
-from ape.utils import injected_before_use, load_config
+from ape.utils import load_config
 
 from .base import ManagerBase
 
 if TYPE_CHECKING:
-    from .project import ProjectManager, _DependencyManager
+    from .project import ProjectManager
 
 
 CONFIG_FILE_NAME = "ape-config.yaml"
@@ -69,7 +69,6 @@ class ConfigManager(ManagerBase):
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
     """A dict of contract deployments by address and contract type."""
 
-    _dependency_manager: ClassVar["_DependencyManager"] = injected_before_use()  # type: ignore
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
 
     def __init__(
@@ -108,7 +107,7 @@ class ConfigManager(ManagerBase):
             raise ConfigError("'dependencies' config item must be a list of dicts.")
 
         self.dependencies = [
-            self._dependency_manager.decode_dependency(dep) for dep in dependencies
+            self.dependency_manager.decode_dependency(dep) for dep in dependencies
         ]  # type: ignore
 
         if "contracts_folder" in user_config:

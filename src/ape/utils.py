@@ -49,6 +49,7 @@ if TYPE_CHECKING:
     from ape.managers.config import ConfigManager
     from ape.managers.converters import ConversionManager
     from ape.managers.networks import NetworkManager
+    from ape.managers.project import ProjectManager, _DependencyManager
     from ape.managers.query import QueryManager
     from ape.plugins import PluginManager
 
@@ -553,6 +554,10 @@ class ManagerAccessBase:
     to more easily compile sources.
     """
 
+    dependency_manager: ClassVar["_DependencyManager"] = cast(
+        "_DependencyManager", injected_before_use()
+    )
+
     config_manager: ClassVar["ConfigManager"] = cast("ConfigManager", injected_before_use())
     """
     A reference to :class:`~ape.managers.config.ConfigManager`, which
@@ -576,6 +581,8 @@ class ManagerAccessBase:
 
     plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
     query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
+
+    project_manager: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
 
 
 class AbstractBaseModel(ManagerAccessBase, ABC, BaseModel):

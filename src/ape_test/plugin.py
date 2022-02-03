@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from ape import networks, project
+from ape import accounts, chain, networks, project
+from ape.managers import ManagerAccessBase
 from ape_test.fixtures import PytestApeFixtures
 from ape_test.runners import PytestApeRunner
 
@@ -45,14 +46,17 @@ def pytest_configure(config):
     config.option.verbose = config.getoption("capture") == "no"
 
     # Inject the runner plugin (must happen before fixtures registration)
-    PytestApeRunner.config_manager = config
-    session = PytestApeRunner(project_manager=project)
+    ManagerAccessBase.config_manager = config
+    ManagerAccessBase.project_manager = project
+    ManagerAccessBase.network_manager = networks
+    ManagerAccessBase.chain_manager = chain
+    ManagerAccessBase.account_manager = accounts
+
+    session = PytestApeRunner()
 
     config.pluginmanager.register(session, "ape-test")
 
-    # Inject fixtures
-    PytestApeFixtures.config_manager = config
-    fixtures = PytestApeFixtures(project_manager=project)
+    fixtures = PytestApeFixtures()
     config.pluginmanager.register(fixtures, "ape-fixtures")
 
 

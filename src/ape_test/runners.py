@@ -2,10 +2,10 @@ from pathlib import Path
 
 import click
 import pytest
+from _pytest.config import Config
 
 import ape
 from ape.logging import logger
-from ape.managers.project import ProjectManager
 from ape.utils import ManagerAccessBase
 from ape_console._cli import console
 
@@ -13,11 +13,7 @@ from .contextmanagers import RevertsContextManager
 
 
 class PytestApeRunner(ManagerAccessBase):
-    def __init__(
-        self,
-        project_manager: ProjectManager,
-    ):
-        self.project = project_manager
+    def __init__(self):
         self._warned_for_missing_features = False
         ape.reverts = RevertsContextManager  # type: ignore
 
@@ -107,6 +103,11 @@ class PytestApeRunner(ManagerAccessBase):
             "Tests will not be completely isolated."
         )
         self._warned_for_missing_features = True
+
+    @property
+    def _network_choice(self) -> str:
+        # The option the user providers via --network (or the default).
+        return Config.getoption("network")
 
     def pytest_sessionstart(self):
         """

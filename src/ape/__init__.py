@@ -16,8 +16,8 @@ from .managers import (
     _conversion_manager,
     _network_manager,
     _plugin_manager,
+    _project_manager,
 )
-from .managers.project import _DependencyManager
 
 # Wiring together the application
 
@@ -46,10 +46,8 @@ Also handy for querying data about the chain and managing local caches.
 accounts = _account_manager
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
-project = Project(path=config.PROJECT_FOLDER)
+project = _project_manager
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
-
-_DependencyManager.project_manager = project
 
 Contract = partial(_Contract, networks=networks, converters=converters)
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
@@ -60,6 +58,7 @@ convert = _conversion_manager.convert
 __all__ = [
     "accounts",
     "chain",
+    "compilers",
     "config",
     "convert",
     "Contract",
