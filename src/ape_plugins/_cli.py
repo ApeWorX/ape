@@ -2,7 +2,7 @@ import subprocess
 import sys
 from os import getcwd
 from pathlib import Path
-from typing import List, Set
+from typing import Collection, List, Set
 
 import click
 
@@ -33,7 +33,7 @@ def _display_section(header: str, lines: List[Set[str]]):
             click.echo("  {}".format("\n  ".join(formatted_output)))
 
 
-def _format_output(plugins_list: Set[str]) -> Set:
+def _format_output(plugins_list: Collection[str]) -> Set:
     output = set()
     for i in plugins_list:
         text = i.replace("ape_", "")
@@ -76,7 +76,7 @@ def _list(cli_ctx, display_all):
             installed_second_class_plugins_no_version.add(name)
 
         elif name not in CORE_PLUGINS or name not in github_client.available_plugins:
-            installed_third_class_plugins.add(f"{name}{spacing}{version})")
+            installed_third_class_plugins.add(f"{name}{spacing}{version}")
         else:
             cli_ctx.logger.error(f"{name} is not a plugin.")
 
