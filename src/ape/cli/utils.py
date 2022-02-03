@@ -1,4 +1,5 @@
 from inspect import getframeinfo, stack
+from pathlib import Path
 from typing import Optional
 
 import click
@@ -15,9 +16,11 @@ class Abort(click.ClickException):
 
     def __init__(self, message: Optional[str] = None):
         caller = getframeinfo(stack()[1][0])
+        file_path = Path(caller.filename)
+        location = file_path.name if file_path.exists() else caller.filename
         message = (
             message
-            or f"Operation aborted in {caller.filename}::{caller.function} on line {caller.lineno}."
+            or f"Operation aborted in {location}::{caller.function} on line {caller.lineno}."
         )
         super().__init__(message)
 
