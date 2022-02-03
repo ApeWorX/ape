@@ -12,11 +12,7 @@ from ape.cli import ape_cli_context
 @ape_cli_context()
 @click.argument("pytest_args", nargs=-1, type=click.UNPROCESSED)
 def cli(cli_ctx, pytest_args):
-    debugger = "ape_test.plugin:ApeDebugger"
-    if "--pdb" in pytest_args and "--pdbcls" not in pytest_args:
-        pytest_args = [a for a in pytest_args]
-        pytest_args.extend(("--pdbcls", debugger))
     return_code = pytest.main([*pytest_args], ["ape_test"])
     if return_code:
         # only exit with non-zero status to make testing easier
-        cli_ctx.abort()
+        cli_ctx.abort("Failed to run pytest")

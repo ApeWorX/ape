@@ -2,18 +2,10 @@ import sys
 from pathlib import Path
 
 import pytest
-from IPython.core.debugger import Pdb
 
 from ape import accounts, chain, networks, project
 from ape_test.fixtures import PytestApeFixtures
 from ape_test.runners import PytestApeRunner
-
-
-class ApeDebugger(Pdb):
-    # will have namespace\
-    # namespace = {component: getattr(ape, component) for component in ape.__all__}
-    #
-    pass
 
 
 def pytest_addoption(parser):
@@ -26,6 +18,12 @@ def pytest_addoption(parser):
         action="store",
         default=networks.default_ecosystem.name,
         help="Override the default network and provider. (see ``ape networks list`` for options)",
+    )
+    parser.addoption(
+        "--interactive",
+        "-I",
+        action="store_true",
+        help="Open an interactive console each time a test fails",
     )
 
     # NOTE: Other testing plugins, such as hypothesis, should integrate with pytest separately
