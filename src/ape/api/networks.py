@@ -7,7 +7,7 @@ from pluggy import PluginManager  # type: ignore
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
 from ape.types import AddressType
-from ape.utils import abstractdataclass, abstractmethod, cached_property, dataclass
+from ape.utils import AbstractBaseModel, abstractdataclass, abstractmethod, cached_property
 
 from .config import ConfigItem
 
@@ -89,8 +89,6 @@ class EcosystemAPI:
                 networks[network_name] = network_class(
                     name=network_name,
                     ecosystem=self,
-                    config_manager=self.config_manager,
-                    plugin_manager=self.plugin_manager,
                     data_folder=network_folder,
                     request_header=self.request_header,
                 )
@@ -314,8 +312,7 @@ class ProviderContextManager:
             self.network_manager.active_provider = self._connected_providers[-1]
 
 
-@dataclass
-class NetworkAPI:
+class NetworkAPI(AbstractBaseModel):
     """
     A wrapper around a provider for a specific ecosystem.
     """
@@ -326,19 +323,13 @@ class NetworkAPI:
     ecosystem: EcosystemAPI
     """The ecosystem of the network."""
 
-    config_manager: "ConfigManager"
-    """A reference to the global config manager."""
-
-    plugin_manager: PluginManager
-    """A reference to the global plugin manager."""
-
     data_folder: Path  # For caching any data that might need caching
     """The path to the ``.ape`` directory."""
 
-    request_header: str
+    request_header: dict
     """A shareable network HTTP header."""
 
-    _default_provider: str = ""
+    _default_provider: Optional[str] = ""
 
     @cached_property
     def config(self) -> ConfigItem:

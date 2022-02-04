@@ -160,7 +160,6 @@ def test_list_excludes_external_accounts(ape_cli, runner, mock_account_manager):
     assert "test_external_address" not in result.output
 
 
-@pytest.mark.skip(reason="Something broken with linking the path: No such file or directory")
 def test_change_password(ape_cli, runner, test_keyfile):
     assert test_keyfile.exists()
     # Delete Account (`N` for "Leave unlocked?")
