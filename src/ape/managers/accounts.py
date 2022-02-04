@@ -77,13 +77,7 @@ class AccountManager(ManagerBase):
             List[:class:`~ape.api.accounts.AccountAPI`]
         """
 
-        accounts_with_type = []
-        for account in self:
-            if isinstance(account, type_):
-                self._inject_provider(account)
-                accounts_with_type.append(account)
-
-        return accounts_with_type
+        return [acc for acc in self if isinstance(acc, type_)]
 
     def __len__(self) -> int:
         """
@@ -98,7 +92,6 @@ class AccountManager(ManagerBase):
     def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
             for account in container:
-                self._inject_provider(account)
                 yield account
 
     def __repr__(self) -> str:
@@ -129,9 +122,7 @@ class AccountManager(ManagerBase):
                 continue
 
             container = container_type(None, account_type, self.config_manager)
-            for account in container:
-                self._inject_provider(account)
-                accounts.append(account)
+            accounts.extend([acc for acc in container])
 
         return accounts
 
@@ -151,7 +142,6 @@ class AccountManager(ManagerBase):
 
         for account in self:
             if account.alias and account.alias == alias:
-                self._inject_provider(account)
                 return account
 
         raise IndexError(f"No account with alias '{alias}'.")
@@ -176,7 +166,6 @@ class AccountManager(ManagerBase):
 
         for idx, account in enumerate(self.__iter__()):
             if account_id == idx:
-                self._inject_provider(account)
                 return account
 
         raise IndexError(f"No account at index '{account_id}'.")
@@ -197,9 +186,7 @@ class AccountManager(ManagerBase):
 
         for container in self.containers.values():
             if account_id in container:
-                account = container[account_id]
-                self._inject_provider(account)
-                return account
+                return container[account_id]
 
         raise IndexError(f"No account with address '{account_id}'.")
 
@@ -215,7 +202,3 @@ class AccountManager(ManagerBase):
         """
 
         return any(address in container for container in self.containers.values())
-
-    def _inject_provider(self, account: AccountAPI):
-        if self.network_manager.active_provider is not None:
-            account.provider = self.network_manager.active_provider

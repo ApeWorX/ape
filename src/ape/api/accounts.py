@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Callable, ClassVar, Iterator, List, Optional, Type, Union, cast
 
 import click
 from eth_account import Account
@@ -8,7 +8,7 @@ from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.types.signatures import _Signature
-from ape.utils import abstractdataclass, abstractmethod, cached_property
+from ape.utils import abstractdataclass, abstractmethod, cached_property, injected_before_use
 
 from .address import AddressAPI
 from .providers import ReceiptAPI, TransactionAPI, TransactionType
@@ -24,7 +24,7 @@ class AccountAPI(AddressAPI):
     An API class representing an account.
     """
 
-    container: "AccountContainerAPI"
+    container: ClassVar["AccountContainerAPI"] = cast("AccountContainerAPI", injected_before_use())
 
     def __dir__(self) -> List[str]:
         """
