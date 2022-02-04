@@ -589,6 +589,7 @@ class AbstractBaseModel(ManagerAccessBase, ABC, BaseModel):
     class Config:
         keep_untouched = (cached_property,)
         arbitrary_types_allowed = True
+        underscore_attrs_are_private = True
 
     # NOTE: Due to https://github.com/samuelcolvin/pydantic/issues/1241
     #       we have to add this cached property workaround in order to avoid this error:

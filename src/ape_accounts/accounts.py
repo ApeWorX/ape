@@ -39,13 +39,11 @@ class AccountContainer(AccountContainerAPI):
             yield KeyfileAccount(container=self, keyfile_path=keyfile)  # type: ignore
 
 
-# NOTE: `AccountAPI` is a dataclass
+# NOTE: `AccountAPI` is am AbstractBaseModel
 class KeyfileAccount(AccountAPI):
     keyfile_path: Path
-
-    def __post_init__(self):
-        self.locked = True
-        self.__cached_key = None
+    locked: bool = True
+    __cached_key: Optional[EthAccount] = None
 
     def __repr__(self):
         return f"<{self.__class__.__name__} address={self.address} alias={self.alias}>"

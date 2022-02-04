@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Collection, Dict, List, Optional
+from typing import Collection, Dict, List, Optional
 
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
@@ -10,26 +10,18 @@ from pydantic import ValidationError
 
 from ape.logging import logger
 from ape.utils import (
-    abstractdataclass,
+    AbstractBaseModel,
     abstractmethod,
     get_all_files_in_directory,
     get_relative_path,
 )
 
-if TYPE_CHECKING:
-    from ape.managers.compilers import CompilerManager
-    from ape.managers.project import ProjectManager
 
-
-@abstractdataclass
-class ProjectAPI:
+class ProjectAPI(AbstractBaseModel):
     """
     An abstract base-class for working with projects.
     This class can also be extended to a plugin for supporting non-ape projects.
     """
-
-    compilers: "CompilerManager"
-    """Compilers for creating the manifest."""
 
     path: Path
     """The project path."""
@@ -139,14 +131,10 @@ class ProjectAPI:
         }
 
 
-@abstractdataclass
-class DependencyAPI:
+class DependencyAPI(AbstractBaseModel):
     """
     A base-class for dependency sources, such as GitHub or IPFS.
     """
-
-    project_manager: "ProjectManager"
-    """The root project manager."""
 
     name: str
     """The name of the dependency."""

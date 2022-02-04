@@ -54,7 +54,7 @@ class ApeProject(ProjectAPI):
         if not self.contracts_folder.exists():
             return files
 
-        for extension in self.compilers.registered_compilers:
+        for extension in self.compiler_manager.registered_compilers:
             files.extend(self.contracts_folder.rglob(f"*{extension}"))
 
         return files
@@ -122,12 +122,12 @@ class ApeProject(ProjectAPI):
         needs_compiling = list(filter(file_needs_compiling, sources))
 
         # Set the context in case compiling a dependency (or anything outside the root project).
-        with self.compilers.config_manager.using_project(
+        with self.compiler_manager.config_manager.using_project(
             self.path, contracts_folder=self.contracts_folder
         ):
-            self.compilers.config_manager.PROJECT_FOLDER = self.path
-            self.compilers.config_manager.contracts_folder = self.contracts_folder
-            compiled_contract_types = self.compilers.compile(needs_compiling)
+            self.compiler_manager.config_manager.PROJECT_FOLDER = self.path
+            self.compiler_manager.config_manager.contracts_folder = self.contracts_folder
+            compiled_contract_types = self.compiler_manager.compile(needs_compiling)
             contract_types.update(compiled_contract_types)
 
             # NOTE: Update contract types & re-calculate source code entries in manifest
@@ -409,11 +409,8 @@ class ProjectManager(ManagerBase):
         """
 
         def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
-            with self.config_manager.using_project(
-                path, contracts_folder=contracts_folder
-            ) as project_manager:
+            with self.config_manager.using_project(path, contracts_folder=contracts_folder):
                 proj = proj_cls(
-                    compilers=project_manager.compiler_manager,
                     contracts_folder=contracts_folder,
                     name=name,
                     path=path,
@@ -685,14 +682,13 @@ class _DependencyManager(ManagerAccessBase):
 
         dependency_classes["github"] = GithubDependency
         dependency_classes["local"] = LocalDependency
-        return dependency_classes
+        return dependency_classes  # type: ignore
 
     def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
         for key, dependency_cls in self.dependency_types.items():
             if key in config_dependency_data:
                 return dependency_cls(
                     **config_dependency_data,
-                    project_manager=self.project_manager,
                     _data_folder=self.DATA_FOLDER,
                 )  # type: ignore
 
