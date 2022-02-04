@@ -45,7 +45,7 @@ class AccountManager(ManagerBase):
             accounts_folder = data_folder / plugin_name
             accounts_folder.mkdir(exist_ok=True)
             containers[plugin_name] = container_type(
-                accounts_folder, account_type, self.config_manager
+                data_folder=accounts_folder, account_type=account_type
             )
 
         return containers
@@ -121,7 +121,8 @@ class AccountManager(ManagerBase):
             if not issubclass(account_type, TestAccountAPI):
                 continue
 
-            container = container_type(None, account_type, self.config_manager)
+            # pydantic validation won't allow passing None for data_folder/required attr
+            container = container_type(data_folder="", account_type=account_type)
             accounts.extend([acc for acc in container])
 
         return accounts
