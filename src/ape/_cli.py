@@ -72,15 +72,20 @@ class ApeCLI(click.MultiCommand):
 
     @property
     def commands(self) -> Dict:
+        group_name = "ape_cli_subcommands"
         if not self._commands:
-            entry_points = metadata.entry_points()  # type: ignore
+            try:
+                entry_points = metadata.entry_points(group=group_name)
+            except TypeError:
+                entry_points = metadata.entry_points()
+                entry_points = entry_points[group_name] if group_name in entry_points else []  # type: ignore
 
-            if "ape_cli_subcommands" not in entry_points:
+            if not entry_points:
                 raise Abort("Missing registered cli subcommands")
 
             self._commands = {
                 clean_plugin_name(entry_point.name): entry_point.load
-                for entry_point in entry_points["ape_cli_subcommands"]
+                for entry_point in entry_points
             }
 
         return self._commands
