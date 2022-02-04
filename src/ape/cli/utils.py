@@ -15,13 +15,12 @@ class Abort(click.ClickException):
     """
 
     def __init__(self, message: Optional[str] = None):
-        caller = getframeinfo(stack()[1][0])
-        file_path = Path(caller.filename)
-        location = file_path.name if file_path.exists() else caller.filename
-        message = (
-            message
-            or f"Operation aborted in {location}::{caller.function} on line {caller.lineno}."
-        )
+        if not message:
+            caller = getframeinfo(stack()[1][0])
+            file_path = Path(caller.filename)
+            location = file_path.name if file_path.exists() else caller.filename
+            message = f"Operation aborted in {location}::{caller.function} on line {caller.lineno}."
+
         super().__init__(message)
 
     def show(self, file=None):
