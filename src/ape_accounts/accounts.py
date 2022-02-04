@@ -36,12 +36,12 @@ class AccountContainer(AccountContainerAPI):
 
     def __iter__(self) -> Iterator[AccountAPI]:
         for keyfile in self._keyfiles:
-            yield KeyfileAccount(self, keyfile)  # type: ignore
+            yield KeyfileAccount(container=self, keyfile_path=keyfile)  # type: ignore
 
 
 # NOTE: `AccountAPI` is a dataclass
 class KeyfileAccount(AccountAPI):
-    _keyfile: Path
+    keyfile_path: Path
 
     def __post_init__(self):
         self.locked = True
@@ -52,11 +52,11 @@ class KeyfileAccount(AccountAPI):
 
     @property
     def alias(self) -> str:
-        return self._keyfile.stem
+        return self.keyfile_path.stem
 
     @property
     def keyfile(self) -> dict:
-        return json.loads(self._keyfile.read_text())
+        return json.loads(self.keyfile_path.read_text())
 
     @property
     def address(self) -> AddressType:
@@ -106,7 +106,7 @@ class KeyfileAccount(AccountAPI):
             confirmation_prompt=True,
         )
 
-        self._keyfile.write_text(json.dumps(EthAccount.encrypt(key, passphrase)))
+        self.keyfile_path.write_text(json.dumps(EthAccount.encrypt(key, passphrase)))
 
     def delete(self):
         passphrase = click.prompt(
@@ -115,7 +115,7 @@ class KeyfileAccount(AccountAPI):
             default="",  # Just in case there's no passphrase
         )
         self.__decrypt_keyfile(passphrase)
-        self._keyfile.unlink()
+        self.keyfile_path.unlink()
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         if self.locked and not click.confirm(f"{msg}\n\nSign: "):
