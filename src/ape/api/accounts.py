@@ -8,17 +8,16 @@ from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.types.signatures import _Signature
-from ape.utils import abstractdataclass, abstractmethod, cached_property, injected_before_use
+from ape.utils import AbstractBaseModel, abstractmethod, cached_property, injected_before_use
 
 from .address import AddressAPI
 from .providers import ReceiptAPI, TransactionAPI, TransactionType
 
 if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance
-    from ape.managers.config import ConfigManager
 
 
-# NOTE: AddressAPI is a dataclass already
+# NOTE: AddressAPI is an AbstractBaseModel already
 class AccountAPI(AddressAPI):
     """
     An API class representing an account.
@@ -240,8 +239,7 @@ class AccountAPI(AddressAPI):
             raise ValueError(f"Unsupported Message type: {type(data)}.")
 
 
-@abstractdataclass
-class AccountContainerAPI:
+class AccountContainerAPI(AbstractBaseModel):
     """
     An API class representing a collection of :class:`~ape.api.accounts.AccountAPI`
     instances.
@@ -249,7 +247,6 @@ class AccountContainerAPI:
 
     data_folder: Path
     account_type: Type[AccountAPI]
-    config_manager: "ConfigManager"
 
     @property
     @abstractmethod
