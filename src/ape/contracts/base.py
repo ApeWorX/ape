@@ -128,7 +128,6 @@ class ContractCallHandler(AbstractBaseModel):
             abi=selected_abi,
             address=self.contract.address,
             provider=self.provider,
-            conversion_manager=self.conversion_manager,
         )(*args, **kwargs)
 
 
@@ -232,7 +231,6 @@ class ContractInstance(AddressAPI):
     """
 
     _address: AddressType
-    _conversion_manager: "ConversionManager"
     _contract_type: ContractType
 
     def __repr__(self) -> str:
@@ -378,7 +376,6 @@ class ContractContainer(AbstractBaseModel):
         return ContractInstance(  # type: ignore
             _address=address,
             _provider=self._provider,
-            _conversion_manager=self.conversion_manager,
             _contract_type=self.contract_type,
         )
 
@@ -437,7 +434,6 @@ def _Contract(
         return ContractInstance(  # type: ignore
             _address=converted_address,
             _provider=provider,
-            _conversion_manager=conversion_manager,
             _contract_type=contract_type,
         )
 

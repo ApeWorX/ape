@@ -478,7 +478,6 @@ class ProjectManager(ManagerBase):
         return ContractContainer(  # type: ignore
             contract_type=contract_type,
             _provider=self.network_manager.active_provider,
-            _conversion_manager=self.conversion_manager,
         )
 
     def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
