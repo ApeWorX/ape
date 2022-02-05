@@ -5,7 +5,7 @@ from eth_utils import to_bytes
 from pydantic.dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class _Signature:
     v: int
     r: bytes

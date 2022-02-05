@@ -39,7 +39,7 @@ class AccountContainer(AccountContainerAPI):
             yield KeyfileAccount(container=self, keyfile_path=keyfile)  # type: ignore
 
 
-# NOTE: `AccountAPI` is am AbstractBaseModel
+# NOTE: `AccountAPI` is an AbstractBaseModel
 class KeyfileAccount(AccountAPI):
     keyfile_path: Path
     locked: bool = True
