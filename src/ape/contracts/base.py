@@ -309,7 +309,7 @@ class ContractInstance(AddressAPI):
             # NOTE: `__getattr__` *must* raise `AttributeError`
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
-        if num_matching_conditions > 1:
+        elif num_matching_conditions > 1:
             # ABI should not contain a mix of events, mutable and view methods that match
             # NOTE: `__getattr__` *must* raise `AttributeError`
             raise AttributeError(f"{self.__class__.__name__} has corrupted ABI.")
