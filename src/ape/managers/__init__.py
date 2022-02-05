@@ -25,13 +25,13 @@ ManagerAccessBase.dependency_manager = _dependency_manager
 
 _config_manager = ConfigManager(
     # Store all globally-cached files
-    data_folder=_data_folder,
+    DATA_FOLDER=_data_folder,
     # NOTE: For all HTTP requests we make
-    request_header={
+    REQUEST_HEADER={
         "User-Agent": USER_AGENT,
     },
     # What we are considering to be the starting project directory
-    project_folder=_project_folder,
+    PROJECT_FOLDER=_project_folder,
 )
 ManagerAccessBase.config_manager = _config_manager
 

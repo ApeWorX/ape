@@ -28,7 +28,7 @@ class TestAccountContainer(TestAccountContainerAPI):
     def __len__(self) -> int:
         return len(self._dev_accounts)
 
-    def __iter__(self) -> Iterator[TestAccountAPI]:
+    def __iter__(self):
         for index in range(0, len(self)):
             account = self._dev_accounts[index]
             yield TestAccount(
