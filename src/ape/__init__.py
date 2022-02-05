@@ -5,13 +5,14 @@ signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
 import sys as _sys
 from functools import partial
 
+from ape.utils import ManagerAccessBase as _ManagerAccessBase
+
 from .contracts import _Contract
 from .managers import (
     Project,
     _account_manager,
     _chain_manager,
     _compiler_manager,
-    _config_manager,
     _conversion_manager,
     _network_manager,
     _plugin_manager,
@@ -23,8 +24,10 @@ from .managers import (
 plugin_manager = _plugin_manager
 """Manages plugins for the current project. See :class:`ape.plugins.PluginManager`."""
 
-config = _config_manager
-"""The active configs for the current project. See :class:`ape.managers.config.ConfigManager`."""
+config = _ManagerAccessBase.config_manager
+"""The active configs for the current project. See :class:`ape.managers.config.ConfigManager`.
+# NOTE: config is an injected property.
+"""
 
 # Main types we export for the user
 compilers = _compiler_manager
