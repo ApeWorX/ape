@@ -77,11 +77,7 @@ class KeyfileAccount(AccountAPI):
             default="",  # Just in case there's no passphrase
         )
 
-        try:
-            key = EthAccount.decrypt(self.keyfile, passphrase)
-
-        except ValueError as err:
-            raise InvalidPasswordError() from err
+        key = self.__decrypt_keyfile(passphrase)
 
         if click.confirm(f"Leave '{self.alias}' unlocked?"):
             self.locked = False
@@ -94,12 +90,8 @@ class KeyfileAccount(AccountAPI):
             f"Enter Passphrase to permanently unlock '{self.alias}'",
             hide_input=True,
         )
-
-        try:
-            self.__cached_key = EthAccount.decrypt(self.keyfile, passphrase)
-            self.locked = False
-        except ValueError as err:
-            raise InvalidPasswordError() from err
+        self.__cached_key = self.__decrypt_keyfile(passphrase)
+        self.locked = False
 
     def lock(self):
         self.locked = True
@@ -122,9 +114,7 @@ class KeyfileAccount(AccountAPI):
             hide_input=True,
             default="",  # Just in case there's no passphrase
         )
-
-        EthAccount.decrypt(self.keyfile, passphrase)
-
+        self.__decrypt_keyfile(passphrase)
         self._keyfile.unlink()
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
@@ -148,3 +138,9 @@ class KeyfileAccount(AccountAPI):
             r=to_bytes(signed_txn.r),
             s=to_bytes(signed_txn.s),
         )
+
+    def __decrypt_keyfile(self, passphrase: str) -> EthAccount:
+        try:
+            return EthAccount.decrypt(self.keyfile, passphrase)
+        except ValueError as err:
+            raise InvalidPasswordError() from err

@@ -161,7 +161,7 @@ def deep_merge(dict1, dict2) -> Dict:
     result = deepcopy(dict1)
 
     for key, value in dict2.items():
-        if isinstance(value, collections.Mapping):
+        if isinstance(value, collections.Mapping):  # type: ignore
             result[key] = deep_merge(result.get(key, {}), value)
         else:
             result[key] = deepcopy(dict2[key])
