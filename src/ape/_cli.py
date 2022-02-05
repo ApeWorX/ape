@@ -75,16 +75,18 @@ class ApeCLI(click.MultiCommand):
         group_name = "ape_cli_subcommands"
         if not self._commands:
             try:
-                entry_points = metadata.entry_points(group=group_name)
+                entry_points = metadata.entry_points(group=group_name)  # type: ignore
             except TypeError:
                 entry_points = metadata.entry_points()
-                entry_points = entry_points[group_name] if group_name in entry_points else []  # type: ignore
+                entry_points = (
+                    entry_points[group_name] if group_name in entry_points else []  # type: ignore
+                )
 
             if not entry_points:
                 raise Abort("Missing registered cli subcommands")
 
             self._commands = {
-                clean_plugin_name(entry_point.name): entry_point.load
+                clean_plugin_name(entry_point.name): entry_point.load  # type: ignore
                 for entry_point in entry_points
             }
 
