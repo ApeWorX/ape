@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from eth_utils import to_bytes
-from ethpm_types import ABI, ContractType
+from ethpm_types import ContractType
+from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 
 from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.exceptions import (
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 @dataclass
 class ContractConstructor:
     deployment_bytecode: bytes
-    abi: Optional[ABI]
+    abi: ConstructorABI
     provider: ProviderAPI
     converter: "ConversionManager"
 
@@ -61,7 +61,7 @@ class ContractConstructor:
 
 @dataclass
 class ContractCall:
-    abi: ABI
+    abi: MethodABI
     address: AddressType
     provider: ProviderAPI
     converter: "ConversionManager"
@@ -107,7 +107,7 @@ class ContractCallHandler:
     provider: ProviderAPI
     converter: "ConversionManager"
     contract: "ContractInstance"
-    abis: List[ABI]
+    abis: List[MethodABI]
 
     def __repr__(self) -> str:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
@@ -147,7 +147,7 @@ def _select_abi(abis, args):
 
 @dataclass
 class ContractTransaction:
-    abi: ABI
+    abi: MethodABI
     address: AddressType
     provider: ProviderAPI
     converter: "ConversionManager"
@@ -184,7 +184,7 @@ class ContractTransactionHandler:
     provider: ProviderAPI
     converter: "ConversionManager"
     contract: "ContractInstance"
-    abis: List[ABI]
+    abis: List[MethodABI]
 
     def __repr__(self) -> str:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
@@ -222,7 +222,7 @@ class ContractEvent:
     provider: ProviderAPI
     converter: "ConversionManager"
     contract: "ContractInstance"
-    abis: List[ABI]
+    abis: List[EventABI]
     cached_logs: List[ContractLog] = []
 
 
@@ -266,7 +266,7 @@ class ContractInstance(AddressAPI):
             List[str]
         """
         return list(super(AddressAPI, self).__dir__()) + [
-            abi.name for abi in self._contract_type.abi  # type: ignore
+            abi.name for abi in self._contract_type.abi if isinstance(abi, (MethodABI, EventABI))
         ]
 
     def __getattr__(self, attr_name: str) -> Any:
@@ -284,43 +284,61 @@ class ContractInstance(AddressAPI):
             any: The return value from the contract call, or a transaction receipt.
         """
 
-        handlers = {
-            "events": ContractEvent,
-            "calls": ContractCallHandler,
-            "transactions": ContractTransactionHandler,
+        def name_matches(abi):
+            return abi.name == attr_name
+
+        selected_view_methods = list(filter(name_matches, self._contract_type.view_methods))
+        has_matching_view_methods = len(selected_view_methods) > 0
+
+        selected_mutable_methods = list(filter(name_matches, self._contract_type.mutable_methods))
+        has_matching_mutable_methods = len(selected_mutable_methods) > 0
+
+        selected_events = list(filter(name_matches, self._contract_type.events))
+        has_matching_events = len(selected_events) > 0
+
+        num_matching_conditions = sum(
+            [
+                has_matching_view_methods,
+                has_matching_mutable_methods,
+                has_matching_events,
+            ]
+        )
+
+        if num_matching_conditions == 0:
+            # Didn't find anything that matches
+            # NOTE: `__getattr__` *must* raise `AttributeError`
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
+
+        elif num_matching_conditions > 1:
+            # ABI should not contain a mix of events, mutable and view methods that match
+            # NOTE: `__getattr__` *must* raise `AttributeError`
+            raise AttributeError(f"{self.__class__.__name__} has corrupted ABI.")
+
+        kwargs = {
+            "provider": self.provider,
+            "converter": self._converter,
+            "contract": self,
         }
 
-        def get_handler(abi_type: str) -> Any:
-            selected_abis = [
-                abi for abi in getattr(self._contract_type, abi_type) if abi.name == attr_name
-            ]
+        # Handle according to the proper abi type handler
+        if has_matching_events:
+            kwargs["abis"] = selected_events
+            handler = ContractEvent
 
-            if not selected_abis:
-                return  # No ABIs found for this type
+        elif has_matching_view_methods:
+            kwargs["abis"] = selected_view_methods
+            handler = ContractCallHandler  # type: ignore
 
-            kwargs = {
-                "provider": self.provider,
-                "converter": self._converter,
-                "contract": self,
-                "abis": selected_abis,
-            }
+        elif has_matching_mutable_methods:
+            kwargs["abis"] = selected_mutable_methods
+            handler = ContractTransactionHandler  # type: ignore
 
-            try:
-                return handlers[abi_type](**kwargs)  # type: ignore
+        try:
+            return handler(**kwargs)  # type: ignore
 
-            except Exception as e:
-                # NOTE: Just a hack, because `__getattr__` *must* raise `AttributeError`
-                raise AttributeError(str(e)) from e
-
-        # Reverse search for the proper handler for this ABI name, if one exists
-        for abi_type in handlers:
-            handler = get_handler(abi_type)
-            if handler:
-                return handler
-            # else: No ABI found with `attr_name`
-
-        # No ABIs w/ name `attr_name` found at all
-        raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'")
+        except Exception as e:
+            # NOTE: Just a hack, because `__getattr__` *must* raise `AttributeError`
+            raise AttributeError(str(e)) from e
 
 
 @dataclass
@@ -375,32 +393,13 @@ class ContractContainer:
             _contract_type=self.contract_type,
         )
 
-    @property
-    def _deployment_bytecode(self) -> bytes:
-        if (
-            self.contract_type.deployment_bytecode
-            and self.contract_type.deployment_bytecode.bytecode
-        ):
-            return to_bytes(hexstr=self.contract_type.deployment_bytecode.bytecode)
-
-        else:
-            return b""
-
-    @property
-    def _runtime_bytecode(self) -> bytes:
-        if self.contract_type.runtime_bytecode and self.contract_type.runtime_bytecode.bytecode:
-            return to_bytes(hexstr=self.contract_type.runtime_bytecode.bytecode)
-
-        else:
-            return b""
-
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         args = self._converter.convert(args, tuple)
         constructor = ContractConstructor(  # type: ignore
             abi=self.contract_type.constructor,
             provider=self._provider,
             converter=self._converter,
-            deployment_bytecode=self._deployment_bytecode,
+            deployment_bytecode=self.contract_type.get_deployment_bytecode() or b"",
         )
 
         args_length = len(args)
