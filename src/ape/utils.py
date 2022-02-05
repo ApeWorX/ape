@@ -1,4 +1,3 @@
-import collections
 import json
 import os
 import re
@@ -7,6 +6,7 @@ import sys
 import tempfile
 import zipfile
 from abc import ABCMeta, abstractmethod
+from collections import namedtuple
 from copy import deepcopy
 from functools import lru_cache, partial
 from io import BytesIO
@@ -41,6 +41,11 @@ try:
     from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
+try:
+    from collections.abc import Mapping as CollectionsMapping  # type: ignore
+except ImportError:
+    # Python <3.10
+    from collections import Mapping as CollectionsMapping  # type: ignore
 
 
 _python_version = (
@@ -161,7 +166,7 @@ def deep_merge(dict1, dict2) -> Dict:
     result = deepcopy(dict1)
 
     for key, value in dict2.items():
-        if isinstance(value, collections.Mapping):
+        if isinstance(value, CollectionsMapping):
             result[key] = deep_merge(result.get(key, {}), value)
         else:
             result[key] = deepcopy(dict2[key])
@@ -221,7 +226,7 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
         return {}
 
 
-GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", "private_key"))
+GeneratedDevAccount = namedtuple("GeneratedDevAccount", ("address", "private_key"))
 """
 An account key-pair generated from the test mnemonic. Set the test mnemonic
 in your ``ape-config.yaml`` file under the ``test`` section. Access your test
