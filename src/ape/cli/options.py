@@ -226,7 +226,12 @@ def incompatible_with(incompatible_opts):
 
     Usage example::
 
+        import click
 
+        @click.command()
+        @click.option("--option", cls=incompatible_with(["other_option"]))
+        def cmd(option, other_option):
+            ....
     """
 
     if isinstance(incompatible_opts, str):
