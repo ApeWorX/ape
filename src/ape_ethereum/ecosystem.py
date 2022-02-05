@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
@@ -10,7 +10,7 @@ from eth_account._utils.legacy_transactions import (
 )
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak, to_bytes, to_checksum_address, to_int
-from ethpm_types import ABI
+from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
 from ape.api import (
@@ -244,7 +244,7 @@ class Ethereum(EcosystemAPI):
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
 
-    def encode_calldata(self, abi: ABI, *args) -> bytes:
+    def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
         if abi.inputs:
             input_types = [i.canonical_type for i in abi.inputs]
             return abi_encode(input_types, args)
@@ -252,7 +252,7 @@ class Ethereum(EcosystemAPI):
         else:
             return HexBytes(b"")
 
-    def decode_calldata(self, abi: ABI, raw_data: bytes) -> Tuple[Any, ...]:
+    def decode_calldata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
         try:
             vm_return_values = abi_decode(output_types, raw_data)
@@ -276,7 +276,7 @@ class Ethereum(EcosystemAPI):
             raise DecodingError() from err
 
     def encode_deployment(
-        self, deployment_bytecode: bytes, abi: Optional[ABI], *args, **kwargs
+        self, deployment_bytecode: bytes, abi: ConstructorABI, *args, **kwargs
     ) -> BaseTransaction:
         txn = self.create_transaction(**kwargs)
         txn.data = deployment_bytecode
@@ -290,7 +290,7 @@ class Ethereum(EcosystemAPI):
     def encode_transaction(
         self,
         address: AddressType,
-        abi: ABI,
+        abi: MethodABI,
         *args,
         **kwargs,
     ) -> BaseTransaction:
@@ -343,7 +343,7 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)  # type: ignore
 
-    def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
+    def decode_event(self, abi: EventABI, receipt: "ReceiptAPI") -> "ContractLog":
         filter_id = keccak(to_bytes(text=abi.selector))
         event_data = next(log for log in receipt.logs if log["filter_id"] == filter_id)
 
