@@ -2,8 +2,7 @@ import json
 from pathlib import Path
 from typing import List, Optional, Set
 
-from ethpm_types import ABI, ContractType
-from pydantic import parse_obj_as
+from ethpm_types import ContractType
 
 from ape.api import CompilerAPI
 from ape.logging import logger
@@ -25,22 +24,23 @@ class InterfaceCompiler(CompilerAPI):
     ) -> List[ContractType]:
         contract_types: List[ContractType] = []
         for path in filepaths:
-            with path.open() as f:
-                data = json.load(f)
+            abi = json.loads(path.read_text())
 
             source_id = (
                 str(get_relative_path(path, base_path))
                 if base_path and path.is_absolute()
                 else str(path)
             )
-            if not isinstance(data, list):
+            if not isinstance(abi, list):
                 logger.warning(f"Not a valid ABI interface JSON file (sourceID={source_id}).")
 
             else:
-                contract = ContractType(  # type: ignore
-                    contractName=path.stem,
-                    abi=parse_obj_as(List[ABI], data),
-                    sourceId=source_id,
+                contract = ContractType.parse_obj(
+                    {
+                        "contractName": path.stem,
+                        "abi": abi,
+                        "sourceId": source_id,
+                    }
                 )
 
                 contract_types.append(contract)
