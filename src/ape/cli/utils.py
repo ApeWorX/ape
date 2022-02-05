@@ -1,3 +1,7 @@
+from inspect import getframeinfo, stack
+from pathlib import Path
+from typing import Optional
+
 import click
 
 from ape.logging import logger
@@ -10,9 +14,12 @@ class Abort(click.ClickException):
     useful for all user-facing errors.
     """
 
-    def __init__(self, message):
-        if not message.endswith("."):
-            message = f"{message}."
+    def __init__(self, message: Optional[str] = None):
+        if not message:
+            caller = getframeinfo(stack()[1][0])
+            file_path = Path(caller.filename)
+            location = file_path.name if file_path.exists() else caller.filename
+            message = f"Operation aborted in {location}::{caller.function} on line {caller.lineno}."
 
         super().__init__(message)
 
