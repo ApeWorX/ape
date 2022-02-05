@@ -13,14 +13,13 @@ from web3 import Web3
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
-from ape.utils import abstractdataclass, abstractmethod
+from ape.utils import AbstractBaseModel, abstractdataclass, abstractmethod
 
 from . import networks
 from .config import ConfigItem
 
 if TYPE_CHECKING:
     from ape.api.explorers import ExplorerAPI
-    from ape.managers.chain import ChainManager
 
 
 def raises_not_implemented(fn):
@@ -385,15 +384,12 @@ class BlockAPI:
         """
 
 
-@abstractdataclass
-class ProviderAPI:
+class ProviderAPI(AbstractBaseModel):
     """
     An abstraction of a connection to a network in an ecosystem. Example ``ProviderAPI``
     implementations include the `ape-infura <https://github.com/ApeWorX/ape-infura>`__
     plugin or the `ape-hardhat <https://github.com/ApeWorX/ape-hardhat>`__ plugin.
     """
-
-    _chain: Optional["ChainManager"] = None
 
     name: str
     """The name of the provider (should be the plugin name)."""
@@ -410,7 +406,7 @@ class ProviderAPI:
     data_folder: Path
     """The path to the  ``.ape`` directory."""
 
-    request_header: str
+    request_header: dict
     """A header to set on HTTP/RPC requests."""
 
     @abstractmethod
@@ -635,8 +631,8 @@ class ProviderAPI:
         return f"<{self.__class__.__name__} {self.name}>"
 
     def _try_track_receipt(self, receipt: ReceiptAPI):
-        if self._chain:
-            self._chain.account_history.append(receipt)
+        if self.chain_manager:
+            self.chain_manager.account_history.append(receipt)
 
 
 class TestProviderAPI(ProviderAPI):

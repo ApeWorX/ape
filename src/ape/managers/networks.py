@@ -36,9 +36,6 @@ class NetworkManager(ManagerBase):
 
     @active_provider.setter
     def active_provider(self, new_value: ProviderAPI):
-        from ape import chain
-
-        new_value._chain = chain
         self._active_provider = new_value
 
     @property

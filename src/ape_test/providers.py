@@ -10,6 +10,13 @@ from ape.utils import gas_estimation_error_message
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
+    _tester: PyEVMBackend
+    _web3: Web3
+
+    def __init__(self, **data) -> None:
+        super().__init__(**data)
+        self.__post_init__()
+
     def connect(self):
         pass
 
