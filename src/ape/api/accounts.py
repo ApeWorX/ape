@@ -263,7 +263,7 @@ class AccountContainerAPI(AbstractBaseModel):
         """
 
     @abstractmethod
-    def __iter__(self) -> Iterator[AccountAPI]:
+    def __iter__(self):
         """
         Iterate over all accounts.
 

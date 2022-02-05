@@ -1,8 +1,9 @@
-import json
 import os
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Generator, List, Optional, Union
+
+from pydantic import BaseModel
 
 from ape.api import ConfigDict, ConfigItem, DependencyAPI
 from ape.convert import to_address
@@ -24,7 +25,7 @@ class DeploymentConfig(ConfigItem):
     contract_type: str
 
 
-class ConfigManager(ManagerBase):
+class ConfigManager(ManagerBase, BaseModel):
     """
     The singleton responsible for managing the ``ape-config.yaml`` project file.
     The config manager is useful for loading plugin configurations which contain
@@ -71,15 +72,8 @@ class ConfigManager(ManagerBase):
 
     _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
 
-    def __init__(
-        self,
-        data_folder: Path,
-        request_header: Dict,
-        project_folder: Path,
-    ) -> None:
-        self.DATA_FOLDER = data_folder
-        self.REQUEST_HEADER = request_header
-        self.PROJECT_FOLDER = project_folder
+    class Config:
+        arbitrary_types_allowed = True
 
     @property
     def packages_folder(self) -> Path:
@@ -205,22 +199,6 @@ class ConfigManager(ManagerBase):
 
         return self._plugin_configs[plugin_name]
 
-    def serialize(self) -> Dict:
-        """
-        Convert the project config file, ``ape-config.yaml``, to a dictionary.
-
-        Returns:
-            dict
-        """
-
-        project_config = dict()
-
-        for name, config in self._plugin_configs.items():
-            # NOTE: `config` is either `ConfigItem` or `dict`
-            project_config[name] = config.serialize() if isinstance(config, ConfigItem) else config
-
-        return project_config
-
     @contextmanager
     def using_project(
         self, project_folder: Path, contracts_folder: Optional[Path] = None
@@ -277,4 +255,4 @@ class ConfigManager(ManagerBase):
             str
         """
 
-        return json.dumps(self.serialize())
+        return self.json()
