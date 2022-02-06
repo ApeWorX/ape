@@ -1,4 +1,3 @@
-import collections
 import json
 import os
 import re
@@ -7,7 +6,7 @@ import sys
 import tempfile
 import zipfile
 from abc import ABCMeta, abstractmethod
-from copy import deepcopy
+from collections import namedtuple
 from functools import lru_cache, partial
 from io import BytesIO
 from pathlib import Path
@@ -41,7 +40,6 @@ try:
     from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
-
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -150,25 +148,6 @@ __version__ = get_package_version(__name__)
 USER_AGENT = f"Ape/{__version__} (Python/{_python_version})"
 
 
-def deep_merge(dict1, dict2) -> Dict:
-    """
-    Merge two dictionaries recursively.
-
-    Returns:
-        dict: The result of the merge as a new dictionary.
-    """
-
-    result = deepcopy(dict1)
-
-    for key, value in dict2.items():
-        if isinstance(value, collections.Mapping):
-            result[key] = deep_merge(result.get(key, {}), value)
-        else:
-            result[key] = deepcopy(dict2[key])
-
-    return result
-
-
 def expand_environment_variables(contents: str) -> str:
     """
     Replace substrings of the form ``$name`` or ``${name}`` in the given path
@@ -221,7 +200,7 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
         return {}
 
 
-GeneratedDevAccount = collections.namedtuple("GeneratedDevAccount", ("address", "private_key"))
+GeneratedDevAccount = namedtuple("GeneratedDevAccount", ("address", "private_key"))
 """
 An account key-pair generated from the test mnemonic. Set the test mnemonic
 in your ``ape-config.yaml`` file under the ``test`` section. Access your test
@@ -573,7 +552,6 @@ __all__ = [
     "AbstractDataClassMeta",
     "cached_property",
     "dataclass",
-    "deep_merge",
     "expand_environment_variables",
     "extract_nested_value",
     "get_relative_path",
