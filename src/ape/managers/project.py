@@ -568,7 +568,9 @@ class ProjectManager:
         def find_in_dir(dir_path: Path) -> Optional[Path]:
             for file_path in dir_path.iterdir():
                 if file_path.is_dir():
-                    return find_in_dir(file_path)
+                    result = find_in_dir(file_path)
+                    if result:
+                        return result
 
                 # If the user provided an extension, it has to match.
                 ext_okay = ext == file_path.suffix if ext is not None else True
@@ -677,7 +679,7 @@ class ProjectManager:
 
             return console()
 
-    def _load_dependencies(self):
+    def _load_dependencies(self) -> Dict[str, PackageManifest]:
         return {d.name: d.extract_manifest() for d in self.config.dependencies}
 
     # @property

@@ -373,7 +373,7 @@ class GithubClient:
         return {
             repo.name.replace("-", "_")
             for repo in self.ape_org.get_repos()
-            if repo.name.startswith("ape-")
+            if not repo.private and repo.name.startswith("ape-")
         }
 
     def get_release(self, repo_path: str, version: str) -> GitRelease:
