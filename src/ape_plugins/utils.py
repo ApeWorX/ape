@@ -1,42 +1,137 @@
 import subprocess
 import sys
-from typing import Dict, Tuple
+from typing import Dict, List, Optional
 
 from ape.__modules__ import __modules__
 from ape.exceptions import ConfigError
+from ape.logging import CliLogger
+from ape.plugins import clean_plugin_name
+from ape.utils import get_package_version, github_client
 
 # Plugins maintained OSS by ApeWorX (and trusted)
 CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
 
 
-def is_plugin_installed(plugin: str) -> bool:
-    plugin = plugin.replace("_", "-")
-    reqs = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
-    installed_packages = [r.decode().split("==")[0] for r in reqs.split()]
-    return plugin in installed_packages
+def _pip_freeze_grep_ape() -> List[str]:
+    # NOTE: This uses 'pip' subprocess because often we have installed
+    # in the same process and this session's site-packages won't know about it yet.
+    output = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+    if output:
+        return [p for p in output.decode().split("\n") if p.startswith("ape-")]
+
+    return []
 
 
-def extract_module_and_package_install_names(item: Dict) -> Tuple[str, str]:
-    """
-    Extracts the module name and package name from the configured
-    plugin. The package name includes `==<version>` if the version is
-    specified in the config.
-    """
-    try:
-        name = item["name"]
-        module_name = f"ape_{name.replace('-', '_')}"
-        package_install_name = f"ape-{name}"
-        version = item.get("version")
+class ApePlugin:
+    def __init__(self, name: str, version_to_install: Optional[str] = None):
+        self.name = clean_plugin_name(name)  # 'plugin-name'
+        self.package_name = f"ape-{self.name}"  # 'ape-plugin-name'
+        self.module_name = f"ape_{self.name.replace('-', '_')}"  # 'ape_plugin_name'
+        self.version_to_install = version_to_install
+        self.current_version = get_package_version(self.package_name)
 
-        if version:
-            package_install_name = f"{package_install_name}=={version}"
+    @classmethod
+    def from_dict(cls, data: Dict) -> "ApePlugin":
+        if "name" not in data:
+            expected_format = (
+                "plugins:\n  - name: <plugin-name>\n    version: <plugin-version>  # optional"
+            )
+            raise ConfigError(
+                f"Config item mis-configured. Expected format:\n\n{expected_format}\n"
+            )
 
-        return module_name, package_install_name
+        name = data.pop("name")
 
-    except Exception as err:
-        raise _get_config_error() from err
+        version = None
+        if "version" in data:
+            version = data.pop("version")
+
+        if data:
+            keys_str = ", ".join(data.keys())
+            raise ConfigError(f"Unknown keys for plugins entry '{name}': '{keys_str}'.")
+
+        return ApePlugin(name, version_to_install=version)
+
+    @property
+    def install_str(self) -> str:
+        pip_str = str(self.package_name)
+        if self.version_to_install:
+            pip_str = f"{pip_str}=={self.version_to_install}"
+
+        return pip_str
+
+    @property
+    def is_part_of_core(self) -> bool:
+        return self.module_name in CORE_PLUGINS
+
+    @property
+    def is_installed(self) -> bool:
+        ape_packages = [r.split("==")[0] for r in _pip_freeze_grep_ape()]
+        breakpoint()
+        return self.package_name in ape_packages
+
+    @property
+    def pip_freeze_version(self) -> Optional[str]:
+        for package in _pip_freeze_grep_ape():
+            parts = package.split("==")
+            if len(parts) != 2:
+                continue
+
+            name = parts[0]
+            if name == self.package_name:
+                version_str = parts[-1]
+                return version_str
+
+        return None
+
+    @property
+    def is_available(self) -> bool:
+        return self.module_name in github_client.available_plugins
 
 
-def _get_config_error() -> ConfigError:
-    expected_format = "plugins:\n  - name: <plugin-name>\n    version: <plugin-version>  # optional"
-    return ConfigError(f"Config item mis-configured. Expected format:\n\n{expected_format}\n")
+class ModifyPluginsResultHandler:
+    def __init__(self, logger: CliLogger, plugin: ApePlugin):
+        self._logger = logger
+        self._plugin = plugin
+
+    def handle_install_result(self, result) -> bool:
+        if not self._plugin.is_installed:
+            self._log_modify_failed("install")
+            return False
+        elif result != 0:
+            self._log_errors_occurred("installing")
+            return False
+        else:
+            self._log_success("installed")
+            return True
+
+    def handle_upgrade_result(self, result, version_before: str) -> bool:
+        if result != 0:
+            self._log_errors_occurred("upgrading")
+            return False
+        elif version_before == self._plugin.pip_freeze_version:
+            # Nothing to do and not failures.
+            return True
+        else:
+            self._log_success("upgraded")
+            return True
+
+    def handle_uninstall_result(self, result) -> bool:
+        if self._plugin.is_installed:
+            self._log_modify_failed("uninstall")
+            return False
+        elif result != 0:
+            self._log_errors_occurred("uninstalling")
+            return False
+        else:
+            self._log_success("uninstalled")
+            return True
+
+    def _log_success(self, verb: str):
+        self._logger.success(f"Plugin '{self._plugin.name}' has been {verb}.")
+
+    def _log_errors_occurred(self, verb: str):
+        self._logger.error(f"Errors occurred when {verb} '{self._plugin.name}'.")
+
+    def _log_modify_failed(self, verb: str):
+        self._logger.error(f"Failed to {verb} plugin '{self._plugin.name}.")
