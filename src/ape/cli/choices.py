@@ -10,7 +10,11 @@ from ape.exceptions import AccountsError
 
 
 def _get_account_by_type(account_type: Optional[Type[AccountAPI]] = None) -> List[AccountAPI]:
-    return list(accounts) if not account_type else accounts.get_accounts_by_type(account_type)
+    account_list = (
+        list(accounts) if not account_type else accounts.get_accounts_by_type(account_type)
+    )
+    account_list.sort(key=lambda a: a.alias or "")
+    return account_list
 
 
 class Alias(click.Choice):
