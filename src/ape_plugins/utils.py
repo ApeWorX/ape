@@ -11,7 +11,7 @@ CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
 
 def is_plugin_installed(plugin: str) -> bool:
     plugin = plugin.replace("_", "-")
-    python_packages = [
+    pip_freeze_output_lines = [
         r
         for r in subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
         .decode()
@@ -19,13 +19,11 @@ def is_plugin_installed(plugin: str) -> bool:
         if r
     ]
 
-    for package in python_packages:
-        if "==" in package:
-            if package.split("==")[0] == plugin:
-                return True
-        elif plugin.startswith("-e") and ".git" in plugin:
-            if package.split(".git")[0].split("/")[-1] == plugin:
-                return True
+    for package in pip_freeze_output_lines:
+        if package.split("==")[0] == plugin:
+            return True
+        elif package.split(".git")[0].split("/")[-1] == plugin:
+            return True
 
     return False
 
