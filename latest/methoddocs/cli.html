@@ -456,6 +456,22 @@ If you pass <code class="docutils literal notranslate"><span class="pre">multipl
 </dd></dl>
 
 <dl class="py function">
+<dt id="ape.cli.options.incompatible_with">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">incompatible_with</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">incompatible_opts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.incompatible_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory for creating custom <code class="docutils literal notranslate"><span class="pre">click.Option</span></code> subclasses that
+enforce incompatibility with the option strings passed to this function.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;--option&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">incompatible_with</span><span class="p">([</span><span class="s2">&quot;other_option&quot;</span><span class="p">]))</span>
+<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">other_option</span><span class="p">):</span>
+    <span class="o">....</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt id="ape.cli.options.network_option">
 <code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">network_option</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.network_option" title="Permalink to this definition">¶</a></dt>
 <dd><p>A <code class="docutils literal notranslate"><span class="pre">click.option</span></code> for specifying a network.</p>
