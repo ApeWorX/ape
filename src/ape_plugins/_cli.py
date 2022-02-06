@@ -7,7 +7,7 @@ from typing import Collection, List, Set
 import click
 
 from ape import config
-from ape.cli import ape_cli_context, skip_confirmation_option
+from ape.cli import ape_cli_context, incompatible_with, skip_confirmation_option
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins import clean_plugin_name, plugin_manager
 from ape.utils import get_package_version, github_client
@@ -122,7 +122,7 @@ def _list(cli_ctx, display_all):
             click.echo()
 
 
-def upgrade_option(help: str = ""):
+def upgrade_option(help: str = "", **kwargs):
     """
     A ``click.option`` for upgrading plugins (``--upgrade``).
 
@@ -130,13 +130,7 @@ def upgrade_option(help: str = ""):
         help (str): CLI option help text. Defaults to ``""``.
     """
 
-    return click.option(
-        "-U",
-        "--upgrade",
-        default=False,
-        is_flag=True,
-        help=help,
-    )
+    return click.option("-U", "--upgrade", default=False, is_flag=True, help=help, **kwargs)
 
 
 @cli.command(short_help="Install an ape plugin")
@@ -144,7 +138,10 @@ def upgrade_option(help: str = ""):
 @click.option("--version", help="Specify version (Default is latest)")
 @skip_confirmation_option(help="Don't ask for confirmation to add the plugin")
 @ape_cli_context()
-@upgrade_option(help="Upgrade the plugin to the newest available version")
+@upgrade_option(
+    help="Upgrade the plugin to the newest available version",
+    cls=incompatible_with(["version"]),
+)
 def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
     args = [sys.executable, "-m", "pip", "install", "--quiet"]
     if plugin.startswith("ape"):
