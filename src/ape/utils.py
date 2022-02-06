@@ -7,7 +7,6 @@ import tempfile
 import zipfile
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from copy import deepcopy
 from functools import lru_cache, partial
 from io import BytesIO
 from pathlib import Path
@@ -41,12 +40,6 @@ try:
     from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
-try:
-    from collections.abc import Mapping as CollectionsMapping  # type: ignore
-except ImportError:
-    # Python <3.10
-    from collections import Mapping as CollectionsMapping  # type: ignore
-
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -153,25 +146,6 @@ def get_package_version(obj: Any) -> str:
 
 __version__ = get_package_version(__name__)
 USER_AGENT = f"Ape/{__version__} (Python/{_python_version})"
-
-
-def deep_merge(dict1, dict2) -> Dict:
-    """
-    Merge two dictionaries recursively.
-
-    Returns:
-        dict: The result of the merge as a new dictionary.
-    """
-
-    result = deepcopy(dict1)
-
-    for key, value in dict2.items():
-        if isinstance(value, CollectionsMapping):
-            result[key] = deep_merge(result.get(key, {}), value)
-        else:
-            result[key] = deepcopy(dict2[key])
-
-    return result
 
 
 def expand_environment_variables(contents: str) -> str:
@@ -578,7 +552,6 @@ __all__ = [
     "AbstractDataClassMeta",
     "cached_property",
     "dataclass",
-    "deep_merge",
     "expand_environment_variables",
     "extract_nested_value",
     "get_relative_path",
