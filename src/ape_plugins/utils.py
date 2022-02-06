@@ -11,9 +11,23 @@ CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
 
 def is_plugin_installed(plugin: str) -> bool:
     plugin = plugin.replace("_", "-")
-    reqs = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
-    installed_packages = [r.decode().split("==")[0] for r in reqs.split()]
-    return plugin in installed_packages
+    python_packages = [
+        r
+        for r in subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+        .decode()
+        .split("\n")
+        if r
+    ]
+
+    for package in python_packages:
+        if "==" in package:
+            if package.split("==")[0] == plugin:
+                return True
+        elif plugin.startswith("-e") and ".git" in plugin:
+            if package.split(".git")[0].split("/")[-1] == plugin:
+                return True
+
+    return False
 
 
 def extract_module_and_package_install_names(item: Dict) -> Tuple[str, str]:
