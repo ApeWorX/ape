@@ -32,7 +32,7 @@ def _pip_freeze_plugins() -> List[str]:
     return new_lines
 
 
-class ApePlugin:
+class ModifyPluginRequest:
     def __init__(self, name: str, version_to_install: Optional[str] = None):
         self.name = clean_plugin_name(name)  # 'plugin-name'
         self.package_name = f"ape-{self.name}"  # 'ape-plugin-name'
@@ -46,7 +46,7 @@ class ApePlugin:
         )
 
     @classmethod
-    def from_dict(cls, data: Dict) -> "ApePlugin":
+    def from_dict(cls, data: Dict) -> "ModifyPluginRequest":
         if "name" not in data:
             expected_format = (
                 "plugins:\n  - name: <plugin-name>\n    version: <plugin-version>  # optional"
@@ -65,7 +65,7 @@ class ApePlugin:
             keys_str = ", ".join(data.keys())
             raise ConfigError(f"Unknown keys for plugins entry '{name}': '{keys_str}'.")
 
-        return ApePlugin(name, version_to_install=version)
+        return ModifyPluginRequest(name, version_to_install=version)
 
     @property
     def install_str(self) -> str:
@@ -110,8 +110,8 @@ class ApePlugin:
         return self.module_name in github_client.available_plugins
 
 
-class ModifyPluginsResultHandler:
-    def __init__(self, logger: CliLogger, plugin: ApePlugin):
+class ModifyPluginResultHandler:
+    def __init__(self, logger: CliLogger, plugin: ModifyPluginRequest):
         self._logger = logger
         self._plugin = plugin
 

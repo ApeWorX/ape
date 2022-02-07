@@ -10,7 +10,7 @@ from ape.cli import ape_cli_context, incompatible_with, skip_confirmation_option
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins import plugin_manager
 from ape.utils import github_client
-from ape_plugins.utils import CORE_PLUGINS, ApePlugin, ModifyPluginsResultHandler
+from ape_plugins.utils import CORE_PLUGINS, ModifyPluginRequest, ModifyPluginResultHandler
 
 
 @click.group(short_help="Manage ape plugins")
@@ -37,7 +37,7 @@ def _format_output(plugins_list: Collection[str]) -> Set:
 
 
 def plugin_argument():
-    return click.argument("plugin", callback=lambda ctx, param, value: ApePlugin(value))
+    return click.argument("plugin", callback=lambda ctx, param, value: ModifyPluginRequest(value))
 
 
 @cli.command(name="list", short_help="Display plugins")
@@ -62,7 +62,7 @@ def _list(cli_ctx, display_all):
     space_buffer = 4
 
     for name, _ in plugin_list:
-        plugin = ApePlugin(name)
+        plugin = ModifyPluginRequest(name)
         spacing = (longest_plugin_name - len(plugin.name) + space_buffer) * " "
         if plugin.is_part_of_core:
             if not display_all:
@@ -144,7 +144,7 @@ def upgrade_option(help: str = "", **kwargs):
 )
 def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
     plugin.version_to_install = version
-    result_handler = ModifyPluginsResultHandler(cli_ctx.logger, plugin)
+    result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
     args = [sys.executable, "-m", "pip", "install", "--quiet"]
 
     if plugin.version_to_install and plugin.version_to_install == plugin.current_version:
@@ -197,7 +197,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
     cli_ctx.logger.info(f"Installing plugins from config file at '{config_path}'.")
     plugins = config.get_config("plugins") or []
     for plugin_dict in plugins:
-        plugin = ApePlugin.from_dict(plugin_dict)
+        plugin = ModifyPluginRequest.from_dict(plugin_dict)
 
         if plugin.is_part_of_core:
             cli_ctx.abort(f"Cannot install core 'ape' plugin '{plugin.name}'.")
@@ -206,7 +206,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
         if not plugin.is_installed and not plugin.is_available:
             cli_ctx.logger.warning(f"Plugin '{plugin.name}' is not an trusted plugin.")
 
-        result_handler = ModifyPluginsResultHandler(cli_ctx.logger, plugin)
+        result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
         args = [sys.executable, "-m", "pip", "install", "--quiet"]
 
         if upgrade:
@@ -253,8 +253,8 @@ def uninstall(cli_ctx, skip_confirmation):
     failures_occurred = False
     plugins = config.get_config("plugins") or []
     for plugin_dict in plugins:
-        plugin = ApePlugin.from_dict(plugin_dict)
-        result_handler = ModifyPluginsResultHandler(cli_ctx.logger, plugin)
+        plugin = ModifyPluginRequest.from_dict(plugin_dict)
+        result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
 
         # if plugin is installed but not a 2nd class. It must be a third party
         if plugin.is_installed and not plugin.is_available:
@@ -299,7 +299,7 @@ def remove(cli_ctx, plugin, skip_confirmation):
         cli_ctx.abort(f"Cannot remove 1st class plugin '{plugin.name}'.")
 
     elif skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?"):
-        result_handler = ModifyPluginsResultHandler(cli_ctx.logger, plugin)
+        result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
