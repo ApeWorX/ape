@@ -12,14 +12,24 @@ from ape.utils import get_package_version, github_client
 CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
 
 
-def _pip_freeze_grep_ape() -> List[str]:
+def _pip_freeze_plugins() -> List[str]:
     # NOTE: This uses 'pip' subprocess because often we have installed
     # in the same process and this session's site-packages won't know about it yet.
     output = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
-    if output:
-        return [p for p in output.decode().split("\n") if p.startswith("ape-")]
+    lines = [
+        p
+        for p in output.decode().split("\n")
+        if p.startswith("ape-") or (p.startswith("-e") and "ape-" in p)
+    ]
 
-    return []
+    new_lines = []
+    for package in lines:
+        if "==" in package:
+            new_lines.append(package)
+        elif "-e" in package:
+            new_lines.append(package.split(".git")[0].split("/")[-1])
+
+    return new_lines
 
 
 class ApePlugin:
@@ -29,6 +39,11 @@ class ApePlugin:
         self.module_name = f"ape_{self.name.replace('-', '_')}"  # 'ape_plugin_name'
         self.version_to_install = version_to_install
         self.current_version = get_package_version(self.package_name)
+
+    def __str__(self):
+        return (
+            self.name if not self.version_to_install else f"{self.name}=={self.version_to_install}"
+        )
 
     @classmethod
     def from_dict(cls, data: Dict) -> "ApePlugin":
@@ -61,18 +76,24 @@ class ApePlugin:
         return pip_str
 
     @property
+    def can_install(self) -> bool:
+        requesting_different_version = (
+            self.version_to_install is not None and self.version_to_install != self.current_version
+        )
+        return not self.is_installed or requesting_different_version
+
+    @property
     def is_part_of_core(self) -> bool:
         return self.module_name in CORE_PLUGINS
 
     @property
     def is_installed(self) -> bool:
-        ape_packages = [r.split("==")[0] for r in _pip_freeze_grep_ape()]
-        breakpoint()
+        ape_packages = [r.split("==")[0] for r in _pip_freeze_plugins()]
         return self.package_name in ape_packages
 
     @property
     def pip_freeze_version(self) -> Optional[str]:
-        for package in _pip_freeze_grep_ape():
+        for package in _pip_freeze_plugins():
             parts = package.split("==")
             if len(parts) != 2:
                 continue
@@ -102,18 +123,27 @@ class ModifyPluginsResultHandler:
             self._log_errors_occurred("installing")
             return False
         else:
-            self._log_success("installed")
+            plugin_id = f"{self._plugin.name}=={self._plugin.pip_freeze_version}"
+            self._logger.success(f"Plugin '{plugin_id}' has been installed.")
             return True
 
     def handle_upgrade_result(self, result, version_before: str) -> bool:
         if result != 0:
             self._log_errors_occurred("upgrading")
             return False
-        elif version_before == self._plugin.pip_freeze_version:
+
+        pip_freeze_version = self._plugin.pip_freeze_version
+        if version_before == pip_freeze_version or not pip_freeze_version:
             # Nothing to do and not failures.
+            self._logger.info(
+                f"'{self._plugin.name}' already has version '{self._plugin.version_to_install}'."
+            )
             return True
         else:
-            self._log_success("upgraded")
+            self._logger.success(
+                f"Plugin '{self._plugin.name}' has been "
+                f"upgraded to version {self._plugin.pip_freeze_version}."
+            )
             return True
 
     def handle_uninstall_result(self, result) -> bool:
@@ -124,14 +154,11 @@ class ModifyPluginsResultHandler:
             self._log_errors_occurred("uninstalling")
             return False
         else:
-            self._log_success("uninstalled")
+            self._logger.success(f"Plugin '{self._plugin.name}' has been uninstalled.")
             return True
 
-    def _log_success(self, verb: str):
-        self._logger.success(f"Plugin '{self._plugin.name}' has been {verb}.")
-
     def _log_errors_occurred(self, verb: str):
-        self._logger.error(f"Errors occurred when {verb} '{self._plugin.name}'.")
+        self._logger.error(f"Errors occurred when {verb} '{self._plugin}'.")
 
     def _log_modify_failed(self, verb: str):
-        self._logger.error(f"Failed to {verb} plugin '{self._plugin.name}.")
+        self._logger.error(f"Failed to {verb} plugin '{self._plugin}.")

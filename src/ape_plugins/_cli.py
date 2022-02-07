@@ -146,31 +146,28 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
     result_handler = ModifyPluginsResultHandler(cli_ctx.logger, plugin)
     args = [sys.executable, "-m", "pip", "install", "--quiet"]
 
-    if plugin.is_part_of_core:
-        cli_ctx.abort(f"Cannot add core 'ape' plugin '{plugin.name}'.")
+    if plugin.version_to_install and plugin.version_to_install == plugin.current_version:
+        cli_ctx.logger.warning(f"Plugin '{plugin}' already installed.")
+        return
 
-    elif plugin.is_installed:
-        if upgrade:
-            cli_ctx.logger.info(f"Upgrading '{plugin.name}'...")
-            args.extend(("--upgrade", plugin.package_name))
+    elif plugin.is_part_of_core:
+        cli_ctx.abort(f"Cannot install core 'ape' plugin '{plugin.name}'.")
 
-            version_before = plugin.current_version
-            result = subprocess.call(args)
-            if not result_handler.handle_upgrade_result(result, version_before):
-                sys.exit(1)
+    elif plugin.is_installed and upgrade:
+        cli_ctx.logger.info(f"Upgrading '{plugin.name}'...")
+        args.extend(("--upgrade", plugin.package_name))
 
-        else:
-            cli_ctx.logger.warning(
-                f"Plugin '{plugin.name}' is already installed. "
-                f"Did you mean to include '--upgrade'?"
-            )
+        version_before = plugin.current_version
+        result = subprocess.call(args)
+        if not result_handler.handle_upgrade_result(result, version_before):
+            sys.exit(1)
 
-    elif (
+    elif plugin.can_install and (
         plugin.is_available
         or skip_confirmation
         or click.confirm(f"Install unknown 3rd party plugin '{plugin.name}'?")
     ):
-        cli_ctx.logger.info(f"Installing '{plugin.name}'...")
+        cli_ctx.logger.info(f"Installing '{plugin}'...")
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
         # NOTE: This is not abstracted into another function *on purpose*
@@ -179,6 +176,11 @@ def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
         result = subprocess.call(args)
         if not result_handler.handle_install_result(result):
             sys.exit(1)
+
+    else:
+        cli_ctx.logger.warning(
+            f"Plugin '{plugin.name}' is already installed. Did you mean to include '--upgrade'?"
+        )
 
 
 @cli.command(short_help="Install all plugins in the local config file")
@@ -195,12 +197,16 @@ def install(cli_ctx, skip_confirmation, upgrade):
     plugins = config.get_config("plugins") or []
     for plugin_dict in plugins:
         plugin = ApePlugin.from_dict(plugin_dict)
-        result_handler = ModifyPluginsResultHandler(cli_ctx.logger, plugin)
-        args = [sys.executable, "-m", "pip", "install", "--quiet"]
+
+        if plugin.is_part_of_core:
+            cli_ctx.abort(f"Cannot install core 'ape' plugin '{plugin.name}'.")
 
         # if plugin is installed but not a 2nd class. It must be a third party
         if not plugin.is_installed and not plugin.is_available:
             cli_ctx.logger.warning(f"Plugin '{plugin.name}' is not an trusted plugin.")
+
+        result_handler = ModifyPluginsResultHandler(cli_ctx.logger, plugin)
+        args = [sys.executable, "-m", "pip", "install", "--quiet"]
 
         if upgrade:
             cli_ctx.logger.info(f"Upgrading '{plugin.name}'...")
@@ -210,13 +216,13 @@ def install(cli_ctx, skip_confirmation, upgrade):
             result = subprocess.call(args)
             any_failures = result_handler.handle_upgrade_result(result, version_before)
 
-        elif not plugin.is_installed and (
+        elif plugin.can_install and (
             plugin.is_available
             or skip_confirmation
             or click.confirm(f"Install unknown 3rd party plugin '{plugin.name}'?")
         ):
-            cli_ctx.logger.info(f"Installing {plugin.name}...")
-            args.append(plugin.package_name)
+            cli_ctx.logger.info(f"Installing {plugin}...")
+            args.append(plugin.install_str)
 
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
@@ -264,18 +270,15 @@ def uninstall(cli_ctx, skip_confirmation):
             pass
 
         # if plugin is installed and 2nd class. We should uninstall it
-        if plugin.is_installed and (plugin.is_available or skip_confirmation):
+        if plugin.is_installed and (
+            skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?")
+        ):
             cli_ctx.logger.info(f"Uninstalling '{plugin.name}'...")
+            args = [sys.executable, "-m", "pip", "uninstall", "--quiet", "-y", plugin.package_name]
+
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
-
-            args = [sys.executable, "-m", "pip", "uninstall", "--quiet"]
-            if skip_confirmation:
-                args.append("-y")
-
-            args.append(plugin.package_name)
-
             result = subprocess.call(args)
             failures_occurred = not result_handler.handle_uninstall_result(result)
 
@@ -294,9 +297,7 @@ def remove(cli_ctx, plugin, skip_confirmation):
     elif plugin in CORE_PLUGINS:
         cli_ctx.abort(f"Cannot remove 1st class plugin '{plugin.name}'.")
 
-    elif skip_confirmation or click.confirm(
-        f"Remove plugin '{plugin.name}' ({plugin.current_version})'"
-    ):
+    elif skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?"):
         result_handler = ModifyPluginsResultHandler(cli_ctx.logger, plugin)
         # NOTE: Be *extremely careful* with this command, as it modifies the user's
         #       installed packages, to potentially catastrophic results
