@@ -193,7 +193,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
     if not config_path.exists():
         cli_ctx.abort(f"'{config_path.name}' not found.")
 
-    any_failures = False
+    failures_occurred = False
     cli_ctx.logger.info(f"Installing plugins from config file at '{config_path}'.")
     plugins = config.get_config("plugins") or []
     for plugin_dict in plugins:
@@ -201,7 +201,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
 
         if plugin.is_part_of_core:
             cli_ctx.logger.error(f"Cannot install core 'ape' plugin '{plugin.name}'.")
-            any_failures = True
+            failures_occurred = True
 
         # if plugin is installed but not a 2nd class. It must be a third party
         if not plugin.is_installed and not plugin.is_available:
@@ -216,7 +216,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
 
             version_before = plugin.current_version
             result = subprocess.call(args)
-            any_failures = result_handler.handle_upgrade_result(result, version_before)
+            failures_occurred = result_handler.handle_upgrade_result(result, version_before)
 
         elif plugin.can_install and (
             plugin.is_available
@@ -230,14 +230,14 @@ def install(cli_ctx, skip_confirmation, upgrade):
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
             result = subprocess.call(args)
-            any_failures = not result_handler.handle_install_result(result)
+            failures_occurred = not result_handler.handle_install_result(result)
 
         else:
             cli_ctx.logger.warning(
                 f"'{plugin.name}' is already installed. " f"Did you mean to include '--upgrade'."
             )
 
-    if any_failures:
+    if failures_occurred:
         sys.exit(1)
 
 
