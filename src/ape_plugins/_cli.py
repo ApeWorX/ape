@@ -10,7 +10,7 @@ from ape.cli import ape_cli_context, incompatible_with, skip_confirmation_option
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins import plugin_manager
 from ape.utils import github_client
-from ape_plugins.utils import CORE_PLUGINS, ModifyPluginRequest, ModifyPluginResultHandler
+from ape_plugins.utils import CORE_PLUGINS, ApePlugin, ModifyPluginResultHandler
 
 
 @click.group(short_help="Manage ape plugins")
@@ -37,7 +37,7 @@ def _format_output(plugins_list: Collection[str]) -> Set:
 
 
 def plugin_argument():
-    return click.argument("plugin", callback=lambda ctx, param, value: ModifyPluginRequest(value))
+    return click.argument("plugin", callback=lambda ctx, param, value: ApePlugin(value))
 
 
 @cli.command(name="list", short_help="Display plugins")
@@ -62,7 +62,7 @@ def _list(cli_ctx, display_all):
     space_buffer = 4
 
     for name, _ in plugin_list:
-        plugin = ModifyPluginRequest(name)
+        plugin = ApePlugin(name)
         spacing = (longest_plugin_name - len(plugin.name) + space_buffer) * " "
         if plugin.is_part_of_core:
             if not display_all:
@@ -197,7 +197,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
     cli_ctx.logger.info(f"Installing plugins from config file at '{config_path}'.")
     plugins = config.get_config("plugins") or []
     for plugin_dict in plugins:
-        plugin = ModifyPluginRequest.from_dict(plugin_dict)
+        plugin = ApePlugin.from_dict(plugin_dict)
 
         if plugin.is_part_of_core:
             cli_ctx.abort(f"Cannot install core 'ape' plugin '{plugin.name}'.")
@@ -253,7 +253,7 @@ def uninstall(cli_ctx, skip_confirmation):
     failures_occurred = False
     plugins = config.get_config("plugins") or []
     for plugin_dict in plugins:
-        plugin = ModifyPluginRequest.from_dict(plugin_dict)
+        plugin = ApePlugin.from_dict(plugin_dict)
         result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
 
         # if plugin is installed but not a 2nd class. It must be a third party
