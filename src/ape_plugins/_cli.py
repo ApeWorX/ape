@@ -299,7 +299,7 @@ def remove(cli_ctx, plugin, skip_confirmation):
         cli_ctx.abort(f"Plugin '{plugin.name}' is not installed.")
 
     elif plugin in CORE_PLUGINS:
-        cli_ctx.abort(f"Cannot remove 1st class plugin '{plugin.name}'.")
+        cli_ctx.abort(f"Cannot remove core plugin '{plugin.name}'.")
 
     elif skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?"):
         result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
