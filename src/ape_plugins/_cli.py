@@ -202,6 +202,7 @@ def install(cli_ctx, skip_confirmation, upgrade):
         if plugin.is_part_of_core:
             cli_ctx.logger.error(f"Cannot install core 'ape' plugin '{plugin.name}'.")
             failures_occurred = True
+            continue
 
         # if plugin is installed but not a 2nd class. It must be a third party
         if not plugin.is_installed and not plugin.is_available:
@@ -264,12 +265,13 @@ def uninstall(cli_ctx, skip_confirmation):
                 f" Please uninstall outside of Ape."
             )
             failures_occurred = True
-            pass
+            continue
+
         # check for installed check the config.yaml
         elif not plugin.is_installed:
             cli_ctx.logger.warning(f"Plugin '{plugin.name}' is not installed.")
             failures_occurred = True
-            pass
+            continue
 
         # if plugin is installed and 2nd class. We should uninstall it
         if plugin.is_installed and (
