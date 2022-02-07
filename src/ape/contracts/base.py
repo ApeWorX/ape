@@ -307,7 +307,8 @@ class ContractInstance(AddressAPI):
         if num_matching_conditions == 0:
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
+            name = self._contract_type.name or self.__class__.__name__
+            raise AttributeError(f"'{name}' has no attribute '{attr_name}'.")
 
         elif num_matching_conditions > 1:
             # ABI should not contain a mix of events, mutable and view methods that match
