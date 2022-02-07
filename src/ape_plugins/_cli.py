@@ -200,7 +200,8 @@ def install(cli_ctx, skip_confirmation, upgrade):
         plugin = ApePlugin.from_dict(plugin_dict)
 
         if plugin.is_part_of_core:
-            cli_ctx.abort(f"Cannot install core 'ape' plugin '{plugin.name}'.")
+            cli_ctx.logger.error(f"Cannot install core 'ape' plugin '{plugin.name}'.")
+            any_failures = True
 
         # if plugin is installed but not a 2nd class. It must be a third party
         if not plugin.is_installed and not plugin.is_available:
