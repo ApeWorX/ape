@@ -99,13 +99,11 @@ def _list(cli_ctx, display_all):
     elif not display_all:
         # user has no plugins installed | cant verify installed plugins
         if available_second:
-            click.echo("There are available plugins to install, use -a to list all plugins.")
+            click.echo("No secondary plugins installed. Use '--all' to see available plugins.")
 
     if display_all:
-
         available_second_output = _format_output(available_second)
         if available_second_output:
-
             sections["Available Plugins"] = [available_second_output]
 
         else:
