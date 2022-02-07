@@ -90,12 +90,15 @@ def _list(cli_ctx, display_all):
         github_client.available_plugins - installed_second_class_plugins_no_version
     )
 
+    installed_plugins = []
     if installed_second_class_plugins:
-        sections["Installed Plugins"] = [
-            installed_second_class_plugins,
-            installed_third_class_plugins,
-        ]
+        installed_plugins.append(installed_second_class_plugins)
 
+    if installed_third_class_plugins:
+        installed_plugins.append(installed_third_class_plugins)
+
+    if installed_plugins:
+        sections["Installed Plugins"] = installed_plugins
     elif not display_all:
         # user has no plugins installed | cant verify installed plugins
         if available_second:
