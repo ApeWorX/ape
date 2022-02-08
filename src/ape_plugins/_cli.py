@@ -5,11 +5,10 @@ from typing import Collection, List, Set, Tuple
 
 import click
 
-from ape import config
 from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins import plugin_manager
-from ape.utils import github_client
+from ape.utils import github_client, load_config
 from ape_plugins.utils import ApePlugin, ModifyPluginResultHandler
 
 
@@ -43,25 +42,32 @@ def plugins_argument():
     """
 
     def callback(ctx, value: Tuple[str]):
-        action = "Installing" if ctx.command.name == install.name else "Uninstalling"
-        config_path = Path.cwd() / CONFIG_FILE_NAME
         if not value:
-            if not config_path.exists():
-                ctx.obj.abort(f"No config file found at '{config_path.parent}'.")
+            ctx.obj.abort("You must give at least one requirement to install.")
 
-            ctx.obj.logger.info(f"{action} plugins from config file at '{config_path}'.")
-            plugins = config.get_config("plugins") or []
+        elif len(value) == 1 and Path(value[0]).resolve().exists():
+            # User passed in a path to a config file.
+            config_path = Path(value[0]).resolve()
+            if config_path.name != CONFIG_FILE_NAME:
+                config_path = config_path / CONFIG_FILE_NAME
+
+            config = load_config(config_path)
+            plugins = config.get("plugins") or []
 
             if not plugins:
-                ctx.obj.logger.warning("No plugins found in config file.")
+                ctx.obj.logger.warning("No plugins found in config.")
                 sys.exit(0)
 
             return [ApePlugin.from_dict(d) for d in plugins]
 
-        return [ApePlugin(v) for v in value]
+        else:
+            return [ApePlugin(v) for v in value]
 
     return click.argument(
-        "plugins", callback=lambda ctx, param, value: callback(ctx, value), nargs=-1
+        "plugins",
+        callback=lambda ctx, param, value: callback(ctx, value),
+        nargs=-1,
+        metavar="PLUGIN-NAMES or path/to/project-dir",
     )
 
 

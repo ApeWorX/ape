@@ -132,9 +132,13 @@ class ModifyPluginResultHandler:
 
         pip_freeze_version = self._plugin.pip_freeze_version
         if version_before == pip_freeze_version or not pip_freeze_version:
-            self._logger.info(
-                f"'{self._plugin.name}' already has version '{self._plugin.requested_version}'."
-            )
+            if self._plugin.requested_version:
+                self._logger.info(
+                    f"'{self._plugin.name}' already has version '{self._plugin.requested_version}'."
+                )
+            else:
+                self._logger.info(f"'{self._plugin.name}' already up to date.")
+
             return True
         else:
             self._logger.success(
