@@ -213,7 +213,12 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
     """Uninstall plugins"""
 
     failures_occurred = False
+    did_warn_about_version = False
     for plugin in plugins:
+        if plugin.requested_version is not None and not did_warn_about_version:
+            cli_ctx.logger.warning("Specifying a version when uninstalling is not necessary.")
+            did_warn_about_version = True
+
         result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
 
         # if plugin is installed but not a 2nd class. It must be a third party
