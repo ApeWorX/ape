@@ -47,7 +47,7 @@ def plugins_argument():
 
         elif len(value) == 1 and Path(value[0]).resolve().exists():
             # User passed in a path to a config file.
-            config_path = Path(value[0]).resolve()
+            config_path = Path(value[0]).expanduser().resolve()
             if config_path.name != CONFIG_FILE_NAME:
                 config_path = config_path / CONFIG_FILE_NAME
 
@@ -55,7 +55,7 @@ def plugins_argument():
             plugins = config.get("plugins") or []
 
             if not plugins:
-                ctx.obj.logger.warning("No plugins found in config.")
+                ctx.obj.logger.warning(f"No plugins found in config '{config_path}'.")
                 sys.exit(0)
 
             return [ApePlugin.from_dict(d) for d in plugins]
