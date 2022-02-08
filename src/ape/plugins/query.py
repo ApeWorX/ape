@@ -1,8 +1,9 @@
-from typing import Iterator, Tuple, Type
-
-from ape.api import QueryAPI
+from typing import TYPE_CHECKING, Iterator, Tuple, Type
 
 from .pluggy_patch import PluginType, hookspec
+
+if TYPE_CHECKING:
+    from ape.api import QueryAPI
 
 
 class QueryPlugin(PluginType):
@@ -11,7 +12,7 @@ class QueryPlugin(PluginType):
     """
 
     @hookspec
-    def query_engines(self) -> Iterator[Tuple[str, Type[QueryAPI]]]:
+    def query_engines(self) -> Iterator[Tuple[str, Type["QueryAPI"]]]:
         """
         A hook that returns an iterator of types of a string query type and a ``QueryAPI`` subclass
 
@@ -19,7 +20,7 @@ class QueryPlugin(PluginType):
 
             @plugins.register(plugins.QueryPlugin)
             def query_engines():
-                yield postgres, PostgresEngine
+                yield "postgres", PostgresEngine
 
         Returns:
             Iterator[tuple[str, Type[:class:`~ape.api.query.QueryAPI`]]]

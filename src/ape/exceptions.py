@@ -219,11 +219,7 @@ class UnknownSnapshotError(ChainError):
         super().__init__(f"Unknown snapshot ID '{str(snapshot_id)}'.")
 
 
-class QueryEngineException(ApeException):
+class QueryEngineError(ApeException):
     """
-    Raised when query engine with the given name was not found.
+    Raised when a query engine is unavailable.
     """
-
-    def __init__(self, query_engine: str) -> None:
-        message = f"No query engine named '{query_engine}'."
-        super().__init__(message)

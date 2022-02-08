@@ -1,48 +1,66 @@
 from typing import Any, Dict, List, Literal, Optional, Union
 
 import pandas as pd
-from pydantic import BaseModel
+from pydantic import BaseModel, PositiveInt, root_validator
 
+from ape.managers.networks import NetworkManager
 from ape.types import AddressType
 from ape.utils import abstractdataclass, abstractmethod
 
-Query = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractMethodQuery"]
+QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractMethodQuery"]
 
 
-class BaseQuery(BaseModel):
+class _BaseQuery(BaseModel):
     type: str  # Used as discriminator
     columns: List[str]
-    filter_args: Dict[str, Any]
-    engine_to_use: Optional[str] = None
 
 
-class BaseBlockQuery(BaseQuery):
-    start_block: int = 0
-    stop_block: Optional[int] = None
+class _BaseBlockQuery(_BaseQuery):
+    start_block: PositiveInt = 0
+    stop_block: Optional[PositiveInt] = None
+
+    @root_validator(pre=True)
+    def check_start_block_before_stop_block(cls, values):
+        if values["stop_block"] < values["start_block"]:
+            raise ValueError(
+                f"stop_block: {values['stop_block']} cannot be less than "
+                f"start_block: {values['start_block']}."
+            )
+
+        return values
 
 
-class BlockQuery(BaseBlockQuery):
+class BlockQuery(_BaseBlockQuery):
     type: Literal["blocks"]
 
 
-class BaseAccountQuery(BaseModel):
-    start_nonce: int = 0
-    stop_nonce: Optional[int] = None
-    engine_to_use: Optional[str] = None
+class _BaseAccountQuery(BaseModel):
+    start_nonce: PositiveInt = 0
+    stop_nonce: Optional[PositiveInt] = None
+
+    @root_validator(pre=True)
+    def check_start_nonce_before_stop_nonce(cls, values):
+        if values["stop_nonce"] < values["start_nonce"]:
+            raise ValueError(
+                f"stop_nonce: {values['stop_nonce']} cannot be less than "
+                f"start_nonce: {values['start_nonce']}."
+            )
+
+        return values
 
 
-class AccountQuery(BaseBlockQuery):
+class AccountQuery(_BaseAccountQuery):
     type: Literal["accounts"]
     account: AddressType
 
 
-class ContractEventQuery(BaseBlockQuery):
+class ContractEventQuery(_BaseBlockQuery):
     type: Literal["contract_events"]
     contract: AddressType
     event_id: bytes
 
 
-class ContractMethodQuery(BaseBlockQuery):
+class ContractMethodQuery(_BaseBlockQuery):
     type: Literal["contract_calls"]
     contract: AddressType
     method_id: bytes
@@ -52,27 +70,30 @@ class ContractMethodQuery(BaseBlockQuery):
 @abstractdataclass
 class QueryAPI:
 
-    engine_to_use: Optional[str] = None
+    network_manager: NetworkManager
 
     @abstractmethod
-    def estimate_query(self, query: Query) -> Optional[int]:
+    def estimate_query(self, query: QueryType) -> Optional[int]:
         """
-        Estimation of time needed to complete the query.
+        Estimation of time needed to complete the query. The estimation is returned
+        as an int representing milliseconds. A value of None indicates that the
+        query engine is not available for use.
 
         Args:
-            query (``Query``): query to estimate
+            query (``QueryType``): query to estimate
 
         Returns:
-            pandas.DataFrame
+            Optional[int]: Represents milliseconds, returns ``None`` if unavailable.
+
         """
 
     @abstractmethod
-    def perform_query(self, query: Query) -> pd.DataFrame:
+    def perform_query(self, query: QueryType) -> pd.DataFrame:
         """
         Executes the query using best performing ``estimate_query`` query engine.
 
         Args:
-            query (``Query``): query to execute
+            query (``QueryType``): query to execute
 
         Returns:
             pandas.DataFrame

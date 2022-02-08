@@ -110,15 +110,9 @@ class BlockContainer(_ConnectedChain):
 
         if stop_block > len(self):
             raise ChainError(
-                f"'stop={stop_block}' cannot be greater than the chain length ({len(self)}). "
+                f"'stop_block={stop_block}' cannot be greater than the chain length ({len(self)}). "
                 f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
             )
-        elif stop_block < start_block:
-            raise ValueError(f"stop '{stop_block}' cannot be less than start '{start_block}'.")
-        elif stop_block < 0:
-            raise ValueError(f"start '{start_block}' cannot be negative.")
-        elif start_block < 0:
-            raise ValueError(f"stop '{stop_block}' cannot be negative.")
 
         query = BlockQuery(
             columns=columns,
