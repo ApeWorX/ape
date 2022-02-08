@@ -1,7 +1,7 @@
 import functools
 import importlib
 import pkgutil
-from typing import Any, Callable, Iterator, Tuple, Type, cast
+from typing import Any, Callable, Iterator, List, Optional, Tuple, Type, cast
 
 from ape.logging import logger
 
@@ -117,6 +117,8 @@ def valid_impl(api_class: Any) -> bool:
 
 
 class PluginManager:
+    _unimplemented_plugins: List[str] = []
+
     def __init__(self) -> None:
         # NOTE: This actually loads the plugins, and should only be done once
         for _, name, ispkg in pkgutil.iter_modules():
@@ -145,29 +147,58 @@ class PluginManager:
             if not isinstance(results, tuple) and hasattr(results, "__iter__"):
                 # Only if it's an iterator, provider results as a series
                 for result in results:
-                    if valid_impl(result):
-                        yield clean_plugin_name(plugin_name), result
+                    validated_plugin = self._validate_plugin(plugin_name, result)
+                    if validated_plugin:
+                        yield validated_plugin
+            else:
+                validated_plugin = self._validate_plugin(plugin_name, results)
+                if validated_plugin:
+                    yield validated_plugin
 
-                    else:
-                        api_name = result.__name__ if hasattr(result, "__name__") else result
-                        logger.warning(
-                            f"'{api_name}' from '{plugin_name}' is not fully implemented."
-                        )
+    def _validate_plugin(self, plugin_name: str, plugin_cls) -> Optional[Tuple[str, Tuple]]:
+        if valid_impl(plugin_cls):
+            return clean_plugin_name(plugin_name), plugin_cls
+        else:
+            self._warn_not_fully_implemented_error(plugin_cls, plugin_name)
+            return None
 
-            elif valid_impl(results):
-                # Otherwise, provide results directly
-                yield clean_plugin_name(plugin_name), results
+    def _warn_not_fully_implemented_error(self, results, plugin_name):
+        if plugin_name in self._unimplemented_plugins:
+            # Already warned
+            return
+
+        unimplemented_methods = []
+
+        # Find the best API name to warn about.
+        if isinstance(results, (list, tuple)):
+            classes = [p for p in results if hasattr(p, "__name__")]
+            if classes:
+                # Likely only ever a single class in a registration, but just in case.
+                api_name = " - ".join([p.__name__ for p in classes])
+                for api_cls in classes:
+                    if hasattr(api_cls, "__abstractmethods__") and api_cls.__abstractmethods__:
+                        unimplemented_methods.extend(api_cls.__abstractmethods__)
 
             else:
-                _warn_not_fully_implemented_error(results, plugin_name)
+                # This would only happen if the registration consisted of all primitives.
+                api_name = " - ".join(results)
 
+        elif hasattr(results, "__name__"):
+            api_name = results.__name__
+            if hasattr(results, "__abstractmethods__") and results.__abstractmethods__:
+                unimplemented_methods.extend(results.__abstractmethods__)
+        else:
+            api_name = results
 
-def _warn_not_fully_implemented_error(results, plugin_name):
-    if isinstance(results, (tuple, list)):
-        class_names = ", ".join((r.__name__ for r in results))
-    else:
-        class_names = results.__name__
-    logger.warning(f"'{class_names}' from '{plugin_name}' is not fully implemented")
+        message = f"'{api_name}' from '{plugin_name}' is not fully implemented."
+        if unimplemented_methods:
+            methods_str = ", ".join(unimplemented_methods)
+            message = f"{message} Remaining abstract methods: '{methods_str}'."
+
+        logger.warning(message)
+
+        # Record so we don't warn repeatedly
+        self._unimplemented_plugins.append(plugin_name)
 
 
 __all__ = [

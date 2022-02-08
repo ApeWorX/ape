@@ -2,7 +2,7 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
 
-from ethpm_types import ABI
+from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from pluggy import PluginManager  # type: ignore
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
@@ -202,18 +202,18 @@ class EcosystemAPI:
 
     @abstractmethod
     def encode_deployment(
-        self, deployment_bytecode: bytes, abi: Optional[ABI], *args, **kwargs
+        self, deployment_bytecode: bytes, abi: ConstructorABI, *args, **kwargs
     ) -> "TransactionAPI":
         ...
 
     @abstractmethod
     def encode_transaction(
-        self, address: AddressType, abi: ABI, *args, **kwargs
+        self, address: AddressType, abi: MethodABI, *args, **kwargs
     ) -> "TransactionAPI":
         ...
 
     @abstractmethod
-    def decode_event(self, abi: ABI, receipt: "ReceiptAPI") -> "ContractLog":
+    def decode_event(self, abi: EventABI, receipt: "ReceiptAPI") -> "ContractLog":
         ...
 
     @abstractmethod
