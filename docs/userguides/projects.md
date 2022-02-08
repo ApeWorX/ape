@@ -27,8 +27,7 @@ directory determine which compiler plugin `ape` uses. Make sure to install the c
 missing by adding them to your `ape-config.yaml`'s `plugin` section, or manually adding via the following:
 
 ```bash
-ape plugins add solidity
-ape plugins add vyper
+ape plugins install solidity vyper
 ```
 
 Then, use the following command to compile all contracts in the `contracts/` directory:
@@ -195,5 +194,5 @@ not come with `ape` but can be installed by including it in the `plugins` list i
 manually installing it using the command:
 
 ```bash
-ape plugins add hardhat
+ape plugins install hardhat
 ```
