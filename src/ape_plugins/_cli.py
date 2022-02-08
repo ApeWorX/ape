@@ -167,8 +167,16 @@ def install(cli_ctx, plugins, skip_confirmation, upgrade):
             failures_occurred = True
             continue
 
+        elif plugin.requested_version is not None and upgrade:
+            cli_ctx.logger.error(
+                f"Cannot use '--upgrade' option when specifying "
+                f"a version for plugin '{plugin.name}'."
+            )
+            failures_occurred = True
+            continue
+
         # if plugin is installed but not a 2nd class. It must be a third party
-        if not plugin.is_installed and not plugin.is_available:
+        elif not plugin.is_installed and not plugin.is_available:
             cli_ctx.logger.warning(f"Plugin '{plugin.name}' is not an trusted plugin.")
 
         result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
@@ -198,7 +206,7 @@ def install(cli_ctx, plugins, skip_confirmation, upgrade):
 
         else:
             cli_ctx.logger.warning(
-                f"'{plugin.name}' is already installed. " f"Did you mean to include '--upgrade'."
+                f"'{plugin.name}' is already installed. Did you mean to include '--upgrade'."
             )
 
     if failures_occurred:

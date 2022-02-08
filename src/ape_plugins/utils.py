@@ -132,7 +132,6 @@ class ModifyPluginResultHandler:
 
         pip_freeze_version = self._plugin.pip_freeze_version
         if version_before == pip_freeze_version or not pip_freeze_version:
-            # Nothing to do and not failures.
             self._logger.info(
                 f"'{self._plugin.name}' already has version '{self._plugin.requested_version}'."
             )
