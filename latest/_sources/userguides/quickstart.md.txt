@@ -120,7 +120,7 @@ Add any plugins you may need, such as `vyper`.
 
 ```bash
 ape plugins list -a
-ape plugins add vyper
+ape plugins install vyper
 ape plugins list -a
 ```
 

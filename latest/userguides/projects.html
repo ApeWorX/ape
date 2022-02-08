@@ -177,8 +177,7 @@ use in your <code class="docutils literal notranslate"><span class="pre">ape-con
 <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory is where compilers look for contracts to compile. File extensions found within the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code>
 directory determine which compiler plugin <code class="docutils literal notranslate"><span class="pre">ape</span></code> uses. Make sure to install the compiler plugins you need if they are
 missing by adding them to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>’s <code class="docutils literal notranslate"><span class="pre">plugin</span></code> section, or manually adding via the following:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins add solidity
-ape plugins add vyper
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install solidity vyper
 </pre></div>
 </div>
 <p>Then, use the following command to compile all contracts in the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory:</p>
@@ -321,7 +320,7 @@ installed, you can use the <code class="docutils literal notranslate"><span clas
 <p>Another option for testing providers is the <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat plugin</a>, which does
 not come with <code class="docutils literal notranslate"><span class="pre">ape</span></code> but can be installed by including it in the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file or
 manually installing it using the command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins add hardhat
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install hardhat
 </pre></div>
 </div>
 </div>
