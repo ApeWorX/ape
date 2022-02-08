@@ -45,7 +45,10 @@ def plugins_argument():
     def callback(ctx, value: Tuple[str]):
         action = "Installing" if ctx.command.name == install.name else "Uninstalling"
         config_path = Path.cwd() / CONFIG_FILE_NAME
-        if not value and config_path.exists():
+        if not value:
+            if not config_path.exists():
+                ctx.obj.abort(f"No config file found at '{config_path.parent}'.")
+
             ctx.obj.logger.info(f"{action} plugins from config file at '{config_path}'.")
             plugins = config.get_config("plugins") or []
             return [ApePlugin.from_dict(d) for d in plugins]
@@ -232,8 +235,8 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
         # if plugin is installed but not a 2nd class. It must be a third party
         if plugin.is_installed and not plugin.is_available:
             cli_ctx.logger.warning(
-                f"Plugin '{plugin.name}' is not installed but not in available plugins."
-                f" Please uninstall outside of Ape."
+                f"Plugin '{plugin.name}' is installed but not in available plugins. "
+                f"Please uninstall outside of Ape."
             )
             failures_occurred = True
             continue
