@@ -51,6 +51,11 @@ def plugins_argument():
 
             ctx.obj.logger.info(f"{action} plugins from config file at '{config_path}'.")
             plugins = config.get_config("plugins") or []
+
+            if not plugins:
+                ctx.obj.logger.warning("No plugins found in config file.")
+                sys.exit(0)
+
             return [ApePlugin.from_dict(d) for d in plugins]
 
         return [ApePlugin(v) for v in value]
