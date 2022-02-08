@@ -7,9 +7,5 @@ WORKDIR /code
 # TODO: Figure out a better solution or wait for it to resolve itself.
 RUN pip install typing-extensions==3.10.0.2
 RUN python3 ./setup.py install
-RUN ape plugins add solidity --yes
-RUN ape plugins add vyper --yes
-RUN ape plugins add infura --yes
-RUN ape plugins add etherscan --yes
-RUN ape plugins add ens --yes
+RUN ape plugins install solidity vyper infura etherscan ens
 ENTRYPOINT ["ape"]

@@ -347,7 +347,7 @@ class GithubClient:
         The available ``ape`` plugins, found from looking at the ``ApeWorx`` Github organization.
 
         Returns:
-            Set[str]: The plugin names.
+            Set[str]: The plugin names as 'ape_plugin_name' (module-like).
         """
         return {
             repo.name.replace("-", "_")
