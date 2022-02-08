@@ -18,8 +18,6 @@ class QueryManager:
     Args:
         query (``QueryType``): query to execute
 
-    Returns:
-
     Usage example::
 
         chain.blocks.query()
