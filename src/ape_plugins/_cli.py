@@ -1,16 +1,16 @@
 import subprocess
 import sys
 from pathlib import Path
-from typing import Collection, List, Set
+from typing import Collection, List, Set, Tuple
 
 import click
 
 from ape import config
-from ape.cli import ape_cli_context, incompatible_with, skip_confirmation_option
+from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins import plugin_manager
 from ape.utils import github_client
-from ape_plugins.utils import CORE_PLUGINS, ApePlugin, ModifyPluginResultHandler
+from ape_plugins.utils import ApePlugin, ModifyPluginResultHandler
 
 
 @click.group(short_help="Manage ape plugins")
@@ -36,11 +36,39 @@ def _format_output(plugins_list: Collection[str]) -> Set:
     return output
 
 
-def plugin_argument():
-    return click.argument("plugin", callback=lambda ctx, param, value: ApePlugin(value))
+def plugins_argument():
+    """
+    An argument that is either the given list of plugins
+    or plugins loaded from the local config file.
+    """
+
+    def callback(ctx, value: Tuple[str]):
+        action = "Installing" if ctx.command.name == install.name else "Uninstalling"
+        config_path = Path.cwd() / CONFIG_FILE_NAME
+        if not value and config_path.exists():
+            ctx.obj.logger.info(f"{action} plugins from config file at '{config_path}'.")
+            plugins = config.get_config("plugins") or []
+            return [ApePlugin.from_dict(d) for d in plugins]
+
+        return [ApePlugin(v) for v in value]
+
+    return click.argument(
+        "plugins", callback=lambda ctx, param, value: callback(ctx, value), nargs=-1
+    )
 
 
-@cli.command(name="list", short_help="Display plugins")
+def upgrade_option(help: str = "", **kwargs):
+    """
+    A ``click.option`` for upgrading plugins (``--upgrade``).
+
+    Args:
+        help (str): CLI option help text. Defaults to ``""``.
+    """
+
+    return click.option("-U", "--upgrade", default=False, is_flag=True, help=help, **kwargs)
+
+
+@cli.command(name="list")
 @click.option(
     "-a",
     "--all",
@@ -51,6 +79,8 @@ def plugin_argument():
 )
 @ape_cli_context()
 def _list(cli_ctx, display_all):
+    """Display plugins"""
+
     installed_first_class_plugins = set()
     installed_second_class_plugins = set()
     installed_second_class_plugins_no_version = set()
@@ -122,83 +152,16 @@ def _list(cli_ctx, display_all):
             click.echo()
 
 
-def upgrade_option(help: str = "", **kwargs):
-    """
-    A ``click.option`` for upgrading plugins (``--upgrade``).
-
-    Args:
-        help (str): CLI option help text. Defaults to ``""``.
-    """
-
-    return click.option("-U", "--upgrade", default=False, is_flag=True, help=help, **kwargs)
-
-
-@cli.command(short_help="Install an ape plugin")
-@plugin_argument()
-@click.option("--version", help="Specify version (Default is latest)")
-@skip_confirmation_option(help="Don't ask for confirmation to add the plugin")
+@cli.command()
 @ape_cli_context()
-@upgrade_option(
-    help="Upgrade the plugin to the newest available version",
-    cls=incompatible_with(["version"]),
-)
-def add(cli_ctx, plugin, version, skip_confirmation, upgrade):
-    plugin.version_to_install = version
-    result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
-    args = [sys.executable, "-m", "pip", "install", "--quiet"]
-
-    if plugin.version_to_install and plugin.version_to_install == plugin.current_version:
-        cli_ctx.logger.warning(f"Plugin '{plugin}' already installed.")
-        return
-
-    elif plugin.is_part_of_core:
-        cli_ctx.abort(f"Cannot install core 'ape' plugin '{plugin.name}'.")
-
-    elif plugin.is_installed and upgrade:
-        cli_ctx.logger.info(f"Upgrading '{plugin.name}'...")
-        args.extend(("--upgrade", plugin.package_name))
-
-        version_before = plugin.current_version
-        result = subprocess.call(args)
-        if not result_handler.handle_upgrade_result(result, version_before):
-            sys.exit(1)
-
-    elif plugin.can_install and (
-        plugin.is_available
-        or skip_confirmation
-        or click.confirm(f"Install unknown 3rd party plugin '{plugin.name}'?")
-    ):
-        cli_ctx.logger.info(f"Installing '{plugin}'...")
-        # NOTE: Be *extremely careful* with this command, as it modifies the user's
-        #       installed packages, to potentially catastrophic results
-        # NOTE: This is not abstracted into another function *on purpose*
-
-        args.append(plugin.install_str)
-        result = subprocess.call(args)
-        if not result_handler.handle_install_result(result):
-            sys.exit(1)
-
-    else:
-        cli_ctx.logger.warning(
-            f"Plugin '{plugin.name}' is already installed. Did you mean to include '--upgrade'?"
-        )
-
-
-@cli.command(short_help="Install all plugins in the local config file")
-@ape_cli_context()
+@plugins_argument()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 @upgrade_option(help="Upgrade the plugin to the newest available version")
-def install(cli_ctx, skip_confirmation, upgrade):
-    config_path = Path.cwd() / CONFIG_FILE_NAME
-    if not config_path.exists():
-        cli_ctx.abort(f"'{config_path.name}' not found.")
+def install(cli_ctx, plugins, skip_confirmation, upgrade):
+    """Install plugins"""
 
     failures_occurred = False
-    cli_ctx.logger.info(f"Installing plugins from config file at '{config_path}'.")
-    plugins = config.get_config("plugins") or []
-    for plugin_dict in plugins:
-        plugin = ApePlugin.from_dict(plugin_dict)
-
+    for plugin in plugins:
         if plugin.is_part_of_core:
             cli_ctx.logger.error(f"Cannot install core 'ape' plugin '{plugin.name}'.")
             failures_occurred = True
@@ -242,20 +205,15 @@ def install(cli_ctx, skip_confirmation, upgrade):
         sys.exit(1)
 
 
-@cli.command(short_help="Uninstall all plugins in the local config file")
+@cli.command()
+@plugins_argument()
 @ape_cli_context()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
-def uninstall(cli_ctx, skip_confirmation):
-    config_path = Path.cwd() / CONFIG_FILE_NAME
-    if not config_path.exists():
-        cli_ctx.abort(f"'{config_path.name}' not found.")
-
-    cli_ctx.logger.info(f"Uninstalling plugins from config file at '{config_path}'.")
+def uninstall(cli_ctx, plugins, skip_confirmation):
+    """Uninstall plugins"""
 
     failures_occurred = False
-    plugins = config.get_config("plugins") or []
-    for plugin_dict in plugins:
-        plugin = ApePlugin.from_dict(plugin_dict)
+    for plugin in plugins:
         result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
 
         # if plugin is installed but not a 2nd class. It must be a third party
@@ -288,26 +246,3 @@ def uninstall(cli_ctx, skip_confirmation):
 
     if failures_occurred:
         sys.exit(1)
-
-
-@cli.command(short_help="Uninstall an ape plugin")
-@plugin_argument()
-@skip_confirmation_option("Don't ask for confirmation to remove the plugin")
-@ape_cli_context()
-def remove(cli_ctx, plugin, skip_confirmation):
-    if not plugin.is_installed:
-        cli_ctx.abort(f"Plugin '{plugin.name}' is not installed.")
-
-    elif plugin in CORE_PLUGINS:
-        cli_ctx.abort(f"Cannot remove core plugin '{plugin.name}'.")
-
-    elif skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?"):
-        result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
-        # NOTE: Be *extremely careful* with this command, as it modifies the user's
-        #       installed packages, to potentially catastrophic results
-        # NOTE: This is not abstracted into another function *on purpose*
-        result = subprocess.call(
-            [sys.executable, "-m", "pip", "uninstall", "--quiet", "-y", plugin.package_name]
-        )
-        if not result_handler.handle_uninstall_result(result):
-            sys.exit(1)

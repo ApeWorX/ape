@@ -33,17 +33,16 @@ def _pip_freeze_plugins() -> List[str]:
 
 
 class ApePlugin:
-    def __init__(self, name: str, version_to_install: Optional[str] = None):
-        self.name = clean_plugin_name(name)  # 'plugin-name'
+    def __init__(self, name: str):
+        parts = name.split("==")
+        self.name = clean_plugin_name(parts[0])  # 'plugin-name'
+        self.requested_version = parts[-1] if len(parts) == 2 else None
         self.package_name = f"ape-{self.name}"  # 'ape-plugin-name'
         self.module_name = f"ape_{self.name.replace('-', '_')}"  # 'ape_plugin_name'
-        self.version_to_install = version_to_install
         self.current_version = get_package_version(self.package_name)
 
     def __str__(self):
-        return (
-            self.name if not self.version_to_install else f"{self.name}=={self.version_to_install}"
-        )
+        return self.name if not self.requested_version else f"{self.name}=={self.requested_version}"
 
     @classmethod
     def from_dict(cls, data: Dict) -> "ApePlugin":
@@ -56,29 +55,28 @@ class ApePlugin:
             )
 
         name = data.pop("name")
-
-        version = None
         if "version" in data:
             version = data.pop("version")
+            name = f"{name}=={version}"
 
         if data:
             keys_str = ", ".join(data.keys())
             raise ConfigError(f"Unknown keys for plugins entry '{name}': '{keys_str}'.")
 
-        return ApePlugin(name, version_to_install=version)
+        return ApePlugin(name)
 
     @property
     def install_str(self) -> str:
         pip_str = str(self.package_name)
-        if self.version_to_install:
-            pip_str = f"{pip_str}=={self.version_to_install}"
+        if self.requested_version:
+            pip_str = f"{pip_str}=={self.requested_version}"
 
         return pip_str
 
     @property
     def can_install(self) -> bool:
         requesting_different_version = (
-            self.version_to_install is not None and self.version_to_install != self.current_version
+            self.requested_version is not None and self.requested_version != self.current_version
         )
         return not self.is_installed or requesting_different_version
 
@@ -136,7 +134,7 @@ class ModifyPluginResultHandler:
         if version_before == pip_freeze_version or not pip_freeze_version:
             # Nothing to do and not failures.
             self._logger.info(
-                f"'{self._plugin.name}' already has version '{self._plugin.version_to_install}'."
+                f"'{self._plugin.name}' already has version '{self._plugin.requested_version}'."
             )
             return True
         else:
