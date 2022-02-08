@@ -99,11 +99,32 @@ class BlockContainer(_ConnectedChain):
 
     def query(
         self,
-        columns: List[str],
+        columns: Union[str, List[str]],
         start_block: int = 0,
         stop_block: Optional[int] = None,
         engine_to_use: Optional[QueryAPI] = None,
     ) -> pd.DataFrame:
+        """
+        A method for querying blocks and returning a pandas DataFrame. If you
+        do not provide a starting block, the 0 block is assumed. If you do not
+        provide a stopping block, the last block is assumed. You can pass engine_to_use
+        to short-circuit engine selection.
+
+        Raises:
+            :class:`~ape.exceptions.ChainError`: When ``stop_block`` is greater
+              than the chain length.
+
+        Args:
+            columns (Union[str, List[str]]): columns in the DataFrame to return
+            start_block (int): The first block, by number, to include in the
+              range. Defaults to 0.
+            stop_block (Optional[int]): The block number to stop before. Defaults
+              to the lastest block.
+            engine_to_use (Optional[QueryAPI]): query engine to use, bypasses performance estimation
+
+        Returns:
+            pandas.DataFrame
+        """
 
         if stop_block is None:
             stop_block = len(self)
@@ -127,11 +148,20 @@ class BlockContainer(_ConnectedChain):
         """
         Iterate over blocks. Works similarly to python ``range()``.
 
+        Raises:
+            :class:`~ape.exceptions.ChainError`: When ``stop_block`` is greater
+                than the chain length.
+            :class:`~ape.exceptions.ChainError`: When ``stop_block`` is greater
+                than ``start_block``.
+            :class:`~ape.exceptions.ChainError`: When ``stop_block`` is less
+                than 0.
+            :class:`~ape.exceptions.ChainError`: When ``start_block`` is less
+                than 0.
+
         Args:
             start (int): The first block, by number, to include in the range.
               Defaults to 0.
-            stop (Optional[int]): The block number to stop before. Also the total
-             number of blocks to get.
+            stop (Optional[int]): The block number to stop before. Defaults to the lastest block.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]

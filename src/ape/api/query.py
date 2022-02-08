@@ -12,12 +12,12 @@ QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractM
 
 class _BaseQuery(BaseModel):
     type: str  # Used as discriminator
-    columns: List[str]
+    columns: Union[str, List[str]]
 
 
 class _BaseBlockQuery(_BaseQuery):
     start_block: PositiveInt = 0
-    stop_block: Optional[PositiveInt] = None
+    stop_block: PositiveInt
 
     @root_validator(pre=True)
     def check_start_block_before_stop_block(cls, values):
@@ -36,7 +36,7 @@ class BlockQuery(_BaseBlockQuery):
 
 class _BaseAccountQuery(BaseModel):
     start_nonce: PositiveInt = 0
-    stop_nonce: Optional[PositiveInt] = None
+    stop_nonce: PositiveInt
 
     @root_validator(pre=True)
     def check_start_nonce_before_stop_nonce(cls, values):
