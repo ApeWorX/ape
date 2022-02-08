@@ -217,3 +217,13 @@ class UnknownSnapshotError(ChainError):
             snapshot_id = humanize_hash(snapshot_id)  # type: ignore
 
         super().__init__(f"Unknown snapshot ID '{str(snapshot_id)}'.")
+
+
+class QueryEngineException(ApeException):
+    """
+    Raised when query engine with the given name was not found.
+    """
+
+    def __init__(self, query_engine: str) -> None:
+        message = f"No query engine named '{query_engine}'."
+        super().__init__(message)

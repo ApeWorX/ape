@@ -14,8 +14,6 @@ from ethpm_types import (
 )
 from hexbytes import HexBytes
 
-from ape.managers.query import AccountQuery, BlockQuery, EventQuery, MethodQuery
-
 from .signatures import MessageSignature, SignableMessage, TransactionSignature
 
 # We can remove this once we stop supporting python3.7.
@@ -40,11 +38,6 @@ providers when using this feature, so there should not be confusion over this ty
 cases.
 """
 
-Query = Union[BlockQuery, AccountQuery, EventQuery, MethodQuery]
-"""
-A query type representing different query options.
-"""
-
 __all__ = [
     "ABI",
     "AddressType",
@@ -56,7 +49,6 @@ __all__ = [
     "MessageSignature",
     "PackageManifest",
     "PackageMeta",
-    "Query",
     "SignableMessage",
     "SnapshotID",
     "Source",

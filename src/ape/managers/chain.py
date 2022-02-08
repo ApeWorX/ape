@@ -1,11 +1,15 @@
 import time
-from typing import Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Union, cast
+
+import pandas as pd
 
 from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI
+from ape.api.query import BlockQuery, QueryAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import logger
 from ape.managers.converters import ConversionManager
 from ape.managers.networks import NetworkManager
+from ape.managers.query import QueryManager
 from ape.types import AddressType, BlockID, SnapshotID
 from ape.utils import cached_property, injected_before_use
 
@@ -13,6 +17,7 @@ from ape.utils import cached_property, injected_before_use
 class _ConnectedChain:
     _networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
     _converters: ClassVar[ConversionManager] = injected_before_use()  # type: ignore
+    _query_manager: ClassVar[QueryManager] = cast(QueryManager, injected_before_use())
 
     @property
     def provider(self) -> ProviderAPI:
@@ -91,6 +96,38 @@ class BlockContainer(_ConnectedChain):
         """
 
         return self.range()
+
+    def query(
+        self,
+        columns: List[str],
+        start_block: int = 0,
+        stop_block: Optional[int] = None,
+        engine_to_use: Optional[QueryAPI] = None,
+    ) -> pd.DataFrame:
+
+        if stop_block is None:
+            stop_block = len(self)
+
+        if stop_block > len(self):
+            raise ChainError(
+                f"'stop={stop_block}' cannot be greater than the chain length ({len(self)}). "
+                f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
+            )
+        elif stop_block < start_block:
+            raise ValueError(f"stop '{stop_block}' cannot be less than start '{start_block}'.")
+        elif stop_block < 0:
+            raise ValueError(f"start '{start_block}' cannot be negative.")
+        elif start_block < 0:
+            raise ValueError(f"stop '{stop_block}' cannot be negative.")
+
+        query = BlockQuery(
+            columns=columns,
+            start_block=start_block,
+            stop_block=stop_block,
+            engine_to_use=engine_to_use,
+        )
+
+        return self._query_manager.query(query)
 
     def range(self, start: int = 0, stop: Optional[int] = None) -> Iterator[BlockAPI]:
         """
