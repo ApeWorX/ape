@@ -221,5 +221,5 @@ class UnknownSnapshotError(ChainError):
 
 class QueryEngineError(ApeException):
     """
-    Raised when a query engine is unavailable.
+    Raised when issues occur in a query engine.
     """
