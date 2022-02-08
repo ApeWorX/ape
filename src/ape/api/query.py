@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Literal, Optional, Union
+import sys
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 from pydantic import BaseModel, PositiveInt, root_validator
@@ -6,6 +7,12 @@ from pydantic import BaseModel, PositiveInt, root_validator
 from ape.managers.networks import NetworkManager
 from ape.types import AddressType
 from ape.utils import abstractdataclass, abstractmethod
+
+# We can remove this once we stop supporting python3.7.
+if sys.version_info >= (3, 8):
+    from typing import Literal
+else:
+    from typing_extensions import Literal
 
 QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractMethodQuery"]
 
