@@ -7,7 +7,7 @@ from .utils import skip_projects, skip_projects_except
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
     assert result.exit_code == 0, result.output
-    assert "WARNING" in result.output
+    assert "WARNING" in result.output, result.output
     assert "No source files found in" in result.output
 
 
