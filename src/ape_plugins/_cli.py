@@ -41,7 +41,7 @@ def plugins_argument():
     or plugins loaded from the local config file.
     """
 
-    def callback(ctx, value: Tuple[str]):
+    def callback(ctx, param, value: Tuple[str]):
         if not value:
             ctx.obj.abort("You must give at least one requirement to install.")
 
@@ -65,7 +65,7 @@ def plugins_argument():
 
     return click.argument(
         "plugins",
-        callback=lambda ctx, param, value: callback(ctx, value),
+        callback=callback,
         nargs=-1,
         metavar="PLUGIN-NAMES or path/to/project-dir",
     )
