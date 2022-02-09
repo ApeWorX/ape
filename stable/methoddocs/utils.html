@@ -187,20 +187,6 @@ errors will occur. This class cannot be instantiated on its own.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ape.utils.deep_merge">
-<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">deep_merge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict2</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><a class="headerlink" href="#ape.utils.deep_merge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Merge two dictionaries recursively.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The result of the merge as a new dictionary.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt id="ape.utils.expand_environment_variables">
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">expand_environment_variables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contents</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape.utils.expand_environment_variables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replace substrings of the form <code class="docutils literal notranslate"><span class="pre">$name</span></code> or <code class="docutils literal notranslate"><span class="pre">${name}</span></code> in the given path
@@ -350,6 +336,14 @@ which may or may not share a common ancestor.
 </dl>
 </dd></dl>
 
+<dl class="py class">
+<dt id="ape.utils.injected_before_use">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">injected_before_use</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.injected_before_use" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">property</span></code></p>
+<p>Injected properties are injected class variables that must be set before use
+NOTE: do not appear in a Pydantic model’s set of properties</p>
+</dd></dl>
+
 <dl class="py function">
 <dt id="ape.utils.load_config">
 <code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">load_config</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_envars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">must_exist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><a class="headerlink" href="#ape.utils.load_config" title="Permalink to this definition">¶</a></dt>
@@ -388,6 +382,27 @@ callables as instance methods.</p>
 <dd><p>Registers a new implementation for the given <em>cls</em> on a <em>generic_method</em>.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.utils.stream_response">
+<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">stream_response</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">download_url</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar_description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Downloading'</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bytes</span><a class="headerlink" href="#ape.utils.stream_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download HTTP content by streaming and returning the bytes.
+Progress bar will be displayed in the CLI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>download_url</strong> (<em>str</em>) – String to get files to download.</p></li>
+<li><p><strong>progress_bar_description</strong> (<em>str</em>) – Downloading word.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Content in bytes to show the progress.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bytes</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>

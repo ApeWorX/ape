@@ -83,6 +83,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.convert">Convert</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.explorers">Explorers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.networks">Networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.api.projects">Projects</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.providers">Providers</a></li>
 </ul>
 </li>
@@ -205,6 +206,28 @@
 </dd></dl>
 
 <dl class="py method">
+<dt id="ape.api.accounts.AccountAPI.check_signature">
+<code class="sig-name descname"><span class="pre">check_signature</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">eth_account.messages.SignableMessage</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.signatures._Signature</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#ape.api.accounts.AccountAPI.check_signature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify a message or transaction was signed by this account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (Union[<a class="reference internal" href="types.html#ape.types.signatures.SignableMessage" title="ape.types.signatures.SignableMessage"><code class="xref py py-class docutils literal notranslate"><span class="pre">SignableMessage</span></code></a>, <a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>]) – # noqa: E501
+The message or transaction to verify.</p></li>
+<li><p><strong>signature</strong> (Optional[<code class="docutils literal notranslate"><span class="pre">_Signature</span></code>]) – The <a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a> or the
+<a class="reference internal" href="types.html#ape.types.signatures.TransactionSignature" title="ape.types.signatures.TransactionSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionSignature</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the data was signed by this account. <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.api.accounts.AccountAPI.deploy">
 <code class="sig-name descname"><span class="pre">deploy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ContractContainer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ContractInstance</span><a class="headerlink" href="#ape.api.accounts.AccountAPI.deploy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a smart contract on the blockchain. The smart contract must compile before
@@ -228,7 +251,7 @@ deploying and a provider must be active.</p>
 <dd><p>Sign a message.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>msg</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">SignableMessage</span></code>) – The message to sign.
+<dd class="field-odd"><p><strong>msg</strong> (<a class="reference internal" href="types.html#ape.types.signatures.SignableMessage" title="ape.types.signatures.SignableMessage"><code class="xref py py-class docutils literal notranslate"><span class="pre">SignableMessage</span></code></a>) – The message to sign.
 See these
 <a class="reference external" href="https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage">docs</a>  # noqa: E501
 for more type information on this type.</p>
@@ -294,7 +317,7 @@ instances.</p>
 <dd class="field-odd"><p><strong>IndexError</strong> – When the given account address is not in this container.</p>
 </dd>
 <dt class="field-even">Parameters</dt>
-<dd class="field-even"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – An account address.</p>
+<dd class="field-even"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – An account address.</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if <code class="docutils literal notranslate"><span class="pre">ape</span></code> manages the account with the given address.</p>
@@ -314,7 +337,7 @@ instances.</p>
 <dd class="field-odd"><p><strong>NotImplementError</strong> – When not overridden within a plugin.</p>
 </dd>
 <dt class="field-even">Parameters</dt>
-<dd class="field-even"><p><strong>address</strong> (address <a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the account to delete.</p>
+<dd class="field-even"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the account to delete.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -324,11 +347,15 @@ instances.</p>
 <code class="sig-name descname"><span class="pre">__getitem__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an account by address.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
-<dd class="field-odd"><p><strong>IndexError</strong> – When there is no local account with the given address.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address to get. The type is an alias to
+<a class="reference external" href="https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress">ChecksumAddress</a>.  # noqa: E501</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>IndexError</strong> – When there is no local account with the given address.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -425,7 +452,11 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <dd><p>The raw address type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
+<dd class="field-odd"><p>An alias to
+<a class="reference external" href="https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress">ChecksumAddress</a>.  # noqa: E501</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -678,7 +709,7 @@ in a particular ecosystem.</p>
 <dd><p>Get a list of list of transactions performed by an address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The account address.</p>
+<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The account address.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Iterator[<a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>]</p>
@@ -692,8 +723,7 @@ in a particular ecosystem.</p>
 <dd><p>Get an address URL, such as for a transaction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address to
-get the URL for.</p>
+<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address to get the URL for.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>str</p>
@@ -707,7 +737,7 @@ get the URL for.</p>
 <dd><p>Get the contract type for a given address if it has been published in an explorer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.AddressType" title="ape.types.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The contract address.</p>
+<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The contract address.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>If not published, returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
@@ -739,7 +769,7 @@ get the URL for.</p>
 <span id="networks"></span><h2>Networks<a class="headerlink" href="#module-ape.api.networks" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="ape.api.networks.EcosystemAPI">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></code><code class="sig-name descname"><span class="pre">EcosystemAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">NetworkManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ConfigManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugin_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pluggy.manager.PluginManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_types</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">TransactionType</span><span class="p"><span class="pre">,</span> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TransactionAPI</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receipt_class</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">ReceiptAPI</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_class</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BlockAPI</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_default_network</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'development'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.EcosystemAPI" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></code><code class="sig-name descname"><span class="pre">EcosystemAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">NetworkManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ConfigManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugin_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pluggy.manager.PluginManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_types</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">TransactionType</span><span class="p"><span class="pre">,</span> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TransactionAPI</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receipt_class</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">ReceiptAPI</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_class</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BlockAPI</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_default_network</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.EcosystemAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A set of related networks, such as Ethereum.</p>
 <dl class="py method">
@@ -1190,6 +1220,156 @@ an instance of this context manager.</p>
 <dt id="ape.api.networks.create_network_type">
 <code class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></code><code class="sig-name descname"><span class="pre">create_network_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.networks.create_network_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Easily create a <a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.networks.NetworkAPI</span></code></a> subclass.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.api.projects">
+<span id="projects"></span><h2>Projects<a class="headerlink" href="#module-ape.api.projects" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.api.projects.DependencyAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.projects.</span></code><code class="sig-name descname"><span class="pre">DependencyAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ProjectManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_data_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contracts_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'contracts'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.projects.DependencyAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A base-class for dependency sources, such as GitHub or IPFS.</p>
+<dl class="py method">
+<dt id="ape.api.projects.DependencyAPI.cached_manifest">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">cached_manifest</span></code><a class="headerlink" href="#ape.api.projects.DependencyAPI.cached_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>The manifest from the <code class="docutils literal notranslate"><span class="pre">.ape/packages/&lt;dependency-name&gt;/&lt;version-id&gt;</span></code>
+if it exists and is valid.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.DependencyAPI.contracts_folder">
+<code class="sig-name descname"><span class="pre">contracts_folder</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">'contracts'</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.contracts_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dependency’s <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
+This is where <code class="docutils literal notranslate"><span class="pre">ape</span></code> will look for source files when compiling
+the manifest for this dependency. <strong>NOTE</strong>: This must be the name
+of a directory in the project.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.projects.DependencyAPI.extract_manifest">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">extract_manifest</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">ethpm_types.manifest.PackageManifest</span><a class="headerlink" href="#ape.api.projects.DependencyAPI.extract_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <a class="reference internal" href="#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a> implementation,
+presumably by downloading and compiling the dependency.</p>
+<p>Implementations may use <code class="docutils literal notranslate"><span class="pre">self.project_manager</span></code> to call method
+<a class="reference internal" href="managers.html#ape.managers.project.ProjectManager.get_project" title="ape.managers.project.ProjectManager.get_project"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_project()</span></code></a>
+to dynamically get the correct <a class="reference internal" href="#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a>.
+based on the project’s structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.DependencyAPI.name">
+<code class="sig-name descname"><span class="pre">name</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dependency.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.DependencyAPI.project_manager">
+<code class="sig-name descname"><span class="pre">project_manager</span></code><em class="property"><span class="pre">:</span> <span class="pre">ProjectManager</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.project_manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>The root project manager.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.DependencyAPI.version">
+<code class="sig-name descname"><span class="pre">version</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The version of the dependency. Omit to use the latest.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.projects.DependencyAPI.version_id">
+<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">version_id</span></code><a class="headerlink" href="#ape.api.projects.DependencyAPI.version_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ID to use as the sub-directory in the download cache.
+Most often, this is either a version number or a branch name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ape.api.projects.ProjectAPI">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.api.projects.</span></code><code class="sig-name descname"><span class="pre">ProjectAPI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compilers</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">CompilerManager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contracts_folder</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.projects.ProjectAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An abstract base-class for working with projects.
+This class can also be extended to a plugin for supporting non-ape projects.</p>
+<dl class="py method">
+<dt id="ape.api.projects.ProjectAPI.cached_manifest">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">cached_manifest</span></code><a class="headerlink" href="#ape.api.projects.ProjectAPI.cached_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code> at <a class="reference internal" href="#ape.api.projects.ProjectAPI.manifest_cachefile" title="ape.api.projects.ProjectAPI.manifest_cachefile"><code class="xref py py-attr docutils literal notranslate"><span class="pre">manifest_cachefile</span></code></a>
+if it exists and is valid.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.ProjectAPI.compilers">
+<code class="sig-name descname"><span class="pre">compilers</span></code><em class="property"><span class="pre">:</span> <span class="pre">CompilerManager</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.compilers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compilers for creating the manifest.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.ProjectAPI.contracts_folder">
+<code class="sig-name descname"><span class="pre">contracts_folder</span></code><em class="property"><span class="pre">:</span> <span class="pre">pathlib.Path</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.contracts_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>The path to the contracts in the project.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.projects.ProjectAPI.create_manifest">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">create_manifest</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_paths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ethpm_types.manifest.PackageManifest</span><a class="headerlink" href="#ape.api.projects.ProjectAPI.create_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a manifest from the project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_paths</strong> (<em>Optional</em><em>[</em><em>List</em><em>]</em>) – An optional list of paths to compile
+from this project.</p></li>
+<li><p><strong>use_cache</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to clear caches and force a re-compile.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.projects.ProjectAPI.is_valid">
+<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_valid</span></code><a class="headerlink" href="#ape.api.projects.ProjectAPI.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the project at the given path matches this project type.
+Useful for figuring out the best <code class="docutils literal notranslate"><span class="pre">ProjectAPI</span></code> to use when compiling a project.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.api.projects.ProjectAPI.manifest_cachefile">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">manifest_cachefile</span></code><a class="headerlink" href="#ape.api.projects.ProjectAPI.manifest_cachefile" title="Permalink to this definition">¶</a></dt>
+<dd><p>The path to the project’s cached manifest. The manifest
+is a cached file representing the project and is useful
+for sharing, such as uploading to IPFS.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>pathlib.Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.ProjectAPI.name">
+<code class="sig-name descname"><span class="pre">name</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of this project when another project uses it as a dependency.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.ProjectAPI.path">
+<code class="sig-name descname"><span class="pre">path</span></code><em class="property"><span class="pre">:</span> <span class="pre">pathlib.Path</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.path" title="Permalink to this definition">¶</a></dt>
+<dd><p>The project path.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.api.projects.ProjectAPI.version">
+<code class="sig-name descname"><span class="pre">version</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The version of the project whe another project uses it as a dependency.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -1652,8 +1832,7 @@ Allows developers to go back to a previous state.</p>
 <em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">snapshot</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.snapshot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Record the current state of the blockchain with intent to later
 call the method <code class="xref py py-meth docutils literal notranslate"><span class="pre">revert()</span></code>
-to go back to this point. This method is for development networks
-only.</p>
+to go back to this point. This method is for local networks only.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The snapshot ID.</p>

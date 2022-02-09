@@ -343,7 +343,7 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 <dd><p>Prompt the user to pick from their accounts and return that account.
 Use this method if you want to prompt users to select accounts _outside_
 of CLI options. For CLI options, use
-<a class="reference internal" href="#ape.cli.options.account_option_that_prompts_when_not_given" title="ape.cli.options.account_option_that_prompts_when_not_given"><code class="xref py py-meth docutils literal notranslate"><span class="pre">account_option_that_prompts_when_not_given()</span></code></a>.</p>
+<a class="reference internal" href="#ape.cli.options.account_option" title="ape.cli.options.account_option"><code class="xref py py-meth docutils literal notranslate"><span class="pre">account_option()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -429,9 +429,9 @@ an error to preserve the exception stack.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ape.cli.options.account_option_that_prompts_when_not_given">
-<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">account_option_that_prompts_when_not_given</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.account_option_that_prompts_when_not_given" title="Permalink to this definition">¶</a></dt>
-<dd><p>Accepts either the account alias or the account number.
+<dt id="ape.cli.options.account_option">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">account_option</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.account_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>A CLI option that accepts either the account alias or the account number.
 If not given anything, it will prompt the user to select an account.</p>
 </dd></dl>
 
@@ -453,6 +453,22 @@ If you pass <code class="docutils literal notranslate"><span class="pre">multipl
 <dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ContractError" title="ape.exceptions.ContractError"><strong>ContractError</strong></a> – In the callback when it fails to load the contracts.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ape.cli.options.incompatible_with">
+<code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">incompatible_with</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">incompatible_opts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.incompatible_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory for creating custom <code class="docutils literal notranslate"><span class="pre">click.Option</span></code> subclasses that
+enforce incompatibility with the option strings passed to this function.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;--option&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">incompatible_with</span><span class="p">([</span><span class="s2">&quot;other_option&quot;</span><span class="p">]))</span>
+<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">other_option</span><span class="p">):</span>
+    <span class="o">....</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -546,7 +562,7 @@ of <code class="docutils literal notranslate"><span class="pre">pathlib.Path</sp
 <span id="utilities"></span><h2>Utilities<a class="headerlink" href="#module-ape.cli.utils" title="Permalink to this headline">¶</a></h2>
 <dl class="py exception">
 <dt id="ape.cli.utils.Abort">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.utils.</span></code><code class="sig-name descname"><span class="pre">Abort</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.utils.Abort" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.utils.</span></code><code class="sig-name descname"><span class="pre">Abort</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.utils.Abort" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">click.exceptions.ClickException</span></code></p>
 <p>A wrapper around a CLI exception. When you raise this error,
 the error is nicely printed to the terminal. This is
