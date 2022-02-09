@@ -256,19 +256,20 @@ class AccountContainerAPI(AbstractBaseModel):
             Iterator[str]
         """
 
+    @property
     @abstractmethod
-    def __len__(self) -> int:
-        """
-        Number of accounts.
-        """
-
-    @abstractmethod
-    def __iter__(self):
+    def accounts(self):
         """
         Iterate over all accounts.
 
         Returns:
             Iterator[:class:`~ape.api.accounts.AccountAPI`]
+        """
+
+    @abstractmethod
+    def __len__(self) -> int:
+        """
+        Number of accounts.
         """
 
     def __getitem__(self, address: AddressType) -> AccountAPI:
@@ -285,7 +286,7 @@ class AccountContainerAPI(AbstractBaseModel):
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
-        for account in self.__iter__():
+        for account in self.accounts:
             if account.address == address:
                 return account
 
@@ -303,7 +304,7 @@ class AccountContainerAPI(AbstractBaseModel):
         """
         self._verify_account_type(account)
 
-        if account.address in self:
+        if account.address in self.accounts:
             raise AccountsError(f"Account '{account.address}' already in container.")
 
         self._verify_unused_alias(account)
@@ -325,7 +326,7 @@ class AccountContainerAPI(AbstractBaseModel):
         """
         self._verify_account_type(account)
 
-        if account.address not in self:
+        if account.address not in self.accounts:
             raise AccountsError(f"Account '{account.address}' not known.")
 
         self.__delitem__(account.address)

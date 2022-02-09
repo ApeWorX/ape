@@ -25,10 +25,8 @@ class TestAccountContainer(TestAccountContainerAPI):
         for index in range(0, len(self)):
             yield f"dev_{index}"
 
-    def __len__(self) -> int:
-        return len(self._dev_accounts)
-
-    def __iter__(self):
+    @property
+    def accounts(self) -> Iterator["TestAccount"]:
         for index in range(0, len(self)):
             account = self._dev_accounts[index]
             TestAccount.container = self
@@ -37,6 +35,9 @@ class TestAccountContainer(TestAccountContainerAPI):
                 address_str=account.address,
                 private_key=account.private_key,
             )  # type: ignore
+
+    def __len__(self) -> int:
+        return len(self._dev_accounts)
 
 
 class TestAccount(TestAccountAPI):

@@ -65,6 +65,12 @@ class AccountManager(ManagerBase):
         for container in self.containers.values():
             yield from container.aliases
 
+    @property
+    def accounts(self) -> Iterator[AccountAPI]:
+        for container in self.containers.values():
+            for account in container.accounts:
+                yield account
+
     def get_accounts_by_type(self, type_: Type[AccountAPI]) -> List[AccountAPI]:
         """
         Get a list of accounts by their type.
@@ -77,7 +83,7 @@ class AccountManager(ManagerBase):
             List[:class:`~ape.api.accounts.AccountAPI`]
         """
 
-        return [acc for acc in self if isinstance(acc, type_)]
+        return [acc for acc in self.accounts if isinstance(acc, type_)]
 
     def __len__(self) -> int:
         """
@@ -89,13 +95,8 @@ class AccountManager(ManagerBase):
 
         return sum(len(container) for container in self.containers.values())
 
-    def __iter__(self) -> Iterator[AccountAPI]:
-        for container in self.containers.values():
-            for account in container:
-                yield account
-
     def __repr__(self) -> str:
-        return "[" + ", ".join(repr(a) for a in self) + "]"
+        return "[" + ", ".join(repr(a) for a in self.accounts) + "]"
 
     @cached_property
     def test_accounts(self) -> List[TestAccountAPI]:
@@ -123,7 +124,7 @@ class AccountManager(ManagerBase):
 
             # pydantic validation won't allow passing None for data_folder/required attr
             container = container_type(data_folder="", account_type=account_type)
-            accounts.extend([acc for acc in container])
+            accounts.extend([acc for acc in container.accounts])
 
         return accounts
 
@@ -141,7 +142,7 @@ class AccountManager(ManagerBase):
         if alias == "":
             raise ValueError("Cannot use empty string as alias!")
 
-        for account in self:
+        for account in self.accounts:
             if account.alias and account.alias == alias:
                 return account
 
@@ -165,7 +166,7 @@ class AccountManager(ManagerBase):
             :class:`~ape.api.accounts.AccountAPI`
         """
 
-        for idx, account in enumerate(self.__iter__()):
+        for idx, account in enumerate(self.accounts):
             if account_id == idx:
                 return account
 
@@ -186,7 +187,7 @@ class AccountManager(ManagerBase):
         account_id = self.conversion_manager.convert(account_str, AddressType)
 
         for container in self.containers.values():
-            if account_id in container:
+            if account_id in container.accounts:
                 return container[account_id]
 
         raise IndexError(f"No account with address '{account_id}'.")
@@ -202,4 +203,4 @@ class AccountManager(ManagerBase):
             bool: ``True`` when the given address is found.
         """
 
-        return any(address in container for container in self.containers.values())
+        return any(address in container.accounts for container in self.containers.values())
