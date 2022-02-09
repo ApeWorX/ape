@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class QueryManager:
     """
-    A singelton that manages all query sources.
+    A singleton that manages query engines and performs queries.
 
     Args:
         query (``QueryType``): query to execute
