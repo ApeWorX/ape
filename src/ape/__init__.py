@@ -8,20 +8,11 @@ from functools import partial
 from ape.utils import ManagerAccessBase as _ManagerAccessBase
 
 from .contracts import _Contract
-from .managers import (
-    Project,
-    _account_manager,
-    _chain_manager,
-    _compiler_manager,
-    _conversion_manager,
-    _network_manager,
-    _plugin_manager,
-    _project_manager,
-)
+from .managers import Project
 
 # Wiring together the application
 
-plugin_manager = _plugin_manager
+plugin_manager = _ManagerAccessBase.plugin_manager
 """Manages plugins for the current project. See :class:`ape.plugins.PluginManager`."""
 
 config = _ManagerAccessBase.config_manager
@@ -30,33 +21,33 @@ config = _ManagerAccessBase.config_manager
 """
 
 # Main types we export for the user
-compilers = _compiler_manager
+compilers = _ManagerAccessBase.compiler_manager
 """Manages compilers for the current project. See
 :class:`ape.managers.compilers.CompilerManager`."""
 
-networks = _network_manager
+networks = _ManagerAccessBase.network_manager
 """Manages the networks for the current project. See
 :class:`ape.managers.networks.NetworkManager`."""
 
-_converters = _conversion_manager
+_converters = _ManagerAccessBase.conversion_manager
 
-chain = _chain_manager
+chain = _ManagerAccessBase.chain_manager
 """
 The current connected blockchain; requires an active provider.
 Useful for development purposes, such as controlling the state of the blockchain.
 Also handy for querying data about the chain and managing local caches.
 """
 
-accounts = _account_manager
+accounts = _ManagerAccessBase.account_manager
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
-project = _project_manager
+project = _ManagerAccessBase.project_manager
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
 Contract = partial(_Contract, networks=networks, converters=_converters)
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 
-convert = _conversion_manager.convert
+convert = _ManagerAccessBase.conversion_manager.convert
 """Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
 
 __all__ = [
