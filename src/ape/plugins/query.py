@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Iterator, Tuple, Type
+from typing import TYPE_CHECKING, Iterator, Type
 
 from .pluggy_patch import PluginType, hookspec
 
@@ -12,7 +12,7 @@ class QueryPlugin(PluginType):
     """
 
     @hookspec
-    def query_engines(self) -> Iterator[Tuple[str, Type["QueryAPI"]]]:
+    def query_engines(self) -> Iterator[Type["QueryAPI"]]:
         """
         A hook that returns an iterator of types of a string query type and a ``QueryAPI`` subclass
 

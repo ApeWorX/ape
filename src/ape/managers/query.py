@@ -4,6 +4,7 @@ import pandas as pd
 
 from ape.api import QueryAPI, QueryType
 from ape.exceptions import QueryEngineError
+from ape.plugins import clean_plugin_name
 from ape.utils import cached_property
 
 if TYPE_CHECKING:
@@ -20,7 +21,7 @@ class QueryManager:
 
     Usage example::
 
-        biggest_block_size = chain.blocks.query("size").max()
+         biggest_block_size = chain.blocks.query("size").max()
     """
 
     plugin_manager: "PluginManager"
@@ -40,7 +41,8 @@ class QueryManager:
         """
 
         engines = {}
-        for plugin_name, (engine_name, engine_class) in self.plugin_manager.query_engines:
+        for plugin_name, (engine_class,) in self.plugin_manager.query_engines:
+            engine_name = clean_plugin_name(plugin_name)
             engines[engine_name] = engine_class(network_manager=self.network_manager)
 
         return engines
