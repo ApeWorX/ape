@@ -28,9 +28,9 @@ class ContractConstructor(AbstractBaseModel):
 
     @validator("deployment_bytecode")
     def check_empty_contract(cls, value):
-        if len(value) == 0:
+        if not value:
             logger.warning("Deploying an empty contract (no bytecode)")
-        return value
+        return b""
 
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
