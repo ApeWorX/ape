@@ -523,8 +523,10 @@ class NetworkAPI(AbstractBaseModel):
         """
 
         return ProviderContextManager(
-            self.ecosystem.network_manager,
-            self.get_provider(provider_name=provider_name, provider_settings=provider_settings),
+            network_manager=self.ecosystem.network_manager,
+            provider=self.get_provider(
+                provider_name=provider_name, provider_settings=provider_settings
+            ),
         )
 
     @property
