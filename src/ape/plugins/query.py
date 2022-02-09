@@ -14,14 +14,14 @@ class QueryPlugin(PluginType):
     @hookspec
     def query_engines(self) -> Iterator[Type["QueryAPI"]]:
         """
-        A hook that returns an iterator of types of a string query type and a ``QueryAPI`` subclass
+        A hook that returns an iterator of types of a ``QueryAPI`` subclasses
 
         Usage example::
 
             @plugins.register(plugins.QueryPlugin)
             def query_engines():
-                yield "postgres", PostgresEngine
+                yield PostgresEngine
 
         Returns:
-            Iterator[tuple[str, Type[:class:`~ape.api.query.QueryAPI`]]]
+            Iterator[Type[:class:`~ape.api.query.QueryAPI`]]
         """
