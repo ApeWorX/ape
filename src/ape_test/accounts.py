@@ -31,8 +31,8 @@ class TestAccountContainer(TestAccountContainerAPI):
     def __iter__(self):
         for index in range(0, len(self)):
             account = self._dev_accounts[index]
+            TestAccount.container = self
             yield TestAccount(
-                container=self,
                 index=index,
                 address_str=account.address,
                 private_key=account.private_key,
