@@ -54,8 +54,8 @@ class CompilerManager(ManagerBase):
         registered_compilers = {}
 
         for plugin_name, (extensions, compiler_class) in self.plugin_manager.register_compiler:
-            config = self.config_manager.get_config(plugin_name)
-            compiler = compiler_class(config_manager=config)
+
+            compiler = compiler_class()
 
             for extension in extensions:
                 if extension not in registered_compilers:
