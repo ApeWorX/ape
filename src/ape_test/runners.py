@@ -35,16 +35,8 @@ class PytestApeRunner:
 
     def pytest_exception_interact(self, report, call):
         """
-        Called when an exception was raised which can potentially be
-        interactively handled.
-        With the `--interactive` flag, outputs the full repr of the failed test
-        and opens an interactive shell using `brownie._cli.console.Console`.
-        Arguments
-        ---------
-        report : _pytest.reports.BaseReport
-            Report object for the failed test.
-        call : _pytest.runner.CallInfo
-            Result/Exception info for the failed test.
+        A `-I` option triggers when an exception is raised which can be interactively handeled.
+        Outputs the full repr of the failed test and opens an interactive shell using `ape console`.
         """
 
         if self.config.getoption("interactive") and report.failed:
