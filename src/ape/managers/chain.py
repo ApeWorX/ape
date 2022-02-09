@@ -130,7 +130,7 @@ class BlockContainer(_ConnectedChain):
         if stop_block is None:
             stop_block = len(self)
 
-        if stop_block > len(self):
+        elif stop_block > len(self):
             raise ChainError(
                 f"'stop_block={stop_block}' cannot be greater than the chain length ({len(self)}). "
                 f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
