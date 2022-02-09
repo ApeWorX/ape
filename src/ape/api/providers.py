@@ -220,6 +220,9 @@ class ReceiptAPI:
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
+    def __repr__(self):
+        return str(self)
+
     def raise_for_status(self):
         """
         Handle provider-specific errors regarding a non-successful
