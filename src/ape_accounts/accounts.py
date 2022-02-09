@@ -31,12 +31,13 @@ class AccountContainer(AccountContainerAPI):
         for p in self._keyfiles:
             yield p.stem
 
-    def __len__(self) -> int:
-        return len([*self._keyfiles])
-
-    def __iter__(self):
+    @property
+    def accounts(self) -> Iterator[AccountAPI]:
         for keyfile in self._keyfiles:
             yield KeyfileAccount(container=self, keyfile_path=keyfile)  # type: ignore
+
+    def __len__(self) -> int:
+        return len([*self._keyfiles])
 
 
 # NOTE: `AccountAPI` is an AbstractBaseModel
