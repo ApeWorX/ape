@@ -120,7 +120,8 @@ class BlockContainer(_ConnectedChain):
               range. Defaults to 0.
             stop_block (Optional[int]): The block number to stop before. Defaults
               to the lastest block.
-            engine_to_use (Optional[QueryAPI]): query engine to use, bypasses performance estimation
+            engine_to_use (Optional[QueryAPI]): query engine to use, bypasses query
+              engine selection algorithm.
 
         Returns:
             pandas.DataFrame
