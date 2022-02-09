@@ -74,7 +74,7 @@ $ ape test -k test_only_one_thing --coverage --gas
 $ ape console --network ethereum:mainnet:infura
 
 # Add new plugins to ape
-$ ape plugins add plugin-name
+$ ape plugins install plugin-name
 ```
 
 Ape also works as a package. You can use the same networks, accounts, and projects from the ape package as you can in the cli:
