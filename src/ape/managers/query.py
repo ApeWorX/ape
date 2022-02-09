@@ -20,7 +20,7 @@ class QueryManager:
 
     Usage example::
 
-        chain.blocks.query()
+        biggest_block_size = chain.blocks.query("size").max()
     """
 
     plugin_manager: "PluginManager"
