@@ -2,6 +2,7 @@ import sys
 from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
+from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, PositiveInt, root_validator
 
 from ape.managers.networks import NetworkManager
@@ -64,13 +65,13 @@ class AccountQuery(_BaseAccountQuery):
 class ContractEventQuery(_BaseBlockQuery):
     type: Literal["contract_events"]
     contract: AddressType
-    event_id: bytes
+    event: EventABI
 
 
 class ContractMethodQuery(_BaseBlockQuery):
     type: Literal["contract_calls"]
     contract: AddressType
-    method_id: bytes
+    method: MethodABI
     method_args: Dict[str, Any]
 
 
