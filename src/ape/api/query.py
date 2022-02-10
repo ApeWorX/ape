@@ -25,8 +25,8 @@ class _BaseBlockQuery(_BaseQuery):
     def check_start_block_before_stop_block(cls, values):
         if values["stop_block"] < values["start_block"]:
             raise ValueError(
-                f"stop_block: {values['stop_block']} cannot be less than "
-                f"start_block: {values['start_block']}."
+                f"stop_block: '{values['stop_block']}' cannot be less than "
+                f"start_block: '{values['start_block']}'."
             )
 
         return values
@@ -49,8 +49,8 @@ class _BaseAccountQuery(BaseModel):
     def check_start_nonce_before_stop_nonce(cls, values):
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
-                f"stop_nonce: {values['stop_nonce']} cannot be less than "
-                f"start_nonce: {values['start_nonce']}."
+                f"stop_nonce: '{values['stop_nonce']}' cannot be less than "
+                f"start_nonce: '{values['start_nonce']}'."
             )
 
         return values
