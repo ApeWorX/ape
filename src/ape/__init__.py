@@ -8,7 +8,7 @@ from functools import partial
 from ape.utils import ManagerAccessBase as _ManagerAccessBase
 
 from .contracts import _Contract
-from .managers import Project
+from .managers.project import ProjectManager as Project
 
 # Wiring together the application
 
