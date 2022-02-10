@@ -152,13 +152,13 @@ class BlockContainer(_ConnectedChain):
         Iterate over blocks. Works similarly to python ``range()``.
 
         Raises:
-            :class:`~ape.exceptions.ChainError`: When ``stop_block`` is greater
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is greater
                 than the chain length.
-            :class:`~ape.exceptions.ChainError`: When ``stop_block`` is greater
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is less
                 than ``start_block``.
-            :class:`~ape.exceptions.ChainError`: When ``stop_block`` is less
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is less
                 than 0.
-            :class:`~ape.exceptions.ChainError`: When ``start_block`` is less
+            :class:`~ape.exceptions.ChainError`: When ``start`` is less
                 than 0.
 
         Args:
