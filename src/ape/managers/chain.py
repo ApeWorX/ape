@@ -92,16 +92,18 @@ class BlockContainer(_ConnectedChain):
 
         return self.range(len(self))
 
-    def range(self, start: int, stop: Optional[int] = None, step: int = 1) -> Iterator[BlockAPI]:
+    def range(
+        self, start_or_stop: int, stop: Optional[int] = None, step: int = 1
+    ) -> Iterator[BlockAPI]:
         """
         Iterate over blocks. Works similarly to python ``range()``.
 
         Args:
-            start (int): The start number in the range if given two
-              values otherwise the last number if just given a single value.
+            start_or_stop (int): When given just a single value, it is the stop.
+              Otherwise, it is the start.
             stop (Optional[int]): The block number to stop before. Also the total
-              number of blocks to get. If not setting a ``start`` value, only pass
-              in a single argument for ``start`` (just like python's built-in ``range``).
+              number of blocks to get. If not setting a start value, is set by
+              the first argument.
             step (Optional[int]): The value to increment by. Defaults to ``1``.
 
         Returns:
@@ -109,8 +111,10 @@ class BlockContainer(_ConnectedChain):
         """
 
         if stop is None:
-            stop = start
+            stop = start_or_stop
             start = 0
+        else:
+            start = start_or_stop
 
         if stop > len(self):
             raise ChainError(
@@ -121,7 +125,7 @@ class BlockContainer(_ConnectedChain):
             raise ValueError(f"stop '{stop}' cannot be less than start '{start}'.")
         elif stop < 0:
             raise ValueError(f"start '{start}' cannot be negative.")
-        elif start < 0:
+        elif start_or_stop < 0:
             raise ValueError(f"stop '{stop}' cannot be negative.")
 
         for i in range(start, stop, step):
