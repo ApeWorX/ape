@@ -12,6 +12,7 @@ from .converter import ConversionPlugin
 from .network import EcosystemPlugin, ExplorerPlugin, NetworkPlugin, ProviderPlugin
 from .pluggy_patch import PluginType, hookimpl, plugin_manager
 from .project import DependencyPlugin, ProjectPlugin
+from .query import QueryPlugin
 
 
 class PluginError(Exception):
@@ -30,6 +31,7 @@ class AllPluginHooks(
     NetworkPlugin,
     ProjectPlugin,
     ProviderPlugin,
+    QueryPlugin,
 ):
     pass
 

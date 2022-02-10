@@ -66,7 +66,7 @@ class ConfigManager:
     """A list of project dependencies."""
 
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
-    """A list of contract deployments by address and contract type."""
+    """A dict of contract deployments by address and contract type."""
 
     plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
     _dependency_manager: ClassVar["_DependencyManager"] = injected_before_use()  # type: ignore

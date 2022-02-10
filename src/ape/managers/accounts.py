@@ -35,7 +35,7 @@ class AccountManager:
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
         """
-        The list of all :class:`~ape.api.accounts.AccountContainerAPI` instances
+        A dict of all :class:`~ape.api.accounts.AccountContainerAPI` instances
         across all installed plugins.
 
         Returns:
