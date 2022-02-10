@@ -554,10 +554,6 @@ class ManagerAccessBase:
     to more easily compile sources.
     """
 
-    dependency_manager: ClassVar["_DependencyManager"] = cast(
-        "_DependencyManager", injected_before_use()
-    )
-
     config_manager: ClassVar["ConfigManager"] = cast("ConfigManager", injected_before_use())
     """
     A reference to :class:`~ape.managers.config.ConfigManager`, which
@@ -572,6 +568,10 @@ class ManagerAccessBase:
     :class:`~ape.managers.converters.ConversionManager`.
     """
 
+    dependency_manager: ClassVar["_DependencyManager"] = cast(
+        "_DependencyManager", injected_before_use()
+    )
+
     network_manager: ClassVar["NetworkManager"] = cast("NetworkManager", injected_before_use())
     """
     The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
@@ -580,9 +580,10 @@ class ManagerAccessBase:
     """
 
     plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
-    query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
 
     project_manager: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
+
+    query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
 
 
 class AbstractBaseModel(ManagerAccessBase, ABC, BaseModel):

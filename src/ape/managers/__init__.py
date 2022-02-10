@@ -9,21 +9,18 @@ from .compilers import CompilerManager
 from .config import ConfigManager
 from .converters import ConversionManager
 from .networks import NetworkManager
-from .project import ProjectManager as Project
-from .project import _DependencyManager
-from .query import QueryManager as _QueryManager
+from .project import ProjectManager, _DependencyManager
+from .query import QueryManager
 
 # Wiring together the application
 _data_folder = _Path.home().joinpath(".ape")
 _project_folder = _Path.cwd()
 
-_plugin_manager = PluginManager()
-ManagerAccessBase.plugin_manager = _plugin_manager
+ManagerAccessBase.plugin_manager = PluginManager()
 
-_dependency_manager = _DependencyManager(data_folder=_data_folder)
-ManagerAccessBase.dependency_manager = _dependency_manager
+ManagerAccessBase.dependency_manager = _DependencyManager(data_folder=_data_folder)
 
-_config_manager = ConfigManager(
+ManagerAccessBase.config_manager = ConfigManager(
     # Store all globally-cached files
     DATA_FOLDER=_data_folder,
     # NOTE: For all HTTP requests we make
@@ -33,37 +30,17 @@ _config_manager = ConfigManager(
     # What we are considering to be the starting project directory
     PROJECT_FOLDER=_project_folder,
 )
-ManagerAccessBase.config_manager = _config_manager
 
-_compiler_manager = CompilerManager()
-ManagerAccessBase.compiler_manager = _compiler_manager
+ManagerAccessBase.compiler_manager = CompilerManager()
 
-_network_manager = NetworkManager()
-ManagerAccessBase.network_manager = _network_manager
+ManagerAccessBase.network_manager = NetworkManager()
 
-_query_manager = _QueryManager()
-ManagerAccessBase.query_manager = _query_manager
+ManagerAccessBase.query_manager = QueryManager()
 
-_conversion_manager = ConversionManager()
-ManagerAccessBase.conversion_manager = _conversion_manager
+ManagerAccessBase.conversion_manager = ConversionManager()
 
-_chain_manager = ChainManager()
-ManagerAccessBase.chain_manager = _chain_manager
+ManagerAccessBase.chain_manager = ChainManager()
 
-_account_manager = AccountManager()
-ManagerAccessBase.account_manager = _account_manager
+ManagerAccessBase.account_manager = AccountManager()
 
-_project_manager = Project(path=_project_folder)
-ManagerAccessBase.project_manager = _project_manager
-
-__all__ = [
-    "_account_manager",
-    "_chain_manager",
-    "_compiler_manager",
-    "_config_manager",
-    "_conversion_manager",
-    "_network_manager",
-    "_project_manager",
-    "Project",
-    "query",
-]
+ManagerAccessBase.project_manager = ProjectManager(path=_project_folder)
