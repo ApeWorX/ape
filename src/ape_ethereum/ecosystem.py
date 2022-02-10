@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
@@ -199,22 +199,13 @@ class Receipt(ReceiptAPI):
 class BlockGasFee(BlockGasAPI):
     @classmethod
     def decode(cls, data: Dict) -> BlockGasAPI:
-        return BlockGasFee(  # type: ignore
-            gas_limit=data["gasLimit"],
-            gas_used=data["gasUsed"],
-            base_fee=data.get("baseFeePerGas"),
-        )
+        return BlockGasFee(**data)  # type: ignore
 
 
 class BlockConsensus(BlockConsensusAPI):
-    difficulty: Optional[int] = None
-    total_difficulty: Optional[int] = None
-
     @classmethod
     def decode(cls, data: Dict) -> BlockConsensusAPI:
-        return cls(
-            difficulty=data.get("difficulty"), total_difficulty=data.get("totalDifficulty")
-        )  # type: ignore
+        return cls(**data)  # type: ignore
 
 
 class Block(BlockAPI):
