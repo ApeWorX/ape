@@ -162,7 +162,7 @@ class BlockContainer(_ConnectedChain):
         Args:
             start (int): The first block, by number, to include in the range.
               Defaults to 0.
-            stop (Optional[int]): The block number to stop before. Defaults to the lastest block.
+            stop (Optional[int]): The block number to stop before. Defaults to the latest block.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
