@@ -58,8 +58,8 @@ class _BaseAccountQuery(BaseModel):
 
 class AccountQuery(_BaseAccountQuery):
     """
-    A ``QueryType`` that collects properties of ``AccountAPI`` over a range of
-    nonces between ``start_nonce`` and ``stop_nonce``.
+    A ``QueryType`` that collects properties of ``TransactionAPI`` over a range
+    of transactions between ``start_nonce`` and ``stop_nonce``.
     """
 
     type: Literal["accounts"]
@@ -69,7 +69,7 @@ class AccountQuery(_BaseAccountQuery):
 class ContractEventQuery(_BaseBlockQuery):
     """
     A ``QueryType`` that collects properties of ``EventABI`` over a range of
-    blocks between ``start_block`` and ``stop_block`` for a given ``Contract`` address.
+    logs between ``start_block`` and ``stop_block`` for a given ``Event``.
     """
 
     type: Literal["contract_events"]
@@ -80,7 +80,7 @@ class ContractEventQuery(_BaseBlockQuery):
 class ContractMethodQuery(_BaseBlockQuery):
     """
     A ``QueryType`` that collects properties of ``MethodABI`` over a range of
-    blocks between ``start_block`` and ``stop_block`` for a given ``Contract`` address.
+    logs between ``start_block`` and ``stop_block`` for a given ``Method``.
     """
 
     type: Literal["contract_calls"]
