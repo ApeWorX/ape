@@ -59,7 +59,7 @@ class _BaseAccountQuery(BaseModel):
 class AccountQuery(_BaseAccountQuery):
     """
     A ``QueryType`` that collects properties of ``TransactionAPI`` over a range
-    of transactions between ``start_nonce`` and ``stop_nonce``.
+    of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
     """
 
     type: Literal["accounts"]
@@ -68,8 +68,8 @@ class AccountQuery(_BaseAccountQuery):
 
 class ContractEventQuery(_BaseBlockQuery):
     """
-    A ``QueryType`` that collects properties of ``EventABI`` over a range of
-    logs between ``start_block`` and ``stop_block`` for a given ``Event``.
+    A ``QueryType`` that collects members from ``event`` over a range of
+    logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
     """
 
     type: Literal["contract_events"]
@@ -79,8 +79,8 @@ class ContractEventQuery(_BaseBlockQuery):
 
 class ContractMethodQuery(_BaseBlockQuery):
     """
-    A ``QueryType`` that collects properties of ``MethodABI`` over a range of
-    logs between ``start_block`` and ``stop_block`` for a given ``Method``.
+    A ``QueryType`` that collects return values from calling ``method`` in ``contract``
+    over a range of blocks between ``start_block`` and ``stop_block``.
     """
 
     type: Literal["contract_calls"]
@@ -99,13 +99,13 @@ class QueryAPI:
         """
         Estimation of time needed to complete the query. The estimation is returned
         as an int representing milliseconds. A value of None indicates that the
-        query engine is not available for use.
+        query engine is not available for use or is unable to complete the query.
 
         Args:
-            query (``QueryType``): query to estimate
+            query (``QueryType``): Query to estimate execution time for.
 
         Returns:
-            Optional[int]: Represents milliseconds, returns ``None`` if unavailable.
+            Optional[int]: Represents milliseconds, returns ``None`` if unable to execute.
 
         """
 

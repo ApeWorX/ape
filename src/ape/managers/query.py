@@ -63,6 +63,7 @@ class QueryManager:
         if engine_to_use:
             if engine_to_use not in self.engines:
                 raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")
+
             return self.engines[engine_to_use].perform_query(query)
 
         # Get heuristics from all the query engines to perform this query
@@ -71,12 +72,12 @@ class QueryManager:
         # Ignore query engines that can't perform this query
         valid_estimates = filter(lambda qe: qe[1] is not None, estimates)
 
-        if not valid_estimates:
-            raise QueryEngineError("No query engines are available.")
-
-        # Find the "best" engine to perform the query
-        # NOTE: Sorted by fastest time heuristic
-        engine, _ = min(valid_estimates, key=lambda qe: qe[1])  # type: ignore
+        try:
+            # Find the "best" engine to perform the query
+            # NOTE: Sorted by fastest time heuristic
+            engine, _ = min(valid_estimates, key=lambda qe: qe[1])  # type: ignore
+        except ValueError as e:
+            raise QueryEngineError("No query engines are available.") from e
 
         # Go fetch the result from the engine
         return engine.perform_query(query)
