@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Dict, Iterator, List, Optional
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
 from hexbytes import HexBytes
+from pydantic import Field
 from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
@@ -284,32 +285,17 @@ class ReceiptAPI:
         return self
 
 
-@abstractdataclass
-class BlockGasAPI:
+class BlockGasAPI(AbstractBaseModel):
     """
     An abstract class for representing gas data for a block.
     """
 
-    gas_limit: int
-    gas_used: int
-    base_fee: Optional[int] = None
-
-    @classmethod
-    @abstractmethod
-    def decode(cls, data: Dict) -> "BlockGasAPI":
-        """
-        Decode data to a :class:`~ape.api.BlockGasAPI`.
-
-        Args:
-            data (dict): A dictionary of block-gas properties.
-
-        Returns:
-            :class:`~ape.api.BlockGasAPI`
-        """
+    gas_limit: int = Field(alias="gasLimit")
+    gas_used: int = Field(alias="gasUsed")
+    base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
 
 
-@abstractdataclass
-class BlockConsensusAPI:
+class BlockConsensusAPI(AbstractBaseModel):
     """
     An abstract class representing block consensus-data,
     such as PoW-related information regarding the block.
@@ -317,20 +303,7 @@ class BlockConsensusAPI:
     """
 
     difficulty: Optional[int] = None
-    total_difficulty: Optional[int] = None
-
-    @classmethod
-    @abstractmethod
-    def decode(cls, data: Dict) -> "BlockConsensusAPI":
-        """
-        Decode data to a :class:`~ape.api.BlockConsensusAPI`.
-
-        Args:
-            data (dict): A dictionary of data to decode.
-
-        Returns:
-            :class:`~ape.api.BlockConsensusAPI`
-        """
+    total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
 
 
 @abstractdataclass
