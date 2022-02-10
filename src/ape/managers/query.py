@@ -62,7 +62,7 @@ class QueryManager:
         """
         if engine_to_use:
             if engine_to_use not in self.engines:
-                raise QueryEngineError(f"Query engine {engine_to_use} not found.")
+                raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")
             return self.engines[engine_to_use].perform_query(query)
 
         # Get heuristics from all the query engines to perform this query
