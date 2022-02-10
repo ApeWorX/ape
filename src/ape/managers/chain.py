@@ -107,8 +107,8 @@ class BlockContainer(_ConnectedChain):
         """
         A method for querying blocks and returning a pandas DataFrame. If you
         do not provide a starting block, the 0 block is assumed. If you do not
-        provide a stopping block, the last block is assumed. You can pass engine_to_use
-        to short-circuit engine selection.
+        provide a stopping block, the last block is assumed. You can pass
+        ``engine_to_use`` to short-circuit engine selection.
 
         Raises:
             :class:`~ape.exceptions.ChainError`: When ``stop_block`` is greater
@@ -119,7 +119,7 @@ class BlockContainer(_ConnectedChain):
             start_block (int): The first block, by number, to include in the
               range. Defaults to 0.
             stop_block (Optional[int]): The block number to stop before. Defaults
-              to the lastest block.
+              to the latest block.
             engine_to_use (Optional[QueryAPI]): query engine to use, bypasses query
               engine selection algorithm.
 
