@@ -90,24 +90,26 @@ class BlockContainer(_ConnectedChain):
             Iterator[:class:`~ape.api.providers.BlockAPI`]
         """
 
-        return self.range()
+        return self.range(len(self))
 
-    def range(self, start: int = 0, stop: Optional[int] = None) -> Iterator[BlockAPI]:
+    def range(self, start: int, stop: Optional[int] = None) -> Iterator[BlockAPI]:
         """
         Iterate over blocks. Works similarly to python ``range()``.
 
         Args:
-            start (int): The first block, by number, to include in the range.
-              Defaults to 0.
+            start (int): The start number in the range if given two
+              values otherwise the last number if just given a single value.
             stop (Optional[int]): The block number to stop before. Also the total
-             number of blocks to get.
+              number of blocks to get. If not setting a ``start`` value, only pass
+              in a single argument for ``start`` (just like python's built-in ``range``).
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
         """
 
         if stop is None:
-            stop = len(self)
+            stop = start
+            start = 0
 
         if stop > len(self):
             raise ChainError(
