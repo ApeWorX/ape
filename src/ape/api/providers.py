@@ -217,7 +217,7 @@ class ReceiptAPI:
     receiver: str
     nonce: int
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
     def raise_for_status(self):
