@@ -1,6 +1,6 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from pluggy import PluginManager  # type: ignore
@@ -108,15 +108,6 @@ class EcosystemAPI:
     def __post_init__(self):
         if len(self.networks) == 0:
             raise NetworkError("Must define at least one network in ecosystem")
-
-    def __iter__(self) -> Iterator[str]:
-        """
-        Iterate over the set of all valid network names in the ecosystem.
-
-        Returns:
-            Iterator[str]
-        """
-        yield from self.networks
 
     def __getitem__(self, network_name: str) -> "NetworkAPI":
         """
