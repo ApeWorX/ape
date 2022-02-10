@@ -92,7 +92,7 @@ class BlockContainer(_ConnectedChain):
 
         return self.range(len(self))
 
-    def range(self, start: int, stop: Optional[int] = None) -> Iterator[BlockAPI]:
+    def range(self, start: int, stop: Optional[int] = None, step: int = 1) -> Iterator[BlockAPI]:
         """
         Iterate over blocks. Works similarly to python ``range()``.
 
@@ -102,6 +102,7 @@ class BlockContainer(_ConnectedChain):
             stop (Optional[int]): The block number to stop before. Also the total
               number of blocks to get. If not setting a ``start`` value, only pass
               in a single argument for ``start`` (just like python's built-in ``range``).
+            step (Optional[int]): The value to increment by. Defaults to ``1``.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
@@ -123,8 +124,12 @@ class BlockContainer(_ConnectedChain):
         elif start < 0:
             raise ValueError(f"stop '{stop}' cannot be negative.")
 
+        step_counter = 0
         for i in range(start, stop):
-            yield self._get_block(i)
+            step_counter += 1
+            if step_counter == step:
+                yield self._get_block(i)
+                step_counter = 0
 
     def poll_blocks(
         self,
