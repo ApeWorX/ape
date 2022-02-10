@@ -117,9 +117,9 @@ class BlockContainer(_ConnectedChain):
         Args:
             columns (Union[str, List[str]]): columns in the DataFrame to return
             start_block (int): The first block, by number, to include in the
-              range. Defaults to 0.
-            stop_block (Optional[int]): The block number to stop before. Defaults
-              to the latest block.
+              query. Defaults to 0.
+            stop_block (Optional[int]): The last block, by number, to include
+              in the query. Defaults to the latest block.
             engine_to_use (Optional[QueryAPI]): query engine to use, bypasses query
               engine selection algorithm.
 
@@ -128,9 +128,9 @@ class BlockContainer(_ConnectedChain):
         """
 
         if stop_block is None:
-            stop_block = len(self)
+            stop_block = self.height
 
-        elif stop_block > len(self):
+        elif stop_block > self.height:
             raise ChainError(
                 f"'stop_block={stop_block}' cannot be greater than the chain length ({len(self)}). "
                 f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
@@ -162,7 +162,8 @@ class BlockContainer(_ConnectedChain):
         Args:
             start (int): The first block, by number, to include in the range.
               Defaults to 0.
-            stop (Optional[int]): The block number to stop before. Defaults to the latest block.
+            stop (Optional[int]): The block number to stop before. Also the total
+             number of blocks to get. Defaults to the latest block.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
