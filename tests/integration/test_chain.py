@@ -84,7 +84,7 @@ def test_iterate_blocks(chain_at_block_5):
 
 def test_blocks_range(chain_at_block_5):
     expected_number_of_blocks = 3  # Expecting blocks [0, 1, 2]
-    blocks = [b for b in chain_at_block_5.blocks.range(stop=3)]
+    blocks = [b for b in chain_at_block_5.blocks.range(3)]
     assert len(blocks) == expected_number_of_blocks
 
     expected_number = 0
