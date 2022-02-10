@@ -7,7 +7,13 @@ from pluggy import PluginManager  # type: ignore
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
 from ape.types import AddressType
-from ape.utils import AbstractBaseModel, abstractdataclass, abstractmethod, cached_property
+from ape.utils import (
+    AbstractBaseModel,
+    ManagerAccessBase,
+    abstractdataclass,
+    abstractmethod,
+    cached_property,
+)
 
 from .config import ConfigItem
 
@@ -260,7 +266,7 @@ class EcosystemAPI:
         return data
 
 
-class ProviderContextManager:
+class ProviderContextManager(ManagerAccessBase):
     """
     A context manager for temporarily connecting to a network.
     When entering the context, calls the :meth:`ape.api.providers.ProviderAPI.connect` method.
@@ -282,8 +288,7 @@ class ProviderContextManager:
     # NOTE: Class variable, so it will manage stack across instances of this object
     _connected_providers: List["ProviderAPI"] = []
 
-    def __init__(self, network_manager: "NetworkManager", provider: "ProviderAPI"):
-        self.network_manager = network_manager
+    def __init__(self, provider: "ProviderAPI"):
         self.provider = provider
 
     def __enter__(self, *args, **kwargs):
@@ -523,7 +528,6 @@ class NetworkAPI(AbstractBaseModel):
         """
 
         return ProviderContextManager(
-            network_manager=self.ecosystem.network_manager,
             provider=self.get_provider(
                 provider_name=provider_name, provider_settings=provider_settings
             ),
