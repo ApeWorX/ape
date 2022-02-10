@@ -285,7 +285,7 @@ class NetworkManager(ManagerBase):
 
         # If explicit default is not set, use first registered ecosystem
         elif len(self.ecosystems) > 0:
-            return self.ecosystems[list(self.__iter__())[0]]
+            return list(self.ecosystems.values())[0]
 
         else:
             raise NetworkError("No ecosystems installed.")
@@ -302,7 +302,7 @@ class NetworkManager(ManagerBase):
               as the default.
         """
 
-        if ecosystem_name in self.__iter__():
+        if ecosystem_name in self.ecosystems:
             self._default = ecosystem_name
 
         else:
@@ -336,7 +336,8 @@ class NetworkManager(ManagerBase):
             ecosystem_data["isDefault"] = True
 
         ecosystem_data["networks"] = []
-        for network_name in getattr(self, ecosystem_name):
+
+        for network_name in getattr(self, ecosystem_name).networks.keys():
             network_data = ecosystem.get_network_data(network_name)
             ecosystem_data["networks"].append(network_data)
 
