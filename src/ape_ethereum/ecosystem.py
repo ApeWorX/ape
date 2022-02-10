@@ -111,16 +111,15 @@ class StaticFeeTransaction(BaseTransaction):
     gas_price: int = None  # type: ignore
     type: TransactionType = TransactionType.STATIC
 
-    @property
-    def max_fee(self) -> int:
-        return (self.gas_limit or 0) * (self.gas_price or 0)
-
-    @max_fee.setter
-    def max_fee(self, valie):
-        raise NotImplementedError("Max fee is not settable for static-fee transactions.")
+    def __init__(self, **data) -> None:
+        data["max_fee"] = data.get("gas_limit", 0) * data.get("gas_price", 0)
+        super().__init__(**data)
 
     def as_dict(self):
         data = super().as_dict()
+        if "max_priority_fee" in data:
+            data.pop("max_priority_fee")
+
         if "gas_price" in data:
             data["gasPrice"] = data.pop("gas_price")
 
@@ -135,12 +134,12 @@ class DynamicFeeTransaction(BaseTransaction):
     and ``maxPriorityFeePerGas`` fields.
     """
 
-    max_fee: int = None  # type: ignore
     max_priority_fee: int = None  # type: ignore
     type: TransactionType = TransactionType.DYNAMIC
 
     def as_dict(self):
         data = super().as_dict()
+
         if "max_fee" in data:
             data["maxFeePerGas"] = data.pop("max_fee")
         if "max_priority_fee" in data:

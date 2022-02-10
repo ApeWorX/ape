@@ -3,7 +3,6 @@ from enum import Enum, IntEnum
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterator, List, Optional
 
-from dataclassy import as_dict
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
 from hexbytes import HexBytes
@@ -42,8 +41,7 @@ class TransactionType(Enum):
     DYNAMIC = "0x02"  # EIP-1559
 
 
-@abstractdataclass
-class TransactionAPI:
+class TransactionAPI(AbstractBaseModel):
     """
     An API class representing a transaction.
     Ecosystem plugins implement one or more of transaction APIs
@@ -59,33 +57,12 @@ class TransactionAPI:
     gas_limit: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     data: bytes = b""
     type: TransactionType = TransactionType.STATIC
+    max_fee: int = None  # type: ignore
 
     # If left as None, will get set to the network's default required confirmations.
     required_confirmations: Optional[int] = None
 
     signature: Optional[TransactionSignature] = None
-
-    @property
-    def max_fee(self) -> int:
-        """
-        The total amount in fees willing to be spent on a transaction.
-        Override this property as needed, such as for
-        `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ differences.
-
-        See :class:`~ape_ethereum.ecosystem.StaticFeeTransaction` and
-        :class:`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
-
-        Raises:
-            NotImplementedError: When setting in a class that did not override the setter.
-
-        Returns:
-            int
-        """
-        return 0
-
-    @max_fee.setter
-    def max_fee(self, value: int):
-        raise NotImplementedError("Max fee is not settable by default.")
 
     @property
     def total_transfer_value(self) -> int:
@@ -109,15 +86,15 @@ class TransactionAPI:
         Returns:
             dict
         """
-        return as_dict(self)
+        return self.dict()
 
     def __repr__(self) -> str:
-        data = as_dict(self)  # NOTE: `as_dict` could be overridden
+        data = self.as_dict()  # NOTE: `as_dict` could be overridden
         params = ", ".join(f"{k}={v}" for k, v in data.items())
         return f"<{self.__class__.__name__} {params}>"
 
     def __str__(self) -> str:
-        data = as_dict(self)  # NOTE: `as_dict` could be overridden
+        data = self.as_dict()  # NOTE: `as_dict` could be overridden
         if len(data["data"]) > 9:
             data["data"] = (
                 "0x" + bytes(data["data"][:3]).hex() + "..." + bytes(data["data"][-3:]).hex()
