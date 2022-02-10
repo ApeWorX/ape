@@ -51,10 +51,11 @@ class QueryManager:
         """
         Args:
             query (``QueryType``): The type of query to execute
-            engine_to_use_ (str): short-circuit selection logic using a specific engine
+            engine_to_use (Optional[str]): Short-circuit selection logic using
+              a specific engine. Defaults to None.
 
-        Raises: :class:`~ape.exceptions.QueryEngineError`: When the engine_to_use
-            is invalid or inaccessible
+        Raises: :class:`~ape.exceptions.QueryEngineError`: When given an
+            invalid or inaccessible ``engine_to_use`` value.
 
         Returns:
             pandas.DataFrame
