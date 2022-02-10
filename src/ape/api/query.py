@@ -34,7 +34,7 @@ class _BaseBlockQuery(_BaseQuery):
 
 class BlockQuery(_BaseBlockQuery):
     """
-    A `QueryType` that collects properties of ``BlockAPI`` over a range of
+    A ``QueryType`` that collects properties of ``BlockAPI`` over a range of
     blocks between ``start_block`` and ``stop_block``.
     """
 
