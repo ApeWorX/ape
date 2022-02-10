@@ -124,12 +124,8 @@ class BlockContainer(_ConnectedChain):
         elif start < 0:
             raise ValueError(f"stop '{stop}' cannot be negative.")
 
-        step_counter = 0
-        for i in range(start, stop):
-            step_counter += 1
-            if step_counter == step:
-                yield self._get_block(i)
-                step_counter = 0
+        for i in range(start, stop, step):
+            yield self._get_block(i)
 
     def poll_blocks(
         self,
