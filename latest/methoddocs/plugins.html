@@ -88,6 +88,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.plugins.converter">Converter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.plugins.network">Network</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.plugins.project">Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.plugins.query">Query</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
@@ -481,6 +482,33 @@ via <code class="docutils literal notranslate"><span class="pre">.gitmodules</sp
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Type[<a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.plugins.query">
+<span id="query"></span><h2>Query<a class="headerlink" href="#module-ape.plugins.query" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.plugins.query.QueryPlugin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.plugins.query.</span></code><code class="sig-name descname"><span class="pre">QueryPlugin</span></code><a class="headerlink" href="#ape.plugins.query.QueryPlugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.plugins.pluggy_patch.PluginType" title="ape.plugins.pluggy_patch.PluginType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.plugins.pluggy_patch.PluginType</span></code></a></p>
+<p>A plugin for querying chains.</p>
+<dl class="py method">
+<dt id="ape.plugins.query.QueryPlugin.query_engines">
+<code class="sig-name descname"><span class="pre">query_engines</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">QueryAPI</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.plugins.query.QueryPlugin.query_engines" title="Permalink to this definition">¶</a></dt>
+<dd><p>A hook that returns an iterator of types of a <code class="docutils literal notranslate"><span class="pre">QueryAPI</span></code> subclasses</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">QueryPlugin</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">query_engines</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="n">PostgresEngine</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Iterator[Type[<code class="xref py py-class docutils literal notranslate"><span class="pre">QueryAPI</span></code>]]</p>
 </dd>
 </dl>
 </dd></dl>

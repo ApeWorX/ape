@@ -87,6 +87,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.converters">Converters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.networks">Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.project">Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.query">Query</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
@@ -212,7 +213,7 @@ account alias to load an account using method
 <dl class="py method">
 <dt id="ape.managers.accounts.AccountManager.containers">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">containers</span></code><a class="headerlink" href="#ape.managers.accounts.AccountManager.containers" title="Permalink to this definition">¶</a></dt>
-<dd><p>The list of all <a class="reference internal" href="api.html#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code></a> instances
+<dd><p>A dict of all <a class="reference internal" href="api.html#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code></a> instances
 across all installed plugins.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -495,20 +496,61 @@ before yielding the block. The more confirmations, the less likely a reorg will 
 </dd></dl>
 
 <dl class="py method">
+<dt id="ape.managers.chain.BlockContainer.query">
+<code class="sig-name descname"><span class="pre">query</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_block</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_block</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine_to_use</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.api.query.QueryAPI</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pandas.core.frame.DataFrame</span><a class="headerlink" href="#ape.managers.chain.BlockContainer.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method for querying blocks and returning a pandas DataFrame. If you
+do not provide a starting block, the 0 block is assumed. If you do not
+provide a stopping block, the last block is assumed. You can pass
+<code class="docutils literal notranslate"><span class="pre">engine_to_use</span></code> to short-circuit engine selection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ChainError" title="ape.exceptions.ChainError"><strong>ChainError</strong></a> – When <code class="docutils literal notranslate"><span class="pre">stop_block</span></code> is greater
+    than the chain length.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>columns</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – columns in the DataFrame to return</p></li>
+<li><p><strong>start_block</strong> (<em>int</em>) – The first block, by number, to include in the
+query. Defaults to 0.</p></li>
+<li><p><strong>stop_block</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The last block, by number, to include
+in the query. Defaults to the latest block.</p></li>
+<li><p><strong>engine_to_use</strong> (<em>Optional</em><em>[</em><em>QueryAPI</em><em>]</em>) – query engine to use, bypasses query
+engine selection algorithm.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.managers.chain.BlockContainer.range">
 <code class="sig-name descname"><span class="pre">range</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">ape.api.providers.BlockAPI</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.chain.BlockContainer.range" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over blocks. Works similarly to python <code class="docutils literal notranslate"><span class="pre">range()</span></code>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Raises</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.ChainError" title="ape.exceptions.ChainError"><strong>ChainError</strong></a> – When <code class="docutils literal notranslate"><span class="pre">stop_block</span></code> is greater
+    than the chain length.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.ChainError" title="ape.exceptions.ChainError"><strong>ChainError</strong></a> – When <code class="docutils literal notranslate"><span class="pre">stop_block</span></code> is greater
+    than <code class="docutils literal notranslate"><span class="pre">start_block</span></code>.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.ChainError" title="ape.exceptions.ChainError"><strong>ChainError</strong></a> – When <code class="docutils literal notranslate"><span class="pre">stop_block</span></code> is less
+    than 0.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.ChainError" title="ape.exceptions.ChainError"><strong>ChainError</strong></a> – When <code class="docutils literal notranslate"><span class="pre">start_block</span></code> is less
+    than 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
 <li><p><strong>start</strong> (<em>int</em>) – The first block, by number, to include in the range.
 Defaults to 0.</p></li>
 <li><p><strong>stop</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The block number to stop before. Also the total
-number of blocks to get.</p></li>
+number of blocks to get. Defaults to the latest block.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Iterator[<a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockAPI</span></code></a>]</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Iterator[<a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockAPI</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -691,7 +733,7 @@ is how you can access those settings at runtime.</p>
 <dl class="py attribute">
 <dt id="ape.managers.config.ConfigManager.deployments">
 <code class="sig-name descname"><span class="pre">deployments</span></code><em class="property"><span class="pre">:</span> <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.managers.config.DeploymentConfig" title="ape.managers.config.DeploymentConfig"><span class="pre">ape.managers.config.DeploymentConfig</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.config.ConfigManager.deployments" title="Permalink to this definition">¶</a></dt>
-<dd><p>A list of contract deployments by address and contract type.</p>
+<dd><p>A dict of contract deployments by address and contract type.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1613,6 +1655,71 @@ in the project. <code class="docutils literal notranslate"><span class="pre">Fal
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>pathlib.Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ape.managers.query">
+<span id="query"></span><h2>Query<a class="headerlink" href="#module-ape.managers.query" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="ape.managers.query.QueryManager">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.managers.query.</span></code><code class="sig-name descname"><span class="pre">QueryManager</span></code><a class="headerlink" href="#ape.managers.query.QueryManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>A singleton that manages query engines and performs queries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>query</strong> (<code class="docutils literal notranslate"><span class="pre">QueryType</span></code>) – query to execute</p>
+</dd>
+</dl>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">biggest_block_size</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="ape.managers.query.QueryManager.engines">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">engines</span></code><a class="headerlink" href="#ape.managers.query.QueryManager.engines" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dict of all <code class="xref py py-class docutils literal notranslate"><span class="pre">QueryAPI</span></code> instances across all
+installed plugins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict[str, <code class="xref py py-class docutils literal notranslate"><span class="pre">QueryAPI</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.managers.query.QueryManager.network_manager">
+<code class="sig-name descname"><span class="pre">network_manager</span></code><em class="property"><span class="pre">:</span> <span class="pre">NetworkManager</span></em><a class="headerlink" href="#ape.managers.query.QueryManager.network_manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the global network manager.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ape.managers.query.QueryManager.plugin_manager">
+<code class="sig-name descname"><span class="pre">plugin_manager</span></code><em class="property"><span class="pre">:</span> <span class="pre">PluginManager</span></em><a class="headerlink" href="#ape.managers.query.QueryManager.plugin_manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the global plugin manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.query.QueryManager.query">
+<code class="sig-name descname"><span class="pre">query</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">BlockQuery</span><span class="p"><span class="pre">,</span> </span><span class="pre">AccountQuery</span><span class="p"><span class="pre">,</span> </span><span class="pre">ContractEventQuery</span><span class="p"><span class="pre">,</span> </span><span class="pre">ContractMethodQuery</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine_to_use</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pandas.core.frame.DataFrame</span><a class="headerlink" href="#ape.managers.query.QueryManager.query" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<code class="docutils literal notranslate"><span class="pre">QueryType</span></code>) – The type of query to execute</p></li>
+<li><p><strong>engine_to_use</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Short-circuit selection logic using
+a specific engine. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Raises: <a class="reference internal" href="exceptions.html#ape.exceptions.QueryEngineError" title="ape.exceptions.QueryEngineError"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryEngineError</span></code></a>: When given an</dt><dd><p>invalid or inaccessible <code class="docutils literal notranslate"><span class="pre">engine_to_use</span></code> value.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>

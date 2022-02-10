@@ -56,3 +56,12 @@
     :special-members:
     :exclude-members: __repr__, __weakref__, __metaclass__
 ```
+
+## Query
+
+```{eval-rst}
+.. automodule:: ape.managers.query
+    :members:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__
+```
