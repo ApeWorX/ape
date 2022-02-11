@@ -1,5 +1,5 @@
 from ape import plugins
-from ape.api import ConfigEnum, ConfigItem
+from ape.api import ConfigEnum, PluginConfig
 
 
 class EvmVersion(ConfigEnum):
@@ -7,7 +7,7 @@ class EvmVersion(ConfigEnum):
     istanbul = "istanbul"
 
 
-class Config(ConfigItem):
+class Config(PluginConfig):
     evm_version: EvmVersion = EvmVersion.istanbul
 
     def validate_config(self):

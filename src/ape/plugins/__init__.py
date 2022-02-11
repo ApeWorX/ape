@@ -1,7 +1,7 @@
 import functools
 import importlib
 import pkgutil
-from typing import Any, Callable, Iterator, List, Optional, Tuple, Type, cast
+from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, Type, cast
 
 from ape.logging import logger
 
@@ -134,6 +134,10 @@ class PluginManager:
         return f"<{self.__class__.__name__}>"
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
+
+        if attr_name == "__fields_set__":
+            return set()
+
         if not hasattr(plugin_manager.hook, attr_name):
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
@@ -145,17 +149,18 @@ class PluginManager:
             return h.plugin_name, getattr(h.plugin, attr_name)()
 
         for plugin_name, results in map(get_plugin_name_and_hookfn, hookimpls):
+
             # NOTE: Some plugins return a tuple and some return iterators
-            if not isinstance(results, tuple) and hasattr(results, "__iter__"):
+            if not isinstance(results, Generator):
+                validated_plugin = self._validate_plugin(plugin_name, results)
+                if validated_plugin:
+                    yield validated_plugin
+            else:
                 # Only if it's an iterator, provider results as a series
                 for result in results:
                     validated_plugin = self._validate_plugin(plugin_name, result)
                     if validated_plugin:
                         yield validated_plugin
-            else:
-                validated_plugin = self._validate_plugin(plugin_name, results)
-                if validated_plugin:
-                    yield validated_plugin
 
     def _validate_plugin(self, plugin_name: str, plugin_cls) -> Optional[Tuple[str, Tuple]]:
         if valid_impl(plugin_cls):

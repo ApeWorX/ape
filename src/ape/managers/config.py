@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Dict, Generator, List, Optional, Union
 
 from pydantic import BaseModel
 
-from ape.api import ConfigDict, ConfigItem, DependencyAPI
+from ape.api import ConfigDict, DependencyAPI, PluginConfig
 from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.logging import logger
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 CONFIG_FILE_NAME = "ape-config.yaml"
 
 
-class DeploymentConfig(ConfigItem):
+class DeploymentConfig(PluginConfig):
     address: Union[str, bytes]
     contract_type: str
 
@@ -70,7 +70,7 @@ class ConfigManager(ManagerBase, BaseModel):
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
     """A dict of contract deployments by address and contract type."""
 
-    _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
+    _plugin_configs_by_project: Dict[str, Dict[str, PluginConfig]] = {}
 
     class Config:
         arbitrary_types_allowed = True
@@ -82,7 +82,7 @@ class ConfigManager(ManagerBase, BaseModel):
         return path
 
     @property
-    def _plugin_configs(self) -> Dict[str, ConfigItem]:
+    def _plugin_configs(self) -> Dict[str, PluginConfig]:
         # This property is cached per active project.
         project_name = self.PROJECT_FOLDER.stem
         if project_name in self._plugin_configs_by_project:
@@ -151,9 +151,6 @@ class ConfigManager(ManagerBase, BaseModel):
                 # NOTE: Will raise if improperly provided keys
                 config = config_class(**user_override)  # type: ignore
 
-                # NOTE: Should raise if settings violate some sort of plugin requirement
-                config.validate_config()
-
             else:
                 # NOTE: Just use it directly as a dict if `ConfigDict` is passed
                 config = user_override
@@ -182,7 +179,7 @@ class ConfigManager(ManagerBase, BaseModel):
         _ = self._plugin_configs
         return self
 
-    def get_config(self, plugin_name: str) -> ConfigItem:
+    def get_config(self, plugin_name: str) -> PluginConfig:
         """
         Get a plugin config.
 
@@ -190,12 +187,12 @@ class ConfigManager(ManagerBase, BaseModel):
             plugin_name (str): The name of the plugin to get the config for.
 
         Returns:
-            :class:`~ape.api.config.ConfigItem`
+            :class:`~ape.api.config.PluginConfig`
         """
 
         if plugin_name not in self._plugin_configs:
             # plugin has no registered config class, so return empty config
-            return ConfigItem()
+            return PluginConfig()
 
         return self._plugin_configs[plugin_name]
 
@@ -228,24 +225,18 @@ class ConfigManager(ManagerBase, BaseModel):
 
         contracts_folder = contracts_folder or project_folder / "contracts"
 
-        import ape
-
         initial_project_folder = self.PROJECT_FOLDER
         initial_contracts_folder = self.contracts_folder
 
         self.PROJECT_FOLDER = project_folder
         self.contracts_folder = contracts_folder
-        previous_project = ape.project
         os.chdir(project_folder)
-        try:
-            project = ape.Project(project_folder)
-            ape.project = project
-            yield project
-        finally:
-            self.PROJECT_FOLDER = initial_project_folder
-            self.contracts_folder = initial_contracts_folder
-            ape.project = previous_project
-            os.chdir(initial_project_folder)
+
+        yield self.project_manager
+
+        self.PROJECT_FOLDER = initial_project_folder
+        self.contracts_folder = initial_contracts_folder
+        os.chdir(initial_project_folder)
 
     def __str__(self) -> str:
         """

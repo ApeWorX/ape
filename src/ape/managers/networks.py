@@ -43,6 +43,7 @@ class NetworkManager(ManagerBase):
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
+
         project_name = self.config_manager.PROJECT_FOLDER.stem
         if project_name in self._ecosystems_by_project:
             return self._ecosystems_by_project[project_name]
@@ -67,11 +68,11 @@ class NetworkManager(ManagerBase):
 
             if ecosystem_config:
                 for network_name, network in ecosystem.networks.items():
-                    network_config = ecosystem_config.get(network_name)
+                    network_config = ecosystem_config[network_name]
                     if not network_config:
                         continue
 
-                    default_provider = network_config.get("default_provider")
+                    default_provider = network_config["default_provider"]
                     if not default_provider:
                         continue
 
@@ -127,6 +128,8 @@ class NetworkManager(ManagerBase):
 
             eth = networks.ethereum
         """
+        if attr_name in dir(self):
+            return self.__getattribute__(attr_name)
 
         if attr_name not in self.ecosystems:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
@@ -280,7 +283,7 @@ class NetworkManager(ManagerBase):
             return self.ecosystems[self._default]
 
         # If explicit default is not set, use first registered ecosystem
-        elif len(self.ecosystems) == 1:
+        elif len(self.ecosystems) >= 1:
             return list(self.ecosystems.values())[0]
 
         else:
@@ -315,6 +318,7 @@ class NetworkManager(ManagerBase):
         Returns:
             dict
         """
+
         data: Dict = {"ecosystems": []}
 
         for ecosystem_name in self:
@@ -324,6 +328,7 @@ class NetworkManager(ManagerBase):
         return data
 
     def _get_ecosystem_data(self, ecosystem_name) -> Dict:
+
         ecosystem = self[ecosystem_name]
         ecosystem_data = {"name": ecosystem_name}
 

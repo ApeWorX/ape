@@ -1,7 +1,7 @@
 from .accounts import AccountAPI, AccountContainerAPI, TestAccountAPI, TestAccountContainerAPI
 from .address import Address, AddressAPI
 from .compiler import CompilerAPI
-from .config import ConfigDict, ConfigEnum, ConfigItem
+from .config import ConfigDict, ConfigEnum, PluginConfig
 from .convert import ConverterAPI
 from .explorers import ExplorerAPI
 from .networks import EcosystemAPI, NetworkAPI, ProviderContextManager, create_network_type
@@ -32,7 +32,7 @@ __all__ = [
     "CompilerAPI",
     "ConfigDict",
     "ConfigEnum",
-    "ConfigItem",
+    "PluginConfig",
     "ConverterAPI",
     "create_network_type",
     "DependencyAPI",

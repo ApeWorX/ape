@@ -28,7 +28,7 @@ def test_no_compiler_for_extension(ape_cli, runner, project):
 
 
 @skip_projects(["empty-config", "no-config", "script", "unregistered-contracts", "test", "geth"])
-def test_compile(ape_cli, runner, project):
+def test_compile(ape_cli, runner, project, clean_cache):
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     # First time it compiles, it compiles fully

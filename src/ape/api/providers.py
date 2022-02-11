@@ -16,7 +16,7 @@ from ape.types import BlockID, SnapshotID, TransactionSignature
 from ape.utils import AbstractBaseModel, abstractdataclass, abstractmethod
 
 from . import networks
-from .config import ConfigItem
+from .config import PluginConfig
 
 if TYPE_CHECKING:
     from ape.api.explorers import ExplorerAPI
@@ -347,7 +347,7 @@ class ProviderAPI(AbstractBaseModel):
     network: networks.NetworkAPI
     """A reference to the network this provider provides."""
 
-    config: ConfigItem
+    config: PluginConfig
     """The provider's configuration."""
 
     provider_settings: dict

@@ -110,9 +110,10 @@ def clean_cache(project):
     Use this fixture to ensure a project
     does not have a cached compilation.
     """
+
     cache_file = project._project.manifest_cachefile
-    if cache_file.exists():
-        cache_file.unlink()
+    # if cache_file.exists():
+    #     cache_file.unlink()
 
     yield
 

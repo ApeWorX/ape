@@ -15,7 +15,7 @@ from ape.utils import (
     cached_property,
 )
 
-from .config import ConfigItem
+from .config import PluginConfig
 
 if TYPE_CHECKING:
     from ape.contracts import ContractLog
@@ -67,13 +67,13 @@ class EcosystemAPI:
     _default_network: str = LOCAL_NETWORK_NAME
 
     @cached_property
-    def config(self) -> ConfigItem:
+    def config(self) -> PluginConfig:
         """
         The configuration of the ecosystem. See :class:`ape.managers.config.ConfigManager`
         for more information on plugin configurations.
 
         Returns:
-            :class:`ape.api.config.ConfigItem`
+            :class:`ape.api.config.PluginConfig`
         """
 
         return self.config_manager.get_config(self.name)
@@ -328,7 +328,7 @@ class NetworkAPI(AbstractBaseModel):
     _default_provider: Optional[str] = ""
 
     @cached_property
-    def config(self) -> ConfigItem:
+    def config(self) -> PluginConfig:
         """
         The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
         for more information on plugin configurations.
@@ -337,8 +337,8 @@ class NetworkAPI(AbstractBaseModel):
         return self.config_manager.get_config(self.ecosystem.name)
 
     @cached_property
-    def _network_config(self) -> ConfigItem:
-        return self.config.get(self.name, {})  # type: ignore
+    def _network_config(self) -> PluginConfig:
+        return self.config.dict().get(self.name, {})  # type: ignore
 
     @property
     def chain_id(self) -> int:

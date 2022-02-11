@@ -14,7 +14,6 @@ from ape.cli.utils import Abort
 from ape.exceptions import ContractError
 from ape.logging import DEFAULT_LOG_LEVEL, LogLevel, logger
 from ape.managers.base import ManagerAccessBase
-from ape.managers.project import ProjectManager
 
 
 class ApeCliContextObject(ManagerAccessBase):
@@ -26,25 +25,6 @@ class ApeCliContextObject(ManagerAccessBase):
 
     def __init__(self):
         self.logger = logger
-        self._project = None
-
-    @property
-    def project(self) -> ProjectManager:
-        """
-        A class representing the project that is active at runtime.
-        (This is the same object as from ``from ape import project``).
-
-        Returns:
-            :class:`~ape.managers.project.ProjectManager`
-        """
-
-        if not self._project:
-            from ape import project
-
-            self._project = project
-            self._project.config_manager.load()
-
-        return self._project
 
     @staticmethod
     def abort(msg: str, base_error: Exception = None):

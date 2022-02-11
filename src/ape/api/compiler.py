@@ -5,6 +5,8 @@ from ethpm_types import ContractType
 
 from ape.utils import AbstractBaseModel, abstractmethod
 
+# from ape.api.config import PluginConfig
+
 
 class CompilerAPI(AbstractBaseModel):
     """

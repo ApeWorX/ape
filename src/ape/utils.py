@@ -10,7 +10,7 @@ from collections import namedtuple
 from functools import lru_cache, partial
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Mapping, Optional, Set, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Mapping, Optional, Set, Type, cast
 
 import pygit2  # type: ignore
 import requests
@@ -584,6 +584,8 @@ class ManagerAccessBase:
     project_manager: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
 
     query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
+
+    Project: ClassVar[Type["ProjectManager"]] = cast(Type["ProjectManager"], injected_before_use())
 
 
 class AbstractBaseModel(ManagerAccessBase, ABC, BaseModel):

@@ -44,3 +44,5 @@ ManagerAccessBase.chain_manager = ChainManager()
 ManagerAccessBase.account_manager = AccountManager()
 
 ManagerAccessBase.project_manager = ProjectManager(path=_project_folder)
+
+ManagerAccessBase.Project = ProjectManager

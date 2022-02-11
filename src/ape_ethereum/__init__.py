@@ -28,4 +28,4 @@ def networks():
 
     # NOTE: This works for development providers, as they get chain_id from themselves
     yield "ethereum", LOCAL_NETWORK_NAME, NetworkAPI
-    yield "ethereum", "mainnet-fork", NetworkAPI
+    # yield "ethereum", "mainnet-fork", NetworkAPI

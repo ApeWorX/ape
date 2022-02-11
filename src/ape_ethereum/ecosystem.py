@@ -17,8 +17,8 @@ from ape.api import (
     BlockAPI,
     BlockConsensusAPI,
     BlockGasAPI,
-    ConfigItem,
     EcosystemAPI,
+    PluginConfig,
     ReceiptAPI,
     TransactionAPI,
     TransactionStatusEnum,
@@ -39,13 +39,13 @@ NETWORKS = {
 }
 
 
-class NetworkConfig(ConfigItem):
+class NetworkConfig(PluginConfig):
     required_confirmations: int = 0
     default_provider: str = "geth"
     block_time: int = 0
 
 
-class EthereumConfig(ConfigItem):
+class EthereumConfig(PluginConfig):
     mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
     ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
     kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore

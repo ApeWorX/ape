@@ -2,9 +2,9 @@ import pytest
 
 from ape.api import (
     AccountContainerAPI,
-    ConfigItem,
     EcosystemAPI,
     NetworkAPI,
+    PluginConfig,
     ProviderAPI,
     ReceiptAPI,
     TransactionAPI,
@@ -55,7 +55,7 @@ def mock_web3(mocker):
 
 @pytest.fixture
 def mock_config_item(mocker):
-    return mocker.MagicMock(spec=ConfigItem)
+    return mocker.MagicMock(spec=PluginConfig)
 
 
 @pytest.fixture

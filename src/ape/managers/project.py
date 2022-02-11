@@ -471,6 +471,7 @@ class ProjectManager(ManagerBase):
         elif attr_name in self.dependencies:
             contract_type = self.dependencies[attr_name]  # type: ignore
         else:
+            breakpoint()
             # Fixes anomaly when accessing non-ContractType attributes.
             # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
             return self.__getattribute__(attr_name)  # type: ignore
