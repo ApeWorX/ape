@@ -1188,16 +1188,20 @@ connection to a provider. See
 <a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network_choices</span></code></a> for all
 available choices (or use CLI command <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">list</span></code>).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.NetworkError" title="ape.exceptions.NetworkError"><strong>NetworkError</strong></a> – When the given network choice does not
+    match any known network.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
 <li><p><strong>network_choice</strong> (<em>str</em><em>, </em><em>optional</em>) – The network choice
 (see <a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network_choices</span></code></a>).
 Defaults to the default ecosystem, network, and provider combination.</p></li>
 <li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings for the provider. Defaults to None.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></p>
 </dd>
 </dl>
 </dd></dl>
