@@ -8,6 +8,7 @@ from ethpm_types.utils import compute_checksum
 from packaging import version as version_util
 from pydantic import ValidationError
 
+from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.utils import (
     abstractdataclass,
@@ -226,6 +227,12 @@ class DependencyAPI:
             if s.name.lower() not in ("package.json", "package-lock.json")
         ]
         project_manifest = project.create_manifest(file_paths=sources)
+
+        if not project_manifest.contract_types:
+            raise ProjectError(
+                f"No contract types found in dependency '{self.name}'. "
+                "Do you have the correct compilers installed?"
+            )
 
         # Cache the manifest for future use outside of this tempdir.
         self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
