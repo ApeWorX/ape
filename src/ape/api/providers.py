@@ -631,6 +631,9 @@ class ProviderAPI:
             NotImplementedError: Unless overridden.
         """
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__} {self.name}>"
+
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self._chain:
             self._chain.account_history.append(receipt)
