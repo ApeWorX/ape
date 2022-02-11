@@ -78,7 +78,7 @@ setup(
         "click>=8.0.0",
         "dataclassy==0.10.4",  # NOTE: Pinned due to issue with `Type[<nothing>]`
         "eth-account==0.5.7",
-        "ethpm-types>=0.1.0b5",
+        "ethpm-types>=0.1.0b7",
         "hexbytes>=0.2.2,<1.0.0",
         "packaging>=20.9,<21.0",
         "pandas>=1.3.0,<2.0",

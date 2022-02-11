@@ -259,6 +259,10 @@ class NetworkManager:
         :py:attr:`~ape.managers.networks.NetworkManager.network_choices` for all
         available choices (or use CLI command ``ape networks list``).
 
+        Raises:
+            :class:`~ape.exceptions.NetworkError`: When the given network choice does not
+              match any known network.
+
         Args:
             network_choice (str, optional): The network choice
               (see :py:attr:`~ape.managers.networks.NetworkManager.network_choices`).
