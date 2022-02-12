@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import click
 import pytest
 from _pytest.config import Config as PytestConfig
 
@@ -52,10 +53,12 @@ class PytestApeRunner:
                 try:
                     Path(tb_frame.path).relative_to(self.project.path)
                     traceback = tb_frame
-                    logger.info(f"\nTraceback: {traceback}")
+                    click.echo()
+                    click.echo(f"Traceback:{traceback}")
                     break
-                except ValueError:
-                    logger.error(f"\n{tb_frame}")
+                except ValueError as err:
+                    click.echo()
+                    logger.warn_from_exception(err, f"{tb_frame}")
                     pass
 
             # get global namespace
