@@ -34,7 +34,7 @@ logging.Logger.success = success  # type: ignore
 
 CLICK_STYLE_KWARGS = {
     LogLevel.ERROR: dict(fg="bright_red"),
-    LogLevel.WARNING: dict(fg="bright_red"),
+    LogLevel.WARNING: dict(fg="bright_yellow"),
     LogLevel.SUCCESS: dict(fg="bright_green"),
     LogLevel.INFO: dict(fg="blue"),
     LogLevel.DEBUG: dict(fg="blue"),

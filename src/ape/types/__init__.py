@@ -1,4 +1,3 @@
-import sys
 from typing import Union
 
 from eth_typing import ChecksumAddress as AddressType
@@ -14,13 +13,9 @@ from ethpm_types import (
 )
 from hexbytes import HexBytes
 
-from .signatures import MessageSignature, SignableMessage, TransactionSignature
+from ape._compat import Literal
 
-# We can remove this once we stop supporting python3.7.
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    from typing_extensions import Literal
+from .signatures import MessageSignature, SignableMessage, TransactionSignature
 
 BlockID = Union[str, int, HexBytes, Literal["earliest", "latest", "pending"]]
 """

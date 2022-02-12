@@ -217,3 +217,9 @@ class UnknownSnapshotError(ChainError):
             snapshot_id = humanize_hash(snapshot_id)  # type: ignore
 
         super().__init__(f"Unknown snapshot ID '{str(snapshot_id)}'.")
+
+
+class QueryEngineError(ApeException):
+    """
+    Raised when issues occur in a query engine.
+    """
