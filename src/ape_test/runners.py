@@ -33,6 +33,7 @@ class PytestApeRunner:
         # The option the user providers via --network (or the default).
         return self.config.getoption("network")
 
+    # @ape_cli_context()
     def pytest_exception_interact(self, report, call):
         """
         A `-I` option triggers when an exception is raised which can be interactively handeled.
@@ -51,8 +52,10 @@ class PytestApeRunner:
                 try:
                     Path(tb_frame.path).relative_to(self.project.path)
                     traceback = tb_frame
+                    logger.info(f"\nTraceback: {traceback}")
                     break
                 except ValueError:
+                    logger.error(f"\n{tb_frame}")
                     pass
 
             # get global namespace
@@ -76,7 +79,7 @@ class PytestApeRunner:
 
             namespace = {"_callinfo": call, **globals_dict, **locals_dict}
             console(extra_locals=namespace, project=self.project)
-
+            # launch ipdb instead of console
             if capman:
                 capman.resume_global_capture()
 
