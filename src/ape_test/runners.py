@@ -80,8 +80,11 @@ class PytestApeRunner:
             locals_dict = traceback.locals
             locals_dict = {k: v for k, v in locals_dict.items() if not k.startswith("@")}
 
+            click.echo("Starting interactive mode. Type `exit` fail and halt current test.")
+
             namespace = {"_callinfo": call, **globals_dict, **locals_dict}
             console(extra_locals=namespace, project=self.project)
+
             # launch ipdb instead of console
             if capman:
                 capman.resume_global_capture()
