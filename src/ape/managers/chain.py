@@ -163,7 +163,8 @@ class BlockContainer(_ConnectedChain):
 
         Args:
             start_or_stop (int): When given just a single value, it is the stop.
-              Otherwise, it is the start. This mimics the behavior of ``range`` built-in Python function.
+              Otherwise, it is the start. This mimics the behavior of ``range``
+              built-in Python function.
             stop (Optional[int]): The block number to stop before. Also the total
               number of blocks to get. If not setting a start value, is set by
               the first argument.
