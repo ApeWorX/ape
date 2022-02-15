@@ -84,7 +84,7 @@ def test_iterate_blocks(chain_at_block_5):
 
 def test_blocks_range(chain_at_block_5):
     expected_number_of_blocks = 3  # Expecting blocks [0, 1, 2]
-    blocks = [b for b in chain_at_block_5.blocks.range(stop=3)]
+    blocks = [b for b in chain_at_block_5.blocks.range(3)]
     assert len(blocks) == expected_number_of_blocks
 
     expected_number = 0
@@ -97,7 +97,7 @@ def test_blocks_range_too_high_stop(chain_at_block_5):
     len_plus_1 = len(chain_at_block_5.blocks) + 1
     with pytest.raises(ChainError) as err:
         # Have to run through generator to trigger code in definition.
-        _ = [_ for _ in chain_at_block_5.blocks.range(stop=len_plus_1)]
+        _ = [_ for _ in chain_at_block_5.blocks.range(len_plus_1)]
 
     assert str(err.value) == (
         f"'stop={len_plus_1}' cannot be greater than the chain length (6). "
