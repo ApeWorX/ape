@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import BaseModel, PositiveInt, root_validator
+from pydantic import BaseModel, NonNegativeInt, root_validator
 
 from ape._compat import Literal
 from ape.managers.networks import NetworkManager
@@ -18,8 +18,8 @@ class _BaseQuery(BaseModel):
 
 
 class _BaseBlockQuery(_BaseQuery):
-    start_block: PositiveInt = 0
-    stop_block: PositiveInt
+    start_block: NonNegativeInt = 0
+    stop_block: NonNegativeInt
 
     @root_validator(pre=True)
     def check_start_block_before_stop_block(cls, values):
@@ -42,8 +42,8 @@ class BlockQuery(_BaseBlockQuery):
 
 
 class _BaseAccountQuery(BaseModel):
-    start_nonce: PositiveInt = 0
-    stop_nonce: PositiveInt
+    start_nonce: NonNegativeInt = 0
+    stop_nonce: NonNegativeInt
 
     @root_validator(pre=True)
     def check_start_nonce_before_stop_nonce(cls, values):
