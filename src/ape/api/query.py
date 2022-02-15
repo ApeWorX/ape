@@ -38,7 +38,7 @@ class BlockQuery(_BaseBlockQuery):
     blocks between ``start_block`` and ``stop_block``.
     """
 
-    type: Literal["blocks"]
+    type: Literal["blocks"] = "blocks"
 
 
 class _BaseAccountQuery(BaseModel):
@@ -62,7 +62,7 @@ class AccountQuery(_BaseAccountQuery):
     of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
     """
 
-    type: Literal["accounts"]
+    type: Literal["accounts"] = "accounts"
     account: AddressType
 
 
@@ -72,7 +72,7 @@ class ContractEventQuery(_BaseBlockQuery):
     logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
     """
 
-    type: Literal["contract_events"]
+    type: Literal["contract_events"] = "contract_events"
     contract: AddressType
     event: EventABI
 
@@ -83,7 +83,7 @@ class ContractMethodQuery(_BaseBlockQuery):
     over a range of blocks between ``start_block`` and ``stop_block``.
     """
 
-    type: Literal["contract_calls"]
+    type: Literal["contract_calls"] = "contract_calls"
     contract: AddressType
     method: MethodABI
     method_args: Dict[str, Any]
