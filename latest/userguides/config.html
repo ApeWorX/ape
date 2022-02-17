@@ -63,6 +63,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#contracts-folder">Contracts Folder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#deployments">Deployments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#geth">Geth</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#networks">Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plugins">Plugins</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
@@ -219,6 +220,17 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 <span class="w">    </span><span class="nt">ropsten</span><span class="p">:</span><span class="w"></span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyContract</span><span class="w"></span>
 <span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0xc222000cCcbBbaAa444777000111222111222222</span><span class="w"></span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="geth">
+<h2>Geth<a class="headerlink" href="#geth" title="Permalink to this headline">¶</a></h2>
+<p>When using the <code class="docutils literal notranslate"><span class="pre">geth</span></code> provider, you can customize its settings.
+For example, to change the URI for an Ethereum network, do:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5030</span><span class="w"></span>
 </pre></div>
 </div>
 </div>
