@@ -291,7 +291,7 @@ class NetworkManager:
             return self.ecosystems[self._default]
 
         # If explicit default is not set, use first registered ecosystem
-        elif len(self.ecosystems) == 1:
+        elif len(self.ecosystems) > 0:
             return self.ecosystems[list(self.__iter__())[0]]
 
         else:
