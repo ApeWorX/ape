@@ -87,5 +87,4 @@ class QueryManager:
         for engine in self.engines.values():
             engine.update_cache(query, result)
 
-        # Finally, return the result
         return result

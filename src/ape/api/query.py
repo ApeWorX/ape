@@ -130,4 +130,3 @@ class QueryAPI:
             query (``QueryType``): query that was executed
             result (``pandas.DataFrame``): the result of the query
         """
-        pass
