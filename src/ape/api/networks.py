@@ -480,7 +480,7 @@ class NetworkAPI:
         Args:
             provider_name (str, optional): The name of the provider to get. Defaults to ``None``.
               When ``None``, returns the default provider.
-            provider_settings dict, optional): Settings to apply to the provider. Defaults to
+            provider_settings (dict, optional): Settings to apply to the provider. Defaults to
               ``None``.
 
         Returns:
