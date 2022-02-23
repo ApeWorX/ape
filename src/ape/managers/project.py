@@ -4,7 +4,7 @@ import sys
 import tempfile
 from importlib import import_module
 from pathlib import Path
-from typing import ClassVar, Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Type, Union
 
 import yaml
 from ethpm_types import Compiler, ContractType, PackageManifest
@@ -14,13 +14,10 @@ from ape.api.projects import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import logger
-from ape.plugins import PluginManager
-from ape.utils import cached_property, get_relative_path, github_client, injected_before_use
+from ape.utils import ManagerAccessBase, cached_property, get_relative_path, github_client
 
-from .compilers import CompilerManager
-from .config import CONFIG_FILE_NAME, ConfigManager
-from .converters import ConversionManager
-from .networks import NetworkManager
+from .base import ManagerBase
+from .config import CONFIG_FILE_NAME
 
 
 class ApeProject(ProjectAPI):
@@ -32,6 +29,7 @@ class ApeProject(ProjectAPI):
 
     @property
     def is_valid(self) -> bool:
+
         if (self.path / CONFIG_FILE_NAME).exists():
             return True
 
@@ -54,10 +52,11 @@ class ApeProject(ProjectAPI):
         """
 
         files: List[Path] = []
+
         if not self.contracts_folder.exists():
             return files
 
-        for extension in self.compilers.registered_compilers:
+        for extension in self.compiler_manager.registered_compilers:
             files.extend(self.contracts_folder.rglob(f"*{extension}"))
 
         return files
@@ -65,18 +64,23 @@ class ApeProject(ProjectAPI):
     def create_manifest(
         self, file_paths: Optional[List[Path]] = None, use_cache: bool = True
     ) -> PackageManifest:
+
         # Create a config file if one doesn't exist to forward values from
         # the root project's 'ape-config.yaml' 'dependencies:' config.
         config_file = self.path / CONFIG_FILE_NAME
+
         if not config_file.exists():
             config_data = {}
             if self.name:
                 config_data["name"] = self.name
+
             if self.version:
                 config_data["version"] = self.version
+
             if self.contracts_folder.name != "contracts":
                 # Only sets when not default.
                 config_data["contracts_folder"] = self.contracts_folder.name
+
             if config_data:
                 with open(config_file, "w") as f:
                     yaml.safe_dump(config_data, f)
@@ -84,19 +88,23 @@ class ApeProject(ProjectAPI):
         # Load a cached or clean manifest (to use for caching)
         if self.cached_manifest and use_cache:
             manifest = self.cached_manifest
+
         else:
             manifest = PackageManifest()
+
             if self.manifest_cachefile.exists():
                 self.manifest_cachefile.unlink()
 
         cached_sources = manifest.sources or {}
         cached_contract_types = manifest.contract_types or {}
+
         sources = {s for s in self.sources if s in file_paths} if file_paths else self.sources
 
         # Filter out deleted sources
         deleted_source_ids = cached_sources.keys() - set(
             map(str, [get_relative_path(s, self.contracts_folder) for s in sources])
         )
+
         contract_types = {
             name: contract_type
             for name, contract_type in cached_contract_types.items()
@@ -104,6 +112,7 @@ class ApeProject(ProjectAPI):
         }
 
         def file_needs_compiling(source: Path) -> bool:
+
             path = str(get_relative_path(source, self.contracts_folder))
 
             if path not in cached_sources:
@@ -125,14 +134,17 @@ class ApeProject(ProjectAPI):
         needs_compiling = list(filter(file_needs_compiling, sources))
 
         # Set the context in case compiling a dependency (or anything outside the root project).
-        with self.compilers.config.using_project(self.path, contracts_folder=self.contracts_folder):
-            self.compilers.config.PROJECT_FOLDER = self.path
-            self.compilers.config.contracts_folder = self.contracts_folder
-            compiled_contract_types = self.compilers.compile(needs_compiling)
+        with self.compiler_manager.config_manager.using_project(
+            self.path, contracts_folder=self.contracts_folder
+        ):
+            self.compiler_manager.config_manager.PROJECT_FOLDER = self.path
+            self.compiler_manager.config_manager.contracts_folder = self.contracts_folder
+            compiled_contract_types = self.compiler_manager.compile(needs_compiling)
             contract_types.update(compiled_contract_types)
 
             # NOTE: Update contract types & re-calculate source code entries in manifest
             sources = {s for s in self.sources if s in file_paths} if file_paths else self.sources
+
             manifest = self._create_manifest(
                 sources,
                 self.contracts_folder,
@@ -160,7 +172,9 @@ class LocalDependency(DependencyAPI):
 
     @property
     def path(self) -> Path:
+
         given_path = Path(self.local)
+
         if not given_path.exists():
             raise ProjectError(f"No project exists at path '{given_path}'.")
 
@@ -200,6 +214,7 @@ class GithubDependency(DependencyAPI):
 
     @property
     def version_id(self) -> str:
+
         if self.branch:
             return self.branch
 
@@ -207,6 +222,7 @@ class GithubDependency(DependencyAPI):
             return self.version
 
         latest_release = github_client.get_release(self.github, "latest")
+
         return latest_release.tag_name
 
     def __repr__(self):
@@ -232,7 +248,7 @@ class GithubDependency(DependencyAPI):
             return self._extract_local_manifest(temp_project_path)
 
 
-class ProjectManager:
+class ProjectManager(ManagerBase):
     """
     A manager for accessing contract-types, dependencies, and other project resources.
     Additionally, compile contracts using the
@@ -256,34 +272,7 @@ class ProjectManager:
     path: Path
     """The project path."""
 
-    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
-    """
-    A reference to :class:`~ape.managers.config.ConfigManager`, which
-    manages project and plugin configurations.
-    """
-
-    converter: ClassVar[ConversionManager] = injected_before_use()  # type: ignore
-    """
-    A reference to the conversion utilities in
-    :class:`~ape.managers.converters.ConversionManager`.
-    """
-
-    compilers: ClassVar[CompilerManager] = injected_before_use()  # type: ignore
-    """
-    The group of compiler plugins for compiling source files. See
-    :class:`~ape.managers.compilers.CompilerManager` for more information.
-    Call method :meth:`~ape.managers.project.ProjectManager.load_contracts` in this class
-    to more easily compile sources.
-    """
-
-    networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
-    """
-    The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
-    To get the active provide, use
-    :py:attr:`ape.managers.networks.NetworkManager.active_provider`.
-    """
-
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
+    _cached_projects: Dict[str, ProjectAPI] = {}
 
     def __init__(
         self,
@@ -313,7 +302,7 @@ class ProjectManager:
             pathlib.Path
         """
 
-        return self.config.contracts_folder
+        return self.config_manager.contracts_folder
 
     @property
     def sources(self) -> List[Path]:
@@ -324,11 +313,13 @@ class ProjectManager:
         Returns:
             List[pathlib.Path]: A list of a source file paths in the project.
         """
+
         files: List[Path] = []
+
         if not self.contracts_folder.exists():
             return files
 
-        for extension in self.compilers.registered_compilers:
+        for extension in self.compiler_manager.registered_compilers:
             files.extend(self.contracts_folder.rglob(f"*{extension}"))
 
         return files
@@ -387,7 +378,7 @@ class ProjectManager:
 
         compilers = []
 
-        for extension, compiler in self.compilers.registered_compilers.items():
+        for extension, compiler in self.compiler_manager.registered_compilers.items():
             for version in compiler.get_versions(
                 [p for p in self.sources if p.suffix == extension]
             ):
@@ -407,11 +398,18 @@ class ProjectManager:
             project_classes.append(project_class)
 
         project_classes.append(ApeProject)
+
         return project_classes
 
-    @cached_property
+    @property
     def _project(self) -> ProjectAPI:
-        return self.get_project(self.path, self.contracts_folder)
+
+        if self.path.name not in self._cached_projects:
+            self._cached_projects[self.path.name] = self.get_project(
+                self.path, self.contracts_folder
+            )
+
+        return self._cached_projects[self.path.name]
 
     def get_project(
         self,
@@ -439,24 +437,24 @@ class ProjectManager:
         """
 
         def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
-            with self.config.using_project(
-                path, contracts_folder=contracts_folder
-            ) as project_manager:
+            with self.config_manager.using_project(path, contracts_folder=contracts_folder):
                 proj = proj_cls(
-                    compilers=project_manager.compilers,
                     contracts_folder=contracts_folder,
                     name=name,
                     path=path,
                     version=version,
                 )  # type: ignore
+
                 if proj.is_valid:
                     return proj
 
             return None
 
         project_plugin_types = [pt for pt in self.project_types if not issubclass(pt, ApeProject)]
+
         for project_cls in project_plugin_types:
             project = _try_create_project(project_cls)
+
             if project:
                 return project
 
@@ -499,10 +497,13 @@ class ProjectManager:
         """
 
         contracts = self.load_contracts()
+
         if attr_name in contracts:
             contract_type = contracts[attr_name]
+
         elif attr_name in self.dependencies:
             contract_type = self.dependencies[attr_name]  # type: ignore
+
         else:
             # Fixes anomaly when accessing non-ContractType attributes.
             # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
@@ -510,8 +511,6 @@ class ProjectManager:
 
         return ContractContainer(  # type: ignore
             contract_type=contract_type,
-            _provider=self.networks.active_provider,
-            _converter=self.converter,
         )
 
     def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
@@ -527,20 +526,25 @@ class ProjectManager:
             List[str]: A list of file extensions found in the ``contracts/`` directory
             that do not have associated compilers installed.
         """
+
         extensions_found = []
 
         def _append_extensions_in_dir(directory: Path):
+
             for file in directory.iterdir():
+
                 if file.is_dir():
                     _append_extensions_in_dir(file)
+
                 elif (
                     file.suffix
                     and file.suffix not in extensions_found
-                    and file.suffix not in self.compilers.registered_compilers
+                    and file.suffix not in self.compiler_manager.registered_compilers
                 ):
                     extensions_found.append(file.suffix)
 
         _append_extensions_in_dir(self.contracts_folder)
+
         if extensions:
             extensions_found = [e for e in extensions_found if e in extensions]
 
@@ -566,9 +570,12 @@ class ProjectManager:
         ext = key_contract_path.suffix or None
 
         def find_in_dir(dir_path: Path) -> Optional[Path]:
+
             for file_path in dir_path.iterdir():
+
                 if file_path.is_dir():
                     result = find_in_dir(file_path)
+
                     if result:
                         return result
 
@@ -610,10 +617,12 @@ class ProjectManager:
         file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
 
         in_source_cache = self.contracts_folder / ".cache"
+
         if not use_cache and in_source_cache.exists():
             shutil.rmtree(str(in_source_cache))
 
         manifest = self._project.create_manifest(file_paths, use_cache=use_cache)
+
         return manifest.contract_types or {}
 
     def run_script(self, name: str, interactive: bool = False):
@@ -680,11 +689,11 @@ class ProjectManager:
             return console()
 
     def _load_dependencies(self) -> Dict[str, PackageManifest]:
-        return {d.name: d.extract_manifest() for d in self.config.dependencies}
+        return {d.name: d.extract_manifest() for d in self.config_manager.dependencies}
 
     # @property
     # def meta(self) -> PackageMeta:
-    #     return PackageMeta(**self.config.get_config("ethpm").serialize())
+    #     return PackageMeta(**self.config_manager.get_config("ethpm").serialize())
 
     # def publish_manifest(self):
     #     manifest = self.manifest.dict()
@@ -697,11 +706,8 @@ class ProjectManager:
     #     TODO: Publish to IPFS
 
 
-class _DependencyManager:
+class _DependencyManager(ManagerAccessBase):
     DATA_FOLDER: Path
-
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
-    project_manager: ClassVar[ProjectManager] = injected_before_use()  # type: ignore
 
     def __init__(self, data_folder: Path):
         self.DATA_FOLDER = data_folder
@@ -718,16 +724,19 @@ class _DependencyManager:
 
         dependency_classes["github"] = GithubDependency
         dependency_classes["local"] = LocalDependency
-        return dependency_classes
+
+        return dependency_classes  # type: ignore
 
     def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
+
         for key, dependency_cls in self.dependency_types.items():
+
             if key in config_dependency_data:
                 return dependency_cls(
                     **config_dependency_data,
-                    project_manager=self.project_manager,
                     _data_folder=self.DATA_FOLDER,
                 )  # type: ignore
 
         dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))
+
         raise ProjectError(f"No installed dependency API that supports '{dep_id}'.")

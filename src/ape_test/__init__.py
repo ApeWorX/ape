@@ -1,12 +1,12 @@
 from ape import plugins
-from ape.api import ConfigItem
+from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME
 
 from .accounts import TestAccount, TestAccountContainer
 from .providers import LocalProvider
 
 
-class Config(ConfigItem):
+class Config(PluginConfig):
     mnemonic: str = "test test test test test test test test test test test junk"
     number_of_accounts: int = 10
 

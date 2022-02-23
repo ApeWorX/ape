@@ -1,30 +1,26 @@
 import time
-from typing import Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Union, cast
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import pandas as pd
 
-from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI
+from ape.api import BlockAPI, ProviderAPI, ReceiptAPI
+from ape.api.address import AddressBase
 from ape.api.query import BlockQuery, QueryAPI
 from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import logger
-from ape.managers.converters import ConversionManager
-from ape.managers.networks import NetworkManager
-from ape.managers.query import QueryManager
 from ape.types import AddressType, BlockID, SnapshotID
-from ape.utils import cached_property, injected_before_use
+from ape.utils import cached_property
+
+from .base import ManagerBase
 
 
-class _ConnectedChain:
-    _networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
-    _converters: ClassVar[ConversionManager] = injected_before_use()  # type: ignore
-    _query_manager: ClassVar[QueryManager] = cast(QueryManager, injected_before_use())
-
+class _ConnectedChain(ManagerBase):
     @property
     def provider(self) -> ProviderAPI:
-        if not self._networks.active_provider:
+        if not self.network_manager.active_provider:
             raise ProviderNotConnectedError()
 
-        return self._networks.active_provider
+        return self.network_manager.active_provider
 
 
 class BlockContainer(_ConnectedChain):
@@ -57,6 +53,7 @@ class BlockContainer(_ConnectedChain):
 
     @property
     def network_confirmations(self) -> int:
+
         return self.provider.network.required_confirmations
 
     def __getitem__(self, block_number: int) -> BlockAPI:
@@ -143,7 +140,7 @@ class BlockContainer(_ConnectedChain):
             engine_to_use=engine_to_use,
         )
 
-        return self._query_manager.query(query)
+        return self.query_manager.query(query)
 
     def range(
         self, start_or_stop: int, stop: Optional[int] = None, step: int = 1
@@ -178,6 +175,7 @@ class BlockContainer(_ConnectedChain):
         if stop is None:
             stop = start_or_stop
             start = 0
+
         else:
             start = start_or_stop
 
@@ -186,10 +184,13 @@ class BlockContainer(_ConnectedChain):
                 f"'stop={stop}' cannot be greater than the chain length ({len(self)}). "
                 f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
             )
+
         elif stop < start:
             raise ValueError(f"stop '{stop}' cannot be less than start '{start}'.")
+
         elif stop < 0:
             raise ValueError(f"start '{start}' cannot be negative.")
+
         elif start_or_stop < 0:
             raise ValueError(f"stop '{stop}' cannot be negative.")
 
@@ -221,6 +222,7 @@ class BlockContainer(_ConnectedChain):
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
         """
+
         if required_confirmations is None:
             required_confirmations = self.network_confirmations
 
@@ -237,14 +239,18 @@ class BlockContainer(_ConnectedChain):
 
         while True:
             confirmable_block_number = self.height - required_confirmations
+
             if confirmable_block_number < latest_confirmed_block_number and has_yielded:
                 logger.error(
                     "Chain has reorganized since returning the last block. "
                     "Try adjusting the required network confirmations."
                 )
+
             elif confirmable_block_number > latest_confirmed_block_number:
+
                 # Yield all missed confirmable blocks
                 new_blocks_count = confirmable_block_number - latest_confirmed_block_number
+
                 for i in range(new_blocks_count):
                     block_num = latest_confirmed_block_number + i
                     block = self._get_block(block_num)
@@ -268,9 +274,10 @@ class AccountHistory(_ConnectedChain):
 
     @cached_property
     def _convert(self) -> Callable:
-        return self._converters.convert
 
-    def __getitem__(self, address: Union[AddressAPI, AddressType, str]) -> List[ReceiptAPI]:
+        return self.conversion_manager.convert
+
+    def __getitem__(self, address: Union[AddressBase, AddressType, str]) -> List[ReceiptAPI]:
         """
         Get the list of transactions from the active session for the given address.
 
@@ -284,9 +291,11 @@ class AccountHistory(_ConnectedChain):
 
         address_key: AddressType = self._convert(address, AddressType)
         explorer = self.provider.network.explorer
+
         explorer_receipts = (
             [r for r in explorer.get_account_transactions(address_key)] if explorer else []
         )
+
         for receipt in explorer_receipts:
             if receipt.txn_hash not in [r.txn_hash for r in self._map.get(address_key, [])]:
                 self.append(receipt)
@@ -325,7 +334,9 @@ class AccountHistory(_ConnectedChain):
               **NOTE**: The receipt is accessible in the list returned from
               :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
+
         address = self._convert(txn_receipt.sender, AddressType)
+
         if address not in self._map:
             self._map[address] = [txn_receipt]
             return
@@ -365,18 +376,12 @@ class ChainManager(_ConnectedChain):
     _block_container_map: Dict[int, BlockContainer] = {}
     _account_history_map: Dict[int, AccountHistory] = {}
 
-    def __init__(self) -> None:
-        BlockContainer._networks = self._networks
-        BlockContainer._converters = self._converters
-
-        AccountHistory._networks = self._networks
-        AccountHistory._converters = self._converters
-
     @property
     def blocks(self) -> BlockContainer:
         """
         The list of blocks on the chain.
         """
+
         if self.chain_id not in self._block_container_map:
             blocks = BlockContainer()
             self._block_container_map[self.chain_id] = blocks
@@ -388,6 +393,7 @@ class ChainManager(_ConnectedChain):
         """
         A mapping of transactions from the active session to the account responsible.
         """
+
         if self.chain_id not in self._account_history_map:
             history = AccountHistory()
             self._account_history_map[self.chain_id] = history
@@ -402,6 +408,7 @@ class ChainManager(_ConnectedChain):
         """
 
         network_name = self.provider.network.name
+
         if network_name not in self._chain_id_map:
             self._chain_id_map[network_name] = self.provider.chain_id
 
@@ -446,10 +453,13 @@ class ChainManager(_ConnectedChain):
 
     @pending_timestamp.setter
     def pending_timestamp(self, new_value: str):
-        self.provider.set_timestamp(self._converters.convert(value=new_value, type=int))
+
+        self.provider.set_timestamp(self.conversion_manager.convert(value=new_value, type=int))
 
     def __repr__(self) -> str:
-        props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
+
+        props = f"id={self.chain_id}" if self.network_manager.active_provider else "disconnected"
+
         return f"<{self.__class__.__name__} ({props})>"
 
     def snapshot(self) -> SnapshotID:
@@ -465,6 +475,7 @@ class ChainManager(_ConnectedChain):
         Returns:
             :class:`~ape.types.SnapshotID`: The snapshot ID.
         """
+
         snapshot_id = self.provider.snapshot()
 
         if snapshot_id not in self._snapshots:
@@ -487,12 +498,16 @@ class ChainManager(_ConnectedChain):
             snapshot_id (Optional[:class:`~ape.types.SnapshotID`]): The snapshot ID. Defaults
               to the most recent snapshot ID.
         """
+
         if not self._snapshots:
             raise ChainError("There are no snapshots to revert to.")
+
         elif snapshot_id is None:
             snapshot_id = self._snapshots.pop()
+
         elif snapshot_id not in self._snapshots:
             raise UnknownSnapshotError(snapshot_id)
+
         else:
             snapshot_index = self._snapshots.index(snapshot_id)
             self._snapshots = self._snapshots[:snapshot_index]
@@ -501,6 +516,8 @@ class ChainManager(_ConnectedChain):
         self.account_history.revert_to_block(self.blocks.height)
 
     def mine(self, num_blocks: int = 1, timestamp: Optional[int] = None) -> None:
+
         if timestamp:
             self.pending_timestamp = timestamp
+
         self.provider.mine(num_blocks)

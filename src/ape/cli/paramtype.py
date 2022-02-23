@@ -26,5 +26,7 @@ class AllFilePaths(Path):
     def convert(
         self, value: Any, param: Optional["Parameter"], ctx: Optional["Context"]
     ) -> List[PathLibPath]:
+
         path = super().convert(value, param, ctx)
+
         return get_all_files_in_directory(path)

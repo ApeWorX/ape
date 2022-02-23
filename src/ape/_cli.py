@@ -20,6 +20,7 @@ _DIFFLIB_CUT_OFF = 0.6
 
 
 def display_config(ctx, param, value):
+
     # NOTE: This is necessary not to interrupt how version or help is intercepted
     if not value or ctx.resilient_parsing:
         return
@@ -27,7 +28,7 @@ def display_config(ctx, param, value):
     from ape import project
 
     click.echo("# Current configuration")
-    click.echo(yaml.dump(project.config.serialize()))
+    click.echo(yaml.dump(project.config_manager.dict()))
 
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 
@@ -36,14 +37,19 @@ class ApeCLI(click.MultiCommand):
     _commands = None
 
     def invoke(self, ctx) -> Any:
+
         try:
             return super().invoke(ctx)
+
         except click.UsageError as err:
             self._suggest_cmd(err)
+
         except ApeException as err:
+
             if logger.level == LogLevel.DEBUG.value:
                 tb = traceback.format_exc()
                 err_message = tb or str(err)
+
             else:
                 err_message = str(err)
 
@@ -51,10 +57,12 @@ class ApeCLI(click.MultiCommand):
 
     @staticmethod
     def _suggest_cmd(usage_error):
+
         if usage_error.message is None:
             raise usage_error
 
         match = re.match("No such command '(.*)'.", usage_error.message)
+
         if not match:
             raise usage_error
 
@@ -62,6 +70,7 @@ class ApeCLI(click.MultiCommand):
         suggested_commands = difflib.get_close_matches(
             bad_arg, list(usage_error.ctx.command.commands.keys()), cutoff=_DIFFLIB_CUT_OFF
         )
+
         if suggested_commands:
             if bad_arg not in suggested_commands:
                 usage_error.message = (
@@ -72,10 +81,13 @@ class ApeCLI(click.MultiCommand):
 
     @property
     def commands(self) -> Dict:
+
         group_name = "ape_cli_subcommands"
+
         if not self._commands:
             try:
                 entry_points = metadata.entry_points(group=group_name)  # type: ignore
+
             except TypeError:
                 entry_points = metadata.entry_points()
                 entry_points = (
@@ -96,9 +108,11 @@ class ApeCLI(click.MultiCommand):
         return list(sorted(self.commands))
 
     def get_command(self, ctx, name):
+
         if name in self.commands:
             try:
                 return self.commands[name]()
+
             except Exception as err:
                 logger.warn_from_exception(
                     err, f"Unable to load CLI endpoint for plugin 'ape_{name}'"

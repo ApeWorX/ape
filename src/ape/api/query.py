@@ -5,9 +5,8 @@ from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, NonNegativeInt, root_validator
 
 from ape._compat import Literal
-from ape.managers.networks import NetworkManager
 from ape.types import AddressType
-from ape.utils import abstractdataclass, abstractmethod
+from ape.utils import AbstractBaseModel, abstractmethod
 
 QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractMethodQuery"]
 
@@ -23,6 +22,7 @@ class _BaseBlockQuery(_BaseQuery):
 
     @root_validator(pre=True)
     def check_start_block_before_stop_block(cls, values):
+
         if values["stop_block"] < values["start_block"]:
             raise ValueError(
                 f"stop_block: '{values['stop_block']}' cannot be less than "
@@ -47,6 +47,7 @@ class _BaseAccountQuery(BaseModel):
 
     @root_validator(pre=True)
     def check_start_nonce_before_stop_nonce(cls, values):
+
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
                 f"stop_nonce: '{values['stop_nonce']}' cannot be less than "
@@ -89,11 +90,7 @@ class ContractMethodQuery(_BaseBlockQuery):
     method_args: Dict[str, Any]
 
 
-@abstractdataclass
-class QueryAPI:
-
-    network_manager: NetworkManager
-
+class QueryAPI(AbstractBaseModel):
     @abstractmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:
         """
@@ -102,7 +99,7 @@ class QueryAPI:
         query engine is not available for use or is unable to complete the query.
 
         Args:
-            query (``QueryType``): Query to estimate execution time for.
+            query (``QueryType``): Query for which execution time will be estimated.
 
         Returns:
             Optional[int]: Represents milliseconds, returns ``None`` if unable to execute.

@@ -22,8 +22,11 @@ DEFAULT_LOG_LEVEL = LogLevel.INFO.name
 
 
 def success(self, message, *args, **kws):
-    """This method gets injecting into python's `logging` module
-    to handle logging at this level."""
+    """
+    This method gets injecting into python's `logging` module
+    to handle logging at this level.
+    """
+
     if self.isEnabledFor(LogLevel.SUCCESS.value):
         # Yes, logger takes its '*args' as 'args'.
         self._log(LogLevel.SUCCESS.value, message, args, **kws)
@@ -39,6 +42,7 @@ CLICK_STYLE_KWARGS = {
     LogLevel.INFO: dict(fg="blue"),
     LogLevel.DEBUG: dict(fg="blue"),
 }
+
 CLICK_ECHO_KWARGS = {
     LogLevel.ERROR: dict(err=True),
     LogLevel.WARNING: dict(err=True),
@@ -50,11 +54,14 @@ CLICK_ECHO_KWARGS = {
 
 # Borrowed from `click._compat`.
 def _isatty(stream: IO) -> bool:
-    """Returns ``True`` if the stream is part of tty.
-    Borrowed from ``click._compat``."""
+    """
+    Returns ``True`` if the stream is part of tty.
+    Borrowed from ``click._compat``.
+    """
     # noinspection PyBroadException
     try:
         return stream.isatty()
+
     except Exception:
         return False
 
@@ -64,6 +71,7 @@ class ApeColorFormatter(logging.Formatter):
         super().__init__(fmt="%(levelname)s: %(message)s")
 
     def format(self, record):
+
         if _isatty(sys.stdout) and _isatty(sys.stderr):
             # only color log messages when sys.stdout and sys.stderr are sent to the terminal
             level = LogLevel(record.levelno)
@@ -79,13 +87,17 @@ class ClickHandler(logging.Handler):
         self.echo_kwargs = echo_kwargs
 
     def emit(self, record):
+
         try:
             msg = self.format(record)
             level = record.levelname.lower()
+
             if self.echo_kwargs.get(level):
                 click.echo(msg, **self.echo_kwargs[level])
+
             else:
                 click.echo(msg)
+
         except Exception:
             self.handleError(record)
 
@@ -110,6 +122,7 @@ class CliLogger:
         return self._logger.level
 
     def set_level(self, level_name: str):
+
         self._logger.setLevel(level_name)
         self._web3_request_manager_logger.setLevel(level_name)
         self._web3_http_provider_logger.setLevel(level_name)
@@ -118,7 +131,9 @@ class CliLogger:
         """
         Avoids logging empty messages.
         """
+
         message = str(err)
+
         if message:
             self._logger.error(message)
 
@@ -128,6 +143,7 @@ class CliLogger:
         log the stack-trace of the error at the DEBUG level, and
         mention how to enable DEBUG logging (only once).
         """
+
         message = self._create_message_from_error(err, message)
         self._logger.warning(message)
         self._log_debug_stack_trace()
@@ -138,13 +154,16 @@ class CliLogger:
         log the stack-trace of the error at the DEBUG level, and
         mention how to enable DEBUG logging (only once).
         """
+
         message = self._create_message_from_error(err, message)
         self._logger.error(message)
         self._log_debug_stack_trace()
 
     def _create_message_from_error(self, err: Exception, message: str):
+
         err_output = f"{type(err).__name__}: {err}"
         message = f"{message}\n\t{err_output}"
+
         if not self._mentioned_verbosity_option:
             message += "\n\t(Use `--verbosity DEBUG` to see full stack-trace)"
             self._mentioned_verbosity_option = True
@@ -157,11 +176,15 @@ class CliLogger:
 
 
 def _get_logger(name: str) -> logging.Logger:
-    """Get a logger with the given ``name`` and configure it for usage with Click."""
+    """
+    Get a logger with the given ``name`` and configure it for usage with Click.
+    """
+
     cli_logger = logging.getLogger(name)
     handler = ClickHandler(echo_kwargs=CLICK_ECHO_KWARGS)
     handler.setFormatter(ApeColorFormatter())
     cli_logger.handlers = [handler]
+
     return cli_logger
 
 

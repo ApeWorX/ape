@@ -15,6 +15,7 @@ class InterfaceCompiler(CompilerAPI):
         return "ethpm"
 
     def get_versions(self, all_paths: List[Path]) -> Set[str]:
+
         # NOTE: This bypasses the serialization of this compiler into the package manifest's
         #       ``compilers`` field. You should not do this with a real compiler plugin.
         return set()
@@ -22,7 +23,9 @@ class InterfaceCompiler(CompilerAPI):
     def compile(
         self, filepaths: List[Path], base_path: Optional[Path] = None
     ) -> List[ContractType]:
+
         contract_types: List[ContractType] = []
+
         for path in filepaths:
             abi = json.loads(path.read_text())
 
@@ -31,6 +34,7 @@ class InterfaceCompiler(CompilerAPI):
                 if base_path and path.is_absolute()
                 else str(path)
             )
+
             if not isinstance(abi, list):
                 logger.warning(f"Not a valid ABI interface JSON file (sourceID={source_id}).")
 

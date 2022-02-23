@@ -23,6 +23,7 @@ def ecosystems():
 
 @plugins.register(plugins.NetworkPlugin)
 def networks():
+
     for network_name, network_params in NETWORKS.items():
         yield "ethereum", network_name, create_network_type(*network_params)
 

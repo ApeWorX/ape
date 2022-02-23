@@ -10,6 +10,15 @@ from ape.utils import gas_estimation_error_message
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
+
+    _tester: PyEVMBackend
+    _web3: Web3
+
+    def __init__(self, **data) -> None:
+
+        super().__init__(**data)
+        self.__post_init__()
+
     def connect(self):
         pass
 
@@ -20,17 +29,21 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         pass
 
     def __post_init__(self):
+
         self._tester = PyEVMBackend.from_mnemonic(
             self.config["mnemonic"], num_accounts=self.config["number_of_accounts"]
         )
         self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
+
         try:
             return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
+
         except ValidationError as err:
             message = gas_estimation_error_message(err)
             raise TransactionError(base_err=err, message=message) from err
+
         except TransactionFailed as err:
             raise _get_vm_err(err) from err
 
@@ -44,40 +57,50 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return 0
 
     def send_call(self, txn: TransactionAPI) -> bytes:
-        data = txn.as_dict()
+
+        data = txn.dict(exclude_none=True, by_alias=True)
+
         if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)
 
         try:
             return self._web3.eth.call(data)
+
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
+
         except TransactionFailed as err:
             raise _get_vm_err(err) from err
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+
         try:
-            txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
+            txn_hash = self._web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
+
         except TransactionFailed as err:
             raise _get_vm_err(err) from err
 
         receipt = self.get_transaction(
             txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
         )
+
         if txn.gas_limit is not None and receipt.ran_out_of_gas:
             raise OutOfGasError()
 
         self._try_track_receipt(receipt)
+
         return receipt
 
     def snapshot(self) -> SnapshotID:
         return self._tester.take_snapshot()
 
     def revert(self, snapshot_id: SnapshotID):
+
         if snapshot_id:
             current_hash = self.get_block("latest").hash
+
             if current_hash != snapshot_id:
                 return self._tester.revert_to_snapshot(snapshot_id)
 
@@ -89,7 +112,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
 
 def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:
+
     err_message = str(web3_err).split("execution reverted: ")[-1] or None
+
     if err_message == "b''":
         err_message = None
 

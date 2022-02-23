@@ -15,6 +15,7 @@ class Abort(click.ClickException):
     """
 
     def __init__(self, message: Optional[str] = None):
+
         if not message:
             caller = getframeinfo(stack()[1][0])
             file_path = Path(caller.filename)

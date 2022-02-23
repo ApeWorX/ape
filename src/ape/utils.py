@@ -5,18 +5,16 @@ import shutil
 import sys
 import tempfile
 import zipfile
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from collections import namedtuple
-from functools import lru_cache, partial
+from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Set
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Mapping, Optional, Set, cast
 
 import pygit2  # type: ignore
 import requests
 import yaml
-from dataclassy import dataclass
-from dataclassy.dataclass import DataClassMeta
 from eth_account import Account
 from eth_account.hdaccount import HDPath, seed_from_mnemonic
 from github import Github, UnknownObjectException
@@ -26,6 +24,7 @@ from github.Repository import Repository as GithubRepository
 from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
+from pydantic import BaseModel
 from pygit2 import Repository as GitRepository
 from tqdm import tqdm  # type: ignore
 
@@ -41,6 +40,18 @@ try:
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
+if TYPE_CHECKING:
+    from ape.managers.accounts import AccountManager
+    from ape.managers.chain import ChainManager
+    from ape.managers.compilers import CompilerManager
+    from ape.managers.config import ConfigManager
+    from ape.managers.converters import ConversionManager
+    from ape.managers.networks import NetworkManager
+    from ape.managers.project import ProjectManager, _DependencyManager
+    from ape.managers.query import QueryManager
+    from ape.plugins import PluginManager
+
+
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
     f".{sys.version_info.micro} {sys.version_info.releaselevel}"
@@ -52,6 +63,7 @@ def get_distributions():
     """
     Get a mapping of top-level packages to their distributions.
     """
+
     return packages_distributions()
 
 
@@ -66,6 +78,7 @@ def is_relative_to(path: Path, target: Path) -> bool:
     Returns:
         bool: ``True`` if the path is relative to the target path or ``False``.
     """
+
     if hasattr(path, "is_relative_to"):
         # NOTE: Only available ``>=3.9``
         return target.is_relative_to(path)  # type: ignore
@@ -73,6 +86,7 @@ def is_relative_to(path: Path, target: Path) -> bool:
     else:
         try:
             return target.relative_to(path) is not None
+
         except ValueError:
             return False
 
@@ -90,13 +104,16 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     Returns:
         pathlib.Path: The new path to the target path from the anchor path.
     """
+
     if not target.is_absolute():
         raise ValueError("'target' must be an absolute path.")
+
     if not anchor.is_absolute():
         raise ValueError("'anchor' must be an absolute path.")
 
     anchor_copy = Path(str(anchor))
     levels_deep = 0
+
     while not is_relative_to(anchor_copy, target):
         levels_deep += 1
         anchor_copy = anchor_copy.parent
@@ -116,6 +133,7 @@ def get_package_version(obj: Any) -> str:
     Returns:
         str: version string.
     """
+
     # If value is already cached/static
     if hasattr(obj, "__version__"):
         return obj.__version__
@@ -130,6 +148,7 @@ def get_package_version(obj: Any) -> str:
 
     # NOTE: In case the distribution and package name differ
     dists = get_distributions()
+
     if pkg_name in dists:
         # NOTE: Shouldn't really be more than 1, but never know
         if len(dists[pkg_name]) != 1:
@@ -160,6 +179,7 @@ def expand_environment_variables(contents: str) -> str:
     Returns:
         str: The given content with all environment variables replaced with their values.
     """
+
     return os.path.expandvars(contents)
 
 
@@ -179,15 +199,19 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
     Returns:
         Dict (dict): Configured settings parsed from a config file.
     """
+
     if path.exists():
         contents = path.read_text()
+
         if expand_envars:
             contents = expand_environment_variables(contents)
 
         if path.suffix in (".json",):
             config = json.loads(contents)
+
         elif path.suffix in (".yml", ".yaml"):
             config = yaml.safe_load(contents)
+
         else:
             raise TypeError(f"Cannot parse '{path.suffix}' files!")
 
@@ -234,6 +258,7 @@ def generate_dev_accounts(
     Returns:
         List[:class:`~ape.utils.GeneratedDevAccount`]: List of development accounts.
     """
+
     seed = seed_from_mnemonic(mnemonic, "")
     accounts = []
 
@@ -258,6 +283,7 @@ def gas_estimation_error_message(tx_error: Exception) -> str:
         str: An error message explaining that the gas failed and that the transaction
         will likely revert.
     """
+
     return (
         f"Gas estimation failed: '{tx_error}'. This transaction will likely revert. "
         "If you wish to broadcast, you must set the gas limit manually."
@@ -281,7 +307,9 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
         dict, optional: The final value if it exists
         else ``None`` if the tree ends at any point.
     """
+
     current_value: Any = root
+
     for arg in args:
         if not hasattr(current_value, "get"):
             return None
@@ -303,6 +331,7 @@ def stream_response(download_url: str, progress_bar_description: str = "Download
     Returns:
         bytes: Content in bytes to show the progress.
     """
+
     response = requests.get(download_url, stream=True)
     response.raise_for_status()
 
@@ -310,11 +339,13 @@ def stream_response(download_url: str, progress_bar_description: str = "Download
     progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
     progress_bar.set_description(progress_bar_description)
     content = bytes()
+
     for data in response.iter_content(1024, decode_unicode=True):
         progress_bar.update(len(data))
         content += data
 
     progress_bar.close()
+
     return content
 
 
@@ -327,8 +358,10 @@ class GithubClient:
     _repo_cache: Dict[str, GithubRepository] = {}
 
     def __init__(self):
+
         token = None
         self.has_auth = self.TOKEN_KEY in os.environ
+
         if self.has_auth:
             token = os.environ[self.TOKEN_KEY]
 
@@ -349,6 +382,7 @@ class GithubClient:
         Returns:
             Set[str]: The plugin names as 'ape_plugin_name' (module-like).
         """
+
         return {
             repo.name.replace("-", "_")
             for repo in self.ape_org.get_repos()
@@ -368,6 +402,7 @@ class GithubClient:
         Returns:
             github.GitRelease.GitRelease
         """
+
         repo = self._client.get_repo(repo_path)
 
         if version == "latest":
@@ -378,6 +413,7 @@ class GithubClient:
 
         try:
             return repo.get_release(version)
+
         except UnknownObjectException:
             raise ProjectError(f"Unknown version '{version.lstrip('v')}' for repo '{repo.name}'.")
 
@@ -419,15 +455,18 @@ class GithubClient:
         logger.info(f"Cloning branch '{branch}' from '{repo.name}'.")
 
         class GitRemoteCallbacks(pygit2.RemoteCallbacks):
+
             PERCENTAGE_PATTERN = r"[1-9]{1,2}% \([1-9]*/[1-9]*\)"  # e.g. '75% (324/432)'
             total_objects: int = 0
             current_objects_cloned: int = 0
             _progress_bar = None
 
             def sideband_progress(self, string: str):
+
                 # Parse a line like 'Compressing objects:   0% (1/432)'
                 string = string.lower()
                 expected_prefix = "compressing objects:"
+
                 if expected_prefix not in string:
                     return
 
@@ -441,14 +480,17 @@ class GithubClient:
                 fraction = fraction_str.split("/")
 
                 GitRemoteCallbacks.total_objects = int(fraction[1])
+
                 previous_value = GitRemoteCallbacks.current_objects_cloned
                 new_value = int(fraction[0])
+
                 GitRemoteCallbacks.current_objects_cloned = new_value
 
                 if GitRemoteCallbacks.total_objects and not GitRemoteCallbacks._progress_bar:
                     GitRemoteCallbacks._progress_bar = tqdm(range(GitRemoteCallbacks.total_objects))
 
                 difference = new_value - previous_value
+
                 if difference > 0:
                     GitRemoteCallbacks._progress_bar.update(difference)  # type: ignore
                     GitRemoteCallbacks._progress_bar.refresh()  # type: ignore
@@ -456,6 +498,7 @@ class GithubClient:
         clone = pygit2.clone_repository(
             repo.git_url, str(target_path), checkout_branch=branch, callbacks=GitRemoteCallbacks()
         )
+
         return clone
 
     def download_package(self, repo_path: str, version: str, target_path: Path):
@@ -469,6 +512,7 @@ class GithubClient:
                                 to the downloaded package.
             target_path (path): A path in your local filesystem to save the downloaded package.
         """
+
         if not target_path or not target_path.exists() or not target_path.is_dir():
             raise ValueError(f"'target_path' must be a valid directory (got '{target_path}').")
 
@@ -513,27 +557,11 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     Returns:
         List[pathlib.Path]: A list of files in the given directory.
     """
+
     if path.is_dir():
         return list(path.rglob("*.*"))
 
     return [path]
-
-
-class AbstractDataClassMeta(DataClassMeta, ABCMeta):
-    """
-    A `data class <https://docs.python.org/3/library/dataclasses.html>`__ that
-    is also abstract (meaning it has methods that **must** be implemented in a
-    sub-class or else errors will occur). This class cannot be instantiated
-    on its own.
-    """
-
-
-abstractdataclass = partial(dataclass, kwargs=True, meta=AbstractDataClassMeta)
-"""
-A `data class <https://docs.python.org/3/library/dataclasses.html>`__ that is
-also abstract (meaning it has methods that **must** be implemented or else
-errors will occur. This class cannot be instantiated on its own.
-"""
 
 
 class injected_before_use(property):
@@ -546,12 +574,89 @@ class injected_before_use(property):
         raise ValueError("Value not set. Please inject this property before calling.")
 
 
+class ManagerAccessBase:
+
+    # NOTE: cast is used to update the class type returned to mypy
+    account_manager: ClassVar["AccountManager"] = cast("AccountManager", injected_before_use())
+
+    chain_manager: ClassVar["ChainManager"] = cast("ChainManager", injected_before_use())
+
+    compiler_manager: ClassVar["CompilerManager"] = cast("CompilerManager", injected_before_use())
+    """
+    The group of compiler plugins for compiling source files. See
+    :class:`~ape.managers.compilers.CompilerManager` for more information.
+    Call method :meth:`~ape.managers.project.ProjectManager.load_contracts` in this class
+    to more easily compile sources.
+    """
+
+    config_manager: ClassVar["ConfigManager"] = cast("ConfigManager", injected_before_use())
+    """
+    A reference to :class:`~ape.managers.config.ConfigManager`, which
+    manages project and plugin configurations.
+    """
+
+    conversion_manager: ClassVar["ConversionManager"] = cast(
+        "ConversionManager", injected_before_use()
+    )
+    """
+    A reference to the conversion utilities in
+    :class:`~ape.managers.converters.ConversionManager`.
+    """
+
+    dependency_manager: ClassVar["_DependencyManager"] = cast(
+        "_DependencyManager", injected_before_use()
+    )
+
+    network_manager: ClassVar["NetworkManager"] = cast("NetworkManager", injected_before_use())
+    """
+    The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
+    To get the active provide, use
+    :py:attr:`ape.managers.networks.NetworkManager.active_provider`.
+    """
+
+    plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
+
+    project_manager: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
+
+    query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
+
+
+class AbstractBase(ManagerAccessBase, ABC):
+    """
+    Abstract class that has manager access.
+    """
+
+
+class AbstractBaseModel(AbstractBase, BaseModel):
+    """
+    Abstract class with manager access on a pydantic base model
+    """
+
+    class Config:
+        """
+        NOTE: Due to https://github.com/samuelcolvin/pydantic/issues/1241 we have
+        to add this cached property workaround in order to avoid this error:
+
+            TypeError: cannot pickle '_thread.RLock' object
+        """
+
+        keep_untouched = (cached_property,)
+        arbitrary_types_allowed = True
+        underscore_attrs_are_private = True
+
+    def __dir__(self) -> List[str]:
+        """
+        NOTE: Integrates with IPython tab-completion
+        https://ipython.readthedocs.io/en/stable/config/integrating.html
+        """
+        # Filter out protected/private members
+        return [member for member in super().__dir__() if not member.startswith("_")]
+
+
 __all__ = [
-    "abstractdataclass",
     "abstractmethod",
-    "AbstractDataClassMeta",
+    "AbstractBaseModel",
     "cached_property",
-    "dataclass",
     "expand_environment_variables",
     "extract_nested_value",
     "get_relative_path",

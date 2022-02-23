@@ -11,7 +11,7 @@ from ape.exceptions import AccountsError
 
 def _get_account_by_type(account_type: Optional[Type[AccountAPI]] = None) -> List[AccountAPI]:
     account_list = (
-        list(accounts) if not account_type else accounts.get_accounts_by_type(account_type)
+        list(accounts.accounts) if not account_type else accounts.get_accounts_by_type(account_type)
     )
     account_list.sort(key=lambda a: a.alias or "")
     return account_list
@@ -29,6 +29,7 @@ class Alias(click.Choice):
 
     # noinspection PyMissingConstructor
     def __init__(self, account_type: Optional[Type[AccountAPI]] = None):
+
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False
         self._account_type = account_type
@@ -43,6 +44,7 @@ class Alias(click.Choice):
         """
 
         options = _get_account_by_type(self._account_type)
+
         return [a.alias for a in options if a.alias is not None]
 
 
@@ -67,9 +69,11 @@ class PromptChoice(click.ParamType):
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
     ) -> Optional[Any]:
+
         # noinspection PyBroadException
         try:
             choice_index = int(value)
+
             if choice_index < 0:
                 self.fail("Invalid choice", param=param)
 
@@ -104,6 +108,7 @@ def get_user_selected_account(
         raise AccountsError(f"Cannot return accounts with type '{account_type}'.")
 
     prompt = AccountAliasPromptChoice(account_type=account_type, prompt_message=prompt_message)
+
     return prompt.get_user_selected_account()
 
 
@@ -115,6 +120,7 @@ class AccountAliasPromptChoice(PromptChoice):
 
     # noinspection PyMissingConstructor
     def __init__(self, account_type: Optional[Type[AccountAPI]] = None, prompt_message: str = None):
+
         # NOTE: we purposely skip the constructor of `PromptChoice`
         self._account_type = account_type
         self._prompt_message = prompt_message or "Select an account"
@@ -123,11 +129,13 @@ class AccountAliasPromptChoice(PromptChoice):
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
     ) -> Optional[AccountAPI]:
+
         if value and value in accounts.aliases:
             return accounts.load(value)
 
         # Prompt the user if they didn't provide a value.
         alias = super().convert(value, param, ctx)
+
         return accounts.load(alias) if alias else None
 
     @property
@@ -155,6 +163,7 @@ class AccountAliasPromptChoice(PromptChoice):
 
         if not self.choices:
             raise AccountsError("No accounts found.")
+
         elif len(self.choices) == 1:
             return accounts.load(self.choices[0])
 

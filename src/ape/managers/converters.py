@@ -1,19 +1,18 @@
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Any, ClassVar, Dict, List, Tuple, Type, Union
+from typing import Any, Dict, List, Tuple, Type, Union
 
 from dateutil.parser import parse  # type: ignore
 from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
 from hexbytes import HexBytes
 
-from ape.api import AddressAPI, ConverterAPI
+from ape.api import ConverterAPI
+from ape.api.address import AddressBase
 from ape.exceptions import ConversionError
-from ape.plugins import PluginManager
 from ape.types import AddressType
-from ape.utils import cached_property, injected_before_use
+from ape.utils import cached_property
 
-from .config import ConfigManager
-from .networks import NetworkManager
+from .base import ManagerBase
 
 
 # NOTE: This utility converter ensures that all bytes args can accept hex too
@@ -35,21 +34,19 @@ class HexConverter(ConverterAPI):
         Returns:
             bytes
         """
+
         return HexBytes(value)
-
-
-hex_converter = HexConverter(None, None, None)  # type: ignore
 
 
 class AddressAPIConverter(ConverterAPI):
     """
-    A converter that converts an :class:`~ape.api.address.AddressAPI` to a ``AddressType``.
+    A converter that converts an :class:`~ape.api.address.AddressBase` to a ``AddressType``.
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, AddressAPI)
+        return isinstance(value, AddressBase)
 
-    def convert(self, value: AddressAPI) -> AddressType:
+    def convert(self, value: AddressBase) -> AddressType:
         """
         Convert the given value to ``AddressType``.
 
@@ -62,9 +59,6 @@ class AddressAPIConverter(ConverterAPI):
         """
 
         return value.address
-
-
-address_api_converter = AddressAPIConverter(None, None, None)  # type: ignore
 
 
 class HexAddressConverter(ConverterAPI):
@@ -87,9 +81,6 @@ class HexAddressConverter(ConverterAPI):
         """
 
         return to_checksum_address(value)
-
-
-hex_address_converter = HexAddressConverter(None, None, None)  # type: ignore
 
 
 class ListTupleConverter(ConverterAPI):
@@ -118,9 +109,10 @@ class ListTupleConverter(ConverterAPI):
             conversion_found = False
             # NOTE: Double loop required because we might not know the exact type of the inner
             #       items. The UX of having to specify all inner items seemed poor as well.
-            for typ in self.converter._converters:
+            for typ in self.conversion_manager._converters:
                 for check_fn, convert_fn in map(
-                    lambda c: (c.is_convertible, c.convert), self.converter._converters[typ]
+                    lambda c: (c.is_convertible, c.convert),
+                    self.conversion_manager._converters[typ],
                 ):
                     if check_fn(v):
                         converted_value.append(convert_fn(v))
@@ -137,9 +129,6 @@ class ListTupleConverter(ConverterAPI):
         return value.__class__(converted_value)
 
 
-list_tuple_converter = ListTupleConverter(None, None, None)  # type: ignore
-
-
 class TimestampConverter(ConverterAPI):
     """
     Converts either a string, datetime object, or a timedelta object to a timestamp.
@@ -147,33 +136,38 @@ class TimestampConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Union[str, datetime, timedelta]) -> bool:
+
         if not isinstance(value, (str, datetime, timedelta)):
             return False
+
         if isinstance(value, str):
             if " " not in value and len(value.split(" ")) > 2:
                 return False
+
             else:
                 try:
                     parse(value)
                 except ValueError:
                     return False
+
         return True
 
     def convert(self, value: Union[str, datetime, timedelta]) -> int:
+
         if isinstance(value, str):
             return int(parse(value).replace(tzinfo=timezone.utc).timestamp())
+
         elif isinstance(value, datetime):
             return int(value.replace(tzinfo=timezone.utc).timestamp())
+
         elif isinstance(value, timedelta):
             return int((datetime.now(timezone.utc) + value).timestamp())
+
         else:
             raise ConversionError
 
 
-timestamp_converter = TimestampConverter(None, None, None)  # type: ignore
-
-
-class ConversionManager:
+class ConversionManager(ManagerBase):
     """
     A singleton that manages all the converters.
 
@@ -188,27 +182,24 @@ class ConversionManager:
         amount = convert("1 gwei", int)
     """
 
-    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
-    networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
-
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
 
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
-        list_tuple_converter.converter = self  # Splice this in (no need for the rest)
+
         converters: Dict[Type, List[ConverterAPI]] = {
-            AddressType: [address_api_converter, hex_address_converter],
-            bytes: [hex_converter],
-            int: [timestamp_converter],
+            AddressType: [AddressAPIConverter(), HexAddressConverter()],
+            bytes: [HexConverter()],
+            int: [TimestampConverter()],
             Decimal: [],
-            list: [list_tuple_converter],
-            tuple: [list_tuple_converter],
+            list: [ListTupleConverter()],
+            tuple: [ListTupleConverter()],
         }
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
-            converter = converter_class(self.config.get_config(plugin_name), self.networks, self)
+
+            converter = converter_class()
 
             if conversion_type not in converters:
                 options = ", ".join([t.__name__ for t in converters])

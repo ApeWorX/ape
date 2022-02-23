@@ -24,10 +24,11 @@ def cli(cli_ctx, scripts, interactive, network):
     will be injected dynamically during script execution. The dynamically injected objects are
     the exports from the ``ape`` top-level package (similar to how the console works)
     """
+
     _ = network  # Not used directly but required.
 
     if not scripts:
         cli_ctx.abort("Must provide at least one script name or path.")
 
     for name in scripts:
-        cli_ctx.project.run_script(name, interactive)
+        cli_ctx.project_manager.run_script(name, interactive)

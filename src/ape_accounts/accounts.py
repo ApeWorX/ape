@@ -31,32 +31,32 @@ class AccountContainer(AccountContainerAPI):
         for p in self._keyfiles:
             yield p.stem
 
+    @property
+    def accounts(self) -> Iterator[AccountAPI]:
+        for keyfile in self._keyfiles:
+            yield KeyfileAccount(container=self, keyfile_path=keyfile)  # type: ignore
+
     def __len__(self) -> int:
         return len([*self._keyfiles])
 
-    def __iter__(self) -> Iterator[AccountAPI]:
-        for keyfile in self._keyfiles:
-            yield KeyfileAccount(self, keyfile)  # type: ignore
 
-
-# NOTE: `AccountAPI` is a dataclass
+# NOTE: `AccountAPI` is an AbstractBaseModel
 class KeyfileAccount(AccountAPI):
-    _keyfile: Path
 
-    def __post_init__(self):
-        self.locked = True
-        self.__cached_key = None
+    keyfile_path: Path
+    locked: bool = True
+    __cached_key: Optional[EthAccount] = None
 
     def __repr__(self):
         return f"<{self.__class__.__name__} address={self.address} alias={self.alias}>"
 
     @property
     def alias(self) -> str:
-        return self._keyfile.stem
+        return self.keyfile_path.stem
 
     @property
     def keyfile(self) -> dict:
-        return json.loads(self._keyfile.read_text())
+        return json.loads(self.keyfile_path.read_text())
 
     @property
     def address(self) -> AddressType:
@@ -64,10 +64,12 @@ class KeyfileAccount(AccountAPI):
 
     @property
     def __key(self) -> EthAccount:
+
         if self.__cached_key is not None:
             if not self.locked:
                 click.echo(f"Using cached key for '{self.alias}'")
                 return self.__cached_key
+
             else:
                 self.__cached_key = None
 
@@ -86,10 +88,12 @@ class KeyfileAccount(AccountAPI):
         return key
 
     def unlock(self):
+
         passphrase = click.prompt(
             f"Enter Passphrase to permanently unlock '{self.alias}'",
             hide_input=True,
         )
+
         self.__cached_key = self.__decrypt_keyfile(passphrase)
         self.locked = False
 
@@ -106,22 +110,26 @@ class KeyfileAccount(AccountAPI):
             confirmation_prompt=True,
         )
 
-        self._keyfile.write_text(json.dumps(EthAccount.encrypt(key, passphrase)))
+        self.keyfile_path.write_text(json.dumps(EthAccount.encrypt(key, passphrase)))
 
     def delete(self):
+
         passphrase = click.prompt(
             f"Enter Passphrase to delete '{self.alias}'",
             hide_input=True,
             default="",  # Just in case there's no passphrase
         )
+
         self.__decrypt_keyfile(passphrase)
-        self._keyfile.unlink()
+        self.keyfile_path.unlink()
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
+
         if self.locked and not click.confirm(f"{msg}\n\nSign: "):
             return None
 
         signed_msg = EthAccount.sign_message(msg, self.__key)
+
         return MessageSignature(  # type: ignore
             v=signed_msg.v,
             r=to_bytes(signed_msg.r),
@@ -129,10 +137,14 @@ class KeyfileAccount(AccountAPI):
         )
 
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
+
         if self.locked and not click.confirm(f"{txn}\n\nSign: "):
             return None
 
-        signed_txn = EthAccount.sign_transaction(txn.as_dict(), self.__key)
+        signed_txn = EthAccount.sign_transaction(
+            txn.dict(exclude_none=True, by_alias=True), self.__key
+        )
+
         return TransactionSignature(  # type: ignore
             v=signed_txn.v,
             r=to_bytes(signed_txn.r),
@@ -140,7 +152,9 @@ class KeyfileAccount(AccountAPI):
         )
 
     def __decrypt_keyfile(self, passphrase: str) -> EthAccount:
+
         try:
             return EthAccount.decrypt(self.keyfile, passphrase)
+
         except ValueError as err:
             raise InvalidPasswordError() from err

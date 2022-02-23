@@ -13,8 +13,10 @@ _flatten = chain.from_iterable
 
 
 def _require_non_existing_alias(value):
+
     if value in accounts.aliases:
         raise AliasAlreadyInUseError(value)
+
     return value
 
 
@@ -47,9 +49,10 @@ def _create_contracts_paths(ctx, param, value):
         raise click.BadArgumentUsage(f"Contract '{name}' not found.")
 
     resolved_contract_paths = set()
+
     for contract_path in contract_paths:
         # Adds missing absolute path as well as extension.
-        resolved_contract_path = ctx.obj.project.lookup_path(contract_path)
+        resolved_contract_path = ctx.obj.project_manager.lookup_path(contract_path)
 
         if not resolved_contract_path:
             _raise_bad_arg(contract_path.name)

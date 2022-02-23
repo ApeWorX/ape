@@ -2,9 +2,14 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from hexbytes import HexBytes
+from pydantic import validator
+from pydantic.dataclasses import dataclass
 
-from ape.api import Address, AddressAPI, ProviderAPI, ReceiptAPI, TransactionAPI
+from ape.api import Address, ProviderAPI, ReceiptAPI, TransactionAPI
+from ape.api.address import AddressBase
 from ape.exceptions import (
+    AddressError,
     ArgumentsLengthError,
     ContractError,
     ProviderNotConnectedError,
@@ -12,31 +17,39 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType
-from ape.utils import dataclass
+from ape.utils import ManagerAccessBase, cached_property
 
 if TYPE_CHECKING:
     from ape.managers.converters import ConversionManager
     from ape.managers.networks import NetworkManager
 
 
-@dataclass
-class ContractConstructor:
-    deployment_bytecode: bytes
-    abi: ConstructorABI
-    provider: ProviderAPI
-    converter: "ConversionManager"
+class ContractConstructor(ManagerAccessBase):
+    def __init__(
+        self, deployment_bytecode: HexBytes, abi: ConstructorABI, provider: ProviderAPI
+    ) -> None:
+        self.deployment_bytecode = deployment_bytecode
+        self.abi = abi
+        self.provider = provider
 
-    def __post_init__(self):
-        if len(self.deployment_bytecode) == 0:
+    @validator("deployment_bytecode")
+    def check_empty_contract(cls, value):
+
+        if not value:
             logger.warning("Deploying an empty contract (no bytecode)")
+            return b""
+
+        assert isinstance(value, HexBytes)
+        return value
 
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
 
     def _convert_tuple(self, v: tuple) -> tuple:
-        return self.converter.convert(v, tuple)
+        return self.conversion_manager.convert(v, tuple)
 
-    def encode(self, *args, **kwargs) -> TransactionAPI:
+    def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
+
         args = self._convert_tuple(args)
         kwargs = dict(
             (k, v)
@@ -45,34 +58,45 @@ class ContractConstructor:
                 self._convert_tuple(tuple(kwargs.values())),
             )
         )
+
         return self.provider.network.ecosystem.encode_deployment(
             self.deployment_bytecode, self.abi, *args, **kwargs
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+
         if "sender" in kwargs:
             sender = kwargs["sender"]
-            txn = self.encode(*args, **kwargs)
+            txn = self.serialize_transaction(*args, **kwargs)
             return sender.call(txn)
 
-        txn = self.encode(*args, **kwargs)
+        txn = self.serialize_transaction(*args, **kwargs)
         return self.provider.send_transaction(txn)
 
 
-@dataclass
-class ContractCall:
-    abi: MethodABI
-    address: AddressType
-    provider: ProviderAPI
-    converter: "ConversionManager"
+class ContractCall(ManagerAccessBase):
+    def __init__(self, abi: MethodABI, address: AddressType) -> None:
+        super().__init__()
+        self.abi = abi
+        self.address = address
 
     def __repr__(self) -> str:
         return self.abi.signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
-        return self.converter.convert(v, tuple)
+        return self.conversion_manager.convert(v, tuple)
 
-    def encode(self, *args, **kwargs) -> TransactionAPI:
+    @property
+    def provider(self) -> ProviderAPI:
+
+        if self.network_manager.active_provider is None:
+            raise AddressError(
+                f"Incorrectly implemented provider API for class {type(self).__name__}"
+            )
+
+        return self.network_manager.active_provider
+
+    def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         kwargs = dict(
             (k, v)
             for k, v in zip(
@@ -80,12 +104,14 @@ class ContractCall:
                 self._convert_tuple(tuple(kwargs.values())),
             )
         )
+
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
 
     def __call__(self, *args, **kwargs) -> Any:
-        txn = self.encode(*args, **kwargs)
+
+        txn = self.serialize_transaction(*args, **kwargs)
         txn.chain_id = self.provider.network.chain_id
 
         raw_output = self.provider.send_call(txn)
@@ -102,63 +128,81 @@ class ContractCall:
         return tuple_output
 
 
-@dataclass
-class ContractCallHandler:
-    provider: ProviderAPI
-    converter: "ConversionManager"
+class ContractCallHandler(ManagerAccessBase):
+
     contract: "ContractInstance"
     abis: List[MethodABI]
+
+    def __init__(self, contract: "ContractInstance", abis: List[MethodABI]) -> None:
+        super().__init__()
+        self.contract = contract
+        self.abis = abis
 
     def __repr__(self) -> str:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
         return abis[-1].signature
 
+    @property
+    def provider(self) -> ProviderAPI:
+
+        if self.network_manager.active_provider is None:
+            raise AddressError(
+                f"Incorrectly implemented provider API for class {type(self).__name__}"
+            )
+
+        return self.network_manager.active_provider
+
     def _convert_tuple(self, v: tuple) -> tuple:
-        return self.converter.convert(v, tuple)
+        return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> Any:
+
         if not self.contract.is_contract:
             network = self.provider.network.name
             raise _get_non_contract_error(self.contract.address, network)
 
         args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
+
         if not selected_abi:
             raise ArgumentsLengthError(len(args))
 
         return ContractCall(  # type: ignore
             abi=selected_abi,
             address=self.contract.address,
-            provider=self.provider,
-            converter=self.converter,
         )(*args, **kwargs)
 
 
 def _select_abi(abis, args):
     args = args or []
     selected_abi = None
+
     for abi in abis:
         inputs = abi.inputs or []
+
         if len(args) == len(inputs):
             selected_abi = abi
 
     return selected_abi
 
 
-@dataclass
-class ContractTransaction:
+class ContractTransaction(ManagerAccessBase):
+
     abi: MethodABI
     address: AddressType
-    provider: ProviderAPI
-    converter: "ConversionManager"
+
+    def __init__(self, abi: MethodABI, address: AddressType) -> None:
+        super().__init__()
+        self.abi = abi
+        self.address = address
 
     def __repr__(self) -> str:
         return self.abi.signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
-        return self.converter.convert(v, tuple)
+        return self.conversion_manager.convert(v, tuple)
 
-    def encode(self, *args, **kwargs) -> TransactionAPI:
+    def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         kwargs = dict(
             (k, v)
             for k, v in zip(
@@ -166,32 +210,43 @@ class ContractTransaction:
                 self._convert_tuple(tuple(kwargs.values())),
             )
         )
+
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
 
+    @property
+    def provider(self) -> ProviderAPI:
+
+        if self.network_manager.active_provider is None:
+            raise AddressError(
+                f"Incorrectly implemented provider API for class {type(self).__name__}"
+            )
+
+        return self.network_manager.active_provider
+
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+
         if "sender" in kwargs:
             sender = kwargs["sender"]
-            txn = self.encode(*args, **kwargs)
+            txn = self.serialize_transaction(*args, **kwargs)
             return sender.call(txn)
 
         raise TransactionError(message="Must specify a `sender`.")
 
 
-@dataclass
-class ContractTransactionHandler:
-    provider: ProviderAPI
-    converter: "ConversionManager"
-    contract: "ContractInstance"
-    abis: List[MethodABI]
+class ContractTransactionHandler(ManagerAccessBase):
+    def __init__(self, contract: "ContractInstance", abis: List[MethodABI]) -> None:
+        super().__init__()
+        self.contract = contract
+        self.abis = abis
 
     def __repr__(self) -> str:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
-        return self.converter.convert(v, tuple)
+        return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         if not self.contract.is_contract:
@@ -200,33 +255,57 @@ class ContractTransactionHandler:
 
         args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
+
         if not selected_abi:
             raise ArgumentsLengthError(len(args))
 
         return ContractTransaction(  # type: ignore
             abi=selected_abi,
             address=self.contract.address,
-            provider=self.provider,
-            converter=self.converter,
         )(*args, **kwargs)
+
+    @property
+    def provider(self) -> ProviderAPI:
+
+        if self.network_manager.active_provider is None:
+            raise AddressError(
+                f"Incorrectly implemented provider API for class {type(self).__name__}"
+            )
+
+        return self.network_manager.active_provider
 
 
 @dataclass
 class ContractLog:
+
     name: str
     data: Dict[str, Any]
 
 
-@dataclass
-class ContractEvent:
-    provider: ProviderAPI
-    converter: "ConversionManager"
-    contract: "ContractInstance"
-    abis: List[EventABI]
-    cached_logs: List[ContractLog] = []
+class ContractEvent(ManagerAccessBase):
+    def __init__(
+        self,
+        contract: "ContractInstance",
+        abis: List[EventABI],
+        cached_logs: List[ContractLog] = [],
+    ) -> None:
+        super().__init__()
+        self.contract = contract
+        self.abis = abis
+        self.cached_logs = cached_logs
+
+    @property
+    def provider(self) -> ProviderAPI:
+
+        if self.network_manager.active_provider is None:
+            raise AddressError(
+                f"Incorrectly implemented provider API for class {type(self).__name__}"
+            )
+
+        return self.network_manager.active_provider
 
 
-class ContractInstance(AddressAPI):
+class ContractInstance(AddressBase):
     """
     An interactive instance of a smart contract.
     After you deploy a contract using the :class:`~ape.api.accounts.AccountAPI.deploy` method,
@@ -240,9 +319,10 @@ class ContractInstance(AddressAPI):
         contract = a.deploy(project.MyContract)  # The result of 'deploy()' is a ContractInstance
     """
 
-    _address: AddressType
-    _converter: "ConversionManager"
-    _contract_type: ContractType
+    def __init__(self, address: AddressType, contract_type: ContractType) -> None:
+        super().__init__()
+        self._address = address
+        self._contract_type = contract_type
 
     def __repr__(self) -> str:
         contract_name = self._contract_type.name or "<Unnamed Contract>"
@@ -256,7 +336,68 @@ class ContractInstance(AddressAPI):
         Returns:
             ``AddressType``
         """
+
         return self._address
+
+    @cached_property
+    def _view_methods_(self) -> Dict[str, ContractCallHandler]:
+
+        view_methods: Dict[str, List[MethodABI]] = dict()
+
+        for abi in self._contract_type.view_methods:
+            if abi.name in view_methods:
+                view_methods[abi.name].append(abi)
+            else:
+                view_methods[abi.name] = [abi]
+
+        try:
+            return {
+                abi_name: ContractCallHandler(contract=self, abis=abis)
+                for abi_name, abis in view_methods.items()
+            }
+        except Exception as e:
+            # NOTE: Must raise AttributeError for __attr__ method or will seg fault
+            raise AttributeError(str(e)) from e
+
+    @cached_property
+    def _mutable_methods_(self) -> Dict[str, ContractTransactionHandler]:
+
+        mutable_methods: Dict[str, List[MethodABI]] = dict()
+
+        for abi in self._contract_type.mutable_methods:
+            if abi.name in mutable_methods:
+                mutable_methods[abi.name].append(abi)
+            else:
+                mutable_methods[abi.name] = [abi]
+
+        try:
+            return {
+                abi_name: ContractTransactionHandler(contract=self, abis=abis)
+                for abi_name, abis in mutable_methods.items()
+            }
+        except Exception as e:
+            # NOTE: Must raise AttributeError for __attr__ method or will seg fault
+            raise AttributeError(str(e)) from e
+
+    @cached_property
+    def _events_(self) -> Dict[str, ContractEvent]:
+
+        events: Dict[str, List[EventABI]] = dict()
+
+        for abi in self._contract_type.events:
+            if abi.name in events:
+                events[abi.name].append(abi)
+            else:
+                events[abi.name] = [abi]
+
+        try:
+            return {
+                abi_name: ContractEvent(contract=self, abis=abis)
+                for abi_name, abis in events.items()
+            }
+        except Exception as e:
+            # NOTE: Must raise AttributeError for __attr__ method or will seg fault
+            raise AttributeError(str(e)) from e
 
     def __dir__(self) -> List[str]:
         """
@@ -265,9 +406,12 @@ class ContractInstance(AddressAPI):
         Returns:
             List[str]
         """
-        return list(super(AddressAPI, self).__dir__()) + [
-            abi.name for abi in self._contract_type.abi if isinstance(abi, (MethodABI, EventABI))
-        ]
+
+        return list(
+            set(super(AddressBase, self).__dir__()).union(
+                self._view_methods_, self._mutable_methods_, self._events_
+            )
+        )
 
     def __getattr__(self, attr_name: str) -> Any:
         """
@@ -284,66 +428,38 @@ class ContractInstance(AddressAPI):
             any: The return value from the contract call, or a transaction receipt.
         """
 
-        def name_matches(abi):
-            return abi.name == attr_name
+        if attr_name in set(super(AddressBase, self).__dir__()):
+            return super(AddressBase, self).__getattribute__(attr_name)
 
-        selected_view_methods = list(filter(name_matches, self._contract_type.view_methods))
-        has_matching_view_methods = len(selected_view_methods) > 0
-
-        selected_mutable_methods = list(filter(name_matches, self._contract_type.mutable_methods))
-        has_matching_mutable_methods = len(selected_mutable_methods) > 0
-
-        selected_events = list(filter(name_matches, self._contract_type.events))
-        has_matching_events = len(selected_events) > 0
-
-        num_matching_conditions = sum(
-            [
-                has_matching_view_methods,
-                has_matching_mutable_methods,
-                has_matching_events,
-            ]
-        )
-
-        if num_matching_conditions == 0:
+        if attr_name not in set((*self._view_methods_, *self._mutable_methods_, *self._events_)):
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
             name = self._contract_type.name or self.__class__.__name__
             raise AttributeError(f"'{name}' has no attribute '{attr_name}'.")
 
-        elif num_matching_conditions > 1:
+        elif (
+            int(attr_name in self._view_methods_)
+            + int(attr_name in self._mutable_methods_)
+            + int(attr_name in self._events_)
+            > 1
+        ):
             # ABI should not contain a mix of events, mutable and view methods that match
             # NOTE: `__getattr__` *must* raise `AttributeError`
             raise AttributeError(f"{self.__class__.__name__} has corrupted ABI.")
 
-        kwargs = {
-            "provider": self.provider,
-            "converter": self._converter,
-            "contract": self,
-        }
+        if attr_name in self._view_methods_:
+            handler = self._view_methods_[attr_name]
 
-        # Handle according to the proper abi type handler
-        if has_matching_events:
-            kwargs["abis"] = selected_events
-            handler = ContractEvent
+        elif attr_name in self._mutable_methods_:
+            handler = self._mutable_methods_[attr_name]  # type: ignore
 
-        elif has_matching_view_methods:
-            kwargs["abis"] = selected_view_methods
-            handler = ContractCallHandler  # type: ignore
+        else:
+            handler = self._events_[attr_name]  # type: ignore
 
-        elif has_matching_mutable_methods:
-            kwargs["abis"] = selected_mutable_methods
-            handler = ContractTransactionHandler  # type: ignore
-
-        try:
-            return handler(**kwargs)  # type: ignore
-
-        except Exception as e:
-            # NOTE: Just a hack, because `__getattr__` *must* raise `AttributeError`
-            raise AttributeError(str(e)) from e
+        return handler
 
 
-@dataclass
-class ContractContainer:
+class ContractContainer(ManagerAccessBase):
     """
     A wrapper around the contract type that has access to the provider.
     When you import your contracts from the :class:`ape.managers.project.ProjectManager`, you
@@ -356,16 +472,21 @@ class ContractContainer:
         contract_container = project.MyContract  # Assuming there is a contract named "MyContract"
     """
 
-    contract_type: ContractType
-    """The type of the contract."""
-
-    _provider: Optional[ProviderAPI]
-    # _provider is only None when a user is not connected to a provider.
-
-    _converter: "ConversionManager"
+    def __init__(self, contract_type: ContractType) -> None:
+        self.contract_type = contract_type
 
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
+
+    @property
+    def provider(self) -> ProviderAPI:
+
+        if self.network_manager.active_provider is None:
+            raise AddressError(
+                f"Incorrectly implemented provider API for class {type(self).__name__}"
+            )
+
+        return self.network_manager.active_provider
 
     def at(self, address: str) -> ContractInstance:
         """
@@ -388,47 +509,48 @@ class ContractContainer:
         """
 
         return ContractInstance(  # type: ignore
-            _address=address,
-            _provider=self._provider,
-            _converter=self._converter,
-            _contract_type=self.contract_type,
+            address=address,  # type: ignore
+            contract_type=self.contract_type,
         )
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
-        args = self._converter.convert(args, tuple)
+
+        args = self.conversion_manager.convert(args, tuple)
         constructor = ContractConstructor(  # type: ignore
             abi=self.contract_type.constructor,
-            provider=self._provider,
-            converter=self._converter,
-            deployment_bytecode=self.contract_type.get_deployment_bytecode() or b"",
+            provider=self.provider,
+            deployment_bytecode=self.contract_type.get_deployment_bytecode() or b"",  # type: ignore
         )
 
         args_length = len(args)
         inputs_length = (
             len(constructor.abi.inputs) if constructor.abi and constructor.abi.inputs else 0
         )
+
         if inputs_length != args_length:
             raise ArgumentsLengthError(args_length, inputs_length=inputs_length)
 
-        return constructor.encode(*args, **kwargs)
+        return constructor.serialize_transaction(*args, **kwargs)
 
 
 def _Contract(
-    address: Union[str, AddressAPI, AddressType],
+    address: Union[str, AddressBase, AddressType],
     networks: "NetworkManager",
-    converters: "ConversionManager",
+    conversion_manager: "ConversionManager",
     contract_type: Optional[ContractType] = None,
-) -> AddressAPI:
+) -> AddressBase:
     """
     Function used to triage whether we have a contract type available for
     the given address/network combo, or explicitly provided. If none are found,
     returns a simple ``Address`` instance instead of throwing (provides a warning)
     """
+
     provider = networks.active_provider
+
     if not provider:
         raise ProviderNotConnectedError()
 
-    converted_address: AddressType = converters.convert(address, AddressType)
+    converted_address: AddressType = conversion_manager.convert(address, AddressType)
 
     # Check contract cache (e.g. previously deployed/downloaded contracts)
     # TODO: Add ``contract_cache`` dict-like object to ``NetworkAPI``
@@ -439,6 +561,7 @@ def _Contract(
     # Check explorer API/cache (e.g. publicly published contracts)
     # TODO: Store in ``NetworkAPI.contract_cache`` to reduce API calls
     explorer = provider.network.explorer
+
     if not contract_type and explorer:
         contract_type = explorer.get_contract_type(converted_address)
 
@@ -448,15 +571,14 @@ def _Contract(
     #   3) from explorer
     if contract_type:
         return ContractInstance(  # type: ignore
-            _address=converted_address,
-            _provider=provider,
-            _converter=converters,
-            _contract_type=contract_type,
+            address=converted_address,
+            contract_type=contract_type,
         )
 
     else:
         # We don't have a contract type from any source, provide raw address instead
         logger.warning(f"No contract type found for {address}")
+
         return Address(  # type: ignore
             _address=converted_address,
             _provider=provider,
@@ -464,6 +586,7 @@ def _Contract(
 
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:
+
     raise ContractError(
         f"Unable to make contract call. "
         f"'{address}' is not a contract on network '{network_name}'."

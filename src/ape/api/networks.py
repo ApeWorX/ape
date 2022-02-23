@@ -1,30 +1,28 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
-from pluggy import PluginManager  # type: ignore
+from hexbytes import HexBytes
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
 from ape.types import AddressType
-from ape.utils import abstractdataclass, abstractmethod, cached_property, dataclass
+from ape.utils import AbstractBaseModel, abstractmethod, cached_property
 
-from .config import ConfigItem
+from .config import PluginConfig
 
 if TYPE_CHECKING:
     from ape.contracts import ContractLog
-    from ape.managers.config import ConfigManager
     from ape.managers.networks import NetworkManager
 
     from .explorers import ExplorerAPI
-    from .providers import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI, TransactionType
+    from .providers import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI
 
 
 LOCAL_NETWORK_NAME = "local"
 
 
-@abstractdataclass
-class EcosystemAPI:
+class EcosystemAPI(AbstractBaseModel):
     """
     A set of related networks, such as Ethereum.
     """
@@ -34,40 +32,58 @@ class EcosystemAPI:
     The name of the ecosystem. This should be set the same name as the plugin.
     """
 
-    network_manager: "NetworkManager"
-    """A reference to the global network manager."""
-
-    config_manager: "ConfigManager"
-    """A reference to the global config manager."""
-
-    plugin_manager: PluginManager
-    """A reference to the global plugin manager."""
-
     data_folder: Path
     """The path to the ``.ape`` directory."""
 
-    request_header: str
+    request_header: dict
     """A shareable HTTP header for network requests."""
-
-    transaction_types: Dict["TransactionType", Type["TransactionAPI"]]
-    """The available types of transaction API this ecosystem supports."""
-
-    receipt_class: Type["ReceiptAPI"]
-    """The receipt class for this ecosystem."""
-
-    block_class: Type["BlockAPI"]
-    """The block class for this ecosystem."""
 
     _default_network: str = LOCAL_NETWORK_NAME
 
+    @abstractmethod
+    def serialize_transaction(self, transaction: "TransactionAPI") -> bytes:
+        """
+        Serialize a transaction to bytes.
+
+        Args:
+            transaction (:class:`~ape.api.TransactionAPI`): The transaction to encode.
+
+        Returns:
+            bytes
+        """
+
+    @abstractmethod
+    def decode_receipt(self, data: dict) -> "ReceiptAPI":
+        """
+        Convert data to :class:`~ape.api.ReceiptAPI`.
+
+        Args:
+            data (dict): A dictionary of Receipt properties.
+
+        Returns:
+            :class:`~ape.api.ReceiptAPI`
+        """
+
+    @abstractmethod
+    def decode_block(self, data: dict) -> "BlockAPI":
+        """
+        Decode data to a :class:`~ape.api.BlockAPI`.
+
+        Args:
+            data (dict): A dictionary of data to decode.
+
+        Returns:
+            :class:`~ape.api.BlockAPI`
+        """
+
     @cached_property
-    def config(self) -> ConfigItem:
+    def config(self) -> PluginConfig:
         """
         The configuration of the ecosystem. See :class:`ape.managers.config.ConfigManager`
         for more information on plugin configurations.
 
         Returns:
-            :class:`ape.api.config.ConfigItem`
+            :class:`ape.api.config.PluginConfig`
         """
 
         return self.config_manager.get_config(self.name)
@@ -89,8 +105,6 @@ class EcosystemAPI:
                 networks[network_name] = network_class(
                     name=network_name,
                     ecosystem=self,
-                    config_manager=self.config_manager,
-                    plugin_manager=self.plugin_manager,
                     data_folder=network_folder,
                     request_header=self.request_header,
                 )
@@ -102,17 +116,9 @@ class EcosystemAPI:
             raise NetworkError("No networks found")
 
     def __post_init__(self):
+
         if len(self.networks) == 0:
             raise NetworkError("Must define at least one network in ecosystem")
-
-    def __iter__(self) -> Iterator[str]:
-        """
-        Iterate over the set of all valid network names in the ecosystem.
-
-        Returns:
-            Iterator[str]
-        """
-        yield from self.networks
 
     def __getitem__(self, network_name: str) -> "NetworkAPI":
         """
@@ -167,6 +173,7 @@ class EcosystemAPI:
         Returns:
             :class:`~ape.api.networks.NetworkAPI`
         """
+
         if network_name in self.networks:
             raise NetworkError(f"Unable to overwrite existing network '{network_name}'.")
         else:
@@ -196,13 +203,14 @@ class EcosystemAPI:
 
         if network_name in self.networks:
             self._default_network = network_name
+
         else:
             message = f"'{network_name}' is not a valid network for ecosystem '{self.name}'."
             raise NetworkError(message)
 
     @abstractmethod
     def encode_deployment(
-        self, deployment_bytecode: bytes, abi: ConstructorABI, *args, **kwargs
+        self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
     ) -> "TransactionAPI":
         ...
 
@@ -223,6 +231,7 @@ class EcosystemAPI:
     def _try_get_network(self, network_name):
         if network_name in self.networks:
             return self.networks[network_name]
+
         else:
             raise NetworkNotFoundError(network_name)
 
@@ -239,6 +248,7 @@ class EcosystemAPI:
         Returns:
             dict: A dictionary containing the providers in a network.
         """
+
         data: Dict[str, Any] = {"name": network_name}
 
         # Only add isDefault key when True
@@ -247,6 +257,7 @@ class EcosystemAPI:
 
         data["providers"] = []
         network = self[network_name]
+
         if network.explorer:
             data["explorer"] = network.explorer.name
 
@@ -283,10 +294,11 @@ class ProviderContextManager:
 
     # NOTE: Class variable, so it will manage stack across instances of this object
     _connected_providers: List["ProviderAPI"] = []
+    network_manager: "NetworkManager"
 
-    def __init__(self, network_manager: "NetworkManager", provider: "ProviderAPI"):
-        self.network_manager = network_manager
+    def __init__(self, provider: "ProviderAPI", network_manager: "NetworkManager"):
         self.provider = provider
+        self.network_manager = network_manager
 
     def __enter__(self, *args, **kwargs):
         # If we are already connected to a provider, disconnect and add
@@ -304,7 +316,8 @@ class ProviderContextManager:
     def __exit__(self, *args, **kwargs):
         # Put our providers back the way it was
         provider = self._connected_providers.pop()
-        if self.provider != provider:
+
+        if id(self.provider) != id(provider):
             raise ValueError("Previous provider value unknown.")
 
         provider.disconnect()
@@ -314,8 +327,7 @@ class ProviderContextManager:
             self.network_manager.active_provider = self._connected_providers[-1]
 
 
-@dataclass
-class NetworkAPI:
+class NetworkAPI(AbstractBaseModel):
     """
     A wrapper around a provider for a specific ecosystem.
     """
@@ -326,22 +338,16 @@ class NetworkAPI:
     ecosystem: EcosystemAPI
     """The ecosystem of the network."""
 
-    config_manager: "ConfigManager"
-    """A reference to the global config manager."""
-
-    plugin_manager: PluginManager
-    """A reference to the global plugin manager."""
-
     data_folder: Path  # For caching any data that might need caching
     """The path to the ``.ape`` directory."""
 
-    request_header: str
+    request_header: dict
     """A shareable network HTTP header."""
 
-    _default_provider: str = ""
+    _default_provider: Optional[str] = ""
 
     @cached_property
-    def config(self) -> ConfigItem:
+    def config(self) -> PluginConfig:
         """
         The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
         for more information on plugin configurations.
@@ -350,8 +356,8 @@ class NetworkAPI:
         return self.config_manager.get_config(self.ecosystem.name)
 
     @cached_property
-    def _network_config(self) -> ConfigItem:
-        return self.config.get(self.name, {})  # type: ignore
+    def _network_config(self) -> PluginConfig:
+        return self.config.dict().get(self.name, {})  # type: ignore
 
     @property
     def chain_id(self) -> int:
@@ -386,6 +392,7 @@ class NetworkAPI:
         Returns:
             int
         """
+
         return self.chain_id
 
     @property
@@ -399,6 +406,7 @@ class NetworkAPI:
         Returns:
             int
         """
+
         return self._network_config.get("required_confirmations", 0)  # type: ignore
 
     @property
@@ -490,7 +498,7 @@ class NetworkAPI:
             :class:`~ape.api.providers.ProviderAPI`
         """
 
-        provider_name = provider_name or self.default_provider
+        provider_name = provider_name or self.default_provider or ""
         provider_settings = provider_settings or {}
 
         if ":" in provider_name:
@@ -535,20 +543,28 @@ class NetworkAPI:
         """
 
         return ProviderContextManager(
-            self.ecosystem.network_manager,
-            self.get_provider(provider_name=provider_name, provider_settings=provider_settings),
+            provider=self.get_provider(
+                provider_name=provider_name, provider_settings=provider_settings
+            ),
+            network_manager=self.network_manager,
         )
 
     @property
-    def default_provider(self) -> str:
+    def default_provider(self) -> Optional[str]:
         """
-        The name of the default provider.
+        The name of the default provider or ``None``.
 
         Returns:
-            str
+            Optional[str]
         """
 
-        return self._default_provider or list(self.providers)[0]
+        if self._default_provider:
+            return self._default_provider
+
+        if len(self.providers):
+            return list(self.providers)[0]
+
+        return None
 
     def set_default_provider(self, provider_name: str):
         """
@@ -587,7 +603,11 @@ class NetworkAPI:
         Returns:
             :class:`~ape.api.networks.ProviderContextManager`
         """
-        return self.use_provider(self.default_provider, provider_settings=provider_settings)
+
+        if self.default_provider:
+            return self.use_provider(self.default_provider, provider_settings=provider_settings)
+
+        raise NetworkError(f"No providers for network '{self.name}'.")
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:

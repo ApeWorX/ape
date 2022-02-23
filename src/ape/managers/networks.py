@@ -1,16 +1,14 @@
-from typing import ClassVar, Dict, Iterator, Optional
+from typing import Dict, Iterator, Optional
 
 import yaml
-from pluggy import PluginManager  # type: ignore
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.exceptions import ConfigError, NetworkError
-from ape.utils import injected_before_use
 
-from .config import ConfigManager
+from .base import ManagerBase
 
 
-class NetworkManager:
+class NetworkManager(ManagerBase):
     """
     The set of all blockchain network ecosystems registered from the plugin system.
     Typically, you set the provider via the ``--network`` command line option.
@@ -25,8 +23,6 @@ class NetworkManager:
            ...
     """
 
-    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
     _active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
     _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
@@ -40,50 +36,52 @@ class NetworkManager:
 
     @active_provider.setter
     def active_provider(self, new_value: ProviderAPI):
-        from ape import chain
-
-        new_value._chain = chain
         self._active_provider = new_value
 
     @property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
         """
-        All the registered ecosystems in ``ape``, such as ``ethereum``.
+        All the
+        registered ecosystems in ``ape``, such as ``ethereum``.
         """
-        project_name = self.config.PROJECT_FOLDER.stem
+        project_name = self.config_manager.PROJECT_FOLDER.stem
+
         if project_name in self._ecosystems_by_project:
             return self._ecosystems_by_project[project_name]
 
         ecosystem_dict = {}
         for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
-            ecosystem = ecosystem_class(
+            ecosystem = ecosystem_class(  # type: ignore
                 name=plugin_name,
-                network_manager=self,
-                config_manager=self.config,
-                plugin_manager=self.plugin_manager,
-                data_folder=self.config.DATA_FOLDER / plugin_name,
-                request_header=self.config.REQUEST_HEADER,
+                data_folder=self.config_manager.DATA_FOLDER / plugin_name,
+                request_header=self.config_manager.REQUEST_HEADER,
             )
-            ecosystem_config = self.config.get_config(plugin_name)
+
+            ecosystem_config = self.config_manager.get_config(plugin_name)
             default_network = ecosystem_config.default_network  # type: ignore
 
             if default_network and default_network in ecosystem.networks:
                 ecosystem.set_default_network(default_network)
+
             else:
                 raise ConfigError(f"No network named '{default_network}'.")
 
             if ecosystem_config:
                 for network_name, network in ecosystem.networks.items():
-                    network_config = ecosystem_config.get(network_name)
-                    if not network_config:
+                    network_config = ecosystem_config.dict().get(network_name)
+
+                    if not hasattr(ecosystem_config, network_name):
                         continue
 
-                    default_provider = network_config.get("default_provider")
+                    network_config = getattr(ecosystem_config, network_name)
+                    default_provider = network_config.default_provider
+
                     if not default_provider:
                         continue
 
                     if default_provider in network.providers:
                         network.set_default_provider(default_provider)
+
                     else:
                         raise ConfigError(
                             f"No provider '{default_provider}' in '{network_name}' network."
@@ -161,6 +159,7 @@ class NetworkManager:
         """
         for ecosystem_name, ecosystem in self.ecosystems.items():
             yield ecosystem_name
+
             for network_name, network in ecosystem.networks.items():
                 if ecosystem_name == self.default_ecosystem.name:
                     yield f":{network_name}"
@@ -210,6 +209,7 @@ class NetworkManager:
 
         if network_choice is None:
             default_network = self.default_ecosystem.default_network
+
             return self.default_ecosystem[default_network].get_provider(
                 provider_settings=provider_settings
             )
@@ -221,27 +221,36 @@ class NetworkManager:
             selections[2] = ":".join(selections[2:])
 
         if selections == network_choice or len(selections) == 1:
+
             # Either split didn't work (in which case it matches the start)
             # or there was nothing after the ``:`` (e.g. "ethereum:")
             ecosystem = self.__getattr__(selections[0] or self.default_ecosystem.name)
+
             # By default, the "local" network should be specified for
             # any ecosystem (this should not correspond to a production chain)
             default_network = ecosystem.default_network
+
             return ecosystem[default_network].get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 2:
+
             # Only ecosystem and network were specified, not provider
             ecosystem_name, network_name = selections
+
             ecosystem = self.__getattr__(ecosystem_name or self.default_ecosystem.name)
             network = ecosystem[network_name or ecosystem.default_network]
+
             return network.get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 3:
+
             # Everything is specified, use specified provider for ecosystem
             # and network
             ecosystem_name, network_name, provider_name = selections
+
             ecosystem = self.__getattr__(ecosystem_name or self.default_ecosystem.name)
             network = ecosystem[network_name or ecosystem.default_network]
+
             return network.get_provider(
                 provider_name=provider_name, provider_settings=provider_settings
             )
@@ -276,9 +285,10 @@ class NetworkManager:
         """
 
         provider = self.get_provider_from_choice(
-            network_choice, provider_settings=provider_settings
+            network_choice=network_choice, provider_settings=provider_settings
         )
-        return ProviderContextManager(self, provider)
+
+        return ProviderContextManager(provider=provider, network_manager=self)
 
     @property
     def default_ecosystem(self) -> EcosystemAPI:
@@ -289,12 +299,13 @@ class NetworkManager:
         only a single ecosystem installed, such as Ethereum, then get
         that ecosystem.
         """
+
         if self._default:
             return self.ecosystems[self._default]
 
         # If explicit default is not set, use first registered ecosystem
         elif len(self.ecosystems) > 0:
-            return self.ecosystems[list(self.__iter__())[0]]
+            return list(self.ecosystems.values())[0]
 
         else:
             raise NetworkError("No ecosystems installed.")
@@ -311,7 +322,7 @@ class NetworkManager:
               as the default.
         """
 
-        if ecosystem_name in self.__iter__():
+        if ecosystem_name in self.ecosystems:
             self._default = ecosystem_name
 
         else:
@@ -328,6 +339,7 @@ class NetworkManager:
         Returns:
             dict
         """
+
         data: Dict = {"ecosystems": []}
 
         for ecosystem_name in self:
@@ -337,6 +349,7 @@ class NetworkManager:
         return data
 
     def _get_ecosystem_data(self, ecosystem_name) -> Dict:
+
         ecosystem = self[ecosystem_name]
         ecosystem_data = {"name": ecosystem_name}
 
@@ -345,7 +358,8 @@ class NetworkManager:
             ecosystem_data["isDefault"] = True
 
         ecosystem_data["networks"] = []
-        for network_name in getattr(self, ecosystem_name):
+
+        for network_name in getattr(self, ecosystem_name).networks.keys():
             network_data = ecosystem.get_network_data(network_name)
             ecosystem_data["networks"].append(network_data)
 

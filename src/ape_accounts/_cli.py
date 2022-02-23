@@ -27,7 +27,9 @@ def cli():
 @click.option("--all", help="Output accounts from all plugins", is_flag=True)
 @ape_cli_context()
 def _list(cli_ctx, all):
+
     accounts_to_output = accounts if all else accounts.containers.get("accounts", [])
+
     if len(accounts_to_output) == 0:
         cli_ctx.logger.warning("No accounts found.")
         return
@@ -38,7 +40,7 @@ def _list(cli_ctx, all):
     else:
         click.echo("Found 1 account:")
 
-    for account in accounts_to_output:
+    for account in accounts_to_output.accounts:
         alias_display = f" (alias: '{account.alias}')" if account.alias else ""
         click.echo(f"  {account.address}{alias_display}")
 
@@ -47,18 +49,23 @@ def _list(cli_ctx, all):
 @non_existing_alias_argument()
 @ape_cli_context()
 def generate(cli_ctx, alias):
+
     path = _get_container().data_folder.joinpath(f"{alias}.json")
+
     extra_entropy = click.prompt(
         "Add extra entropy for key generation...",
         hide_input=True,
     )
+
     account = EthAccount.create(extra_entropy)
     passphrase = click.prompt(
         "Create Passphrase",
         hide_input=True,
         confirmation_prompt=True,
     )
+
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
+
     cli_ctx.logger.success(
         f"A new account '{account.address}' has been added with the id '{alias}'"
     )
@@ -69,10 +76,13 @@ def generate(cli_ctx, alias):
 @non_existing_alias_argument()
 @ape_cli_context()
 def _import(cli_ctx, alias):
+
     path = _get_container().data_folder.joinpath(f"{alias}.json")
     key = click.prompt("Enter Private Key", hide_input=True)
+
     try:
         account = EthAccount.from_key(to_bytes(hexstr=key))
+
     except Exception as error:
         cli_ctx.abort(f"Key can't be imported: {error}")
         return
@@ -82,7 +92,9 @@ def _import(cli_ctx, alias):
         hide_input=True,
         confirmation_prompt=True,
     )
+
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
+
     cli_ctx.logger.success(
         f"A new account '{account.address}' has been added with the id '{alias}'"
     )
@@ -92,6 +104,7 @@ def _import(cli_ctx, alias):
 @existing_alias_argument(account_type=KeyfileAccount)
 @ape_cli_context()
 def change_password(cli_ctx, alias):
+
     account = accounts.load(alias)
     account.change_password()
     cli_ctx.logger.success(f"Password has been changed for account '{alias}'")
@@ -101,6 +114,7 @@ def change_password(cli_ctx, alias):
 @existing_alias_argument(account_type=KeyfileAccount)
 @ape_cli_context()
 def delete(cli_ctx, alias):
+
     account = accounts.load(alias)
     account.delete()
     cli_ctx.logger.success(f"Account '{alias}' has been deleted")

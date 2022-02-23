@@ -1,15 +1,13 @@
 from pathlib import Path
-from typing import ClassVar, Dict, List, Set
+from typing import Dict, List, Set
 
 from ethpm_types import ContractType
 
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
-from ape.plugins import PluginManager
-from ape.utils import injected_before_use
 
-from .config import ConfigManager
+from .base import ManagerBase
 
 
 def _get_contract_path(path: Path, base_path: Path):
@@ -19,7 +17,7 @@ def _get_contract_path(path: Path, base_path: Path):
         return path
 
 
-class CompilerManager:
+class CompilerManager(ManagerBase):
     """
     The singleton that manages :class:`~ape.api.compiler.CompilerAPI` instances.
     Each compiler plugin typically contains a single :class:`~ape.api.compiler.CompilerAPI`.
@@ -32,8 +30,6 @@ class CompilerManager:
         from ape import compilers  # "compilers" is the CompilerManager singleton
     """
 
-    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
     _registered_compilers_cache: Dict[Path, Dict[str, CompilerAPI]] = {}
 
     def __repr__(self):
@@ -51,15 +47,15 @@ class CompilerManager:
             to compiler API classes.
         """
 
-        cache_key = self.config.PROJECT_FOLDER
+        cache_key = self.config_manager.PROJECT_FOLDER
         if cache_key in self._registered_compilers_cache:
             return self._registered_compilers_cache[cache_key]
 
         registered_compilers = {}
 
         for plugin_name, (extensions, compiler_class) in self.plugin_manager.register_compiler:
-            config = self.config.get_config(plugin_name)
-            compiler = compiler_class(config=config)
+
+            compiler = compiler_class()
 
             for extension in extensions:
                 if extension not in registered_compilers:
@@ -88,16 +84,18 @@ class CompilerManager:
 
         extensions = self._get_contract_extensions(contract_filepaths)
         contract_types_dict = {}
+
         for extension in extensions:
             paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
 
             for path in paths_to_compile:
-                contract_path = _get_contract_path(path, self.config.contracts_folder)
+                contract_path = _get_contract_path(path, self.config_manager.contracts_folder)
                 logger.info(f"Compiling '{contract_path}'.")
 
             compiled_contracts = self.registered_compilers[extension].compile(
-                paths_to_compile, base_path=self.config.contracts_folder
+                paths_to_compile, base_path=self.config_manager.contracts_folder
             )
+
             for contract_type in compiled_contracts:
 
                 if contract_type.name in contract_types_dict:
@@ -108,8 +106,10 @@ class CompilerManager:
         return contract_types_dict  # type: ignore
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
+
         extensions = set(path.suffix for path in contract_filepaths)
         unhandled_extensions = extensions - set(self.registered_compilers)
+
         if len(unhandled_extensions) > 0:
             unhandled_extensions_str = ", ".join(unhandled_extensions)
             raise CompilerError(f"No compiler found for extensions [{unhandled_extensions_str}].")

@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Collection, Dict, List, Optional
+from typing import Collection, Dict, List, Optional
 
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
@@ -11,26 +11,18 @@ from pydantic import ValidationError
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.utils import (
-    abstractdataclass,
+    AbstractBaseModel,
     abstractmethod,
     get_all_files_in_directory,
     get_relative_path,
 )
 
-if TYPE_CHECKING:
-    from ape.managers.compilers import CompilerManager
-    from ape.managers.project import ProjectManager
 
-
-@abstractdataclass
-class ProjectAPI:
+class ProjectAPI(AbstractBaseModel):
     """
     An abstract base-class for working with projects.
     This class can also be extended to a plugin for supporting non-ape projects.
     """
-
-    compilers: "CompilerManager"
-    """Compilers for creating the manifest."""
 
     path: Path
     """The project path."""
@@ -96,6 +88,7 @@ class ProjectAPI:
 
     @property
     def _cache_folder(self) -> Path:
+
         folder = self.path / ".build"
         # NOTE: If we use the cache folder, we expect it to exist
         folder.mkdir(exist_ok=True, parents=True)
@@ -111,6 +104,7 @@ class ProjectAPI:
         version: Optional[str] = None,
         initial_manifest: Optional[PackageManifest] = None,
     ) -> PackageManifest:
+
         manifest = initial_manifest or PackageManifest()
 
         if name:
@@ -127,6 +121,7 @@ class ProjectAPI:
     def _create_source_dict(
         cls, contracts_paths: Collection[Path], base_path: Path
     ) -> Dict[str, Source]:
+
         return {
             str(get_relative_path(source, base_path)): Source(  # type: ignore
                 checksum=Checksum(  # type: ignore
@@ -140,14 +135,10 @@ class ProjectAPI:
         }
 
 
-@abstractdataclass
-class DependencyAPI:
+class DependencyAPI(AbstractBaseModel):
     """
     A base-class for dependency sources, such as GitHub or IPFS.
     """
-
-    project_manager: "ProjectManager"
-    """The root project manager."""
 
     name: str
     """The name of the dependency."""
@@ -185,7 +176,9 @@ class DependencyAPI:
 
     @property
     def _target_manifest_cache_file(self) -> Path:
+
         version_id = self.version_id
+
         if isinstance(
             version_util.parse(version_id), version_util.Version
         ) and not version_id.startswith("v"):
@@ -219,6 +212,7 @@ class DependencyAPI:
         return _load_manifest_from_file(self._target_manifest_cache_file)
 
     def _extract_local_manifest(self, project_path: Path):
+
         contracts_folder = project_path / self.contracts_folder
         project = self.project_manager.get_project(
             project_path,

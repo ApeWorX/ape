@@ -1,19 +1,16 @@
-from typing import List, Optional
+from typing import List
 
 from ape.exceptions import AddressError
 from ape.types import AddressType
-from ape.utils import abstractdataclass, abstractmethod
+from ape.utils import AbstractBase, abstractmethod
 
 from .providers import ProviderAPI
 
 
-@abstractdataclass
-class AddressAPI:
+class AddressBase(AbstractBase):
     """
     A base address API class. All account-types subclass this type.
     """
-
-    _provider: Optional[ProviderAPI] = None
 
     @property
     def provider(self) -> ProviderAPI:
@@ -28,23 +25,12 @@ class AddressAPI:
             :class:`~ape.api.providers.ProviderAPI`
         """
 
-        if not self._provider:
+        if self.network_manager.active_provider is None:
             raise AddressError(
                 f"Incorrectly implemented provider API for class {type(self).__name__}"
             )
 
-        return self._provider
-
-    @provider.setter
-    def provider(self, value: ProviderAPI):
-        """
-        Set the active provider if connected to one.
-
-        Args:
-            value (:class:`~ape.api.providers.ProviderAPI`): The provider to set.
-        """
-
-        self._provider = value
+        return self.network_manager.active_provider
 
     @property
     @abstractmethod
@@ -55,15 +41,15 @@ class AddressAPI:
 
     def __eq__(self, other: object) -> bool:
         """
-        Compares :class:`~ape.api.AddressAPI`/``str`` objects by converting to ``AddressType``.
+        Compares :class:`~ape.api.AddressBase`/``str`` objects by converting to ``AddressType``.
 
         Returns:
             bool: comparison result
         """
-        # Circular import
-        from ape import convert
 
-        return convert(self, AddressType) == convert(other, AddressType)
+        return self.conversion_manager.convert(
+            self, AddressType
+        ) == self.conversion_manager.convert(other, AddressType)
 
     def __dir__(self) -> List[str]:
         """
@@ -72,6 +58,7 @@ class AddressAPI:
         Returns:
             List[str]: Method names that IPython uses for tab completion.
         """
+
         return [
             "address",
             "balance",
@@ -83,6 +70,7 @@ class AddressAPI:
         ]
 
     def __repr__(self) -> str:
+
         return f"<{self.__class__.__name__} {self.address}>"
 
     def __str__(self) -> str:
@@ -137,9 +125,10 @@ class AddressAPI:
         return len(self.code) > 0
 
 
-class Address(AddressAPI):
+class Address(AddressBase):
     """
     A generic blockchain address.
+
     Typically, this is used when we do not know the contract type at a given address,
     or to refer to an EOA the user doesn't personally control.
     """

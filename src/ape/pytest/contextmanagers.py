@@ -11,6 +11,7 @@ class RevertsContextManager:
         pass
 
     def __exit__(self, exc_type: Type, exc_value: Exception, traceback) -> bool:
+
         if exc_type is None:
             raise AssertionError("Transaction did not revert.")
 

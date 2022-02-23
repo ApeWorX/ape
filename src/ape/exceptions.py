@@ -25,6 +25,7 @@ class AliasAlreadyInUseError(AccountsError):
     """
 
     def __init__(self, alias: str):
+
         self.alias = alias
         super().__init__(f"Account with alias '{alias}' already in use.")
 
@@ -48,12 +49,14 @@ class ArgumentsLengthError(ContractError):
     """
 
     def __init__(self, arguments_length: int, inputs_length: Optional[int] = None):
+
         abi_suffix = f" ({inputs_length})" if inputs_length else ""
         message = (
             f"The number of the given arguments ({arguments_length}) "
             f"do not match what is defined in the "
             f"ABI{abi_suffix}."
         )
+
         super().__init__(message)
 
 
@@ -80,6 +83,7 @@ class TransactionError(ContractError):
         message: Optional[str] = None,
         code: Optional[int] = None,
     ):
+
         self.base_err = base_err
         if not message:
             message = str(base_err) if base_err else self.DEFAULT_MESSAGE
@@ -88,6 +92,7 @@ class TransactionError(ContractError):
         self.code = code
 
         ex_message = f"({code}) {message}" if code else message
+
         super().__init__(ex_message)
 
 
@@ -150,8 +155,10 @@ class NetworkNotFoundError(NetworkError):
     """
 
     def __init__(self, network: str):
+
         self.network = network
         message = f"No network named '{network}'."
+
         super().__init__(message)
 
 
@@ -212,6 +219,7 @@ class UnknownSnapshotError(ChainError):
     """
 
     def __init__(self, snapshot_id: "SnapshotID"):
+
         if isinstance(snapshot_id, bytes):
             # Is block hash
             snapshot_id = humanize_hash(snapshot_id)  # type: ignore

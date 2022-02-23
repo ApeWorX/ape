@@ -20,7 +20,9 @@ from ape.version import version as ape_version  # type: ignore
 @ape_cli_context()
 def cli(cli_ctx, network):
     """Opens a console for the local project."""
+
     verbose = cli_ctx.logger.level == logging.DEBUG
+
     return console(verbose=verbose)
 
 
@@ -32,6 +34,7 @@ def console(project=None, verbose=None, extra_locals=None):
         project = default_project
 
     banner = ""
+
     if verbose:
         banner = """
    Python:  {python_version}

@@ -5,7 +5,7 @@ from ape_ethereum.ecosystem import BaseTransaction, Receipt, TransactionStatusEn
 
 
 class TestBaseTransaction:
-    def test_as_dict_excludes_none_values(self):
+    def test_dict_excludes_none_values(self):
         txn = BaseTransaction()
         txn.value = 1000000
         actual = txn.as_dict()
