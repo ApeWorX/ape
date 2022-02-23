@@ -34,11 +34,11 @@ class PytestApeRunner:
         # The option the user providers via --network (or the default).
         return self.config.getoption("network")
 
-    # @ape_cli_context()
     def pytest_exception_interact(self, report, call):
         """
-        A `-I` option triggers when an exception is raised which can be interactively handeled.
-        Outputs the full repr of the failed test and opens an interactive shell using `ape console`.
+        A ``-I`` option triggers when an exception is raised which can be interactively handled.
+        Outputs the full ``repr`` of the failed test and opens an interactive shell using the
+        same console as the ``ape console`` command.
         """
 
         if self.config.getoption("interactive") and report.failed:
@@ -58,7 +58,7 @@ class PytestApeRunner:
                     break
                 except ValueError as err:
                     click.echo()
-                    logger.warn_from_exception(err, f"{tb_frame}")
+                    logger.warn_from_exception(err, tb_frame)
                     pass
 
             # get global namespace
