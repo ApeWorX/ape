@@ -120,3 +120,13 @@ class QueryAPI:
         Returns:
             pandas.DataFrame
         """
+
+    def update_cache(self, query: QueryType, result: pd.DataFrame):
+        """
+        Allows a query plugin the chance to update any cache using the results obtained
+        from other query plugins. Defaults to doing nothing, override to store cache data.
+
+        Args:
+            query (``QueryType``): query that was executed
+            result (``pandas.DataFrame``): the result of the query
+        """
