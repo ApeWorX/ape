@@ -64,20 +64,27 @@ class QueryManager:
             if engine_to_use not in self.engines:
                 raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")
 
-            return self.engines[engine_to_use].perform_query(query)
+            engine = self.engines[engine_to_use]
 
-        # Get heuristics from all the query engines to perform this query
-        estimates = map(lambda qe: (qe, qe.estimate_query(query)), self.engines.values())
+        else:
+            # Get heuristics from all the query engines to perform this query
+            estimates = map(lambda qe: (qe, qe.estimate_query(query)), self.engines.values())
 
-        # Ignore query engines that can't perform this query
-        valid_estimates = filter(lambda qe: qe[1] is not None, estimates)
+            # Ignore query engines that can't perform this query
+            valid_estimates = filter(lambda qe: qe[1] is not None, estimates)
 
-        try:
-            # Find the "best" engine to perform the query
-            # NOTE: Sorted by fastest time heuristic
-            engine, _ = min(valid_estimates, key=lambda qe: qe[1])  # type: ignore
-        except ValueError as e:
-            raise QueryEngineError("No query engines are available.") from e
+            try:
+                # Find the "best" engine to perform the query
+                # NOTE: Sorted by fastest time heuristic
+                engine, _ = min(valid_estimates, key=lambda qe: qe[1])  # type: ignore
+            except ValueError as e:
+                raise QueryEngineError("No query engines are available.") from e
 
         # Go fetch the result from the engine
-        return engine.perform_query(query)
+        result = engine.perform_query(query)
+
+        # Update any caches
+        for engine in self.engines.values():
+            engine.update_cache(query, result)
+
+        return result
