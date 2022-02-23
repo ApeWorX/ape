@@ -88,6 +88,18 @@ deployments:
         address: 0xc222000cCcbBbaAa444777000111222111222222
 ```
 
+## Geth
+
+When using the ``geth`` provider, you can customize its settings.
+For example, to change the URI for an Ethereum network, do:
+
+```yaml
+geth:
+  ethereum:
+    mainnet:
+      uri: http://localhost:5030
+```
+
 ## Networks
 
 Set default network and network providers:
