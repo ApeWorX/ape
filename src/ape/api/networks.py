@@ -455,7 +455,6 @@ class NetworkAPI:
         for plugin_name, plugin_tuple in self.plugin_manager.providers:
             ecosystem_name, network_name, provider_class = plugin_tuple
             provider_name = provider_class.__module__.split(".")[0].split("_")[-1]
-            print(f"{ecosystem_name}:{network_name}:{provider_name}")
 
             if self.ecosystem.name == ecosystem_name and self.name == network_name:
                 # NOTE: Lazily load provider config
