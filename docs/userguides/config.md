@@ -33,7 +33,7 @@ dependencies:
     version: 4.4.2
 ```
 
-To ignore files from dependency project, use the `exclude` field to specify glob patterns:
+To ignore files from a dependency project, use the `exclude` setting to specify glob patterns:
 
 ```yaml
 dependencies:
