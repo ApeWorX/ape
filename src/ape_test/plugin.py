@@ -19,6 +19,13 @@ def pytest_addoption(parser):
         default=networks.default_ecosystem.name,
         help="Override the default network and provider. (see ``ape networks list`` for options)",
     )
+    parser.addoption(
+        "--interactive",
+        "-I",
+        action="store_true",
+        help="Open an interactive console each time a test fails",
+    )
+
     # NOTE: Other testing plugins, such as hypothesis, should integrate with pytest separately
 
 
