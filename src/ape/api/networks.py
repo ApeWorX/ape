@@ -6,6 +6,7 @@ from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from pluggy import PluginManager  # type: ignore
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
+from ape.plugins import clean_plugin_name
 from ape.types import AddressType
 from ape.utils import abstractdataclass, abstractmethod, cached_property, dataclass
 
@@ -454,7 +455,7 @@ class NetworkAPI:
 
         for plugin_name, plugin_tuple in self.plugin_manager.providers:
             ecosystem_name, network_name, provider_class = plugin_tuple
-            provider_name = provider_class.__module__.split(".")[0].split("_")[-1]
+            provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
 
             if self.ecosystem.name == ecosystem_name and self.name == network_name:
                 # NOTE: Lazily load provider config
