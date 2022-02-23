@@ -95,7 +95,7 @@ setup(
         "pytest>=6.0,<7.0",
         "rich>=10.14,<11",
         "tqdm>=4.62.3,<5.0",
-        "typing-extensions ; python_version<'3.8'",
+        "typing-extensions>=3.10,<4 ; python_version<'3.8'",
         "web3[tester]==5.27.0",
         "eth_abi==2.1.1",
         "eth-utils==1.10.0",
