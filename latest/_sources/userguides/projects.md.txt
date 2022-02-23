@@ -196,3 +196,7 @@ manually installing it using the command:
 ```bash
 ape plugins install hardhat
 ```
+
+### Test Interactive
+
+Use ape test ``-I`` to open the interactive mode at the point of exception. This allows the user to inspect the point of failure in your tests.
