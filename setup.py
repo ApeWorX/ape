@@ -104,7 +104,7 @@ setup(
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
-        "pytest11": ["ape_test=ape_test.plugin"],
+        "pytest11": ["ape_test=ape.pytest.plugin"],
         "ape_cli_subcommands": [
             "ape_accounts=ape_accounts._cli:cli",
             "ape_compile=ape_compile._cli:cli",
