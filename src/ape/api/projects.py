@@ -229,9 +229,9 @@ class DependencyAPI:
 
         all_sources = get_all_files_in_directory(project.contracts_folder)
 
-        excluded_files = []
-        for pattern in self.exclude:
-            excluded_files.extend([f for f in project.contracts_folder.glob(pattern)])
+        excluded_files = set()
+        for pattern in set(self.exclude):
+            excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
 
         sources = [s for s in all_sources if s not in excluded_files]
         project_manifest = project.create_manifest(file_paths=sources)
