@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 
 from ape import accounts, chain, networks, project
-from ape_test.fixtures import PytestApeFixtures
-from ape_test.runners import PytestApeRunner
+from ape.pytest.fixtures import PytestApeFixtures
+from ape.pytest.runners import PytestApeRunner
 
 
 def pytest_addoption(parser):
@@ -26,7 +26,7 @@ def pytest_addoption(parser):
         help="Open an interactive console each time a test fails",
     )
 
-    # NOTE: Other testing plugins, such as hypothesis, should integrate with pytest separately
+    # NOTE: Other pytest plugins, such as hypothesis, should integrate with pytest separately
 
 
 def pytest_configure(config):
