@@ -165,6 +165,11 @@ class DependencyAPI:
     of a directory in the project.
     """
 
+    exclude: List[str] = ["package.json", "package-lock.json"]
+    """
+    A list of glob-patterns for excluding files in dependency projects.
+    """
+
     _data_folder: Path
 
     def __repr__(self):
@@ -221,11 +226,14 @@ class DependencyAPI:
             name=self.name,
             version=self.version,
         )
-        sources = [
-            s
-            for s in get_all_files_in_directory(project.contracts_folder)
-            if s.name.lower() not in ("package.json", "package-lock.json")
-        ]
+
+        all_sources = get_all_files_in_directory(project.contracts_folder)
+
+        excluded_files = set()
+        for pattern in set(self.exclude):
+            excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
+
+        sources = [s for s in all_sources if s not in excluded_files]
         project_manifest = project.create_manifest(file_paths=sources)
 
         if not project_manifest.contract_types:

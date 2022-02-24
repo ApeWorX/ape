@@ -33,6 +33,17 @@ dependencies:
     version: 4.4.2
 ```
 
+To ignore files from a dependency project, use the `exclude` setting to specify glob patterns:
+
+```yaml
+dependencies:
+  - name: dependency-project-name
+    github: org-name/dependency-project-name
+    exclude:
+      - package.json    # Ignore package.json files.
+      - mocks/**/*      # Ignore all files in the 'mocks' directory
+```
+
 will download the [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) package with version `4.4.2`.
 
 To use dependencies in the `ape-solidity` plugin, configure `import_remappings`:
