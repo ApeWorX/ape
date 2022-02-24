@@ -85,7 +85,9 @@ class NetworkManager:
                     if default_provider in network.providers:
                         network.set_default_provider(default_provider)
                     else:
-                        raise ConfigError(f"No provider named '{default_provider}'.")
+                        raise ConfigError(
+                            f"No provider '{default_provider}' in '{network_name}' network."
+                        )
 
             ecosystem_dict[plugin_name] = ecosystem
 
