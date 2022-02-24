@@ -450,9 +450,9 @@ class NetworkAPI:
             Dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
         """
 
-        providers = {}
-
         from ape.plugins import clean_plugin_name
+
+        providers = {}
 
         for plugin_name, plugin_tuple in self.plugin_manager.providers:
             ecosystem_name, network_name, provider_class = plugin_tuple
