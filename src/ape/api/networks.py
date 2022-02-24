@@ -450,16 +450,19 @@ class NetworkAPI:
             Dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
         """
 
+        from ape.plugins import clean_plugin_name
+
         providers = {}
 
         for plugin_name, plugin_tuple in self.plugin_manager.providers:
             ecosystem_name, network_name, provider_class = plugin_tuple
+            provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
 
             if self.ecosystem.name == ecosystem_name and self.name == network_name:
-                # NOTE: Lazily load and provider config on load
-                providers[plugin_name] = partial(
+                # NOTE: Lazily load provider config
+                providers[provider_name] = partial(
                     provider_class,
-                    name=plugin_name,
+                    name=provider_name,
                     config=self.config_manager.get_config(plugin_name),
                     network=self,
                     # NOTE: No need to have separate folder, caching should be interoperable
