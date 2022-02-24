@@ -71,7 +71,7 @@ ethereum  (default)
 def assert_rich_text(actual: str, expected: str):
     """
     The output from `rich` causes a bunch of extra spaces to
-    appear at the end of each line. For easier pytest, we remove those here.
+    appear at the end of each line. For easier testing, we remove those here.
     """
     expected = expected.strip()
     lines = actual.split("\n")

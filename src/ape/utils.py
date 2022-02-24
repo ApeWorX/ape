@@ -223,7 +223,7 @@ def generate_dev_accounts(
     """
     Create accounts from the given test mnemonic.
     Use these accounts (or the mnemonic) in chain-genesis
-    for pytest providers.
+    for testing providers.
 
     Args:
         mnemonic (str): mnemonic phrase or seed words.
