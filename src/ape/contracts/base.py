@@ -426,11 +426,12 @@ class ContractInstance(AddressBase):
             name = self._contract_type.name or self.__class__.__name__
             raise AttributeError(f"'{name}' has no attribute '{attr_name}'.")
 
-        elif (
-            int(attr_name in self._view_methods_)
-            + int(attr_name in self._mutable_methods_)
-            + int(attr_name in self._events_)
-            > 1
+        elif any(
+            (
+                attr_name in self._view_methods_,
+                attr_name in self._mutable_methods_,
+                attr_name in self._events_,
+            )
         ):
             # ABI should not contain a mix of events, mutable and view methods that match
             # NOTE: `__getattr__` *must* raise `AttributeError`
