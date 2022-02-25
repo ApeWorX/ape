@@ -22,7 +22,6 @@ class _BaseBlockQuery(_BaseQuery):
 
     @root_validator(pre=True)
     def check_start_block_before_stop_block(cls, values):
-
         if values["stop_block"] < values["start_block"]:
             raise ValueError(
                 f"stop_block: '{values['stop_block']}' cannot be less than "
@@ -47,7 +46,6 @@ class _BaseAccountQuery(BaseModel):
 
     @root_validator(pre=True)
     def check_start_nonce_before_stop_nonce(cls, values):
-
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
                 f"stop_nonce: '{values['stop_nonce']}' cannot be less than "
@@ -99,7 +97,7 @@ class QueryAPI(AbstractBaseModel):
         query engine is not available for use or is unable to complete the query.
 
         Args:
-            query (``QueryType``): Query for which execution time will be estimated.
+            query (``QueryType``): Query to estimate.
 
         Returns:
             Optional[int]: Represents milliseconds, returns ``None`` if unable to execute.

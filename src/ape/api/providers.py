@@ -210,10 +210,9 @@ class ReceiptAPI(AbstractBaseModel):
 
     @property
     def provider(self) -> "ProviderAPI":
-
         if self.network_manager.active_provider is None:
             raise AddressError(
-                f"Incorrectly implemented provider API for class {type(self).__name__}"
+                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
 
         return self.network_manager.active_provider
@@ -227,7 +226,6 @@ class ReceiptAPI(AbstractBaseModel):
             bool:  ``True`` when the transaction failed and used the
             same amount of gas as the given ``gas_limit``.
         """
-
         return self.status == TransactionStatusEnum.FAILING and self.gas_used == self.gas_limit
 
     @property
@@ -240,7 +238,6 @@ class ReceiptAPI(AbstractBaseModel):
 
     @property
     def _confirmations_occurred(self) -> int:
-
         latest_block = self.provider.get_block("latest")
         return latest_block.number - self.block_number
 
@@ -251,10 +248,8 @@ class ReceiptAPI(AbstractBaseModel):
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
-
         # Wait for nonce from provider to increment.
         sender_nonce = self.provider.get_nonce(self.sender)
-
         while sender_nonce == self.nonce:  # type: ignore
             time.sleep(1)
             sender_nonce = self.provider.get_nonce(self.sender)
@@ -265,16 +260,13 @@ class ReceiptAPI(AbstractBaseModel):
             return self
 
         confirmations_occurred = self._confirmations_occurred
-
         if confirmations_occurred >= self.required_confirmations:
             return self
 
         # If we get here, that means the transaction has been recently submitted.
         log_message = f"Submitted {self.txn_hash}"
-
         if self._explorer:
             explorer_url = self._explorer.get_transaction_url(self.txn_hash)
-
             if explorer_url:
                 log_message = f"{log_message}\n{self._explorer.name} URL: {explorer_url}"
 
@@ -330,10 +322,7 @@ class BlockAPI(AbstractBaseModel):
 
     @validator("hash", "parent_hash", pre=True)
     def validate_hexbytes(cls, value):
-        """
-        Custom validation method for HexBytes because pydantic treats these
-        values as bytes and throws an error
-        """
+        # NOTE: pydantic treats these values as bytes and throws an error
         assert isinstance(value, HexBytes)
         return value
 
@@ -473,7 +462,6 @@ class ProviderAPI(AbstractBaseModel):
             NotImplementedError: When this provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
         """
-
         raise NotImplementedError("base_fee is not implemented by this provider")
 
     @abstractmethod
@@ -645,13 +633,11 @@ class Web3Provider(ProviderAPI):
     _web3: Web3 = None  # type: ignore
 
     def update_settings(self, new_settings: dict):
-
         self.disconnect()
         self.provider_settings.update(new_settings)
         self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-
         txn_dict = txn.as_dict()
         return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
 
@@ -669,7 +655,6 @@ class Web3Provider(ProviderAPI):
 
     @property
     def base_fee(self) -> int:
-
         block = self.get_block("latest")
 
         if block.gas_data.base_fee is None:
@@ -679,7 +664,6 @@ class Web3Provider(ProviderAPI):
         return block.gas_data.base_fee
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
-
         if isinstance(block_id, str):
             block_id = HexStr(block_id)
 
@@ -702,7 +686,6 @@ class Web3Provider(ProviderAPI):
         return self._web3.eth.call(txn.as_dict())
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
-
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
 
@@ -716,11 +699,9 @@ class Web3Provider(ProviderAPI):
                 **receipt_data,
             }
         )
-
         return receipt.await_confirmations()
 
     def get_events(self, **filter_params) -> Iterator[dict]:
-
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
@@ -734,7 +715,6 @@ class Web3Provider(ProviderAPI):
         receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
         logger.info(f"Confirmed {receipt.txn_hash} (gas_used={receipt.gas_used})")
         self._try_track_receipt(receipt)
-
         return receipt
 
 

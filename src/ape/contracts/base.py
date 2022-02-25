@@ -88,10 +88,9 @@ class ContractCall(ManagerAccessBase):
 
     @property
     def provider(self) -> ProviderAPI:
-
         if self.network_manager.active_provider is None:
             raise AddressError(
-                f"Incorrectly implemented provider API for class {type(self).__name__}"
+                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
 
         return self.network_manager.active_provider
@@ -144,10 +143,9 @@ class ContractCallHandler(ManagerAccessBase):
 
     @property
     def provider(self) -> ProviderAPI:
-
         if self.network_manager.active_provider is None:
             raise AddressError(
-                f"Incorrectly implemented provider API for class {type(self).__name__}"
+                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
 
         return self.network_manager.active_provider
@@ -217,10 +215,9 @@ class ContractTransaction(ManagerAccessBase):
 
     @property
     def provider(self) -> ProviderAPI:
-
         if self.network_manager.active_provider is None:
             raise AddressError(
-                f"Incorrectly implemented provider API for class {type(self).__name__}"
+                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
 
         return self.network_manager.active_provider
@@ -266,10 +263,9 @@ class ContractTransactionHandler(ManagerAccessBase):
 
     @property
     def provider(self) -> ProviderAPI:
-
         if self.network_manager.active_provider is None:
             raise AddressError(
-                f"Incorrectly implemented provider API for class {type(self).__name__}"
+                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
 
         return self.network_manager.active_provider
@@ -296,10 +292,9 @@ class ContractEvent(ManagerAccessBase):
 
     @property
     def provider(self) -> ProviderAPI:
-
         if self.network_manager.active_provider is None:
             raise AddressError(
-                f"Incorrectly implemented provider API for class {type(self).__name__}"
+                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
 
         return self.network_manager.active_provider
@@ -480,10 +475,9 @@ class ContractContainer(ManagerAccessBase):
 
     @property
     def provider(self) -> ProviderAPI:
-
         if self.network_manager.active_provider is None:
             raise AddressError(
-                f"Incorrectly implemented provider API for class {type(self).__name__}"
+                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
 
         return self.network_manager.active_provider

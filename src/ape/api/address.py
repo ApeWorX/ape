@@ -24,10 +24,9 @@ class AddressBase(AbstractBase):
         Returns:
             :class:`~ape.api.providers.ProviderAPI`
         """
-
         if self.network_manager.active_provider is None:
             raise AddressError(
-                f"Incorrectly implemented provider API for class {type(self).__name__}"
+                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
 
         return self.network_manager.active_provider
