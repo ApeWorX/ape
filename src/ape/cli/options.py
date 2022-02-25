@@ -25,7 +25,6 @@ class ApeCliContextObject(ManagerAccessBase):
 
     def __init__(self):
         self.logger = logger
-        self._project = None
 
     @staticmethod
     def abort(msg: str, base_error: Exception = None):
