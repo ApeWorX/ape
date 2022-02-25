@@ -74,7 +74,7 @@ class ApeProject(ProjectAPI):
                 config_data["name"] = self.name
             if self.version:
                 config_data["version"] = self.version
-            if self.contracts_folder != "contracts":
+            if self.contracts_folder.name != "contracts":
                 # Only sets when not default.
                 config_data["contracts_folder"] = self.contracts_folder.name
             if config_data:
