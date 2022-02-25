@@ -46,7 +46,7 @@ class EcosystemAPI(AbstractBaseModel):
         Serialize a transaction to bytes.
 
         Args:
-            transaction (:class:`~ape.api.TransactionAPI`): The transaction to encode.
+            transaction (:class:`~ape.api.providers.TransactionAPI`): The transaction to encode.
 
         Returns:
             bytes
@@ -55,25 +55,25 @@ class EcosystemAPI(AbstractBaseModel):
     @abstractmethod
     def decode_receipt(self, data: dict) -> "ReceiptAPI":
         """
-        Convert data to :class:`~ape.api.ReceiptAPI`.
+        Convert data to :class:`~ape.api.providers.ReceiptAPI`.
 
         Args:
             data (dict): A dictionary of Receipt properties.
 
         Returns:
-            :class:`~ape.api.ReceiptAPI`
+            :class:`~ape.api.providers.ReceiptAPI`
         """
 
     @abstractmethod
     def decode_block(self, data: dict) -> "BlockAPI":
         """
-        Decode data to a :class:`~ape.api.BlockAPI`.
+        Decode data to a :class:`~ape.api.providers.BlockAPI`.
 
         Args:
             data (dict): A dictionary of data to decode.
 
         Returns:
-            :class:`~ape.api.BlockAPI`
+            :class:`~ape.api.providers.BlockAPI`
         """
 
     @cached_property
@@ -116,7 +116,6 @@ class EcosystemAPI(AbstractBaseModel):
             raise NetworkError("No networks found")
 
     def __post_init__(self):
-
         if len(self.networks) == 0:
             raise NetworkError("Must define at least one network in ecosystem")
 
@@ -134,7 +133,6 @@ class EcosystemAPI(AbstractBaseModel):
         Returns:
             :class:`~ape.api.networks.NetworkAPI`
         """
-
         return self._try_get_network(network_name)
 
     def __getattr__(self, network_name: str) -> "NetworkAPI":
@@ -156,7 +154,6 @@ class EcosystemAPI(AbstractBaseModel):
         Returns:
             :class:`~ape.api.networks.NetworkAPI`
         """
-
         network_name = network_name.replace("_", "-")
         return self._try_get_network(network_name)
 
@@ -173,7 +170,6 @@ class EcosystemAPI(AbstractBaseModel):
         Returns:
             :class:`~ape.api.networks.NetworkAPI`
         """
-
         if network_name in self.networks:
             raise NetworkError(f"Unable to overwrite existing network '{network_name}'.")
         else:
@@ -187,7 +183,6 @@ class EcosystemAPI(AbstractBaseModel):
         Returns:
             str
         """
-
         return self._default_network
 
     def set_default_network(self, network_name: str):
@@ -200,10 +195,8 @@ class EcosystemAPI(AbstractBaseModel):
         Args:
             network_name (str): The name of the default network to switch to.
         """
-
         if network_name in self.networks:
             self._default_network = network_name
-
         else:
             message = f"'{network_name}' is not a valid network for ecosystem '{self.name}'."
             raise NetworkError(message)
@@ -231,7 +224,6 @@ class EcosystemAPI(AbstractBaseModel):
     def _try_get_network(self, network_name):
         if network_name in self.networks:
             return self.networks[network_name]
-
         else:
             raise NetworkNotFoundError(network_name)
 
@@ -248,7 +240,6 @@ class EcosystemAPI(AbstractBaseModel):
         Returns:
             dict: A dictionary containing the providers in a network.
         """
-
         data: Dict[str, Any] = {"name": network_name}
 
         # Only add isDefault key when True
