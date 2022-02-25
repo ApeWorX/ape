@@ -140,8 +140,8 @@ class GethProvider(Web3Provider, UpstreamProvider):
     @property
     def uri(self) -> str:
         ecosystem_config = getattr(self.config, self.network.ecosystem.name)
-        network_config = ecosystem_config.get(self.network.name, DEFAULT_SETTINGS)
-        return network_config.get("uri", DEFAULT_SETTINGS["uri"])
+        network_config = ecosystem_config.get(self.network.name) or DEFAULT_SETTINGS
+        return network_config.get("uri") or DEFAULT_SETTINGS["uri"]
 
     @property
     def connection_str(self) -> str:
