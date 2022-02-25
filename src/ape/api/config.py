@@ -32,9 +32,9 @@ class PluginConfig(BaseSettings):
         return getattr(self, attr_name)
 
 
-class UnprocessedConfig(PluginConfig):
+class GenericConfig(PluginConfig):
     """
-    The default class used when no specialized class is used
+    The default class used when no specialized class is used.
     """
 
     __root__: dict = {}
