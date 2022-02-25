@@ -58,7 +58,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def send_call(self, txn: TransactionAPI) -> bytes:
 
-        data = txn.dict(exclude_none=True, by_alias=True)
+        data = txn.dict()
 
         if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)
