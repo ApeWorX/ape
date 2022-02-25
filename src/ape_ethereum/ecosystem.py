@@ -205,7 +205,7 @@ class Ethereum(EcosystemAPI):
             logs=data.get("logs"),
             contract_address=data.get("contractAddress"),
             sender=data["from"],
-            receiver=data["to"],
+            receiver=data["to"] or "",
             nonce=data.get("nonce"),
         )
 
