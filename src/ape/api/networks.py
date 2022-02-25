@@ -562,7 +562,7 @@ class NetworkAPI(AbstractBaseModel):
         if self._default_provider:
             return self._default_provider
 
-        if len(self.providers):
+        if len(self.providers) > 0:
             return list(self.providers)[0]
 
         return None
