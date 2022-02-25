@@ -30,7 +30,6 @@ class Alias(click.Choice):
 
     name = "alias"
 
-    # noinspection PyMissingConstructor
     def __init__(self, account_type: Optional[Type[AccountAPI]] = None):
 
         # NOTE: we purposely skip the constructor of `Choice`
@@ -121,7 +120,6 @@ class AccountAliasPromptChoice(PromptChoice):
     Useful for adhoc scripts to lessen the need to hard-code aliases.
     """
 
-    # noinspection PyMissingConstructor
     def __init__(self, account_type: Optional[Type[AccountAPI]] = None, prompt_message: str = None):
 
         # NOTE: we purposely skip the constructor of `PromptChoice`
