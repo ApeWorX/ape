@@ -31,10 +31,9 @@ class ContractConstructor(ManagerAccessMixin):
         self.abi = abi
         self.provider = provider
 
-    def __post_init__(cls, value):
-        if not value:
+        if not self.deployment_bytecode:
             logger.warning("Deploying an empty contract (no bytecode)")
-            return b""
+            self.deployment_bytecode = HexBytes("")
 
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
@@ -426,12 +425,11 @@ class ContractInstance(AddressBase):
             name = self._contract_type.name or self.__class__.__name__
             raise AttributeError(f"'{name}' has no attribute '{attr_name}'.")
 
-        elif any(
-            (
-                attr_name in self._view_methods_,
-                attr_name in self._mutable_methods_,
-                attr_name in self._events_,
-            )
+        elif (
+            int(attr_name in self._view_methods_)
+            + int(attr_name in self._mutable_methods_)
+            + int(attr_name in self._events_)
+            > 1
         ):
             # ABI should not contain a mix of events, mutable and view methods that match
             # NOTE: `__getattr__` *must* raise `AttributeError`

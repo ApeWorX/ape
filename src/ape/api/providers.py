@@ -323,7 +323,8 @@ class BlockAPI(AbstractBaseModel):
     @validator("hash", "parent_hash", pre=True)
     def validate_hexbytes(cls, value):
         # NOTE: pydantic treats these values as bytes and throws an error
-        assert isinstance(value, HexBytes)
+        if not isinstance(value, HexBytes):
+            raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
         return value
 
 
