@@ -88,7 +88,6 @@ class ProjectAPI(AbstractBaseModel):
 
     @property
     def _cache_folder(self) -> Path:
-
         folder = self.path / ".build"
         # NOTE: If we use the cache folder, we expect it to exist
         folder.mkdir(exist_ok=True, parents=True)
@@ -104,7 +103,6 @@ class ProjectAPI(AbstractBaseModel):
         version: Optional[str] = None,
         initial_manifest: Optional[PackageManifest] = None,
     ) -> PackageManifest:
-
         manifest = initial_manifest or PackageManifest()
 
         if name:
@@ -121,7 +119,6 @@ class ProjectAPI(AbstractBaseModel):
     def _create_source_dict(
         cls, contracts_paths: Collection[Path], base_path: Path
     ) -> Dict[str, Source]:
-
         return {
             str(get_relative_path(source, base_path)): Source(  # type: ignore
                 checksum=Checksum(  # type: ignore
@@ -176,9 +173,7 @@ class DependencyAPI(AbstractBaseModel):
 
     @property
     def _target_manifest_cache_file(self) -> Path:
-
         version_id = self.version_id
-
         if isinstance(
             version_util.parse(version_id), version_util.Version
         ) and not version_id.startswith("v"):
@@ -208,11 +203,9 @@ class DependencyAPI(AbstractBaseModel):
         The manifest from the ``.ape/packages/<dependency-name>/<version-id>``
         if it exists and is valid.
         """
-
         return _load_manifest_from_file(self._target_manifest_cache_file)
 
     def _extract_local_manifest(self, project_path: Path):
-
         contracts_folder = project_path / self.contracts_folder
         project = self.project_manager.get_project(
             project_path,
