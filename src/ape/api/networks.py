@@ -336,7 +336,7 @@ class NetworkAPI(AbstractBaseModel):
     request_header: dict
     """A shareable network HTTP header."""
 
-    _default_provider: Optional[str] = ""
+    _default_provider: str = ""
 
     @cached_property
     def config(self) -> PluginConfig:
