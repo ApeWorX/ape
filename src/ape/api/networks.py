@@ -317,6 +317,7 @@ class ProviderContextManager:
         # Put our providers back the way it was
         provider = self._connected_providers.pop()
 
+        # NOTE: using id() to prevent pydantic recursive serialization
         if id(self.provider) != id(provider):
             raise ValueError("Previous provider value unknown.")
 
