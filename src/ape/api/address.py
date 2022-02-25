@@ -47,9 +47,8 @@ class AddressBase(AbstractBase):
             bool: comparison result
         """
 
-        return self.conversion_manager.convert(
-            self, AddressType
-        ) == self.conversion_manager.convert(other, AddressType)
+        convert = self.conversion_manager.convert
+        return convert(self, AddressType) == convert(other, AddressType)
 
     def __dir__(self) -> List[str]:
         """
