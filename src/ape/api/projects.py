@@ -158,8 +158,6 @@ class DependencyAPI(AbstractBaseModel):
     A list of glob-patterns for excluding files in dependency projects.
     """
 
-    _data_folder: Path
-
     def __repr__(self):
         return f"<{self.__class__.__name__} name='{self.name}'>"
 
