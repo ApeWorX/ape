@@ -41,7 +41,7 @@ class AddressBase(AbstractBase):
 
     def __eq__(self, other: object) -> bool:
         """
-        Compares :class:`~ape.api.AddressBase`/``str`` objects by converting to ``AddressType``.
+        Compares :class:`~ape.api.AddressBase` / ``str`` objects by converting to ``AddressType``.
 
         Returns:
             bool: comparison result
@@ -57,7 +57,6 @@ class AddressBase(AbstractBase):
         Returns:
             List[str]: Method names that IPython uses for tab completion.
         """
-
         return [
             "address",
             "balance",
@@ -69,7 +68,6 @@ class AddressBase(AbstractBase):
         ]
 
     def __repr__(self) -> str:
-
         return f"<{self.__class__.__name__} {self.address}>"
 
     def __str__(self) -> str:
@@ -79,7 +77,6 @@ class AddressBase(AbstractBase):
         Returns:
             str: The stringified address.
         """
-
         return self.address
 
     @property

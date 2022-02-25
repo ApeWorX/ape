@@ -44,7 +44,6 @@ class ApeCLI(click.MultiCommand):
             if logger.level == LogLevel.DEBUG.value:
                 tb = traceback.format_exc()
                 err_message = tb or str(err)
-
             else:
                 err_message = str(err)
 
@@ -56,7 +55,6 @@ class ApeCLI(click.MultiCommand):
             raise usage_error
 
         match = re.match("No such command '(.*)'.", usage_error.message)
-
         if not match:
             raise usage_error
 

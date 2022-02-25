@@ -229,7 +229,6 @@ class AccountAPI(AbstractBaseModel, AddressBase):
                 raise ValueError(
                     "Parameter 'signature' required when verifying a 'SignableMessage'."
                 )
-
         elif isinstance(data, TransactionAPI):
             return self.address == Account.recover_transaction(data.serialize_transaction())
         else:
@@ -371,7 +370,6 @@ class AccountContainerAPI(AbstractBaseModel):
             raise AccountsError(message)
 
     def _verify_unused_alias(self, account):
-
         if account.alias and account.alias in self.aliases:
             raise AliasAlreadyInUseError(account.alias)
 
