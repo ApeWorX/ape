@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
-from pydantic import validator
 from pydantic.dataclasses import dataclass
 
 from ape.api import Address, ProviderAPI, ReceiptAPI, TransactionAPI
@@ -32,15 +31,10 @@ class ContractConstructor(ManagerAccessBase):
         self.abi = abi
         self.provider = provider
 
-    @validator("deployment_bytecode")
-    def check_empty_contract(cls, value):
-
+    def __post_init__(cls, value):
         if not value:
             logger.warning("Deploying an empty contract (no bytecode)")
             return b""
-
-        assert isinstance(value, HexBytes)
-        return value
 
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
