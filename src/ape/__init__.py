@@ -3,7 +3,7 @@ import signal
 signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
 
 import sys as _sys
-from functools import partial
+from functools import partial as _partial
 
 from ape.utils import ManagerAccessBase as _ManagerAccessBase
 
@@ -44,7 +44,7 @@ accounts = _ManagerAccessBase.account_manager
 project = _ManagerAccessBase.project_manager
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
-Contract = partial(_Contract, networks=networks, converters=_converters)
+Contract = _partial(_Contract, networks=networks, converters=_converters)
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 
 convert = _ManagerAccessBase.conversion_manager.convert
