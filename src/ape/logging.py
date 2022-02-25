@@ -23,7 +23,7 @@ DEFAULT_LOG_LEVEL = LogLevel.INFO.name
 
 def success(self, message, *args, **kws):
     """
-    This method gets injecting into python's `logging` module
+    This method gets injected into python's `logging` module
     to handle logging at this level.
     """
 
@@ -55,7 +55,7 @@ CLICK_ECHO_KWARGS = {
 # Borrowed from `click._compat`.
 def _isatty(stream: IO) -> bool:
     """
-    Returns ``True`` if the stream is part of tty.
+    Returns ``True`` if the stream is part of a tty.
     Borrowed from ``click._compat``.
     """
     # noinspection PyBroadException
