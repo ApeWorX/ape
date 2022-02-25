@@ -706,7 +706,7 @@ class ProjectManager(BaseManager):
     #     TODO: Publish to IPFS
 
 
-class _DependencyManager(ManagerAccessMixin):
+class DependencyManager(ManagerAccessMixin):
     DATA_FOLDER: Path
 
     def __init__(self, data_folder: Path):

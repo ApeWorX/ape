@@ -9,7 +9,7 @@ from .compilers import CompilerManager
 from .config import ConfigManager
 from .converters import ConversionManager
 from .networks import NetworkManager
-from .project import ProjectManager, _DependencyManager
+from .project import DependencyManager, ProjectManager
 from .query import QueryManager
 
 # Wiring together the application
@@ -18,7 +18,7 @@ _project_folder = _Path.cwd()
 
 ManagerAccessMixin.plugin_manager = PluginManager()
 
-ManagerAccessMixin.dependency_manager = _DependencyManager(data_folder=_data_folder)
+ManagerAccessMixin.dependency_manager = DependencyManager(data_folder=_data_folder)
 
 ManagerAccessMixin.config_manager = ConfigManager(
     # Store all globally-cached files

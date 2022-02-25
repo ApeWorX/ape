@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from ape.managers.config import ConfigManager
     from ape.managers.converters import ConversionManager
     from ape.managers.networks import NetworkManager
-    from ape.managers.project import ProjectManager, _DependencyManager
+    from ape.managers.project import DependencyManager, ProjectManager
     from ape.managers.query import QueryManager
     from ape.plugins import PluginManager
 
@@ -582,37 +582,18 @@ class ManagerAccessMixin:
     chain_manager: ClassVar["ChainManager"] = cast("ChainManager", injected_before_use())
 
     compiler_manager: ClassVar["CompilerManager"] = cast("CompilerManager", injected_before_use())
-    """
-    The group of compiler plugins for compiling source files. See
-    :class:`~ape.managers.compilers.CompilerManager` for more information.
-    Call method :meth:`~ape.managers.project.ProjectManager.load_contracts` in this class
-    to more easily compile sources.
-    """
 
     config_manager: ClassVar["ConfigManager"] = cast("ConfigManager", injected_before_use())
-    """
-    A reference to :class:`~ape.managers.config.ConfigManager`, which
-    manages project and plugin configurations.
-    """
 
     conversion_manager: ClassVar["ConversionManager"] = cast(
         "ConversionManager", injected_before_use()
     )
-    """
-    A reference to the conversion utilities in
-    :class:`~ape.managers.converters.ConversionManager`.
-    """
 
-    dependency_manager: ClassVar["_DependencyManager"] = cast(
-        "_DependencyManager", injected_before_use()
+    dependency_manager: ClassVar["DependencyManager"] = cast(
+        "DependencyManager", injected_before_use()
     )
 
     network_manager: ClassVar["NetworkManager"] = cast("NetworkManager", injected_before_use())
-    """
-    The manager of networks, :class:`~ape.managers.networks.NetworkManager`.
-    To get the active provide, use
-    :py:attr:`ape.managers.networks.NetworkManager.active_provider`.
-    """
 
     plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
 
