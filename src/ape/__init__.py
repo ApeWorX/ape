@@ -17,7 +17,6 @@ plugin_manager = _ManagerAccessBase.plugin_manager
 
 config = _ManagerAccessBase.config_manager
 """The active configs for the current project. See :class:`ape.managers.config.ConfigManager`.
-# NOTE: config is an injected property.
 """
 
 # Main types we export for the user

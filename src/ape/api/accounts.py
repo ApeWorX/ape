@@ -27,6 +27,7 @@ class AccountAPI(AbstractBaseModel, AddressBase):
     def __dir__(self) -> List[str]:
         """
         Display methods to IPython on ``a.[TAB]`` tab completion.
+
         Returns:
             List[str]: Method names that IPython uses for tab completion.
         """
@@ -90,21 +91,18 @@ class AccountAPI(AbstractBaseModel, AddressBase):
         Returns:
             :class:`~ape.api.providers.ReceiptAPI`
         """
-
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
         txn.chain_id = self.provider.network.chain_id
 
         # NOTE: Allow overriding nonce, assume user understand what this does
         if txn.nonce is None:
             txn.nonce = self.nonce
-
         elif txn.nonce < self.nonce:
             raise AccountsError("Invalid nonce, will not publish.")
 
         txn_type = TransactionType(txn.type)
         if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
             txn.gas_price = self.provider.gas_price  # type: ignore
-
         elif txn_type == TransactionType.DYNAMIC:
             if txn.max_priority_fee is None:  # type: ignore
                 txn.max_priority_fee = self.provider.priority_fee  # type: ignore
@@ -119,7 +117,7 @@ class AccountAPI(AbstractBaseModel, AddressBase):
 
         if send_everything:
             if txn.max_fee is None:
-                raise TransactionError(message="Max fee must not be null.")
+                raise TransactionError(message="Max fee must not be None.")
 
             txn.value = self.balance - txn.max_fee
 
@@ -132,7 +130,6 @@ class AccountAPI(AbstractBaseModel, AddressBase):
 
         if txn.required_confirmations is None:
             txn.required_confirmations = self.provider.network.required_confirmations
-
         elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
             raise TransactionError(message="'required_confirmations' must be a positive integer.")
 
@@ -225,11 +222,9 @@ class AccountAPI(AbstractBaseModel, AddressBase):
         Returns:
             bool: ``True`` if the data was signed by this account. ``False`` otherwise.
         """
-
         if isinstance(data, SignableMessage):
             if signature:
                 return self.address == Account.recover_message(data, vrs=signature)
-
             else:
                 raise ValueError(
                     "Parameter 'signature' required when verifying a 'SignableMessage'."
@@ -290,7 +285,6 @@ class AccountContainerAPI(AbstractBaseModel):
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
-
         for account in self.accounts:
             if account.address == address:
                 return account
@@ -307,7 +301,6 @@ class AccountContainerAPI(AbstractBaseModel):
         Args:
             account (:class:`~ape.api.accounts.AccountAPI`): The account to add.
         """
-
         self._verify_account_type(account)
 
         if account.address in self.accounts:
@@ -330,7 +323,6 @@ class AccountContainerAPI(AbstractBaseModel):
         Args:
             account (:class:`~ape.accounts.AccountAPI`): The account to remove.
         """
-
         self._verify_account_type(account)
 
         if account.address not in self.accounts:
@@ -348,7 +340,6 @@ class AccountContainerAPI(AbstractBaseModel):
         Args:
             address (``AddressType``): The address of the account to delete.
         """
-
         raise NotImplementedError("Must define this method to use `container.remove(acct)`.")
 
     def __contains__(self, address: AddressType) -> bool:
@@ -364,7 +355,6 @@ class AccountContainerAPI(AbstractBaseModel):
         Returns:
             bool: ``True`` if ``ape`` manages the account with the given address.
         """
-
         try:
             self.__getitem__(address)
             return True
@@ -373,7 +363,6 @@ class AccountContainerAPI(AbstractBaseModel):
             return False
 
     def _verify_account_type(self, account):
-
         if not isinstance(account, self.account_type):
             message = (
                 f"Container '{type(account).__name__}' is an incorrect "
