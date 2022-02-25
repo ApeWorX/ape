@@ -36,7 +36,7 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
     """
 
     if not file_paths and cli_ctx.project_manager.sources_missing:
-        contracts_dir = cli_ctx.project_manager.config_manager.contracts_folder
+        contracts_dir = cli_ctx.config_manager.contracts_folder
         cli_ctx.logger.warning(f"No source files found in '{contracts_dir}'.")
         return
 
