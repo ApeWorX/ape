@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance
 
 
-# NOTE: AddressBase is an AbstractBaseModel already
 class AccountAPI(AbstractBaseModel, AddressBase):
     """
     An API class representing an account.
