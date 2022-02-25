@@ -12,7 +12,7 @@ from ape.exceptions import ConversionError
 from ape.types import AddressType
 from ape.utils import cached_property
 
-from .base import ManagerBase
+from .base import BaseManager
 
 
 # NOTE: This utility converter ensures that all bytes args can accept hex too
@@ -167,7 +167,7 @@ class TimestampConverter(ConverterAPI):
             raise ConversionError
 
 
-class ConversionManager(ManagerBase):
+class ConversionManager(BaseManager):
     """
     A singleton that manages all the converters.
 

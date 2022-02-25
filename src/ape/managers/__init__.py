@@ -1,7 +1,7 @@
 from pathlib import Path as _Path
 
 from ape.plugins import PluginManager
-from ape.utils import USER_AGENT, ManagerAccessBase
+from ape.utils import USER_AGENT, ManagerAccessMixin
 
 from .accounts import AccountManager
 from .chain import ChainManager
@@ -16,11 +16,11 @@ from .query import QueryManager
 _data_folder = _Path.home().joinpath(".ape")
 _project_folder = _Path.cwd()
 
-ManagerAccessBase.plugin_manager = PluginManager()
+ManagerAccessMixin.plugin_manager = PluginManager()
 
-ManagerAccessBase.dependency_manager = _DependencyManager(data_folder=_data_folder)
+ManagerAccessMixin.dependency_manager = _DependencyManager(data_folder=_data_folder)
 
-ManagerAccessBase.config_manager = ConfigManager(
+ManagerAccessMixin.config_manager = ConfigManager(
     # Store all globally-cached files
     DATA_FOLDER=_data_folder,
     # NOTE: For all HTTP requests we make
@@ -31,16 +31,16 @@ ManagerAccessBase.config_manager = ConfigManager(
     PROJECT_FOLDER=_project_folder,
 )
 
-ManagerAccessBase.compiler_manager = CompilerManager()
+ManagerAccessMixin.compiler_manager = CompilerManager()
 
-ManagerAccessBase.network_manager = NetworkManager()
+ManagerAccessMixin.network_manager = NetworkManager()
 
-ManagerAccessBase.query_manager = QueryManager()
+ManagerAccessMixin.query_manager = QueryManager()
 
-ManagerAccessBase.conversion_manager = ConversionManager()
+ManagerAccessMixin.conversion_manager = ConversionManager()
 
-ManagerAccessBase.chain_manager = ChainManager()
+ManagerAccessMixin.chain_manager = ChainManager()
 
-ManagerAccessBase.account_manager = AccountManager()
+ManagerAccessMixin.account_manager = AccountManager()
 
-ManagerAccessBase.project_manager = ProjectManager(path=_project_folder)
+ManagerAccessMixin.project_manager = ProjectManager(path=_project_folder)

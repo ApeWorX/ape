@@ -1,7 +1,7 @@
-from ape.utils import ManagerAccessBase
+from ape.utils import ManagerAccessMixin
 
 
-class ManagerBase(ManagerAccessBase):
+class BaseManager(ManagerAccessMixin):
     """
-    Manager base that allows us to add other IPython integration features
+    Base manager that allows us to add other IPython integration features
     """

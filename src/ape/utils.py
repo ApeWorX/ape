@@ -574,7 +574,7 @@ class injected_before_use(property):
         raise ValueError("Value not set. Please inject this property before calling.")
 
 
-class ManagerAccessBase:
+class ManagerAccessMixin:
 
     # NOTE: cast is used to update the class type returned to mypy
     account_manager: ClassVar["AccountManager"] = cast("AccountManager", injected_before_use())
@@ -621,7 +621,7 @@ class ManagerAccessBase:
     query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
 
 
-class AbstractBase(ManagerAccessBase, ABC):
+class AbstractBase(ManagerAccessMixin, ABC):
     """
     Abstract class that has manager access.
     """

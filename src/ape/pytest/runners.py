@@ -3,12 +3,12 @@ from _pytest.config import Config as PytestConfig
 
 import ape
 from ape.logging import logger
-from ape.utils import ManagerAccessBase
+from ape.utils import ManagerAccessMixin
 
 from .contextmanagers import RevertsContextManager
 
 
-class PytestApeRunner(ManagerAccessBase):
+class PytestApeRunner(ManagerAccessMixin):
     def __init__(self, pytest_config: PytestConfig):
 
         self.pytest_config = pytest_config

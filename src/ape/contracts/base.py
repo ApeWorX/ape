@@ -16,14 +16,14 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType
-from ape.utils import ManagerAccessBase, cached_property
+from ape.utils import ManagerAccessMixin, cached_property
 
 if TYPE_CHECKING:
     from ape.managers.converters import ConversionManager
     from ape.managers.networks import NetworkManager
 
 
-class ContractConstructor(ManagerAccessBase):
+class ContractConstructor(ManagerAccessMixin):
     def __init__(
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, provider: ProviderAPI
     ) -> None:
@@ -68,7 +68,7 @@ class ContractConstructor(ManagerAccessBase):
         return self.provider.send_transaction(txn)
 
 
-class ContractCall(ManagerAccessBase):
+class ContractCall(ManagerAccessMixin):
     def __init__(self, abi: MethodABI, address: AddressType) -> None:
         super().__init__()
         self.abi = abi
@@ -121,7 +121,7 @@ class ContractCall(ManagerAccessBase):
         return tuple_output
 
 
-class ContractCallHandler(ManagerAccessBase):
+class ContractCallHandler(ManagerAccessMixin):
 
     contract: "ContractInstance"
     abis: List[MethodABI]
@@ -178,7 +178,7 @@ def _select_abi(abis, args):
     return selected_abi
 
 
-class ContractTransaction(ManagerAccessBase):
+class ContractTransaction(ManagerAccessMixin):
 
     abi: MethodABI
     address: AddressType
@@ -226,7 +226,7 @@ class ContractTransaction(ManagerAccessBase):
         raise TransactionError(message="Must specify a `sender`.")
 
 
-class ContractTransactionHandler(ManagerAccessBase):
+class ContractTransactionHandler(ManagerAccessMixin):
     def __init__(self, contract: "ContractInstance", abis: List[MethodABI]) -> None:
         super().__init__()
         self.contract = contract
@@ -272,7 +272,7 @@ class ContractLog:
     data: Dict[str, Any]
 
 
-class ContractEvent(ManagerAccessBase):
+class ContractEvent(ManagerAccessMixin):
     def __init__(
         self,
         contract: "ContractInstance",
@@ -448,7 +448,7 @@ class ContractInstance(AddressBase):
         return handler
 
 
-class ContractContainer(ManagerAccessBase):
+class ContractContainer(ManagerAccessMixin):
     """
     A wrapper around the contract type that has access to the provider.
     When you import your contracts from the :class:`ape.managers.project.ProjectManager`, you

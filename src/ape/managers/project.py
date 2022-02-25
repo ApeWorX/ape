@@ -14,9 +14,9 @@ from ape.api.projects import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import logger
-from ape.utils import ManagerAccessBase, cached_property, get_relative_path, github_client
+from ape.utils import ManagerAccessMixin, cached_property, get_relative_path, github_client
 
-from .base import ManagerBase
+from .base import BaseManager
 from .config import CONFIG_FILE_NAME
 
 
@@ -248,7 +248,7 @@ class GithubDependency(DependencyAPI):
             return self._extract_local_manifest(temp_project_path)
 
 
-class ProjectManager(ManagerBase):
+class ProjectManager(BaseManager):
     """
     A manager for accessing contract-types, dependencies, and other project resources.
     Additionally, compile contracts using the
@@ -706,7 +706,7 @@ class ProjectManager(ManagerBase):
     #     TODO: Publish to IPFS
 
 
-class _DependencyManager(ManagerAccessBase):
+class _DependencyManager(ManagerAccessMixin):
     DATA_FOLDER: Path
 
     def __init__(self, data_folder: Path):

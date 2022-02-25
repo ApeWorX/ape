@@ -5,10 +5,10 @@ import yaml
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.exceptions import ConfigError, NetworkError
 
-from .base import ManagerBase
+from .base import BaseManager
 
 
-class NetworkManager(ManagerBase):
+class NetworkManager(BaseManager):
     """
     The set of all blockchain network ecosystems registered from the plugin system.
     Typically, you set the provider via the ``--network`` command line option.

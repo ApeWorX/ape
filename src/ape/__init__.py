@@ -5,48 +5,48 @@ signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
 import sys as _sys
 from functools import partial as _partial
 
-from ape.utils import ManagerAccessBase as _ManagerAccessBase
+from ape.utils import ManagerAccessMixin as _ManagerAccessMixin
 
 from .contracts import _Contract
 from .managers.project import ProjectManager as Project
 
 # Wiring together the application
 
-plugin_manager = _ManagerAccessBase.plugin_manager
+plugin_manager = _ManagerAccessMixin.plugin_manager
 """Manages plugins for the current project. See :class:`ape.plugins.PluginManager`."""
 
-config = _ManagerAccessBase.config_manager
+config = _ManagerAccessMixin.config_manager
 """The active configs for the current project. See :class:`ape.managers.config.ConfigManager`.
 """
 
 # Main types we export for the user
-compilers = _ManagerAccessBase.compiler_manager
+compilers = _ManagerAccessMixin.compiler_manager
 """Manages compilers for the current project. See
 :class:`ape.managers.compilers.CompilerManager`."""
 
-networks = _ManagerAccessBase.network_manager
+networks = _ManagerAccessMixin.network_manager
 """Manages the networks for the current project. See
 :class:`ape.managers.networks.NetworkManager`."""
 
-_converters = _ManagerAccessBase.conversion_manager
+_converters = _ManagerAccessMixin.conversion_manager
 
-chain = _ManagerAccessBase.chain_manager
+chain = _ManagerAccessMixin.chain_manager
 """
 The current connected blockchain; requires an active provider.
 Useful for development purposes, such as controlling the state of the blockchain.
 Also handy for querying data about the chain and managing local caches.
 """
 
-accounts = _ManagerAccessBase.account_manager
+accounts = _ManagerAccessMixin.account_manager
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
-project = _ManagerAccessBase.project_manager
+project = _ManagerAccessMixin.project_manager
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
 Contract = _partial(_Contract, networks=networks, converters=_converters)
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 
-convert = _ManagerAccessBase.conversion_manager.convert
+convert = _ManagerAccessMixin.conversion_manager.convert
 """Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
 
 __all__ = [

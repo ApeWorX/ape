@@ -11,7 +11,7 @@ from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.utils import load_config
 
-from .base import ManagerBase
+from .base import BaseManager
 
 if TYPE_CHECKING:
     from .project import ProjectManager
@@ -26,7 +26,7 @@ class DeploymentConfig(PluginConfig):
     contract_type: str
 
 
-class ConfigManager(ManagerBase, BaseModel):
+class ConfigManager(BaseManager, BaseModel):
     """
     The singleton responsible for managing the ``ape-config.yaml`` project file.
     The config manager is useful for loading plugin configurations which contain

@@ -5,10 +5,10 @@ import pytest
 from ape.api import TestAccountAPI
 from ape.managers.chain import ChainManager
 from ape.managers.project import ProjectManager
-from ape.utils import ManagerAccessBase
+from ape.utils import ManagerAccessMixin
 
 
-class PytestApeFixtures(ManagerAccessBase):
+class PytestApeFixtures(ManagerAccessMixin):
     @pytest.fixture(scope="session")
     def accounts(self) -> List[TestAccountAPI]:
         return self.account_manager.test_accounts

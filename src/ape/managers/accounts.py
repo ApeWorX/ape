@@ -4,10 +4,10 @@ from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.types import AddressType
 from ape.utils import cached_property, singledispatchmethod
 
-from .base import ManagerBase
+from .base import BaseManager
 
 
-class AccountManager(ManagerBase):
+class AccountManager(BaseManager):
     """
     The ``AccountManager`` is a container of containers for
     :class:`~ape.api.accounts.AccountAPI` objects.

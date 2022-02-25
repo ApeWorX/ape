@@ -11,10 +11,10 @@ from ape.logging import logger
 from ape.types import AddressType, BlockID, SnapshotID
 from ape.utils import cached_property
 
-from .base import ManagerBase
+from .base import BaseManager
 
 
-class _ConnectedChain(ManagerBase):
+class _ConnectedChain(BaseManager):
     @property
     def provider(self) -> ProviderAPI:
         if not self.network_manager.active_provider:

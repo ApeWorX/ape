@@ -5,10 +5,10 @@ import pandas as pd
 from ape.api import QueryAPI, QueryType
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
-from ape.utils import ManagerAccessBase, cached_property
+from ape.utils import ManagerAccessMixin, cached_property
 
 
-class QueryManager(ManagerAccessBase):
+class QueryManager(ManagerAccessMixin):
     """
     A singleton that manages query engines and performs queries.
 

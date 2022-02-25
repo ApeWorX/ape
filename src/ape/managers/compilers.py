@@ -7,7 +7,7 @@ from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
 
-from .base import ManagerBase
+from .base import BaseManager
 
 
 def _get_contract_path(path: Path, base_path: Path):
@@ -17,7 +17,7 @@ def _get_contract_path(path: Path, base_path: Path):
         return path
 
 
-class CompilerManager(ManagerBase):
+class CompilerManager(BaseManager):
     """
     The singleton that manages :class:`~ape.api.compiler.CompilerAPI` instances.
     Each compiler plugin typically contains a single :class:`~ape.api.compiler.CompilerAPI`.
