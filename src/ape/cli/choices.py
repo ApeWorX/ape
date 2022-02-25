@@ -4,14 +4,17 @@ from typing import Any, List, Optional, Type
 import click
 from click import Choice, Context, Parameter
 
-from ape import accounts, networks
+from ape import accounts as account_manager
+from ape import networks
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AccountsError
 
 
 def _get_account_by_type(account_type: Optional[Type[AccountAPI]] = None) -> List[AccountAPI]:
     account_list = (
-        list(accounts.accounts) if not account_type else accounts.get_accounts_by_type(account_type)
+        list(account_manager.accounts)
+        if not account_type
+        else account_manager.get_accounts_by_type(account_type)
     )
     account_list.sort(key=lambda a: a.alias or "")
     return account_list
@@ -130,13 +133,13 @@ class AccountAliasPromptChoice(PromptChoice):
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
     ) -> Optional[AccountAPI]:
 
-        if value and value in accounts.aliases:
-            return accounts.load(value)
+        if value and value in account_manager.aliases:
+            return account_manager.load(value)
 
         # Prompt the user if they didn't provide a value.
         alias = super().convert(value, param, ctx)
 
-        return accounts.load(alias) if alias else None
+        return account_manager.load(alias) if alias else None
 
     @property
     def choices(self) -> List[str]:
@@ -165,7 +168,7 @@ class AccountAliasPromptChoice(PromptChoice):
             raise AccountsError("No accounts found.")
 
         elif len(self.choices) == 1:
-            return accounts.load(self.choices[0])
+            return account_manager.load(self.choices[0])
 
         self.print_choices()
         return click.prompt(self._prompt_message, type=self)
