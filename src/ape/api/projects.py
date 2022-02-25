@@ -180,7 +180,7 @@ class DependencyAPI(AbstractBaseModel):
             version_id = f"v{version_id}"
 
         name = self.name
-        return self._data_folder / "packages" / name / version_id / f"{name}.json"
+        return self.config_manager.DATA_FOLDER / "packages" / name / version_id / f"{name}.json"
 
     @abstractmethod
     def extract_manifest(self) -> PackageManifest:
