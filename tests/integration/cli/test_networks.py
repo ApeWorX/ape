@@ -1,3 +1,6 @@
+from ape.api.networks import LOCAL_NETWORK_NAME
+from ape_geth.providers import DEFAULT_SETTINGS
+
 from .utils import skip_projects, skip_projects_except
 
 _DEFAULT_NETWORKS_TREE = """
@@ -98,6 +101,11 @@ def test_list_yaml(ape_cli, runner):
 
 
 @skip_projects_except(["geth"])
-def test_change_default_from_config_file(ape_cli, runner):
+def test_geth(ape_cli, runner, networks):
     result = runner.invoke(ape_cli, ["networks", "list"])
     assert_rich_text(result.output, _GETH_NETWORKS_YAML)
+
+    # Assert that URI still exists for local network
+    # (was bug where one network's URI disappeared when setting different network's URI)
+    geth_provider = networks.get_provider_from_choice(f"ethereum:{LOCAL_NETWORK_NAME}:geth")
+    assert geth_provider.uri == DEFAULT_SETTINGS["uri"]
