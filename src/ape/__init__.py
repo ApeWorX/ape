@@ -12,9 +12,6 @@ from .managers.project import ProjectManager as Project
 
 # Wiring together the application
 
-plugin_manager = _ManagerAccessMixin.plugin_manager
-"""Manages plugins for the current project. See :class:`ape.plugins.PluginManager`."""
-
 config = _ManagerAccessMixin.config_manager
 """The active configs for the current project. See :class:`ape.managers.config.ConfigManager`.
 """
@@ -27,8 +24,6 @@ compilers = _ManagerAccessMixin.compiler_manager
 networks = _ManagerAccessMixin.network_manager
 """Manages the networks for the current project. See
 :class:`ape.managers.networks.NetworkManager`."""
-
-_converters = _ManagerAccessMixin.conversion_manager
 
 chain = _ManagerAccessMixin.chain_manager
 """
@@ -43,7 +38,7 @@ accounts = _ManagerAccessMixin.account_manager
 project = _ManagerAccessMixin.project_manager
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
-Contract = _partial(_Contract, networks=networks, converters=_converters)
+Contract = _partial(_Contract, networks=networks, converters=_ManagerAccessMixin.conversion_manager)
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 
 convert = _ManagerAccessMixin.conversion_manager.convert
