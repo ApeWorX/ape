@@ -70,7 +70,7 @@ class AccountManager(BaseManager):
     def accounts(self) -> Iterator[AccountAPI]:
 
         for container in self.containers.values():
-            for account in container.accounts:
+            for account in container.accounts():
                 yield account
 
     def get_accounts_by_type(self, type_: Type[AccountAPI]) -> List[AccountAPI]:
