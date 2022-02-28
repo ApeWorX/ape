@@ -734,7 +734,6 @@ class DependencyManager(ManagerAccessMixin):
             if key in config_dependency_data:
                 return dependency_cls(
                     **config_dependency_data,
-                    _data_folder=self.DATA_FOLDER,
                 )  # type: ignore
 
         dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))

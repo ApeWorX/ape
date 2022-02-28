@@ -27,7 +27,7 @@ def plugin_manager():
 
 @pytest.fixture(scope="session")
 def accounts():
-    yield ape.accounts
+    yield ape.accounts.accounts
 
 
 @pytest.fixture(scope="session")
