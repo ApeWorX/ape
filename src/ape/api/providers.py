@@ -1,7 +1,7 @@
 import time
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
@@ -50,9 +50,9 @@ class TransactionAPI(AbstractBaseModel):
     such as typed-transactions from `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
     """
 
-    chain_id: Optional[int] = Field(0, alias="chainId")
-    receiver: Optional[str] = Field("", alias="to")
-    sender: Optional[str] = Field("", alias="from")
+    chain_id: int = Field(0, alias="chainId")
+    receiver: Optional[str] = Field(None, alias="to")
+    sender: Optional[str] = Field(None, alias="from")
     gas_limit: Optional[int] = Field(None, alias="gas")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
@@ -84,25 +84,16 @@ class TransactionAPI(AbstractBaseModel):
     @abstractmethod
     def serialize_transaction(self) -> bytes:
         """
-        Take this object and produce a hash to sign to submit a transaction
+        Serialize the transaction
         """
-
-    def as_dict(self, exclude: Optional[Set[str]] = None) -> dict:
-        """
-        Create a ``dict`` representation of the transaction.
-
-        Returns:
-            dict
-        """
-        return self.dict(by_alias=True, exclude_none=True, exclude=exclude)
 
     def __repr__(self) -> str:
-        data = self.as_dict()  # NOTE: `as_dict` could be overridden
+        data = self.dict()
         params = ", ".join(f"{k}={v}" for k, v in data.items())
         return f"<{self.__class__.__name__} {params}>"
 
     def __str__(self) -> str:
-        data = self.as_dict()  # NOTE: `as_dict` could be overridden
+        data = self.dict()
         if len(data["data"]) > 9:
             data["data"] = (
                 "0x" + bytes(data["data"][:3]).hex() + "..." + bytes(data["data"][-3:]).hex()
@@ -639,7 +630,7 @@ class Web3Provider(ProviderAPI):
         self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        txn_dict = txn.as_dict()
+        txn_dict = txn.dict()
         return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
 
     @property
@@ -684,7 +675,7 @@ class Web3Provider(ProviderAPI):
         return self._web3.eth.get_code(address)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
-        return self._web3.eth.call(txn.as_dict())
+        return self._web3.eth.call(txn.dict())
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
         if required_confirmations < 0:

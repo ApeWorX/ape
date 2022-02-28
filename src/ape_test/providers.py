@@ -38,7 +38,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
 
         try:
-            return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
+            return self._web3.eth.estimate_gas(txn.dict())  # type: ignore
 
         except ValidationError as err:
             message = gas_estimation_error_message(err)
@@ -58,7 +58,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def send_call(self, txn: TransactionAPI) -> bytes:
 
-        data = txn.dict()
+        data = txn.dict(exclude_none=True)
 
         if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)

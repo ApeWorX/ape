@@ -66,7 +66,7 @@ class TestAccount(TestAccountAPI):
 
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
 
-        signed_txn = EthAccount.sign_transaction(txn.as_dict(), self.private_key)
+        signed_txn = EthAccount.sign_transaction(txn.dict(), self.private_key)
 
         return TransactionSignature(  # type: ignore
             v=signed_txn.v,

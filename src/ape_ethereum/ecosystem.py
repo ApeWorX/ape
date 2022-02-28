@@ -64,7 +64,7 @@ class BaseTransaction(TransactionAPI):
         if not self.signature:
             raise SignatureError("The transaction is not signed.")
 
-        txn_data = self.as_dict(exclude={"sender"})
+        txn_data = self.dict(exclude={"sender"})
 
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
@@ -162,11 +162,7 @@ class Ethereum(EcosystemAPI):
         if not transaction.signature:
             raise SignatureError("The transaction is not signed.")
 
-        txn_data = transaction.as_dict()
-
-        # Don't publish from
-        if "from" in txn_data:
-            del txn_data["from"]
+        txn_data = transaction.dict()
 
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (
