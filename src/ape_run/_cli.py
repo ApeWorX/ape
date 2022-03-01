@@ -4,7 +4,6 @@ from typing import Dict, Union
 
 import click
 
-from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.managers.project import ProjectManager
 from ape.utils import cached_property
@@ -99,9 +98,6 @@ class ScriptCommand(click.MultiCommand):
 
     @cached_property
     def commands(self) -> Dict[str, Union[click.Command, click.Group]]:
-        if not self._project.scripts_folder.exists():
-            raise ProjectError("No 'scripts/' directory detected to run script.")
-
         commands = {}
         for filepath in self._project.scripts_folder.glob("*.py"):
             cmd = self.__get_command(filepath)
@@ -109,9 +105,6 @@ class ScriptCommand(click.MultiCommand):
                 commands[filepath.stem] = cmd
             else:
                 logger.info(f"Skipped loading: {filepath}")
-
-        if len(commands) == 0:
-            raise ProjectError("No commands to run in 'scripts/'.")
 
         return commands
 
