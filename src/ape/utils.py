@@ -610,16 +610,14 @@ class AbstractBase(ManagerAccessMixin, ABC):
 
 class AbstractBaseModel(AbstractBase, BaseModel):
     """
-    Abstract class with manager access on a pydantic base model
+    An abstract base-class with manager access on a pydantic base model.
     """
 
     class Config:
-        """
-        NOTE: Due to https://github.com/samuelcolvin/pydantic/issues/1241 we have
-        to add this cached property workaround in order to avoid this error:
+        # NOTE: Due to https://github.com/samuelcolvin/pydantic/issues/1241 we have
+        # to add this cached property workaround in order to avoid this error:
 
-            TypeError: cannot pickle '_thread.RLock' object
-        """
+        #    TypeError: cannot pickle '_thread.RLock' object
 
         keep_untouched = (cached_property,)
         arbitrary_types_allowed = True
@@ -627,7 +625,7 @@ class AbstractBaseModel(AbstractBase, BaseModel):
 
     def __dir__(self) -> List[str]:
         """
-        NOTE: Integrates with IPython tab-completion
+        NOTE: Should integrate options in IPython tab-completion.
         https://ipython.readthedocs.io/en/stable/config/integrating.html
         """
         # Filter out protected/private members

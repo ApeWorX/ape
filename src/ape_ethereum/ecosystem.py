@@ -87,11 +87,8 @@ class StaticFeeTransaction(BaseTransaction):
     type: TransactionType = Field(TransactionType.STATIC, exclude=True)
 
     def __init__(self, **data) -> None:
-        """
-        Establishes the ``max_fee`` by multiplying the
-        ``gas_limit`` by the ``gas_price``.
-        Pydantic doesn't handle calculated fields well.
-        """
+        # NOTE: Establishes the ``max_fee`` by multiplying the `gas_limit` by
+        # the `gas_price`. Pydantic doesn't handle calculated fields well.
 
         data["max_fee"] = data.get("gas_limit", 0) * data.get("gas_price", 0)
         super().__init__(**data)

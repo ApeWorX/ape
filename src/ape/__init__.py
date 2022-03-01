@@ -13,7 +13,8 @@ from .managers.project import ProjectManager as Project
 # Wiring together the application
 
 config = _ManagerAccessMixin.config_manager
-"""The active configs for the current project. See :class:`ape.managers.config.ConfigManager`.
+"""
+The active configs for the current project. See :class:`ape.managers.config.ConfigManager`.
 """
 
 # Main types we export for the user
