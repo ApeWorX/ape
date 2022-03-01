@@ -139,9 +139,6 @@ class PluginManager:
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
 
-        if attr_name == "__fields_set__":
-            return set()
-
         if not hasattr(plugin_manager.hook, attr_name):
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
