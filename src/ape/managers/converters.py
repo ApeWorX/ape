@@ -136,33 +136,25 @@ class TimestampConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Union[str, datetime, timedelta]) -> bool:
-
         if not isinstance(value, (str, datetime, timedelta)):
             return False
-
         if isinstance(value, str):
             if " " not in value and len(value.split(" ")) > 2:
                 return False
-
             else:
                 try:
                     parse(value)
                 except ValueError:
                     return False
-
         return True
 
     def convert(self, value: Union[str, datetime, timedelta]) -> int:
-
         if isinstance(value, str):
             return int(parse(value).replace(tzinfo=timezone.utc).timestamp())
-
         elif isinstance(value, datetime):
             return int(value.replace(tzinfo=timezone.utc).timestamp())
-
         elif isinstance(value, timedelta):
             return int((datetime.now(timezone.utc) + value).timestamp())
-
         else:
             raise ConversionError
 
@@ -187,7 +179,6 @@ class ConversionManager(BaseManager):
 
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
-
         converters: Dict[Type, List[ConverterAPI]] = {
             AddressType: [AddressAPIConverter(), HexAddressConverter()],
             bytes: [HexConverter()],
@@ -198,9 +189,7 @@ class ConversionManager(BaseManager):
         }
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
-
             converter = converter_class()
-
             if conversion_type not in converters:
                 options = ", ".join([t.__name__ for t in converters])
                 raise ConversionError(f"Type '{conversion_type}' must be one of [{options}].")

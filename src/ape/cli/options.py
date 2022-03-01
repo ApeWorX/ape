@@ -55,9 +55,7 @@ def verbosity_option(cli_logger):
 
     def decorator(f):
         def _set_level(ctx, param, value):
-
             log_level = getattr(LogLevel, value.upper(), None)
-
             if log_level is None:
                 raise click.BadParameter(f"Must be one of {names_str}, not {value}.")
 
@@ -103,7 +101,6 @@ def network_option(default: str = None):
     """
 
     default = default or networks.default_ecosystem.name
-
     return click.option(
         "--network",
         type=NetworkChoice(case_sensitive=False),
@@ -133,7 +130,6 @@ def skip_confirmation_option(help=""):
 
 
 def _account_callback(ctx, param, value):
-
     if param and not value:
         return param.type.get_user_selected_account()
 
@@ -154,7 +150,6 @@ def account_option():
 
 
 def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[ContractType]]]:
-
     if not value:
         return None
 
@@ -166,7 +161,6 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[Cont
     is_multiple = isinstance(value, (tuple, list))
 
     def create_contract(contract_name: str) -> ContractType:
-
         if contract_name not in project.contracts:
             raise ContractError(f"No contract named '{value}'")
 
@@ -185,7 +179,6 @@ def contract_option(help=None, required=False, multiple=False):
     """
 
     help = help or "The name of a contract in the current project"
-
     return click.option(
         "--contract", help=help, required=required, callback=_load_contracts, multiple=multiple
     )
@@ -231,20 +224,17 @@ def incompatible_with(incompatible_opts):
             super().__init__(*args, **kwargs)
 
         def handle_parse_result(self, ctx, opts, args):
-
             # if None it means we're in autocomplete mode and don't want to validate
             if ctx.obj is not None:
                 found_incompatible = ", ".join(
                     [f"--{opt.replace('_', '-')}" for opt in opts if opt in incompatible_opts]
                 )
-
                 if self.name in opts and found_incompatible:
                     name = self.name.replace("_", "-")
                     raise click.BadOptionUsage(
                         option_name=self.name,
                         message=f"'--{name}' can't be used with '{found_incompatible}'.",
                     )
-
             return super().handle_parse_result(ctx, opts, args)
 
     return IncompatibleOption

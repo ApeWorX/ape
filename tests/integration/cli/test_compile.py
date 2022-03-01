@@ -31,14 +31,11 @@ def test_no_compiler_for_extension(ape_cli, runner, project):
 def test_compile(ape_cli, runner, project, clean_cache):
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
-
     # First time it compiles, it compiles fully
     for file in project.path.glob("contracts/**/*"):
         assert file.stem in result.output
-
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
-
     # First time it compiles, it caches
     for file in project.path.glob("contracts/**/*"):
         assert file.stem not in result.output

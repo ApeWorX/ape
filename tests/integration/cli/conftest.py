@@ -111,7 +111,6 @@ def clean_cache(project):
     does not have a cached compilation.
     """
     cache_file = project._project.manifest_cachefile
-
     if cache_file.exists():
         cache_file.unlink()
 

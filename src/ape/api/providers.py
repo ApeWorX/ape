@@ -440,7 +440,6 @@ class ProviderAPI(AbstractBaseModel):
             NotImplementedError: When the provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ typed transactions.
         """
-
         raise NotImplementedError("priority_fee is not implemented by this provider")
 
     @property

@@ -41,14 +41,12 @@ NETWORKS = {
 
 
 class NetworkConfig(PluginConfig):
-
     required_confirmations: int = 0
     default_provider: str = "geth"
     block_time: int = 0
 
 
 class EthereumConfig(PluginConfig):
-
     mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
     ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
     kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
@@ -177,7 +175,6 @@ class Ethereum(EcosystemAPI):
 
     def decode_receipt(self, data: dict) -> ReceiptAPI:
         status = data.get("status")
-
         if status:
             if isinstance(status, str) and status.isnumeric():
                 status = int(status)
@@ -215,7 +212,6 @@ class Ethereum(EcosystemAPI):
         )
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
-
         if abi.inputs:
             input_types = [i.canonical_type for i in abi.inputs]
             return abi_encode(input_types, args)
@@ -224,12 +220,9 @@ class Ethereum(EcosystemAPI):
             return HexBytes(b"")
 
     def decode_calldata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
-
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
-
         try:
             vm_return_values = abi_decode(output_types, raw_data)
-
             if not vm_return_values:
                 return vm_return_values
 
@@ -237,10 +230,8 @@ class Ethereum(EcosystemAPI):
                 vm_return_values = (vm_return_values,)
 
             output_values: List[Any] = []
-
             for index in range(len(vm_return_values)):
                 value = vm_return_values[index]
-
                 if index < len(output_types) and output_types[index] == "address":
                     value = to_checksum_address(value)
 
@@ -254,7 +245,6 @@ class Ethereum(EcosystemAPI):
     def encode_deployment(
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
     ) -> BaseTransaction:
-
         txn = self.create_transaction(**kwargs)
         txn.data = deployment_bytecode
 
@@ -271,7 +261,6 @@ class Ethereum(EcosystemAPI):
         *args,
         **kwargs,
     ) -> BaseTransaction:
-
         txn = self.create_transaction(receiver=address, **kwargs)
 
         # Add method ID
@@ -295,27 +284,21 @@ class Ethereum(EcosystemAPI):
 
         if "type" in kwargs:
             type_kwarg = kwargs["type"]
-
             if type_kwarg is None:
                 type_kwarg = TransactionType.DYNAMIC.value
-
             elif isinstance(type_kwarg, int):
                 type_kwarg = f"0{type_kwarg}"
-
             elif isinstance(type_kwarg, bytes):
                 type_kwarg = type_kwarg.hex()
 
             suffix = type_kwarg.replace("0x", "")
-
             if len(suffix) == 1:
                 type_kwarg = f"{type_kwarg.rstrip(suffix)}0{suffix}"
 
             version_str = add_0x_prefix(HexStr(type_kwarg))
             version = TransactionType(version_str)
-
         elif "gas_price" in kwargs:
             version = TransactionType.STATIC
-
         else:
             version = TransactionType.DYNAMIC
 
@@ -326,7 +309,6 @@ class Ethereum(EcosystemAPI):
             # Attempt to use default required-confirmations from `ape-config.yaml`.
             required_confirmations = 0
             active_provider = self.network_manager.active_provider
-
             if active_provider:
                 required_confirmations = active_provider.network.required_confirmations
 
@@ -335,7 +317,6 @@ class Ethereum(EcosystemAPI):
         return txn_class(**kwargs)  # type: ignore
 
     def decode_event(self, abi: EventABI, receipt: "ReceiptAPI") -> "ContractLog":
-
         filter_id = keccak(to_bytes(text=abi.selector))
         event_data = next(log for log in receipt.logs if log["filter_id"] == filter_id)
 

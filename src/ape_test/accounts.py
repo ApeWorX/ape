@@ -41,7 +41,6 @@ class TestAccountContainer(TestAccountContainerAPI):
 
 
 class TestAccount(TestAccountAPI):
-
     index: int
     address_str: str
     private_key: str
@@ -55,9 +54,7 @@ class TestAccount(TestAccountAPI):
         return to_address(self.address_str)
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
-
         signed_msg = EthAccount.sign_message(msg, self.private_key)
-
         return MessageSignature(  # type: ignore
             v=signed_msg.v,
             r=to_bytes(signed_msg.r),
@@ -65,9 +62,7 @@ class TestAccount(TestAccountAPI):
         )
 
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
-
         signed_txn = EthAccount.sign_transaction(txn.dict(), self.private_key)
-
         return TransactionSignature(  # type: ignore
             v=signed_txn.v,
             r=to_bytes(signed_txn.r),

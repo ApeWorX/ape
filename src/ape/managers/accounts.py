@@ -36,7 +36,6 @@ class AccountManager(BaseManager):
         containers = {}
         data_folder = self.config_manager.DATA_FOLDER
         data_folder.mkdir(exist_ok=True)
-
         for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
 
             # Ignore containers that contain test accounts.
@@ -66,11 +65,6 @@ class AccountManager(BaseManager):
         for container in self.containers.values():
             yield from container.aliases
 
-    def __iter__(self) -> Iterator[AccountAPI]:
-        for container in self.containers.values():
-            for account in container.accounts:
-                yield account  # type: ignore
-
     def get_accounts_by_type(self, type_: Type[AccountAPI]) -> List[AccountAPI]:
         """
         Get a list of accounts by their type.
@@ -95,6 +89,11 @@ class AccountManager(BaseManager):
 
         return sum(len(container) for container in self.containers.values())
 
+    def __iter__(self) -> Iterator[AccountAPI]:
+        for container in self.containers.values():
+            for account in container.accounts:
+                yield account  # type: ignore
+
     def __repr__(self) -> str:
         return "[" + ", ".join(repr(a) for a in self) + "]"
 
@@ -117,7 +116,6 @@ class AccountManager(BaseManager):
         Returns:
             List[:class:`~ape.api.accounts.TestAccountAPI`]
         """
-
         accounts = []
         for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
             if not issubclass(account_type, TestAccountAPI):

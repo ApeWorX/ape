@@ -384,7 +384,6 @@ class NetworkAPI(AbstractBaseModel):
         Returns:
             int
         """
-
         return self.chain_id
 
     @property
@@ -398,7 +397,6 @@ class NetworkAPI(AbstractBaseModel):
         Returns:
             int
         """
-
         return self._network_config.get("required_confirmations", 0)  # type: ignore
 
     @property
@@ -595,7 +593,6 @@ class NetworkAPI(AbstractBaseModel):
         Returns:
             :class:`~ape.api.networks.ProviderContextManager`
         """
-
         if self.default_provider:
             return self.use_provider(self.default_provider, provider_settings=provider_settings)
 

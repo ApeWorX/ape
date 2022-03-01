@@ -78,7 +78,6 @@ def is_relative_to(path: Path, target: Path) -> bool:
     Returns:
         bool: ``True`` if the path is relative to the target path or ``False``.
     """
-
     if hasattr(path, "is_relative_to"):
         # NOTE: Only available ``>=3.9``
         return target.is_relative_to(path)  # type: ignore
@@ -86,7 +85,6 @@ def is_relative_to(path: Path, target: Path) -> bool:
     else:
         try:
             return target.relative_to(path) is not None
-
         except ValueError:
             return False
 
@@ -104,16 +102,13 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     Returns:
         pathlib.Path: The new path to the target path from the anchor path.
     """
-
     if not target.is_absolute():
         raise ValueError("'target' must be an absolute path.")
-
     if not anchor.is_absolute():
         raise ValueError("'anchor' must be an absolute path.")
 
     anchor_copy = Path(str(anchor))
     levels_deep = 0
-
     while not is_relative_to(anchor_copy, target):
         levels_deep += 1
         anchor_copy = anchor_copy.parent
@@ -133,7 +128,6 @@ def get_package_version(obj: Any) -> str:
     Returns:
         str: version string.
     """
-
     # If value is already cached/static
     if hasattr(obj, "__version__"):
         return obj.__version__
@@ -148,7 +142,6 @@ def get_package_version(obj: Any) -> str:
 
     # NOTE: In case the distribution and package name differ
     dists = get_distributions()
-
     if pkg_name in dists:
         # NOTE: Shouldn't really be more than 1, but never know
         if len(dists[pkg_name]) != 1:
@@ -179,7 +172,6 @@ def expand_environment_variables(contents: str) -> str:
     Returns:
         str: The given content with all environment variables replaced with their values.
     """
-
     return os.path.expandvars(contents)
 
 
@@ -199,19 +191,15 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
     Returns:
         Dict (dict): Configured settings parsed from a config file.
     """
-
     if path.exists():
         contents = path.read_text()
-
         if expand_envars:
             contents = expand_environment_variables(contents)
 
         if path.suffix in (".json",):
             config = json.loads(contents)
-
         elif path.suffix in (".yml", ".yaml"):
             config = yaml.safe_load(contents)
-
         else:
             raise TypeError(f"Cannot parse '{path.suffix}' files!")
 
@@ -258,7 +246,6 @@ def generate_dev_accounts(
     Returns:
         List[:class:`~ape.utils.GeneratedDevAccount`]: List of development accounts.
     """
-
     seed = seed_from_mnemonic(mnemonic, "")
     accounts = []
 
@@ -283,7 +270,6 @@ def gas_estimation_error_message(tx_error: Exception) -> str:
         str: An error message explaining that the gas failed and that the transaction
         will likely revert.
     """
-
     return (
         f"Gas estimation failed: '{tx_error}'. This transaction will likely revert. "
         "If you wish to broadcast, you must set the gas limit manually."
@@ -307,9 +293,7 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
         dict, optional: The final value if it exists
         else ``None`` if the tree ends at any point.
     """
-
     current_value: Any = root
-
     for arg in args:
         if not hasattr(current_value, "get"):
             return None
@@ -331,7 +315,6 @@ def stream_response(download_url: str, progress_bar_description: str = "Download
     Returns:
         bytes: Content in bytes to show the progress.
     """
-
     response = requests.get(download_url, stream=True)
     response.raise_for_status()
 
@@ -339,13 +322,11 @@ def stream_response(download_url: str, progress_bar_description: str = "Download
     progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
     progress_bar.set_description(progress_bar_description)
     content = bytes()
-
     for data in response.iter_content(1024, decode_unicode=True):
         progress_bar.update(len(data))
         content += data
 
     progress_bar.close()
-
     return content
 
 
@@ -358,10 +339,8 @@ class GithubClient:
     _repo_cache: Dict[str, GithubRepository] = {}
 
     def __init__(self):
-
         token = None
         self.has_auth = self.TOKEN_KEY in os.environ
-
         if self.has_auth:
             token = os.environ[self.TOKEN_KEY]
 
@@ -382,7 +361,6 @@ class GithubClient:
         Returns:
             Set[str]: The plugin names as ``'ape_plugin_name'`` (module-like).
         """
-
         return {
             repo.name.replace("-", "_")
             for repo in self.ape_org.get_repos()
@@ -402,7 +380,6 @@ class GithubClient:
         Returns:
             github.GitRelease.GitRelease
         """
-
         repo = self._client.get_repo(repo_path)
 
         if version == "latest":
@@ -413,7 +390,6 @@ class GithubClient:
 
         try:
             return repo.get_release(version)
-
         except UnknownObjectException:
             raise ProjectError(f"Unknown version '{version.lstrip('v')}' for repo '{repo.name}'.")
 
@@ -455,18 +431,15 @@ class GithubClient:
         logger.info(f"Cloning branch '{branch}' from '{repo.name}'.")
 
         class GitRemoteCallbacks(pygit2.RemoteCallbacks):
-
             PERCENTAGE_PATTERN = r"[1-9]{1,2}% \([1-9]*/[1-9]*\)"  # e.g. '75% (324/432)'
             total_objects: int = 0
             current_objects_cloned: int = 0
             _progress_bar = None
 
             def sideband_progress(self, string: str):
-
                 # Parse a line like 'Compressing objects:   0% (1/432)'
                 string = string.lower()
                 expected_prefix = "compressing objects:"
-
                 if expected_prefix not in string:
                     return
 
@@ -480,17 +453,14 @@ class GithubClient:
                 fraction = fraction_str.split("/")
 
                 GitRemoteCallbacks.total_objects = int(fraction[1])
-
                 previous_value = GitRemoteCallbacks.current_objects_cloned
                 new_value = int(fraction[0])
-
                 GitRemoteCallbacks.current_objects_cloned = new_value
 
                 if GitRemoteCallbacks.total_objects and not GitRemoteCallbacks._progress_bar:
                     GitRemoteCallbacks._progress_bar = tqdm(range(GitRemoteCallbacks.total_objects))
 
                 difference = new_value - previous_value
-
                 if difference > 0:
                     GitRemoteCallbacks._progress_bar.update(difference)  # type: ignore
                     GitRemoteCallbacks._progress_bar.refresh()  # type: ignore
@@ -498,7 +468,6 @@ class GithubClient:
         clone = pygit2.clone_repository(
             repo.git_url, str(target_path), checkout_branch=branch, callbacks=GitRemoteCallbacks()
         )
-
         return clone
 
     def download_package(self, repo_path: str, version: str, target_path: Path):
@@ -512,7 +481,6 @@ class GithubClient:
                                 to the downloaded package.
             target_path (path): A path in your local filesystem to save the downloaded package.
         """
-
         if not target_path or not target_path.exists() or not target_path.is_dir():
             raise ValueError(f"'target_path' must be a valid directory (got '{target_path}').")
 
@@ -557,7 +525,6 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     Returns:
         List[pathlib.Path]: A list of files in the given directory.
     """
-
     if path.is_dir():
         return list(path.rglob("*.*"))
 

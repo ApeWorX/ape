@@ -21,7 +21,6 @@ CONFIG_FILE_NAME = "ape-config.yaml"
 
 
 class DeploymentConfig(PluginConfig):
-
     address: Union[str, bytes]
     contract_type: str
 
@@ -86,7 +85,6 @@ class ConfigManager(BaseManager, BaseModel):
     def _plugin_configs(self) -> Dict[str, PluginConfig]:
         # This property is cached per active project.
         project_name = self.PROJECT_FOLDER.stem
-
         if project_name in self._plugin_configs_by_project:
             return self._plugin_configs_by_project[project_name]
 
@@ -112,7 +110,6 @@ class ConfigManager(BaseManager, BaseModel):
             # Attempt to resolve the path in the case it is relative to the project directory.
             # NOTE: It is okay for this directory not to exist at this point.
             contracts_folder = Path(contracts_folder_value).resolve()
-
         else:
             contracts_folder = self.PROJECT_FOLDER / "contracts"
 
@@ -121,13 +118,11 @@ class ConfigManager(BaseManager, BaseModel):
         # Sanitize deployment addresses.
         deployments = user_config.pop("deployments", {})
         valid_ecosystem_names = [e[0] for e in self.plugin_manager.ecosystems]
-
         for ecosystem_name, networks in deployments.items():
             if ecosystem_name not in valid_ecosystem_names:
                 raise ConfigError(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
 
             valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
-
             for network_name, contract_deployments in networks.items():
                 if network_name not in valid_network_names:
                     raise ConfigError(f"Invalid network '{network_name}' in deployments config.")
@@ -163,7 +158,6 @@ class ConfigManager(BaseManager, BaseModel):
             configs[plugin_name] = config
 
         remaining_keys = user_config.keys()
-
         if len(remaining_keys) > 0:
             remaining_keys_str = ", ".join(remaining_keys)
             logger.warning(
@@ -172,7 +166,6 @@ class ConfigManager(BaseManager, BaseModel):
             )
 
         self._plugin_configs_by_project[project_name] = configs
-
         return configs
 
     def __repr__(self):

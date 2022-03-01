@@ -51,13 +51,11 @@ class ContractConstructor(ManagerAccessMixin):
                 self._convert_tuple(tuple(kwargs.values())),
             )
         )
-
         return self.provider.network.ecosystem.encode_deployment(
             self.deployment_bytecode, self.abi, *args, **kwargs
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
-
         if "sender" in kwargs:
             sender = kwargs["sender"]
             txn = self.serialize_transaction(*args, **kwargs)
@@ -85,7 +83,6 @@ class ContractCall(ManagerAccessMixin):
             raise AddressError(
                 f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
-
         return self.network_manager.active_provider
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
@@ -96,13 +93,11 @@ class ContractCall(ManagerAccessMixin):
                 self._convert_tuple(tuple(kwargs.values())),
             )
         )
-
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
 
     def __call__(self, *args, **kwargs) -> Any:
-
         txn = self.serialize_transaction(*args, **kwargs)
         txn.chain_id = self.provider.network.chain_id
 
@@ -147,14 +142,12 @@ class ContractCallHandler(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> Any:
-
         if not self.contract.is_contract:
             network = self.provider.network.name
             raise _get_non_contract_error(self.contract.address, network)
 
         args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
-
         if not selected_abi:
             raise ArgumentsLengthError(len(args))
 
@@ -167,10 +160,8 @@ class ContractCallHandler(ManagerAccessMixin):
 def _select_abi(abis, args):
     args = args or []
     selected_abi = None
-
     for abi in abis:
         inputs = abi.inputs or []
-
         if len(args) == len(inputs):
             selected_abi = abi
 
@@ -201,7 +192,6 @@ class ContractTransaction(ManagerAccessMixin):
                 self._convert_tuple(tuple(kwargs.values())),
             )
         )
-
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
@@ -216,7 +206,6 @@ class ContractTransaction(ManagerAccessMixin):
         return self.network_manager.active_provider
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
-
         if "sender" in kwargs:
             sender = kwargs["sender"]
             txn = self.serialize_transaction(*args, **kwargs)
@@ -245,7 +234,6 @@ class ContractTransactionHandler(ManagerAccessMixin):
 
         args = self._convert_tuple(args)
         selected_abi = _select_abi(self.abis, args)
-
         if not selected_abi:
             raise ArgumentsLengthError(len(args))
 
@@ -260,13 +248,11 @@ class ContractTransactionHandler(ManagerAccessMixin):
             raise AddressError(
                 f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
-
         return self.network_manager.active_provider
 
 
 @dataclass
 class ContractLog:
-
     name: str
     data: Dict[str, Any]
 
@@ -289,7 +275,6 @@ class ContractEvent(ManagerAccessMixin):
             raise AddressError(
                 f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
-
         return self.network_manager.active_provider
 
 
@@ -324,12 +309,10 @@ class ContractInstance(AddressBase):
         Returns:
             ``AddressType``
         """
-
         return self._address
 
     @cached_property
     def _view_methods_(self) -> Dict[str, ContractCallHandler]:
-
         view_methods: Dict[str, List[MethodABI]] = dict()
 
         for abi in self._contract_type.view_methods:
@@ -349,7 +332,6 @@ class ContractInstance(AddressBase):
 
     @cached_property
     def _mutable_methods_(self) -> Dict[str, ContractTransactionHandler]:
-
         mutable_methods: Dict[str, List[MethodABI]] = dict()
 
         for abi in self._contract_type.mutable_methods:
@@ -369,7 +351,6 @@ class ContractInstance(AddressBase):
 
     @cached_property
     def _events_(self) -> Dict[str, ContractEvent]:
-
         events: Dict[str, List[EventABI]] = dict()
 
         for abi in self._contract_type.events:
@@ -394,7 +375,6 @@ class ContractInstance(AddressBase):
         Returns:
             List[str]
         """
-
         return list(
             set(super(AddressBase, self).__dir__()).union(
                 self._view_methods_, self._mutable_methods_, self._events_
@@ -472,7 +452,6 @@ class ContractContainer(ManagerAccessMixin):
             raise AddressError(
                 f"Incorrectly implemented provider API for class '{type(self).__name__}'."
             )
-
         return self.network_manager.active_provider
 
     def at(self, address: str) -> ContractInstance:
@@ -501,7 +480,6 @@ class ContractContainer(ManagerAccessMixin):
         )
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
-
         args = self.conversion_manager.convert(args, tuple)
         constructor = ContractConstructor(  # type: ignore
             abi=self.contract_type.constructor,
@@ -513,7 +491,6 @@ class ContractContainer(ManagerAccessMixin):
         inputs_length = (
             len(constructor.abi.inputs) if constructor.abi and constructor.abi.inputs else 0
         )
-
         if inputs_length != args_length:
             raise ArgumentsLengthError(args_length, inputs_length=inputs_length)
 
@@ -531,9 +508,7 @@ def _Contract(
     the given address/network combo, or explicitly provided. If none are found,
     returns a simple ``Address`` instance instead of throwing (provides a warning)
     """
-
     provider = networks.active_provider
-
     if not provider:
         raise ProviderNotConnectedError()
 
@@ -548,7 +523,6 @@ def _Contract(
     # Check explorer API/cache (e.g. publicly published contracts)
     # TODO: Store in ``NetworkAPI.contract_cache`` to reduce API calls
     explorer = provider.network.explorer
-
     if not contract_type and explorer:
         contract_type = explorer.get_contract_type(converted_address)
 
@@ -565,7 +539,6 @@ def _Contract(
     else:
         # We don't have a contract type from any source, provide raw address instead
         logger.warning(f"No contract type found for {address}")
-
         return Address(  # type: ignore
             _address=converted_address,
             _provider=provider,
@@ -573,7 +546,6 @@ def _Contract(
 
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:
-
     raise ContractError(
         f"Unable to make contract call. "
         f"'{address}' is not a contract on network '{network_name}'."

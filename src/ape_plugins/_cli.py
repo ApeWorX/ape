@@ -20,9 +20,7 @@ def cli():
 
 
 def _display_section(header: str, lines: List[Set[str]]):
-
     click.echo(header)
-
     for output in lines:
         if output:
             formatted_output = _format_output(output)
@@ -30,13 +28,10 @@ def _display_section(header: str, lines: List[Set[str]]):
 
 
 def _format_output(plugins_list: Collection[str]) -> Set:
-
     output = set()
-
     for i in plugins_list:
         text = i.replace("ape_", "")
         output.add(text)
-
     return output
 
 
@@ -47,7 +42,6 @@ def plugins_argument():
     """
 
     def callback(ctx, param, value: Tuple[str]):
-
         if not value:
             ctx.obj.abort("You must give at least one requirement to install.")
 
@@ -57,7 +51,6 @@ def plugins_argument():
 
             if config_path.name != CONFIG_FILE_NAME:
                 config_path = config_path / CONFIG_FILE_NAME
-
             config = load_config(config_path)
             plugins = config.get("plugins") or []
 
@@ -115,7 +108,6 @@ def _list(cli_ctx, display_all):
     for name, _ in plugin_list:
         plugin = ApePlugin(name)
         spacing = (longest_plugin_name - len(plugin.name) + space_buffer) * " "
-
         if plugin.is_part_of_core:
             if not display_all:
                 continue  # NOTE: Skip 1st class plugins unless specified
@@ -128,7 +120,6 @@ def _list(cli_ctx, display_all):
 
         elif not plugin.is_part_of_core or not plugin.is_available:
             installed_third_class_plugins.add(f"{name}{spacing}{plugin.current_version}")
-
         else:
             cli_ctx.logger.error(f"'{plugin.name}' is not a plugin.")
 
@@ -144,7 +135,6 @@ def _list(cli_ctx, display_all):
     )
 
     installed_plugins = []
-
     if installed_second_class_plugins:
         installed_plugins.append(installed_second_class_plugins)
 
@@ -153,16 +143,13 @@ def _list(cli_ctx, display_all):
 
     if installed_plugins:
         sections["Installed Plugins"] = installed_plugins
-
     elif not display_all:
-
         # user has no plugins installed | cant verify installed plugins
         if available_second:
             click.echo("No secondary plugins installed. Use '--all' to see available plugins.")
 
     if display_all:
         available_second_output = _format_output(available_second)
-
         if available_second_output:
             sections["Available Plugins"] = [available_second_output]
 
@@ -188,7 +175,6 @@ def install(cli_ctx, plugins, skip_confirmation, upgrade):
     """Install plugins"""
 
     failures_occurred = False
-
     for plugin in plugins:
         if plugin.is_part_of_core:
             cli_ctx.logger.error(f"Cannot install core 'ape' plugin '{plugin.name}'.")
@@ -200,9 +186,7 @@ def install(cli_ctx, plugins, skip_confirmation, upgrade):
                 f"Cannot use '--upgrade' option when specifying "
                 f"a version for plugin '{plugin.name}'."
             )
-
             failures_occurred = True
-
             continue
 
         # if plugin is installed but not a 2nd class. It must be a third party
@@ -252,7 +236,6 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
 
     failures_occurred = False
     did_warn_about_version = False
-
     for plugin in plugins:
         if plugin.requested_version is not None and not did_warn_about_version:
             cli_ctx.logger.warning("Specifying a version when uninstalling is not necessary.")

@@ -24,7 +24,6 @@ def cli(cli_ctx, scripts, interactive, network):
     will be injected dynamically during script execution. The dynamically injected objects are
     the exports from the ``ape`` top-level package (similar to how the console works)
     """
-
     _ = network  # Not used directly but required.
 
     if not scripts:

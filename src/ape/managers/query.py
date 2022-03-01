@@ -31,7 +31,6 @@ class QueryManager(ManagerAccessMixin):
         """
 
         engines = {}
-
         for plugin_name, (engine_class,) in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)
             engines[engine_name] = engine_class()
@@ -51,7 +50,6 @@ class QueryManager(ManagerAccessMixin):
         Returns:
             pandas.DataFrame
         """
-
         if engine_to_use:
             if engine_to_use not in self.engines:
                 raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")
@@ -59,7 +57,6 @@ class QueryManager(ManagerAccessMixin):
             engine = self.engines[engine_to_use]
 
         else:
-
             # Get heuristics from all the query engines to perform this query
             estimates = map(lambda qe: (qe, qe.estimate_query(query)), self.engines.values())
 

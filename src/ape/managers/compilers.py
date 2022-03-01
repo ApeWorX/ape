@@ -54,7 +54,6 @@ class CompilerManager(BaseManager):
         registered_compilers = {}
 
         for plugin_name, (extensions, compiler_class) in self.plugin_manager.register_compiler:
-
             compiler = compiler_class()
 
             for extension in extensions:
@@ -84,7 +83,6 @@ class CompilerManager(BaseManager):
 
         extensions = self._get_contract_extensions(contract_filepaths)
         contract_types_dict = {}
-
         for extension in extensions:
             paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
 
@@ -95,7 +93,6 @@ class CompilerManager(BaseManager):
             compiled_contracts = self.registered_compilers[extension].compile(
                 paths_to_compile, base_path=self.config_manager.contracts_folder
             )
-
             for contract_type in compiled_contracts:
 
                 if contract_type.name in contract_types_dict:
@@ -106,10 +103,8 @@ class CompilerManager(BaseManager):
         return contract_types_dict  # type: ignore
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
-
         extensions = set(path.suffix for path in contract_filepaths)
         unhandled_extensions = extensions - set(self.registered_compilers)
-
         if len(unhandled_extensions) > 0:
             unhandled_extensions_str = ", ".join(unhandled_extensions)
             raise CompilerError(f"No compiler found for extensions [{unhandled_extensions_str}].")

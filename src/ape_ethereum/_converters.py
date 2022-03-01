@@ -23,7 +23,6 @@ class WeiConversions(ConverterAPI):
     """Converts units like `1 ether` to 1e18 wei"""
 
     def is_convertible(self, value: str) -> bool:
-
         if not isinstance(value, str):
             return False
 
@@ -35,7 +34,6 @@ class WeiConversions(ConverterAPI):
         return unit.lower() in ETHER_UNITS
 
     def convert(self, value: str) -> int:
-
         value, unit = value.split(" ")
 
         return int(Decimal(value) * ETHER_UNITS[unit.lower()])

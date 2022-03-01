@@ -59,10 +59,8 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
 
 
 def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
-
     # Display bytecode size for *all* contract types (not just ones we compiled)
     code_size = []
-
     for contract in contract_types.values():
         if not contract.deployment_bytecode:
             continue  # Skip if not bytecode to display
@@ -78,9 +76,7 @@ def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
 
     click.echo()
     click.echo("============ Deployment Bytecode Sizes ============")
-
     indent = max(len(i[0]) for i in code_size)  # type: ignore
-
     for name, size in sorted(code_size, key=lambda k: k[1], reverse=True):
         pct = size / 24577
         # pct_color = color(next((i[1] for i in CODESIZE_COLORS if pct >= i[0]), ""))
