@@ -1,11 +1,40 @@
-from typing import Dict, Optional
+from eth_utils import keccak, to_hex, to_bytes
+from functools import partial
+from typing import Any, Dict, Optional
 
 import pandas as pd
+from pydantic import BaseModel
 
 from ape.api import QueryAPI, QueryType
+from ape.api.query import ContractEventQuery, BlockQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property
+
+
+def get_columns_from_item(query: _BaseQuery, item: BaseModel) -> Dict[str, Any]:
+    return {k: v for k, v in item.dict().items() if k in query.columns}
+
+
+class DefaultQueryProvider(QueryAPI):
+    def estimate_query(self, query: QueryType) -> Optional[int]:
+        if isinstance(query, BlockQuery):
+            # NOTE: Very loose estimate of 100ms per block
+            return (query.stop_block - query.start_block) * 100
+
+        return None  # can't handle this query
+
+    def perform_query(self, query: QueryType) -> pd.DataFrame:
+        provider = self.network_manager.active_provider
+        if not provider:
+            raise QueryEngineError("Not connected to a provider.")
+
+        if isinstance(query, BlockQuery):
+            blocks_iter = self.chain_manager.blocks.range(query.start_block, query.stop_block)
+            blocks_iter = map(partial(get_columns_from_item, query), blocks_iter)
+            return pd.DataFrame(columns=query.columns, data=blocks_iter)
+
+        raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
 
 class QueryManager(ManagerAccessMixin):
@@ -30,7 +59,8 @@ class QueryManager(ManagerAccessMixin):
             dict[str, :class:`~ape.api.query.QueryAPI`]
         """
 
-        engines = {}
+        engines = {"__default__": DefaultQueryProvider()}
+
         for plugin_name, (engine_class,) in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)
             engines[engine_name] = engine_class()
