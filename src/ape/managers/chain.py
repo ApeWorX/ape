@@ -88,7 +88,7 @@ class BlockContainer(BaseManager):
 
     def query(
         self,
-        columns: Union[str, List[str]],
+        *columns: List[str],
         start_block: int = 0,
         stop_block: Optional[int] = None,
         engine_to_use: Optional[QueryAPI] = None,
