@@ -6,7 +6,7 @@ import click
 
 from ape.logging import logger
 from ape.managers.project import ProjectManager
-from ape.utils import cached_property
+from ape.utils import cached_property, get_relative_path
 from ape_console._cli import console
 
 
@@ -24,26 +24,28 @@ class ScriptCommand(click.MultiCommand):
         self.ns: dict = {}
 
     def __get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
+        relative_filepath = get_relative_path(filepath, self._project.path)
+
         # First load the code module by compiling it
         # NOTE: This does not execute the module
-        logger.debug(f"Importing module: {filepath}")
+        logger.debug(f"Importing module: {relative_filepath}")
         try:
             code = compile(filepath.read_text(), filepath, "exec")
         except SyntaxError as e:
-            logger.warning(f"Error parsing {filepath}:\n\t{e.__class__.__name__}: {e}")
+            logger.warning(f"Error parsing {relative_filepath}:\n\t{e.__class__.__name__}: {e}")
             return None  # Prevents stalling scripts
 
         # NOTE: Introspect code structure only for given patterns (do not execute it to find hooks)
         if "cli" in code.co_names:
             # If the module contains a click cli subcommand, process it and return the subcommand
-            logger.debug(f"Found 'cli' command in script: {filepath}")
+            logger.debug(f"Found 'cli' command in script: {relative_filepath}")
 
             ns: dict = {}
             try:
                 # TODO: Analyze security issues from this
                 eval(code, ns, ns)
             except Exception as e:
-                logger.warning(f"Error loading {filepath}:\n\t{e.__class__.__name__}: {e}")
+                logger.warning(f"Error loading {relative_filepath}:\n\t{e.__class__.__name__}: {e}")
                 return None  # NOTE: Allow other scripts to load if one breaks
 
             # NOTE: So we can get the extra locals on callback
@@ -51,9 +53,9 @@ class ScriptCommand(click.MultiCommand):
             return ns["cli"]  # retrun subcommand
 
         elif "main" in code.co_names:
-            logger.debug(f"Found 'main' method in script: {filepath}")
+            logger.debug(f"Found 'main' method in script: {relative_filepath}")
 
-            @click.command(short_help=f"Run {filepath}:main")
+            @click.command(short_help=f"Run '{relative_filepath}:main'")
             def call():
                 ns: dict = {}
                 # TODO: Analyze security issues from this
@@ -66,9 +68,9 @@ class ScriptCommand(click.MultiCommand):
             return call
 
         else:
-            logger.warning(f"No 'main' method or 'cli' command in script: {filepath}")
+            logger.warning(f"No 'main' method or 'cli' command in script: {relative_filepath}")
 
-            @click.command(short_help=f"Run {filepath}")
+            @click.command(short_help=f"Run '{relative_filepath}'")
             def call():
                 ns: dict = {}
                 # TODO: Analyze security issues from this
@@ -100,6 +102,9 @@ class ScriptCommand(click.MultiCommand):
     def commands(self) -> Dict[str, Union[click.Command, click.Group]]:
         commands = {}
         for filepath in self._project.scripts_folder.glob("*.py"):
+            if filepath.stem.startswith("_"):
+                continue  # Ignore any "private" files
+
             cmd = self.__get_command(filepath)
             if cmd:  # NOTE: Don't allow calling commands that failed to load
                 commands[filepath.stem] = cmd
