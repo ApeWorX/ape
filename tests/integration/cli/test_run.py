@@ -11,11 +11,17 @@ def test_run_unknown_script(ape_cli, runner, project):
 
 
 def test_run(ape_cli, runner, project):
-    for script_file in project.scripts_folder.glob("*.py"):
-        if script_file.stem == "__init__":
-            continue
+    result = runner.invoke(ape_cli, ["run"])
+    assert result.exit_code == 0, result.output
+    # By default, no commands are run
+    assert "Super secret script output" not in result.output
 
+    for script_file in project.scripts_folder.glob("*.py"):
         result = runner.invoke(ape_cli, ["run", script_file.stem])
         assert result.exit_code == 0, result.output
 
-        assert "Super secret script output" in result.output
+        if script_file.stem.startswith("_"):
+            assert "Super secret script output" not in result.output
+
+        else:
+            assert "Super secret script output" in result.output
