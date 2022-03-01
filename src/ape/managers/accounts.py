@@ -66,11 +66,9 @@ class AccountManager(BaseManager):
         for container in self.containers.values():
             yield from container.aliases
 
-    @property
-    def accounts(self) -> Iterator[AccountAPI]:
-
+    def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
-            for account in container.accounts():
+            for account in container:
                 yield account
 
     def get_accounts_by_type(self, type_: Type[AccountAPI]) -> List[AccountAPI]:
@@ -85,7 +83,7 @@ class AccountManager(BaseManager):
             List[:class:`~ape.api.accounts.AccountAPI`]
         """
 
-        return [acc for acc in self.accounts if isinstance(acc, type_)]
+        return [acc for acc in self if isinstance(acc, type_)]
 
     def __len__(self) -> int:
         """
@@ -98,7 +96,7 @@ class AccountManager(BaseManager):
         return sum(len(container) for container in self.containers.values())
 
     def __repr__(self) -> str:
-        return "[" + ", ".join(repr(a) for a in self.accounts) + "]"
+        return "[" + ", ".join(repr(a) for a in self) + "]"
 
     @cached_property
     def test_accounts(self) -> List[TestAccountAPI]:
@@ -145,7 +143,7 @@ class AccountManager(BaseManager):
         if alias == "":
             raise ValueError("Cannot use empty string as alias!")
 
-        for account in self.accounts:
+        for account in self:
             if account.alias and account.alias == alias:
                 return account
 
@@ -169,7 +167,7 @@ class AccountManager(BaseManager):
             :class:`~ape.api.accounts.AccountAPI`
         """
 
-        for idx, account in enumerate(self.accounts):
+        for idx, account in enumerate(self):
             if account_id == idx:
                 return account
 

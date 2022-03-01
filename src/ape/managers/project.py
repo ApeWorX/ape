@@ -134,11 +134,9 @@ class ApeProject(ProjectAPI):
         needs_compiling = list(filter(file_needs_compiling, sources))
 
         # Set the context in case compiling a dependency (or anything outside the root project).
-        with self.compiler_manager.config_manager.using_project(
-            self.path, contracts_folder=self.contracts_folder
-        ):
-            self.compiler_manager.config_manager.PROJECT_FOLDER = self.path
-            self.compiler_manager.config_manager.contracts_folder = self.contracts_folder
+        with self.config_manager.using_project(self.path, contracts_folder=self.contracts_folder):
+            self.config_manager.PROJECT_FOLDER = self.path
+            self.config_manager.contracts_folder = self.contracts_folder
             compiled_contract_types = self.compiler_manager.compile(needs_compiling)
             contract_types.update(compiled_contract_types)
 
