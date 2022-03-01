@@ -1,13 +1,12 @@
 from typing import List
 
+from ape.api.providers import ProviderAPI
 from ape.exceptions import AddressError
 from ape.types import AddressType
-from ape.utils import AbstractBase, abstractmethod
-
-from .providers import ProviderAPI
+from ape.utils import BaseInterface, abstractmethod
 
 
-class AddressBase(AbstractBase):
+class AddressBase(BaseInterface):
     """
     A base address API class. All account-types subclass this type.
     """

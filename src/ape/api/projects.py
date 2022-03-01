@@ -11,14 +11,14 @@ from pydantic import ValidationError
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.utils import (
-    AbstractBaseModel,
+    BaseInterfaceModel,
     abstractmethod,
     get_all_files_in_directory,
     get_relative_path,
 )
 
 
-class ProjectAPI(AbstractBaseModel):
+class ProjectAPI(BaseInterfaceModel):
     """
     An abstract base-class for working with projects.
     This class can also be extended to a plugin for supporting non-ape projects.
@@ -132,7 +132,7 @@ class ProjectAPI(AbstractBaseModel):
         }
 
 
-class DependencyAPI(AbstractBaseModel):
+class DependencyAPI(BaseInterfaceModel):
     """
     A base-class for dependency sources, such as GitHub or IPFS.
     """

@@ -3,13 +3,13 @@ from typing import Iterator, Optional
 from ethpm_types import ContractType
 
 from ape.types import AddressType
-from ape.utils import AbstractBaseModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 from . import networks
 from .providers import ReceiptAPI
 
 
-class ExplorerAPI(AbstractBaseModel):
+class ExplorerAPI(BaseInterfaceModel):
     """
     An API class representing a blockchain explorer for a particular network
     in a particular ecosystem.

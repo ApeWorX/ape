@@ -7,7 +7,7 @@ from hexbytes import HexBytes
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
 from ape.types import AddressType
-from ape.utils import AbstractBaseModel, abstractmethod, cached_property
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 from .config import PluginConfig
 
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 LOCAL_NETWORK_NAME = "local"
 
 
-class EcosystemAPI(AbstractBaseModel):
+class EcosystemAPI(BaseInterfaceModel):
     """
     A set of related networks, such as Ethereum.
     """
@@ -319,7 +319,7 @@ class ProviderContextManager:
             self.network_manager.active_provider = self._connected_providers[-1]
 
 
-class NetworkAPI(AbstractBaseModel):
+class NetworkAPI(BaseInterfaceModel):
     """
     A wrapper around a provider for a specific ecosystem.
     """

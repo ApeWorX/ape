@@ -3,10 +3,10 @@ from typing import List, Optional, Set
 
 from ethpm_types import ContractType
 
-from ape.utils import AbstractBaseModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 
-class CompilerAPI(AbstractBaseModel):
+class CompilerAPI(BaseInterfaceModel):
     """
     Compiler plugins, such as for languages like
     `Solidity <https://docs.soliditylang.org/en/v0.8.11/>`__ or

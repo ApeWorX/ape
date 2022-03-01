@@ -569,13 +569,13 @@ class ManagerAccessMixin:
     query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
 
 
-class AbstractBase(ManagerAccessMixin, ABC):
+class BaseInterface(ManagerAccessMixin, ABC):
     """
     Abstract class that has manager access.
     """
 
 
-class AbstractBaseModel(AbstractBase, BaseModel):
+class BaseInterfaceModel(BaseInterface, BaseModel):
     """
     An abstract base-class with manager access on a pydantic base model.
     """
@@ -626,7 +626,7 @@ class AbstractBaseModel(AbstractBase, BaseModel):
 
 __all__ = [
     "abstractmethod",
-    "AbstractBaseModel",
+    "BaseInterfaceModel",
     "cached_property",
     "expand_environment_variables",
     "extract_nested_value",

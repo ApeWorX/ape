@@ -40,7 +40,7 @@ class AccountContainer(AccountContainerAPI):
         return len([*self._keyfiles])
 
 
-# NOTE: `AccountAPI` is an AbstractBaseModel
+# NOTE: `AccountAPI` is an BaseInterfaceModel
 class KeyfileAccount(AccountAPI):
 
     keyfile_path: Path

@@ -6,7 +6,7 @@ from pydantic import BaseModel, NonNegativeInt, root_validator
 
 from ape._compat import Literal
 from ape.types import AddressType
-from ape.utils import AbstractBaseModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractMethodQuery"]
 
@@ -88,7 +88,7 @@ class ContractMethodQuery(_BaseBlockQuery):
     method_args: Dict[str, Any]
 
 
-class QueryAPI(AbstractBaseModel):
+class QueryAPI(BaseInterfaceModel):
     @abstractmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:
         """

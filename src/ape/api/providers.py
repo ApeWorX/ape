@@ -13,7 +13,7 @@ from web3 import Web3
 from ape.exceptions import AddressError, TransactionError
 from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
-from ape.utils import AbstractBaseModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 from . import networks
 from .config import PluginConfig
@@ -42,7 +42,7 @@ class TransactionType(Enum):
     DYNAMIC = "0x02"  # EIP-1559
 
 
-class TransactionAPI(AbstractBaseModel):
+class TransactionAPI(BaseInterfaceModel):
     """
     An API class representing a transaction.
     Ecosystem plugins implement one or more of transaction APIs
@@ -164,7 +164,7 @@ class ConfirmationsProgressBar:
         self._bar.set_description(f"Confirmations ({self._confs}/{self._req_confs})")
 
 
-class ReceiptAPI(AbstractBaseModel):
+class ReceiptAPI(BaseInterfaceModel):
     """
     An abstract class to represent a transaction receipt. The receipt
     contains information about the transaction, such as the status
@@ -277,7 +277,7 @@ class ReceiptAPI(AbstractBaseModel):
         return self
 
 
-class BlockGasAPI(AbstractBaseModel):
+class BlockGasAPI(BaseInterfaceModel):
     """
     An abstract class for representing gas data for a block.
     """
@@ -287,7 +287,7 @@ class BlockGasAPI(AbstractBaseModel):
     base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
 
 
-class BlockConsensusAPI(AbstractBaseModel):
+class BlockConsensusAPI(BaseInterfaceModel):
     """
     An abstract class representing block consensus-data,
     such as PoW-related information regarding the block.
@@ -298,7 +298,7 @@ class BlockConsensusAPI(AbstractBaseModel):
     total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
 
 
-class BlockAPI(AbstractBaseModel):
+class BlockAPI(BaseInterfaceModel):
     """
     An abstract class representing a block and its attributes.
     """
@@ -319,7 +319,7 @@ class BlockAPI(AbstractBaseModel):
         return value
 
 
-class ProviderAPI(AbstractBaseModel):
+class ProviderAPI(BaseInterfaceModel):
     """
     An abstraction of a connection to a network in an ecosystem. Example ``ProviderAPI``
     implementations include the `ape-infura <https://github.com/ApeWorX/ape-infura>`__

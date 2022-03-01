@@ -1,11 +1,11 @@
 from typing import Any, Generic, TypeVar
 
-from ape.utils import AbstractBaseModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 ConvertedType = TypeVar("ConvertedType")
 
 
-class ConverterAPI(Generic[ConvertedType], AbstractBaseModel):
+class ConverterAPI(Generic[ConvertedType], BaseInterfaceModel):
     @abstractmethod
     def is_convertible(self, value: Any) -> bool:
         """
