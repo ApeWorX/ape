@@ -5,10 +5,9 @@ from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic.dataclasses import dataclass
 
-from ape.api import Address, ProviderAPI, ReceiptAPI, TransactionAPI
+from ape.api import Address, ReceiptAPI, TransactionAPI
 from ape.api.address import AddressBase
 from ape.exceptions import (
-    AddressError,
     ArgumentsLengthError,
     ContractError,
     ProviderNotConnectedError,
@@ -25,11 +24,12 @@ if TYPE_CHECKING:
 
 class ContractConstructor(ManagerAccessMixin):
     def __init__(
-        self, deployment_bytecode: HexBytes, abi: ConstructorABI, provider: ProviderAPI
+        self,
+        deployment_bytecode: HexBytes,
+        abi: ConstructorABI,
     ) -> None:
         self.deployment_bytecode = deployment_bytecode
         self.abi = abi
-        self.provider = provider
 
         if not self.deployment_bytecode:
             logger.warning("Deploying an empty contract (no bytecode)")
@@ -77,14 +77,6 @@ class ContractCall(ManagerAccessMixin):
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.conversion_manager.convert(v, tuple)
 
-    @property
-    def provider(self) -> ProviderAPI:
-        if self.network_manager.active_provider is None:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
-            )
-        return self.network_manager.active_provider
-
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         kwargs = dict(
             (k, v)
@@ -128,15 +120,6 @@ class ContractCallHandler(ManagerAccessMixin):
     def __repr__(self) -> str:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
         return abis[-1].signature
-
-    @property
-    def provider(self) -> ProviderAPI:
-        if self.network_manager.active_provider is None:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
-            )
-
-        return self.network_manager.active_provider
 
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.conversion_manager.convert(v, tuple)
@@ -196,15 +179,6 @@ class ContractTransaction(ManagerAccessMixin):
             self.address, self.abi, *args, **kwargs
         )
 
-    @property
-    def provider(self) -> ProviderAPI:
-        if self.network_manager.active_provider is None:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
-            )
-
-        return self.network_manager.active_provider
-
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         if "sender" in kwargs:
             sender = kwargs["sender"]
@@ -242,14 +216,6 @@ class ContractTransactionHandler(ManagerAccessMixin):
             address=self.contract.address,
         )(*args, **kwargs)
 
-    @property
-    def provider(self) -> ProviderAPI:
-        if self.network_manager.active_provider is None:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
-            )
-        return self.network_manager.active_provider
-
 
 @dataclass
 class ContractLog:
@@ -268,14 +234,6 @@ class ContractEvent(ManagerAccessMixin):
         self.contract = contract
         self.abis = abis
         self.cached_logs = cached_logs
-
-    @property
-    def provider(self) -> ProviderAPI:
-        if self.network_manager.active_provider is None:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
-            )
-        return self.network_manager.active_provider
 
 
 class ContractInstance(AddressBase):
@@ -446,14 +404,6 @@ class ContractContainer(ManagerAccessMixin):
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
 
-    @property
-    def provider(self) -> ProviderAPI:
-        if self.network_manager.active_provider is None:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
-            )
-        return self.network_manager.active_provider
-
     def at(self, address: str) -> ContractInstance:
         """
         Get a contract at the given address.
@@ -483,7 +433,6 @@ class ContractContainer(ManagerAccessMixin):
         args = self.conversion_manager.convert(args, tuple)
         constructor = ContractConstructor(  # type: ignore
             abi=self.contract_type.constructor,
-            provider=self.provider,
             deployment_bytecode=self.contract_type.get_deployment_bytecode() or b"",  # type: ignore
         )
 

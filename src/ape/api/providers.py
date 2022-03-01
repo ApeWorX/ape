@@ -10,7 +10,7 @@ from pydantic import Field, validator
 from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
-from ape.exceptions import AddressError, TransactionError
+from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod
@@ -198,15 +198,6 @@ class ReceiptAPI(BaseInterfaceModel):
         Handle provider-specific errors regarding a non-successful
         :class:`~api.providers.TransactionStatusEnum`.
         """
-
-    @property
-    def provider(self) -> "ProviderAPI":
-        if self.network_manager.active_provider is None:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
-            )
-
-        return self.network_manager.active_provider
 
     @property
     def ran_out_of_gas(self) -> bool:

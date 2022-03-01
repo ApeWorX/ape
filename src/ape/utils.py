@@ -28,7 +28,7 @@ from pydantic import BaseModel
 from pygit2 import Repository as GitRepository
 from tqdm import tqdm  # type: ignore
 
-from ape.exceptions import CompilerError, ProjectError
+from ape.exceptions import AddressError, CompilerError, ProjectError
 from ape.logging import logger
 
 try:
@@ -41,6 +41,7 @@ except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
 if TYPE_CHECKING:
+    from ape.api.providers import ProviderAPI
     from ape.managers.accounts import AccountManager
     from ape.managers.chain import ChainManager
     from ape.managers.compilers import CompilerManager
@@ -567,6 +568,24 @@ class ManagerAccessMixin:
     project_manager: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
 
     query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
+
+    @property
+    def provider(self) -> "ProviderAPI":
+        """
+        The current active provider if connected to one.
+
+        Raises:
+            :class:`~ape.exceptions.AddressError`: When there is no active
+               provider at runtime.
+
+        Returns:
+            :class:`~ape.api.providers.ProviderAPI`
+        """
+        if self.network_manager.active_provider is None:
+            raise AddressError(
+                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
+            )
+        return self.network_manager.active_provider
 
 
 class BaseInterface(ManagerAccessMixin, ABC):

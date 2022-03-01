@@ -3,10 +3,10 @@ from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import pandas as pd
 
-from ape.api import BlockAPI, ProviderAPI, ReceiptAPI
+from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import AddressBase
 from ape.api.query import BlockQuery, QueryAPI
-from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
+from ape.exceptions import ChainError, UnknownSnapshotError
 from ape.logging import logger
 from ape.types import AddressType, BlockID, SnapshotID
 from ape.utils import cached_property
@@ -14,16 +14,7 @@ from ape.utils import cached_property
 from .base import BaseManager
 
 
-class _ConnectedChain(BaseManager):
-    @property
-    def provider(self) -> ProviderAPI:
-        if not self.network_manager.active_provider:
-            raise ProviderNotConnectedError()
-
-        return self.network_manager.active_provider
-
-
-class BlockContainer(_ConnectedChain):
+class BlockContainer(BaseManager):
     """
     A list of blocks on the chain.
 
@@ -255,7 +246,7 @@ class BlockContainer(_ConnectedChain):
         return self.provider.get_block(block_id)
 
 
-class AccountHistory(_ConnectedChain):
+class AccountHistory(BaseManager):
     """
     A container mapping account addresses to the transaction from the active session.
     """
@@ -346,7 +337,7 @@ class AccountHistory(_ConnectedChain):
         }
 
 
-class ChainManager(_ConnectedChain):
+class ChainManager(BaseManager):
     """
     A class for managing the state of the active blockchain.
     Also handy for querying data about the chain and managing local caches.

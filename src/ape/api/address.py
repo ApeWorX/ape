@@ -1,7 +1,5 @@
 from typing import List
 
-from ape.api.providers import ProviderAPI
-from ape.exceptions import AddressError
 from ape.types import AddressType
 from ape.utils import BaseInterface, abstractmethod
 
@@ -10,25 +8,6 @@ class AddressBase(BaseInterface):
     """
     A base address API class. All account-types subclass this type.
     """
-
-    @property
-    def provider(self) -> ProviderAPI:
-        """
-        The current active provider if connected to one.
-
-        Raises:
-            :class:`~ape.exceptions.AddressError`: When there is no active
-               provider at runtime.
-
-        Returns:
-            :class:`~ape.api.providers.ProviderAPI`
-        """
-        if self.network_manager.active_provider is None:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
-            )
-
-        return self.network_manager.active_provider
 
     @property
     @abstractmethod
