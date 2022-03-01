@@ -380,7 +380,7 @@ class GithubClient:
         The available ``ape`` plugins, found from looking at the ``ApeWorx`` Github organization.
 
         Returns:
-            Set[str]: The plugin names as 'ape_plugin_name' (module-like).
+            Set[str]: The plugin names as ``'ape_plugin_name'`` (module-like).
         """
 
         return {
@@ -567,7 +567,7 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
 class injected_before_use(property):
     """
     Injected properties are injected class variables that must be set before use
-    NOTE: do not appear in a Pydantic model's set of properties
+    **NOTE**: do not appear in a Pydantic model's set of properties.
     """
 
     def __get__(self, *args):
