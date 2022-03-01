@@ -59,7 +59,7 @@ def plugins_argument():
                 config_path = config_path / CONFIG_FILE_NAME
 
             config = load_config(config_path)
-            plugins = config.get("plugins", [])
+            plugins = config.get("plugins") or []
 
             if not plugins:
                 ctx.obj.logger.warning(f"No plugins found in config '{config_path}'.")
