@@ -1,8 +1,6 @@
 import json
 import shutil
-import sys
 import tempfile
-from importlib import import_module
 from pathlib import Path
 from typing import Dict, List, Optional, Type, Union
 
@@ -585,69 +583,6 @@ class ProjectManager(BaseManager):
 
         manifest = self._project.create_manifest(file_paths, use_cache=use_cache)
         return manifest.contract_types or {}
-
-    def run_script(self, name: str, interactive: bool = False):
-        """
-        Run a script from the project :py:attr:`~ape.mangers.project.ProjectManager.scripts_folder`
-        directory.
-
-        Args:
-            name (str): The script name.
-            interactive (bool): Whether to launch the console as well. Defaults to ``False``.
-        """
-
-        available_scripts = {p.stem: p.resolve() for p in self.scripts_folder.glob("*.py")}
-
-        if Path(name).exists():
-            script_file = Path(name).resolve()
-
-        elif not self.scripts_folder.exists():
-            raise ProjectError("No 'scripts/' directory detected to run script.")
-
-        elif name not in available_scripts:
-            raise ProjectError(f"No script named '{name}' detected in scripts folder.")
-
-        else:
-            script_file = self.scripts_folder / name
-
-        script_path = get_relative_path(script_file, Path.cwd())
-        script_parts = script_path.parts[:-1]
-
-        if any(p == ".." for p in script_parts):
-            raise ProjectError("Cannot execute script from outside current directory")
-
-        # Add to Python path so we can search for the given script to import
-        root_path = Path(".").resolve().root
-        sys.path.append(root_path)
-
-        # Load the python module to find our hook functions
-        try:
-            import_str = ".".join(self.scripts_folder.resolve().parts[1:] + (script_path.stem,))
-            py_module = import_module(import_str)
-        except Exception as err:
-            logger.error_from_exception(err, f"Exception while executing script: {script_path}")
-            sys.exit(1)
-
-        finally:
-            # Undo adding the path to make sure it's not permanent
-            sys.path.remove(root_path)
-
-        # Execute the hooks
-        if hasattr(py_module, "cli"):
-            # TODO: Pass context to ``cli`` before calling it
-            py_module.cli()  # type: ignore
-
-        elif hasattr(py_module, "main"):
-            # NOTE: ``main()`` accepts no arguments
-            py_module.main()  # type: ignore
-
-        else:
-            raise ProjectError("No `main` or `cli` method detected")
-
-        if interactive:
-            from ape_console._cli import console
-
-            return console()
 
     def _load_dependencies(self) -> Dict[str, PackageManifest]:
         return {d.name: d.extract_manifest() for d in self.config_manager.dependencies}
