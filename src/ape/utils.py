@@ -28,7 +28,7 @@ from pydantic import BaseModel
 from pygit2 import Repository as GitRepository
 from tqdm import tqdm  # type: ignore
 
-from ape.exceptions import AddressError, CompilerError, ProjectError
+from ape.exceptions import CompilerError, ProjectError, ProviderNotConnectedError
 from ape.logging import logger
 
 try:
@@ -582,9 +582,7 @@ class ManagerAccessMixin:
             :class:`~ape.api.providers.ProviderAPI`
         """
         if self.network_manager.active_provider is None:
-            raise AddressError(
-                f"Incorrectly implemented provider API for class '{type(self).__name__}'."
-            )
+            raise ProviderNotConnectedError()
         return self.network_manager.active_provider
 
 
