@@ -1,17 +1,15 @@
 import os
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Generator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import root_validator
 
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
 from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.logging import logger
-from ape.utils import load_config
-
-from .base import BaseManager
+from ape.utils import BaseInterfaceModel, load_config
 
 if TYPE_CHECKING:
     from .project import ProjectManager
@@ -25,7 +23,7 @@ class DeploymentConfig(PluginConfig):
     contract_type: str
 
 
-class ConfigManager(BaseManager, BaseModel):
+class ConfigManager(BaseInterfaceModel):
     """
     The singleton responsible for managing the ``ape-config.yaml`` project file.
     The config manager is useful for loading plugin configurations which contain
@@ -72,8 +70,13 @@ class ConfigManager(BaseManager, BaseModel):
 
     _plugin_configs_by_project: Dict[str, Dict[str, PluginConfig]] = {}
 
-    class Config:
-        arbitrary_types_allowed = True
+    @root_validator(pre=True)
+    def check_config_for_extra_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        extra = [key for key in values.keys() if key not in cls.__fields__]
+        if extra:
+            logger.warning(f"Unprocessed extra config fields not set '{extra}'.")
+
+        return values
 
     @property
     def packages_folder(self) -> Path:
