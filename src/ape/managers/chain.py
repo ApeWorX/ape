@@ -4,7 +4,7 @@ from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 import pandas as pd
 
 from ape.api import BlockAPI, ReceiptAPI
-from ape.api.address import AddressBase
+from ape.api.address import BaseAddress
 from ape.api.query import BlockQuery, QueryAPI
 from ape.exceptions import ChainError, UnknownSnapshotError
 from ape.logging import logger
@@ -258,7 +258,7 @@ class AccountHistory(BaseManager):
 
         return self.conversion_manager.convert
 
-    def __getitem__(self, address: Union[AddressBase, AddressType, str]) -> List[ReceiptAPI]:
+    def __getitem__(self, address: Union[BaseAddress, AddressType, str]) -> List[ReceiptAPI]:
         """
         Get the list of transactions from the active session for the given address.
 

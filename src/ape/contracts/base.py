@@ -6,7 +6,7 @@ from hexbytes import HexBytes
 from pydantic.dataclasses import dataclass
 
 from ape.api import Address, ReceiptAPI, TransactionAPI
-from ape.api.address import AddressBase
+from ape.api.address import BaseAddress
 from ape.exceptions import (
     ArgumentsLengthError,
     ContractError,
@@ -236,7 +236,7 @@ class ContractEvent(ManagerAccessMixin):
         self.cached_logs = cached_logs
 
 
-class ContractInstance(AddressBase):
+class ContractInstance(BaseAddress):
     """
     An interactive instance of a smart contract.
     After you deploy a contract using the :class:`~ape.api.accounts.AccountAPI.deploy` method,
@@ -334,7 +334,7 @@ class ContractInstance(AddressBase):
             List[str]
         """
         return list(
-            set(super(AddressBase, self).__dir__()).union(
+            set(super(BaseAddress, self).__dir__()).union(
                 self._view_methods_, self._mutable_methods_, self._events_
             )
         )
@@ -354,8 +354,8 @@ class ContractInstance(AddressBase):
             any: The return value from the contract call, or a transaction receipt.
         """
 
-        if attr_name in set(super(AddressBase, self).__dir__()):
-            return super(AddressBase, self).__getattribute__(attr_name)
+        if attr_name in set(super(BaseAddress, self).__dir__()):
+            return super(BaseAddress, self).__getattribute__(attr_name)
 
         if attr_name not in set((*self._view_methods_, *self._mutable_methods_, *self._events_)):
             # Didn't find anything that matches
@@ -447,11 +447,11 @@ class ContractContainer(ManagerAccessMixin):
 
 
 def _Contract(
-    address: Union[str, AddressBase, AddressType],
+    address: Union[str, BaseAddress, AddressType],
     networks: "NetworkManager",
     conversion_manager: "ConversionManager",
     contract_type: Optional[ContractType] = None,
-) -> AddressBase:
+) -> BaseAddress:
     """
     Function used to triage whether we have a contract type available for
     the given address/network combo, or explicitly provided. If none are found,

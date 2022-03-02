@@ -34,7 +34,7 @@ class AccountContainer(AccountContainerAPI):
     @property
     def accounts(self) -> Iterator[AccountAPI]:
         for keyfile in self._keyfiles:
-            yield KeyfileAccount(container=self, keyfile_path=keyfile)  # type: ignore
+            yield KeyfileAccount(keyfile_path=keyfile)
 
     def __len__(self) -> int:
         return len([*self._keyfiles])

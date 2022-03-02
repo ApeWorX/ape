@@ -7,7 +7,7 @@ from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_a
 from hexbytes import HexBytes
 
 from ape.api import ConverterAPI
-from ape.api.address import AddressBase
+from ape.api.address import BaseAddress
 from ape.exceptions import ConversionError
 from ape.types import AddressType
 from ape.utils import cached_property
@@ -40,13 +40,13 @@ class HexConverter(ConverterAPI):
 
 class AddressAPIConverter(ConverterAPI):
     """
-    A converter that converts an :class:`~ape.api.address.AddressBase` to a ``AddressType``.
+    A converter that converts an :class:`~ape.api.address.BaseAddress` to a ``AddressType``.
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, AddressBase)
+        return isinstance(value, BaseAddress)
 
-    def convert(self, value: AddressBase) -> AddressType:
+    def convert(self, value: BaseAddress) -> AddressType:
         """
         Convert the given value to ``AddressType``.
 

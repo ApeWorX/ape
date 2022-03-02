@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, ClassVar, Iterator, List, Optional, Type, Union, cast
+from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
 
 import click
 from eth_account import Account
@@ -8,21 +8,19 @@ from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.types.signatures import _Signature
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, injected_before_use
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
-from .address import AddressBase
+from .address import BaseAddress
 from .providers import ReceiptAPI, TransactionAPI, TransactionType
 
 if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance
 
 
-class AccountAPI(BaseInterfaceModel, AddressBase):
+class AccountAPI(BaseInterfaceModel, BaseAddress):
     """
     An API class representing an account.
     """
-
-    container: ClassVar["AccountContainerAPI"] = cast("AccountContainerAPI", injected_before_use())
 
     def __dir__(self) -> List[str]:
         """
@@ -31,7 +29,7 @@ class AccountAPI(BaseInterfaceModel, AddressBase):
         Returns:
             List[str]: Method names that IPython uses for tab completion.
         """
-        return list(super(AddressBase, self).__dir__()) + [
+        return list(super(BaseAddress, self).__dir__()) + [
             "alias",
             "sign_message",
             "sign_transaction",
@@ -145,7 +143,7 @@ class AccountAPI(BaseInterfaceModel, AddressBase):
 
     def transfer(
         self,
-        account: Union[str, AddressType, AddressBase],
+        account: Union[str, AddressType, BaseAddress],
         value: Union[str, int, None] = None,
         data: Union[bytes, str, None] = None,
         **kwargs,
@@ -302,7 +300,7 @@ class AccountContainerAPI(BaseInterfaceModel):
         """
         self._verify_account_type(account)
 
-        if account.address in self.accounts:  # type: ignore
+        if account.address in self:
             raise AccountsError(f"Account '{account.address}' already in container.")
 
         self._verify_unused_alias(account)
@@ -324,7 +322,7 @@ class AccountContainerAPI(BaseInterfaceModel):
         """
         self._verify_account_type(account)
 
-        if account.address not in self.accounts:  # type: ignore
+        if account.address not in self:
             raise AccountsError(f"Account '{account.address}' not known.")
 
         self.__delitem__(account.address)

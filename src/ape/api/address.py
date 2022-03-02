@@ -4,7 +4,7 @@ from ape.types import AddressType
 from ape.utils import BaseInterface, abstractmethod
 
 
-class AddressBase(BaseInterface):
+class BaseAddress(BaseInterface):
     """
     A base address API class. All account-types subclass this type.
     """
@@ -18,7 +18,7 @@ class AddressBase(BaseInterface):
 
     def __eq__(self, other: object) -> bool:
         """
-        Compares :class:`~ape.api.AddressBase` / ``str`` objects by converting to ``AddressType``.
+        Compares :class:`~ape.api.BaseAddress` / ``str`` objects by converting to ``AddressType``.
 
         Returns:
             bool: comparison result
@@ -98,7 +98,7 @@ class AddressBase(BaseInterface):
         return len(self.code) > 0
 
 
-class Address(AddressBase):
+class Address(BaseAddress):
     """
     A generic blockchain address.
 

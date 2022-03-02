@@ -54,6 +54,11 @@ class CompilerManager(BaseManager):
         registered_compilers = {}
 
         for plugin_name, (extensions, compiler_class) in self.plugin_manager.register_compiler:
+
+            # TODO: Investigate side effects of loading compiler plugins.
+            #       See if this needs to be refactored.
+            self.config_manager.get_config(plugin_name=plugin_name)
+
             compiler = compiler_class()
 
             for extension in extensions:

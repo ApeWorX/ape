@@ -202,6 +202,4 @@ class AccountManager(BaseManager):
             bool: ``True`` when the given address is found.
         """
 
-        return any(
-            address in container.accounts for container in self.containers.values()  # type: ignore
-        )
+        return any(address in container for container in self.containers.values())
