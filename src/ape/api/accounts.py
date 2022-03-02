@@ -256,7 +256,7 @@ class AccountContainerAPI(BaseInterfaceModel):
 
     @property
     @abstractmethod
-    def accounts(self):
+    def accounts(self) -> Iterator[AccountAPI]:
         """
         Iterate over all accounts.
 
@@ -302,7 +302,7 @@ class AccountContainerAPI(BaseInterfaceModel):
         """
         self._verify_account_type(account)
 
-        if account.address in self.accounts:
+        if account.address in self.accounts:  # type: ignore
             raise AccountsError(f"Account '{account.address}' already in container.")
 
         self._verify_unused_alias(account)
@@ -324,7 +324,7 @@ class AccountContainerAPI(BaseInterfaceModel):
         """
         self._verify_account_type(account)
 
-        if account.address not in self.accounts:
+        if account.address not in self.accounts:  # type: ignore
             raise AccountsError(f"Account '{account.address}' not known.")
 
         self.__delitem__(account.address)
