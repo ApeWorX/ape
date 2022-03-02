@@ -100,7 +100,7 @@ def get_user_selected_account(
         :class:`~ape.api.accounts.AccountAPI`
     """
 
-    if account_type and (type(account_type) != type or not issubclass(account_type, AccountAPI)):
+    if account_type and not issubclass(account_type, AccountAPI):
         raise AccountsError(f"Cannot return accounts with type '{account_type}'.")
 
     prompt = AccountAliasPromptChoice(account_type=account_type, prompt_message=prompt_message)

@@ -98,7 +98,7 @@ class BaseTransaction(TransactionAPI):
         signed_txn = encode_transaction(unsigned_txn, signature)
 
         if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
-            raise SignatureError("Recovered Signer doesn't match sender!")
+            raise SignatureError("Recovered signer doesn't match sender!")
 
         return signed_txn
 
