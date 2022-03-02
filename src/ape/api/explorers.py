@@ -17,7 +17,6 @@ class ExplorerAPI(BaseInterfaceModel):
 
     name: str  # Plugin name
     network: networks.NetworkAPI
-    request_header: str
 
     @abstractmethod
     def get_address_url(self, address: AddressType) -> str:
