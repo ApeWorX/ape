@@ -9,8 +9,26 @@ from ape.utils import github_client
 
 @click.command(short_help="Initalize an ape project")
 @ape_cli_context()
-@click.option("--github")
+@click.option(
+    "--github", metavar="GH_username/repo", help="Add github_username/repository to clone project"
+)
 def cli(cli_ctx, github):
+    """
+    Ape Init allows the user to create an ape project with
+    default folders and ape-config.yaml
+
+        project_name/\n
+            contracts/\n
+            tests/\n
+            scripts/\n
+            ape-config.yaml\n
+
+    ape-config.yaml is to manage project dependencies such as plugins.
+    Adding plugins is format sensitive.
+
+    Ape init has an [OPTIONAL] argument to clone repositories
+    `ape init --github github_username/repository_name`
+    """
     if github:
         try:
             github_client.clone_repo(github, Path.cwd())
