@@ -12,7 +12,7 @@ from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak, to_bytes, to_checksum_address, to_int
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
-from pydantic import Field, validator
+from pydantic import Field, root_validator, validator
 
 from ape.api import (
     BlockAPI,
@@ -84,13 +84,13 @@ class StaticFeeTransaction(BaseTransaction):
     gas_price: Optional[int] = Field(None, alias="gasPrice")
     max_priority_fee: Optional[int] = Field(None, exclude=True)
     type: TransactionType = Field(TransactionType.STATIC, exclude=True)
+    max_fee: Optional[int] = Field(None, exclude=True)
 
-    def __init__(self, **data) -> None:
-        # NOTE: Establishes the ``max_fee`` by multiplying the `gas_limit` by
-        # the `gas_price`. Pydantic doesn't handle calculated fields well.
-
-        data["max_fee"] = data.get("gas_limit", 0) * data.get("gas_price", 0)
-        super().__init__(**data)
+    @root_validator(pre=True)
+    def calculate_read_only_max_fee(cls, values) -> Dict:
+        # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
+        values["max_fee"] = values.get("gas_limit", 0) * values.get("gas_price", 0)
+        return values
 
 
 class DynamicFeeTransaction(BaseTransaction):

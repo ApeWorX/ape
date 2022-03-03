@@ -616,7 +616,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
         # Filter out protected/private members
         return [member for member in super().__dir__() if not member.startswith("_")]
 
-    def dict(self, *args, **kwargs) -> dict:
+    def dict(self, *args, **kwargs) -> Dict:
         if "by_alias" not in kwargs:
             kwargs["by_alias"] = True
 
