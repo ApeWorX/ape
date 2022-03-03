@@ -10,12 +10,12 @@ from pydantic import Field, validator
 from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
+from ape.api.config import PluginConfig
+from ape.api.networks import NetworkAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod
-
-from . import PluginConfig, networks
 
 if TYPE_CHECKING:
     from ape.api.explorers import ExplorerAPI
@@ -319,7 +319,7 @@ class ProviderAPI(BaseInterfaceModel):
     name: str
     """The name of the provider (should be the plugin name)."""
 
-    network: networks.NetworkAPI
+    network: NetworkAPI
     """A reference to the network this provider provides."""
 
     provider_settings: dict
