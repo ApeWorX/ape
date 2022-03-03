@@ -142,13 +142,23 @@
   <div class="tex2jax_ignore mathjax_ignore section" id="module-ape.utils">
 <span id="ape-utils"></span><h1>ape.utils<a class="headerlink" href="#module-ape.utils" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="ape.utils.AbstractDataClassMeta">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">AbstractDataClassMeta</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict_</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.AbstractDataClassMeta" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dataclassy.dataclass.DataClassMeta</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABCMeta</span></code></p>
-<p>A <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html">data class</a> that
-is also abstract (meaning it has methods that <strong>must</strong> be implemented in a
-sub-class or else errors will occur). This class cannot be instantiated
-on its own.</p>
+<dt id="ape.utils.BaseInterfaceModel">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">BaseInterfaceModel</span></code><a class="headerlink" href="#ape.utils.BaseInterfaceModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.utils.BaseInterface</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<p>An abstract base-class with manager access on a pydantic base model.</p>
+<dl class="py method">
+<dt id="ape.utils.BaseInterfaceModel.dict">
+<code class="sig-name descname"><span class="pre">dict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><a class="headerlink" href="#ape.utils.BaseInterfaceModel.dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.utils.BaseInterfaceModel.json">
+<code class="sig-name descname"><span class="pre">json</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#ape.utils.BaseInterfaceModel.json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a JSON representation of the model, <cite>include</cite> and <cite>exclude</cite> arguments as per <cite>dict()</cite>.</p>
+<p><cite>encoder</cite> is an optional function to supply as <cite>default</cite> to json.dumps(), other arguments as per <cite>json.dumps()</cite>.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -176,14 +186,6 @@ accounts using the <a class="reference internal" href="managers.html#ape.manager
 <dd><p>Alias for field number 1</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py function">
-<dt id="ape.utils.abstractdataclass">
-<code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">abstractdataclass</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">cls:</span> <span class="pre">Optional[type]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">*</span></em>, <em class="sig-param"><span class="pre">meta=&lt;class</span> <span class="pre">'ape.utils.AbstractDataClassMeta'&gt;</span></em>, <em class="sig-param"><span class="pre">**options</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.utils.abstractdataclass" title="Permalink to this definition">¶</a></dt>
-<dd><p>A <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html">data class</a> that is
-also abstract (meaning it has methods that <strong>must</strong> be implemented or else
-errors will occur. This class cannot be instantiated on its own.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -341,7 +343,7 @@ which may or may not share a common ancestor.
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.utils.</span></code><code class="sig-name descname"><span class="pre">injected_before_use</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.injected_before_use" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">property</span></code></p>
 <p>Injected properties are injected class variables that must be set before use
-NOTE: do not appear in a Pydantic model’s set of properties</p>
+<strong>NOTE</strong>: do not appear in a Pydantic model’s set of properties.</p>
 </dd></dl>
 
 <dl class="py function">

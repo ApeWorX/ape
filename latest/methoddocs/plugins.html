@@ -269,10 +269,11 @@ See the <a class="reference internal" href="managers.html#ape.managers.config.Co
 information on the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>.</p>
 <dl class="py method">
 <dt id="ape.plugins.config.Config.config_class">
-<code class="sig-name descname"><span class="pre">config_class</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><span class="pre">ape.api.config.ConfigItem</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.plugins.config.Config.config_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>A hook that returns a <a class="reference internal" href="api.html#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigItem</span></code></a> parser class that can be
+<code class="sig-name descname"><span class="pre">config_class</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><span class="pre">ape.api.config.PluginConfig</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.plugins.config.Config.config_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>A hook that returns a <a class="reference internal" href="api.html#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">PluginConfig</span></code></a> parser class that can be
 used to deconstruct the user config options for this plugins.</p>
-<p>NOTE: If none are specified, all injected <a class="reference internal" href="api.html#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.config.ConfigItem</span></code></a>’s are empty.</p>
+<p><strong>NOTE</strong>: If none are specified, all injected <a class="reference internal" href="api.html#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.config.PluginConfig</span></code></a>’s
+are empty.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">Config</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">config_class</span><span class="p">():</span>
@@ -281,7 +282,7 @@ used to deconstruct the user config options for this plugins.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="api.html#ape.api.config.ConfigItem" title="ape.api.config.ConfigItem"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigItem</span></code></a>]</p>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="api.html#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">PluginConfig</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -508,7 +509,7 @@ via <code class="docutils literal notranslate"><span class="pre">.gitmodules</sp
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Iterator[Type[<code class="xref py py-class docutils literal notranslate"><span class="pre">QueryAPI</span></code>]]</p>
+<dd class="field-odd"><p>Iterator[Type[<a class="reference internal" href="api.html#ape.api.query.QueryAPI" title="ape.api.query.QueryAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryAPI</span></code></a>]]</p>
 </dd>
 </dl>
 </dd></dl>

@@ -395,7 +395,7 @@ in the right way.</p>
 <dl class="py class">
 <dt id="ape.cli.options.ApeCliContextObject">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></code><code class="sig-name descname"><span class="pre">ApeCliContextObject</span></code><a class="headerlink" href="#ape.cli.options.ApeCliContextObject" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.utils.ManagerAccessMixin</span></code></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">click</span></code> context object class. Use via <a class="reference internal" href="#ape.cli.options.ape_cli_context" title="ape.cli.options.ape_cli_context"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape_cli_context()</span></code></a>.
 It provides common CLI utilities for ape, such as logging or
 access to the managers.</p>
@@ -410,18 +410,6 @@ access to the managers.</p>
 <li><p><strong>base_error</strong> (<em>Exception</em><em>, </em><em>optional</em>) – Optionally provide
 an error to preserve the exception stack.</p></li>
 </ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="ape.cli.options.ApeCliContextObject.project">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">project</span></code><a class="headerlink" href="#ape.cli.options.ApeCliContextObject.project" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class representing the project that is active at runtime.
-(This is the same object as from <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">ape</span> <span class="pre">import</span> <span class="pre">project</span></code>).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
