@@ -15,7 +15,6 @@ def cli(cli_ctx, github):
         try:
             github_client.clone_repo(github, Path.cwd())
         except Exception as err:
-
             raise Abort(f"({type(err).__name__}) {err.data}") from err
 
         shutil.rmtree(Path.cwd() / ".git")
