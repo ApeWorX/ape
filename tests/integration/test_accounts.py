@@ -15,3 +15,10 @@ def test_transfer(sender, receiver):
     sender.transfer(receiver, "1 gwei")
     expected = initial_balance + convert("1 gwei", int)
     assert receiver.balance == expected
+
+
+def test_transfer_using_type_0(sender, receiver):
+    initial_balance = receiver.balance
+    sender.transfer(receiver, "1 gwei", type=0)
+    expected = initial_balance + convert("1 gwei", int)
+    assert receiver.balance == expected

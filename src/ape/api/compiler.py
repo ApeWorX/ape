@@ -3,24 +3,19 @@ from typing import List, Optional, Set
 
 from ethpm_types import ContractType
 
-from ape.utils import abstractdataclass, abstractmethod
-
-from .config import ConfigItem
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 
-@abstractdataclass
-class CompilerAPI:
+class CompilerAPI(BaseInterfaceModel):
     """
     Compiler plugins, such as for languages like
     `Solidity <https://docs.soliditylang.org/en/v0.8.11/>`__ or
     `Vyper <https://vyper.readthedocs.io/en/stable/>`__, implement this API.
+
     See the repository for the `ape-solidity <https://github.com/ApeWorX/ape-solidity>`__ plugin or
     the `ape-vyper <https://github.com/ApeWorX/ape-vyper>`__ plugin as example implementations of
     this API.
     """
-
-    config: ConfigItem
-    """The :class:`ape.api.config.ConfigItem` for this compiler plugin."""
 
     @property
     @abstractmethod

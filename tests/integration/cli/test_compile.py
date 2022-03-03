@@ -28,7 +28,7 @@ def test_no_compiler_for_extension(ape_cli, runner, project):
 
 
 @skip_projects(["empty-config", "no-config", "script", "unregistered-contracts", "test", "geth"])
-def test_compile(ape_cli, runner, project):
+def test_compile(ape_cli, runner, project, clean_cache):
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     # First time it compiles, it compiles fully
@@ -42,7 +42,7 @@ def test_compile(ape_cli, runner, project):
 
 
 @skip_projects_except(["one-interface"])
-def test_can_access_contracts(project):
+def test_can_access_contracts(project, clean_cache):
     # This test does not use the CLI but still requires a project or run off of.
     assert project.Interface, "Unable to access contract when needing to compile"
     assert project.Interface, "Unable to access contract when not needing to compile"

@@ -10,6 +10,19 @@ from ape.utils import gas_estimation_error_message
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
+
+    _tester: PyEVMBackend
+    _web3: Web3
+
+    def __init__(self, **data) -> None:
+        super().__init__(**data)
+
+        self._tester = PyEVMBackend.from_mnemonic(
+            mnemonic=self.config["mnemonic"],
+            num_accounts=self.config["number_of_accounts"],
+        )
+        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
+
     def connect(self):
         pass
 
@@ -19,15 +32,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def update_settings(self, new_settings: dict):
         pass
 
-    def __post_init__(self):
-        self._tester = PyEVMBackend.from_mnemonic(
-            self.config["mnemonic"], num_accounts=self.config["number_of_accounts"]
-        )
-        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
-
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         try:
-            return self._web3.eth.estimate_gas(txn.as_dict())  # type: ignore
+            return self._web3.eth.estimate_gas(txn.dict())  # type: ignore
         except ValidationError as err:
             message = gas_estimation_error_message(err)
             raise TransactionError(base_err=err, message=message) from err
@@ -44,7 +51,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return 0
 
     def send_call(self, txn: TransactionAPI) -> bytes:
-        data = txn.as_dict()
+        data = txn.dict(exclude_none=True)
         if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)
 
@@ -57,7 +64,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
-            txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
+            txn_hash = self._web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:

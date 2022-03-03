@@ -5,18 +5,16 @@ import shutil
 import sys
 import tempfile
 import zipfile
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from collections import namedtuple
-from functools import lru_cache, partial
+from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Set
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Mapping, Optional, Set, cast
 
 import pygit2  # type: ignore
 import requests
 import yaml
-from dataclassy import dataclass
-from dataclassy.dataclass import DataClassMeta
 from eth_account import Account
 from eth_account.hdaccount import HDPath, seed_from_mnemonic
 from github import Github, UnknownObjectException
@@ -26,10 +24,11 @@ from github.Repository import Repository as GithubRepository
 from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
+from pydantic import BaseModel
 from pygit2 import Repository as GitRepository
 from tqdm import tqdm  # type: ignore
 
-from ape.exceptions import CompilerError, ProjectError
+from ape.exceptions import CompilerError, ProjectError, ProviderNotConnectedError
 from ape.logging import logger
 
 try:
@@ -40,6 +39,20 @@ try:
     from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
+
+if TYPE_CHECKING:
+    from ape.api.providers import ProviderAPI
+    from ape.managers.accounts import AccountManager
+    from ape.managers.chain import ChainManager
+    from ape.managers.compilers import CompilerManager
+    from ape.managers.config import ConfigManager
+    from ape.managers.converters import ConversionManager
+    from ape.managers.networks import NetworkManager
+    from ape.managers.project import DependencyManager, ProjectManager
+    from ape.managers.query import QueryManager
+    from ape.plugins import PluginManager
+
+DEFAULT_NUMBER_OF_TEST_ACCOUNTS = 10
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -52,6 +65,7 @@ def get_distributions():
     """
     Get a mapping of top-level packages to their distributions.
     """
+
     return packages_distributions()
 
 
@@ -217,7 +231,7 @@ Config example::
 
 def generate_dev_accounts(
     mnemonic: str,
-    number_of_accounts: int = 10,
+    number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     hd_path_format="m/44'/60'/0'/{}",
 ) -> List[GeneratedDevAccount]:
     """
@@ -347,7 +361,7 @@ class GithubClient:
         The available ``ape`` plugins, found from looking at the ``ApeWorx`` Github organization.
 
         Returns:
-            Set[str]: The plugin names as 'ape_plugin_name' (module-like).
+            Set[str]: The plugin names as ``'ape_plugin_name'`` (module-like).
         """
         return {
             repo.name.replace("-", "_")
@@ -519,39 +533,120 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     return [path]
 
 
-class AbstractDataClassMeta(DataClassMeta, ABCMeta):
-    """
-    A `data class <https://docs.python.org/3/library/dataclasses.html>`__ that
-    is also abstract (meaning it has methods that **must** be implemented in a
-    sub-class or else errors will occur). This class cannot be instantiated
-    on its own.
-    """
-
-
-abstractdataclass = partial(dataclass, kwargs=True, meta=AbstractDataClassMeta)
-"""
-A `data class <https://docs.python.org/3/library/dataclasses.html>`__ that is
-also abstract (meaning it has methods that **must** be implemented or else
-errors will occur. This class cannot be instantiated on its own.
-"""
-
-
 class injected_before_use(property):
     """
     Injected properties are injected class variables that must be set before use
-    NOTE: do not appear in a Pydantic model's set of properties
+    **NOTE**: do not appear in a Pydantic model's set of properties.
     """
 
     def __get__(self, *args):
         raise ValueError("Value not set. Please inject this property before calling.")
 
 
+class ManagerAccessMixin:
+
+    # NOTE: cast is used to update the class type returned to mypy
+    account_manager: ClassVar["AccountManager"] = cast("AccountManager", injected_before_use())
+
+    chain_manager: ClassVar["ChainManager"] = cast("ChainManager", injected_before_use())
+
+    compiler_manager: ClassVar["CompilerManager"] = cast("CompilerManager", injected_before_use())
+
+    config_manager: ClassVar["ConfigManager"] = cast("ConfigManager", injected_before_use())
+
+    conversion_manager: ClassVar["ConversionManager"] = cast(
+        "ConversionManager", injected_before_use()
+    )
+
+    dependency_manager: ClassVar["DependencyManager"] = cast(
+        "DependencyManager", injected_before_use()
+    )
+
+    network_manager: ClassVar["NetworkManager"] = cast("NetworkManager", injected_before_use())
+
+    plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
+
+    project_manager: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
+
+    query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
+
+    @property
+    def provider(self) -> "ProviderAPI":
+        """
+        The current active provider if connected to one.
+
+        Raises:
+            :class:`~ape.exceptions.AddressError`: When there is no active
+               provider at runtime.
+
+        Returns:
+            :class:`~ape.api.providers.ProviderAPI`
+        """
+        if self.network_manager.active_provider is None:
+            raise ProviderNotConnectedError()
+        return self.network_manager.active_provider
+
+
+class BaseInterface(ManagerAccessMixin, ABC):
+    """
+    Abstract class that has manager access.
+    """
+
+
+class BaseInterfaceModel(BaseInterface, BaseModel):
+    """
+    An abstract base-class with manager access on a pydantic base model.
+    """
+
+    class Config:
+        # NOTE: Due to https://github.com/samuelcolvin/pydantic/issues/1241 we have
+        # to add this cached property workaround in order to avoid this error:
+
+        #    TypeError: cannot pickle '_thread.RLock' object
+
+        keep_untouched = (cached_property,)
+        arbitrary_types_allowed = True
+        underscore_attrs_are_private = True
+        anystr_strip_whitespace = True
+
+    def __dir__(self) -> List[str]:
+        """
+        NOTE: Should integrate options in IPython tab-completion.
+        https://ipython.readthedocs.io/en/stable/config/integrating.html
+        """
+        # Filter out protected/private members
+        return [member for member in super().__dir__() if not member.startswith("_")]
+
+    def dict(self, *args, **kwargs) -> Dict:
+        if "by_alias" not in kwargs:
+            kwargs["by_alias"] = True
+
+        if "exclude_none" not in kwargs:
+            kwargs["exclude_none"] = True
+
+        return super().dict(*args, **kwargs)
+
+    def json(self, *args, **kwargs) -> str:
+
+        if "separators" not in kwargs:
+            kwargs["separators"] = (",", ":")
+
+        if "sort_keys" not in kwargs:
+            kwargs["sort_keys"] = True
+
+        if "by_alias" not in kwargs:
+            kwargs["by_alias"] = True
+
+        if "exclude_none" not in kwargs:
+            kwargs["exclude_none"] = True
+
+        return super().json(*args, **kwargs)
+
+
 __all__ = [
-    "abstractdataclass",
     "abstractmethod",
-    "AbstractDataClassMeta",
+    "BaseInterfaceModel",
     "cached_property",
-    "dataclass",
     "expand_environment_variables",
     "extract_nested_value",
     "get_relative_path",

@@ -1,8 +1,7 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
-from ape.logging import logger
-from ape.utils import dataclass
+from pydantic import BaseModel, BaseSettings
 
 
 class ConfigEnum(str, Enum):
@@ -13,82 +12,29 @@ class ConfigEnum(str, Enum):
     """
 
 
-@dataclass(slots=True, kwargs=True)
-class ConfigItem:
+class ConfigDict(BaseModel):
+    __root__: dict = {}
+
+
+class PluginConfig(BaseSettings):
     """
     A base plugin configuration class. Each plugin that includes
     a config API must register a subclass of this class.
     """
 
-    def serialize(self) -> Dict:
-        """
-        Serialize the config item into a raw dict format for storing on disk.
+    def __getitem__(self, attr_name: str) -> Any:
+        # allow hyphens in plugin config files
+        attr_name = attr_name.replace("-", "_")
 
-        Returns:
-            Dict
-        """
-        data: Dict[str, Union[str, int, Dict, List, None]] = dict()
-        for name in self.__slots__:
-            value = getattr(self, name)
-            if isinstance(value, ConfigItem):
-                data[name] = value.serialize()
-            elif isinstance(value, ConfigEnum):
-                data[name] = value.name
-            elif value is None or isinstance(value, (int, str, dict, list)):
-                data[name] = value
-            else:
-                logger.error(
-                    f"Received unknown type '{type(value)}' when serializing a config item."
-                )
-        return data
+        if not hasattr(self, attr_name):
+            raise AttributeError(f"{self.__class__.__name__} has no attr '{attr_name}'")
 
-    def validate_config(self):
-        pass
-
-    def __getitem__(self, attrname: str) -> Any:
-        """
-        Get a configuration setting property by name. Use
-        :meth:`~ape.api.config.ConfigItem.get` when it is ok for the key not to
-        exist in the config.
-
-        Raises:
-            KeyError: When the attribute name is not a key in the config.
-
-        Args:
-            attrname (str): The configuration setting key.
-
-        Returns:
-            Any: The value from the config.
-        """
-
-        if attrname in self.__slots__:
-            return getattr(self, attrname)
-
-        raise KeyError(f"{attrname!r}")
-
-    def get(self, attrname: str, default_value: Optional[Any] = None) -> Optional[Any]:
-        """
-        Get a configuration setting property by name.
-
-        Args:
-            attrname (str): The configuration setting key.
-            default_value (Optional[Any]): The value to return if the key does
-              not exist. Defaults to ``None``.
-
-        Returns:
-            Optional[Any]: The default value if the key is not in the config, the value otherwise.
-        """
-
-        if attrname in self.__slots__:
-            return getattr(self, attrname)
-
-        return default_value
+        return getattr(self, attr_name)
 
 
-class ConfigDict(ConfigItem):
+class GenericConfig(PluginConfig):
     """
-    A config class that is generic and key-value based.
+    The default class used when no specialized class is used.
     """
 
-    def __post_init__(self):
-        raise ValueError("Do not use this class directly!")
+    __root__: dict = {}

@@ -8,23 +8,19 @@ from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.types.signatures import _Signature
-from ape.utils import abstractdataclass, abstractmethod, cached_property
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
-from .address import AddressAPI
+from .address import BaseAddress
 from .providers import ReceiptAPI, TransactionAPI, TransactionType
 
 if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance
-    from ape.managers.config import ConfigManager
 
 
-# NOTE: AddressAPI is a dataclass already
-class AccountAPI(AddressAPI):
+class AccountAPI(BaseInterfaceModel, BaseAddress):
     """
     An API class representing an account.
     """
-
-    container: "AccountContainerAPI"
 
     def __dir__(self) -> List[str]:
         """
@@ -33,7 +29,7 @@ class AccountAPI(AddressAPI):
         Returns:
             List[str]: Method names that IPython uses for tab completion.
         """
-        return list(super(AddressAPI, self).__dir__()) + [
+        return list(super(BaseAddress, self).__dir__()) + [
             "alias",
             "sign_message",
             "sign_transaction",
@@ -118,6 +114,9 @@ class AccountAPI(AddressAPI):
         # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if send_everything:
+            if txn.max_fee is None:
+                raise TransactionError(message="Max fee must not be None.")
+
             txn.value = self.balance - txn.max_fee
 
         if txn.total_transfer_value > self.balance:
@@ -140,14 +139,11 @@ class AccountAPI(AddressAPI):
 
     @cached_property
     def _convert(self) -> Callable:
-        # NOTE: Need to differ loading this property
-        from ape import convert
-
-        return convert
+        return self.conversion_manager.convert
 
     def transfer(
         self,
-        account: Union[str, AddressType, "AddressAPI"],
+        account: Union[str, AddressType, BaseAddress],
         value: Union[str, int, None] = None,
         data: Union[bytes, str, None] = None,
         **kwargs,
@@ -200,14 +196,11 @@ class AccountAPI(AddressAPI):
         contract_name = contract.contract_type.name or "<Unnamed Contract>"
         logger.success(f"Contract '{contract_name}' deployed to: {address}")
 
-        from ape import _converters
         from ape.contracts import ContractInstance
 
         return ContractInstance(  # type: ignore
-            _provider=self.provider,
-            _converter=_converters,
-            _address=receipt.contract_address,
-            _contract_type=contract.contract_type,
+            address=receipt.contract_address,  # type: ignore
+            contract_type=contract.contract_type,
         )
 
     def check_signature(
@@ -235,13 +228,12 @@ class AccountAPI(AddressAPI):
                     "Parameter 'signature' required when verifying a 'SignableMessage'."
                 )
         elif isinstance(data, TransactionAPI):
-            return self.address == Account.recover_transaction(data.encode())
+            return self.address == Account.recover_transaction(data.serialize_transaction())
         else:
             raise ValueError(f"Unsupported Message type: {type(data)}.")
 
 
-@abstractdataclass
-class AccountContainerAPI:
+class AccountContainerAPI(BaseInterfaceModel):
     """
     An API class representing a collection of :class:`~ape.api.accounts.AccountAPI`
     instances.
@@ -249,7 +241,6 @@ class AccountContainerAPI:
 
     data_folder: Path
     account_type: Type[AccountAPI]
-    config_manager: "ConfigManager"
 
     @property
     @abstractmethod
@@ -261,19 +252,20 @@ class AccountContainerAPI:
             Iterator[str]
         """
 
+    @property
     @abstractmethod
-    def __len__(self) -> int:
-        """
-        Number of accounts.
-        """
-
-    @abstractmethod
-    def __iter__(self) -> Iterator[AccountAPI]:
+    def accounts(self) -> Iterator[AccountAPI]:
         """
         Iterate over all accounts.
 
         Returns:
             Iterator[:class:`~ape.api.accounts.AccountAPI`]
+        """
+
+    @abstractmethod
+    def __len__(self) -> int:
+        """
+        Number of accounts.
         """
 
     def __getitem__(self, address: AddressType) -> AccountAPI:
@@ -290,7 +282,7 @@ class AccountContainerAPI:
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
-        for account in self.__iter__():
+        for account in self.accounts:
             if account.address == address:
                 return account
 
@@ -344,7 +336,6 @@ class AccountContainerAPI:
 
         Args:
             address (``AddressType``): The address of the account to delete.
-
         """
         raise NotImplementedError("Must define this method to use `container.remove(acct)`.")
 

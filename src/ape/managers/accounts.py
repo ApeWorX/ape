@@ -1,17 +1,13 @@
-from typing import ClassVar, Dict, Iterator, List, Type
-
-from pluggy import PluginManager  # type: ignore
+from typing import Dict, Iterator, List, Type
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.types import AddressType
-from ape.utils import cached_property, injected_before_use, singledispatchmethod
+from ape.utils import cached_property, singledispatchmethod
 
-from .config import ConfigManager
-from .converters import ConversionManager
-from .networks import NetworkManager
+from .base import BaseManager
 
 
-class AccountManager:
+class AccountManager(BaseManager):
     """
     The ``AccountManager`` is a container of containers for
     :class:`~ape.api.accounts.AccountAPI` objects.
@@ -27,11 +23,6 @@ class AccountManager:
         my_accounts = accounts.load("dev")
     """
 
-    config: ClassVar[ConfigManager] = injected_before_use()  # type: ignore
-    converters: ClassVar[ConversionManager] = injected_before_use()  # type: ignore
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
-    network_manager: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
-
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
         """
@@ -43,7 +34,7 @@ class AccountManager:
         """
 
         containers = {}
-        data_folder = self.config.DATA_FOLDER
+        data_folder = self.config_manager.DATA_FOLDER
         data_folder.mkdir(exist_ok=True)
         for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
 
@@ -53,7 +44,9 @@ class AccountManager:
 
             accounts_folder = data_folder / plugin_name
             accounts_folder.mkdir(exist_ok=True)
-            containers[plugin_name] = container_type(accounts_folder, account_type, self.config)
+            containers[plugin_name] = container_type(
+                data_folder=accounts_folder, account_type=account_type
+            )
 
         return containers
 
@@ -84,13 +77,7 @@ class AccountManager:
             List[:class:`~ape.api.accounts.AccountAPI`]
         """
 
-        accounts_with_type = []
-        for account in self:
-            if isinstance(account, type_):
-                self._inject_provider(account)
-                accounts_with_type.append(account)
-
-        return accounts_with_type
+        return [acc for acc in self if isinstance(acc, type_)]
 
     def __len__(self) -> int:
         """
@@ -104,9 +91,8 @@ class AccountManager:
 
     def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
-            for account in container:
-                self._inject_provider(account)
-                yield account
+            for account in container.accounts:
+                yield account  # type: ignore
 
     def __repr__(self) -> str:
         return "[" + ", ".join(repr(a) for a in self) + "]"
@@ -135,10 +121,9 @@ class AccountManager:
             if not issubclass(account_type, TestAccountAPI):
                 continue
 
-            container = container_type(None, account_type, self.config)
-            for account in container:
-                self._inject_provider(account)
-                accounts.append(account)
+            # pydantic validation won't allow passing None for data_folder/required attr
+            container = container_type(data_folder="", account_type=account_type)
+            accounts.extend([acc for acc in container.accounts])
 
         return accounts
 
@@ -158,7 +143,6 @@ class AccountManager:
 
         for account in self:
             if account.alias and account.alias == alias:
-                self._inject_provider(account)
                 return account
 
         raise IndexError(f"No account with alias '{alias}'.")
@@ -181,9 +165,8 @@ class AccountManager:
             :class:`~ape.api.accounts.AccountAPI`
         """
 
-        for idx, account in enumerate(self.__iter__()):
+        for idx, account in enumerate(self):
             if account_id == idx:
-                self._inject_provider(account)
                 return account
 
         raise IndexError(f"No account at index '{account_id}'.")
@@ -200,13 +183,11 @@ class AccountManager:
             :class:`~ape.api.accounts.AccountAPI`
         """
 
-        account_id = self.converters.convert(account_str, AddressType)
+        account_id = self.conversion_manager.convert(account_str, AddressType)
 
         for container in self.containers.values():
-            if account_id in container:
-                account = container[account_id]
-                self._inject_provider(account)
-                return account
+            if account_id in container.accounts:
+                return container[account_id]
 
         raise IndexError(f"No account with address '{account_id}'.")
 
@@ -222,7 +203,3 @@ class AccountManager:
         """
 
         return any(address in container for container in self.containers.values())
-
-    def _inject_provider(self, account: AccountAPI):
-        if self.network_manager.active_provider is not None:
-            account.provider = self.network_manager.active_provider

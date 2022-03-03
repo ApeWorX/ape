@@ -25,32 +25,35 @@ class TestAccountContainer(TestAccountContainerAPI):
         for index in range(0, len(self)):
             yield f"dev_{index}"
 
-    def __len__(self) -> int:
-        return len(self._dev_accounts)
-
-    def __iter__(self) -> Iterator[TestAccountAPI]:
+    @property
+    def accounts(self) -> Iterator["TestAccount"]:
         for index in range(0, len(self)):
             account = self._dev_accounts[index]
             yield TestAccount(
-                self, _index=index, _address=account.address, _private_key=account.private_key
-            )  # type: ignore
+                index=index,
+                address_str=account.address,
+                private_key=account.private_key,
+            )
+
+    def __len__(self) -> int:
+        return len(self._dev_accounts)
 
 
 class TestAccount(TestAccountAPI):
-    _index: int
-    _address: str
-    _private_key: str
+    index: int
+    address_str: str
+    private_key: str
 
     @property
     def alias(self) -> str:
-        return f"dev_{self._index}"
+        return f"dev_{self.index}"
 
     @property
     def address(self) -> AddressType:
-        return to_address(self._address)
+        return to_address(self.address_str)
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
-        signed_msg = EthAccount.sign_message(msg, self._private_key)
+        signed_msg = EthAccount.sign_message(msg, self.private_key)
         return MessageSignature(  # type: ignore
             v=signed_msg.v,
             r=to_bytes(signed_msg.r),
@@ -58,7 +61,7 @@ class TestAccount(TestAccountAPI):
         )
 
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
-        signed_txn = EthAccount.sign_transaction(txn.as_dict(), self._private_key)
+        signed_txn = EthAccount.sign_transaction(txn.dict(), self.private_key)
         return TransactionSignature(  # type: ignore
             v=signed_txn.v,
             r=to_bytes(signed_txn.r),

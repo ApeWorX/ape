@@ -4,7 +4,6 @@ import click
 from rich import print as echo_rich_text
 from rich.tree import Tree
 
-from ape import networks
 from ape.cli import ape_cli_context
 from ape.cli.choices import OutputFormat
 from ape.cli.options import output_format_option
@@ -23,7 +22,7 @@ def cli():
 def _list(cli_ctx, output_format):
     if output_format == OutputFormat.TREE:
         default_suffix = "[dim default]  (default)"
-        ecosystems = networks.network_data["ecosystems"]
+        ecosystems = cli_ctx.network_manager.network_data["ecosystems"]
 
         def make_sub_tree(data: Dict, create_tree: Callable) -> Tree:
             name = f"[bold green]{data['name']:}"
@@ -46,4 +45,4 @@ def _list(cli_ctx, output_format):
             if _networks:
                 echo_rich_text(ecosystem_tree)
     elif output_format == OutputFormat.YAML:
-        click.echo(networks.networks_yaml.strip())
+        click.echo(cli_ctx.network_manager.networks_yaml.strip())

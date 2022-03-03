@@ -48,9 +48,9 @@ def plugins_argument():
         elif len(value) == 1 and Path(value[0]).resolve().exists():
             # User passed in a path to a config file.
             config_path = Path(value[0]).expanduser().resolve()
+
             if config_path.name != CONFIG_FILE_NAME:
                 config_path = config_path / CONFIG_FILE_NAME
-
             config = load_config(config_path)
             plugins = config.get("plugins") or []
 

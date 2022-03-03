@@ -1,11 +1,11 @@
 from typing import Iterator, Union
 
-from dataclassy import dataclass
 from eth_account.messages import SignableMessage
 from eth_utils import to_bytes
+from pydantic.dataclasses import dataclass
 
 
-@dataclass(frozen=True, slots=True, kwargs=True)
+@dataclass(frozen=True)
 class _Signature:
     v: int
     r: bytes
