@@ -40,7 +40,7 @@ class BlockContainer(BaseManager):
         The latest block number.
         """
         if self.head.number is None:
-            raise ChainError("Pending block doesn't have a block number yet.")
+            raise ChainError("Latest block has no number.")
 
         return self.head.number
 

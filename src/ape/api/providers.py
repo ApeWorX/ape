@@ -12,7 +12,7 @@ from web3 import Web3
 
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
-from ape.exceptions import ChainError, TransactionError
+from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod
@@ -222,7 +222,7 @@ class ReceiptAPI(BaseInterfaceModel):
         latest_block = self.provider.get_block("latest")
 
         if latest_block.number is None:
-            raise ChainError("Latest block number is pending.")
+            latest_block.number = 0
 
         return latest_block.number - self.block_number
 
