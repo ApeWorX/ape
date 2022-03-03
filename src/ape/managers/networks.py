@@ -64,7 +64,6 @@ class NetworkManager(BaseManager):
 
             if ecosystem_config:
                 for network_name, network in ecosystem.networks.items():
-                    network_config = ecosystem_config.dict().get(network_name)
                     if not hasattr(ecosystem_config, network_name):
                         continue
                     network_config = getattr(ecosystem_config, network_name)
