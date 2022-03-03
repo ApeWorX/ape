@@ -200,7 +200,7 @@ class Ethereum(EcosystemAPI):
             contract_address=data.get("contractAddress"),
             sender=data["from"],
             receiver=data["to"] or "",
-            nonce=data.get("nonce", None) or None,
+            nonce=data["nonce"] if "nonce" in data and data["nonce"] != "" else None,
         )
 
     def decode_block(self, data: Dict) -> BlockAPI:
