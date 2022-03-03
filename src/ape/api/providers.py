@@ -12,7 +12,7 @@ from web3 import Web3
 
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
-from ape.exceptions import TransactionError
+from ape.exceptions import ChainError, TransactionError
 from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod
@@ -187,7 +187,7 @@ class ReceiptAPI(BaseInterfaceModel):
     required_confirmations: int = 0
     sender: str
     receiver: str
-    nonce: int
+    nonce: Optional[int] = None
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
@@ -220,6 +220,10 @@ class ReceiptAPI(BaseInterfaceModel):
     @property
     def _confirmations_occurred(self) -> int:
         latest_block = self.provider.get_block("latest")
+
+        if latest_block.number is None:
+            raise ChainError("Latest block number is pending.")
+
         return latest_block.number - self.block_number
 
     def await_confirmations(self) -> "ReceiptAPI":
@@ -295,16 +299,16 @@ class BlockAPI(BaseInterfaceModel):
 
     gas_data: BlockGasAPI
     consensus_data: BlockConsensusAPI
-    hash: Any
-    number: int
-    parent_hash: Any
+    hash: Optional[Any] = None
+    number: Optional[int] = None
+    parent_hash: Optional[Any] = None
     size: int
     timestamp: int
 
     @validator("hash", "parent_hash", pre=True)
     def validate_hexbytes(cls, value):
         # NOTE: pydantic treats these values as bytes and throws an error
-        if not isinstance(value, HexBytes):
+        if value and not isinstance(value, HexBytes):
             raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
         return value
 

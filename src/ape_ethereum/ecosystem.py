@@ -182,7 +182,10 @@ class Ethereum(EcosystemAPI):
 
             status = TransactionStatusEnum(status)
 
-        txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
+        txn_hash = data.get("hash")
+
+        if txn_hash:
+            txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
 
         return Receipt(  # type: ignore
             provider=data.get("provider"),
@@ -205,7 +208,7 @@ class Ethereum(EcosystemAPI):
         return Block(  # type: ignore
             gas_data=BlockGasFee.decode(data),
             consensus_data=BlockConsensus.decode(data),
-            number=data["number"],
+            number=data.get("number"),
             size=data.get("size"),
             timestamp=data.get("timestamp"),
             hash=data.get("hash"),

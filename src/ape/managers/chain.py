@@ -39,6 +39,8 @@ class BlockContainer(BaseManager):
         """
         The latest block number.
         """
+        if self.head.number is None:
+            raise ChainError("Pending block doesn't have a block number yet.")
 
         return self.head.number
 
