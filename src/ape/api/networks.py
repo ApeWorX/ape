@@ -434,7 +434,6 @@ class NetworkAPI(BaseInterfaceModel):
                 return explorer_class(
                     name=plugin_name,
                     network=self,
-                    request_header=self.request_header,
                 )
 
         return None  # May not have an block explorer
