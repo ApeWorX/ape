@@ -222,7 +222,7 @@ class ReceiptAPI(BaseInterfaceModel):
         latest_block = self.provider.get_block("latest")
 
         if latest_block.number is None:
-            latest_block.number = 0
+            return 0
 
         return latest_block.number - self.block_number
 
