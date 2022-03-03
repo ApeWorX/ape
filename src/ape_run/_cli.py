@@ -1,6 +1,7 @@
+from importlib.machinery import SourceFileLoader
 from pathlib import Path
 from types import ModuleType
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 import click
 
@@ -21,18 +22,27 @@ def deepcopy_skip_modules(d):
 class ScriptCommand(click.MultiCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, result_callback=self.result_callback)
-        self.ns: dict = {}
 
-    def __get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
+    def __load_module(self, filepath: Path) -> Optional[ModuleType]:
+        try:
+            # TODO: Analyze security issues from this
+            return SourceFileLoader("script", str(filepath)).load_module()
+
+        except Exception as err:
+            relative_filepath = get_relative_path(filepath, self._project.path)
+            logger.error_from_exception(err, f"Exception while loading script: {relative_filepath}")
+            return None
+
+    def _get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
         relative_filepath = get_relative_path(filepath, self._project.path)
 
         # First load the code module by compiling it
         # NOTE: This does not execute the module
-        logger.debug(f"Importing module: {relative_filepath}")
+        logger.debug(f"Parsing module: {relative_filepath}")
         try:
             code = compile(filepath.read_text(), filepath, "exec")
         except SyntaxError as e:
-            logger.warning(f"Error parsing {relative_filepath}:\n\t{e.__class__.__name__}: {e}")
+            logger.error_from_exception(e, f"Exception while parsing script: {relative_filepath}")
             return None  # Prevents stalling scripts
 
         # NOTE: Introspect code structure only for given patterns (do not execute it to find hooks)
@@ -40,30 +50,20 @@ class ScriptCommand(click.MultiCommand):
             # If the module contains a click cli subcommand, process it and return the subcommand
             logger.debug(f"Found 'cli' command in script: {relative_filepath}")
 
-            ns: dict = {}
-            try:
-                # TODO: Analyze security issues from this
-                eval(code, ns, ns)
-            except Exception as e:
-                logger.warning(f"Error loading {relative_filepath}:\n\t{e.__class__.__name__}: {e}")
-                return None  # NOTE: Allow other scripts to load if one breaks
+            script = self.__load_module(filepath)
+            if script:
+                return script.cli  # type: ignore
 
-            # NOTE: So we can get the extra locals on callback
-            self.ns[filepath.stem] = deepcopy_skip_modules(ns)
-            return ns["cli"]  # retrun subcommand
+            return None  # NOTE: Allow other scripts to load if loading script breaks
 
         elif "main" in code.co_names:
             logger.debug(f"Found 'main' method in script: {relative_filepath}")
 
             @click.command(short_help=f"Run '{relative_filepath}:main'")
             def call():
-                ns: dict = {}
-                # TODO: Analyze security issues from this
-                eval(code, ns, ns)
-                # NOTE: So we can get the extra locals on callback
-                self.ns[filepath.stem] = deepcopy_skip_modules(ns)
-
-                ns["main"]()  # Call function
+                module = self.__load_module(filepath)
+                if module:
+                    module.main()  # type: ignore
 
             return call
 
@@ -72,12 +72,7 @@ class ScriptCommand(click.MultiCommand):
 
             @click.command(short_help=f"Run '{relative_filepath}'")
             def call():
-                ns: dict = {}
-                # TODO: Analyze security issues from this
-                eval(code, ns, ns)
-                # NOTE: So we can get the extra locals on callback
-                self.ns[filepath.stem] = deepcopy_skip_modules(ns)
-
+                self.__load_module(filepath)
                 # Nothing to call
 
             return call
@@ -100,16 +95,17 @@ class ScriptCommand(click.MultiCommand):
 
     @cached_property
     def commands(self) -> Dict[str, Union[click.Command, click.Group]]:
+        if not self._project.scripts_folder.exists():
+            return {}
+
         commands = {}
         for filepath in self._project.scripts_folder.glob("*.py"):
             if filepath.stem.startswith("_"):
                 continue  # Ignore any "private" files
 
-            cmd = self.__get_command(filepath)
+            cmd = self._get_command(filepath)
             if cmd:  # NOTE: Don't allow calling commands that failed to load
                 commands[filepath.stem] = cmd
-            else:
-                logger.info(f"Skipped loading: {filepath}")
 
         return commands
 
@@ -128,7 +124,8 @@ class ScriptCommand(click.MultiCommand):
 
     def result_callback(self, result, interactive):
         if interactive:
-            return console(project=self._project, extra_locals={**self.ns[self.command_called]})
+            # TODO: Figure out how to pull out namespace for `extra_locals`
+            return console(project=self._project, extra_locals={})
 
         return result
 
