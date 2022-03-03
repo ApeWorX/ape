@@ -52,6 +52,7 @@ if TYPE_CHECKING:
     from ape.managers.query import QueryManager
     from ape.plugins import PluginManager
 
+DEFAULT_NUMBER_OF_TEST_ACCOUNTS = 10
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -230,7 +231,7 @@ Config example::
 
 def generate_dev_accounts(
     mnemonic: str,
-    number_of_accounts: int = 10,
+    number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     hd_path_format="m/44'/60'/0'/{}",
 ) -> List[GeneratedDevAccount]:
     """
