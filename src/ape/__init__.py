@@ -39,7 +39,9 @@ accounts = _ManagerAccessMixin.account_manager
 project = _ManagerAccessMixin.project_manager
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
-Contract = _partial(_Contract, networks=networks, converters=_ManagerAccessMixin.conversion_manager)
+Contract = _partial(
+    _Contract, networks=networks, conversion_manager=_ManagerAccessMixin.conversion_manager
+)
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 
 convert = _ManagerAccessMixin.conversion_manager.convert
