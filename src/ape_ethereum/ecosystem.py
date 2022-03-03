@@ -193,7 +193,7 @@ class Ethereum(EcosystemAPI):
             gas_used=data["gasUsed"],
             gas_price=data["gasPrice"],
             gas_limit=data.get("gas") or data.get("gasLimit"),
-            logs=data.get("logs"),
+            logs=data.get("logs", []),
             contract_address=data.get("contractAddress"),
             sender=data["from"],
             receiver=data["to"] or "",
