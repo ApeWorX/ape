@@ -105,7 +105,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             if txn.max_priority_fee is None:  # type: ignore
                 txn.max_priority_fee = self.provider.priority_fee  # type: ignore
 
-            if not txn.max_fee:
+            if txn.max_fee is None:
                 txn.max_fee = self.provider.base_fee + txn.max_priority_fee
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
