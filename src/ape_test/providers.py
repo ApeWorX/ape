@@ -18,7 +18,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         super().__init__(**data)
 
         self._tester = PyEVMBackend.from_mnemonic(
-            self.config["mnemonic"], num_accounts=self.config["number_of_accounts"]
+            mnemonic=self.config["mnemonic"],
+            num_accounts=self.config["number_of_accounts"],
         )
         self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
 

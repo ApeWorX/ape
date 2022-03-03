@@ -15,8 +15,7 @@ from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod
 
-from . import networks
-from .config import PluginConfig
+from . import PluginConfig, networks
 
 if TYPE_CHECKING:
     from ape.api.explorers import ExplorerAPI
@@ -323,9 +322,6 @@ class ProviderAPI(BaseInterfaceModel):
     network: networks.NetworkAPI
     """A reference to the network this provider provides."""
 
-    config: PluginConfig
-    """The provider's configuration."""
-
     provider_settings: dict
     """The settings for the provider, as overrides to the configuration."""
 
@@ -421,6 +417,13 @@ class ProviderAPI(BaseInterfaceModel):
         The price for what it costs to transact
         (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
+
+    @property
+    def config(self) -> PluginConfig:
+        """
+        The provider's configuration.
+        """
+        return self.config_manager.get_config(self.name)
 
     @property
     def priority_fee(self) -> int:

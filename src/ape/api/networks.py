@@ -460,7 +460,6 @@ class NetworkAPI(BaseInterfaceModel):
                 providers[provider_name] = partial(
                     provider_class,
                     name=provider_name,
-                    config=self.config_manager.get_config(provider_name),
                     network=self,
                     # NOTE: No need to have separate folder, caching should be interoperable
                     data_folder=self.data_folder,
