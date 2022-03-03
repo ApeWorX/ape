@@ -76,10 +76,10 @@ class TransactionAPI(BaseInterfaceModel):
         Useful for determining if an account balance can afford
         to submit the transaction.
         """
-        if self.max_fee:
-            return self.value + self.max_fee
+        if self.max_fee is None:
+            raise TransactionError(message="Max fee must not be null.")
 
-        raise TransactionError(message="Max fee must not be null.")
+        return self.value + self.max_fee
 
     @abstractmethod
     def serialize_transaction(self) -> bytes:
