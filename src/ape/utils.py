@@ -607,6 +607,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
         keep_untouched = (cached_property,)
         arbitrary_types_allowed = True
         underscore_attrs_are_private = True
+        anystr_strip_whitespace = True
 
     def __dir__(self) -> List[str]:
         """
