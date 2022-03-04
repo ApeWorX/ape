@@ -414,6 +414,9 @@ class GithubClient:
             except UnknownObjectException as err:
                 raise ProjectError(f"Unknown repository '{repo_path}'") from err
 
+        else:
+            return self._repo_cache[repo_path]
+
     def clone_repo(
         self, repo_path: str, target_path: Path, branch: Optional[str] = None
     ) -> GitRepository:
