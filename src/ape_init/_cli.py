@@ -3,7 +3,7 @@ from pathlib import Path
 
 import click
 
-from ape.cli import Abort, ape_cli_context
+from ape.cli import ape_cli_context
 from ape.utils import github_client
 
 
@@ -30,11 +30,7 @@ def cli(cli_ctx, github):
     `ape init --github github_username/repository_name`
     """
     if github:
-        try:
-            github_client.clone_repo(github, Path.cwd())
-        except Exception as err:
-            raise Abort(f"({type(err).__name__}) {err.data}") from err
-
+        github_client.clone_repo(github, Path.cwd())
         shutil.rmtree(Path.cwd() / ".git")
 
     else:
