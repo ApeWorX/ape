@@ -16,7 +16,26 @@ def get_columns_from_item(query: _BaseQuery, item: BaseModel) -> Dict[str, Any]:
 
 
 class DefaultQueryProvider(QueryAPI):
+    """
+    Default implementation of the ape.api.query.QueryAPI
+    Allows for the query of blockchain data
+
+    Args:
+        query: (``QueryType``): query to execute
+
+    returns:
+        pd.DataFrame: response of query in a pandas dataframe
+    """
     def estimate_query(self, query: QueryType) -> Optional[int]:
+        """
+        Estimates the time that the query will take as a timestamp
+
+        Args:
+            query (``QueryType``): The transaction data you want to query
+
+        Returns:
+             Optional[int]: Depends on whether the query can be completed
+        """
         if isinstance(query, BlockQuery):
             # NOTE: Very loose estimate of 100ms per block
             return (query.stop_block - query.start_block) * 100
@@ -24,14 +43,19 @@ class DefaultQueryProvider(QueryAPI):
         return None  # can't handle this query
 
     def perform_query(self, query: QueryType) -> pd.DataFrame:
-        provider = self.network_manager.active_provider
-        if not provider:
-            raise QueryEngineError("Not connected to a provider.")
+        """
+        Performs a query
 
+        Args:
+            query (``QueryType``): The specific transaction data you want to query
+
+        Returns:
+            pd.DataFrame: A pandas dataframe
+        """
         if isinstance(query, BlockQuery):
             blocks_iter = self.chain_manager.blocks.range(query.start_block, query.stop_block)
-            blocks_iter = map(partial(get_columns_from_item, query), blocks_iter)  # type: ignore
-            return pd.DataFrame(columns=query.columns, data=blocks_iter)
+            block_dicts_iter = map(partial(get_columns_from_item, query), blocks_iter)
+            return pd.DataFrame(columns=query.columns, data=block_dicts_iter)
 
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
@@ -58,13 +82,13 @@ class QueryManager(ManagerAccessMixin):
             dict[str, :class:`~ape.api.query.QueryAPI`]
         """
 
-        engines = {"__default__": DefaultQueryProvider()}
+        engines: Dict[str, QueryAPI] = {"__default__": DefaultQueryProvider()}
 
         for plugin_name, (engine_class,) in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)
             engines[engine_name] = engine_class()
 
-        return engines  # type: ignore
+        return engines
 
     def query(self, query: QueryType, engine_to_use: Optional[str] = None) -> pd.DataFrame:
         """
