@@ -5,6 +5,7 @@ __modules__ = [
     "ape_console",
     "ape_ethereum",
     "ape_geth",
+    "ape_init",
     "ape_networks",
     "ape_plugins",
     "ape_run",

@@ -3,20 +3,23 @@ from pathlib import Path
 
 import click
 
-from ape.cli import Abort, ape_cli_context
+from ape.cli import ape_cli_context
 from ape.utils import github_client
 
 
 @click.command(short_help="Initalize an ape project")
 @ape_cli_context()
-@click.option("--github")
+@click.option("--github", metavar="github-org/repo", help="Clone a template from Github")
 def cli(cli_ctx, github):
-    if github:
-        try:
-            github_client.clone_repo(github, Path.cwd())
-        except Exception as err:
-            raise Abort(f"({type(err).__name__}) {err.data}") from err
+    """
+    ``ape init`` allows the user to create an ape project with
+    default folders and ape-config.yaml
 
+    From more information:
+    https://docs.apeworx.io/ape/stable/userguides/config.html
+    """
+    if github:
+        github_client.clone_repo(github, Path.cwd())
         shutil.rmtree(Path.cwd() / ".git")
 
     else:

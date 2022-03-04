@@ -408,9 +408,14 @@ class GithubClient:
         """
 
         if repo_path not in self._repo_cache:
-            self._repo_cache[repo_path] = self._client.get_repo(repo_path)
+            try:
+                self._repo_cache[repo_path] = self._client.get_repo(repo_path)
+                return self._repo_cache[repo_path]
+            except UnknownObjectException as err:
+                raise ProjectError(f"Unknown repository '{repo_path}'") from err
 
-        return self._repo_cache[repo_path]
+        else:
+            return self._repo_cache[repo_path]
 
     def clone_repo(
         self, repo_path: str, target_path: Path, branch: Optional[str] = None

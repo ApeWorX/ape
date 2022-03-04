@@ -20,6 +20,7 @@
    commands/accounts.rst
    commands/compile.rst
    commands/console.rst
+   commands/init.rst
    commands/networks.rst
    commands/plugins.rst
    commands/run.rst
