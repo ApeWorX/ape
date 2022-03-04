@@ -115,7 +115,7 @@ setup(
             "ape_init=ape_init._cli:cli",
         ],
     },
-    python_requires=">=3.7,<3.11",
+    python_requires=">=3.7.2,<3.11",
     extras_require=extras_require,
     py_modules=packages_data["__modules__"],
     license="Apache-2.0",
