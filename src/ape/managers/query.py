@@ -1,12 +1,12 @@
-from eth_utils import keccak, to_hex, to_bytes
 from functools import partial
 from typing import Any, Dict, Optional
 
 import pandas as pd
+from eth_utils import keccak, to_bytes, to_hex
 from pydantic import BaseModel
 
 from ape.api import QueryAPI, QueryType
-from ape.api.query import ContractEventQuery, BlockQuery, _BaseQuery
+from ape.api.query import BlockQuery, ContractEventQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property
@@ -31,7 +31,7 @@ class DefaultQueryProvider(QueryAPI):
 
         if isinstance(query, BlockQuery):
             blocks_iter = self.chain_manager.blocks.range(query.start_block, query.stop_block)
-            blocks_iter = map(partial(get_columns_from_item, query), blocks_iter)
+            blocks_iter = map(partial(get_columns_from_item, query), blocks_iter)  # type: ignore
             return pd.DataFrame(columns=query.columns, data=blocks_iter)
 
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
@@ -65,7 +65,7 @@ class QueryManager(ManagerAccessMixin):
             engine_name = clean_plugin_name(plugin_name)
             engines[engine_name] = engine_class()
 
-        return engines
+        return engines  # type: ignore
 
     def query(self, query: QueryType, engine_to_use: Optional[str] = None) -> pd.DataFrame:
         """
