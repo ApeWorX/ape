@@ -2,11 +2,10 @@ from functools import partial
 from typing import Any, Dict, Optional
 
 import pandas as pd
-from eth_utils import keccak, to_bytes, to_hex
 from pydantic import BaseModel
 
 from ape.api import QueryAPI, QueryType
-from ape.api.query import BlockQuery, ContractEventQuery, _BaseQuery
+from ape.api.query import BlockQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property
