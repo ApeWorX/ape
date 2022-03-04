@@ -24,16 +24,20 @@ class _TestAccountAPI(AccountAPI):
 
 @pytest.fixture
 def test_account_api_no_sign(mock_account_container_api, mock_provider_api):
-    account = _TestAccountAPI(mock_account_container_api, can_sign=False)
-    account._provider = mock_provider_api
-    return account
+    account = _TestAccountAPI(can_sign=False)
+    provider = account.network_manager.active_provider
+    account.network_manager.active_provider = mock_provider_api
+    yield account
+    account.network_manager.active_provider = provider
 
 
 @pytest.fixture
 def test_account_api_can_sign(mock_account_container_api, mock_provider_api):
-    account = _TestAccountAPI(mock_account_container_api, can_sign=True)
-    account._provider = mock_provider_api
-    return account
+    account = _TestAccountAPI(can_sign=True)
+    provider = account.network_manager.active_provider
+    account.network_manager.active_provider = mock_provider_api
+    yield account
+    account.network_manager.active_provider = provider
 
 
 class TestAccountAPI:
@@ -58,6 +62,7 @@ class TestAccountAPI:
         mock_provider_api.get_nonce.return_value = mock_transaction.nonce = 0
         mock_transaction.type = TransactionType.STATIC
         mock_transaction.gas_price = 0
+        mock_transaction.gas_limit = 0
 
         # Transaction costs are greater than balance
         mock_transaction.total_transfer_value = 1000000
@@ -81,6 +86,7 @@ class TestAccountAPI:
         mock_transaction.total_transfer_value = mock_provider_api.get_balance.return_value = 1000000
         mock_transaction.type = TransactionType.STATIC
         mock_transaction.gas_price = 0
+        mock_transaction.gas_limit = 0
         mock_transaction.required_confirmations = 0
 
         with pytest.raises(AccountsError) as err:
@@ -98,7 +104,7 @@ class TestAccountAPI:
         mock_transaction.gas_limit = None  # Causes estimate_gas_cost to get called
         mock_provider_api.get_nonce.return_value = mock_transaction.nonce = 0
         mock_transaction.total_transfer_value = mock_provider_api.get_balance.return_value = 1000000
-        mock_transaction.signature.return_value = "test-signature"
+        mock_transaction.signature = "test-signature"
         test_account_api_can_sign.call(mock_transaction)
         mock_provider_api.estimate_gas_cost.assert_called_once_with(mock_transaction)
 
@@ -108,6 +114,7 @@ class TestAccountAPI:
         mock_transaction = mocker.MagicMock(spec=TransactionAPI)
         mock_transaction.type = TransactionType.STATIC
         mock_transaction.gas_price = 0
+        mock_transaction.gas_limit = 0
         mock_provider_api.get_nonce.return_value = mock_transaction.nonce = 0
         mock_transaction.total_transfer_value = mock_provider_api.get_balance.return_value = 1000000
         mock_transaction.required_confirmations = None  # To be explicit

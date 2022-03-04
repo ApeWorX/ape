@@ -1,29 +1,29 @@
-import json
 import os
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar, Dict, Generator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
-from ape.api import ConfigDict, ConfigItem, DependencyAPI
+from pydantic import root_validator
+
+from ape.api import ConfigDict, DependencyAPI, PluginConfig
 from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.logging import logger
-from ape.plugins import PluginManager
-from ape.utils import injected_before_use, load_config
+from ape.utils import BaseInterfaceModel, load_config
 
 if TYPE_CHECKING:
-    from .project import ProjectManager, _DependencyManager
+    from .project import ProjectManager
 
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 
 
-class DeploymentConfig(ConfigItem):
+class DeploymentConfig(PluginConfig):
     address: Union[str, bytes]
     contract_type: str
 
 
-class ConfigManager:
+class ConfigManager(BaseInterfaceModel):
     """
     The singleton responsible for managing the ``ape-config.yaml`` project file.
     The config manager is useful for loading plugin configurations which contain
@@ -68,19 +68,15 @@ class ConfigManager:
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
     """A dict of contract deployments by address and contract type."""
 
-    plugin_manager: ClassVar[PluginManager] = injected_before_use()  # type: ignore
-    _dependency_manager: ClassVar["_DependencyManager"] = injected_before_use()  # type: ignore
-    _plugin_configs_by_project: Dict[str, Dict[str, ConfigItem]] = {}
+    _plugin_configs_by_project: Dict[str, Dict[str, PluginConfig]] = {}
 
-    def __init__(
-        self,
-        data_folder: Path,
-        request_header: Dict,
-        project_folder: Path,
-    ) -> None:
-        self.DATA_FOLDER = data_folder
-        self.REQUEST_HEADER = request_header
-        self.PROJECT_FOLDER = project_folder
+    @root_validator(pre=True)
+    def check_config_for_extra_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        extra = [key for key in values.keys() if key not in cls.__fields__]
+        if extra:
+            logger.warning(f"Unprocessed extra config fields not set '{extra}'.")
+
+        return values
 
     @property
     def packages_folder(self) -> Path:
@@ -89,7 +85,7 @@ class ConfigManager:
         return path
 
     @property
-    def _plugin_configs(self) -> Dict[str, ConfigItem]:
+    def _plugin_configs(self) -> Dict[str, PluginConfig]:
         # This property is cached per active project.
         project_name = self.PROJECT_FOLDER.stem
         if project_name in self._plugin_configs_by_project:
@@ -108,7 +104,7 @@ class ConfigManager:
             raise ConfigError("'dependencies' config item must be a list of dicts.")
 
         self.dependencies = [
-            self._dependency_manager.decode_dependency(dep) for dep in dependencies
+            self.dependency_manager.decode_dependency(dep) for dep in dependencies
         ]  # type: ignore
 
         if "contracts_folder" in user_config:
@@ -158,9 +154,6 @@ class ConfigManager:
                 # NOTE: Will raise if improperly provided keys
                 config = config_class(**user_override)  # type: ignore
 
-                # NOTE: Should raise if settings violate some sort of plugin requirement
-                config.validate_config()
-
             else:
                 # NOTE: Just use it directly as a dict if `ConfigDict` is passed
                 config = user_override
@@ -189,7 +182,7 @@ class ConfigManager:
         _ = self._plugin_configs
         return self
 
-    def get_config(self, plugin_name: str) -> ConfigItem:
+    def get_config(self, plugin_name: str) -> PluginConfig:
         """
         Get a plugin config.
 
@@ -197,30 +190,14 @@ class ConfigManager:
             plugin_name (str): The name of the plugin to get the config for.
 
         Returns:
-            :class:`~ape.api.config.ConfigItem`
+            :class:`~ape.api.config.PluginConfig`
         """
 
         if plugin_name not in self._plugin_configs:
             # plugin has no registered config class, so return empty config
-            return ConfigItem()
+            return PluginConfig()
 
         return self._plugin_configs[plugin_name]
-
-    def serialize(self) -> Dict:
-        """
-        Convert the project config file, ``ape-config.yaml``, to a dictionary.
-
-        Returns:
-            dict
-        """
-
-        project_config = dict()
-
-        for name, config in self._plugin_configs.items():
-            # NOTE: `config` is either `ConfigItem` or `dict`
-            project_config[name] = config.serialize() if isinstance(config, ConfigItem) else config
-
-        return project_config
 
     @contextmanager
     def using_project(
@@ -251,24 +228,21 @@ class ConfigManager:
 
         contracts_folder = contracts_folder or project_folder / "contracts"
 
-        import ape
-
         initial_project_folder = self.PROJECT_FOLDER
         initial_contracts_folder = self.contracts_folder
 
         self.PROJECT_FOLDER = project_folder
         self.contracts_folder = contracts_folder
-        previous_project = ape.project
+        self.project_manager.path = project_folder
         os.chdir(project_folder)
-        try:
-            project = ape.Project(project_folder)
-            ape.project = project
-            yield project
-        finally:
-            self.PROJECT_FOLDER = initial_project_folder
-            self.contracts_folder = initial_contracts_folder
-            ape.project = previous_project
-            os.chdir(initial_project_folder)
+
+        self.load()
+        yield self.project_manager
+
+        self.PROJECT_FOLDER = initial_project_folder
+        self.contracts_folder = initial_contracts_folder
+        self.project_manager.path = initial_project_folder
+        os.chdir(initial_project_folder)
 
     def __str__(self) -> str:
         """
@@ -278,4 +252,4 @@ class ConfigManager:
             str
         """
 
-        return json.dumps(self.serialize())
+        return self.json()

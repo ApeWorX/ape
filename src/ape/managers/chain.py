@@ -1,33 +1,20 @@
 import time
-from typing import Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Union, cast
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import pandas as pd
 
-from ape.api import AddressAPI, BlockAPI, ProviderAPI, ReceiptAPI
+from ape.api import BlockAPI, ReceiptAPI
+from ape.api.address import BaseAddress
 from ape.api.query import BlockQuery, QueryAPI
-from ape.exceptions import ChainError, ProviderNotConnectedError, UnknownSnapshotError
+from ape.exceptions import ChainError, UnknownSnapshotError
 from ape.logging import logger
-from ape.managers.converters import ConversionManager
-from ape.managers.networks import NetworkManager
-from ape.managers.query import QueryManager
 from ape.types import AddressType, BlockID, SnapshotID
-from ape.utils import cached_property, injected_before_use
+from ape.utils import cached_property
+
+from .base import BaseManager
 
 
-class _ConnectedChain:
-    _networks: ClassVar[NetworkManager] = injected_before_use()  # type: ignore
-    _converters: ClassVar[ConversionManager] = injected_before_use()  # type: ignore
-    _query_manager: ClassVar[QueryManager] = cast(QueryManager, injected_before_use())
-
-    @property
-    def provider(self) -> ProviderAPI:
-        if not self._networks.active_provider:
-            raise ProviderNotConnectedError()
-
-        return self._networks.active_provider
-
-
-class BlockContainer(_ConnectedChain):
+class BlockContainer(BaseManager):
     """
     A list of blocks on the chain.
 
@@ -52,6 +39,8 @@ class BlockContainer(_ConnectedChain):
         """
         The latest block number.
         """
+        if self.head.number is None:
+            raise ChainError("Latest block has no number.")
 
         return self.head.number
 
@@ -143,7 +132,7 @@ class BlockContainer(_ConnectedChain):
             engine_to_use=engine_to_use,
         )
 
-        return self._query_manager.query(query)
+        return self.query_manager.query(query)
 
     def range(
         self, start_or_stop: int, stop: Optional[int] = None, step: int = 1
@@ -259,7 +248,7 @@ class BlockContainer(_ConnectedChain):
         return self.provider.get_block(block_id)
 
 
-class AccountHistory(_ConnectedChain):
+class AccountHistory(BaseManager):
     """
     A container mapping account addresses to the transaction from the active session.
     """
@@ -268,9 +257,10 @@ class AccountHistory(_ConnectedChain):
 
     @cached_property
     def _convert(self) -> Callable:
-        return self._converters.convert
 
-    def __getitem__(self, address: Union[AddressAPI, AddressType, str]) -> List[ReceiptAPI]:
+        return self.conversion_manager.convert
+
+    def __getitem__(self, address: Union[BaseAddress, AddressType, str]) -> List[ReceiptAPI]:
         """
         Get the list of transactions from the active session for the given address.
 
@@ -349,7 +339,7 @@ class AccountHistory(_ConnectedChain):
         }
 
 
-class ChainManager(_ConnectedChain):
+class ChainManager(BaseManager):
     """
     A class for managing the state of the active blockchain.
     Also handy for querying data about the chain and managing local caches.
@@ -364,13 +354,6 @@ class ChainManager(_ConnectedChain):
     _chain_id_map: Dict[str, int] = {}
     _block_container_map: Dict[int, BlockContainer] = {}
     _account_history_map: Dict[int, AccountHistory] = {}
-
-    def __init__(self) -> None:
-        BlockContainer._networks = self._networks
-        BlockContainer._converters = self._converters
-
-        AccountHistory._networks = self._networks
-        AccountHistory._converters = self._converters
 
     @property
     def blocks(self) -> BlockContainer:
@@ -446,10 +429,10 @@ class ChainManager(_ConnectedChain):
 
     @pending_timestamp.setter
     def pending_timestamp(self, new_value: str):
-        self.provider.set_timestamp(self._converters.convert(value=new_value, type=int))
+        self.provider.set_timestamp(self.conversion_manager.convert(value=new_value, type=int))
 
     def __repr__(self) -> str:
-        props = f"id={self.chain_id}" if self._networks.active_provider else "disconnected"
+        props = f"id={self.chain_id}" if self.network_manager.active_provider else "disconnected"
         return f"<{self.__class__.__name__} ({props})>"
 
     def snapshot(self) -> SnapshotID:
@@ -466,7 +449,6 @@ class ChainManager(_ConnectedChain):
             :class:`~ape.types.SnapshotID`: The snapshot ID.
         """
         snapshot_id = self.provider.snapshot()
-
         if snapshot_id not in self._snapshots:
             self._snapshots.append(snapshot_id)
 

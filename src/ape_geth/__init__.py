@@ -10,5 +10,5 @@ def config_class():
 
 @plugins.register(plugins.ProviderPlugin)
 def providers():
-    for network_name in GethNetworkConfig().serialize():
+    for network_name in GethNetworkConfig().dict():
         yield "ethereum", network_name, GethProvider

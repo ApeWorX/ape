@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Collection, Dict, List, Optional
+from typing import Collection, Dict, List, Optional
 
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
@@ -11,26 +11,18 @@ from pydantic import ValidationError
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.utils import (
-    abstractdataclass,
+    BaseInterfaceModel,
     abstractmethod,
     get_all_files_in_directory,
     get_relative_path,
 )
 
-if TYPE_CHECKING:
-    from ape.managers.compilers import CompilerManager
-    from ape.managers.project import ProjectManager
 
-
-@abstractdataclass
-class ProjectAPI:
+class ProjectAPI(BaseInterfaceModel):
     """
     An abstract base-class for working with projects.
     This class can also be extended to a plugin for supporting non-ape projects.
     """
-
-    compilers: "CompilerManager"
-    """Compilers for creating the manifest."""
 
     path: Path
     """The project path."""
@@ -140,14 +132,10 @@ class ProjectAPI:
         }
 
 
-@abstractdataclass
-class DependencyAPI:
+class DependencyAPI(BaseInterfaceModel):
     """
     A base-class for dependency sources, such as GitHub or IPFS.
     """
-
-    project_manager: "ProjectManager"
-    """The root project manager."""
 
     name: str
     """The name of the dependency."""
@@ -170,8 +158,6 @@ class DependencyAPI:
     A list of glob-patterns for excluding files in dependency projects.
     """
 
-    _data_folder: Path
-
     def __repr__(self):
         return f"<{self.__class__.__name__} name='{self.name}'>"
 
@@ -192,7 +178,7 @@ class DependencyAPI:
             version_id = f"v{version_id}"
 
         name = self.name
-        return self._data_folder / "packages" / name / version_id / f"{name}.json"
+        return self.config_manager.DATA_FOLDER / "packages" / name / version_id / f"{name}.json"
 
     @abstractmethod
     def extract_manifest(self) -> PackageManifest:
@@ -215,7 +201,6 @@ class DependencyAPI:
         The manifest from the ``.ape/packages/<dependency-name>/<version-id>``
         if it exists and is valid.
         """
-
         return _load_manifest_from_file(self._target_manifest_cache_file)
 
     def _extract_local_manifest(self, project_path: Path):

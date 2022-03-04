@@ -31,32 +31,32 @@ class AccountContainer(AccountContainerAPI):
         for p in self._keyfiles:
             yield p.stem
 
+    @property
+    def accounts(self) -> Iterator[AccountAPI]:
+        for keyfile in self._keyfiles:
+            yield KeyfileAccount(keyfile_path=keyfile)
+
     def __len__(self) -> int:
         return len([*self._keyfiles])
 
-    def __iter__(self) -> Iterator[AccountAPI]:
-        for keyfile in self._keyfiles:
-            yield KeyfileAccount(self, keyfile)  # type: ignore
 
-
-# NOTE: `AccountAPI` is a dataclass
+# NOTE: `AccountAPI` is an BaseInterfaceModel
 class KeyfileAccount(AccountAPI):
-    _keyfile: Path
 
-    def __post_init__(self):
-        self.locked = True
-        self.__cached_key = None
+    keyfile_path: Path
+    locked: bool = True
+    __cached_key: Optional[EthAccount] = None
 
     def __repr__(self):
         return f"<{self.__class__.__name__} address={self.address} alias={self.alias}>"
 
     @property
     def alias(self) -> str:
-        return self._keyfile.stem
+        return self.keyfile_path.stem
 
     @property
     def keyfile(self) -> dict:
-        return json.loads(self._keyfile.read_text())
+        return json.loads(self.keyfile_path.read_text())
 
     @property
     def address(self) -> AddressType:
@@ -106,7 +106,7 @@ class KeyfileAccount(AccountAPI):
             confirmation_prompt=True,
         )
 
-        self._keyfile.write_text(json.dumps(EthAccount.encrypt(key, passphrase)))
+        self.keyfile_path.write_text(json.dumps(EthAccount.encrypt(key, passphrase)))
 
     def delete(self):
         passphrase = click.prompt(
@@ -115,7 +115,7 @@ class KeyfileAccount(AccountAPI):
             default="",  # Just in case there's no passphrase
         )
         self.__decrypt_keyfile(passphrase)
-        self._keyfile.unlink()
+        self.keyfile_path.unlink()
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         if self.locked and not click.confirm(f"{msg}\n\nSign: "):
@@ -132,7 +132,9 @@ class KeyfileAccount(AccountAPI):
         if self.locked and not click.confirm(f"{txn}\n\nSign: "):
             return None
 
-        signed_txn = EthAccount.sign_transaction(txn.as_dict(), self.__key)
+        signed_txn = EthAccount.sign_transaction(
+            txn.dict(exclude_none=True, by_alias=True), self.__key
+        )
         return TransactionSignature(  # type: ignore
             v=signed_txn.v,
             r=to_bytes(signed_txn.r),

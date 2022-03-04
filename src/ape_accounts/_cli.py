@@ -38,7 +38,7 @@ def _list(cli_ctx, all):
     else:
         click.echo("Found 1 account:")
 
-    for account in accounts_to_output:
+    for account in accounts_to_output.accounts:
         alias_display = f" (alias: '{account.alias}')" if account.alias else ""
         click.echo(f"  {account.address}{alias_display}")
 
@@ -52,6 +52,7 @@ def generate(cli_ctx, alias):
         "Add extra entropy for key generation...",
         hide_input=True,
     )
+
     account = EthAccount.create(extra_entropy)
     passphrase = click.prompt(
         "Create Passphrase",

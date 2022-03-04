@@ -2,9 +2,9 @@ import pytest
 
 from ape.api import (
     AccountContainerAPI,
-    ConfigItem,
     EcosystemAPI,
     NetworkAPI,
+    PluginConfig,
     ProviderAPI,
     ReceiptAPI,
     TransactionAPI,
@@ -12,7 +12,7 @@ from ape.api import (
 )
 from ape.exceptions import ContractLogicError
 
-TEST_ADDRESS = "0x0A78AAAAA2122100000b9046f0A085AB2E111113"
+TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 
 
 @pytest.fixture
@@ -55,7 +55,7 @@ def mock_web3(mocker):
 
 @pytest.fixture
 def mock_config_item(mocker):
-    return mocker.MagicMock(spec=ConfigItem)
+    return mocker.MagicMock(spec=PluginConfig)
 
 
 @pytest.fixture

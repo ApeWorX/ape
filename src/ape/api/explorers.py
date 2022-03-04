@@ -3,14 +3,13 @@ from typing import Iterator, Optional
 from ethpm_types import ContractType
 
 from ape.types import AddressType
-from ape.utils import abstractdataclass, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 from . import networks
 from .providers import ReceiptAPI
 
 
-@abstractdataclass
-class ExplorerAPI:
+class ExplorerAPI(BaseInterfaceModel):
     """
     An API class representing a blockchain explorer for a particular network
     in a particular ecosystem.
@@ -18,7 +17,6 @@ class ExplorerAPI:
 
     name: str  # Plugin name
     network: networks.NetworkAPI
-    request_header: str
 
     @abstractmethod
     def get_address_url(self, address: AddressType) -> str:

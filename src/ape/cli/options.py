@@ -13,10 +13,10 @@ from ape.cli.choices import (
 from ape.cli.utils import Abort
 from ape.exceptions import ContractError
 from ape.logging import DEFAULT_LOG_LEVEL, LogLevel, logger
-from ape.managers.project import ProjectManager
+from ape.managers.base import ManagerAccessMixin
 
 
-class ApeCliContextObject:
+class ApeCliContextObject(ManagerAccessMixin):
     """
     A ``click`` context object class. Use via :meth:`~ape.cli.options.ape_cli_context()`.
     It provides common CLI utilities for ape, such as logging or
@@ -25,25 +25,7 @@ class ApeCliContextObject:
 
     def __init__(self):
         self.logger = logger
-        self._project = None
-
-    @property
-    def project(self) -> ProjectManager:
-        """
-        A class representing the project that is active at runtime.
-        (This is the same object as from ``from ape import project``).
-
-        Returns:
-            :class:`~ape.managers.project.ProjectManager`
-        """
-
-        if not self._project:
-            from ape import project
-
-            self._project = project
-            self._project.config.load()
-
-        return self._project
+        self.config_manager.load()
 
     @staticmethod
     def abort(msg: str, base_error: Exception = None):

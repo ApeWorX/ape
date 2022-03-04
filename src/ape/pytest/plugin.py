@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from ape import accounts, chain, networks, project
+from ape import networks, project
 from ape.pytest.fixtures import PytestApeFixtures
 from ape.pytest.runners import PytestApeRunner
 
@@ -44,12 +44,10 @@ def pytest_configure(config):
     # Enable verbose output if stdout capture is disabled
     config.option.verbose = config.getoption("capture") == "no"
 
-    # Inject the runner plugin (must happen before fixtures registration)
-    session = PytestApeRunner(config, project, networks, chain)
+    session = PytestApeRunner(pytest_config=config)
     config.pluginmanager.register(session, "ape-test")
 
-    # Inject fixtures
-    fixtures = PytestApeFixtures(accounts, networks, project, chain)
+    fixtures = PytestApeFixtures()
     config.pluginmanager.register(fixtures, "ape-fixtures")
 
 
@@ -58,6 +56,7 @@ def pytest_load_initial_conftests(early_config):
     Compile contracts before loading conftests.
     """
     cap_sys = early_config.pluginmanager.get_plugin("capturemanager")
+
     if not project.sources_missing:
         # Suspend stdout capture to display compilation data
         cap_sys.suspend()

@@ -1,26 +1,24 @@
 import time
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional
 
-from dataclassy import as_dict
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
 from hexbytes import HexBytes
+from pydantic import Field, validator
 from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
+from ape.api.config import PluginConfig
+from ape.api.networks import NetworkAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
-from ape.utils import abstractdataclass, abstractmethod
-
-from . import networks
-from .config import ConfigItem
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 if TYPE_CHECKING:
     from ape.api.explorers import ExplorerAPI
-    from ape.managers.chain import ChainManager
 
 
 def raises_not_implemented(fn):
@@ -43,8 +41,7 @@ class TransactionType(Enum):
     DYNAMIC = "0x02"  # EIP-1559
 
 
-@abstractdataclass
-class TransactionAPI:
+class TransactionAPI(BaseInterfaceModel):
     """
     An API class representing a transaction.
     Ecosystem plugins implement one or more of transaction APIs
@@ -52,41 +49,24 @@ class TransactionAPI:
     such as typed-transactions from `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
     """
 
-    chain_id: int = 0
-    sender: str = ""
-    receiver: str = ""
+    chain_id: int = Field(0, alias="chainId")
+    receiver: Optional[str] = Field(None, alias="to")
+    sender: Optional[str] = Field(None, alias="from")
+    gas_limit: Optional[int] = Field(None, alias="gas")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
-    gas_limit: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     data: bytes = b""
     type: TransactionType = TransactionType.STATIC
+    max_fee: Optional[int] = None
+    max_priority_fee: Optional[int] = None
 
     # If left as None, will get set to the network's default required confirmations.
-    required_confirmations: Optional[int] = None
+    required_confirmations: Optional[int] = Field(None, exclude=True)
 
-    signature: Optional[TransactionSignature] = None
+    signature: Optional[TransactionSignature] = Field(exclude=True)
 
-    @property
-    def max_fee(self) -> int:
-        """
-        The total amount in fees willing to be spent on a transaction.
-        Override this property as needed, such as for
-        `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ differences.
-
-        See :class:`~ape_ethereum.ecosystem.StaticFeeTransaction` and
-        :class:`~ape_ethereum.ecosystem.DynamicFeeTransaction` as examples.
-
-        Raises:
-            NotImplementedError: When setting in a class that did not override the setter.
-
-        Returns:
-            int
-        """
-        return 0
-
-    @max_fee.setter
-    def max_fee(self, value: int):
-        raise NotImplementedError("Max fee is not settable by default.")
+    class Config:
+        allow_population_by_field_name = True
 
     @property
     def total_transfer_value(self) -> int:
@@ -95,30 +75,24 @@ class TransactionAPI:
         Useful for determining if an account balance can afford
         to submit the transaction.
         """
+        if self.max_fee is None:
+            raise TransactionError(message="Max fee must not be null.")
+
         return self.value + self.max_fee
 
     @abstractmethod
-    def encode(self) -> bytes:
+    def serialize_transaction(self) -> bytes:
         """
-        Take this object and produce a hash to sign to submit a transaction
+        Serialize the transaction
         """
-
-    def as_dict(self) -> dict:
-        """
-        Create a ``dict`` representation of the transaction.
-
-        Returns:
-            dict
-        """
-        return as_dict(self)
 
     def __repr__(self) -> str:
-        data = as_dict(self)  # NOTE: `as_dict` could be overridden
+        data = self.dict()
         params = ", ".join(f"{k}={v}" for k, v in data.items())
         return f"<{self.__class__.__name__} {params}>"
 
     def __str__(self) -> str:
-        data = as_dict(self)  # NOTE: `as_dict` could be overridden
+        data = self.dict()
         if len(data["data"]) > 9:
             data["data"] = (
                 "0x" + bytes(data["data"][:3]).hex() + "..." + bytes(data["data"][-3:]).hex()
@@ -189,8 +163,7 @@ class ConfirmationsProgressBar:
         self._bar.set_description(f"Confirmations ({self._confs}/{self._req_confs})")
 
 
-@abstractdataclass
-class ReceiptAPI:
+class ReceiptAPI(BaseInterfaceModel):
     """
     An abstract class to represent a transaction receipt. The receipt
     contains information about the transaction, such as the status
@@ -203,7 +176,6 @@ class ReceiptAPI:
     a :class:`ape.contracts.base.ContractInstance`.
     """
 
-    provider: "ProviderAPI"
     txn_hash: str
     status: TransactionStatusEnum
     block_number: int
@@ -215,7 +187,7 @@ class ReceiptAPI:
     required_confirmations: int = 0
     sender: str
     receiver: str
-    nonce: int
+    nonce: Optional[int] = None
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
@@ -237,19 +209,6 @@ class ReceiptAPI:
         """
         return self.status == TransactionStatusEnum.FAILING and self.gas_used == self.gas_limit
 
-    @classmethod
-    @abstractmethod
-    def decode(cls, data: dict) -> "ReceiptAPI":
-        """
-        Convert data to :class:`~ape.api.ReceiptAPI`.
-
-        Args:
-            data (dict): A dictionary of Receipt properties.
-
-        Returns:
-            :class:`~ape.api.ReceiptAPI`
-        """
-
     @property
     def _explorer(self) -> Optional["ExplorerAPI"]:
         return self.provider.network.explorer
@@ -261,6 +220,10 @@ class ReceiptAPI:
     @property
     def _confirmations_occurred(self) -> int:
         latest_block = self.provider.get_block("latest")
+
+        if latest_block.number is None:
+            return 0
+
         return latest_block.number - self.block_number
 
     def await_confirmations(self) -> "ReceiptAPI":
@@ -308,32 +271,17 @@ class ReceiptAPI:
         return self
 
 
-@abstractdataclass
-class BlockGasAPI:
+class BlockGasAPI(BaseInterfaceModel):
     """
     An abstract class for representing gas data for a block.
     """
 
-    gas_limit: int
-    gas_used: int
-    base_fee: Optional[int] = None
-
-    @classmethod
-    @abstractmethod
-    def decode(cls, data: Dict) -> "BlockGasAPI":
-        """
-        Decode data to a :class:`~ape.api.BlockGasAPI`.
-
-        Args:
-            data (dict): A dictionary of block-gas properties.
-
-        Returns:
-            :class:`~ape.api.BlockGasAPI`
-        """
+    gas_limit: int = Field(alias="gasLimit")
+    gas_used: int = Field(alias="gasUsed")
+    base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
 
 
-@abstractdataclass
-class BlockConsensusAPI:
+class BlockConsensusAPI(BaseInterfaceModel):
     """
     An abstract class representing block consensus-data,
     such as PoW-related information regarding the block.
@@ -341,68 +289,42 @@ class BlockConsensusAPI:
     """
 
     difficulty: Optional[int] = None
-    total_difficulty: Optional[int] = None
-
-    @classmethod
-    @abstractmethod
-    def decode(cls, data: Dict) -> "BlockConsensusAPI":
-        """
-        Decode data to a :class:`~ape.api.BlockConsensusAPI`.
-
-        Args:
-            data (dict): A dictionary of data to decode.
-
-        Returns:
-            :class:`~ape.api.BlockConsensusAPI`
-        """
+    total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
 
 
-@abstractdataclass
-class BlockAPI:
+class BlockAPI(BaseInterfaceModel):
     """
     An abstract class representing a block and its attributes.
     """
 
     gas_data: BlockGasAPI
     consensus_data: BlockConsensusAPI
-    hash: HexBytes
-    number: int
-    parent_hash: HexBytes
+    hash: Optional[Any] = None
+    number: Optional[int] = None
+    parent_hash: Optional[Any] = None
     size: int
     timestamp: int
 
-    @classmethod
-    @abstractmethod
-    def decode(cls, data: Dict) -> "BlockAPI":
-        """
-        Decode data to a :class:`~ape.api.BlockAPI`.
-
-        Args:
-            data (dict): A dictionary of data to decode.
-
-        Returns:
-            :class:`~ape.api.BlockAPI`
-        """
+    @validator("hash", "parent_hash", pre=True)
+    def validate_hexbytes(cls, value):
+        # NOTE: pydantic treats these values as bytes and throws an error
+        if value and not isinstance(value, HexBytes):
+            raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
+        return value
 
 
-@abstractdataclass
-class ProviderAPI:
+class ProviderAPI(BaseInterfaceModel):
     """
     An abstraction of a connection to a network in an ecosystem. Example ``ProviderAPI``
     implementations include the `ape-infura <https://github.com/ApeWorX/ape-infura>`__
     plugin or the `ape-hardhat <https://github.com/ApeWorX/ape-hardhat>`__ plugin.
     """
 
-    _chain: Optional["ChainManager"] = None
-
     name: str
     """The name of the provider (should be the plugin name)."""
 
-    network: networks.NetworkAPI
+    network: NetworkAPI
     """A reference to the network this provider provides."""
-
-    config: ConfigItem
-    """The provider's configuration."""
 
     provider_settings: dict
     """The settings for the provider, as overrides to the configuration."""
@@ -410,7 +332,7 @@ class ProviderAPI:
     data_folder: Path
     """The path to the  ``.ape`` directory."""
 
-    request_header: str
+    request_header: dict
     """A header to set on HTTP/RPC requests."""
 
     @abstractmethod
@@ -499,6 +421,13 @@ class ProviderAPI:
         The price for what it costs to transact
         (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
+
+    @property
+    def config(self) -> PluginConfig:
+        """
+        The provider's configuration.
+        """
+        return self.config_manager.get_config(self.name)
 
     @property
     def priority_fee(self) -> int:
@@ -631,12 +560,9 @@ class ProviderAPI:
             NotImplementedError: Unless overridden.
         """
 
-    def __repr__(self):
-        return f"<{self.__class__.__name__} {self.name}>"
-
     def _try_track_receipt(self, receipt: ReceiptAPI):
-        if self._chain:
-            self._chain.account_history.append(receipt)
+        if self.chain_manager:
+            self.chain_manager.account_history.append(receipt)
 
 
 class TestProviderAPI(ProviderAPI):
@@ -701,7 +627,7 @@ class Web3Provider(ProviderAPI):
         self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        txn_dict = txn.as_dict()
+        txn_dict = txn.dict()
         return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
 
     @property
@@ -734,7 +660,7 @@ class Web3Provider(ProviderAPI):
                 block_id = add_0x_prefix(block_id)
 
         block_data = self._web3.eth.get_block(block_id)
-        return self.network.ecosystem.block_class.decode(block_data)  # type: ignore
+        return self.network.ecosystem.decode_block(block_data)  # type: ignore
 
     def get_nonce(self, address: str) -> int:
         return self._web3.eth.get_transaction_count(address)  # type: ignore
@@ -746,7 +672,7 @@ class Web3Provider(ProviderAPI):
         return self._web3.eth.get_code(address)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
-        return self._web3.eth.call(txn.as_dict())
+        return self._web3.eth.call(txn.dict())
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
         if required_confirmations < 0:
@@ -754,7 +680,7 @@ class Web3Provider(ProviderAPI):
 
         receipt_data = self._web3.eth.wait_for_transaction_receipt(HexBytes(txn_hash))
         txn = self._web3.eth.get_transaction(txn_hash)  # type: ignore
-        receipt = self.network.ecosystem.receipt_class.decode(
+        receipt = self.network.ecosystem.decode_receipt(
             {
                 "provider": self,
                 "required_confirmations": required_confirmations,
@@ -768,7 +694,7 @@ class Web3Provider(ProviderAPI):
         return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        txn_hash = self._web3.eth.send_raw_transaction(txn.encode())
+        txn_hash = self._web3.eth.send_raw_transaction(txn.serialize_transaction())
         req_confs = (
             txn.required_confirmations
             if txn.required_confirmations is not None

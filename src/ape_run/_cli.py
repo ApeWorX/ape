@@ -30,4 +30,4 @@ def cli(cli_ctx, scripts, interactive, network):
         cli_ctx.abort("Must provide at least one script name or path.")
 
     for name in scripts:
-        cli_ctx.project.run_script(name, interactive)
+        cli_ctx.project_manager.run_script(name, interactive)

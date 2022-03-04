@@ -1,18 +1,14 @@
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import Dict, Optional
 
 import pandas as pd
 
 from ape.api import QueryAPI, QueryType
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
-from ape.utils import cached_property
-
-if TYPE_CHECKING:
-    from ape.managers.networks import NetworkManager
-    from ape.plugins import PluginManager
+from ape.utils import ManagerAccessMixin, cached_property
 
 
-class QueryManager:
+class QueryManager(ManagerAccessMixin):
     """
     A singleton that manages query engines and performs queries.
 
@@ -23,12 +19,6 @@ class QueryManager:
 
          biggest_block_size = chain.blocks.query("size").max()
     """
-
-    plugin_manager: "PluginManager"
-    """A reference to the global plugin manager."""
-
-    network_manager: "NetworkManager"
-    """A reference to the global network manager."""
 
     @cached_property
     def engines(self) -> Dict[str, QueryAPI]:
@@ -43,7 +33,7 @@ class QueryManager:
         engines = {}
         for plugin_name, (engine_class,) in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)
-            engines[engine_name] = engine_class(network_manager=self.network_manager)
+            engines[engine_name] = engine_class()
 
         return engines
 

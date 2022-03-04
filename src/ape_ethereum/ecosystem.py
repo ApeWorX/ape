@@ -12,13 +12,14 @@ from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak, to_bytes, to_checksum_address, to_int
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
+from pydantic import Field, root_validator, validator
 
 from ape.api import (
     BlockAPI,
     BlockConsensusAPI,
     BlockGasAPI,
-    ConfigItem,
     EcosystemAPI,
+    PluginConfig,
     ReceiptAPI,
     TransactionAPI,
     TransactionStatusEnum,
@@ -39,14 +40,15 @@ NETWORKS = {
 }
 
 
-class NetworkConfig(ConfigItem):
+class NetworkConfig(PluginConfig):
     required_confirmations: int = 0
     default_provider: str = "geth"
     block_time: int = 0
 
 
-class EthereumConfig(ConfigItem):
+class EthereumConfig(PluginConfig):
     mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
+    mainnet_fork: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
     kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
     rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
@@ -56,41 +58,12 @@ class EthereumConfig(ConfigItem):
 
 
 class BaseTransaction(TransactionAPI):
-    def as_dict(self) -> dict:
-        data = super().as_dict()
+    def serialize_transaction(self) -> bytes:
 
-        # Clean up data to what we expect
-        data["chainId"] = data.pop("chain_id")
-
-        receiver = data.pop("receiver")
-        if receiver:
-            data["to"] = receiver
-
-        # NOTE: sender is needed sometimes for estimating gas
-        # but is it no needed during publish (and may error if included).
-        sender = data.pop("sender")
-        if sender:
-            data["from"] = sender
-
-        data["gas"] = data.pop("gas_limit")
-
-        if "required_confirmations" in data:
-            data.pop("required_confirmations")
-
-        # NOTE: Don't include signature
-        data.pop("signature")
-
-        return {key: value for key, value in data.items() if value is not None}
-
-    def encode(self) -> bytes:
         if not self.signature:
             raise SignatureError("The transaction is not signed.")
 
-        txn_data = self.as_dict()
-
-        # Don't publish from
-        if "from" in txn_data:
-            del txn_data["from"]
+        txn_data = self.dict(exclude={"sender"})
 
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
@@ -108,25 +81,16 @@ class StaticFeeTransaction(BaseTransaction):
     Transactions that are pre-EIP-1559 and use the ``gasPrice`` field.
     """
 
-    gas_price: int = None  # type: ignore
-    type: TransactionType = TransactionType.STATIC
+    gas_price: Optional[int] = Field(None, alias="gasPrice")
+    max_priority_fee: Optional[int] = Field(None, exclude=True)
+    type: TransactionType = Field(TransactionType.STATIC, exclude=True)
+    max_fee: Optional[int] = Field(None, exclude=True)
 
-    @property
-    def max_fee(self) -> int:
-        return (self.gas_limit or 0) * (self.gas_price or 0)
-
-    @max_fee.setter
-    def max_fee(self, valie):
-        raise NotImplementedError("Max fee is not settable for static-fee transactions.")
-
-    def as_dict(self):
-        data = super().as_dict()
-        if "gas_price" in data:
-            data["gasPrice"] = data.pop("gas_price")
-
-        data.pop("type")
-
-        return data
+    @root_validator(pre=True)
+    def calculate_read_only_max_fee(cls, values) -> Dict:
+        # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
+        values["max_fee"] = values.get("gas_limit", 0) * values.get("gas_price", 0)
+        return values
 
 
 class DynamicFeeTransaction(BaseTransaction):
@@ -135,21 +99,17 @@ class DynamicFeeTransaction(BaseTransaction):
     and ``maxPriorityFeePerGas`` fields.
     """
 
-    max_fee: int = None  # type: ignore
-    max_priority_fee: int = None  # type: ignore
-    type: TransactionType = TransactionType.DYNAMIC
+    max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")
+    max_fee: Optional[int] = Field(None, alias="maxFeePerGas")
+    type: TransactionType = Field(TransactionType.DYNAMIC)
 
-    def as_dict(self):
-        data = super().as_dict()
-        if "max_fee" in data:
-            data["maxFeePerGas"] = data.pop("max_fee")
-        if "max_priority_fee" in data:
-            data["maxPriorityFeePerGas"] = data.pop("max_priority_fee")
+    @validator("type")
+    def check_type(cls, value):
 
-        if isinstance(data["type"], TransactionType):
-            data["type"] = data.pop("type").value
+        if isinstance(value, TransactionType):
+            return value.value
 
-        return data
+        return value
 
 
 class Receipt(ReceiptAPI):
@@ -170,8 +130,51 @@ class Receipt(ReceiptAPI):
             txn_hash = HexBytes(self.txn_hash).hex()
             raise TransactionError(message=f"Transaction '{txn_hash}' failed.")
 
+
+class BlockGasFee(BlockGasAPI):
     @classmethod
-    def decode(cls, data: dict) -> ReceiptAPI:
+    def decode(cls, data: Dict) -> BlockGasAPI:
+        return BlockGasFee(**data)  # type: ignore
+
+
+class BlockConsensus(BlockConsensusAPI):
+    @classmethod
+    def decode(cls, data: Dict) -> BlockConsensusAPI:
+        return cls(**data)  # type: ignore
+
+
+class Block(BlockAPI):
+    """
+    Class for representing a block on a chain.
+    """
+
+
+class Ethereum(EcosystemAPI):
+    @property
+    def config(self) -> EthereumConfig:
+        return self.config_manager.get_config("ethereum")  # type: ignore
+
+    def serialize_transaction(self, transaction: TransactionAPI) -> bytes:
+        if not transaction.signature:
+            raise SignatureError("The transaction is not signed.")
+
+        txn_data = transaction.dict()
+
+        unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
+        signature = (
+            transaction.signature.v,
+            to_int(transaction.signature.r),
+            to_int(transaction.signature.s),
+        )
+
+        signed_txn = encode_transaction(unsigned_txn, signature)
+
+        if transaction.sender and EthAccount.recover_transaction(signed_txn) != transaction.sender:
+            raise SignatureError("Recovered Signer doesn't match sender!")
+
+        return signed_txn
+
+    def decode_receipt(self, data: dict) -> ReceiptAPI:
         status = data.get("status")
         if status:
             if isinstance(status, str) and status.isnumeric():
@@ -179,8 +182,12 @@ class Receipt(ReceiptAPI):
 
             status = TransactionStatusEnum(status)
 
-        txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
-        return cls(  # type: ignore
+        txn_hash = data.get("hash")
+
+        if txn_hash:
+            txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
+
+        return Receipt(  # type: ignore
             provider=data.get("provider"),
             required_confirmations=data.get("required_confirmations", 0),
             txn_hash=txn_hash,
@@ -189,60 +196,24 @@ class Receipt(ReceiptAPI):
             gas_used=data["gasUsed"],
             gas_price=data["gasPrice"],
             gas_limit=data.get("gas") or data.get("gasLimit"),
-            logs=data.get("logs"),
+            logs=data.get("logs", []),
             contract_address=data.get("contractAddress"),
             sender=data["from"],
-            receiver=data["to"],
-            nonce=data.get("nonce"),
+            receiver=data["to"] or "",
+            nonce=data["nonce"] if "nonce" in data and data["nonce"] != "" else None,
         )
 
+    def decode_block(self, data: Dict) -> BlockAPI:
 
-class BlockGasFee(BlockGasAPI):
-    @classmethod
-    def decode(cls, data: Dict) -> BlockGasAPI:
-        return BlockGasFee(  # type: ignore
-            gas_limit=data["gasLimit"],
-            gas_used=data["gasUsed"],
-            base_fee=data.get("baseFeePerGas"),
-        )
-
-
-class BlockConsensus(BlockConsensusAPI):
-    difficulty: Optional[int] = None
-    total_difficulty: Optional[int] = None
-
-    @classmethod
-    def decode(cls, data: Dict) -> BlockConsensusAPI:
-        return cls(
-            difficulty=data.get("difficulty"), total_difficulty=data.get("totalDifficulty")
-        )  # type: ignore
-
-
-class Block(BlockAPI):
-    @classmethod
-    def decode(cls, data: Dict) -> BlockAPI:
-        return cls(  # type: ignore
+        return Block(  # type: ignore
             gas_data=BlockGasFee.decode(data),
             consensus_data=BlockConsensus.decode(data),
-            number=data["number"],
+            number=data.get("number"),
             size=data.get("size"),
             timestamp=data.get("timestamp"),
             hash=data.get("hash"),
             parent_hash=data.get("hash"),
         )
-
-
-class Ethereum(EcosystemAPI):
-    transaction_types = {
-        TransactionType.STATIC: StaticFeeTransaction,
-        TransactionType.DYNAMIC: DynamicFeeTransaction,
-    }
-    receipt_class = Receipt
-    block_class = Block
-
-    @property
-    def config(self) -> EthereumConfig:
-        return self.config_manager.get_config("ethereum")  # type: ignore
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
         if abi.inputs:
@@ -276,7 +247,7 @@ class Ethereum(EcosystemAPI):
             raise DecodingError() from err
 
     def encode_deployment(
-        self, deployment_bytecode: bytes, abi: ConstructorABI, *args, **kwargs
+        self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
     ) -> BaseTransaction:
         txn = self.create_transaction(**kwargs)
         txn.data = deployment_bytecode
@@ -309,6 +280,12 @@ class Ethereum(EcosystemAPI):
         Returns:
             :class:`~ape.api.providers.TransactionAPI`
         """
+
+        transaction_types = {
+            TransactionType.STATIC: StaticFeeTransaction,
+            TransactionType.DYNAMIC: DynamicFeeTransaction,
+        }
+
         if "type" in kwargs:
             type_kwarg = kwargs["type"]
             if type_kwarg is None:
@@ -329,7 +306,7 @@ class Ethereum(EcosystemAPI):
         else:
             version = TransactionType.DYNAMIC
 
-        txn_class = self.transaction_types[version]
+        txn_class = transaction_types[version]
         kwargs["type"] = version.value
 
         if "required_confirmations" not in kwargs or kwargs["required_confirmations"] is None:

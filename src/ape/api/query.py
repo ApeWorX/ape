@@ -5,9 +5,8 @@ from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, NonNegativeInt, root_validator
 
 from ape._compat import Literal
-from ape.managers.networks import NetworkManager
 from ape.types import AddressType
-from ape.utils import abstractdataclass, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractMethodQuery"]
 
@@ -89,11 +88,7 @@ class ContractMethodQuery(_BaseBlockQuery):
     method_args: Dict[str, Any]
 
 
-@abstractdataclass
-class QueryAPI:
-
-    network_manager: NetworkManager
-
+class QueryAPI(BaseInterfaceModel):
     @abstractmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:
         """
@@ -102,7 +97,7 @@ class QueryAPI:
         query engine is not available for use or is unable to complete the query.
 
         Args:
-            query (``QueryType``): Query to estimate execution time for.
+            query (``QueryType``): Query to estimate.
 
         Returns:
             Optional[int]: Represents milliseconds, returns ``None`` if unable to execute.
