@@ -151,7 +151,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
         self._web3 = Web3(HTTPProvider(self.uri))
 
         # Try to start an ephemeral geth process if no provider is running.
-        if not self._web3.isConnected():
+        if not self._web3.isConnected() and self.network.name == LOCAL_NETWORK_NAME:
             parsed_uri = urlparse(self.uri)
 
             if parsed_uri.hostname not in ("localhost", "127.0.0.1"):
