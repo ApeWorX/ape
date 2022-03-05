@@ -228,12 +228,12 @@ class ContractEvent(ManagerAccessMixin):
         self,
         contract: "ContractInstance",
         abis: List[EventABI],
-        cached_logs: List[ContractLog] = [],
+        cached_logs: List[ContractLog] = None,
     ) -> None:
         super().__init__()
         self.contract = contract
         self.abis = abis
-        self.cached_logs = cached_logs
+        self.cached_logs = cached_logs or []
 
 
 class ContractInstance(BaseAddress):
