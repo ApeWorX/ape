@@ -34,12 +34,14 @@ def load_consolerc(namespace):
         module = SourceFileLoader(consolerc.name[:-3], str(consolerc)).load_module()
 
         # Look for an initrc function
-        if hasattr(module, "initrc"):  # and hasattr(module.initrc, "__call__"):
+        if hasattr(module, "initrc"):
             # Execute functionality with existing console namespace so the
             # script can modify things as it needs
             module.initrc(namespace)
 
-        return {k: getattr(module, k) for k in dir(module) if k != "w" and not k.startswith("_")}
+        return {
+            k: getattr(module, k) for k in dir(module) if k != "initrc" and not k.startswith("_")
+        }
 
 
 def console(project=None, verbose=None, extra_locals=None):
