@@ -26,6 +26,7 @@ class DefaultQueryProvider(QueryAPI):
     returns:
         pd.DataFrame: response of query in a pandas dataframe
     """
+
     def estimate_query(self, query: QueryType) -> Optional[int]:
         """
         Estimates the time that the query will take as a timestamp
