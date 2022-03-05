@@ -106,7 +106,8 @@ class Address(BaseAddress):
     or to refer to an EOA the user doesn't personally control.
     """
 
-    _address: AddressType
+    def __init__(self, address: AddressType):
+        self._address = address
 
     @property
     def address(self) -> AddressType:
