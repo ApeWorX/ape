@@ -139,8 +139,6 @@ class PytestApeRunner(ManagerAccessMixin):
             )
             self.network_manager.active_provider.connect()
             self._provider_is_connected = True
-        else:
-            raise pytest.UsageError(f"No tests found in '{Path.cwd()}'.")
 
     def pytest_sessionfinish(self):
         """
