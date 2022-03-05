@@ -1,10 +1,12 @@
 import faulthandler
 import io
 import logging
+from importlib.machinery import SourceFileLoader
 
 import click
 import IPython  # type: ignore
 
+from ape import config
 from ape import project as default_project
 from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 from ape.utils import _python_version
@@ -22,6 +24,22 @@ def cli(cli_ctx, network):
     """Opens a console for the local project."""
     verbose = cli_ctx.logger.level == logging.DEBUG
     return console(verbose=verbose)
+
+
+def load_consolerc(namespace):
+    """load and return namespace from consolerc.py if it exists"""
+    consolerc = config.DATA_FOLDER.joinpath("consolerc.py")
+
+    if consolerc.is_file():
+        module = SourceFileLoader(consolerc.name[:-3], str(consolerc)).load_module()
+
+        # Look for an initrc function
+        if hasattr(module, "initrc"):  # and hasattr(module.initrc, "__call__"):
+            # Execute functionality with existing console namespace so the
+            # script can modify things as it needs
+            module.initrc(namespace)
+
+        return {k: getattr(module, k) for k in dir(module) if k != "w" and not k.startswith("_")}
 
 
 def console(project=None, verbose=None, extra_locals=None):
@@ -57,5 +75,10 @@ def console(project=None, verbose=None, extra_locals=None):
 
     if extra_locals:
         namespace.update(extra_locals)
+
+    rc_symbols = load_consolerc(namespace)
+
+    if rc_symbols:
+        namespace.update(rc_symbols)
 
     IPython.embed(colors="Neutral", banner1=banner, user_ns=namespace)
