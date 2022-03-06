@@ -162,6 +162,9 @@ class CliLogger:
 def _get_logger(name: str) -> logging.Logger:
     """Get a logger with the given ``name`` and configure it for usage with Click."""
     cli_logger = logging.getLogger(name)
+    handler = ClickHandler(echo_kwargs=CLICK_ECHO_KWARGS)
+    handler.setFormatter(ApeColorFormatter())
+    cli_logger.handlers = [handler]
 
     # NOTE: We need to set the verbosity from the CLI option earlier than click lets us.
     for arg_i in range(len(sys.argv) - 1):
@@ -173,13 +176,11 @@ def _get_logger(name: str) -> logging.Logger:
                 cli_logger.setLevel(level)
             else:
                 names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
-                raise click.BadParameter(f"Must be one of '{names_str}', not '{level}'.")
+                cli_logger.error(f"Must be one of '{names_str}', not '{level}'.")
+                sys.exit(2)
         else:
             cli_logger.setLevel(DEFAULT_LOG_LEVEL)
 
-    handler = ClickHandler(echo_kwargs=CLICK_ECHO_KWARGS)
-    handler.setFormatter(ApeColorFormatter())
-    cli_logger.handlers = [handler]
     return cli_logger
 
 
