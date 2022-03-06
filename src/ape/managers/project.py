@@ -470,10 +470,16 @@ class ProjectManager(BaseManager):
         """
 
         contracts = self.load_contracts()
+
+        dependency_contracts = []
+        for _, manifest in self.dependencies.items():
+            manifest_contracts = [ContractContainer(ct) for ct in manifest.contract_types.values()]
+            dependency_contracts.extend(manifest_contracts)
+
         if attr_name in contracts:
             contract_type = contracts[attr_name]
-        elif attr_name in self.dependencies:
-            contract_type = self.dependencies[attr_name]  # type: ignore
+        elif attr_name in dependency_contracts:
+            contract_type = dependency_contracts[attr_name]  # type: ignore
         else:
             # Fixes anomaly when accessing non-ContractType attributes.
             # Returns normal attribute if exists. Raises 'AttributeError' otherwise.

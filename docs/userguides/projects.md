@@ -47,6 +47,19 @@ a = accounts.load("metamask_0")
 a.deploy(project.MyContract)
 ```
 
+### Dependencies
+
+To set up dependencies in your ``ape-config.yaml`` file, follow [this guide](https://docs.apeworx.io/ape/stable/userguides/config.html#dependencies).
+If you are setting dependencies from a remote source, they will download when you run `ape compile` or other commands that compile in the background.
+
+You can access dependency contracts off your root project manager the same as your project's contracts.
+
+```python
+from ape import project
+
+dependency = project.MyDependency
+```
+
 ## Networks
 
 The default provider for the development network is the 
