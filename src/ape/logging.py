@@ -104,13 +104,15 @@ class CliLogger:
         self._logger = _logger
         self._web3_request_manager_logger = _get_logger("web3.RequestManager")
         self._web3_http_provider_logger = _get_logger("web3.providers.HTTPProvider")
-        self.set_level(DEFAULT_LOG_LEVEL)
 
     @property
     def level(self) -> int:
         return self._logger.level
 
     def set_level(self, level_name: str):
+        if level_name == self._logger.level:
+            return
+
         self._logger.setLevel(level_name)
         self._web3_request_manager_logger.setLevel(level_name)
         self._web3_http_provider_logger.setLevel(level_name)
@@ -160,6 +162,22 @@ class CliLogger:
 def _get_logger(name: str) -> logging.Logger:
     """Get a logger with the given ``name`` and configure it for usage with Click."""
     cli_logger = logging.getLogger(name)
+
+    # NOTE: We need set the verbosity from the CLI option earlier than click lets us.
+    for arg_i in range(len(sys.argv) - 1):
+        if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
+            level = sys.argv[arg_i + 1].upper()
+            level_names = [lvl.name for lvl in LogLevel]
+
+            if level in level_names:
+                cli_logger.setLevel(level)
+            else:
+                names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
+                raise click.BadParameter(f"Must be one of '{names_str}', not '{level}'.")
+            # else: let ``click`` handle the error later on.
+        else:
+            cli_logger.setLevel(DEFAULT_LOG_LEVEL)
+
     handler = ClickHandler(echo_kwargs=CLICK_ECHO_KWARGS)
     handler.setFormatter(ApeColorFormatter())
     cli_logger.handlers = [handler]

@@ -1,10 +1,9 @@
 import functools
 import importlib
 import pkgutil
-import sys
 from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, Type, cast
 
-from ape.logging import LogLevel, logger
+from ape.logging import logger
 
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
@@ -123,15 +122,6 @@ class PluginManager:
     _unimplemented_plugins: List[str] = []
 
     def __init__(self) -> None:
-        # NOTE: This is a hack to make 'ape -v debug' correctly debug failing plugins.
-        for arg_i in range(len(sys.argv) - 1):
-            if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
-                level = sys.argv[arg_i + 1].upper()
-
-                if level in [lvl.name for lvl in LogLevel]:
-                    logger.set_level(level)
-                # else: let ``click`` handle the error later on.
-
         # NOTE: This actually loads the plugins, and should only be done once
         for _, name, ispkg in pkgutil.iter_modules():
             if name.startswith("ape_") and ispkg:
