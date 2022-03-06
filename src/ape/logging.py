@@ -163,7 +163,7 @@ def _get_logger(name: str) -> logging.Logger:
     """Get a logger with the given ``name`` and configure it for usage with Click."""
     cli_logger = logging.getLogger(name)
 
-    # NOTE: We need set the verbosity from the CLI option earlier than click lets us.
+    # NOTE: We need to set the verbosity from the CLI option earlier than click lets us.
     for arg_i in range(len(sys.argv) - 1):
         if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
             level = sys.argv[arg_i + 1].upper()
@@ -174,7 +174,6 @@ def _get_logger(name: str) -> logging.Logger:
             else:
                 names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
                 raise click.BadParameter(f"Must be one of '{names_str}', not '{level}'.")
-            # else: let ``click`` handle the error later on.
         else:
             cli_logger.setLevel(DEFAULT_LOG_LEVEL)
 
