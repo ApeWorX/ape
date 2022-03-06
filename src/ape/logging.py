@@ -2,13 +2,13 @@
 import logging
 import sys
 import traceback
-from enum import Enum
+from enum import IntEnum
 from typing import IO
 
 import click
 
 
-class LogLevel(Enum):
+class LogLevel(IntEnum):
     ERROR = logging.ERROR
     WARNING = logging.WARNING
     SUCCESS = logging.INFO + 1
