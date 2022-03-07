@@ -69,10 +69,10 @@ class NetworkManager(BaseManager):
                         continue
 
                     network_config = ecosystem_config[network_name]
-                    default_provider = network_config.get("default_provider")
-                    if not default_provider:
+                    if "default_provider" not in network_config:
                         continue
 
+                    default_provider = network_config["default_provider"]
                     if default_provider in network.providers:
                         network.set_default_provider(default_provider)
                     else:
