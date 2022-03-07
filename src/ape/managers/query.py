@@ -17,15 +17,9 @@ def get_columns_from_item(query: _BaseQuery, item: BaseModel) -> Dict[str, Any]:
 
 class DefaultQueryProvider(QueryAPI):
     """
-    Default implementation of the ape.api.query.QueryAPI
-    Allows for the query of blockchain data
-
-    Args:
-        query: (``QueryType``): query to execute
-
-    returns:
-        pd.DataFrame: response of query in a pandas dataframe
-    """
+     Default implementation of the ape.api.query.QueryAPI
+     Allows for the query of blockchain data using connected provider
+     """
 
     def estimate_query(self, query: QueryType) -> Optional[int]:
         """
