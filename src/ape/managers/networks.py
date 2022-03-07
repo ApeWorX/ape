@@ -3,6 +3,7 @@ from typing import Dict, Iterator, Optional
 import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import ConfigError, NetworkError
 
 from .base import BaseManager
@@ -54,8 +55,8 @@ class NetworkManager(BaseManager):
                 data_folder=self.config_manager.DATA_FOLDER / plugin_name,
                 request_header=self.config_manager.REQUEST_HEADER,
             )
-            ecosystem_config = self.config_manager.get_config(plugin_name)
-            default_network = ecosystem_config.default_network  # type: ignore
+            ecosystem_config = self.config_manager.get_config(plugin_name).dict()
+            default_network = ecosystem_config.get("default_network", LOCAL_NETWORK_NAME)
 
             if default_network and default_network in ecosystem.networks:
                 ecosystem.set_default_network(default_network)
@@ -64,12 +65,14 @@ class NetworkManager(BaseManager):
 
             if ecosystem_config:
                 for network_name, network in ecosystem.networks.items():
-                    if not hasattr(ecosystem_config, network_name):
+                    if network_name not in ecosystem_config:
                         continue
-                    network_config = getattr(ecosystem_config, network_name)
-                    default_provider = network_config.default_provider
-                    if not default_provider:
+
+                    network_config = ecosystem_config[network_name]
+                    if "default_provider" not in network_config:
                         continue
+
+                    default_provider = network_config["default_provider"]
                     if default_provider in network.providers:
                         network.set_default_provider(default_provider)
                     else:
