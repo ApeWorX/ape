@@ -2,6 +2,9 @@ import pytest
 from eth.exceptions import HeaderNotFound
 
 import ape
+
+from ape import networks
+
 from ape.api import (
     AccountContainerAPI,
     EcosystemAPI,
@@ -118,3 +121,9 @@ def sender(test_accounts):
 @pytest.fixture
 def receiver(test_accounts):
     return test_accounts[1]
+
+
+@pytest.fixture
+def test_provider():
+    with networks.ethereum.local.use_provider("test") as provider:
+        yield provider
