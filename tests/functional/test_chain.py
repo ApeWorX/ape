@@ -74,7 +74,7 @@ def test_account_history(sender, receiver, chain):
 def test_iterate_blocks(chain_at_block_5):
     expected_number_of_blocks = 6  # chain_at_block_5: [0, 1, 2, 3, 4, 5] (len=6)
     blocks = [b for b in chain_at_block_5.blocks]
-    assert len(blocks) == expected_number_of_blocks
+    assert len(blocks) == expected_number_of_blocks, "Blocks are mined after fixture set"
 
     expected_number = 0
     for block in blocks:
