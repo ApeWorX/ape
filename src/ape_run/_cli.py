@@ -146,10 +146,10 @@ class ScriptCommand(click.MultiCommand):
 )
 def cli(interactive):
     """
-    Run scripts from the ``scripts`` folder. A script must either define a ``main()`` method,
-    or define an import named ``cli`` that is a ``click.Command`` or ``click.Group`` object.
-    ``click.Group`` and ``click.Command`` objects will be provided with additional context, which
-    will be injected dynamically during script execution. The dynamically injected objects are
-    the exports from the ``ape`` top-level package (similar to how the console works)
+    Run scripts from the "scripts/" folder of a project. A script must either define a ``main()``
+    method, or define a command named ``cli`` that is a ``click.Command`` or ``click.Group`` object.
+    Scripts with only a ``main()`` method will be called with a network option given to the command.
+    Scripts with a ``cli`` command should import any mix-ins necessary to operate from the
+    ``ape.cli`` package.
     """
     _ = interactive  # NOTE: Used in above callback handler
