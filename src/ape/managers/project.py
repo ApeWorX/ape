@@ -228,6 +228,19 @@ class GithubDependency(DependencyAPI):
             return self._extract_local_manifest(temp_project_path)
 
 
+class PackageManifestWrapper:
+    def __init__(self, manifest: PackageManifest):
+        self.manifest = manifest
+
+    def __getattr__(self, contract_name: str):
+        if not hasattr(self.manifest, contract_name):
+            raise AttributeError(
+                f"Manifest '{self.manifest.name}' has not  contract '{contract_name}'."
+            )
+
+        return ContractContainer(getattr(self.manifest, contract_name))
+
+
 class ProjectManager(BaseManager):
     """
     A manager for accessing contract-types, dependencies, and other project resources.
@@ -264,13 +277,13 @@ class ProjectManager(BaseManager):
         return f'Project("{self.path}")'
 
     @cached_property
-    def dependencies(self) -> Dict[str, PackageManifest]:
+    def dependencies(self) -> Dict[str, PackageManifestWrapper]:
         """
         The package manifests of all dependencies mentioned
         in this project's ``ape-config.yaml`` file.
         """
 
-        return self._load_dependencies()
+        return {d: PackageManifestWrapper(m) for d, m in self._load_dependencies().items()}
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
     @property
@@ -469,18 +482,16 @@ class ProjectManager(BaseManager):
             :class:`~ape.contracts.ContractContainer`
         """
 
-        contracts = self.load_contracts()
-
-        if attr_name in contracts:
-            contract_type = contracts[attr_name]
+        if attr_name in self.contracts and not self.contracts[attr_name].source_id.startswith(
+            ".cache"
+        ):
+            return ContractContainer(  # type: ignore
+                contract_type=self.contracts[attr_name],
+            )
         else:
             # Fixes anomaly when accessing non-ContractType attributes.
             # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
             return self.__getattribute__(attr_name)  # type: ignore
-
-        return ContractContainer(  # type: ignore
-            contract_type=contract_type,
-        )
 
     def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
         """
