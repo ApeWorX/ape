@@ -89,7 +89,7 @@ class ScriptCommand(click.MultiCommand):
 
         from ape import project
 
-        project.config.load()
+        project.config_manager.load()
 
         return project
 
