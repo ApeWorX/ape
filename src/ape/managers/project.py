@@ -270,7 +270,7 @@ class ProjectManager(BaseManager):
         in this project's ``ape-config.yaml`` file.
         """
 
-        return {d.name: d for d in self.config_manager.dependencies}
+        return self._load_dependencies()
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
     @property
@@ -573,7 +573,7 @@ class ProjectManager(BaseManager):
         if not self.contracts_folder.exists():
             return {}
 
-        _ = self.config_manager.dependencies
+        self._load_dependencies()
         file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
 
         in_source_cache = self.contracts_folder / ".cache"
@@ -645,6 +645,14 @@ class ProjectManager(BaseManager):
             from ape_console._cli import console
 
             return console()
+
+    def _load_dependencies(self) -> Dict[str, DependencyAPI]:
+        deps = {d.name: d for d in self.config_manager.dependencies}
+        for api in deps.values():
+            # Downloads if needed
+            api.extract_manifest()
+
+        return deps
 
     # @property
     # def meta(self) -> PackageMeta:
