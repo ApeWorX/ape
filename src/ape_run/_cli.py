@@ -4,6 +4,7 @@ from typing import Dict, Union
 
 import click
 
+from ape.cli import NetworkBoundCommand, network_option
 from ape.logging import logger
 from ape.managers.project import ProjectManager
 from ape.utils import cached_property, get_relative_path, use_temp_sys_path
@@ -49,8 +50,10 @@ class ScriptCommand(click.MultiCommand):
         elif "main" in code.co_names:
             logger.debug(f"Found 'main' method in script: {relative_filepath}")
 
-            @click.command(short_help=f"Run '{relative_filepath}:main'")
-            def call():
+            @click.command(cls=NetworkBoundCommand, short_help=f"Run '{relative_filepath}:main'")
+            @network_option()
+            def call(network):
+                _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
                     ns = run_module(f"scripts.{filepath.stem}")
 
@@ -62,8 +65,10 @@ class ScriptCommand(click.MultiCommand):
         else:
             logger.warning(f"No 'main' method or 'cli' command in script: {relative_filepath}")
 
-            @click.command(short_help=f"Run '{relative_filepath}'")
-            def call():
+            @click.command(cls=NetworkBoundCommand, short_help=f"Run '{relative_filepath}'")
+            @network_option()
+            def call(network):
+                _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
                     ns = run_module(f"scripts.{filepath.stem}")
 
