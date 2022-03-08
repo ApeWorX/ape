@@ -327,8 +327,7 @@ class RPCTimeoutError(SubprocessTimeoutError):
     ):
         error_message = (
             "Timed out waiting for successful RPC connection to "
-            f"the Hardhat node ({seconds} seconds) "
-            "Try 'npx hardhat node' to debug."
+            f"the '{provider.process_name}' process ({seconds} seconds)."
         )
         kwargs["message"] = error_message
         if seconds:

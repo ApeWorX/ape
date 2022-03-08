@@ -627,7 +627,7 @@ class TestProviderAPI(ProviderAPI):
         """
 
     @cached_property
-    def test_config(self):
+    def test_config(self) -> PluginConfig:
         return self.config_manager.get_config("test")
 
 
@@ -790,7 +790,7 @@ class SubprocessProvider(ProviderAPI):
         """
 
     def connect(self):
-        """ "
+        """
         Start the process and connect to it.
         Subclasses handle the connection-related tasks.
         """
@@ -824,12 +824,7 @@ class SubprocessProvider(ProviderAPI):
             logger.info(f"Connecting to existing '{self.process_name}' process.")
             process = None  # Not managing the process.
         else:
-            start_message = f"Started '{self.process_name}'"
-
-            # TODO: Conditionally add port?
-
-            logger.info(start_message)
-
+            logger.info(f"Started '{self.process_name}'")
             pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
             process = _popen(*self.build_command(), preexec_fn=pre_exec_fn)
 
@@ -854,31 +849,6 @@ class SubprocessProvider(ProviderAPI):
         self._kill_process()
         self.is_stopping = False
         self.process = None
-
-    def _windows_taskkill(self) -> None:
-        """
-        Kills the given process and all child processes using taskkill.exe. Used
-        for subprocesses started up on Windows which run in a cmd.exe wrapper that
-        doesn't propagate signals by default (leaving orphaned processes).
-        """
-        process = self.process
-        if not process:
-            return
-
-        taskkill_bin = shutil.which("taskkill")
-        if not taskkill_bin:
-            raise SubprocessError("Could not find taskkill.exe executable.")
-
-        proc = Popen(
-            [
-                taskkill_bin,
-                "/F",  # forcefully terminate
-                "/T",  # terminate child processes
-                "/PID",
-                str(process.pid),
-            ]
-        )
-        proc.wait(timeout=self.PROCESS_WAIT_TIMEOUT)
 
     def _wait_for_popen(self, timeout: int = 30):
         if not self.process:
@@ -920,6 +890,31 @@ class SubprocessProvider(ProviderAPI):
             self.process.kill()
 
         self.process = None
+
+    def _windows_taskkill(self) -> None:
+        """
+        Kills the given process and all child processes using taskkill.exe. Used
+        for subprocesses started up on Windows which run in a cmd.exe wrapper that
+        doesn't propagate signals by default (leaving orphaned processes).
+        """
+        process = self.process
+        if not process:
+            return
+
+        taskkill_bin = shutil.which("taskkill")
+        if not taskkill_bin:
+            raise SubprocessError("Could not find taskkill.exe executable.")
+
+        proc = Popen(
+            [
+                taskkill_bin,
+                "/F",  # forcefully terminate
+                "/T",  # terminate child processes
+                "/PID",
+                str(process.pid),
+            ]
+        )
+        proc.wait(timeout=self.PROCESS_WAIT_TIMEOUT)
 
 
 pipe_kwargs = {"stdin": PIPE, "stdout": PIPE, "stderr": PIPE}
