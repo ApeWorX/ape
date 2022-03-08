@@ -33,11 +33,16 @@ class ScriptCommand(click.MultiCommand):
             logger.debug(f"Found 'cli' command in script: {relative_filepath}")
 
             with use_temp_sys_path(filepath.parent.parent):
-                ns = run_module(f"scripts.{filepath.stem}")
+                try:
+                    ns = run_module(f"scripts.{filepath.stem}")
+                except Exception as e:
+                    logger.error_from_exception(
+                        e, f"Exception while parsing script: {relative_filepath}"
+                    )
+                    return None  # Prevents stalling scripts
 
             self._namespace[filepath.stem] = ns
-            if ns and "cli" in ns:
-                return ns["cli"]
+            return ns["cli"]
 
             return None  # NOTE: Allow other scripts to load if loading script breaks
 
@@ -49,9 +54,7 @@ class ScriptCommand(click.MultiCommand):
                 with use_temp_sys_path(filepath.parent.parent):
                     ns = run_module(f"scripts.{filepath.stem}")
 
-                if ns:
-                    ns["main"]()
-
+                ns["main"]()  # Execute the script
                 self._namespace[filepath.stem] = ns
 
             return call
@@ -64,7 +67,7 @@ class ScriptCommand(click.MultiCommand):
                 with use_temp_sys_path(filepath.parent.parent):
                     ns = run_module(f"scripts.{filepath.stem}")
 
-                # Nothing to call
+                # Nothing to call, everything executes on loading
                 self._namespace[filepath.stem] = ns
 
             return call
