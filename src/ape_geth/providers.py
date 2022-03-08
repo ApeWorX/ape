@@ -9,6 +9,7 @@ from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
+from pydantic import Extra
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
@@ -122,6 +123,9 @@ class GethNetworkConfig(PluginConfig):
 class NetworkConfig(PluginConfig):
     ethereum: GethNetworkConfig = GethNetworkConfig()
 
+    class Config:
+        extra = Extra.allow
+
 
 class GethNotInstalledError(ConnectionError):
     def __init__(self):
@@ -139,9 +143,12 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
     @property
     def uri(self) -> str:
-        ecosystem_config = getattr(self.config, self.network.ecosystem.name)
-        network_config = ecosystem_config.dict().get(self.network.name) or DEFAULT_SETTINGS
-        return network_config.get("uri") or DEFAULT_SETTINGS["uri"]
+        ecosystem_config = self.config.dict().get(self.network.ecosystem.name, None)
+        if ecosystem_config is None:
+            return DEFAULT_SETTINGS["uri"]
+
+        network_config = ecosystem_config.get(self.network.name)
+        return network_config.get("uri", DEFAULT_SETTINGS["uri"])
 
     @property
     def connection_str(self) -> str:
