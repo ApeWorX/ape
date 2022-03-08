@@ -19,6 +19,7 @@ class PytestApeRunner(ManagerAccessMixin):
     ):
         self.pytest_config = pytest_config
         self._warned_for_missing_features = False
+        self._provider_is_connected = False
         ape.reverts = RevertsContextManager  # type: ignore
 
     @property
@@ -137,11 +138,16 @@ class PytestApeRunner(ManagerAccessMixin):
                 self._network_choice
             )
             self.network_manager.active_provider.connect()
+            self._provider_is_connected = True
 
     def pytest_sessionfinish(self):
         """
         Called after whole test run finished, right before returning the exit
         status to the system.
+
+        **NOTE**: This hook fires even when exceptions occur, so we cannot
+        assume the provider successfully connected.
         """
-        if self.chain_manager:
+        if self._provider_is_connected:
             self.chain_manager.provider.disconnect()
+            self._provider_is_connected = False

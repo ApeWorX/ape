@@ -228,12 +228,12 @@ class ContractEvent(ManagerAccessMixin):
         self,
         contract: "ContractInstance",
         abis: List[EventABI],
-        cached_logs: List[ContractLog] = [],
+        cached_logs: List[ContractLog] = None,
     ) -> None:
         super().__init__()
         self.contract = contract
         self.abis = abis
-        self.cached_logs = cached_logs
+        self.cached_logs = cached_logs or []
 
 
 class ContractInstance(BaseAddress):
@@ -488,10 +488,7 @@ def _Contract(
     else:
         # We don't have a contract type from any source, provide raw address instead
         logger.warning(f"No contract type found for {address}")
-        return Address(  # type: ignore
-            _address=converted_address,
-            _provider=provider,
-        )
+        return Address(converted_address)
 
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:
