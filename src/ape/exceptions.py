@@ -309,7 +309,7 @@ class SubprocessTimeoutError(SubprocessError):
             raise self
 
     def cancel(self):
-        if self._provider and self._provider.running:
+        if self._provider and self._provider.process is not None:
             self._provider.stop()
             self._provider = None
 
