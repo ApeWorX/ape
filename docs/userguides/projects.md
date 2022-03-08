@@ -50,15 +50,18 @@ a.deploy(project.MyContract)
 ### Dependencies
 
 To set up dependencies in your ``ape-config.yaml`` file, follow [this guide](https://docs.apeworx.io/ape/stable/userguides/config.html#dependencies).
-If you are setting dependencies from a remote source, they will download when you run `ape compile` or other commands that compile in the background.
+If you are using dependencies from a remote source, they will download when you run `ape compile` or other commands that compile beforehand.
 Dependencies only need to download and compile once.
 
-You can access dependency contracts off your root project manager the same as your project's contracts.
+You can access dependency contracts off your root project manager:
 
 ```python
-from ape import project
+from ape import accounts, project
 
-dependency = project.MyDependency
+dependency_contract = project.dependencies["my_dependency"].DependencyContractType
+my_account = accounts.load("alias")
+deployed_contract = my_account.deploy(dependency_contract, "argument")
+print(deployed_contract.address)
 ```
 
 ## Networks
