@@ -1,7 +1,7 @@
 import pytest
 from eth.exceptions import HeaderNotFound
 
-from ape import chain, networks
+import ape
 from ape.api import (
     AccountContainerAPI,
     EcosystemAPI,
@@ -67,7 +67,7 @@ def mock_transaction(mocker):
 
 @pytest.hookimpl(trylast=True, hookwrapper=True)
 def pytest_collection_finish(session):
-    with networks.parse_network_choice("::test"):
+    with ape.networks.parse_network_choice("::test"):
         # Sets the active provider
         yield
 
@@ -75,15 +75,14 @@ def pytest_collection_finish(session):
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_protocol(item, nextitem):
     module_name = item.module.__name__
-    prefix = "tests.integration"
+    prefix = "tests.functional"
 
-    # Only do snapshotting for non-functional and non-CLI tests.
-    if module_name.startswith(prefix) and not module_name.startswith(f"{prefix}.cli"):
-        snapshot_id = chain.snapshot()
+    if module_name.startswith(prefix):
+        snapshot_id = ape.chain.snapshot()
         yield
 
         try:
-            chain.restore(snapshot_id)
+            ape.chain.restore(snapshot_id)
         except (HeaderNotFound, ChainError):
             pass
     else:
@@ -92,8 +91,8 @@ def pytest_runtest_protocol(item, nextitem):
 
 @pytest.fixture
 def networks_connected_to_tester():
-    with networks.parse_network_choice("::test"):
-        yield networks
+    with ape.networks.parse_network_choice("::test"):
+        yield ape.networks
 
 
 @pytest.fixture
