@@ -262,7 +262,6 @@ class SubprocessTimeoutError(SubprocessError):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.cancel()
         return False
 
     def __str__(self):
@@ -298,6 +297,7 @@ class SubprocessTimeoutError(SubprocessError):
             return
 
         elif time.time() > self.expire_at:
+            self.cancel()
             self._is_running = False
 
             if isinstance(self._exception, type):

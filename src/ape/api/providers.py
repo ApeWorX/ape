@@ -761,24 +761,6 @@ class SubprocessProvider(ProviderAPI):
         ``False`` otherwise.
         """
 
-    @property
-    @abstractmethod
-    def is_rpc_ready(self) -> bool:
-        """
-        ``True`` when the provider process is able to accept RPC requests.
-        This gets called during :meth:`~ape.api.providers.SubprocessProvider.connect`.
-        """
-
-    @property
-    def started(self) -> bool:
-        """``True`` if the process has been initiated to run."""
-        return self.process is not None
-
-    @property
-    def running(self) -> bool:
-        """``True`` if the process is running."""
-        return self.process is not None and self.process.poll() is not None
-
     @abstractmethod
     def build_command(self) -> List[str]:
         """
@@ -820,23 +802,21 @@ class SubprocessProvider(ProviderAPI):
     def start(self, timeout: int = 20):
         """Start the process and wait for its RPC to be ready."""
 
-        if self.is_rpc_ready:
+        if self.is_connected:
             logger.info(f"Connecting to existing '{self.process_name}' process.")
-            process = None  # Not managing the process.
+            self.process = None  # Not managing the process.
         else:
-            logger.info(f"Started '{self.process_name}'")
+            logger.info(f"Starting '{self.process_name}' process.")
             pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
-            process = _popen(*self.build_command(), preexec_fn=pre_exec_fn)
+            self.process = _popen(*self.build_command(), preexec_fn=pre_exec_fn)
 
             with RPCTimeoutError(self, seconds=timeout) as _timeout:
                 while True:
-                    if self.is_rpc_ready:
+                    if self.is_connected:
                         break
 
                     time.sleep(0.1)
                     _timeout.check()
-
-        self.process = process
 
     def stop(self):
         """Kill the process."""
