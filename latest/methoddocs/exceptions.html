@@ -298,10 +298,32 @@ out of gas.</p>
 </dd></dl>
 
 <dl class="py exception">
+<dt id="ape.exceptions.RPCTimeoutError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">RPCTimeoutError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">SubprocessProvider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seconds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exception</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.RPCTimeoutError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.SubprocessTimeoutError" title="ape.exceptions.SubprocessTimeoutError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.exceptions.SubprocessTimeoutError</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
 <dt id="ape.exceptions.SignatureError">
 <em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">SignatureError</span></code><a class="headerlink" href="#ape.exceptions.SignatureError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.exceptions.AccountsError" title="ape.exceptions.AccountsError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.exceptions.AccountsError</span></code></a></p>
 <p>Raised when there are issues with signing.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="ape.exceptions.SubprocessError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">SubprocessError</span></code><a class="headerlink" href="#ape.exceptions.SubprocessError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ApeException" title="ape.exceptions.ApeException"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.exceptions.ApeException</span></code></a></p>
+<p>An error raised whilst managing a subprocess.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="ape.exceptions.SubprocessTimeoutError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></code><code class="sig-name descname"><span class="pre">SubprocessTimeoutError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">SubprocessProvider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seconds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exception</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.SubprocessTimeoutError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.SubprocessError" title="ape.exceptions.SubprocessError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.exceptions.SubprocessError</span></code></a></p>
+<p>A context-manager exception that raises if its operations exceed
+the given timeout seconds.</p>
+<p>This implementation was inspired from py-geth.</p>
 </dd></dl>
 
 <dl class="py exception">
