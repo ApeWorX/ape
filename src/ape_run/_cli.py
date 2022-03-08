@@ -1,37 +1,19 @@
-from importlib.machinery import SourceFileLoader
 from pathlib import Path
-from types import ModuleType
-from typing import Dict, Optional, Union
+from runpy import run_module
+from typing import Dict, Union
 
 import click
 
 from ape.logging import logger
 from ape.managers.project import ProjectManager
-from ape.utils import cached_property, get_relative_path
+from ape.utils import cached_property, get_relative_path, use_temp_sys_path
 from ape_console._cli import console
-
-
-def deepcopy_skip_modules(d):
-    return {
-        k: deepcopy_skip_modules(v) if isinstance(v, dict) else v
-        for k, v in d.items()
-        if not k.startswith("_") and not isinstance(v, ModuleType)
-    }
 
 
 class ScriptCommand(click.MultiCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, result_callback=self.result_callback)
-
-    def __load_module(self, filepath: Path) -> Optional[ModuleType]:
-        try:
-            # TODO: Analyze security issues from this
-            return SourceFileLoader("script", str(filepath)).load_module()
-
-        except Exception as err:
-            relative_filepath = get_relative_path(filepath, self._project.path)
-            logger.error_from_exception(err, f"Exception while loading script: {relative_filepath}")
-            return None
+        self._namespace = {}
 
     def _get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
         relative_filepath = get_relative_path(filepath, self._project.path)
@@ -50,9 +32,12 @@ class ScriptCommand(click.MultiCommand):
             # If the module contains a click cli subcommand, process it and return the subcommand
             logger.debug(f"Found 'cli' command in script: {relative_filepath}")
 
-            script = self.__load_module(filepath)
-            if script:
-                return script.cli  # type: ignore
+            with use_temp_sys_path(filepath.parent.parent):
+                ns = run_module(f"scripts.{filepath.stem}")
+
+            self._namespace[filepath.stem] = ns
+            if ns and "cli" in ns:
+                return ns["cli"]
 
             return None  # NOTE: Allow other scripts to load if loading script breaks
 
@@ -61,9 +46,13 @@ class ScriptCommand(click.MultiCommand):
 
             @click.command(short_help=f"Run '{relative_filepath}:main'")
             def call():
-                module = self.__load_module(filepath)
-                if module:
-                    module.main()  # type: ignore
+                with use_temp_sys_path(filepath.parent.parent):
+                    ns = run_module(f"scripts.{filepath.stem}")
+
+                if ns:
+                    ns["main"]()
+
+                self._namespace[filepath.stem] = ns
 
             return call
 
@@ -72,8 +61,11 @@ class ScriptCommand(click.MultiCommand):
 
             @click.command(short_help=f"Run '{relative_filepath}'")
             def call():
-                self.__load_module(filepath)
+                with use_temp_sys_path(filepath.parent.parent):
+                    ns = run_module(f"scripts.{filepath.stem}")
+
                 # Nothing to call
+                self._namespace[filepath.stem] = ns
 
             return call
 
@@ -117,7 +109,7 @@ class ScriptCommand(click.MultiCommand):
             name = Path(name).stem
 
         if name in self.commands:
-            self.command_called = name
+            self._command_called = name
             return self.commands[name]
 
         # NOTE: don't return anything so Click displays proper error
@@ -125,7 +117,10 @@ class ScriptCommand(click.MultiCommand):
     def result_callback(self, result, interactive):
         if interactive:
             # TODO: Figure out how to pull out namespace for `extra_locals`
-            return console(project=self._project, extra_locals={})
+            return console(
+                project=self._project,
+                extra_locals=self._namespace[self._command_called],
+            )
 
         return result
 
