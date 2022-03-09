@@ -451,8 +451,11 @@ class ProjectManager(BaseManager):
 
     def __getattr__(self, attr_name: str) -> ContractContainer:
         """
-        Get a contract container from an existing contract type or dependency
-        name using ``.`` access.
+        Get a contract container from an existing contract type in
+        the local project using ``.`` access.
+
+        **NOTE**: To get a dependency contract, use
+        :py:attr:`~ape.managers.project.ProjectManager.dependencies`.
 
         Usage example::
 
@@ -460,8 +463,11 @@ class ProjectManager(BaseManager):
 
             contract = project.MyContract
 
+        Raises:
+            AttributeError: When the given name is not a contract in the project.
+
         Args:
-            attr_name (str): The name of the contract or dependency.
+            attr_name (str): The name of the contract in the project.
 
         Returns:
             :class:`~ape.contracts.ContractContainer`
