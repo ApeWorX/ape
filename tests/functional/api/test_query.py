@@ -6,9 +6,7 @@ def test_basic_query(test_provider):
     a.transfer(a, 100)
     a.transfer(a, 100)
     a.transfer(a, 100)
-    df = chain.blocks.query("number")
-    assert len(df) == 3
-    assert df["number"][0] == 0
+    assert chain.blocks.query("number").to_dict() == {"number": {0: 0, 1: 1, 2: 2}}
     df = chain.blocks.query("number", "timestamp")
     assert len(df) == 3
-    assert df["timestamp"][2] > df["timestamp"][1] > df["timestamp"][0]
+    assert df["timestamp"][2] >= df["timestamp"][1] >= df["timestamp"][0]
