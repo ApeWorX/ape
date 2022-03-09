@@ -45,8 +45,6 @@ class ScriptCommand(click.MultiCommand):
             self._namespace[filepath.stem] = ns
             return ns["cli"]
 
-            return None  # NOTE: Allow other scripts to load if loading script breaks
-
         elif "main" in code.co_names:
             logger.debug(f"Found 'main' method in script: {relative_filepath}")
 
