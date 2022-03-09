@@ -121,6 +121,22 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     )
 
 
+class use_temp_sys_path:
+    """
+    A context manager to manage injecting and removing paths from
+    a user's sys paths without permanently modifying it.
+    """
+
+    def __init__(self, path: Path):
+        self.temp_path = str(path)
+
+    def __enter__(self):
+        sys.path.append(self.temp_path)
+
+    def __exit__(self, *exc):
+        sys.path.remove(self.temp_path)
+
+
 def get_package_version(obj: Any) -> str:
     """
     Get the version of a single package.
