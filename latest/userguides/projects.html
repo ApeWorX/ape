@@ -60,6 +60,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Developing Projects with Ape</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#compiling-contracts">Compiling Contracts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#networks">Networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scripts">Scripts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#test-structure">Test Structure</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fixtures">Fixtures</a><ul>
@@ -207,13 +208,26 @@ network using the <code class="docutils literal notranslate"><span class="pre">a
 </div>
 <p>For specifying the network in an ad-hoc fashion, commands such as <code class="docutils literal notranslate"><span class="pre">run</span></code>, <code class="docutils literal notranslate"><span class="pre">test</span></code>, and <code class="docutils literal notranslate"><span class="pre">console</span></code> offer a <code class="docutils literal notranslate"><span class="pre">--network</span></code>
 option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape run deploy --network ethereum:local:hardhat
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape console --network ethereum:local:hardhat
 </pre></div>
 </div>
 <p><strong>NOTE</strong>: If you are using the default ecosystem or network, you can omit them from the option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape run deploy --network ::hardhat
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape console --network ::hardhat
 </pre></div>
 </div>
+</div>
+<div class="section" id="scripts">
+<h2>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h2>
+<p>You can write scripts that run using the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> command. The <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> command will register and run Python
+files defined under the <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> directory that do not start with an <code class="docutils literal notranslate"><span class="pre">_</span></code> underscore. If the scripts take
+advantage of utilities from our <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">ape.cli</span></code></span> submodule,
+you can build a <a class="reference external" href="https://click.palletsprojects.com/">Click</a> command line interface
+by defining a <code class="docutils literal notranslate"><span class="pre">click.Command</span></code> or <code class="docutils literal notranslate"><span class="pre">click.Group</span></code> object called <code class="docutils literal notranslate"><span class="pre">cli</span></code> in your file.
+Otherwise, if the script has a <code class="docutils literal notranslate"><span class="pre">main()</span></code> method, it will execute that method when called.</p>
+<p>Note that by default, <code class="docutils literal notranslate"><span class="pre">cli</span></code> scripts do not have
+<a class="reference external" href="../methoddocs/cli.html?highlight=options#ape.cli.options.network_option"><code class="docutils literal notranslate"><span class="pre">ape.cli.network_option</span></code></a>
+installed, giving you more flexibility in how you define your scripts.
+<code class="docutils literal notranslate"><span class="pre">main</span></code> scripts will always provide a network option to the call.</p>
 </div>
 <div class="section" id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
