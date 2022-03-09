@@ -1,6 +1,6 @@
 ## Testing Strategy
 
-Due to it's plugin-based architecture and registration as a pytest plugin, testing the mechnanics
+Due to its plugin-based architecture and registration as a pytest plugin, testing the mechanics
 of the core Ape repository is a bit more complex than other Python-based repositories.
 
 ### MyPy Type Annotations
@@ -8,7 +8,7 @@ of the core Ape repository is a bit more complex than other Python-based reposit
 This codebase uses MyPy extensively, not only to help aide in finding typing issues within the
 codebase, but also as a means to help plugin writers avoid integration issues with the library.
 Please try to use MyPy Type Annotations as much as possible in the Core codebase, except where
-there exists an issue that would hugely complicate it's use from a lack of available machinery.
+there exists an issue that would hugely complicate its use from a lack of available machinery.
 
 ### Functional Tests
 
@@ -42,9 +42,9 @@ above 80% in practice.
 ### Fuzzing Tests
 
 Certain tests may be turned into property-based tests via the `hypothesis` fuzzing library, and
-should appropiately be marked with the `fuzzing` pytest marker. These tests will run in a separate
+should appropriately be marked with the `fuzzing` pytest marker. These tests will run in a separate
 CI pass as they might take time to execute. Use fuzz testing under conditions where it is not
-possible to parametrize all of the behaviors in a particular code path, especially when the
+possible to parametrize all the behaviors in a particular code path, especially when the
 codebase is complex and has varying behavior. Fuzz testing is particularly useful in finding issues
 with code that is very user-configurable, and can often find issues much more cheaply than more
 advanced types of analysis-based testing tools.
