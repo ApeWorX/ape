@@ -618,8 +618,6 @@ class DependencyManager(ManagerAccessMixin):
         for _, (config_key, dependency_class) in self.plugin_manager.dependencies:
             dependency_classes[config_key] = dependency_class
 
-        dependency_classes["github"] = GithubDependency
-        dependency_classes["local"] = LocalDependency
         return dependency_classes  # type: ignore
 
     def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
