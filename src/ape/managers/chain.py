@@ -91,7 +91,7 @@ class BlockContainer(BaseManager):
         *columns: List[str],
         start_block: int = 0,
         stop_block: Optional[int] = None,
-        engine_to_use: Optional[QueryAPI] = None,
+        engine_to_use: Optional[str] = None,
     ) -> pd.DataFrame:
         """
         A method for querying blocks and returning a pandas DataFrame. If you
@@ -104,12 +104,12 @@ class BlockContainer(BaseManager):
               than the chain length.
 
         Args:
-            columns (Union[str, List[str]]): columns in the DataFrame to return
+            columns (List[str]): columns in the DataFrame to return
             start_block (int): The first block, by number, to include in the
               query. Defaults to 0.
             stop_block (Optional[int]): The last block, by number, to include
               in the query. Defaults to the latest block.
-            engine_to_use (Optional[QueryAPI]): query engine to use, bypasses query
+            engine_to_use (Optional[str]): query engine to use, bypasses query
               engine selection algorithm.
 
         Returns:
