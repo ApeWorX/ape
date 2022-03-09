@@ -1,7 +1,15 @@
+import atexit
+import ctypes
+import platform
+import shutil
+import sys
 import time
+from abc import ABC
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional
+from signal import SIGINT, SIGTERM, signal
+from subprocess import PIPE, Popen, call
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
@@ -12,10 +20,16 @@ from web3 import Web3
 
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
-from ape.exceptions import TransactionError
+from ape.exceptions import (
+    ProviderError,
+    RPCTimeoutError,
+    SubprocessError,
+    SubprocessTimeoutError,
+    TransactionError,
+)
 from ape.logging import logger
 from ape.types import BlockID, SnapshotID, TransactionSignature
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 if TYPE_CHECKING:
     from ape.api.explorers import ExplorerAPI
@@ -612,8 +626,12 @@ class TestProviderAPI(ProviderAPI):
             num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
         """
 
+    @cached_property
+    def test_config(self) -> PluginConfig:
+        return self.config_manager.get_config("test")
 
-class Web3Provider(ProviderAPI):
+
+class Web3Provider(ProviderAPI, ABC):
     """
     A base provider mixin class that uses the
     [web3.py](https://web3py.readthedocs.io/en/stable/) python package.
@@ -719,3 +737,188 @@ class UpstreamProvider(ProviderAPI):
         The str used by downstream providers to connect to this one.
         For example, the URL for HTTP-based providers.
         """
+
+
+class SubprocessProvider(ProviderAPI):
+    """
+    A provider that manages a process, such as for ``ganache``.
+    """
+
+    PROCESS_WAIT_TIMEOUT = 15
+    process: Optional[Popen] = None
+    is_stopping: bool = False
+
+    @property
+    @abstractmethod
+    def process_name(self) -> str:
+        """The name of the process, such as ``Hardhat node``."""
+
+    @property
+    @abstractmethod
+    def is_connected(self) -> bool:
+        """
+        ``True`` if the process is running and connected.
+        ``False`` otherwise.
+        """
+
+    @abstractmethod
+    def build_command(self) -> List[str]:
+        """
+        Get the command as a list of ``str``.
+        Subclasses should override and add command arguments if needed.
+
+        Returns:
+            List[str]: The command to pass to ``subprocess.Popen``.
+        """
+
+    def connect(self):
+        """
+        Start the process and connect to it.
+        Subclasses handle the connection-related tasks.
+        """
+
+        if self.is_connected:
+            raise ProviderError("Cannot connect twice. Call disconnect before connecting again.")
+
+        # Register atexit handler to make sure disconnect is called for normal object lifecycle.
+        atexit.register(self.disconnect)
+
+        # Register handlers to ensure atexit handlers are called when Python dies.
+        def _signal_handler(signum, frame):
+            atexit._run_exitfuncs()
+            sys.exit(143 if signum == SIGTERM else 130)
+
+        signal(SIGINT, _signal_handler)
+        signal(SIGTERM, _signal_handler)
+
+    def disconnect(self):
+        """Stop the process if it exists.
+        Subclasses override this method to do provider-specific disconnection tasks.
+        """
+
+        if self.process:
+            self.stop()
+
+    def start(self, timeout: int = 20):
+        """Start the process and wait for its RPC to be ready."""
+
+        if self.is_connected:
+            logger.info(f"Connecting to existing '{self.process_name}' process.")
+            self.process = None  # Not managing the process.
+        else:
+            logger.info(f"Starting '{self.process_name}' process.")
+            pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
+            self.process = _popen(*self.build_command(), preexec_fn=pre_exec_fn)
+
+            with RPCTimeoutError(self, seconds=timeout) as _timeout:
+                while True:
+                    if self.is_connected:
+                        break
+
+                    time.sleep(0.1)
+                    _timeout.check()
+
+    def stop(self):
+        """Kill the process."""
+
+        if not self.process or self.is_stopping:
+            return
+
+        self.is_stopping = True
+        logger.info(f"Stopping '{self.process_name}' process.")
+        self._kill_process()
+        self.is_stopping = False
+        self.process = None
+
+    def _wait_for_popen(self, timeout: int = 30):
+        if not self.process:
+            # Mostly just to make mypy happy.
+            raise SubprocessError("Unable to wait for process. It is not set yet.")
+
+        try:
+            with SubprocessTimeoutError(self, seconds=timeout) as _timeout:
+                while self.process.poll() is None:
+                    time.sleep(0.1)
+                    _timeout.check()
+
+        except SubprocessTimeoutError:
+            pass
+
+    def _kill_process(self):
+        if platform.uname().system == "Windows":
+            self._windows_taskkill()
+            return
+
+        warn_prefix = f"Trying to close '{self.process_name}' process."
+
+        def _try_close(warn_message):
+            try:
+                self.process.send_signal(SIGINT)
+                self._wait_for_popen(self.PROCESS_WAIT_TIMEOUT)
+            except KeyboardInterrupt:
+                logger.warning(warn_message)
+
+        try:
+            if self.process.poll() is None:
+                _try_close(f"{warn_prefix}. Press Ctrl+C 1 more times to force quit")
+
+            if self.process.poll() is None:
+                self.process.kill()
+                self._wait_for_popen(2)
+
+        except KeyboardInterrupt:
+            self.process.kill()
+
+        self.process = None
+
+    def _windows_taskkill(self) -> None:
+        """
+        Kills the given process and all child processes using taskkill.exe. Used
+        for subprocesses started up on Windows which run in a cmd.exe wrapper that
+        doesn't propagate signals by default (leaving orphaned processes).
+        """
+        process = self.process
+        if not process:
+            return
+
+        taskkill_bin = shutil.which("taskkill")
+        if not taskkill_bin:
+            raise SubprocessError("Could not find taskkill.exe executable.")
+
+        proc = Popen(
+            [
+                taskkill_bin,
+                "/F",  # forcefully terminate
+                "/T",  # terminate child processes
+                "/PID",
+                str(process.pid),
+            ]
+        )
+        proc.wait(timeout=self.PROCESS_WAIT_TIMEOUT)
+
+
+pipe_kwargs = {"stdin": PIPE, "stdout": PIPE, "stderr": PIPE}
+
+
+def _popen(*cmd, preexec_fn: Optional[Callable] = None) -> Popen:
+    kwargs: Dict[str, Any] = {**pipe_kwargs}
+    if preexec_fn:
+        kwargs["preexec_fn"] = preexec_fn
+
+    return Popen([str(c) for c in [*cmd]], **kwargs)
+
+
+def _call(*args):
+    return call([*args], **pipe_kwargs)
+
+
+def _linux_set_death_signal():
+    """
+    Automatically sends SIGTERM to child subprocesses when parent process
+    dies (only usable on Linux).
+    """
+    # from: https://stackoverflow.com/a/43152455/75956
+    # the first argument, 1, is the flag for PR_SET_PDEATHSIG
+    # the second argument is what signal to send to child subprocesses
+    libc = ctypes.CDLL("libc.so.6")
+    return libc.prctl(1, SIGTERM)
