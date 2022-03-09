@@ -1,15 +1,18 @@
 ### What I did
+<!-- Create a summary of the changes -->
 
 <!-- The `fixes:` field denotes an issue that will be marked resolved by merging this PR -->
 fixes: #
 
 ### How I did it
+<!-- Discuss the thought process behind the change -->
 
 ### How to verify it
+<!-- Discuss any methods that should be used to verify the change -->
 
 ### Checklist
+<!-- All PRs must complete the following checklist before being merged -->
 
-- [ ] Passes all linting checks (pre-commit and CI jobs)
-- [ ] New test cases have been added and are passing
+- [ ] All changes are completed
+- [ ] New test cases have been added
 - [ ] Documentation has been updated
-- [ ] PR title follows [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) standard (will be automatically included in the changelog)
