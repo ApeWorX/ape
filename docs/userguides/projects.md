@@ -93,7 +93,7 @@ ape console --network ::hardhat
 
 You can write scripts that run using the `ape run` command. The `ape run` command will register and run Python
 files defined under the `scripts/` directory that do not start with an `_` underscore. If the scripts take
-advantage of utilities from our [`ape.cli`](../methoddocs/cli.html) submodule,
+advantage of utilities from our [`ape.cli`](../methoddocs/cli.html#ape-cli) submodule,
 you can build a [Click](https://click.palletsprojects.com/) command line interface
 by defining a `click.Command` or `click.Group` object called `cli` in your file.
 Otherwise, if the script has a `main()` method, it will execute that method when called.
