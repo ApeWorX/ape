@@ -479,13 +479,6 @@ class ProjectManager(BaseManager):
         """
 
         if attr_name in self.contracts:
-            source_id = self.contracts[attr_name].source_id
-            if source_id and source_id.startswith(".cache"):
-                raise AttributeError(
-                    "Cannot access dependency contracts from root project manager. "
-                    f"Please use `project.dependencies['dependency_name'].{attr_name}`."
-                )
-
             return self.create_contract_container(
                 contract_type=self.contracts[attr_name],
             )
