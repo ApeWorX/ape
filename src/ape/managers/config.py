@@ -6,10 +6,9 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 from pydantic import root_validator
 
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
-from ape.convert import to_address
 from ape.exceptions import ConfigError
 from ape.logging import logger
-from ape.utils import BaseInterfaceModel, load_config
+from ape.utils import BaseInterfaceModel, load_config, to_address
 
 if TYPE_CHECKING:
     from .project import ProjectManager
