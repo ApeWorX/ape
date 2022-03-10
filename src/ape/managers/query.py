@@ -1,11 +1,58 @@
-from typing import Dict, Optional
+from functools import partial
+from typing import Any, Dict, Optional
 
 import pandas as pd
+from pydantic import BaseModel
 
 from ape.api import QueryAPI, QueryType
+from ape.api.query import BlockQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property
+
+
+def get_columns_from_item(query: _BaseQuery, item: BaseModel) -> Dict[str, Any]:
+    return {k: v for k, v in item.dict().items() if k in query.columns}
+
+
+class DefaultQueryProvider(QueryAPI):
+    """
+    Default implementation of the ape.api.query.QueryAPI
+    Allows for the query of blockchain data using connected provider
+    """
+
+    def estimate_query(self, query: QueryType) -> Optional[int]:
+        """
+        Estimates the time that the query will take as a timestamp
+
+        Args:
+            query (``QueryType``): The transaction data you want to query
+
+        Returns:
+             Optional[int]: Depends on whether the query can be completed
+        """
+        if isinstance(query, BlockQuery):
+            # NOTE: Very loose estimate of 100ms per block
+            return (query.stop_block - query.start_block) * 100
+
+        return None  # can't handle this query
+
+    def perform_query(self, query: QueryType) -> pd.DataFrame:
+        """
+        Performs a query
+
+        Args:
+            query (``QueryType``): The specific transaction data you want to query
+
+        Returns:
+            pd.DataFrame: A pandas dataframe
+        """
+        if isinstance(query, BlockQuery):
+            blocks_iter = self.chain_manager.blocks.range(query.start_block, query.stop_block)
+            block_dicts_iter = map(partial(get_columns_from_item, query), blocks_iter)
+            return pd.DataFrame(columns=query.columns, data=block_dicts_iter)
+
+        raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
 
 class QueryManager(ManagerAccessMixin):
@@ -30,7 +77,8 @@ class QueryManager(ManagerAccessMixin):
             dict[str, :class:`~ape.api.query.QueryAPI`]
         """
 
-        engines = {}
+        engines: Dict[str, QueryAPI] = {"__default__": DefaultQueryProvider()}
+
         for plugin_name, (engine_class,) in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)
             engines[engine_name] = engine_class()
