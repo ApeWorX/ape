@@ -117,7 +117,6 @@ class ConfigManager(BaseInterfaceModel):
     def _plugin_configs(self) -> Dict[str, PluginConfig]:
         project_name = self.PROJECT_FOLDER.stem
         if project_name in self._cached_configs:
-            # Use cached configs.
             cache = self._cached_configs[project_name]
             self.name = cache.get("name", "")
             self.version = cache.get("version", "")
@@ -126,11 +125,12 @@ class ConfigManager(BaseInterfaceModel):
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
             return cache
 
+        # First, load top-level configs. Then, load all the plugin configs.
+        # The configs are popped off the dict for checking if all configs were processed.
+
         configs = {}
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
         user_config = load_config(config_file) if config_file.exists() else {}
-
-        # Top level config items
         self.name = configs["name"] = user_config.pop("name", "")
         self.version = configs["version"] = user_config.pop("version", "")
 
@@ -138,19 +138,16 @@ class ConfigManager(BaseInterfaceModel):
         if not isinstance(dependencies, list):
             raise ConfigError("'dependencies' config item must be a list of dicts.")
 
-        self.dependencies = configs["dependencies"] = [
-            self.dependency_manager.decode_dependency(dep) for dep in dependencies
-        ]  # type: ignore
+        decode = self.dependency_manager.decode_dependency
+        configs["dependencies"] = [decode(dep) for dep in dependencies]  # type: ignore
+        self.dependencies = configs["dependencies"]
 
-        if "contracts_folder" in user_config:
-            contracts_folder_value = Path(user_config.pop("contracts_folder")).expanduser()
-
-            # Attempt to resolve the path in the case it is relative to the project directory.
-            # NOTE: It is okay for this directory not to exist at this point.
-            contracts_folder = Path(contracts_folder_value).resolve()
-        else:
-            contracts_folder = self.PROJECT_FOLDER / "contracts"
-
+        # NOTE: It is okay for this directory not to exist at this point.
+        contracts_folder = (
+            Path(user_config.pop("contracts_folder")).expanduser().resolve()
+            if "contracts_folder" in user_config
+            else self.PROJECT_FOLDER / "contracts"
+        )
         self.contracts_folder = configs["contracts_folder"] = contracts_folder
 
         deployments = user_config.pop("deployments", {})
@@ -161,13 +158,10 @@ class ConfigManager(BaseInterfaceModel):
         )
 
         for plugin_name, config_class in self.plugin_manager.config_class:
-            # NOTE: `dict.pop()` is used for checking if all config was processed
             user_override = user_config.pop(plugin_name, {})
-
             if config_class != ConfigDict:
                 # NOTE: Will raise if improperly provided keys
                 config = config_class(**user_override)  # type: ignore
-
             else:
                 # NOTE: Just use it directly as a dict if `ConfigDict` is passed
                 config = user_override
