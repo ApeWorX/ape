@@ -5,9 +5,8 @@ from eth_account.messages import SignableMessage
 from eth_utils import to_bytes
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
-from ape.convert import to_address
 from ape.types import AddressType, MessageSignature, TransactionSignature
-from ape.utils import GeneratedDevAccount, cached_property, generate_dev_accounts
+from ape.utils import GeneratedDevAccount, cached_property, generate_dev_accounts, to_address
 
 
 class TestAccountContainer(TestAccountContainerAPI):
