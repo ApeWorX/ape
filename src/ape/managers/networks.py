@@ -133,8 +133,12 @@ class NetworkManager(BaseManager):
 
         return self.ecosystems[attr_name]
 
-    @property
-    def network_choices(self) -> Iterator[str]:
+    def get_network_choices(
+        self,
+        ecosystem_filter: Optional[str] = None,
+        network_filter: Optional[str] = None,
+        provider_filter: Optional[str] = None,
+    ) -> Iterator[str]:
         """
         The set of all possible network choices available as a "network selection"
         e.g. ``--network [ECOSYSTEM:NETWORK:PROVIDER]``.
@@ -151,27 +155,36 @@ class NetworkManager(BaseManager):
             Iterator[str]: An iterator over all the network-choice possibilities.
         """
         for ecosystem_name, ecosystem in self.ecosystems.items():
+            if ecosystem_filter and ecosystem_name != ecosystem_filter:
+                continue
+
             yield ecosystem_name
             for network_name, network in ecosystem.networks.items():
+                if network_filter and network_name != network_filter:
+                    continue
+
                 if ecosystem_name == self.default_ecosystem.name:
                     yield f":{network_name}"
 
                 yield f"{ecosystem_name}:{network_name}"
 
-                for provider in network.providers:
+                for provider_name in network.providers:
+                    if provider_filter and provider_name != provider_filter:
+                        continue
+
                     if (
                         ecosystem_name == self.default_ecosystem.name
                         and network_name == ecosystem.default_network
                     ):
-                        yield f"::{provider}"
+                        yield f"::{provider_name}"
 
                     elif ecosystem_name == self.default_ecosystem.name:
-                        yield f":{network_name}:{provider}"
+                        yield f":{network_name}:{provider_name}"
 
                     elif network_name == ecosystem.default_network:
-                        yield f"{ecosystem_name}::{provider}"
+                        yield f"{ecosystem_name}::{provider_name}"
 
-                    yield f"{ecosystem_name}:{network_name}:{provider}"
+                    yield f"{ecosystem_name}:{network_name}:{provider_name}"
 
     def get_provider_from_choice(
         self,
@@ -181,7 +194,7 @@ class NetworkManager(BaseManager):
         """
         Get a :class:`~ape.api.providers.ProviderAPI` from a network choice.
         A network choice is any value returned from
-        :py:attr:`~ape.managers.networks.NetworkManager.network_choices`. Use the
+        :meth:`~ape.managers.networks.NetworkManager.get_network_choices`. Use the
         CLI command ``ape networks list`` to list all the possible network
         combinations.
 
@@ -191,7 +204,7 @@ class NetworkManager(BaseManager):
 
         Args:
             network_choice (str, optional): The network choice
-              (see :py:attr:`~ape.managers.networks.NetworkManager.network_choices`).
+              (see :meth:`~ape.managers.networks.NetworkManager.get_network_choices`).
               Defaults to the default ecosystem, network, and provider combination.
             provider_settings (dict, optional): Settings for the provider. Defaults to None.
 
@@ -249,7 +262,7 @@ class NetworkManager(BaseManager):
         """
         Parse a network choice into a context manager for managing a temporary
         connection to a provider. See
-        :py:attr:`~ape.managers.networks.NetworkManager.network_choices` for all
+        :meth:`~ape.managers.networks.NetworkManager.get_network_choices` for all
         available choices (or use CLI command ``ape networks list``).
 
         Raises:
@@ -258,7 +271,7 @@ class NetworkManager(BaseManager):
 
         Args:
             network_choice (str, optional): The network choice
-              (see :py:attr:`~ape.managers.networks.NetworkManager.network_choices`).
+              (see :meth:`~ape.managers.networks.NetworkManager.get_network_choices`).
               Defaults to the default ecosystem, network, and provider combination.
             provider_settings (dict, optional): Settings for the provider. Defaults to None.
 

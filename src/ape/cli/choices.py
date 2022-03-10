@@ -168,8 +168,21 @@ class NetworkChoice(click.Choice):
     A ``click.Choice`` to provide network choice defaults for the active project.
     """
 
-    def __init__(self, case_sensitive=True):
-        super().__init__(list(networks.network_choices), case_sensitive)
+    def __init__(
+        self,
+        case_sensitive=True,
+        ecosystem: Optional[str] = None,
+        network: Optional[str] = None,
+        provider: Optional[str] = None,
+    ):
+        super().__init__(
+            list(
+                networks.get_network_choices(
+                    ecosystem_filter=ecosystem, network_filter=network, provider_filter=provider
+                )
+            ),
+            case_sensitive,
+        )
 
     def get_metavar(self, param):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
