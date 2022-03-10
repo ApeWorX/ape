@@ -5,7 +5,7 @@ import pandas as pd
 
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
-from ape.api.query import BlockQuery, QueryAPI
+from ape.api.query import BlockQuery
 from ape.exceptions import ChainError, UnknownSnapshotError
 from ape.logging import logger
 from ape.types import AddressType, BlockID, SnapshotID
