@@ -214,7 +214,7 @@ class NetworkManager(BaseManager):
         if selections == network_choice or len(selections) == 1:
             # Either split didn't work (in which case it matches the start)
             # or there was nothing after the ``:`` (e.g. "ethereum:")
-            ecosystem = self.__getattr__(selections[0] or self.default_ecosystem.name)
+            ecosystem = self.ecosystems[selections[0] or self.default_ecosystem.name]
             # By default, the "local" network should be specified for
             # any ecosystem (this should not correspond to a production chain)
             default_network = ecosystem.default_network
@@ -223,7 +223,7 @@ class NetworkManager(BaseManager):
         elif len(selections) == 2:
             # Only ecosystem and network were specified, not provider
             ecosystem_name, network_name = selections
-            ecosystem = self.__getattr__(ecosystem_name or self.default_ecosystem.name)
+            ecosystem = self.ecosystems[ecosystem_name or self.default_ecosystem.name]
             network = ecosystem[network_name or ecosystem.default_network]
             return network.get_provider(provider_settings=provider_settings)
 
@@ -231,7 +231,7 @@ class NetworkManager(BaseManager):
             # Everything is specified, use specified provider for ecosystem
             # and network
             ecosystem_name, network_name, provider_name = selections
-            ecosystem = self.__getattr__(ecosystem_name or self.default_ecosystem.name)
+            ecosystem = self.ecosystems[ecosystem_name or self.default_ecosystem.name]
             network = ecosystem[network_name or ecosystem.default_network]
             return network.get_provider(
                 provider_name=provider_name, provider_settings=provider_settings
