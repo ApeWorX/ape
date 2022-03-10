@@ -80,7 +80,7 @@ def test_compile_contracts(ape_cli, runner, project):
 
 
 @skip_projects_except(["with-dependency"])
-def test_compile_with_dependencies(ape_cli, runner, project):
+def test_compile_with_dependency(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "__test_dependency__" in project.dependencies
