@@ -1,36 +1,3 @@
-{
-  "manifest": "ethpm/3",
-  "sources": {
-    "Dependency.sol": {
-      "checksum": {
-        "algorithm": "md5",
-        "hash": "8f693924b9279aaa73fb279f31cef511"
-      },
-      "urls": [],
-      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ncontract ExampleDependency {\n    \n}\n"
-    }
-  },
-  "contractTypes": {
-    "ExampleDependency": {
-      "contractName": "ExampleDependency",
-      "sourceId": "Dependency.sol",
-      "deploymentBytecode": {
-        "bytecode": "6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220c2c2276e8bdc830629bde41bae5dcd7371aa7f6f79eec4a6c5b0687e40e62ade64736f6c634300080c0033"
-      },
-      "runtimeBytecode": {
-        "bytecode": "6080604052600080fdfea2646970667358221220c2c2276e8bdc830629bde41bae5dcd7371aa7f6f79eec4a6c5b0687e40e62ade64736f6c634300080c0033"
-      },
-      "abi": [],
-      "userdoc": {
-        "kind": "user",
-        "methods": {},
-        "version": 1
-      },
-      "devdoc": {
-        "kind": "dev",
-        "methods": {},
-        "version": 1
-      }
-    }
-  }
-}
+[
+    {"name":"foo","type":"fallback", "stateMutability":"nonpayable"}
+]

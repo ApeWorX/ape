@@ -251,6 +251,7 @@ class ProjectManager(BaseManager):
     """The project path."""
 
     _cached_projects: Dict[str, ProjectAPI] = {}
+    _cached_dependencies: Dict[str, Dict[str, DependencyAPI]] = {}
 
     def __init__(
         self,
@@ -261,7 +262,7 @@ class ProjectManager(BaseManager):
     def __str__(self) -> str:
         return f'Project("{self.path}")'
 
-    @cached_property
+    @property
     def dependencies(self) -> Dict[str, DependencyAPI]:
         """
         The package manifests of all dependencies mentioned
@@ -584,8 +585,8 @@ class ProjectManager(BaseManager):
 
         self._load_dependencies()
         file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
-
         in_source_cache = self.contracts_folder / ".cache"
+
         if not use_cache and in_source_cache.exists():
             shutil.rmtree(str(in_source_cache))
 
@@ -593,12 +594,14 @@ class ProjectManager(BaseManager):
         return manifest.contract_types or {}
 
     def _load_dependencies(self) -> Dict[str, DependencyAPI]:
-        deps = {d.name: d for d in self.config_manager.dependencies}
-        for api in deps.values():
-            # Downloads if needed
-            api.extract_manifest()
+        if self.path.name not in self._cached_dependencies:
+            deps = {d.name: d for d in self.config_manager.dependencies}
+            for api in deps.values():
+                api.extract_manifest()  # Downloads if needed
 
-        return deps
+            self._cached_dependencies[self.path.name] = deps
+
+        return self._cached_dependencies[self.path.name]
 
     # @property
     # def meta(self) -> PackageMeta:
