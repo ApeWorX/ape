@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, Optional
+from typing import Dict, Iterator, List, Optional, Union
 
 import yaml
 
@@ -135,9 +135,9 @@ class NetworkManager(BaseManager):
 
     def get_network_choices(
         self,
-        ecosystem_filter: Optional[str] = None,
-        network_filter: Optional[str] = None,
-        provider_filter: Optional[str] = None,
+        ecosystem_filter: Optional[Union[List[str], str]] = None,
+        network_filter: Optional[Union[List[str], str]] = None,
+        provider_filter: Optional[Union[List[str], str]] = None,
     ) -> Iterator[str]:
         """
         The set of all possible network choices available as a "network selection"
@@ -151,16 +151,37 @@ class NetworkManager(BaseManager):
         Use the CLI command ``ape networks list`` to list all the possible network
         combinations.
 
+        Args:
+            ecosystem_filter (Optional[List[str]]): Get only the specified ecosystems. Defaults
+              to getting all ecosystems.
+            network_filter (Optional[List[str]]): Get only the specified networks. Defaults
+              to getting all networks.
+            provider_filter (Optional[List[str]]): Get only the specified providers. Defaults
+              to getting all providers.
+
         Returns:
             Iterator[str]: An iterator over all the network-choice possibilities.
         """
+        ecosystem_filter = ecosystem_filter or []
+        network_filter = network_filter or []
+        provider_filter = provider_filter or []
+
+        if isinstance(ecosystem_filter, str):
+            ecosystem_filter = [ecosystem_filter]
+
+        if isinstance(network_filter, str):
+            network_filter = [network_filter]
+
+        if isinstance(provider_filter, str):
+            provider_filter = [provider_filter]
+
         for ecosystem_name, ecosystem in self.ecosystems.items():
-            if ecosystem_filter and ecosystem_name != ecosystem_filter:
+            if ecosystem_filter and ecosystem_name not in ecosystem_filter:
                 continue
 
             yield ecosystem_name
             for network_name, network in ecosystem.networks.items():
-                if network_filter and network_name != network_filter:
+                if network_filter and network_name not in network_filter:
                     continue
 
                 if ecosystem_name == self.default_ecosystem.name:
@@ -169,7 +190,7 @@ class NetworkManager(BaseManager):
                 yield f"{ecosystem_name}:{network_name}"
 
                 for provider_name in network.providers:
-                    if provider_filter and provider_name != provider_filter:
+                    if provider_filter and provider_name not in provider_filter:
                         continue
 
                     if (

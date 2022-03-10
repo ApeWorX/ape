@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, List, Optional, Type
+from typing import Any, List, Optional, Type, Union
 
 import click
 from click import Choice, Context, Parameter
@@ -171,9 +171,9 @@ class NetworkChoice(click.Choice):
     def __init__(
         self,
         case_sensitive=True,
-        ecosystem: Optional[str] = None,
-        network: Optional[str] = None,
-        provider: Optional[str] = None,
+        ecosystem: Optional[Union[List[str], str]] = None,
+        network: Optional[Union[List[str], str]] = None,
+        provider: Optional[Union[List[str], str]] = None,
     ):
         super().__init__(
             list(
