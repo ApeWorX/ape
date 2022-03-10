@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Dict, List, Set
 
@@ -88,8 +89,17 @@ class CompilerManager(BaseManager):
 
         extensions = self._get_contract_extensions(contract_filepaths)
         contract_types_dict = {}
+        cache_folder = self.project_manager._in_source_cache_folder
         for extension in extensions:
-            paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
+
+            # Filter out in-source cache files from dependencies.
+            paths_to_compile = [
+                path
+                for path in contract_filepaths
+                if path.suffix == extension
+                and os.path.commonpath([cache_folder])
+                != os.path.commonpath([str(path), cache_folder])
+            ]
 
             for path in paths_to_compile:
                 contract_path = _get_contract_path(path, self.config_manager.contracts_folder)
