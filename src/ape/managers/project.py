@@ -482,7 +482,7 @@ class ProjectManager(BaseManager):
                     f"Please use `project.dependencies['dependency_name'].{attr_name}`."
                 )
 
-            return ContractContainer(  # type: ignore
+            return self.create_contract_container(
                 contract_type=self.contracts[attr_name],
             )
 
