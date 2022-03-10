@@ -68,7 +68,7 @@ class ConfigManager(BaseInterfaceModel):
     deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
     """A dict of contract deployments by address and contract type."""
 
-    _plugin_configs_by_project: Dict[str, Dict[str, PluginConfig]] = {}
+    _cached_configs: Dict[str, Dict[str, PluginConfig]] = {}
 
     @root_validator(pre=True)
     def check_config_for_extra_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -88,8 +88,8 @@ class ConfigManager(BaseInterfaceModel):
     def _plugin_configs(self) -> Dict[str, PluginConfig]:
         # This property is cached per active project.
         project_name = self.PROJECT_FOLDER.stem
-        if project_name in self._plugin_configs_by_project:
-            return self._plugin_configs_by_project[project_name]
+        if project_name in self._cached_configs:
+            return self._cached_configs[project_name]
 
         configs = {}
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
@@ -168,7 +168,7 @@ class ConfigManager(BaseInterfaceModel):
                 "Plugins may not be installed yet or keys may be mis-spelled."
             )
 
-        self._plugin_configs_by_project[project_name] = configs
+        self._cached_configs[project_name] = configs
         return configs
 
     def __repr__(self):
