@@ -182,16 +182,6 @@ class ConfigManager(BaseInterfaceModel):
     def __repr__(self):
         return f"<{self.__class__.__name__} project={self.PROJECT_FOLDER.name}>"
 
-    def __str__(self) -> str:
-        """
-        The JSON-text version of the project config data.
-
-        Returns:
-            str
-        """
-
-        return self.json()
-
     def load(self) -> "ConfigManager":
         """
         Load the user config file and return this class.
