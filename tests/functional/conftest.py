@@ -2,7 +2,6 @@ import pytest
 from eth.exceptions import HeaderNotFound
 
 import ape
-from ape import networks
 from ape.api import (
     AccountContainerAPI,
     EcosystemAPI,
