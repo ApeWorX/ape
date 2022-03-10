@@ -216,6 +216,7 @@ class DependencyAPI(BaseInterfaceModel):
         raise ProjectError(f"Dependency project '{self.name}' has no contract '{item}'.")
 
     def _extract_local_manifest(self, project_path: Path):
+        project_path = project_path.resolve()
         contracts_folder = project_path / self.contracts_folder
         project = self.project_manager.get_project(
             project_path,
