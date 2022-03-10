@@ -209,9 +209,7 @@ class DependencyAPI(BaseInterfaceModel):
     def __getattr__(self, item: str) -> "ContractContainer":
         manifest = self.extract_manifest()
         if hasattr(manifest, item):
-            from ape.contracts import ContractContainer
-
-            return ContractContainer(getattr(manifest, item))
+            return self.create_contract_container(contract_type=getattr(manifest, item))
 
         raise ProjectError(f"Dependency project '{self.name}' has no contract '{item}'.")
 
