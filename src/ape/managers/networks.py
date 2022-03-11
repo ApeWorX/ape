@@ -33,6 +33,10 @@ class NetworkManager(BaseManager):
 
     @property
     def active_provider(self) -> Optional[ProviderAPI]:
+        """
+        The currently connected provider if one exists. Otherwise, returns ``None``.
+        """
+
         return self._active_provider
 
     @active_provider.setter
@@ -41,10 +45,18 @@ class NetworkManager(BaseManager):
 
     @property
     def ecosystem_names(self) -> Set[str]:
+        """
+        The set of all ecosystem names in ``ape``.
+        """
+
         return {str(e) for e in self.ecosystems.keys()}
 
     @property
     def network_names(self) -> Set[str]:
+        """
+        The set of all network names in ``ape``.
+        """
+
         names = set()
         for ecosystem in self.ecosystems.values():
             for network in ecosystem.networks.keys():
@@ -54,6 +66,10 @@ class NetworkManager(BaseManager):
 
     @property
     def provider_names(self) -> Set[str]:
+        """
+        The set of all provider names in ``ape``.
+        """
+
         names = set()
         for ecosystem in self.ecosystems.values():
             for network in ecosystem.networks.values():
