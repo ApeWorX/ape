@@ -21,27 +21,15 @@ def _filter_option(name: str, options):
 
 
 def ecosystem_filter_option():
-    options = [e for e in networks.ecosystems]
-    return _filter_option("ecosystem", options)
+    return _filter_option("ecosystem", networks.ecosystem_names)
 
 
 def network_filter_option():
-    options = set()
-    for ecosystem in networks.ecosystems.values():
-        for network in ecosystem.networks:
-            options.add(network)
-
-    return _filter_option("network", options)
+    return _filter_option("network", networks.network_names)
 
 
 def provider_filter_option():
-    options = set()
-    for ecosystem in networks.ecosystems.values():
-        for network in ecosystem.networks.values():
-            for provider in network.providers:
-                options.add(provider)
-
-    return _filter_option("provider", options)
+    return _filter_option("provider", networks.provider_names)
 
 
 @click.group(short_help="Manage networks")

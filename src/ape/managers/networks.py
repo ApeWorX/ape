@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, List, Optional, Union
+from typing import Dict, Iterator, List, Optional, Set, Union
 
 import yaml
 
@@ -38,6 +38,29 @@ class NetworkManager(BaseManager):
     @active_provider.setter
     def active_provider(self, new_value: ProviderAPI):
         self._active_provider = new_value
+
+    @property
+    def ecosystem_names(self) -> Set[str]:
+        return {str(e) for e in self.ecosystems.keys()}
+
+    @property
+    def network_names(self) -> Set[str]:
+        names = set()
+        for ecosystem in self.ecosystems.values():
+            for network in ecosystem.networks.keys():
+                names.add(network)
+
+        return names
+
+    @property
+    def provider_names(self) -> Set[str]:
+        names = set()
+        for ecosystem in self.ecosystems.values():
+            for network in ecosystem.networks.values():
+                for provider in network.providers.keys():
+                    names.add(provider)
+
+        return names
 
     @property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
@@ -162,18 +185,22 @@ class NetworkManager(BaseManager):
         Returns:
             Iterator[str]: An iterator over all the network-choice possibilities.
         """
-        ecosystem_filter = ecosystem_filter or []
-        network_filter = network_filter or []
-        provider_filter = provider_filter or []
 
-        if isinstance(ecosystem_filter, str):
-            ecosystem_filter = [ecosystem_filter]
+        def _validate_filter(arg: Optional[Union[List[str], str]], options: Set[str]):
+            filters = arg or []
 
-        if isinstance(network_filter, str):
-            network_filter = [network_filter]
+            if isinstance(filters, str):
+                filters = [filters]
 
-        if isinstance(provider_filter, str):
-            provider_filter = [provider_filter]
+            for _filter in filters:
+                if _filter not in options:
+                    raise NetworkError(f"Unknown option '{_filter}'.")
+
+            return filters
+
+        ecosystem_filter = _validate_filter(ecosystem_filter, self.ecosystem_names)
+        network_filter = _validate_filter(network_filter, self.network_names)
+        provider_filter = _validate_filter(provider_filter, self.provider_names)
 
         for ecosystem_name, ecosystem in self.ecosystems.items():
             if ecosystem_filter and ecosystem_name not in ecosystem_filter:
