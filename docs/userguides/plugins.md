@@ -10,7 +10,7 @@ The following is a list of example plugins to use as a reference when developing
 * [the Solidity plugin](https://github.com/apeworx/ape-solidity), an example `CompilerAPI`
 * [the Infura plugin](https://github.com/apeworx/ape-infura), an example `ProviderAPI`
 * [the Trezor plugin](https://github.com/apeworx/ape-trezor), an example `AccountAPI`
-* [the Tokens-List plugin](https://github.com/apeworx/ape-tokens), an example CLI Extension
+* [the Tokenlists plugin](https://github.com/apeworx/ape-tokens), an example CLI Extension
 
 ## Initialize a Plugin Project
 
