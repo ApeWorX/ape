@@ -159,7 +159,11 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
         if not self._web3.isConnected():
             if self.network.name != LOCAL_NETWORK_NAME:
-                raise ProviderError(f"Geth plugin expected process to be running on '{self.uri}'.")
+                raise ProviderError(
+                    f"When running on network '{self.network.name}', "
+                    f"the Geth plugin expects the Geth process to already "
+                    f"be running on '{self.uri}'."
+                )
 
             # Start an ephemeral geth process.
             parsed_uri = urlparse(self.uri)
