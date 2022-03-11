@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Collection, Dict, List, Optional
+from typing import TYPE_CHECKING, Collection, Dict, List, Optional
 
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
@@ -16,6 +16,9 @@ from ape.utils import (
     get_all_files_in_directory,
     get_relative_path,
 )
+
+if TYPE_CHECKING:
+    from ape.contracts import ContractContainer
 
 
 class ProjectAPI(BaseInterfaceModel):
@@ -178,7 +181,7 @@ class DependencyAPI(BaseInterfaceModel):
             version_id = f"v{version_id}"
 
         name = self.name
-        return self.config_manager.DATA_FOLDER / "packages" / name / version_id / f"{name}.json"
+        return self.config_manager.packages_folder / name / version_id / f"{name}.json"
 
     @abstractmethod
     def extract_manifest(self) -> PackageManifest:
@@ -203,7 +206,15 @@ class DependencyAPI(BaseInterfaceModel):
         """
         return _load_manifest_from_file(self._target_manifest_cache_file)
 
+    def __getattr__(self, item: str) -> "ContractContainer":
+        manifest = self.extract_manifest()
+        if hasattr(manifest, item):
+            return self.create_contract_container(contract_type=getattr(manifest, item))
+
+        raise ProjectError(f"Dependency project '{self.name}' has no contract '{item}'.")
+
     def _extract_local_manifest(self, project_path: Path):
+        project_path = project_path.resolve()
         contracts_folder = project_path / self.contracts_folder
         project = self.project_manager.get_project(
             project_path,

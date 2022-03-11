@@ -47,6 +47,23 @@ a = accounts.load("metamask_0")
 a.deploy(project.MyContract)
 ```
 
+### Dependencies
+
+To set up dependencies in your ``ape-config.yaml`` file, follow [this guide](https://docs.apeworx.io/ape/stable/userguides/config.html#dependencies).
+If you are using dependencies from a remote source, they will download when you run `ape compile` or other commands that compile beforehand.
+Dependencies only need to download and compile once.
+
+You can access dependency contracts off your root project manager:
+
+```python
+from ape import accounts, project
+
+dependency_contract = project.dependencies["my_dependency"].DependencyContractType
+my_account = accounts.load("alias")
+deployed_contract = my_account.deploy(dependency_contract, "argument")
+print(deployed_contract.address)
+```
+
 ## Networks
 
 The default provider for the development network is the
@@ -76,7 +93,7 @@ ape console --network ::hardhat
 
 You can write scripts that run using the `ape run` command. The `ape run` command will register and run Python
 files defined under the `scripts/` directory that do not start with an `_` underscore. If the scripts take
-advantage of utilities from our [`ape.cli`](../methoddocs/cli.html) submodule,
+advantage of utilities from our [`ape.cli`](../methoddocs/cli.html#ape-cli) submodule,
 you can build a [Click](https://click.palletsprojects.com/) command line interface
 by defining a `click.Command` or `click.Group` object called `cli` in your file.
 Otherwise, if the script has a `main()` method, it will execute that method when called.

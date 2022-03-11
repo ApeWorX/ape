@@ -22,6 +22,35 @@ class DeploymentConfig(PluginConfig):
     contract_type: str
 
 
+class DeploymentConfigCollection(dict):
+    def __init__(
+        self, data: Dict, valid_ecosystem_names: List[str], valid_network_names: List[str]
+    ):
+        for ecosystem_name, networks in data.items():
+            if ecosystem_name not in valid_ecosystem_names:
+                raise ConfigError(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
+
+            for network_name, contract_deployments in networks.items():
+                if network_name not in valid_network_names:
+                    raise ConfigError(f"Invalid network '{network_name}' in deployments config.")
+
+                for deployment in [d for d in contract_deployments]:
+                    if "address" not in deployment:
+                        raise ConfigError(
+                            f"Missing 'address' field in deployment "
+                            f"(ecosystem={ecosystem_name}, network={network_name})"
+                        )
+
+                    address = deployment["address"]
+
+                    try:
+                        deployment["address"] = to_address(address)
+                    except ValueError as err:
+                        raise ConfigError(str(err)) from err
+
+        super().__init__(data)
+
+
 class ConfigManager(BaseInterfaceModel):
     """
     The singleton responsible for managing the ``ape-config.yaml`` project file.
@@ -64,10 +93,10 @@ class ConfigManager(BaseInterfaceModel):
     dependencies: List[DependencyAPI] = []
     """A list of project dependencies."""
 
-    deployments: Dict[str, Dict[str, List[DeploymentConfig]]] = {}
+    deployments: Optional[DeploymentConfigCollection] = None
     """A dict of contract deployments by address and contract type."""
 
-    _plugin_configs_by_project: Dict[str, Dict[str, PluginConfig]] = {}
+    _cached_configs: Dict[str, Dict[str, Any]] = {}
 
     @root_validator(pre=True)
     def check_config_for_extra_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -85,74 +114,53 @@ class ConfigManager(BaseInterfaceModel):
 
     @property
     def _plugin_configs(self) -> Dict[str, PluginConfig]:
-        # This property is cached per active project.
         project_name = self.PROJECT_FOLDER.stem
-        if project_name in self._plugin_configs_by_project:
-            return self._plugin_configs_by_project[project_name]
+        if project_name in self._cached_configs:
+            cache = self._cached_configs[project_name]
+            self.name = cache.get("name", "")
+            self.version = cache.get("version", "")
+            self.dependencies = cache.get("dependencies", [])
+            self.deployments = cache.get("deployments", {})
+            self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
+            return cache
+
+        # First, load top-level configs. Then, load all the plugin configs.
+        # The configs are popped off the dict for checking if all configs were processed.
 
         configs = {}
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
         user_config = load_config(config_file) if config_file.exists() else {}
-
-        # Top level config items
-        self.name = user_config.pop("name", "")
-        self.version = user_config.pop("version", "")
+        self.name = configs["name"] = user_config.pop("name", "")
+        self.version = configs["version"] = user_config.pop("version", "")
 
         dependencies = user_config.pop("dependencies", []) or []
         if not isinstance(dependencies, list):
             raise ConfigError("'dependencies' config item must be a list of dicts.")
 
-        self.dependencies = [
-            self.dependency_manager.decode_dependency(dep) for dep in dependencies
-        ]  # type: ignore
+        decode = self.dependency_manager.decode_dependency
+        configs["dependencies"] = [decode(dep) for dep in dependencies]  # type: ignore
+        self.dependencies = configs["dependencies"]
 
-        if "contracts_folder" in user_config:
-            contracts_folder_value = Path(user_config.pop("contracts_folder")).expanduser()
+        # NOTE: It is okay for this directory not to exist at this point.
+        contracts_folder = (
+            Path(user_config.pop("contracts_folder")).expanduser().resolve()
+            if "contracts_folder" in user_config
+            else self.PROJECT_FOLDER / "contracts"
+        )
+        self.contracts_folder = configs["contracts_folder"] = contracts_folder
 
-            # Attempt to resolve the path in the case it is relative to the project directory.
-            # NOTE: It is okay for this directory not to exist at this point.
-            contracts_folder = Path(contracts_folder_value).resolve()
-        else:
-            contracts_folder = self.PROJECT_FOLDER / "contracts"
-
-        self.contracts_folder = contracts_folder
-
-        # Sanitize deployment addresses.
         deployments = user_config.pop("deployments", {})
         valid_ecosystem_names = [e[0] for e in self.plugin_manager.ecosystems]
-        for ecosystem_name, networks in deployments.items():
-            if ecosystem_name not in valid_ecosystem_names:
-                raise ConfigError(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
-
-            valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
-            for network_name, contract_deployments in networks.items():
-                if network_name not in valid_network_names:
-                    raise ConfigError(f"Invalid network '{network_name}' in deployments config.")
-
-                for deployment in [d for d in contract_deployments]:
-                    if "address" not in deployment:
-                        raise ConfigError(
-                            f"Missing 'address' field in deployment "
-                            f"(ecosystem={ecosystem_name}, network={network_name})"
-                        )
-
-                    address = deployment["address"]
-
-                    try:
-                        deployment["address"] = to_address(address)
-                    except ValueError as err:
-                        raise ConfigError(str(err)) from err
-
-        self.deployments = deployments
+        valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
+        self.deployments = configs["deployments"] = DeploymentConfigCollection(
+            deployments, valid_ecosystem_names, valid_network_names
+        )
 
         for plugin_name, config_class in self.plugin_manager.config_class:
-            # NOTE: `dict.pop()` is used for checking if all config was processed
             user_override = user_config.pop(plugin_name, {})
-
             if config_class != ConfigDict:
                 # NOTE: Will raise if improperly provided keys
                 config = config_class(**user_override)  # type: ignore
-
             else:
                 # NOTE: Just use it directly as a dict if `ConfigDict` is passed
                 config = user_override
@@ -167,7 +175,7 @@ class ConfigManager(BaseInterfaceModel):
                 "Plugins may not be installed yet or keys may be mis-spelled."
             )
 
-        self._plugin_configs_by_project[project_name] = configs
+        self._cached_configs[project_name] = configs
         return configs
 
     def __repr__(self):
@@ -242,13 +250,3 @@ class ConfigManager(BaseInterfaceModel):
         self.contracts_folder = initial_contracts_folder
         self.project_manager.path = initial_project_folder
         os.chdir(initial_project_folder)
-
-    def __str__(self) -> str:
-        """
-        The JSON-text version of the project config data.
-
-        Returns:
-            str
-        """
-
-        return self.json()
