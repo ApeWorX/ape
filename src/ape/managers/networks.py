@@ -202,24 +202,34 @@ class NetworkManager(BaseManager):
         network_filter = _validate_filter(network_filter, self.network_names)
         provider_filter = _validate_filter(provider_filter, self.provider_names)
 
-        for ecosystem_name, ecosystem in self.ecosystems.items():
-            if ecosystem_filter and ecosystem_name not in ecosystem_filter:
+        ecosystem_items = self.ecosystems
+        if ecosystem_filter:
+            ecosystem_items = {n: e for n, e in ecosystem_items.items() if n in ecosystem_filter}
+
+        for ecosystem_name, ecosystem in ecosystem_items.items():
+
+            network_items = ecosystem.networks
+            if network_filter:
+                network_items = {n: net for n, net in network_items.items() if n in network_filter}
+
+            if not network_items:
                 continue
 
-            yield ecosystem_name
-            for network_name, network in ecosystem.networks.items():
-                if network_filter and network_name not in network_filter:
+            ecosystem_has_providers = False
+            for network_name, network in network_items.items():
+                providers = network.providers
+                if provider_filter:
+                    providers = [n for n in providers if n in provider_filter]
+
+                network_has_providers = len(providers) > 0
+                if not ecosystem_has_providers:
+                    # Only check if we still haven't found any
+                    ecosystem_has_providers = network_has_providers
+
+                if not network_has_providers:
                     continue
 
-                if ecosystem_name == self.default_ecosystem.name:
-                    yield f":{network_name}"
-
-                yield f"{ecosystem_name}:{network_name}"
-
-                for provider_name in network.providers:
-                    if provider_filter and provider_name not in provider_filter:
-                        continue
-
+                for provider_name in providers:
                     if (
                         ecosystem_name == self.default_ecosystem.name
                         and network_name == ecosystem.default_network
@@ -233,6 +243,15 @@ class NetworkManager(BaseManager):
                         yield f"{ecosystem_name}::{provider_name}"
 
                     yield f"{ecosystem_name}:{network_name}:{provider_name}"
+
+                # Providers were yielded if we reached this point.
+                if ecosystem_name == self.default_ecosystem.name:
+                    yield f":{network_name}"
+
+                yield f"{ecosystem_name}:{network_name}"
+
+            if ecosystem_has_providers:
+                yield ecosystem_name
 
     def get_provider_from_choice(
         self,

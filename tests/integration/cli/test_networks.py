@@ -69,6 +69,16 @@ ethereum  (default)
     ├── geth  (default)
     └── test
 """
+_TEST_PROVIDER_TREE_OUTPUT = """
+ethereum  (default)
+└── local  (default)
+    └── test  (default)
+"""
+_RINKEBY_NETWORK_TREE_OUTPUT = """
+ethereum  (default)
+└── rinkeby
+    └── geth  (default)
+"""
 
 
 def assert_rich_text(actual: str, expected: str):
@@ -109,3 +119,15 @@ def test_geth(ape_cli, runner, networks):
     # (was bug where one network's URI disappeared when setting different network's URI)
     geth_provider = networks.get_provider_from_choice(f"ethereum:{LOCAL_NETWORK_NAME}:geth")
     assert geth_provider.uri == DEFAULT_SETTINGS["uri"]
+
+
+@skip_projects(["geth"])
+def test_filter_networks(ape_cli, runner, networks):
+    result = runner.invoke(ape_cli, ["networks", "list", "--network", "rinkeby"])
+    assert_rich_text(result.output, _RINKEBY_NETWORK_TREE_OUTPUT)
+
+
+@skip_projects(["geth"])
+def test_filter_providers(ape_cli, runner, networks):
+    result = runner.invoke(ape_cli, ["networks", "list", "--provider", "test"])
+    assert_rich_text(result.output, _TEST_PROVIDER_TREE_OUTPUT)
