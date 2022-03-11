@@ -39,7 +39,6 @@ class TestEthereumProvider:
         )
         provider._web3 = mock_web3
 
-        mock_network_api.ecosystem.receipt_class = _create_mock_receipt()
         web3_error_data = {
             "code": -32000,
             "message": "Test Error Message",
@@ -62,7 +61,6 @@ class TestEthereumProvider:
             request_header="",
         )
         provider._web3 = mock_web3
-        mock_network_api.ecosystem.receipt_class = _create_mock_receipt()
         test_err = Web3ContractLogicError(f"execution reverted: {_TEST_REVERT_REASON}")
         mock_web3.eth.send_raw_transaction.side_effect = test_err
 
@@ -83,7 +81,6 @@ class TestEthereumProvider:
             request_header="",
         )
         provider._web3 = mock_web3
-        mock_network_api.ecosystem.receipt_class = _create_mock_receipt()
         test_err = Web3ContractLogicError("execution reverted")
         mock_web3.eth.send_raw_transaction.side_effect = test_err
 
