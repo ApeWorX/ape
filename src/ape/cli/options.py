@@ -104,11 +104,11 @@ def network_option(
           use as the default. Defaults to how ``ape`` normally
           selects a default network.
         ecosystem Optional[Union[List[str], str]]: Filter the options by ecosystem.
-          Defaults to ``None``.
+          Defaults to getting all ecosystems.
         network: Optional[Union[List[str], str]]: Filter the options by network.
-          Defaults to ``None``.
+          Defaults to getting all networks in ecosystems.
         provider Optional[Union[List[str], str]]: Filter the options by provider.
-          Defaults to ``None``.
+          Defaults to getting all providers in networks.
     """
 
     default = default or networks.default_ecosystem.name
