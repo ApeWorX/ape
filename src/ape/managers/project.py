@@ -386,10 +386,6 @@ class ProjectManager(BaseManager):
 
         return self._cached_projects[self.path.name]
 
-    @property
-    def _in_source_cache_folder(self) -> Path:
-        return self.contracts_folder / ".cache"
-
     def get_project(
         self,
         path: Path,
@@ -582,9 +578,10 @@ class ProjectManager(BaseManager):
 
         self._load_dependencies()
         file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
+        in_source_cache = self.contracts_folder / ".cache"
 
-        if not use_cache and self._in_source_cache_folder.exists():
-            shutil.rmtree(str(self._in_source_cache_folder))
+        if not use_cache and in_source_cache.exists():
+            shutil.rmtree(str(in_source_cache))
 
         manifest = self._project.create_manifest(file_paths, use_cache=use_cache)
         return manifest.contract_types or {}
