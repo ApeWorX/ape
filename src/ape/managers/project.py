@@ -251,6 +251,7 @@ class ProjectManager(BaseManager):
     """The project path."""
 
     _cached_projects: Dict[str, ProjectAPI] = {}
+    _cached_dependencies: Dict[str, Dict[str, DependencyAPI]] = {}
 
     def __init__(
         self,
@@ -261,8 +262,8 @@ class ProjectManager(BaseManager):
     def __str__(self) -> str:
         return f'Project("{self.path}")'
 
-    @cached_property
-    def dependencies(self) -> Dict[str, PackageManifest]:
+    @property
+    def dependencies(self) -> Dict[str, DependencyAPI]:
         """
         The package manifests of all dependencies mentioned
         in this project's ``ape-config.yaml`` file.
@@ -451,8 +452,11 @@ class ProjectManager(BaseManager):
 
     def __getattr__(self, attr_name: str) -> ContractContainer:
         """
-        Get a contract container from an existing contract type or dependency
-        name using ``.`` access.
+        Get a contract container from an existing contract type in
+        the local project using ``.`` access.
+
+        **NOTE**: To get a dependency contract, use
+        :py:attr:`~ape.managers.project.ProjectManager.dependencies`.
 
         Usage example::
 
@@ -460,26 +464,24 @@ class ProjectManager(BaseManager):
 
             contract = project.MyContract
 
+        Raises:
+            AttributeError: When the given name is not a contract in the project.
+
         Args:
-            attr_name (str): The name of the contract or dependency.
+            attr_name (str): The name of the contract in the project.
 
         Returns:
             :class:`~ape.contracts.ContractContainer`
         """
 
-        contracts = self.load_contracts()
-        if attr_name in contracts:
-            contract_type = contracts[attr_name]
-        elif attr_name in self.dependencies:
-            contract_type = self.dependencies[attr_name]  # type: ignore
-        else:
-            # Fixes anomaly when accessing non-ContractType attributes.
-            # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
-            return self.__getattribute__(attr_name)  # type: ignore
+        if attr_name in self.contracts:
+            return self.create_contract_container(
+                contract_type=self.contracts[attr_name],
+            )
 
-        return ContractContainer(  # type: ignore
-            contract_type=contract_type,
-        )
+        # Fixes anomaly when accessing non-ContractType attributes.
+        # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
+        return self.__getattribute__(attr_name)  # type: ignore
 
     def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
         """
@@ -576,16 +578,23 @@ class ProjectManager(BaseManager):
 
         self._load_dependencies()
         file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
-
         in_source_cache = self.contracts_folder / ".cache"
+
         if not use_cache and in_source_cache.exists():
             shutil.rmtree(str(in_source_cache))
 
         manifest = self._project.create_manifest(file_paths, use_cache=use_cache)
         return manifest.contract_types or {}
 
-    def _load_dependencies(self) -> Dict[str, PackageManifest]:
-        return {d.name: d.extract_manifest() for d in self.config_manager.dependencies}
+    def _load_dependencies(self) -> Dict[str, DependencyAPI]:
+        if self.path.name not in self._cached_dependencies:
+            deps = {d.name: d for d in self.config_manager.dependencies}
+            for api in deps.values():
+                api.extract_manifest()  # Downloads if needed
+
+            self._cached_dependencies[self.path.name] = deps
+
+        return self._cached_dependencies[self.path.name]
 
     # @property
     # def meta(self) -> PackageMeta:

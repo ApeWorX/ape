@@ -424,7 +424,7 @@ class ContractContainer(ManagerAccessMixin):
             :class:`~ape.contracts.ContractInstance`
         """
 
-        return ContractInstance(  # type: ignore
+        return self.create_contract(
             address=address,  # type: ignore
             contract_type=self.contract_type,
         )

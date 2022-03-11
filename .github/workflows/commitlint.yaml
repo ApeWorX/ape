@@ -20,7 +20,9 @@ jobs:
               python-version: 3.8
 
         - name: Install Dependencies
-          run: pip install .[dev]
+          run: |
+            python -m pip install --upgrade pip
+            pip install .[dev]
 
         - name: Check commit history
           run: cz check --rev-range $(git rev-list --all --reverse | head -1)..HEAD

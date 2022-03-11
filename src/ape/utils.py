@@ -42,7 +42,9 @@ except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
 if TYPE_CHECKING:
+    from ape.api.address import AddressType
     from ape.api.providers import ProviderAPI
+    from ape.contracts.base import ContractContainer, ContractInstance, ContractType
     from ape.managers.accounts import AccountManager
     from ape.managers.chain import ChainManager
     from ape.managers.compilers import CompilerManager
@@ -608,6 +610,37 @@ class ManagerAccessMixin:
         if self.network_manager.active_provider is None:
             raise ProviderNotConnectedError()
         return self.network_manager.active_provider
+
+    def create_contract_container(self, contract_type: "ContractType") -> "ContractContainer":
+        """
+        Helper method for creating a ``ContractContainer``.
+
+        Args:
+            contract_type (``ContractType``): Type of contract for the container
+
+        Returns:
+            :class:`~ape.contracts.ContractContainer`
+        """
+        from ape.contracts.base import ContractContainer
+
+        return ContractContainer(contract_type=contract_type)
+
+    def create_contract(
+        self, address: "AddressType", contract_type: "ContractType"
+    ) -> "ContractInstance":
+        """
+        Helper method for creating a ``ContractInstance``.
+
+        Args:
+            address (``AddressType``): Address of contract
+            contract_type (``ContractType``): Type of contract
+
+        Returns:
+            :class:`~ape.contracts.ContractInstance`
+        """
+        from ape.contracts.base import ContractInstance
+
+        return ContractInstance(address=address, contract_type=contract_type)
 
 
 class BaseInterface(ManagerAccessMixin, ABC):
