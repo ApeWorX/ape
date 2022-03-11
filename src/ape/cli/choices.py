@@ -166,6 +166,11 @@ class AccountAliasPromptChoice(PromptChoice):
 class NetworkChoice(click.Choice):
     """
     A ``click.Choice`` to provide network choice defaults for the active project.
+
+    Optionally provider it a list of ecosystem names, network names, or provider names
+    to filter the results by.
+
+    This is used in :meth:`~ape.cli.options.network_option`.
     """
 
     def __init__(
