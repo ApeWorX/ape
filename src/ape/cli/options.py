@@ -111,7 +111,12 @@ def network_option(
           Defaults to getting all providers in networks.
     """
 
-    default = default or networks.default_ecosystem.name
+    if not default:
+        if ecosystem:
+            default = ecosystem[0] if isinstance(ecosystem, (list, tuple)) else ecosystem
+        else:
+            default = networks.default_ecosystem.name
+
     return click.option(
         "--network",
         type=NetworkChoice(
