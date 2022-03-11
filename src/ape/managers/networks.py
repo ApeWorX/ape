@@ -191,28 +191,16 @@ class NetworkManager(BaseManager):
         combinations.
 
         Args:
-            ecosystem_filter (Optional[List[str]]): Get only the specified ecosystems. Defaults
-              to getting all ecosystems.
-            network_filter (Optional[List[str]]): Get only the specified networks. Defaults
-              to getting all networks.
-            provider_filter (Optional[List[str]]): Get only the specified providers. Defaults
-              to getting all providers.
+            ecosystem_filter (Optional[Union[List[str], str]]): Get only the specified ecosystems.
+              Defaults to getting all ecosystems.
+            network_filter (Optional[Union[List[str], str]]): Get only the specified networks.
+              Defaults to getting all networks in ecosystems.
+            provider_filter (Optional[Union[List[str], str]]): Get only the specified providers.
+              Defaults to getting all providers in networks.
 
         Returns:
             Iterator[str]: An iterator over all the network-choice possibilities.
         """
-
-        def _validate_filter(arg: Optional[Union[List[str], str]], options: Set[str]):
-            filters = arg or []
-
-            if isinstance(filters, str):
-                filters = [filters]
-
-            for _filter in filters:
-                if _filter not in options:
-                    raise NetworkError(f"Unknown option '{_filter}'.")
-
-            return filters
 
         ecosystem_filter = _validate_filter(ecosystem_filter, self.ecosystem_names)
         network_filter = _validate_filter(network_filter, self.network_names)
@@ -451,3 +439,16 @@ class NetworkManager(BaseManager):
         """
 
         return yaml.dump(self.network_data, sort_keys=False)
+
+
+def _validate_filter(arg: Optional[Union[List[str], str]], options: Set[str]):
+    filters = arg or []
+
+    if isinstance(filters, str):
+        filters = [filters]
+
+    for _filter in filters:
+        if _filter not in options:
+            raise NetworkError(f"Unknown option '{_filter}'.")
+
+    return filters

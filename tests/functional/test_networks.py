@@ -14,6 +14,13 @@ def test_get_block(eth_tester_provider, block_id):
     assert latest_block.gas_data.gas_used == 0
 
 
+def test_get_network_choices_filter_ecosystem():
+    actual = {c for c in networks.get_network_choices(ecosystem_filter="ethereum")}
+    expected = {c for c in networks.get_network_choices()}
+    assert len(actual) == 27
+    assert actual == expected
+
+
 def test_get_network_choices_filter_network():
     actual = {c for c in networks.get_network_choices(network_filter="mainnet-fork")}
     assert actual == set()
