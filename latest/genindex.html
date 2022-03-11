@@ -181,6 +181,13 @@
 </li>
       </ul></li>
       <li>
+    --ecosystem &lt;ecosystem_filter&gt;
+
+      <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-list-ecosystem">networks-list command line option</a>
+</li>
+      </ul></li>
+      <li>
     --force
 
       <ul>
@@ -213,6 +220,20 @@
 
       <ul>
         <li><a href="commands/console.html#cmdoption-console-network">console command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --network &lt;network_filter&gt;
+
+      <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-list-network">networks-list command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --provider &lt;provider_filter&gt;
+
+      <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-list-provider">networks-list command line option</a>
 </li>
       </ul></li>
       <li>
@@ -504,6 +525,8 @@
 </li>
       </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.AccountsError">AccountsError</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.active_provider">active_provider() (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.add_network">add_network() (ape.api.networks.EcosystemAPI method)</a>
 </li>
@@ -1150,6 +1173,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.ecosystem">ecosystem (ape.api.networks.NetworkAPI attribute)</a>
 </li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.ecosystem_names">ecosystem_names() (ape.managers.networks.NetworkManager property)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI">EcosystemAPI (class in ape.api.networks)</a>
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.network.EcosystemPlugin">EcosystemPlugin (class in ape.plugins.network)</a>
@@ -1174,10 +1199,10 @@
         <li><a href="methoddocs/managers.html#ape.managers.query.DefaultQueryProvider.estimate_query">(ape.managers.query.DefaultQueryProvider method)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.exclude">exclude (ape.api.projects.DependencyAPI attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.exclude">exclude (ape.api.projects.DependencyAPI attribute)</a>
+</li>
       <li><a href="methoddocs/cli.html#ape.cli.arguments.existing_alias_argument">existing_alias_argument() (in module ape.cli.arguments)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.expand_environment_variables">expand_environment_variables() (in module ape.utils)</a>
@@ -1282,6 +1307,8 @@
 </li>
       </ul></li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.NetworkChoice.get_metavar">get_metavar() (ape.cli.choices.NetworkChoice method)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.get_network_choices">get_network_choices() (ape.managers.networks.NetworkManager method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.get_network_data">get_network_data() (ape.api.networks.EcosystemAPI method)</a>
 </li>
@@ -1541,11 +1568,11 @@
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.network">network (ape.api.providers.ProviderAPI attribute)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.network_choices">network_choices() (ape.managers.networks.NetworkManager property)</a>
-</li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.network_data">network_data() (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.network_id">network_id() (ape.api.networks.NetworkAPI property)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.network_names">network_names() (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.options.network_option">network_option() (in module ape.cli.options)</a>
 </li>
@@ -1555,12 +1582,12 @@
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.NetworkChoice">NetworkChoice (class in ape.cli.choices)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkError">NetworkError</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager">NetworkManager (class in ape.managers.networks)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkNotFoundError">NetworkNotFoundError</a>
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.network.NetworkPlugin">NetworkPlugin (class in ape.plugins.network)</a>
@@ -1577,7 +1604,13 @@
     networks-list command line option
 
       <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-list-ecosystem">--ecosystem &lt;ecosystem_filter&gt;</a>
+</li>
         <li><a href="commands/networks.html#cmdoption-networks-list-format">--format &lt;output_format&gt;</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-list-network">--network &lt;network_filter&gt;</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-list-provider">--provider &lt;provider_filter&gt;</a>
 </li>
         <li><a href="commands/networks.html#cmdoption-networks-list-v">--verbosity &lt;LVL&gt;</a>
 </li>
@@ -1729,6 +1762,8 @@
       <li><a href="methoddocs/plugins.html#ape.plugins.project.ProjectPlugin.projects">projects() (ape.plugins.project.ProjectPlugin method)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.PromptChoice">PromptChoice (class in ape.cli.choices)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.provider_names">provider_names() (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.provider_settings">provider_settings (ape.api.providers.ProviderAPI attribute)</a>
 </li>

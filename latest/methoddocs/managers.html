@@ -1073,6 +1073,12 @@ However, use this singleton for more granular access to networks.</p>
 </pre></div>
 </div>
 <dl class="py method">
+<dt id="ape.managers.networks.NetworkManager.active_provider">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">active_provider</span></code><a class="headerlink" href="#ape.managers.networks.NetworkManager.active_provider" title="Permalink to this definition">¶</a></dt>
+<dd><p>The currently connected provider if one exists. Otherwise, returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.managers.networks.NetworkManager.default_ecosystem">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">default_ecosystem</span></code><a class="headerlink" href="#ape.managers.networks.NetworkManager.default_ecosystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>The default ecosystem. Call
@@ -1083,9 +1089,46 @@ that ecosystem.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="ape.managers.networks.NetworkManager.ecosystem_names">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">ecosystem_names</span></code><a class="headerlink" href="#ape.managers.networks.NetworkManager.ecosystem_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>The set of all ecosystem names in <code class="docutils literal notranslate"><span class="pre">ape</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="ape.managers.networks.NetworkManager.ecosystems">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">ecosystems</span></code><a class="headerlink" href="#ape.managers.networks.NetworkManager.ecosystems" title="Permalink to this definition">¶</a></dt>
 <dd><p>All the registered ecosystems in <code class="docutils literal notranslate"><span class="pre">ape</span></code>, such as <code class="docutils literal notranslate"><span class="pre">ethereum</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.networks.NetworkManager.get_network_choices">
+<code class="sig-name descname"><span class="pre">get_network_choices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecosystem_filter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_filter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_filter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#ape.managers.networks.NetworkManager.get_network_choices" title="Permalink to this definition">¶</a></dt>
+<dd><p>The set of all possible network choices available as a “network selection”
+e.g. <code class="docutils literal notranslate"><span class="pre">--network</span> <span class="pre">[ECOSYSTEM:NETWORK:PROVIDER]</span></code>.</p>
+<p>Each value is in the form <code class="docutils literal notranslate"><span class="pre">ecosystem:network:provider</span></code> and shortened options also
+appear in the list. For example, <code class="docutils literal notranslate"><span class="pre">::geth</span></code> would default to <code class="docutils literal notranslate"><span class="pre">:ethereum:local:geth</span></code>
+and both will be in the returned list. The values come from each
+<a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a> that is installed.</p>
+<p>Use the CLI command <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">list</span></code> to list all the possible network
+combinations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ecosystem_filter</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Get only the specified ecosystems.
+Defaults to getting all ecosystems.</p></li>
+<li><p><strong>network_filter</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Get only the specified networks.
+Defaults to getting all networks in ecosystems.</p></li>
+<li><p><strong>provider_filter</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Get only the specified providers.
+Defaults to getting all providers in networks.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An iterator over all the network-choice possibilities.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Iterator[str]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1093,7 +1136,7 @@ that ecosystem.</p>
 <code class="sig-name descname"><span class="pre">get_provider_from_choice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">network_choice</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ape.api.providers.ProviderAPI</span></a><a class="headerlink" href="#ape.managers.networks.NetworkManager.get_provider_from_choice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a <a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a> from a network choice.
 A network choice is any value returned from
-<a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network_choices</span></code></a>. Use the
+<a class="reference internal" href="#ape.managers.networks.NetworkManager.get_network_choices" title="ape.managers.networks.NetworkManager.get_network_choices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_network_choices()</span></code></a>. Use the
 CLI command <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">list</span></code> to list all the possible network
 combinations.</p>
 <dl class="field-list simple">
@@ -1104,34 +1147,13 @@ combinations.</p>
 <dt class="field-even">Parameters</dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>network_choice</strong> (<em>str</em><em>, </em><em>optional</em>) – The network choice
-(see <a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network_choices</span></code></a>).
+(see <a class="reference internal" href="#ape.managers.networks.NetworkManager.get_network_choices" title="ape.managers.networks.NetworkManager.get_network_choices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_network_choices()</span></code></a>).
 Defaults to the default ecosystem, network, and provider combination.</p></li>
 <li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings for the provider. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="ape.managers.networks.NetworkManager.network_choices">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">network_choices</span></code><a class="headerlink" href="#ape.managers.networks.NetworkManager.network_choices" title="Permalink to this definition">¶</a></dt>
-<dd><p>The set of all possible network choices available as a “network selection”
-e.g. <code class="docutils literal notranslate"><span class="pre">--network</span> <span class="pre">[ECOSYSTEM:NETWORK:PROVIDER]</span></code>.</p>
-<p>Each value is in the form <code class="docutils literal notranslate"><span class="pre">ecosystem:network:provider</span></code> and shortened options also
-appear in the list. For example, <code class="docutils literal notranslate"><span class="pre">::geth</span></code> would default to <code class="docutils literal notranslate"><span class="pre">:ethereum:local:geth</span></code>
-and both will be in the returned list. The values come from each
-<a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a> that is installed.</p>
-<p>Use the CLI command <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">list</span></code> to list all the possible network
-combinations.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>An iterator over all the network-choice possibilities.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Iterator[str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1147,6 +1169,12 @@ translating into <code class="docutils literal notranslate"><span class="pre">ya
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.networks.NetworkManager.network_names">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">network_names</span></code><a class="headerlink" href="#ape.managers.networks.NetworkManager.network_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>The set of all network names in <code class="docutils literal notranslate"><span class="pre">ape</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1167,7 +1195,7 @@ in all the ecosystems.</p>
 <code class="sig-name descname"><span class="pre">parse_network_choice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">network_choice</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="api.html#ape.api.networks.ProviderContextManager" title="ape.api.networks.ProviderContextManager"><span class="pre">ape.api.networks.ProviderContextManager</span></a><a class="headerlink" href="#ape.managers.networks.NetworkManager.parse_network_choice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a network choice into a context manager for managing a temporary
 connection to a provider. See
-<a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network_choices</span></code></a> for all
+<a class="reference internal" href="#ape.managers.networks.NetworkManager.get_network_choices" title="ape.managers.networks.NetworkManager.get_network_choices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_network_choices()</span></code></a> for all
 available choices (or use CLI command <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">list</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
@@ -1177,7 +1205,7 @@ available choices (or use CLI command <code class="docutils literal notranslate"
 <dt class="field-even">Parameters</dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>network_choice</strong> (<em>str</em><em>, </em><em>optional</em>) – The network choice
-(see <a class="reference internal" href="#ape.managers.networks.NetworkManager.network_choices" title="ape.managers.networks.NetworkManager.network_choices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network_choices</span></code></a>).
+(see <a class="reference internal" href="#ape.managers.networks.NetworkManager.get_network_choices" title="ape.managers.networks.NetworkManager.get_network_choices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_network_choices()</span></code></a>).
 Defaults to the default ecosystem, network, and provider combination.</p></li>
 <li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings for the provider. Defaults to None.</p></li>
 </ul>
@@ -1186,6 +1214,12 @@ Defaults to the default ecosystem, network, and provider combination.</p></li>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ape.managers.networks.NetworkManager.provider_names">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">provider_names</span></code><a class="headerlink" href="#ape.managers.networks.NetworkManager.provider_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>The set of all provider names in <code class="docutils literal notranslate"><span class="pre">ape</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
