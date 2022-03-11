@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, Optional
+from typing import Dict, Iterator, List, Optional, Set, Union
 
 import yaml
 
@@ -33,11 +33,50 @@ class NetworkManager(BaseManager):
 
     @property
     def active_provider(self) -> Optional[ProviderAPI]:
+        """
+        The currently connected provider if one exists. Otherwise, returns ``None``.
+        """
+
         return self._active_provider
 
     @active_provider.setter
     def active_provider(self, new_value: ProviderAPI):
         self._active_provider = new_value
+
+    @property
+    def ecosystem_names(self) -> Set[str]:
+        """
+        The set of all ecosystem names in ``ape``.
+        """
+
+        return {str(e) for e in self.ecosystems.keys()}
+
+    @property
+    def network_names(self) -> Set[str]:
+        """
+        The set of all network names in ``ape``.
+        """
+
+        names = set()
+        for ecosystem in self.ecosystems.values():
+            for network in ecosystem.networks.keys():
+                names.add(network)
+
+        return names
+
+    @property
+    def provider_names(self) -> Set[str]:
+        """
+        The set of all provider names in ``ape``.
+        """
+
+        names = set()
+        for ecosystem in self.ecosystems.values():
+            for network in ecosystem.networks.values():
+                for provider in network.providers.keys():
+                    names.add(provider)
+
+        return names
 
     @property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
@@ -133,8 +172,12 @@ class NetworkManager(BaseManager):
 
         return self.ecosystems[attr_name]
 
-    @property
-    def network_choices(self) -> Iterator[str]:
+    def get_network_choices(
+        self,
+        ecosystem_filter: Optional[Union[List[str], str]] = None,
+        network_filter: Optional[Union[List[str], str]] = None,
+        provider_filter: Optional[Union[List[str], str]] = None,
+    ) -> Iterator[str]:
         """
         The set of all possible network choices available as a "network selection"
         e.g. ``--network [ECOSYSTEM:NETWORK:PROVIDER]``.
@@ -147,31 +190,72 @@ class NetworkManager(BaseManager):
         Use the CLI command ``ape networks list`` to list all the possible network
         combinations.
 
+        Args:
+            ecosystem_filter (Optional[Union[List[str], str]]): Get only the specified ecosystems.
+              Defaults to getting all ecosystems.
+            network_filter (Optional[Union[List[str], str]]): Get only the specified networks.
+              Defaults to getting all networks in ecosystems.
+            provider_filter (Optional[Union[List[str], str]]): Get only the specified providers.
+              Defaults to getting all providers in networks.
+
         Returns:
             Iterator[str]: An iterator over all the network-choice possibilities.
         """
-        for ecosystem_name, ecosystem in self.ecosystems.items():
-            yield ecosystem_name
-            for network_name, network in ecosystem.networks.items():
+
+        ecosystem_filter = _validate_filter(ecosystem_filter, self.ecosystem_names)
+        network_filter = _validate_filter(network_filter, self.network_names)
+        provider_filter = _validate_filter(provider_filter, self.provider_names)
+
+        ecosystem_items = self.ecosystems
+        if ecosystem_filter:
+            ecosystem_items = {n: e for n, e in ecosystem_items.items() if n in ecosystem_filter}
+
+        for ecosystem_name, ecosystem in ecosystem_items.items():
+
+            network_items = ecosystem.networks
+            if network_filter:
+                network_items = {n: net for n, net in network_items.items() if n in network_filter}
+
+            if not network_items:
+                continue
+
+            ecosystem_has_providers = False
+            for network_name, network in network_items.items():
+                providers = network.providers
+                if provider_filter:
+                    providers = [n for n in providers if n in provider_filter]
+
+                network_has_providers = len(providers) > 0
+                if not ecosystem_has_providers:
+                    # Only check if we still haven't found any
+                    ecosystem_has_providers = network_has_providers
+
+                if not network_has_providers:
+                    continue
+
+                for provider_name in providers:
+                    if (
+                        ecosystem_name == self.default_ecosystem.name
+                        and network_name == ecosystem.default_network
+                    ):
+                        yield f"::{provider_name}"
+
+                    elif ecosystem_name == self.default_ecosystem.name:
+                        yield f":{network_name}:{provider_name}"
+
+                    elif network_name == ecosystem.default_network:
+                        yield f"{ecosystem_name}::{provider_name}"
+
+                    yield f"{ecosystem_name}:{network_name}:{provider_name}"
+
+                # Providers were yielded if we reached this point.
                 if ecosystem_name == self.default_ecosystem.name:
                     yield f":{network_name}"
 
                 yield f"{ecosystem_name}:{network_name}"
 
-                for provider in network.providers:
-                    if (
-                        ecosystem_name == self.default_ecosystem.name
-                        and network_name == ecosystem.default_network
-                    ):
-                        yield f"::{provider}"
-
-                    elif ecosystem_name == self.default_ecosystem.name:
-                        yield f":{network_name}:{provider}"
-
-                    elif network_name == ecosystem.default_network:
-                        yield f"{ecosystem_name}::{provider}"
-
-                    yield f"{ecosystem_name}:{network_name}:{provider}"
+            if ecosystem_has_providers:
+                yield ecosystem_name
 
     def get_provider_from_choice(
         self,
@@ -181,7 +265,7 @@ class NetworkManager(BaseManager):
         """
         Get a :class:`~ape.api.providers.ProviderAPI` from a network choice.
         A network choice is any value returned from
-        :py:attr:`~ape.managers.networks.NetworkManager.network_choices`. Use the
+        :meth:`~ape.managers.networks.NetworkManager.get_network_choices`. Use the
         CLI command ``ape networks list`` to list all the possible network
         combinations.
 
@@ -191,7 +275,7 @@ class NetworkManager(BaseManager):
 
         Args:
             network_choice (str, optional): The network choice
-              (see :py:attr:`~ape.managers.networks.NetworkManager.network_choices`).
+              (see :meth:`~ape.managers.networks.NetworkManager.get_network_choices`).
               Defaults to the default ecosystem, network, and provider combination.
             provider_settings (dict, optional): Settings for the provider. Defaults to None.
 
@@ -249,7 +333,7 @@ class NetworkManager(BaseManager):
         """
         Parse a network choice into a context manager for managing a temporary
         connection to a provider. See
-        :py:attr:`~ape.managers.networks.NetworkManager.network_choices` for all
+        :meth:`~ape.managers.networks.NetworkManager.get_network_choices` for all
         available choices (or use CLI command ``ape networks list``).
 
         Raises:
@@ -258,7 +342,7 @@ class NetworkManager(BaseManager):
 
         Args:
             network_choice (str, optional): The network choice
-              (see :py:attr:`~ape.managers.networks.NetworkManager.network_choices`).
+              (see :meth:`~ape.managers.networks.NetworkManager.get_network_choices`).
               Defaults to the default ecosystem, network, and provider combination.
             provider_settings (dict, optional): Settings for the provider. Defaults to None.
 
@@ -355,3 +439,16 @@ class NetworkManager(BaseManager):
         """
 
         return yaml.dump(self.network_data, sort_keys=False)
+
+
+def _validate_filter(arg: Optional[Union[List[str], str]], options: Set[str]):
+    filters = arg or []
+
+    if isinstance(filters, str):
+        filters = [filters]
+
+    for _filter in filters:
+        if _filter not in options:
+            raise NetworkError(f"Unknown option '{_filter}'.")
+
+    return filters
