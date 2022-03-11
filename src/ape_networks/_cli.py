@@ -20,18 +20,6 @@ def _filter_option(name: str, options):
     )
 
 
-def ecosystem_filter_option():
-    return _filter_option("ecosystem", networks.ecosystem_names)
-
-
-def network_filter_option():
-    return _filter_option("network", networks.network_names)
-
-
-def provider_filter_option():
-    return _filter_option("provider", networks.provider_names)
-
-
 @click.group(short_help="Manage networks")
 def cli():
     """
@@ -42,9 +30,9 @@ def cli():
 @cli.command(name="list", short_help="List registered networks")
 @ape_cli_context()
 @output_format_option()
-@ecosystem_filter_option()
-@network_filter_option()
-@provider_filter_option()
+@_filter_option("ecosystem", networks.ecosystem_names)
+@_filter_option("network", networks.network_names)
+@_filter_option("provider", networks.provider_names)
 def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_filter):
     if output_format == OutputFormat.TREE:
         default_suffix = "[dim default]  (default)"
