@@ -56,7 +56,6 @@ You can install the latest release via
 [pip](https://pypi.org/project/pip/):
 
 ```bash
-pip install -U pip
 pip install eth-ape
 ```
 
