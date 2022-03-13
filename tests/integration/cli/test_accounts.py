@@ -44,7 +44,9 @@ def keyparams():
 
 @pytest.fixture(autouse=True)
 def temp_keyfile_path(config):
-    test_keyfile_path = Path(config.DATA_FOLDER / "accounts" / f"{ALIAS}.json")
+    temp_accounts_dir = Path(config.DATA_FOLDER) / "accounts"
+    temp_accounts_dir.mkdir(exist_ok=True, parents=True)
+    test_keyfile_path = temp_accounts_dir / f"{ALIAS}.json"
 
     if test_keyfile_path.exists():
         # Corrupted from a previous test
