@@ -19,7 +19,7 @@ MOCK_EXTERNAL_ADDRESS = "test_external_address"
 
 
 @pytest.fixture
-def test_keyparams():
+def keyparams():
     # NOTE: password is 'a'
     return {
         "address": "7e5f4552091a69125d5dfcb7b8c2659029395bdf",
@@ -43,7 +43,7 @@ def test_keyparams():
 
 
 @pytest.fixture(autouse=True)
-def test_keyfile_path(config):
+def temp_keyfile_path(config):
     test_keyfile_path = Path(config.DATA_FOLDER / "accounts" / f"{ALIAS}.json")
 
     if test_keyfile_path.exists():
@@ -54,17 +54,17 @@ def test_keyfile_path(config):
 
 
 @pytest.fixture
-def test_keyfile(test_keyfile_path, test_keyparams):
-    test_keyfile_path.write_text(json.dumps(test_keyparams))
+def temp_keyfile(temp_keyfile_path, keyparams):
+    temp_keyfile_path.write_text(json.dumps(keyparams))
 
-    yield test_keyfile_path
+    yield temp_keyfile_path
 
-    if test_keyfile_path.exists():
-        test_keyfile_path.unlink()
+    if temp_keyfile_path.exists():
+        temp_keyfile_path.unlink()
 
 
 @pytest.fixture
-def test_account():
+def temp_account():
     return Account.from_key(bytes.fromhex(PRIVATE_KEY))
 
 
@@ -95,17 +95,17 @@ def mock_account_manager(mocker, mock_local_account, mock_third_party_account):
     return mock
 
 
-def test_import(ape_cli, runner, test_account, test_keyfile_path):
-    assert not test_keyfile_path.exists()
+def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
+    assert not temp_keyfile_path.exists()
     # Add account from private keys
     result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
     assert result.exit_code == 0, result.output
-    assert test_account.address in result.output
+    assert temp_account.address in result.output
     assert ALIAS in result.output
-    assert test_keyfile_path.exists()
+    assert temp_keyfile_path.exists()
 
 
-def test_import_alias_already_in_use(ape_cli, runner, test_account, test_keyfile_path):
+def test_import_alias_already_in_use(ape_cli, runner, temp_account, temp_keyfile_path):
     def invoke_import():
         return runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
 
@@ -116,7 +116,7 @@ def test_import_alias_already_in_use(ape_cli, runner, test_account, test_keyfile
 
 
 def test_import_account_instantiation_failure(
-    mocker, ape_cli, runner, test_account, test_keyfile_path
+    mocker, ape_cli, runner, temp_account, temp_keyfile_path
 ):
     eth_account_from_key_patch = mocker.patch("ape_accounts._cli.EthAccount.from_key")
     eth_account_from_key_patch.side_effect = Exception("Can't instantiate this account!")
@@ -124,16 +124,16 @@ def test_import_account_instantiation_failure(
     assert_failure(result, "Key can't be imported: Can't instantiate this account!")
 
 
-def test_generate(ape_cli, runner, test_keyfile_path):
-    assert not test_keyfile_path.exists()
+def test_generate(ape_cli, runner, temp_keyfile_path):
+    assert not temp_keyfile_path.exists()
     # Generate new private key
     result = runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
     assert result.exit_code == 0, result.output
     assert ALIAS in result.output
-    assert test_keyfile_path.exists()
+    assert temp_keyfile_path.exists()
 
 
-def test_generate_alias_already_in_use(ape_cli, runner, test_account, test_keyfile_path):
+def test_generate_alias_already_in_use(ape_cli, runner, temp_account, temp_keyfile_path):
     def invoke_generate():
         return runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
 
@@ -143,16 +143,16 @@ def test_generate_alias_already_in_use(ape_cli, runner, test_account, test_keyfi
     assert_failure(result, f"Account with alias '{ALIAS}' already in use")
 
 
-def test_list(ape_cli, runner, test_keyfile):
+def test_list(ape_cli, runner, temp_keyfile):
     # Check availability
-    assert test_keyfile.exists()
+    assert temp_keyfile.exists()
     result = runner.invoke(ape_cli, ["accounts", "list"])
     assert ALIAS in result.output
 
 
-def test_list_all(ape_cli, runner, test_keyfile):
+def test_list_all(ape_cli, runner, temp_keyfile):
     # Check availability
-    assert test_keyfile.exists()
+    assert temp_keyfile.exists()
     result = runner.invoke(ape_cli, ["accounts", "list", "--all"])
     assert ALIAS in result.output
 
@@ -167,8 +167,8 @@ def test_list_excludes_external_accounts(ape_cli, runner, mock_account_manager):
     assert "test_external_address" not in result.output
 
 
-def test_change_password(ape_cli, runner, test_keyfile):
-    assert test_keyfile.exists()
+def test_change_password(ape_cli, runner, temp_keyfile):
+    assert temp_keyfile.exists()
     # Delete Account (`N` for "Leave unlocked?")
     valid_input = [PASSWORD, "N", "b", "b"]
     result = runner.invoke(
@@ -179,9 +179,9 @@ def test_change_password(ape_cli, runner, test_keyfile):
     assert result.exit_code == 0, result.output
 
 
-def test_delete(ape_cli, runner, test_keyfile):
-    assert test_keyfile.exists()
+def test_delete(ape_cli, runner, temp_keyfile):
+    assert temp_keyfile.exists()
     # Delete Account
     result = runner.invoke(ape_cli, ["accounts", "delete", ALIAS], input=PASSWORD + "\n")
     assert result.exit_code == 0, result.output
-    assert not test_keyfile.exists()
+    assert not temp_keyfile.exists()
