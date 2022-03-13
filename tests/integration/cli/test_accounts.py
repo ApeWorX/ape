@@ -4,7 +4,6 @@ from pathlib import Path
 import pytest
 from eth_account import Account  # type: ignore
 
-from ape.api import AccountAPI
 from tests.integration.cli.utils import assert_failure
 
 ALIAS = "test"
@@ -12,10 +11,6 @@ PASSWORD = "a"
 PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
 IMPORT_VALID_INPUT = "\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD])
 GENERATE_VALID_INPUT = "\n".join(["random entropy", PASSWORD, PASSWORD])
-MOCK_LOCAL_ALIAS = "test_local_alias"
-MOCK_LOCAL_ADDRESS = "test_local_address"
-MOCK_EXTERNAL_ALIAS = "test_external_alias"
-MOCK_EXTERNAL_ADDRESS = "test_external_address"
 
 
 @pytest.fixture
@@ -68,33 +63,6 @@ def temp_keyfile(temp_keyfile_path, keyparams):
 @pytest.fixture
 def temp_account():
     return Account.from_key(bytes.fromhex(PRIVATE_KEY))
-
-
-@pytest.fixture
-def mock_local_account(mocker):
-    mock_account = mocker.MagicMock(spec=AccountAPI)
-    mock_account.alias = MOCK_LOCAL_ALIAS
-    mock_account.address = MOCK_LOCAL_ADDRESS
-    return mock_account
-
-
-@pytest.fixture
-def mock_third_party_account(mocker):
-    mock_account = mocker.MagicMock(spec=AccountAPI)
-    mock_account.alias = MOCK_EXTERNAL_ALIAS
-    mock_account.address = MOCK_EXTERNAL_ADDRESS
-    return mock_account
-
-
-@pytest.fixture
-def mock_account_manager(mocker, mock_local_account, mock_third_party_account):
-    mock = mocker.patch("ape_accounts._cli.accounts")
-    containers = {
-        "accounts": [mock_local_account],
-        "test-wallet": [mock_third_party_account],
-    }
-    mock.containers = containers
-    return mock
 
 
 def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
@@ -157,16 +125,6 @@ def test_list_all(ape_cli, runner, temp_keyfile):
     assert temp_keyfile.exists()
     result = runner.invoke(ape_cli, ["accounts", "list", "--all"])
     assert ALIAS in result.output
-
-
-@pytest.mark.skip(reason="Changes to underlying structure make mocks incorrect")
-def test_list_excludes_external_accounts(ape_cli, runner, mock_account_manager):
-    result = runner.invoke(ape_cli, ["accounts", "list"])
-    assert result.exit_code == 0, result.output
-    assert "test_local_alias" in result.output
-    assert "test_local_address" in result.output
-    assert "test_external_alias" not in result.output
-    assert "test_external_address" not in result.output
 
 
 def test_change_password(ape_cli, runner, temp_keyfile):
