@@ -6,7 +6,6 @@ from eth_utils import to_bytes
 
 from ape import accounts
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
-from ape.plugins import clean_plugin_name
 from ape_accounts import KeyfileAccount
 
 
@@ -31,12 +30,8 @@ def _list(cli_ctx, show_all_plugins):
     if "accounts" not in accounts.containers:
         cli_ctx.abort("Accounts plugin unexpectedly failed to load.")
 
-    containers = (
-        accounts.containers.values() if show_all_plugins else [accounts.containers["accounts"]]
-    )
-    account_map = {
-        clean_plugin_name(c.__module__.split(".")[0]): [a for a in c.accounts] for c in containers
-    }
+    containers = accounts.containers if show_all_plugins else {"accounts": _get_container()}
+    account_map = {n: [a for a in c.accounts] for n, c in containers.items()}
     account_map = [pair for pair in {n: ls for n, ls in account_map.items() if len(ls) > 0}.items()]
 
     if sum([len(c) for c in account_map]) == 0:
