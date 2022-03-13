@@ -24,10 +24,12 @@ def cli():
 
 # Different name because `list` is a keyword
 @cli.command(name="list", short_help="List available local accounts")
-@click.option("--all", help="Output accounts from all plugins", is_flag=True)
+@click.option("--all", "show_all_plugins", help="Output accounts from all plugins", is_flag=True)
 @ape_cli_context()
-def _list(cli_ctx, all):
-    account_list = list(accounts if all else accounts.containers.get("accounts", []).accounts)
+def _list(cli_ctx, show_all_plugins):
+    account_list = list(
+        accounts if show_all_plugins else accounts.containers.get("accounts", []).accounts
+    )
     if len(account_list) == 0:
         cli_ctx.logger.warning("No accounts found.")
         return
