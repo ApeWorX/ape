@@ -47,14 +47,14 @@ def _list(cli_ctx, show_all_plugins):
     for index in range(num_containers):
         plugin_name, container = account_map[index]
         num_accounts = len(container)
-        msg = f"Found {num_accounts} account"
+        header = f"Found {num_accounts} account"
         if num_accounts > 1:
-            msg = f"{msg}s"  # 'account' -> 'accounts'
+            header = f"{header}s"  # 'account' -> 'accounts'
 
         if show_all_plugins:
-            msg = f"{msg} in the '{plugin_name}' plugin"
+            header = f"{header} in the '{plugin_name}' plugin"
 
-        click.echo(f"{msg}:")
+        click.echo(f"{header}:")
 
         for account in container:
             alias_display = f" (alias: '{account.alias}')" if account.alias else ""
