@@ -150,6 +150,13 @@ def test_list(ape_cli, runner, test_keyfile):
     assert ALIAS in result.output
 
 
+def test_list_all(ape_cli, runner, test_keyfile):
+    # Check availability
+    assert test_keyfile.exists()
+    result = runner.invoke(ape_cli, ["accounts", "list", "--all"])
+    assert ALIAS in result.output
+
+
 @pytest.mark.skip(reason="Changes to underlying structure make mocks incorrect")
 def test_list_excludes_external_accounts(ape_cli, runner, mock_account_manager):
     result = runner.invoke(ape_cli, ["accounts", "list"])
