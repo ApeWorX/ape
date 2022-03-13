@@ -47,9 +47,6 @@ def _list(cli_ctx, show_all_plugins):
     for index in range(num_containers):
         plugin_name, container = account_map[index]
         num_accounts = len(container)
-        if num_accounts == 0:
-            continue
-
         msg = f"Found {num_accounts} account"
         if num_accounts > 1:
             msg = f"{msg}s"  # 'account' -> 'accounts'
