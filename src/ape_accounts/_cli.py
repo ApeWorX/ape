@@ -6,6 +6,7 @@ from eth_utils import to_bytes
 
 from ape import accounts
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
+from ape.plugins import clean_plugin_name
 from ape_accounts import KeyfileAccount
 
 
@@ -27,22 +28,43 @@ def cli():
 @click.option("--all", "show_all_plugins", help="Output accounts from all plugins", is_flag=True)
 @ape_cli_context()
 def _list(cli_ctx, show_all_plugins):
-    account_list = list(
-        accounts if show_all_plugins else accounts.containers.get("accounts", []).accounts
+    if "accounts" not in accounts.containers:
+        cli_ctx.abort("Accounts plugin unexpectedly failed to load.")
+
+    containers = (
+        accounts.containers.values() if show_all_plugins else [accounts.containers["accounts"]]
     )
-    if len(account_list) == 0:
+    account_map = {
+        clean_plugin_name(c.__module__.split(".")[0]): [a for a in c.accounts] for c in containers
+    }
+    account_map = [pair for pair in {n: ls for n, ls in account_map.items() if len(ls) > 0}.items()]
+
+    if sum([len(c) for c in account_map]) == 0:
         cli_ctx.logger.warning("No accounts found.")
         return
 
-    elif len(account_list) > 1:
-        click.echo(f"Found {len(accounts)} accounts:")
+    num_containers = len(account_map)
+    for index in range(num_containers):
+        plugin_name, container = account_map[index]
+        num_accounts = len(container)
+        if num_accounts == 0:
+            continue
 
-    else:
-        click.echo("Found 1 account:")
+        msg = f"Found {num_accounts} account"
+        if num_accounts > 1:
+            msg = f"{msg}s"  # 'account' -> 'accounts'
 
-    for account in account_list:
-        alias_display = f" (alias: '{account.alias}')" if account.alias else ""
-        click.echo(f"  {account.address}{alias_display}")
+        if show_all_plugins:
+            msg = f"{msg} in the '{plugin_name}' plugin"
+
+        click.echo(f"{msg}:")
+
+        for account in container:
+            alias_display = f" (alias: '{account.alias}')" if account.alias else ""
+            click.echo(f"  {account.address}{alias_display}")
+
+        if index < num_containers - 1:
+            click.echo()
 
 
 @cli.command(short_help="Create a new keyfile account with a random private key")
