@@ -27,7 +27,7 @@ def cli():
 @click.option("--all", help="Output accounts from all plugins", is_flag=True)
 @ape_cli_context()
 def _list(cli_ctx, all):
-    account_list = accounts if all else accounts.containers.get("accounts", [])
+    account_list = list(accounts if all else accounts.containers.get("accounts", []).accounts)
     if len(account_list) == 0:
         cli_ctx.logger.warning("No accounts found.")
         return
@@ -38,7 +38,7 @@ def _list(cli_ctx, all):
     else:
         click.echo("Found 1 account:")
 
-    for account in account_list.accounts:
+    for account in account_list:
         alias_display = f" (alias: '{account.alias}')" if account.alias else ""
         click.echo(f"  {account.address}{alias_display}")
 
