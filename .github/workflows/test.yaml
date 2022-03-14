@@ -2,6 +2,11 @@ on: ["push", "pull_request"]
 
 name: Test
 
+# Prevents multiple runs when branch is opened on repo
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
     linting:
         runs-on: ubuntu-latest
