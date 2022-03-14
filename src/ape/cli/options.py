@@ -90,20 +90,38 @@ def ape_cli_context():
     return decorator
 
 
-def network_option(default: str = None):
+def network_option(
+    default: Optional[str] = None,
+    ecosystem: Optional[Union[List[str], str]] = None,
+    network: Optional[Union[List[str], str]] = None,
+    provider: Optional[Union[List[str], str]] = None,
+):
     """
     A ``click.option`` for specifying a network.
 
     Args:
-        default (str): Optionally, change which network to
+        default (Optional[str]): Optionally, change which network to
           use as the default. Defaults to how ``ape`` normally
           selects a default network.
+        ecosystem (Optional[Union[List[str], str]]): Filter the options by ecosystem.
+          Defaults to getting all ecosystems.
+        network (Optional[Union[List[str], str]]): Filter the options by network.
+          Defaults to getting all networks in ecosystems.
+        provider (Optional[Union[List[str], str]]): Filter the options by provider.
+          Defaults to getting all providers in networks.
     """
 
-    default = default or networks.default_ecosystem.name
+    if not default:
+        if ecosystem:
+            default = ecosystem[0] if isinstance(ecosystem, (list, tuple)) else ecosystem
+        else:
+            default = networks.default_ecosystem.name
+
     return click.option(
         "--network",
-        type=NetworkChoice(case_sensitive=False),
+        type=NetworkChoice(
+            case_sensitive=False, ecosystem=ecosystem, network=network, provider=provider
+        ),
         default=default,
         help="Override the default network and provider. (see ``ape networks list`` for options)",
         show_default=True,

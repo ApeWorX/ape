@@ -11,10 +11,10 @@ from .base import BaseManager
 
 
 def _get_contract_path(path: Path, base_path: Path):
-    try:
-        return path.relative_to(base_path)
-    except ValueError:
+    if base_path not in path.parents:
         return path
+
+    return path.relative_to(base_path)
 
 
 class CompilerManager(BaseManager):
@@ -89,7 +89,13 @@ class CompilerManager(BaseManager):
         extensions = self._get_contract_extensions(contract_filepaths)
         contract_types_dict = {}
         for extension in extensions:
-            paths_to_compile = [path for path in contract_filepaths if path.suffix == extension]
+
+            # Filter out in-source cache files from dependencies.
+            paths_to_compile = [
+                path
+                for path in contract_filepaths
+                if path.suffix == extension and ".cache" not in [p.name for p in path.parents]
+            ]
 
             for path in paths_to_compile:
                 contract_path = _get_contract_path(path, self.config_manager.contracts_folder)

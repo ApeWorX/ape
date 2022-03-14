@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, List, Optional, Type
+from typing import Any, List, Optional, Type, Union
 
 import click
 from click import Choice, Context, Parameter
@@ -166,10 +166,28 @@ class AccountAliasPromptChoice(PromptChoice):
 class NetworkChoice(click.Choice):
     """
     A ``click.Choice`` to provide network choice defaults for the active project.
+
+    Optionally provide a list of ecosystem names, network names, or provider names
+    to filter the results by.
+
+    This is used in :meth:`~ape.cli.options.network_option`.
     """
 
-    def __init__(self, case_sensitive=True):
-        super().__init__(list(networks.network_choices), case_sensitive)
+    def __init__(
+        self,
+        case_sensitive=True,
+        ecosystem: Optional[Union[List[str], str]] = None,
+        network: Optional[Union[List[str], str]] = None,
+        provider: Optional[Union[List[str], str]] = None,
+    ):
+        super().__init__(
+            list(
+                networks.get_network_choices(
+                    ecosystem_filter=ecosystem, network_filter=network, provider_filter=provider
+                )
+            ),
+            case_sensitive,
+        )
 
     def get_metavar(self, param):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"

@@ -18,7 +18,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=21.10b0,<22.0",  # auto-formatter and linter
+        "black>=21.12b0,<22.0",  # auto-formatter and linter
         "mypy>=0.910,<1.0",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
@@ -95,7 +95,7 @@ setup(
         "rich>=10.14,<11",
         "tqdm>=4.62.3,<5.0",
         "typing-extensions ; python_version<'3.8'",
-        "web3[tester]==5.27.0",
+        "web3[tester]>=5.28.0,<6.0",
         "eth_abi==2.1.1",
         "eth-utils==1.10.0",
         "eth-rlp==0.2.1",
@@ -115,7 +115,7 @@ setup(
             "ape_init=ape_init._cli:cli",
         ],
     },
-    python_requires=">=3.7,<3.11",
+    python_requires=">=3.7.2,<3.11",
     extras_require=extras_require,
     py_modules=packages_data["__modules__"],
     license="Apache-2.0",
@@ -125,7 +125,7 @@ setup(
     package_dir={"": "src"},
     package_data={p: ["py.typed"] for p in packages_data["__modules__"]},
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",

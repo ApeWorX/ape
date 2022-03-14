@@ -13,7 +13,7 @@ QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractM
 
 class _BaseQuery(BaseModel):
     type: str  # Used as discriminator
-    columns: Union[str, List[str]]
+    columns: List[str]
 
 
 class _BaseBlockQuery(_BaseQuery):

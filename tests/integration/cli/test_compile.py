@@ -1,9 +1,11 @@
 import pytest
 
+from ape.contracts import ContractContainer
+
 from .utils import skip_projects, skip_projects_except
 
 
-@skip_projects(["unregistered-contracts", "one-interface", "geth"])
+@skip_projects(["unregistered-contracts", "one-interface", "geth", "with-dependency"])
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
     assert result.exit_code == 0, result.output
@@ -75,3 +77,11 @@ def test_compile_contracts(ape_cli, runner, project):
     # Still caches but displays bytecode size
     for file in project.path.glob("contracts/**/*"):
         assert file.stem in result.output
+
+
+@skip_projects_except(["with-dependency"])
+def test_compile_with_dependency(ape_cli, runner, project):
+    result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "__test_dependency__" in project.dependencies
+    assert type(project.dependencies["__test_dependency__"].Dependency) == ContractContainer

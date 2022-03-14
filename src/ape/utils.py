@@ -17,6 +17,7 @@ import requests
 import yaml
 from eth_account import Account
 from eth_account.hdaccount import HDPath, seed_from_mnemonic
+from eth_utils import to_checksum_address as to_address
 from github import Github, UnknownObjectException
 from github.GitRelease import GitRelease
 from github.Organization import Organization
@@ -41,7 +42,9 @@ except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
 if TYPE_CHECKING:
+    from ape.api.address import AddressType
     from ape.api.providers import ProviderAPI
+    from ape.contracts.base import ContractContainer, ContractInstance, ContractType
     from ape.managers.accounts import AccountManager
     from ape.managers.chain import ChainManager
     from ape.managers.compilers import CompilerManager
@@ -119,6 +122,22 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     return Path("/".join(".." for _ in range(levels_deep))).joinpath(
         str(target.relative_to(anchor_copy))
     )
+
+
+class use_temp_sys_path:
+    """
+    A context manager to manage injecting and removing paths from
+    a user's sys paths without permanently modifying it.
+    """
+
+    def __init__(self, path: Path):
+        self.temp_path = str(path)
+
+    def __enter__(self):
+        sys.path.append(self.temp_path)
+
+    def __exit__(self, *exc):
+        sys.path.remove(self.temp_path)
 
 
 def get_package_version(obj: Any) -> str:
@@ -592,6 +611,37 @@ class ManagerAccessMixin:
             raise ProviderNotConnectedError()
         return self.network_manager.active_provider
 
+    def create_contract_container(self, contract_type: "ContractType") -> "ContractContainer":
+        """
+        Helper method for creating a ``ContractContainer``.
+
+        Args:
+            contract_type (``ContractType``): Type of contract for the container
+
+        Returns:
+            :class:`~ape.contracts.ContractContainer`
+        """
+        from ape.contracts.base import ContractContainer
+
+        return ContractContainer(contract_type=contract_type)
+
+    def create_contract(
+        self, address: "AddressType", contract_type: "ContractType"
+    ) -> "ContractInstance":
+        """
+        Helper method for creating a ``ContractInstance``.
+
+        Args:
+            address (``AddressType``): Address of contract
+            contract_type (``ContractType``): Type of contract
+
+        Returns:
+            :class:`~ape.contracts.ContractInstance`
+        """
+        from ape.contracts.base import ContractInstance
+
+        return ContractInstance(address=address, contract_type=contract_type)
+
 
 class BaseInterface(ManagerAccessMixin, ABC):
     """
@@ -666,5 +716,6 @@ __all__ = [
     "load_config",
     "singledispatchmethod",
     "stream_response",
+    "to_address",
     "USER_AGENT",
 ]
