@@ -68,6 +68,10 @@ html_static_path = ["_static"]
 # or fully qualified paths (eg. https://...)
 html_css_files = ["custom.css"]
 
+# Currently required for how we handle method docs links in the Myst parser
+# since not all links are available in the markdown files pre-build.
+myst_all_links_external = True
+
 
 def fixpath(path: str) -> str:
     """
