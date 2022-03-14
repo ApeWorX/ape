@@ -14,12 +14,8 @@ LATEST_PATH = DOCS_BUILD_PATH / "latest"
 STABLE_PATH = DOCS_BUILD_PATH / "stable"
 
 
-class DocsBuildError(Exception):
+class ApeDocsBuildError(Exception):
     pass
-
-
-def run(*args):
-    subprocess.check_call([*args])
 
 
 def git(*args):
@@ -36,7 +32,12 @@ def new_dir(path: Path) -> Path:
 
 def build_docs(path: Path) -> Path:
     path = new_dir(path)
-    run("sphinx-build", "docs", str(path))
+
+    try:
+        subprocess.check_call(["sphinx-build", "docs", str(path)])
+    except subprocess.SubprocessError as err:
+        raise ApeDocsBuildError(f"Command 'sphinx-build docs {path}' failed.") from err
+
     return path
 
 
@@ -61,7 +62,7 @@ def main():
     elif event_name == "release":
         tag = git("describe", "--tag")
         if not tag:
-            raise DocsBuildError("Unable to find release tag.")
+            raise ApeDocsBuildError("Unable to find release tag.")
 
         if "beta" not in tag and "alpha" not in tag:
             build_dir = DOCS_BUILD_PATH / tag
