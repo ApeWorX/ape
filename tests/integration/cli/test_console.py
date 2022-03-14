@@ -14,3 +14,42 @@ def test_console(ape_cli, runner, item):
         ape_cli, ["console", "-v", "debug"], input=f"{item}\nexit\n", catch_exceptions=False
     )
     assert result.exit_code == 0, result.output
+
+
+@skip_projects(["geth"])
+def test_console_extras(ape_cli, runner):
+    extras_script = """A = 1
+def a():
+    return A"""
+
+    result = runner.invoke(
+        ape_cli, ["console"], input=f"assert A == 1\nexit\n", catch_exceptions=False
+    )
+    assert result.exit_code == 0, result.output
+    result = runner.invoke(
+        ape_cli, ["console"], input=f"assert a() == 1\nexit\n", catch_exceptions=False
+    )
+    assert result.exit_code == 0, result.output
+
+
+@skip_projects(["geth"])
+def test_console_init_extras(ape_cli, runner):
+    extras_script = """A = 1
+def init_extras():
+    global A
+    A = 2"""
+
+    result = runner.invoke(
+        ape_cli, ["console"], input=f"assert A == 2\nexit\n", catch_exceptions=False
+    )
+    assert result.exit_code == 0, result.output
+
+
+@skip_projects(["geth"])
+def test_console_init_extras_kwargs(ape_cli, runner):
+    extras_script = """
+def init_extras(project):
+    assert project"""
+
+    result = runner.invoke(ape_cli, ["console"], input=f"exit\n", catch_exceptions=False)
+    assert result.exit_code == 0, result.output
