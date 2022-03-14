@@ -76,7 +76,7 @@ def load_console_extras(namespace: dict[str, Any]) -> dict[str, Any]:
                 if k != "init_extras" and not k.startswith("_"):
                     # Prevent override of existing namespace symbols
                     if k in namespace:
-                        raise KeyError(f"Namespace conflict (key: {k}) in {extras_file}")
+                        continue
 
                     namespace[k] = getattr(module, k)
 
