@@ -1,7 +1,11 @@
 import faulthandler
+import inspect
 import io
 import logging
 from importlib.machinery import SourceFileLoader
+from importlib.util import module_from_spec, spec_from_loader
+from types import ModuleType
+from typing import Any, Dict
 
 import click
 import IPython  # type: ignore
@@ -11,6 +15,8 @@ from ape import project as default_project
 from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 from ape.utils import _python_version
 from ape.version import version as ape_version  # type: ignore
+
+CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
 
 
 @click.command(
@@ -26,22 +32,55 @@ def cli(cli_ctx, network):
     return console(verbose=verbose)
 
 
-def load_consolerc(namespace):
-    """load and return namespace from consolerc.py if it exists"""
-    consolerc = config.DATA_FOLDER.joinpath("consolerc.py")
+def import_extras_file(file_path) -> ModuleType:
+    """Import a module"""
+    loader = SourceFileLoader(file_path.name[:-3], str(file_path))
+    spec = spec_from_loader(loader.name, loader)
 
-    if consolerc.is_file():
-        module = SourceFileLoader(consolerc.name[:-3], str(consolerc)).load_module()
+    assert spec is not None
 
-        # Look for an initrc function
-        if hasattr(module, "initrc"):
-            # Execute functionality with existing console namespace so the
-            # script can modify things as it needs
-            module.initrc(namespace)
+    module = module_from_spec(spec)
+    loader.exec_module(module)
 
-        return {
-            k: getattr(module, k) for k in dir(module) if k != "initrc" and not k.startswith("_")
-        }
+    return module
+
+
+def load_console_extras(namespace: dict[str, Any]) -> dict[str, Any]:
+    """load and return namespace updates from ape_console_extras.py  files if
+    they exist"""
+    global_extras = config.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
+    project_extras = config.PROJECT_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
+
+    for extras_file in [global_extras, project_extras]:
+        if extras_file.is_file():
+            module = import_extras_file(extras_file)
+            init_extras = getattr(module, "init_extras", None)
+
+            # If found, execute and init_extras() function.
+            if init_extras is not None:
+                # Figure out the kwargs the func is looking for and assemble
+                # from the original namespace
+                func_spec = inspect.getfullargspec(init_extras)
+                init_kwargs: Dict[str, Any] = {k: namespace.get(k) for k in func_spec.args}
+
+                # Execute functionality with existing console namespace as
+                # kwargs.
+                extras = init_extras(**init_kwargs)
+
+                # If init_extras returned a dict expect it to be new symbols
+                if type(extras) == dict:
+                    namespace.update(extras)
+
+            # Add any public symbols from the module into the console namespace
+            for k in dir(module):
+                if k != "init_extras" and not k.startswith("_"):
+                    # Prevent override of existing namespace symbols
+                    if k in namespace:
+                        raise KeyError(f"Namespace conflict (key: {k}) in {extras_file}")
+
+                    namespace[k] = getattr(module, k)
+
+    return namespace
 
 
 def console(project=None, verbose=None, extra_locals=None):
@@ -78,9 +117,9 @@ def console(project=None, verbose=None, extra_locals=None):
     if extra_locals:
         namespace.update(extra_locals)
 
-    rc_symbols = load_consolerc(namespace)
+    console_extras = load_console_extras(namespace)
 
-    if rc_symbols:
-        namespace.update(rc_symbols)
+    if console_extras:
+        namespace.update(console_extras)
 
     IPython.embed(colors="Neutral", banner1=banner, user_ns=namespace)
