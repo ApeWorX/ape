@@ -29,11 +29,10 @@ extras_require = {
         "pandas-stubs>=1.2.0,<2.0",  # NOTE: Needed due to mypy types
     ],
     "doc": [
-        "myst-parser==0.16.0",  # Tools for parsing markdown files in the docs
-        "sphinx-click>=3.0.0,<4.0",  # For documenting CLI
-        "Sphinx>=3.4.3,<4",  # Documentation generator
-        "sphinx-click>=3.0.0",  # Allows autodoc to work for click CLI commands
-        "sphinx_rtd_theme>=0.1.9,<1",  # Readthedocs.org theme
+        "myst-parser>=0.17.0,<0.18",  # Tools for parsing markdown files in the docs
+        "sphinx-click>=3.1.0,<4.0",  # For documenting CLI
+        "Sphinx>=4.4.0,<5.0",  # Documentation generator
+        "sphinx_rtd_theme>=1.0.0,<2",  # Readthedocs.org theme
         "sphinxcontrib-napoleon>=0.7",  # Allow Google-style documentation
     ],
     "release": [  # `release` GitHub Action job uses this
