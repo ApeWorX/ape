@@ -32,10 +32,10 @@ Out[1]: b"\xc0*\xaa9\xb2#\xfe\x8d\n\x0e\\O'\xea\xd9\x08<ul\xc2"
 
 ### Init Function
 
-If you include a function named `init_extras`, it will be executed with the symbols from the existing namespace being provided as keyword arguments.  This allows you to alter the scripts namespace using locals already included in the Ape namespace.  If you return a `dict`, these values will be added to the console namespace.  For example, you could setup an initialized Web3.py object by using one from an existing Ape Provider.
+If you include a function named `ape_init_extras`, it will be executed with the symbols from the existing namespace being provided as keyword arguments.  This allows you to alter the scripts namespace using locals already included in the Ape namespace.  If you return a `dict`, these values will be added to the console namespace.  For example, you could setup an initialized Web3.py object by using one from an existing Ape Provider.
 
 ```python
-def init_extras(chain):
+def ape_init_extras(chain):
     return {"web3": chain.provider._web3}
 ```
 

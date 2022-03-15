@@ -55,26 +55,26 @@ def load_console_extras(namespace: dict[str, Any]) -> dict[str, Any]:
         if not extras_file.is_file():
             continue
             module = import_extras_file(extras_file)
-            init_extras = getattr(module, "init_extras", None)
+            ape_init_extras = getattr(module, "ape_init_extras", None)
 
-            # If found, execute and init_extras() function.
-            if init_extras is not None:
+            # If found, execute and ape_init_extras() function.
+            if ape_init_extras is not None:
                 # Figure out the kwargs the func is looking for and assemble
                 # from the original namespace
-                func_spec = inspect.getfullargspec(init_extras)
+                func_spec = inspect.getfullargspec(ape_init_extras)
                 init_kwargs: Dict[str, Any] = {k: namespace.get(k) for k in func_spec.args}
 
                 # Execute functionality with existing console namespace as
                 # kwargs.
-                extras = init_extras(**init_kwargs)
+                extras = ape_init_extras(**init_kwargs)
 
-                # If init_extras returned a dict expect it to be new symbols
+                # If ape_init_extras returned a dict expect it to be new symbols
                 if isinstance(extras, dict):
                     namespace.update(extras)
 
             # Add any public symbols from the module into the console namespace
             for k in dir(module):
-                if k != "init_extras" and not k.startswith("_"):
+                if k != "ape_init_extras" and not k.startswith("_"):
                     # Prevent override of existing namespace symbols
                     if k in namespace:
                         continue
