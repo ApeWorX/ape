@@ -68,7 +68,7 @@ def load_console_extras(namespace: dict[str, Any]) -> dict[str, Any]:
                 extras = init_extras(**init_kwargs)
 
                 # If init_extras returned a dict expect it to be new symbols
-                if type(extras) == dict:
+                if isinstance(extras, dict):
                     namespace.update(extras)
 
             # Add any public symbols from the module into the console namespace
