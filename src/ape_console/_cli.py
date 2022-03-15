@@ -52,7 +52,8 @@ def load_console_extras(namespace: dict[str, Any]) -> dict[str, Any]:
     project_extras = config.PROJECT_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
 
     for extras_file in [global_extras, project_extras]:
-        if extras_file.is_file():
+        if not extras_file.is_file():
+            continue
             module = import_extras_file(extras_file)
             init_extras = getattr(module, "init_extras", None)
 
@@ -68,7 +69,7 @@ def load_console_extras(namespace: dict[str, Any]) -> dict[str, Any]:
                 extras = init_extras(**init_kwargs)
 
                 # If init_extras returned a dict expect it to be new symbols
-                if type(extras) == dict:
+                if isinstance(extras, dict):
                     namespace.update(extras)
 
             # Add any public symbols from the module into the console namespace
