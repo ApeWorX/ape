@@ -214,8 +214,10 @@ def to_address(value: Union[int, str, bytes]) -> AddressType:
     try:
         hex_address = hexstr_if_str(to_hex, value).lower()
     except AttributeError:
-        raise AddressError("Value must be any string, instead got type {}".format(type(value)))
-    address_hash = encode_hex(keccak(text=remove_0x_prefix(HexStr(hex_address))))
+        raise AddressError(f"Value must be any string, instead got type {type(value)}")
+
+    cleaned_address = remove_0x_prefix(HexStr(hex_address))
+    address_hash = encode_hex(keccak(text=cleaned_address))
 
     checksum_address = add_0x_prefix(
         HexStr(
@@ -225,7 +227,9 @@ def to_address(value: Union[int, str, bytes]) -> AddressType:
             )
         )
     )
-    return AddressType(HexAddress(checksum_address))
+
+    hex_address = HexAddress(checksum_address)
+    return AddressType(hex_address)
 
 
 def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
