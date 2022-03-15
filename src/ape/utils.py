@@ -201,13 +201,15 @@ def expand_environment_variables(contents: str) -> str:
 
 def to_address(value: Union[int, str, bytes]) -> AddressType:
     """
-    Makes a checksum address given a supported format.
+    Make a checksum address given a supported format.
+    Borrowed from ``eth_utils.to_checksum_address()`` but supports
+    non-length 42 addresses.
 
     Args:
         value (Union[int, str, bytes]): The value to convert.
 
     Returns:
-
+        ``AddressType``: The converted address.
     """
     try:
         hex_address = hexstr_if_str(to_hex, value).lower()
