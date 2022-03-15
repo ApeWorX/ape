@@ -96,6 +96,9 @@ class ConfigManager(BaseInterfaceModel):
     deployments: Optional[DeploymentConfigCollection] = None
     """A dict of contract deployments by address and contract type."""
 
+    default_ecosystem: str = "ethereum"
+    """The default ecosystem to use. Defaults to ``"ethereum"``."""
+
     _cached_configs: Dict[str, Dict[str, Any]] = {}
 
     @root_validator(pre=True)
@@ -119,6 +122,7 @@ class ConfigManager(BaseInterfaceModel):
             cache = self._cached_configs[project_name]
             self.name = cache.get("name", "")
             self.version = cache.get("version", "")
+            self.default_ecosystem = cache.get("default_ecosystem", "ethereum")
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
@@ -132,6 +136,10 @@ class ConfigManager(BaseInterfaceModel):
         user_config = load_config(config_file) if config_file.exists() else {}
         self.name = configs["name"] = user_config.pop("name", "")
         self.version = configs["version"] = user_config.pop("version", "")
+
+        self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
+            "default_ecosystem", "ethereum"
+        )
 
         dependencies = user_config.pop("dependencies", []) or []
         if not isinstance(dependencies, list):
@@ -199,6 +207,8 @@ class ConfigManager(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.config.PluginConfig`
         """
+
+        self.load()  # Only loads if it needs to.
 
         if plugin_name not in self._plugin_configs:
             # plugin has no registered config class, so return empty config
