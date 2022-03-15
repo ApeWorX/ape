@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Making Transactions &mdash; ape  documentation</title>
   <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="canonical" href="/ape/userguides/transactions.html" />
@@ -14,6 +17,7 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -54,7 +58,7 @@
 </div>
         </div>
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
-              <p class="caption"><span class="caption-text">User Guides</span></p>
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
@@ -67,7 +71,7 @@
 </ul>
 </li>
 </ul>
-<p class="caption"><span class="caption-text">CLI Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
@@ -78,7 +82,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
@@ -103,55 +107,25 @@
 
       <div class="wy-nav-content">
         <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Making Transactions</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/userguides/transactions.md.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="tex2jax_ignore mathjax_ignore section" id="making-transactions">
-<h1>Making Transactions<a class="headerlink" href="#making-transactions" title="Permalink to this headline">¶</a></h1>
+  <section id="making-transactions">
+<h1>Making Transactions<a class="headerlink" href="#making-transactions" title="Permalink to this headline"></a></h1>
 <p>Regardless of how you are using <code class="docutils literal notranslate"><span class="pre">ape</span></code>, you will likely be making transactions.
 There are various types of transactions you can make with <code class="docutils literal notranslate"><span class="pre">ape</span></code>. A simple example is deploying a contract.</p>
-<div class="section" id="deployment">
-<h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h2>
+<section id="deployment">
+<h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline"></a></h2>
 <p>Deploying a smart contract is a unique type of transaction where we don’t necessarily care about the receipt as much
 as we care about the contract instance. That is why the return value from
 <a class="reference external" href="../methoddocs/api.html?highlight=accountapi#ape.api.accounts.AccountAPI.deploy">the deploy method</a> is a
@@ -165,9 +139,9 @@ as we care about the contract instance. That is why the return value from
     <span class="k">return</span> <span class="n">account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="dynamic-fee-transactions">
-<h2>Dynamic-Fee Transactions<a class="headerlink" href="#dynamic-fee-transactions" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="dynamic-fee-transactions">
+<h2>Dynamic-Fee Transactions<a class="headerlink" href="#dynamic-fee-transactions" title="Permalink to this headline"></a></h2>
 <p>Before <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>, all transactions used a <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>.
 After the London fork of Etheruem, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> got broken up into two values, <code class="docutils literal notranslate"><span class="pre">max_fee</span></code> and <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">ape</span></code> framework supports both types of transactions. By default, transactions use the dynamic-fee model.
@@ -190,9 +164,9 @@ The <code class="docutils literal notranslate"><span class="pre">max_fee</span><
 the value returned from the
 <a class="reference external" href="../methoddocs/api.html?highlight=accountapi#ape.api.providers.ProviderAPI.base_fee">ProviderAPI.base_fee</a> method
 property.</p>
-</div>
-<div class="section" id="static-fee-transactions">
-<h2>Static-Fee Transactions<a class="headerlink" href="#static-fee-transactions" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="static-fee-transactions">
+<h2>Static-Fee Transactions<a class="headerlink" href="#static-fee-transactions" title="Permalink to this headline"></a></h2>
 <p>Static-fee transactions are the transactions that Ethereum used before the London-fork
 (before <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>).
 <strong>However, some applications may still require using static-fee transactions.</strong></p>
@@ -207,34 +181,27 @@ argument <code class="docutils literal notranslate"><span class="pre">type</span
 </pre></div>
 </div>
 <p>When declaring <code class="docutils literal notranslate"><span class="pre">type=&quot;0x0&quot;</span></code> and <em>not</em> specifying a <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> gets set using the provider’s estimation.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../commands/accounts.html" class="btn btn-neutral float-right" title="accounts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="config.html" class="btn btn-neutral float-left" title="Configure Ape" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../commands/accounts.html" class="btn btn-neutral float-right" title="accounts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, ApeWorX LTD.
-
-    </p>
+    <p>&#169; Copyright 2021, ApeWorX LTD.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>

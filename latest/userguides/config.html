@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Configure Ape &mdash; ape  documentation</title>
   <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="canonical" href="/ape/userguides/config.html" />
@@ -14,6 +17,7 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -54,7 +58,7 @@
 </div>
         </div>
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
-              <p class="caption"><span class="caption-text">User Guides</span></p>
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
@@ -72,7 +76,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
 </ul>
-<p class="caption"><span class="caption-text">CLI Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
@@ -83,7 +87,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
@@ -108,55 +112,25 @@
 
       <div class="wy-nav-content">
         <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Configure Ape</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/userguides/config.md.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="tex2jax_ignore mathjax_ignore section" id="configure-ape">
-<h1>Configure Ape<a class="headerlink" href="#configure-ape" title="Permalink to this headline">¶</a></h1>
+  <section id="configure-ape">
+<h1>Configure Ape<a class="headerlink" href="#configure-ape" title="Permalink to this headline"></a></h1>
 <p>An <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file allows you to configure ape. This guide serves as an index of the settings you can include
 in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
-<div class="section" id="contracts-folder">
-<h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Permalink to this headline">¶</a></h2>
+<section id="contracts-folder">
+<h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Permalink to this headline"></a></h2>
 <p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
 This is useful when using a different naming convention, such as <code class="docutils literal notranslate"><span class="pre">src/</span></code> rather than <code class="docutils literal notranslate"><span class="pre">contracts/</span></code>.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span><span class="w"></span>
@@ -167,17 +141,17 @@ This is useful for projects that compile contracts outside their directory.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;~/GlobalContracts&quot;</span><span class="w"></span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="default-ecosystem">
-<h2>Default Ecosystem<a class="headerlink" href="#default-ecosystem" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="default-ecosystem">
+<h2>Default Ecosystem<a class="headerlink" href="#default-ecosystem" title="Permalink to this headline"></a></h2>
 <p>You can change the default ecosystem by including the following:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fantom</span><span class="w"></span>
 </pre></div>
 </div>
 <p>The default ecosystem is <code class="docutils literal notranslate"><span class="pre">ethereum</span></code>.</p>
-</div>
-<div class="section" id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline"></a></h2>
 <p>Configure dependencies for your ape project.
 Ape downloads and caches dependencies in the <code class="docutils literal notranslate"><span class="pre">.ape/packages/&lt;name&gt;/&lt;version-id&gt;</span></code> directory where <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> refers to the name of the dependency and <code class="docutils literal notranslate"><span class="pre">&lt;version-id&gt;</span></code> refers to the version or branch of the package.</p>
 <p>For example:</p>
@@ -227,9 +201,9 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 <li><p>Working on multiple packages at once</p></li>
 <li><p>When there is not a suitable <code class="docutils literal notranslate"><span class="pre">DependencyAPI</span></code> implementation available for downloading your dependency</p></li>
 </ul>
-</div>
-<div class="section" id="deployments">
-<h2>Deployments<a class="headerlink" href="#deployments" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="deployments">
+<h2>Deployments<a class="headerlink" href="#deployments" title="Permalink to this headline"></a></h2>
 <p>Share import deployments to public networks with your teammates:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">deployments</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span><span class="w"></span>
@@ -241,9 +215,9 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 <span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0xc222000cCcbBbaAa444777000111222111222222</span><span class="w"></span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="geth">
-<h2>Geth<a class="headerlink" href="#geth" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="geth">
+<h2>Geth<a class="headerlink" href="#geth" title="Permalink to this headline"></a></h2>
 <p>When using the <code class="docutils literal notranslate"><span class="pre">geth</span></code> provider, you can customize its settings.
 For example, to change the URI for an Ethereum network, do:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span><span class="w"></span>
@@ -252,9 +226,9 @@ For example, to change the URI for an Ethereum network, do:</p>
 <span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5030</span><span class="w"></span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="networks">
-<h2>Networks<a class="headerlink" href="#networks" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="networks">
+<h2>Networks<a class="headerlink" href="#networks" title="Permalink to this headline"></a></h2>
 <p>Set default network and network providers:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet-fork</span><span class="w"></span>
@@ -262,9 +236,9 @@ For example, to change the URI for an Ethereum network, do:</p>
 <span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hardhat</span><span class="w"></span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="plugins">
-<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="plugins">
+<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline"></a></h2>
 <p>Set which plugins you want to always use:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span><span class="w"></span>
@@ -276,43 +250,36 @@ For example, to change the URI for an Ethereum network, do:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install
 </pre></div>
 </div>
-</div>
-<div class="section" id="testing">
-<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline"></a></h2>
 <p>Configure your test accounts:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span><span class="w"></span>
 <span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="transactions.html" class="btn btn-neutral float-right" title="Making Transactions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="plugins.html" class="btn btn-neutral float-left" title="Developing Plugins" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="transactions.html" class="btn btn-neutral float-right" title="Making Transactions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, ApeWorX LTD.
-
-    </p>
+    <p>&#169; Copyright 2021, ApeWorX LTD.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>

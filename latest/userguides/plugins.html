@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Developing Plugins &mdash; ape  documentation</title>
   <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="canonical" href="/ape/userguides/plugins.html" />
@@ -14,6 +17,7 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -54,7 +58,7 @@
 </div>
         </div>
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
-              <p class="caption"><span class="caption-text">User Guides</span></p>
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
@@ -76,7 +80,7 @@
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
 </ul>
-<p class="caption"><span class="caption-text">CLI Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
@@ -87,7 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
@@ -112,51 +116,21 @@
 
       <div class="wy-nav-content">
         <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Developing Plugins</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/userguides/plugins.md.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="tex2jax_ignore mathjax_ignore section" id="developing-plugins">
-<h1>Developing Plugins<a class="headerlink" href="#developing-plugins" title="Permalink to this headline">¶</a></h1>
+  <section id="developing-plugins">
+<h1>Developing Plugins<a class="headerlink" href="#developing-plugins" title="Permalink to this headline"></a></h1>
 <p>Your plugin project can be any type of python project, so long as its package name starts with <code class="docutils literal notranslate"><span class="pre">ape_</span></code> (such as
 <code class="docutils literal notranslate"><span class="pre">ape_ethereum</span></code>). To create an <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugin, implement one or more API classes from the the <code class="docutils literal notranslate"><span class="pre">ape.api</span></code> namespace or add
 key <code class="docutils literal notranslate"><span class="pre">ape_cli_subcommands</span></code> to your entry-points list in your project’s <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>, depending on what type of plugin you
@@ -168,16 +142,16 @@ want to create. This guide is intended to assist in both of those use-cases.</p>
 <li><p><a class="reference external" href="https://github.com/apeworx/ape-trezor">the Trezor plugin</a>, an example <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code></p></li>
 <li><p><a class="reference external" href="https://github.com/apeworx/ape-tokens">the Tokenlists plugin</a>, an example CLI Extension</p></li>
 </ul>
-<div class="section" id="initialize-a-plugin-project">
-<h2>Initialize a Plugin Project<a class="headerlink" href="#initialize-a-plugin-project" title="Permalink to this headline">¶</a></h2>
+<section id="initialize-a-plugin-project">
+<h2>Initialize a Plugin Project<a class="headerlink" href="#initialize-a-plugin-project" title="Permalink to this headline"></a></h2>
 <p>As previously mentioned, a plugin project is merely a python project. However, you can optionally use this
 <a class="reference external" href="https://github.com/ApeWorX/project-template">project template</a> for initializing your plugin. <strong>NOTE</strong>: this template
 is primarily designed for plugins built within the ApeWorX team organization; not everything may apply. It is okay to
 delete anything that does not work or that you don’t find helpful. The template may be good to follow if you want to
 keep your plugin of similar quality to plugins developed by the ApeWorX team.</p>
-</div>
-<div class="section" id="implementing-api-classes">
-<h2>Implementing API Classes<a class="headerlink" href="#implementing-api-classes" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="implementing-api-classes">
+<h2>Implementing API Classes<a class="headerlink" href="#implementing-api-classes" title="Permalink to this headline"></a></h2>
 <p>API classes (classes from the <code class="docutils literal notranslate"><span class="pre">ape.api</span></code> namespace) are primary composed of abstract methods and properties that plugins
 must implement. A benefit of the plugin system is that each plugin can implement these however they need, so long as
 they conform to the API interface. Two plugins with the same API may do entirely different things and yet be
@@ -197,8 +171,8 @@ will fail to work properly if you do not implement all the abstract methods.</p>
     <span class="sd">&quot;&quot;&quot;Implement rest of abstract methods&quot;&quot;&quot;</span>
 </pre></div>
 </div>
-<div class="section" id="registering-api-classes">
-<h3>Registering API Classes<a class="headerlink" href="#registering-api-classes" title="Permalink to this headline">¶</a></h3>
+<section id="registering-api-classes">
+<h3>Registering API Classes<a class="headerlink" href="#registering-api-classes" title="Permalink to this headline"></a></h3>
 <p>Once you have finished implementing your API classes, you need to register them using the
 <a class="reference external" href="../methoddocs/plugins.html#ape.plugins.register">&#64;plugins.register</a> method decorator.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">plugins</span>
@@ -214,9 +188,9 @@ will fail to work properly if you do not implement all the abstract methods.</p>
 start with <code class="docutils literal notranslate"><span class="pre">ape_</span></code>. Then, it will loop through these potential <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugins and see which ones have created a plugin
 type registration. If the plugin type registration is found, then <code class="docutils literal notranslate"><span class="pre">ape</span></code> knows this package is a plugin and attempts to
 process it according to its registration interface.</p>
-</div>
-<div class="section" id="cli-plugins">
-<h3>CLI Plugins<a class="headerlink" href="#cli-plugins" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="cli-plugins">
+<h3>CLI Plugins<a class="headerlink" href="#cli-plugins" title="Permalink to this headline"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">ape</span></code> CLI is built using the python package <a class="reference external" href="https://palletsprojects.com/p/click/">click</a>. To create a CLI plugin,
 create any type of <code class="docutils literal notranslate"><span class="pre">click</span></code> command (such as a <code class="docutils literal notranslate"><span class="pre">click.group</span></code> or a <code class="docutils literal notranslate"><span class="pre">click.command</span></code>).</p>
 <p><code class="docutils literal notranslate"><span class="pre">_cli.py</span></code>:</p>
@@ -259,10 +233,10 @@ a CLI argument for specifying an existing account alias:</p>
   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2"> is an existing account!&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="using-plugins">
-<h2>Using Plugins<a class="headerlink" href="#using-plugins" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="using-plugins">
+<h2>Using Plugins<a class="headerlink" href="#using-plugins" title="Permalink to this headline"></a></h2>
 <p>Once you have finished implementing and registering your API classes, they will now be part of <code class="docutils literal notranslate"><span class="pre">ape</span></code>. For example,
 if you implemented the <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code>, you can now use accounts created from this plugin. The top-level <code class="docutils literal notranslate"><span class="pre">ape</span></code> manager
 classes are indifferent about the source of the plugin.</p>
@@ -286,21 +260,21 @@ uses the <a class="reference external" href="../methoddocs/cli.html?highlight=ne
   <span class="o">...</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="logging">
-<h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="logging">
+<h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline"></a></h2>
 <p>Use Ape’s logger in your plugins or scripts by importing it from the <code class="docutils literal notranslate"><span class="pre">ape.logging</span></code> module or
 by using it off the CLI context (from using the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code> decorator).</p>
-<div class="section" id="import-the-logger-from-the-logging-module">
-<h3>Import the logger from the logging module<a class="headerlink" href="#import-the-logger-from-the-logging-module" title="Permalink to this headline">¶</a></h3>
+<section id="import-the-logger-from-the-logging-module">
+<h3>Import the logger from the logging module<a class="headerlink" href="#import-the-logger-from-the-logging-module" title="Permalink to this headline"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.logging</span> <span class="kn">import</span> <span class="n">logger</span>
 
 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;This is a log message&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="use-the-logger-from-the-ape-cli-context">
-<h3>Use the logger from the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code><a class="headerlink" href="#use-the-logger-from-the-ape-cli-context" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="use-the-logger-from-the-ape-cli-context">
+<h3>Use the logger from the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code><a class="headerlink" href="#use-the-logger-from-the-ape-cli-context" title="Permalink to this headline"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">ape_cli_context</span>
 
 <span class="nd">@ape_cli_context</span><span class="p">()</span>
@@ -308,35 +282,28 @@ by using it off the CLI context (from using the <code class="docutils literal no
   <span class="n">cli_ctx</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;my log message&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="config.html" class="btn btn-neutral float-right" title="Configure Ape" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="projects.html" class="btn btn-neutral float-left" title="Developing Projects with Ape" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-right" title="Configure Ape" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, ApeWorX LTD.
-
-    </p>
+    <p>&#169; Copyright 2021, ApeWorX LTD.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>

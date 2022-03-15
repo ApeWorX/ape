@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>run &mdash; ape  documentation</title>
   <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="canonical" href="/ape/commands/run.html" />
@@ -14,6 +17,7 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -54,7 +58,7 @@
 </div>
         </div>
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
-              <p class="caption"><span class="caption-text">User Guides</span></p>
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
@@ -62,7 +66,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Making Transactions</a></li>
 </ul>
-<p class="caption"><span class="caption-text">CLI Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="accounts.html">accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="compile.html">compile</a></li>
@@ -76,7 +80,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="test.html">test</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
@@ -101,53 +105,23 @@
 
       <div class="wy-nav-content">
         <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>run</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/commands/run.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="run">
-<h1>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="run">
-<h2>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h2>
+  <section id="run">
+<h1>run<a class="headerlink" href="#run" title="Permalink to this headline"></a></h1>
+<section id="run">
+<h2>run<a class="headerlink" href="#run" title="Permalink to this headline"></a></h2>
 <p>Run scripts from the “scripts/” folder of a project. A script must either define a <code class="docutils literal notranslate"><span class="pre">main()</span></code>
 method, or define a command named <code class="docutils literal notranslate"><span class="pre">cli</span></code> that is a <code class="docutils literal notranslate"><span class="pre">click.Command</span></code> or <code class="docutils literal notranslate"><span class="pre">click.Group</span></code> object.
 Scripts with only a <code class="docutils literal notranslate"><span class="pre">main()</span></code> method will be called with a network option given to the command.
@@ -158,39 +132,32 @@ Scripts with a <code class="docutils literal notranslate"><span class="pre">cli<
 </div>
 <p class="rubric">Options</p>
 <dl class="std option">
-<dt id="cmdoption-run-i">
-<span id="cmdoption-run-interactive"></span><code class="sig-name descname"><span class="pre">-i</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--interactive</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-run-i" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-run-i">
+<span id="cmdoption-run-interactive"></span><span class="sig-name descname"><span class="pre">-i</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--interactive</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-run-i" title="Permalink to this definition"></a></dt>
 <dd><p>Drop into interactive console session after running</p>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="test.html" class="btn btn-neutral float-right" title="test" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="plugins.html" class="btn btn-neutral float-left" title="plugins" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="test.html" class="btn btn-neutral float-right" title="test" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, ApeWorX LTD.
-
-    </p>
+    <p>&#169; Copyright 2021, ApeWorX LTD.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>

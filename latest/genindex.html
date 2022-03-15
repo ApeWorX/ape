@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="canonical" href="/ape/genindex.html" />
@@ -14,6 +16,7 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -52,7 +55,7 @@
 </div>
         </div>
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
-              <p class="caption"><span class="caption-text">User Guides</span></p>
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="userguides/quickstart.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="userguides/projects.html">Developing Projects with Ape</a></li>
@@ -60,7 +63,7 @@
 <li class="toctree-l1"><a class="reference internal" href="userguides/config.html">Configure Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="userguides/transactions.html">Making Transactions</a></li>
 </ul>
-<p class="caption"><span class="caption-text">CLI Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="commands/accounts.html">accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands/compile.html">compile</a></li>
@@ -71,7 +74,7 @@
 <li class="toctree-l1"><a class="reference internal" href="commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands/test.html">test</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/ape.html">ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methoddocs/api.html">ape.api</a></li>
@@ -96,42 +99,13 @@
 
       <div class="wy-nav-content">
         <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Index</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -181,7 +155,7 @@
 </li>
       </ul></li>
       <li>
-    --ecosystem &lt;ecosystem_filter&gt;
+    --ecosystem
 
       <ul>
         <li><a href="commands/networks.html#cmdoption-networks-list-ecosystem">networks-list command line option</a>
@@ -195,14 +169,14 @@
 </li>
       </ul></li>
       <li>
-    --format &lt;output_format&gt;
+    --format
 
       <ul>
         <li><a href="commands/networks.html#cmdoption-networks-list-format">networks-list command line option</a>
 </li>
       </ul></li>
       <li>
-    --github &lt;github-org/repo&gt;
+    --github
 
       <ul>
         <li><a href="commands/init.html#cmdoption-init-github">init command line option</a>
@@ -216,21 +190,16 @@
 </li>
       </ul></li>
       <li>
-    --network &lt;network&gt;
+    --network
 
       <ul>
         <li><a href="commands/console.html#cmdoption-console-network">console command line option</a>
 </li>
-      </ul></li>
-      <li>
-    --network &lt;network_filter&gt;
-
-      <ul>
         <li><a href="commands/networks.html#cmdoption-networks-list-network">networks-list command line option</a>
 </li>
       </ul></li>
       <li>
-    --provider &lt;provider_filter&gt;
+    --provider
 
       <ul>
         <li><a href="commands/networks.html#cmdoption-networks-list-provider">networks-list command line option</a>
@@ -251,7 +220,7 @@
 </li>
       </ul></li>
       <li>
-    --verbosity &lt;LVL&gt;
+    --verbosity
 
       <ul>
         <li><a href="commands/accounts.html#cmdoption-accounts-change-password-v">accounts-change-password command line option</a>
@@ -405,6 +374,46 @@
         <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.__getitem__">(ape.managers.chain.BlockContainer method)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.__hash__">__hash__ (ape.api.accounts.AccountAPI attribute)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.__hash__">(ape.api.accounts.AccountContainerAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.accounts.TestAccountAPI.__hash__">(ape.api.accounts.TestAccountAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.accounts.TestAccountContainerAPI.__hash__">(ape.api.accounts.TestAccountContainerAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.config.GenericConfig.__hash__">(ape.api.config.GenericConfig attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.config.PluginConfig.__hash__">(ape.api.config.PluginConfig attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.__hash__">(ape.api.networks.EcosystemAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.__hash__">(ape.api.networks.NetworkAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.query.AccountQuery.__hash__">(ape.api.query.AccountQuery attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.query.BlockQuery.__hash__">(ape.api.query.BlockQuery attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.query.ContractEventQuery.__hash__">(ape.api.query.ContractEventQuery attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.query.ContractMethodQuery.__hash__">(ape.api.query.ContractMethodQuery attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.query.QueryAPI.__hash__">(ape.api.query.QueryAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.__hash__">(ape.managers.config.ConfigManager attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.config.DeploymentConfig.__hash__">(ape.managers.config.DeploymentConfig attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.ApeProject.__hash__">(ape.managers.project.ApeProject attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.GithubDependency.__hash__">(ape.managers.project.GithubDependency attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.LocalDependency.__hash__">(ape.managers.project.LocalDependency attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.query.DefaultQueryProvider.__hash__">(ape.managers.query.DefaultQueryProvider attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.networks.ProviderContextManager.__init__">__init__() (ape.api.networks.ProviderContextManager method)</a>
@@ -445,7 +454,7 @@
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.options.ApeCliContextObject.abort">abort() (ape.cli.options.ApeCliContextObject static method)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.account_history">account_history() (ape.managers.chain.ChainManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.account_history">account_history (ape.managers.chain.ChainManager property)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.options.account_option">account_option() (in module ape.cli.options)</a>
 </li>
@@ -465,15 +474,17 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.query.AccountQuery">AccountQuery (class in ape.api.query)</a>
 </li>
-      <li><a href="methoddocs/ape.html#ape.accounts">accounts (in module ape)</a>
+      <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.accounts">accounts (ape.api.accounts.AccountContainerAPI property)</a>
+
+      <ul>
+        <li><a href="methoddocs/ape.html#ape.accounts">(in module ape)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.accounts">accounts() (ape.api.accounts.AccountContainerAPI property)</a>
-</li>
+      </ul></li>
       <li>
     accounts-change-password command line option
 
       <ul>
-        <li><a href="commands/accounts.html#cmdoption-accounts-change-password-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/accounts.html#cmdoption-accounts-change-password-v">--verbosity</a>
 </li>
         <li><a href="commands/accounts.html#cmdoption-accounts-change-password-v">-v</a>
 </li>
@@ -484,7 +495,7 @@
     accounts-delete command line option
 
       <ul>
-        <li><a href="commands/accounts.html#cmdoption-accounts-delete-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/accounts.html#cmdoption-accounts-delete-v">--verbosity</a>
 </li>
         <li><a href="commands/accounts.html#cmdoption-accounts-delete-v">-v</a>
 </li>
@@ -495,7 +506,7 @@
     accounts-generate command line option
 
       <ul>
-        <li><a href="commands/accounts.html#cmdoption-accounts-generate-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/accounts.html#cmdoption-accounts-generate-v">--verbosity</a>
 </li>
         <li><a href="commands/accounts.html#cmdoption-accounts-generate-v">-v</a>
 </li>
@@ -506,7 +517,7 @@
     accounts-import command line option
 
       <ul>
-        <li><a href="commands/accounts.html#cmdoption-accounts-import-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/accounts.html#cmdoption-accounts-import-v">--verbosity</a>
 </li>
         <li><a href="commands/accounts.html#cmdoption-accounts-import-v">-v</a>
 </li>
@@ -519,29 +530,29 @@
       <ul>
         <li><a href="commands/accounts.html#cmdoption-accounts-list-all">--all</a>
 </li>
-        <li><a href="commands/accounts.html#cmdoption-accounts-list-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/accounts.html#cmdoption-accounts-list-v">--verbosity</a>
 </li>
         <li><a href="commands/accounts.html#cmdoption-accounts-list-v">-v</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.AccountsError">AccountsError</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.active_provider">active_provider() (ape.managers.networks.NetworkManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.active_provider">active_provider (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.add_network">add_network() (ape.api.networks.EcosystemAPI method)</a>
 </li>
-      <li><a href="methoddocs/utils.html#ape.utils.GeneratedDevAccount.address">address (ape.utils.GeneratedDevAccount attribute)</a>
-</li>
-      <li><a href="methoddocs/api.html#ape.api.address.Address">Address (class in ape.api.address)</a>
-</li>
-      <li><a href="methoddocs/api.html#ape.api.address.Address.address">address() (ape.api.address.Address property)</a>
+      <li><a href="methoddocs/api.html#ape.api.address.Address.address">address (ape.api.address.Address property)</a>
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.address">(ape.api.address.BaseAddress property)</a>
 </li>
         <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance.address">(ape.contracts.base.ContractInstance property)</a>
 </li>
+        <li><a href="methoddocs/utils.html#ape.utils.GeneratedDevAccount.address">(ape.utils.GeneratedDevAccount attribute)</a>
+</li>
       </ul></li>
+      <li><a href="methoddocs/api.html#ape.api.address.Address">Address (class in ape.api.address)</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.AddressAPIConverter">AddressAPIConverter (class in ape.managers.converters)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.AddressError">AddressError</a>
@@ -559,13 +570,13 @@
         <li><a href="commands/accounts.html#cmdoption-accounts-import-arg-ALIAS">accounts-import command line option</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/cli.html#ape.cli.choices.Alias">Alias (class in ape.cli.choices)</a>
+      <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.alias">alias (ape.api.accounts.AccountAPI property)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.alias">alias() (ape.api.accounts.AccountAPI property)</a>
+      <li><a href="methoddocs/cli.html#ape.cli.choices.Alias">Alias (class in ape.cli.choices)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.AliasAlreadyInUseError">AliasAlreadyInUseError</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.aliases">aliases() (ape.api.accounts.AccountContainerAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.aliases">aliases (ape.api.accounts.AccountContainerAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.accounts.AccountManager.aliases">(ape.managers.accounts.AccountManager property)</a>
@@ -867,9 +878,9 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.balance">balance() (ape.api.address.BaseAddress property)</a>
+      <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.balance">balance (ape.api.address.BaseAddress property)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.base_fee">base_fee() (ape.api.providers.ProviderAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.base_fee">base_fee (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.base_fee">(ape.api.providers.Web3Provider property)</a>
@@ -881,7 +892,7 @@
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.BaseInterfaceModel">BaseInterfaceModel (class in ape.utils)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.block_time">block_time() (ape.api.networks.NetworkAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.block_time">block_time (ape.api.networks.NetworkAPI property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.BlockAPI">BlockAPI (class in ape.api.providers)</a>
 </li>
@@ -897,7 +908,7 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.query.BlockQuery">BlockQuery (class in ape.api.query)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.blocks">blocks() (ape.managers.chain.ChainManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.blocks">blocks (ape.managers.chain.ChainManager property)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.signatures.SignableMessage.body">body (ape.types.signatures.SignableMessage attribute)</a>
 </li>
@@ -911,7 +922,7 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.cached_manifest">cached_manifest() (ape.api.projects.DependencyAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.cached_manifest">cached_manifest (ape.api.projects.DependencyAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.cached_manifest">(ape.api.projects.ProjectAPI property)</a>
@@ -921,7 +932,7 @@
 </li>
       <li><a href="methoddocs/ape.html#ape.chain">chain (in module ape)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.chain_id">chain_id() (ape.api.networks.NetworkAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.chain_id">chain_id (ape.api.networks.NetworkAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.chain_id">(ape.api.providers.ProviderAPI property)</a>
@@ -937,15 +948,15 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.check_signature">check_signature() (ape.api.accounts.AccountAPI method)</a>
 </li>
-      <li><a href="methoddocs/cli.html#ape.cli.choices.AccountAliasPromptChoice.choices">choices() (ape.cli.choices.AccountAliasPromptChoice property)</a>
+      <li><a href="methoddocs/cli.html#ape.cli.choices.AccountAliasPromptChoice.choices">choices (ape.cli.choices.AccountAliasPromptChoice property)</a>
 
       <ul>
         <li><a href="methoddocs/cli.html#ape.cli.choices.Alias.choices">(ape.cli.choices.Alias property)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.code">code() (ape.api.address.BaseAddress property)</a>
+      <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.code">code (ape.api.address.BaseAddress property)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.codesize">codesize() (ape.api.address.BaseAddress property)</a>
+      <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.codesize">codesize (ape.api.address.BaseAddress property)</a>
 </li>
       <li>
     compile command line option
@@ -955,7 +966,7 @@
 </li>
         <li><a href="commands/compile.html#cmdoption-compile-s">--size</a>
 </li>
-        <li><a href="commands/compile.html#cmdoption-compile-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/compile.html#cmdoption-compile-v">--verbosity</a>
 </li>
         <li><a href="commands/compile.html#cmdoption-compile-f">-f</a>
 </li>
@@ -972,7 +983,7 @@
         <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager.compile">(ape.managers.compilers.CompilerManager method)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.compiler_data">compiler_data() (ape.managers.project.ProjectManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.compiler_data">compiler_data (ape.managers.project.ProjectManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.compiler.CompilerAPI">CompilerAPI (class in ape.api.compiler)</a>
 </li>
@@ -984,11 +995,7 @@
 </li>
       <li><a href="methoddocs/ape.html#ape.compilers">compilers (in module ape)</a>
 </li>
-      <li><a href="methoddocs/plugins.html#ape.plugins.config.Config">Config (class in ape.plugins.config)</a>
-</li>
-      <li><a href="methoddocs/ape.html#ape.config">config (in module ape)</a>
-</li>
-      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.config">config() (ape.api.networks.EcosystemAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.config">config (ape.api.networks.EcosystemAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.config">(ape.api.networks.NetworkAPI property)</a>
@@ -996,6 +1003,10 @@
         <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.config">(ape.api.providers.ProviderAPI property)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.config.Config">Config (class in ape.plugins.config)</a>
+</li>
+      <li><a href="methoddocs/ape.html#ape.config">config (in module ape)</a>
+</li>
       <li><a href="methoddocs/plugins.html#ape.plugins.config.Config.config_class">config_class() (ape.plugins.config.Config method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.config.ConfigEnum">ConfigEnum (class in ape.api.config)</a>
@@ -1006,7 +1017,7 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ConfirmationsProgressBar">ConfirmationsProgressBar (class in ape.api.providers)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.ConfirmationsProgressBar.confs">confs() (ape.api.providers.ConfirmationsProgressBar property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ConfirmationsProgressBar.confs">confs (ape.api.providers.ConfirmationsProgressBar property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1016,20 +1027,20 @@
         <li><a href="methoddocs/api.html#ape.api.providers.SubprocessProvider.connect">(ape.api.providers.SubprocessProvider method)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.connection_str">connection_str() (ape.api.providers.UpstreamProvider property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.connection_str">connection_str (ape.api.providers.UpstreamProvider property)</a>
 </li>
       <li>
     console command line option
 
       <ul>
-        <li><a href="commands/console.html#cmdoption-console-network">--network &lt;network&gt;</a>
+        <li><a href="commands/console.html#cmdoption-console-network">--network</a>
 </li>
-        <li><a href="commands/console.html#cmdoption-console-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/console.html#cmdoption-console-v">--verbosity</a>
 </li>
         <li><a href="commands/console.html#cmdoption-console-v">-v</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/managers.html#ape.managers.accounts.AccountManager.containers">containers() (ape.managers.accounts.AccountManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.accounts.AccountManager.containers">containers (ape.managers.accounts.AccountManager property)</a>
 </li>
       <li><a href="methoddocs/ape.html#ape.Contract">Contract() (in module ape)</a>
 </li>
@@ -1051,7 +1062,7 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.query.ContractMethodQuery">ContractMethodQuery (class in ape.api.query)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.contracts">contracts() (ape.managers.project.ProjectManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.contracts">contracts (ape.managers.project.ProjectManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.contracts_folder">contracts_folder (ape.api.projects.DependencyAPI attribute)</a>
 
@@ -1060,9 +1071,9 @@
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.contracts_folder">(ape.managers.config.ConfigManager attribute)</a>
 </li>
-      </ul></li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.contracts_folder">contracts_folder() (ape.managers.project.ProjectManager property)</a>
+        <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.contracts_folder">(ape.managers.project.ProjectManager property)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ConversionError">ConversionError</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.ConversionManager">ConversionManager (class in ape.managers.converters)</a>
@@ -1128,25 +1139,27 @@
       <li><a href="methoddocs/exceptions.html#ape.exceptions.DecodingError">DecodingError</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.default_ecosystem">default_ecosystem (ape.managers.config.ConfigManager attribute)</a>
+
+      <ul>
+        <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.default_ecosystem">(ape.managers.networks.NetworkManager property)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.default_ecosystem">default_ecosystem() (ape.managers.networks.NetworkManager property)</a>
+      </ul></li>
+      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.default_network">default_network (ape.api.networks.EcosystemAPI property)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.default_network">default_network() (ape.api.networks.EcosystemAPI property)</a>
-</li>
-      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.default_provider">default_provider() (ape.api.networks.NetworkAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.default_provider">default_provider (ape.api.networks.NetworkAPI property)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.query.DefaultQueryProvider">DefaultQueryProvider (class in ape.managers.query)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.dependencies">dependencies (ape.managers.config.ConfigManager attribute)</a>
-</li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.dependencies">dependencies() (ape.managers.project.ProjectManager property)</a>
 
       <ul>
-        <li><a href="methoddocs/plugins.html#ape.plugins.project.DependencyPlugin.dependencies">(ape.plugins.project.DependencyPlugin method)</a>
+        <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.dependencies">(ape.managers.project.ProjectManager property)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.project.DependencyPlugin.dependencies">dependencies() (ape.plugins.project.DependencyPlugin method)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI">DependencyAPI (class in ape.api.projects)</a>
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.project.DependencyPlugin">DependencyPlugin (class in ape.plugins.project)</a>
@@ -1175,19 +1188,17 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.ecosystem">ecosystem (ape.api.networks.NetworkAPI attribute)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.ecosystem_names">ecosystem_names() (ape.managers.networks.NetworkManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.ecosystem_names">ecosystem_names (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI">EcosystemAPI (class in ape.api.networks)</a>
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.network.EcosystemPlugin">EcosystemPlugin (class in ape.plugins.network)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.ecosystems">ecosystems() (ape.managers.networks.NetworkManager property)</a>
-
-      <ul>
-        <li><a href="methoddocs/plugins.html#ape.plugins.network.EcosystemPlugin.ecosystems">(ape.plugins.network.EcosystemPlugin method)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.ecosystems">ecosystems (ape.managers.networks.NetworkManager property)</a>
 </li>
-      </ul></li>
-      <li><a href="methoddocs/managers.html#ape.managers.query.QueryManager.engines">engines() (ape.managers.query.QueryManager property)</a>
+      <li><a href="methoddocs/plugins.html#ape.plugins.network.EcosystemPlugin.ecosystems">ecosystems() (ape.plugins.network.EcosystemPlugin method)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.query.QueryManager.engines">engines (ape.managers.query.QueryManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.estimate_gas_cost">estimate_gas_cost() (ape.api.providers.ProviderAPI method)</a>
 
@@ -1209,7 +1220,7 @@
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.expand_environment_variables">expand_environment_variables() (in module ape.utils)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.explorer">explorer() (ape.api.networks.NetworkAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.explorer">explorer (ape.api.networks.NetworkAPI property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.explorers.ExplorerAPI">ExplorerAPI (class in ape.api.explorers)</a>
 </li>
@@ -1256,7 +1267,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/utils.html#ape.utils.gas_estimation_error_message">gas_estimation_error_message() (in module ape.utils)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.gas_price">gas_price() (ape.api.providers.ProviderAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.gas_price">gas_price (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.gas_price">(ape.api.providers.Web3Provider property)</a>
@@ -1356,13 +1367,13 @@
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.head">head() (ape.managers.chain.BlockContainer property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.head">head (ape.managers.chain.BlockContainer property)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.signatures.SignableMessage.header">header (ape.types.signatures.SignableMessage attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.height">height() (ape.managers.chain.BlockContainer property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.height">height (ape.managers.chain.BlockContainer property)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.HexAddressConverter">HexAddressConverter (class in ape.managers.converters)</a>
 </li>
@@ -1380,22 +1391,22 @@
     init command line option
 
       <ul>
-        <li><a href="commands/init.html#cmdoption-init-github">--github &lt;github-org/repo&gt;</a>
+        <li><a href="commands/init.html#cmdoption-init-github">--github</a>
 </li>
-        <li><a href="commands/init.html#cmdoption-init-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/init.html#cmdoption-init-v">--verbosity</a>
 </li>
         <li><a href="commands/init.html#cmdoption-init-v">-v</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.injected_before_use">injected_before_use (class in ape.utils)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.interfaces_folder">interfaces_folder() (ape.managers.project.ProjectManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.interfaces_folder">interfaces_folder (ape.managers.project.ProjectManager property)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.commands.NetworkBoundCommand.invoke">invoke() (ape.cli.commands.NetworkBoundCommand method)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.SubprocessProvider.is_connected">is_connected() (ape.api.providers.SubprocessProvider property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.SubprocessProvider.is_connected">is_connected (ape.api.providers.SubprocessProvider property)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.is_contract">is_contract() (ape.api.address.BaseAddress property)</a>
+      <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.is_contract">is_contract (ape.api.address.BaseAddress property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1415,7 +1426,7 @@
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.ConversionManager.is_type">is_type() (ape.managers.converters.ConversionManager method)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.is_valid">is_valid() (ape.api.projects.ProjectAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.is_valid">is_valid (ape.api.projects.ProjectAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.project.ApeProject.is_valid">(ape.managers.project.ApeProject property)</a>
@@ -1461,7 +1472,7 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.manifest_cachefile">manifest_cachefile() (ape.api.projects.ProjectAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.manifest_cachefile">manifest_cachefile (ape.api.projects.ProjectAPI property)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.signatures.MessageSignature">MessageSignature (class in ape.types.signatures)</a>
 </li>
@@ -1570,11 +1581,11 @@
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.network">network (ape.api.providers.ProviderAPI attribute)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.network_data">network_data() (ape.managers.networks.NetworkManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.network_data">network_data (ape.managers.networks.NetworkManager property)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.network_id">network_id() (ape.api.networks.NetworkAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.network_id">network_id (ape.api.networks.NetworkAPI property)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.network_names">network_names() (ape.managers.networks.NetworkManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.network_names">network_names (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.options.network_option">network_option() (in module ape.cli.options)</a>
 </li>
@@ -1594,38 +1605,38 @@
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.network.NetworkPlugin">NetworkPlugin (class in ape.plugins.network)</a>
 </li>
-      <li><a href="methoddocs/ape.html#ape.networks">networks (in module ape)</a>
-</li>
-      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.networks">networks() (ape.api.networks.EcosystemAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.networks">networks (ape.api.networks.EcosystemAPI property)</a>
 
       <ul>
-        <li><a href="methoddocs/plugins.html#ape.plugins.network.NetworkPlugin.networks">(ape.plugins.network.NetworkPlugin method)</a>
+        <li><a href="methoddocs/ape.html#ape.networks">(in module ape)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.network.NetworkPlugin.networks">networks() (ape.plugins.network.NetworkPlugin method)</a>
+</li>
       <li>
     networks-list command line option
 
       <ul>
-        <li><a href="commands/networks.html#cmdoption-networks-list-ecosystem">--ecosystem &lt;ecosystem_filter&gt;</a>
+        <li><a href="commands/networks.html#cmdoption-networks-list-ecosystem">--ecosystem</a>
 </li>
-        <li><a href="commands/networks.html#cmdoption-networks-list-format">--format &lt;output_format&gt;</a>
+        <li><a href="commands/networks.html#cmdoption-networks-list-format">--format</a>
 </li>
-        <li><a href="commands/networks.html#cmdoption-networks-list-network">--network &lt;network_filter&gt;</a>
+        <li><a href="commands/networks.html#cmdoption-networks-list-network">--network</a>
 </li>
-        <li><a href="commands/networks.html#cmdoption-networks-list-provider">--provider &lt;provider_filter&gt;</a>
+        <li><a href="commands/networks.html#cmdoption-networks-list-provider">--provider</a>
 </li>
-        <li><a href="commands/networks.html#cmdoption-networks-list-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/networks.html#cmdoption-networks-list-v">--verbosity</a>
 </li>
         <li><a href="commands/networks.html#cmdoption-networks-list-v">-v</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.networks_yaml">networks_yaml() (ape.managers.networks.NetworkManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.networks_yaml">networks_yaml (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.TransactionStatusEnum.NO_ERROR">NO_ERROR (ape.api.providers.TransactionStatusEnum attribute)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.arguments.non_existing_alias_argument">non_existing_alias_argument() (in module ape.cli.arguments)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.nonce">nonce() (ape.api.address.BaseAddress property)</a>
+      <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.nonce">nonce (ape.api.address.BaseAddress property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1659,7 +1670,7 @@
       </ul></li>
       <li><a href="methoddocs/cli.html#ape.cli.paramtype.Path">Path (class in ape.cli.paramtype)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.pending_timestamp">pending_timestamp() (ape.managers.chain.ChainManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.pending_timestamp">pending_timestamp (ape.managers.chain.ChainManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.query.QueryAPI.perform_query">perform_query() (ape.api.query.QueryAPI method)</a>
 
@@ -1668,7 +1679,7 @@
 </li>
       </ul></li>
       <li>
-    PLUGIN-NAMES or path/to/project-dir
+    PLUGIN-NAMES
 
       <ul>
         <li><a href="commands/plugins.html#cmdoption-plugins-install-arg-PLUGIN-NAMES">plugins-install command line option</a>
@@ -1686,7 +1697,7 @@
       <ul>
         <li><a href="commands/plugins.html#cmdoption-plugins-install-U">--upgrade</a>
 </li>
-        <li><a href="commands/plugins.html#cmdoption-plugins-install-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/plugins.html#cmdoption-plugins-install-v">--verbosity</a>
 </li>
         <li><a href="commands/plugins.html#cmdoption-plugins-install-y">--yes</a>
 </li>
@@ -1696,7 +1707,7 @@
 </li>
         <li><a href="commands/plugins.html#cmdoption-plugins-install-y">-y</a>
 </li>
-        <li><a href="commands/plugins.html#cmdoption-plugins-install-arg-PLUGIN-NAMES">PLUGIN-NAMES or path/to/project-dir</a>
+        <li><a href="commands/plugins.html#cmdoption-plugins-install-arg-PLUGIN-NAMES">PLUGIN-NAMES</a>
 </li>
       </ul></li>
       <li>
@@ -1705,7 +1716,7 @@
       <ul>
         <li><a href="commands/plugins.html#cmdoption-plugins-list-a">--all</a>
 </li>
-        <li><a href="commands/plugins.html#cmdoption-plugins-list-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/plugins.html#cmdoption-plugins-list-v">--verbosity</a>
 </li>
         <li><a href="commands/plugins.html#cmdoption-plugins-list-a">-a</a>
 </li>
@@ -1716,7 +1727,7 @@
     plugins-uninstall command line option
 
       <ul>
-        <li><a href="commands/plugins.html#cmdoption-plugins-uninstall-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/plugins.html#cmdoption-plugins-uninstall-v">--verbosity</a>
 </li>
         <li><a href="commands/plugins.html#cmdoption-plugins-uninstall-y">--yes</a>
 </li>
@@ -1724,7 +1735,7 @@
 </li>
         <li><a href="commands/plugins.html#cmdoption-plugins-uninstall-y">-y</a>
 </li>
-        <li><a href="commands/plugins.html#cmdoption-plugins-uninstall-arg-PLUGIN-NAMES">PLUGIN-NAMES or path/to/project-dir</a>
+        <li><a href="commands/plugins.html#cmdoption-plugins-uninstall-arg-PLUGIN-NAMES">PLUGIN-NAMES</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1735,7 +1746,7 @@
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.PromptChoice.print_choices">print_choices() (ape.cli.choices.PromptChoice method)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.priority_fee">priority_fee() (ape.api.providers.ProviderAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.priority_fee">priority_fee (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.priority_fee">(ape.api.providers.Web3Provider property)</a>
@@ -1743,7 +1754,7 @@
       </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.GeneratedDevAccount.private_key">private_key (ape.utils.GeneratedDevAccount attribute)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.SubprocessProvider.process_name">process_name() (ape.api.providers.SubprocessProvider property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.SubprocessProvider.process_name">process_name (ape.api.providers.SubprocessProvider property)</a>
 </li>
       <li><a href="methoddocs/ape.html#ape.Project">Project (in module ape)</a>
 </li>
@@ -1751,7 +1762,7 @@
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.PROJECT_FOLDER">PROJECT_FOLDER (ape.managers.config.ConfigManager attribute)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.project_types">project_types() (ape.managers.project.ProjectManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.project_types">project_types (ape.managers.project.ProjectManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI">ProjectAPI (class in ape.api.projects)</a>
 </li>
@@ -1765,7 +1776,7 @@
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.PromptChoice">PromptChoice (class in ape.cli.choices)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.provider_names">provider_names() (ape.managers.networks.NetworkManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.provider_names">provider_names (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.provider_settings">provider_settings (ape.api.providers.ProviderAPI attribute)</a>
 </li>
@@ -1779,12 +1790,10 @@
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.network.ProviderPlugin">ProviderPlugin (class in ape.plugins.network)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.providers">providers() (ape.api.networks.NetworkAPI property)</a>
-
-      <ul>
-        <li><a href="methoddocs/plugins.html#ape.plugins.network.ProviderPlugin.providers">(ape.plugins.network.ProviderPlugin method)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.providers">providers (ape.api.networks.NetworkAPI property)</a>
 </li>
-      </ul></li>
+      <li><a href="methoddocs/plugins.html#ape.plugins.network.ProviderPlugin.providers">providers() (ape.plugins.network.ProviderPlugin method)</a>
+</li>
       <li>
     PYTEST_ARGS
 
@@ -1824,7 +1833,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.ReceiptAPI.raise_for_status">raise_for_status() (ape.api.providers.ReceiptAPI method)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.ReceiptAPI.ran_out_of_gas">ran_out_of_gas() (ape.api.providers.ReceiptAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ReceiptAPI.ran_out_of_gas">ran_out_of_gas (ape.api.providers.ReceiptAPI property)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.range">range() (ape.managers.chain.BlockContainer method)</a>
 </li>
@@ -1838,7 +1847,7 @@
       </ul></li>
       <li><a href="methoddocs/plugins.html#ape.plugins.compiler.CompilerPlugin.register_compiler">register_compiler() (ape.plugins.compiler.CompilerPlugin method)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager.registered_compilers">registered_compilers() (ape.managers.compilers.CompilerManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager.registered_compilers">registered_compilers (ape.managers.compilers.CompilerManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.remove">remove() (ape.api.accounts.AccountContainerAPI method)</a>
 </li>
@@ -1852,7 +1861,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.required_confirmations">required_confirmations() (ape.api.networks.NetworkAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.required_confirmations">required_confirmations (ape.api.networks.NetworkAPI property)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.restore">restore() (ape.managers.chain.ChainManager method)</a>
 </li>
@@ -1877,7 +1886,7 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.scripts_folder">scripts_folder() (ape.managers.project.ProjectManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.scripts_folder">scripts_folder (ape.managers.project.ProjectManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.send_call">send_call() (ape.api.providers.ProviderAPI method)</a>
 
@@ -1927,13 +1936,13 @@
         <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.snapshot">(ape.managers.chain.ChainManager method)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.ApeProject.sources">sources() (ape.managers.project.ApeProject property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.project.ApeProject.sources">sources (ape.managers.project.ApeProject property)</a>
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.sources">(ape.managers.project.ProjectManager property)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.sources_missing">sources_missing() (ape.managers.project.ProjectManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.sources_missing">sources_missing (ape.managers.project.ProjectManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.SubprocessProvider.start">start() (ape.api.providers.SubprocessProvider method)</a>
 </li>
@@ -1957,14 +1966,14 @@
     test command line option
 
       <ul>
-        <li><a href="commands/test.html#cmdoption-test-v">--verbosity &lt;LVL&gt;</a>
+        <li><a href="commands/test.html#cmdoption-test-v">--verbosity</a>
 </li>
         <li><a href="commands/test.html#cmdoption-test-v">-v</a>
 </li>
         <li><a href="commands/test.html#cmdoption-test-arg-PYTEST_ARGS">PYTEST_ARGS</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/managers.html#ape.managers.accounts.AccountManager.test_accounts">test_accounts() (ape.managers.accounts.AccountManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.accounts.AccountManager.test_accounts">test_accounts (ape.managers.accounts.AccountManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.TestAccountAPI">TestAccountAPI (class in ape.api.accounts)</a>
 </li>
@@ -1972,7 +1981,7 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI">TestProviderAPI (class in ape.api.providers)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.tests_folder">tests_folder() (ape.managers.project.ProjectManager property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.tests_folder">tests_folder (ape.managers.project.ProjectManager property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1980,7 +1989,7 @@
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.to_address">to_address() (in module ape.utils)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.total_transfer_value">total_transfer_value() (ape.api.providers.TransactionAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI.total_transfer_value">total_transfer_value (ape.api.providers.TransactionAPI property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.TransactionAPI">TransactionAPI (class in ape.api.providers)</a>
 </li>
@@ -2042,7 +2051,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.version_id">version_id() (ape.api.projects.DependencyAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.version_id">version_id (ape.api.projects.DependencyAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.project.GithubDependency.version_id">(ape.managers.project.GithubDependency property)</a>
@@ -2080,19 +2089,13 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, ApeWorX LTD.
-
-    </p>
+    <p>&#169; Copyright 2021, ApeWorX LTD.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
