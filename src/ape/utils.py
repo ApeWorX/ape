@@ -55,6 +55,7 @@ if TYPE_CHECKING:
     from ape.managers.query import QueryManager
     from ape.plugins import PluginManager
 
+
 DEFAULT_NUMBER_OF_TEST_ACCOUNTS = 10
 DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"
 
