@@ -320,14 +320,14 @@ class NetworkManager(BaseManager):
             # Only ecosystem and network were specified, not provider
             ecosystem_name, network_name = selections
             ecosystem = self.get_ecosystem(ecosystem_name or self.default_ecosystem.name)
-            network = ecosystem.get_network(network_name)
+            network = ecosystem.get_network(network_name or ecosystem.default_network)
             return network.get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 3:
             # Everything is specified, use specified provider for ecosystem and network
             ecosystem_name, network_name, provider_name = selections
             ecosystem = self.get_ecosystem(ecosystem_name or self.default_ecosystem.name)
-            network = ecosystem.get_network(network_name)
+            network = ecosystem.get_network(network_name or ecosystem.default_network)
             return network.get_provider(
                 provider_name=provider_name, provider_settings=provider_settings
             )
