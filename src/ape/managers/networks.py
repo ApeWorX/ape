@@ -251,6 +251,19 @@ class NetworkManager(BaseManager):
                 yield ecosystem_name
 
     def get_ecosystem(self, ecosystem_name: str) -> EcosystemAPI:
+        """
+        Get the ecosystem for the given name.
+
+        Args:
+            ecosystem_name (str): The name of the ecosystem to get.
+
+        Raises:
+            :class:`~ape.exceptions.NetworkError`: When the ecosystem is not found.
+
+        Returns:
+            :class:`~ape.api.networks.EcosystemAPI`
+        """
+
         if ecosystem_name not in self.ecosystem_names:
             raise NetworkError(f"Ecosystem '{ecosystem_name}' not found.")
 
