@@ -24,23 +24,39 @@ def cli():
 
 # Different name because `list` is a keyword
 @cli.command(name="list", short_help="List available local accounts")
-@click.option("--all", help="Output accounts from all plugins", is_flag=True)
+@click.option("--all", "show_all_plugins", help="Output accounts from all plugins", is_flag=True)
 @ape_cli_context()
-def _list(cli_ctx, all):
-    accounts_to_output = accounts if all else accounts.containers.get("accounts", [])
-    if len(accounts_to_output) == 0:
+def _list(cli_ctx, show_all_plugins):
+    if "accounts" not in accounts.containers:
+        cli_ctx.abort("Accounts plugin unexpectedly failed to load.")
+
+    containers = accounts.containers if show_all_plugins else {"accounts": _get_container()}
+    account_map = {n: [a for a in c.accounts] for n, c in containers.items()}
+    account_map = [pair for pair in {n: ls for n, ls in account_map.items() if len(ls) > 0}.items()]
+
+    if sum([len(c) for c in account_map]) == 0:
         cli_ctx.logger.warning("No accounts found.")
         return
 
-    elif len(accounts_to_output) > 1:
-        click.echo(f"Found {len(accounts)} accounts:")
+    num_containers = len(account_map)
+    for index in range(num_containers):
+        plugin_name, container = account_map[index]
+        num_accounts = len(container)
+        header = f"Found {num_accounts} account"
+        if num_accounts > 1:
+            header = f"{header}s"  # 'account' -> 'accounts'
 
-    else:
-        click.echo("Found 1 account:")
+        if show_all_plugins:
+            header = f"{header} in the '{plugin_name}' plugin"
 
-    for account in accounts_to_output.accounts:
-        alias_display = f" (alias: '{account.alias}')" if account.alias else ""
-        click.echo(f"  {account.address}{alias_display}")
+        click.echo(f"{header}:")
+
+        for account in container:
+            alias_display = f" (alias: '{account.alias}')" if account.alias else ""
+            click.echo(f"  {account.address}{alias_display}")
+
+        if index < num_containers - 1:
+            click.echo()
 
 
 @cli.command(short_help="Create a new keyfile account with a random private key")
