@@ -13,7 +13,7 @@ Out[2]: 7065522116676615294347037
 
 ## Namespace Extras
 
-You can also create scripts to be included in the console namespace by adding a file (`ape_console_extras.py`) to your root project directory.  All non-private symbols from this file will be included in the console namespace.  Private symbols are prefixed by an underscore (`_`).
+You can also create scripts to be included in the console namespace by adding a file (`ape_console_extras.py`) to your root project directory.  All non-internal symbols from this file will be included in the console namespace.  Internal symbols are prefixed by an underscore (`_`).
 
 An example file might look something like this:
 
