@@ -54,32 +54,33 @@ def load_console_extras(namespace: Dict[str, Any]) -> Dict[str, Any]:
     for extras_file in [global_extras, project_extras]:
         if not extras_file.is_file():
             continue
-            module = import_extras_file(extras_file)
-            ape_init_extras = getattr(module, "ape_init_extras", None)
 
-            # If found, execute and ape_init_extras() function.
-            if ape_init_extras is not None:
-                # Figure out the kwargs the func is looking for and assemble
-                # from the original namespace
-                func_spec = inspect.getfullargspec(ape_init_extras)
-                init_kwargs: Dict[str, Any] = {k: namespace.get(k) for k in func_spec.args}
+        module = import_extras_file(extras_file)
+        ape_init_extras = getattr(module, "ape_init_extras", None)
 
-                # Execute functionality with existing console namespace as
-                # kwargs.
-                extras = ape_init_extras(**init_kwargs)
+        # If found, execute and ape_init_extras() function.
+        if ape_init_extras is not None:
+            # Figure out the kwargs the func is looking for and assemble
+            # from the original namespace
+            func_spec = inspect.getfullargspec(ape_init_extras)
+            init_kwargs: Dict[str, Any] = {k: namespace.get(k) for k in func_spec.args}
 
-                # If ape_init_extras returned a dict expect it to be new symbols
-                if isinstance(extras, dict):
-                    namespace.update(extras)
+            # Execute functionality with existing console namespace as
+            # kwargs.
+            extras = ape_init_extras(**init_kwargs)
 
-            # Add any public symbols from the module into the console namespace
-            for k in dir(module):
-                if k != "ape_init_extras" and not k.startswith("_"):
-                    # Prevent override of existing namespace symbols
-                    if k in namespace:
-                        continue
+            # If ape_init_extras returned a dict expect it to be new symbols
+            if isinstance(extras, dict):
+                namespace.update(extras)
 
-                    namespace[k] = getattr(module, k)
+        # Add any public symbols from the module into the console namespace
+        for k in dir(module):
+            if k != "ape_init_extras" and not k.startswith("_"):
+                # Prevent override of existing namespace symbols
+                if k in namespace:
+                    continue
+
+                namespace[k] = getattr(module, k)
 
     return namespace
 
