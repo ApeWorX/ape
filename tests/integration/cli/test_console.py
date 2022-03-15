@@ -9,8 +9,15 @@ def no_console_error(result):
 
 
 def destroy_ape_console_extras(project):
-    project.config_manager.DATA_FOLDER.joinpath("ape_console_extras.py").unlink(True)
-    project.config_manager.PROJECT_FOLDER.joinpath("ape_console_extras.py").unlink(True)
+    try:
+        project.config_manager.DATA_FOLDER.joinpath("ape_console_extras.py").unlink()
+    except FileNotFoundError:
+        pass
+
+    try:
+        project.config_manager.PROJECT_FOLDER.joinpath("ape_console_extras.py").unlink()
+    except FileNotFoundError:
+        pass
 
 
 def write_ape_console_extras(project, folder, contents):
