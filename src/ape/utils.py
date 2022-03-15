@@ -10,14 +10,15 @@ from collections import namedtuple
 from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Mapping, Optional, Set, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Mapping, Optional, Set, Union, cast
 
 import pygit2  # type: ignore
 import requests
 import yaml
 from eth_account import Account
 from eth_account.hdaccount import HDPath, seed_from_mnemonic
-from eth_utils import to_checksum_address as to_address
+from eth_typing import HexAddress, HexStr
+from eth_utils import add_0x_prefix, encode_hex, hexstr_if_str, keccak, remove_0x_prefix, to_hex
 from github import Github, UnknownObjectException
 from github.GitRelease import GitRelease
 from github.Organization import Organization
@@ -29,8 +30,9 @@ from pydantic import BaseModel
 from pygit2 import Repository as GitRepository
 from tqdm import tqdm  # type: ignore
 
-from ape.exceptions import CompilerError, ProjectError, ProviderNotConnectedError
+from ape.exceptions import AddressError, CompilerError, ProjectError, ProviderNotConnectedError
 from ape.logging import logger
+from ape.types import AddressType
 
 try:
     from functools import cached_property  # type: ignore
@@ -42,7 +44,6 @@ except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
 if TYPE_CHECKING:
-    from ape.api.address import AddressType
     from ape.api.providers import ProviderAPI
     from ape.contracts.base import ContractContainer, ContractInstance, ContractType
     from ape.managers.accounts import AccountManager
@@ -196,6 +197,33 @@ def expand_environment_variables(contents: str) -> str:
         str: The given content with all environment variables replaced with their values.
     """
     return os.path.expandvars(contents)
+
+
+def to_address(value: Union[int, str, bytes]) -> AddressType:
+    """
+    Makes a checksum address given a supported format.
+
+    Args:
+        value (Union[int, str, bytes]): The value to convert.
+
+    Returns:
+
+    """
+    try:
+        hex_address = hexstr_if_str(to_hex, value).lower()
+    except AttributeError:
+        raise AddressError("Value must be any string, instead got type {}".format(type(value)))
+    address_hash = encode_hex(keccak(text=remove_0x_prefix(HexStr(hex_address))))
+
+    checksum_address = add_0x_prefix(
+        HexStr(
+            "".join(
+                (hex_address[i].upper() if int(address_hash[i], 16) > 7 else hex_address[i])
+                for i in range(2, len(hex_address))
+            )
+        )
+    )
+    return AddressType(HexAddress(checksum_address))
 
 
 def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
