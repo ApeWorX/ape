@@ -133,7 +133,7 @@ class EcosystemAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.networks.NetworkAPI`
         """
-        return self._try_get_network(network_name)
+        return self.get_network(network_name)
 
     def __getattr__(self, network_name: str) -> "NetworkAPI":
         """
@@ -155,7 +155,7 @@ class EcosystemAPI(BaseInterfaceModel):
             :class:`~ape.api.networks.NetworkAPI`
         """
         network_name = network_name.replace("_", "-")
-        return self._try_get_network(network_name)
+        return self.get_network(network_name)
 
     def add_network(self, network_name: str, network: "NetworkAPI"):
         """
@@ -221,7 +221,20 @@ class EcosystemAPI(BaseInterfaceModel):
     def create_transaction(self, **kwargs) -> "TransactionAPI":
         ...
 
-    def _try_get_network(self, network_name):
+    def get_network(self, network_name: str) -> "NetworkAPI":
+        """
+        Get the network for the given name.
+
+        Args:
+              network_name (str): The name of the network to get.
+
+        Raises:
+              :class:`~ape.exceptions.NetworkNotFoundError`: When the network is not present.
+
+        Returns:
+              :class:`~ape.api.networks.NetworkAPI`
+        """
+
         if network_name in self.networks:
             return self.networks[network_name]
         else:
@@ -499,7 +512,7 @@ class NetworkAPI(BaseInterfaceModel):
 
         else:
             message = (
-                f"'{provider_name}' is not a valid network for ecosystem '{self.ecosystem.name}'"
+                f"'{provider_name}' is not a valid provider for ecosystem '{self.ecosystem.name}'"
             )
             raise NetworkError(message)
 
