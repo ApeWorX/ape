@@ -52,7 +52,8 @@ def load_console_extras(namespace: dict[str, Any]) -> dict[str, Any]:
     project_extras = config.PROJECT_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
 
     for extras_file in [global_extras, project_extras]:
-        if extras_file.is_file():
+        if not extras_file.is_file():
+            continue
             module = import_extras_file(extras_file)
             init_extras = getattr(module, "init_extras", None)
 
