@@ -5,10 +5,8 @@ Ape provides an [IPython](https://ipython.readthedocs.io/) interactive console w
 ```bash
 ape console --network ethereum:mainnet
 
-In [1]: weth = Contract(address='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', contract_type=project.contracts['ERC20'])
-
-In [2]: weth.totalSupply()
-Out[2]: 7065522116676615294347037
+In [1]: networks.active_provider.get_block("latest")
+Out[1]: Block(gas_data=BlockGasFee(gas_limit=30029267, gas_used=1957793, base_fee=22138196051), consensus_data=BlockConsensus(difficulty=13087655881211628, total_difficulty=43800816864239190379319), hash=HexBytes('0x75af0ab1a0bcd42a6d894574a47d7933dd6d1ad67820245d596bee2464b676cf'), number=14388141, parent_hash=HexBytes('0x75af0ab1a0bcd42a6d894574a47d7933dd6d1ad67820245d596bee2464b676cf'), size=17431, timestamp=1647306023)
 ```
 
 ## Namespace Extras
@@ -20,14 +18,27 @@ An example file might look something like this:
 ```python
 from eth_utils import encode_hex, decode_hex
 
-WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+_networks = None
+
+
+def latest(key="number"):
+    return getattr(_networks.active_provider.get_block("latest"), key)
+
+
+def ape_init_extras(networks):
+    """Setup _networks so util func can access it"""
+    global _networks
+    _networks = networks
 ```
 
 Then both imported util functions and `WETH_ADDRESS` will be available when you launch the console.
 
 ```python
-In [1]: decode_hex(WETH_ADDRESS)
-Out[1]: b"\xc0*\xaa9\xb2#\xfe\x8d\n\x0e\\O'\xea\xd9\x08<ul\xc2"
+In [1]: latest()
+Out[1]: 14388241
+
+In [2]: encode_hex(latest('hash'))
+Out[2]: '0x68f768988e9bd4be971d527f72483f321975fa52aff9692b6d0e0af71fb77aaf'
 ```
 
 ### Init Function
