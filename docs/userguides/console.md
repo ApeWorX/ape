@@ -1,6 +1,6 @@
 # Ape Console
 
-Ape provides an IPython interactive console with useful pre-defined locals to interact with your project.
+Ape provides an [IPython](https://ipython.readthedocs.io/) interactive console with useful pre-defined locals to interact with your project.
 
 ```bash
 ape console --network ethereum:mainnet
