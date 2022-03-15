@@ -19,6 +19,16 @@ This is useful for projects that compile contracts outside their directory.
 contracts_folder: "~/GlobalContracts"
 ```
 
+## Default Ecosystem
+
+You can change the default ecosystem by including the following:
+
+```yaml
+default_ecosystem: fantom
+```
+
+The default ecosystem is `ethereum`.
+
 ## Dependencies
 
 Configure dependencies for your ape project.

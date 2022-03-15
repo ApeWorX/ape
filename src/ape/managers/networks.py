@@ -4,7 +4,7 @@ import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import ConfigError, NetworkError
+from ape.exceptions import NetworkError
 
 from .base import BaseManager
 
@@ -49,7 +49,7 @@ class NetworkManager(BaseManager):
         The set of all ecosystem names in ``ape``.
         """
 
-        return {str(e) for e in self.ecosystems.keys()}
+        return {e[0] for e in self.plugin_manager.ecosystems}
 
     @property
     def network_names(self) -> Set[str]:
@@ -83,6 +83,7 @@ class NetworkManager(BaseManager):
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
+
         project_name = self.config_manager.PROJECT_FOLDER.stem
         if project_name in self._ecosystems_by_project:
             return self._ecosystems_by_project[project_name]
@@ -97,10 +98,7 @@ class NetworkManager(BaseManager):
             ecosystem_config = self.config_manager.get_config(plugin_name).dict()
             default_network = ecosystem_config.get("default_network", LOCAL_NETWORK_NAME)
 
-            if default_network and default_network in ecosystem.networks:
-                ecosystem.set_default_network(default_network)
-            else:
-                raise ConfigError(f"No network named '{default_network}'.")
+            ecosystem.set_default_network(default_network)
 
             if ecosystem_config:
                 for network_name, network in ecosystem.networks.items():
@@ -112,12 +110,7 @@ class NetworkManager(BaseManager):
                         continue
 
                     default_provider = network_config["default_provider"]
-                    if default_provider in network.providers:
-                        network.set_default_provider(default_provider)
-                    else:
-                        raise ConfigError(
-                            f"No provider '{default_provider}' in '{network_name}' network."
-                        )
+                    network.set_default_provider(default_provider)
 
             ecosystem_dict[plugin_name] = ecosystem
 
@@ -364,12 +357,15 @@ class NetworkManager(BaseManager):
         only a single ecosystem installed, such as Ethereum, then get
         that ecosystem.
         """
+
+        ecosystems = self.ecosystems  # NOTE: Also will load defaults
+
         if self._default:
-            return self.ecosystems[self._default]
+            return ecosystems[self._default]
 
         # If explicit default is not set, use first registered ecosystem
-        elif len(self.ecosystems) > 0:
-            return list(self.ecosystems.values())[0]
+        elif len(ecosystems) > 0:
+            return list(ecosystems.values())[0]
 
         else:
             raise NetworkError("No ecosystems installed.")
@@ -386,7 +382,7 @@ class NetworkManager(BaseManager):
               as the default.
         """
 
-        if ecosystem_name in self.ecosystems:
+        if ecosystem_name in self.ecosystem_names:
             self._default = ecosystem_name
 
         else:
