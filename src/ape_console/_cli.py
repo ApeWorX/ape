@@ -45,7 +45,7 @@ def import_extras_file(file_path) -> ModuleType:
     return module
 
 
-def load_console_extras(namespace: dict[str, Any]) -> dict[str, Any]:
+def load_console_extras(namespace: Dict[str, Any]) -> Dict[str, Any]:
     """load and return namespace updates from ape_console_extras.py  files if
     they exist"""
     global_extras = config.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
