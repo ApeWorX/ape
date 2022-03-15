@@ -8,21 +8,20 @@
 
 body {
   font-weight: 400;
-  font-family: "Rubik";
-  background-color: #d3e0d1;
+  font-family: "Rubik", sans-serif;
   min-height: 100%;
   background: #f2f3f8;
 }
 
 p {
   font-weight: 400;
-  font-family: "Rubik";
+  font-family: "Rubik", sans-serif;
 }
 
 h1 {
   font-size: 70px;
   line-height: 70px;
-  font-family: "Space Mono";
+  font-family: "Space Mono", sans-serif;
   text-transform: uppercase;
   letter-spacing: -0.05em;
   color: #000000;
@@ -31,14 +30,14 @@ h1 {
 h2 {
   font-size: 42px;
   line-height: 42px;
-  font-family: "Space Mono";
+  font-family: "Space Mono", sans-serif;
   letter-spacing: -0.05em;
 }
 
 h3 {
   font-size: 24px;
   line-height: 24px;
-  font-family: "Space Mono";
+  font-family: "Space Mono", sans-serif;
   letter-spacing: -0.05em;
   font-weight: 300;
 }
@@ -61,8 +60,6 @@ a:hover {
   background: #fff;
   min-height: 100%;
 }
-
-//SIDEBAR SETTINGS - AS OF 12922
 
 .wy-side-scroll {
   width: 320px;
@@ -97,7 +94,7 @@ a:hover {
 .wy-menu-vertical header,
 .wy-menu-vertical p.caption {
   color: #7cffb4;
-  font-family: "Space Mono";
+  font-family: "Space Mono", sans-serif;
   height: 32px;
   line-height: 32px;
   display: block;
@@ -160,7 +157,7 @@ footer {
     display: block;
   }
   .wy-nav-content-wrap {
-    margin-left: 0px;
+    margin-left: 0;
     background-color: #f2f3f8;
     min-height: 100%;
   }
@@ -188,7 +185,7 @@ footer {
   h1 {
     font-size: 40px;
     line-height: 40px;
-    font-family: "Space Mono";
+    font-family: "Space Mono", sans-serif;
     text-transform: uppercase;
     letter-spacing: -0.05em;
     color: #000000;
@@ -197,7 +194,7 @@ footer {
   h2 {
     font-size: 34px;
     line-height: 34px;
-    font-family: "Space Mono";
+    font-family: "Space Mono", sans-serif;
     letter-spacing: -0.05em;
   }
 
