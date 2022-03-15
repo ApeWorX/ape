@@ -46,13 +46,13 @@ def a():
     )
 
     result = runner.invoke(
-        ape_cli, ["console"], input=f"assert A == 1\nexit\n", catch_exceptions=False
+        ape_cli, ["console"], input="assert A == 1\nexit\n", catch_exceptions=False
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
 
     result = runner.invoke(
-        ape_cli, ["console"], input=f"assert a() == 1\nexit\n", catch_exceptions=False
+        ape_cli, ["console"], input="assert a() == 1\nexit\n", catch_exceptions=False
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
@@ -72,7 +72,7 @@ def ape_init_extras():
     )
 
     result = runner.invoke(
-        ape_cli, ["console"], input=f"print('a:', A)\nassert A == 2\nexit\n", catch_exceptions=False
+        ape_cli, ["console"], input="print('a:', A)\nassert A == 2\nexit\n", catch_exceptions=False
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
@@ -90,6 +90,6 @@ def ape_init_extras(project):
     assert project""",
     )
 
-    result = runner.invoke(ape_cli, ["console"], input=f"exit\n", catch_exceptions=False)
+    result = runner.invoke(ape_cli, ["console"], input="exit\n", catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
