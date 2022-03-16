@@ -327,7 +327,9 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
 
 
 def add_padding_to_strings(
-    str_list: List[str], extra_spaces: int = 0, space_character: Optional[str] = None
+    str_list: List[str],
+    extra_spaces: int = 0,
+    space_character: str = " ",
 ) -> List[str]:
     """
     Append spacing to each string in a list of strings such that
@@ -336,14 +338,13 @@ def add_padding_to_strings(
     Args:
         str_list (List[str]): The list of strings to add padding to.
         extra_spaces (Optional[int]): Optionally append extra spacing.
-        space_character (Optional[str]): The character to use in the padding.
-          Defaults to the empty string.
+        space_character (str): The character to use in the padding.
+          Defaults to ``" "``.
 
     Returns:
         List[str]: A list of equal-length strings with padded spaces.
     """
 
-    space_character = space_character or ""
     longest_item = len(max(str_list, key=len))
     spaced_items = []
 
