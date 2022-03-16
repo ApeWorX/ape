@@ -8,7 +8,7 @@ import click
 from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins import plugin_manager
-from ape.utils import github_client, load_config, pad_strings
+from ape.utils import add_padding_to_strings, github_client, load_config
 from ape_plugins.utils import ApePlugin, ModifyPluginResultHandler
 
 
@@ -97,7 +97,7 @@ def _list(cli_ctx, display_all):
     installed_org_plugins = {}
     installed_third_party_plugins = {}
     plugin_list = plugin_manager.list_name_plugin()
-    spaced_names = pad_strings([p[0] for p in plugin_list], extra_spaces=4)
+    spaced_names = add_padding_to_strings([p[0] for p in plugin_list], extra_spaces=4)
 
     for name in spaced_names:
         plugin = ApePlugin(name)
