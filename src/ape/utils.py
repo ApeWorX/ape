@@ -326,6 +326,34 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
     return current_value
 
 
+def pad_strings(
+    str_list: List[str], extra_spaces: int = 0, filler: Optional[str] = None
+) -> List[str]:
+    """
+    Append spacing to the end of a list of strings
+    such that they are all the same length.
+
+    Args:
+        str_list (List[str]): The list of strings to add padding to.
+        extra_spaces (Optional[int]): Optionally append extra spacing.
+        filler (Optional[str]): The character to use in the padding.
+          Defaults to the empty string.
+
+    Returns:
+        List[str]: A list of equal-length strings with padded spaces.
+    """
+
+    filler = filler or ""
+    longest_item = len(max(str_list, key=len))
+    spaced_items = []
+
+    for value in str_list:
+        spacing = (longest_item - len(value) + extra_spaces) * filler
+        spaced_items.append(f"{value}{spacing}")
+
+    return spaced_items
+
+
 def stream_response(download_url: str, progress_bar_description: str = "Downloading") -> bytes:
     """
     Download HTTP content by streaming and returning the bytes.
