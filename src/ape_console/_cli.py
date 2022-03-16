@@ -58,7 +58,7 @@ def load_console_extras(namespace: Dict[str, Any]) -> Dict[str, Any]:
         module = import_extras_file(extras_file)
         ape_init_extras = getattr(module, "ape_init_extras", None)
 
-        # If found, execute and ape_init_extras() function.
+        # If found, execute ape_init_extras() function.
         if ape_init_extras is not None:
             # Figure out the kwargs the func is looking for and assemble
             # from the original namespace
