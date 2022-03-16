@@ -357,7 +357,7 @@ class ContractInstance(BaseAddress):
         if attr_name in set(super(BaseAddress, self).__dir__()):
             return super(BaseAddress, self).__getattribute__(attr_name)
 
-        if attr_name not in set((*self._view_methods_, *self._mutable_methods_, *self._events_)):
+        if attr_name not in {*self._view_methods_, *self._mutable_methods_, *self._events_}:
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
             name = self._contract_type.name or self.__class__.__name__
