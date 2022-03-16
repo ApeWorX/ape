@@ -256,7 +256,7 @@ class ContractInstance(BaseAddress):
         self._contract_type = contract_type
 
     def __repr__(self) -> str:
-        contract_name = self._contract_type.name or "<Unnamed Contract>"
+        contract_name = self._contract_type.name or "Unnamed contract"
         return f"<{contract_name} {self.address}>"
 
     @property
