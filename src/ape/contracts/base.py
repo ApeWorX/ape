@@ -284,9 +284,9 @@ class ContractInstance(BaseAddress):
                 abi_name: ContractCallHandler(contract=self, abis=abis)
                 for abi_name, abis in view_methods.items()
             }
-        except Exception as e:
+        except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise AttributeError(str(e)) from e
+            raise AttributeError(str(err)) from err
 
     @cached_property
     def _mutable_methods_(self) -> Dict[str, ContractTransactionHandler]:
@@ -303,9 +303,9 @@ class ContractInstance(BaseAddress):
                 abi_name: ContractTransactionHandler(contract=self, abis=abis)
                 for abi_name, abis in mutable_methods.items()
             }
-        except Exception as e:
+        except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise AttributeError(str(e)) from e
+            raise AttributeError(str(err)) from err
 
     @cached_property
     def _events_(self) -> Dict[str, ContractEvent]:
@@ -322,9 +322,9 @@ class ContractInstance(BaseAddress):
                 abi_name: ContractEvent(contract=self, abis=abis)
                 for abi_name, abis in events.items()
             }
-        except Exception as e:
+        except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise AttributeError(str(e)) from e
+            raise AttributeError(str(err)) from err
 
     def __dir__(self) -> List[str]:
         """
