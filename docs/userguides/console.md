@@ -5,8 +5,8 @@ Ape provides an [IPython](https://ipython.readthedocs.io/) interactive console w
 ```bash
 ape console --network ethereum:mainnet
 
-In [1]: networks.active_provider.get_block("latest")
-Out[1]: Block(gas_data=BlockGasFee(gas_limit=30029267, gas_used=1957793, base_fee=22138196051), consensus_data=BlockConsensus(difficulty=13087655881211628, total_difficulty=43800816864239190379319), hash=HexBytes('0x75af0ab1a0bcd42a6d894574a47d7933dd6d1ad67820245d596bee2464b676cf'), number=14388141, parent_hash=HexBytes('0x75af0ab1a0bcd42a6d894574a47d7933dd6d1ad67820245d596bee2464b676cf'), size=17431, timestamp=1647306023)
+In [1]: chain.blocks.head.timestamp
+Out[1]: 1647323479
 ```
 
 ## Namespace Extras
@@ -18,23 +18,17 @@ An example file might look something like this:
 ```python
 from eth_utils import encode_hex, decode_hex
 
-_networks = None
-
-
-def latest(key="number"):
-    return getattr(_networks.active_provider.get_block("latest"), key)
-
 
 def ape_init_extras(networks):
-    """Setup _networks so util func can access it"""
-    global _networks
-    _networks = networks
+    return {
+        "latest": lambda key: getattr(networks.active_provider.get_block("latest"), key)
+    }
 ```
 
 Then both imported util functions and `WETH_ADDRESS` will be available when you launch the console.
 
 ```python
-In [1]: latest()
+In [1]: latest('number')
 Out[1]: 14388241
 
 In [2]: encode_hex(latest('hash'))
