@@ -205,7 +205,7 @@ class ReceiptAPI(BaseInterfaceModel):
     receiver: str
     nonce: Optional[int] = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
     def raise_for_status(self):
@@ -577,7 +577,7 @@ class ProviderAPI(BaseInterfaceModel):
             NotImplementedError: Unless overridden.
         """
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         chain_id_output = f" chain_id={self.chain_id}" if self.chain_id is not None else ""
         return f"<{self.name}{chain_id_output}>"
 
