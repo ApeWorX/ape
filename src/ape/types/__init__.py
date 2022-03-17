@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Any, Dict, Union
 
 from eth_typing import ChecksumAddress as AddressType
 from ethpm_types import (
@@ -12,6 +12,7 @@ from ethpm_types import (
     Source,
 )
 from hexbytes import HexBytes
+from pydantic.dataclasses import dataclass
 
 from ape._compat import Literal
 
@@ -32,6 +33,36 @@ Providers will expect and handle snapshot IDs differently. There shouldn't be a 
 providers when using this feature, so there should not be confusion over this type in practical use
 cases.
 """
+
+
+@dataclass
+class ContractLog:
+    """
+    An instance of a log from a contract.
+    """
+
+    name: str
+    """The name of the event."""
+
+    data: Dict[str, Any]
+    """The raw data associated with the log, including both indexed and non-indexed data."""
+
+    def __repr__(self) -> str:
+        return f"<{self.name}>"
+
+    def __getattr__(self, item: str) -> Any:
+        """
+        Access properties from the log via ``.`` access.
+
+        Args:
+            item (str): The name of the property.
+        """
+
+        if item in self.data:
+            return self.data[item]
+
+        raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
+
 
 __all__ = [
     "ABI",

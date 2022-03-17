@@ -29,12 +29,11 @@ from ape.exceptions import (
     TransactionError,
 )
 from ape.logging import logger
-from ape.types import AddressType, BlockID, SnapshotID, TransactionSignature
+from ape.types import AddressType, BlockID, ContractLog, SnapshotID, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 if TYPE_CHECKING:
     from ape.api.explorers import ExplorerAPI
-    from ape.contracts import ContractLog
 
 
 def raises_not_implemented(fn):
@@ -523,7 +522,7 @@ class ProviderAPI(BaseInterfaceModel):
     @abstractmethod
     def get_contract_logs(
         self, address: AddressType, abi: Union[List[EventABI], EventABI], **filter_args
-    ) -> Iterator["ContractLog"]:
+    ) -> Iterator[ContractLog]:
         """
         Get all logs matching the given set of filter parameters.
 
@@ -719,7 +718,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def get_contract_logs(
         self, address: AddressType, abi: Union[List[EventABI], EventABI], **filter_args
-    ) -> Iterator["ContractLog"]:
+    ) -> Iterator[ContractLog]:
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
         for abi in abis:
             filter_data = {"address": address, **filter_args}

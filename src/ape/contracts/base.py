@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
-from pydantic.dataclasses import dataclass
 
 from ape.api import Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
@@ -14,7 +13,7 @@ from ape.exceptions import (
     TransactionError,
 )
 from ape.logging import logger
-from ape.types import AddressType
+from ape.types import AddressType, ContractLog
 from ape.utils import ManagerAccessMixin, cached_property
 
 if TYPE_CHECKING:
@@ -214,35 +213,6 @@ class ContractTransactionHandler(ManagerAccessMixin):
             abi=selected_abi,
             address=self.contract.address,
         )(*args, **kwargs)
-
-
-@dataclass
-class ContractLog:
-    """
-    An instance of a log from a contract.
-    """
-
-    name: str
-    """The name of the event."""
-
-    data: Dict[str, Any]
-    """The raw data associated with the log, including both indexed and non-indexed data."""
-
-    def __repr__(self) -> str:
-        return f"<{self.name}>"
-
-    def __getattr__(self, item: str) -> Any:
-        """
-        Access properties from the log via ``.`` access.
-
-        Args:
-            item (str): The name of the property.
-        """
-
-        if item in self.data:
-            return self.data[item]
-
-        raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
 
 
 class ContractEvent(ManagerAccessMixin):

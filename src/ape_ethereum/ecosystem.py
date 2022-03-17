@@ -32,9 +32,8 @@ from ape.api import (
     TransactionType,
 )
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.contracts import ContractLog
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
-from ape.types import AddressType
+from ape.types import AddressType, ContractLog
 
 NETWORKS = {
     # chain_id, network_id

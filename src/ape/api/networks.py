@@ -6,13 +6,12 @@ from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
-from ape.types import AddressType
+from ape.types import AddressType, ContractLog
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 from .config import PluginConfig
 
 if TYPE_CHECKING:
-    from ape.contracts import ContractLog
     from ape.managers.networks import NetworkManager
 
     from .explorers import ExplorerAPI
@@ -218,7 +217,7 @@ class EcosystemAPI(BaseInterfaceModel):
         ...
 
     @abstractmethod
-    def decode_logs(self, abi: EventABI, raw_logs: List[Dict]) -> Iterator["ContractLog"]:
+    def decode_logs(self, abi: EventABI, raw_logs: List[Dict]) -> Iterator[ContractLog]:
         ...
 
     @abstractmethod
