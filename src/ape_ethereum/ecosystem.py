@@ -1,7 +1,11 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+import itertools
+import re
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
+from eth_abi import grammar
+from eth_abi.abi import decode_abi, decode_single
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account._utils.legacy_transactions import (
@@ -9,8 +13,9 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, keccak, to_bytes, to_checksum_address, to_int
-from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address, to_int
+from eth_utils.abi import collapse_if_tuple
+from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 
@@ -320,11 +325,69 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)  # type: ignore
 
-    def decode_event(self, abi: EventABI, receipt: "ReceiptAPI") -> "ContractLog":
-        filter_id = keccak(to_bytes(text=abi.selector))
-        event_data = next(log for log in receipt.logs if log["filter_id"] == filter_id)
+    def decode_logs(self, abi: EventABI, data: List[Dict]) -> Iterator["ContractLog"]:
+        event_id_bytes = keccak(to_bytes(text=abi.selector))
+        matching_logs = [log for log in data if log["topics"][0] == event_id_bytes]
+        if not matching_logs:
+            raise DecodingError(f"No logs found with ID '{abi.selector}'.")
 
-        return ContractLog(  # type: ignore
-            name=abi.name,
-            inputs={i.name: event_data[i.name] for i in abi.inputs},  # type: ignore
-        )
+        # Process indexed data (topics)
+        log_topics = [i for i in abi.inputs if i.indexed]
+        log_topic_names = [abi.name for abi in log_topics]
+        normalized_log_topics = [abi for abi in _normalize_abi_types(log_topics)]
+        log_topic_types = [t for t in _get_abi_types(normalized_log_topics)]
+
+        # Process the rest of the log data
+        log_data = [i for i in abi.inputs if not i.indexed]
+        log_data_names = [abi.name for abi in log_data]
+        normalized_log_data = [abi for abi in _normalize_abi_types(log_data)]
+        log_data_types = [t for t in _get_abi_types(normalized_log_data)]
+
+        # Sanity check that there are not name intersections between the topic
+        # names and the data argument names.
+        duplicate_names = set(log_topic_names).intersection(log_data_names)
+        if duplicate_names:
+            duplicate_names_str = ", ".join(duplicate_names)
+            raise DecodingError(
+                "The following argument names are duplicated "
+                f"between event inputs: '{duplicate_names_str}'."
+            )
+
+        for log in matching_logs:
+            indexed_data = log["topics"] if log.get("anonymous", False) else log["topics"][1:]
+            log_data = hexstr_if_str(to_bytes, log["data"])
+
+            if len(indexed_data) != len(log_topic_types):
+                raise DecodingError(
+                    f"Expected '{len(indexed_data)}' log topics.  Got '{len(log_topic_types)}'."
+                )
+
+            decoded_topic_data = [
+                decode_single(topic_type, topic_data)
+                for topic_type, topic_data in zip(log_topic_types, indexed_data)
+            ]
+            decoded_log_data = decode_abi(log_data_types, log_data)
+            event_args = dict(
+                itertools.chain(
+                    zip(log_topic_names, decoded_topic_data),
+                    zip(log_data_names, decoded_log_data),
+                )
+            )
+            yield ContractLog(name=abi.name, data=event_args)  # type: ignore
+
+
+def _normalize_abi_types(abi_inputs: List[EventABIType]) -> Iterator[Dict]:
+    for abi_input in abi_inputs:
+        if re.match(r"^{lib_name}r'\.{enum_name}$", str(abi_input.type)):
+            yield {k: "uint8" if k == "type" else v for k, v in abi_input.dict().items()}
+        else:
+            yield abi_input.dict()
+
+
+def _get_abi_types(abi_inputs: List[Dict]) -> Iterator[Union[str, Dict]]:
+    for abi_input in abi_inputs:
+        abi_type = grammar.parse(abi_input["type"])
+        if abi_type.is_dynamic:
+            yield "bytes32"
+        else:
+            yield collapse_if_tuple(abi_input)

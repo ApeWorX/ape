@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
@@ -42,7 +42,6 @@ class ContractConstructor(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-
         args = self._convert_tuple(args)
         kwargs = dict(
             (k, v)
@@ -219,21 +218,98 @@ class ContractTransactionHandler(ManagerAccessMixin):
 
 @dataclass
 class ContractLog:
+
     name: str
     data: Dict[str, Any]
 
+    def __repr__(self) -> str:
+        return f"<{self.name}>"
+
+    def __getattr__(self, item: str) -> Any:
+        if item in self.data:
+            return self.data[item]
+
+        raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
+
 
 class ContractEvent(ManagerAccessMixin):
+    """
+    The types of events on a :class:`~ape.contracts.base.ContractInstance`.
+    Use the event types via ``.`` access on the contract instances.
+
+    Usage example::
+
+         # 'my_contract' refers to a ContractInstance in this case.
+         my_event_type = my_contract.MyEvent
+    """
+
     def __init__(
         self,
         contract: "ContractInstance",
-        abis: List[EventABI],
+        abi: EventABI,
         cached_logs: List[ContractLog] = None,
     ) -> None:
         super().__init__()
         self.contract = contract
-        self.abis = abis
+        self.abi = abi
         self.cached_logs = cached_logs or []
+
+    @property
+    def name(self) -> str:
+        """
+        The name of the contract event, as defined in the contract.
+        """
+
+        return self.abi.name
+
+    def __getitem__(self, index: int) -> ContractLog:
+        """
+        Access events on the contract by the index of when they occurred.
+
+        Args:
+            index (int): The index such that ``0`` is the first event to have occurred
+              and ``-1`` is the last event.
+
+        Returns:
+            :class:`~ape.contracts.base.ContractLog`
+        """
+
+        try:
+            return self._get_logs_list()[index]
+        except IndexError as err:
+            raise ContractError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
+
+    def filter(self, **kwargs) -> Iterator[ContractLog]:
+        """
+        Search through the logs for this event using the given filter parameters.
+
+        Returns:
+            Iterator[:class:`~ape.contracts.base.ContractLog`]
+        """
+
+        for log in self._get_logs_iter():
+            if all([k in log.data and log.data[k] == v for k, v in kwargs.items()]):
+                yield log
+
+    def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
+        """
+        Get all the events from the given receipt.
+
+        Args:
+            receipt (:class:`~ape.api.providers.ReceiptAPI`): The receipt containing the logs.
+
+        Returns:
+            Iterator[:class:`~ape.contracts.base.ContractLog`]
+        """
+
+        ecosystem = self.provider.network.ecosystem
+        yield from ecosystem.decode_logs(self.abi, receipt.logs)
+
+    def _get_logs_list(self) -> List[ContractLog]:
+        return [log for log in self._get_logs_iter()]
+
+    def _get_logs_iter(self) -> Iterator[ContractLog]:
+        yield from self.provider.get_contract_logs(self.abi, self.contract.address)
 
 
 class ContractInstance(BaseAddress):
@@ -309,18 +385,19 @@ class ContractInstance(BaseAddress):
 
     @cached_property
     def _events_(self) -> Dict[str, ContractEvent]:
-        events: Dict[str, List[EventABI]] = dict()
+        events: Dict[str, EventABI] = {}
 
         for abi in self._contract_type.events:
             if abi.name in events:
-                events[abi.name].append(abi)
-            else:
-                events[abi.name] = [abi]
+                raise ContractError(
+                    f"Multiple events with the same ABI defined in '{self._contract_type.name}'."
+                )
+
+            events[abi.name] = abi
 
         try:
             return {
-                abi_name: ContractEvent(contract=self, abis=abis)
-                for abi_name, abis in events.items()
+                abi_name: ContractEvent(contract=self, abi=abi) for abi_name, abi in events.items()
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
@@ -341,7 +418,7 @@ class ContractInstance(BaseAddress):
 
     def __getattr__(self, attr_name: str) -> Any:
         """
-        Access a method or property on the contract using ``.`` access.
+        Access a method, property, or event on the contract using ``.`` access.
 
         Usage example::
 

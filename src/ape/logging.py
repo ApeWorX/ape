@@ -109,13 +109,6 @@ class CliLogger:
     def level(self) -> int:
         return self._logger.level
 
-    def disable(self):
-        """
-        Set the log level to ``100``.
-        """
-
-        self.set_level(100)
-
     def set_level(self, level: Union[str, int]):
         """
         Change the global ape logger log-level.

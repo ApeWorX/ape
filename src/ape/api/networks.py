@@ -1,6 +1,6 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
 
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
@@ -214,7 +214,7 @@ class EcosystemAPI(BaseInterfaceModel):
         ...
 
     @abstractmethod
-    def decode_event(self, abi: EventABI, receipt: "ReceiptAPI") -> "ContractLog":
+    def decode_logs(self, abi: EventABI, data: List[Dict]) -> Iterator["ContractLog"]:
         ...
 
     @abstractmethod

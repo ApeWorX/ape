@@ -9,10 +9,11 @@ from enum import Enum, IntEnum
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen, call
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Union
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
+from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import Field, validator
 from tqdm import tqdm  # type: ignore
@@ -28,11 +29,12 @@ from ape.exceptions import (
     TransactionError,
 )
 from ape.logging import logger
-from ape.types import BlockID, SnapshotID, TransactionSignature
+from ape.types import AddressType, BlockID, SnapshotID, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 if TYPE_CHECKING:
     from ape.api.explorers import ExplorerAPI
+    from ape.contracts import ContractLog
 
 
 def raises_not_implemented(fn):
@@ -203,7 +205,7 @@ class ReceiptAPI(BaseInterfaceModel):
     receiver: str
     nonce: Optional[int] = None
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
     def raise_for_status(self):
@@ -519,15 +521,16 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_events(self, **filter_params) -> Iterator[dict]:
+    def get_contract_logs(self, abi: EventABI, address: AddressType) -> Iterator["ContractLog"]:
         """
-        Get all logs matching a given set of filter parameters.
+        Get all logs matching the given set of filter parameters.
 
         Args:
-            `filter_params`: Filter which logs you get.
+            abi (``EventABI``): The event of interest's ABI.
+            address (``AddressType``): The contract address that defines the logs.
 
         Returns:
-            Iterator[dict]: A dictionary of events.
+            Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
     @raises_not_implemented
@@ -573,6 +576,10 @@ class ProviderAPI(BaseInterfaceModel):
         Raises:
             NotImplementedError: Unless overridden.
         """
+
+    def __repr__(self):
+        chain_id_output = f" chain_id={self.chain_id}" if self.chain_id is not None else ""
+        return f"<{self.name}{chain_id_output}>"
 
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self.chain_manager:
@@ -708,8 +715,13 @@ class Web3Provider(ProviderAPI, ABC):
         )
         return receipt.await_confirmations()
 
-    def get_events(self, **filter_params) -> Iterator[dict]:
-        return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
+    def get_contract_logs(
+        self, abi: Union[List[EventABI], EventABI], address: AddressType
+    ) -> Iterator["ContractLog"]:
+        abis = abi if isinstance(abi, (list, tuple)) else [abi]
+        for abi in abis:
+            for log in self._web3.eth.get_logs({"address": str(address)}):
+                yield self.network.ecosystem.decode_log(abi, log)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         txn_hash = self._web3.eth.send_raw_transaction(txn.serialize_transaction())
