@@ -521,7 +521,9 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_contract_logs(self, abi: EventABI, address: AddressType) -> Iterator["ContractLog"]:
+    def get_contract_logs(
+        self, address: AddressType, abi: Union[List[EventABI], EventABI], **filter_args
+    ) -> Iterator["ContractLog"]:
         """
         Get all logs matching the given set of filter parameters.
 
@@ -716,11 +718,14 @@ class Web3Provider(ProviderAPI, ABC):
         return receipt.await_confirmations()
 
     def get_contract_logs(
-        self, abi: Union[List[EventABI], EventABI], address: AddressType
+        self, address: AddressType, abi: Union[List[EventABI], EventABI], **filter_args
     ) -> Iterator["ContractLog"]:
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
         for abi in abis:
-            log_result = [dict(log) for log in self._web3.eth.get_logs({"address": address})]
+            request_dict = {"address": address, **filter_args}
+            log_result = [
+                dict(log) for log in self._web3.eth.get_logs(request_dict)
+            ]  # type: ignore
             for log in self.network.ecosystem.decode_logs(abi, log_result):
                 yield log
 

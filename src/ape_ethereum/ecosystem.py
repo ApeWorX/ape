@@ -335,13 +335,13 @@ class Ethereum(EcosystemAPI):
         log_topics = [i for i in abi.inputs if i.indexed]
         log_topic_names = [abi.name for abi in log_topics]
         normalized_log_topics = [abi for abi in _normalize_abi_types(log_topics)]
-        log_topic_types = [t for t in _get_abi_types(normalized_log_topics)]
+        log_topic_types = [t for t in _get_event_abi_types(normalized_log_topics)]
 
         # Process the rest of the log data
         log_data = [i for i in abi.inputs if not i.indexed]
         log_data_names = [abi.name for abi in log_data]
         normalized_log_data = [abi for abi in _normalize_abi_types(log_data)]
-        log_data_types = [t for t in _get_abi_types(normalized_log_data)]
+        log_data_types = [t for t in _get_event_abi_types(normalized_log_data)]
 
         # Sanity check that there are not name intersections between the topic
         # names and the data argument names.
@@ -363,10 +363,10 @@ class Ethereum(EcosystemAPI):
                 )
 
             decoded_topic_data = [
-                decode_single(topic_type, topic_data)
+                decode_single(topic_type, topic_data)  # type: ignore
                 for topic_type, topic_data in zip(log_topic_types, indexed_data)
             ]
-            decoded_log_data = decode_abi(log_data_types, log_data)
+            decoded_log_data = decode_abi(log_data_types, log_data)  # type: ignore
             event_args = dict(
                 itertools.chain(
                     zip(log_topic_names, decoded_topic_data),
@@ -384,7 +384,7 @@ def _normalize_abi_types(abi_inputs: List[EventABIType]) -> Iterator[Dict]:
             yield abi_input.dict()
 
 
-def _get_abi_types(abi_inputs: List[Dict]) -> Iterator[Union[str, Dict]]:
+def _get_event_abi_types(abi_inputs: List[Dict]) -> Iterator[Union[str, Dict]]:
     for abi_input in abi_inputs:
         abi_type = grammar.parse(abi_input["type"])
         if abi_type.is_dynamic:

@@ -277,7 +277,7 @@ class ContractEvent(ManagerAccessMixin):
         try:
             return self._get_logs_list()[index]
         except IndexError as err:
-            raise ContractError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
+            raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
 
     def filter(self, **kwargs) -> Iterator[ContractLog]:
         """
@@ -287,7 +287,7 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
-        for log in self._get_logs_iter():
+        for log in self._get_logs_iter(**kwargs):
             if all([k in log.data and log.data[k] == v for k, v in kwargs.items()]):
                 yield log
 
@@ -308,8 +308,8 @@ class ContractEvent(ManagerAccessMixin):
     def _get_logs_list(self) -> List[ContractLog]:
         return [log for log in self._get_logs_iter()]
 
-    def _get_logs_iter(self) -> Iterator[ContractLog]:
-        yield from self.provider.get_contract_logs(self.abi, self.contract.address)
+    def _get_logs_iter(self, **filter_args) -> Iterator[ContractLog]:
+        yield from self.provider.get_contract_logs(self.contract.address, self.abi, **filter_args)
 
 
 class ContractInstance(BaseAddress):
