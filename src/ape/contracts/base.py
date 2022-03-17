@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
@@ -129,8 +129,6 @@ class ContractCallHandler(ManagerAccessMixin):
 
         args = self._convert_tuple(args)
         selected_abi = _select_method_abi(self.abis, args)
-        if not selected_abi:
-            raise ArgumentsLengthError(len(args))
 
         return ContractCall(  # type: ignore
             abi=selected_abi,
@@ -138,13 +136,16 @@ class ContractCallHandler(ManagerAccessMixin):
         )(*args, **kwargs)
 
 
-def _select_method_abi(abis, args) -> MethodABI:
+def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> MethodABI:
     args = args or []
     selected_abi = None
     for abi in abis:
         inputs = abi.inputs or []
         if len(args) == len(inputs):
             selected_abi = abi
+
+    if not selected_abi:
+        raise ArgumentsLengthError(len(args))
 
     return selected_abi
 
@@ -206,8 +207,6 @@ class ContractTransactionHandler(ManagerAccessMixin):
 
         args = self._convert_tuple(args)
         selected_abi = _select_method_abi(self.abis, args)
-        if not selected_abi:
-            raise ArgumentsLengthError(len(args))
 
         return ContractTransaction(  # type: ignore
             abi=selected_abi,
