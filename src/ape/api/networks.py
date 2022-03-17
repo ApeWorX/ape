@@ -214,7 +214,7 @@ class EcosystemAPI(BaseInterfaceModel):
         ...
 
     @abstractmethod
-    def decode_logs(self, abi: EventABI, data: List[Dict]) -> Iterator["ContractLog"]:
+    def decode_logs(self, abi: EventABI, raw_logs: List[Dict]) -> Iterator["ContractLog"]:
         ...
 
     @abstractmethod
