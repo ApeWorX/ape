@@ -490,6 +490,6 @@ class ChainManager(BaseManager):
     ) -> None:
         if timestamp:
             self.pending_timestamp = timestamp
-        if deltatime:
+        elif deltatime:
             self.pending_timestamp += deltatime
         self.provider.mine(num_blocks)
