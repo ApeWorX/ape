@@ -1,4 +1,3 @@
-from datetime import timedelta
 import time
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
@@ -487,7 +486,7 @@ class ChainManager(BaseManager):
         self,
         num_blocks: int = 1,
         timestamp: Optional[int] = None,
-        deltatime: Optional[timedelta] = None,
+        deltatime: Optional[int] = None,
     ) -> None:
         if timestamp:
             self.pending_timestamp = timestamp
