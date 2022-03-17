@@ -218,14 +218,27 @@ class ContractTransactionHandler(ManagerAccessMixin):
 
 @dataclass
 class ContractLog:
+    """
+    An instance of a log from a contract.
+    """
 
     name: str
+    """The name of the event."""
+
     data: Dict[str, Any]
+    """The raw data associated with the log, including both indexed and non-indexed data."""
 
     def __repr__(self) -> str:
         return f"<{self.name}>"
 
     def __getattr__(self, item: str) -> Any:
+        """
+        Access properties from the log via ``.`` access.
+
+        Args:
+            item (str): The name of the property.
+        """
+
         if item in self.data:
             return self.data[item]
 
@@ -279,7 +292,7 @@ class ContractEvent(ManagerAccessMixin):
         except IndexError as err:
             raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
 
-    def filter(self, **kwargs) -> Iterator[ContractLog]:
+    def filter(self, operator="AND", **kwargs) -> Iterator[ContractLog]:
         """
         Search through the logs for this event using the given filter parameters.
 
@@ -287,8 +300,12 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
+        if operator.upper() not in ("OR", "AND"):
+            raise ValueError(f"Expecting OR or ALL for operator. Received '{operator}'.")
+
+        validate = all if operator == "AND" else any
         for log in self._get_logs_iter(**kwargs):
-            if all([k in log.data and log.data[k] == v for k, v in kwargs.items()]):
+            if validate([k in log.data and log.data[k] == v for k, v in kwargs.items()]):
                 yield log
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
