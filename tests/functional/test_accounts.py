@@ -28,7 +28,7 @@ def test_transfer_using_type_0(sender, receiver):
 
 def test_deploy(owner, contract_container):
     contract_instance = owner.deploy(contract_container)
-    assert contract_instance.address == "0x274b028b03A250cA03644E6c578D81f019eE1323"
+    assert contract_instance.address
 
 
 def test_contract_calls(owner, contract_instance):
