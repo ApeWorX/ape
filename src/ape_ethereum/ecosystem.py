@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
 from eth_abi import grammar
-from eth_abi.abi import decode_abi, decode_single
+from eth_abi.abi import decode_abi, decode_single, encode_single
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account._utils.legacy_transactions import (
@@ -20,6 +20,7 @@ from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 
 from ape.api import (
+    AccountAPI,
     BlockAPI,
     BlockConsensusAPI,
     BlockGasAPI,
@@ -325,6 +326,44 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)  # type: ignore
 
+    def encode_log_filter(self, abi: EventABI, **filter_args) -> Dict:
+        filter_data = {}
+
+        if "address" in filter_args:
+            address = filter_args.pop("address")
+            if not isinstance(address, (list, tuple)):
+                address = [address]
+
+            addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
+            filter_data["address"] = addresses
+
+        if "fromBlock" in filter_args:
+            filter_data["fromBlock"] = filter_args.pop("fromBlock")
+
+        if "toBlock" in filter_args:
+            filter_data["toBlock"] = filter_args.pop("toBlock")
+
+        if "topics" not in filter_args:
+            event_signature_hash = keccak(text=abi.selector).hex()
+            filter_data["topics"] = [event_signature_hash]
+
+            search_topics = [
+                self.conversion_manager.convert(a, AddressType) if isinstance(a, AccountAPI) else a
+                for a in filter_args.values()
+            ]
+
+            # Add remaining kwargs as topics to filter on.
+            topics = LogInputs(abi, True)
+            encoded_topic_data = [
+                encode_single(topic_type, topic_data).hex()  # type: ignore
+                for topic_type, topic_data in zip(topics.types, search_topics)
+            ]
+            filter_data["topics"].extend(encoded_topic_data)
+        else:
+            filter_data["topics"] = filter_args.pop("topics")
+
+        return filter_data
+
     def decode_logs(self, abi: EventABI, data: List[Dict]) -> Iterator["ContractLog"]:
         event_id_bytes = keccak(to_bytes(text=abi.selector))
         matching_logs = [log for log in data if log["topics"][0] == event_id_bytes]
@@ -332,20 +371,11 @@ class Ethereum(EcosystemAPI):
             raise DecodingError(f"No logs found with ID '{abi.selector}'.")
 
         # Process indexed data (topics)
-        log_topics = [i for i in abi.inputs if i.indexed]
-        log_topic_names = [abi.name for abi in log_topics]
-        normalized_log_topics = [abi for abi in _normalize_abi_types(log_topics)]
-        log_topic_types = [t for t in _get_event_abi_types(normalized_log_topics)]
+        abi_topics = LogInputs(abi, indexed=True)
+        abi_data = LogInputs(abi, indexed=False)
 
-        # Process the rest of the log data
-        log_data = [i for i in abi.inputs if not i.indexed]
-        log_data_names = [abi.name for abi in log_data]
-        normalized_log_data = [abi for abi in _normalize_abi_types(log_data)]
-        log_data_types = [t for t in _get_event_abi_types(normalized_log_data)]
-
-        # Sanity check that there are not name intersections between the topic
-        # names and the data argument names.
-        duplicate_names = set(log_topic_names).intersection(log_data_names)
+        # Verify no duplicate names
+        duplicate_names = set(abi_topics.names).intersection(abi_data.names)
         if duplicate_names:
             duplicate_names_str = ", ".join([n for n in duplicate_names if n])
             raise DecodingError(
@@ -357,20 +387,20 @@ class Ethereum(EcosystemAPI):
             indexed_data = log["topics"] if log.get("anonymous", False) else log["topics"][1:]
             log_data = hexstr_if_str(to_bytes, log["data"])  # type: ignore
 
-            if len(indexed_data) != len(log_topic_types):
+            if len(indexed_data) != len(abi_topics.types):
                 raise DecodingError(
-                    f"Expected '{len(indexed_data)}' log topics.  Got '{len(log_topic_types)}'."
+                    f"Expected '{len(indexed_data)}' log topics.  Got '{len(abi_topics.types)}'."
                 )
 
             decoded_topic_data = [
                 decode_single(topic_type, topic_data)  # type: ignore
-                for topic_type, topic_data in zip(log_topic_types, indexed_data)
+                for topic_type, topic_data in zip(abi_topics.types, indexed_data)
             ]
-            decoded_log_data = decode_abi(log_data_types, log_data)  # type: ignore
+            decoded_log_data = decode_abi(abi_data.types, log_data)  # type: ignore
             event_args = dict(
                 itertools.chain(
-                    zip(log_topic_names, decoded_topic_data),
-                    zip(log_data_names, decoded_log_data),
+                    zip(abi_topics.names, decoded_topic_data),
+                    zip(abi_data.names, decoded_log_data),
                 )
             )
             yield ContractLog(name=abi.name, data=event_args)  # type: ignore
@@ -391,3 +421,25 @@ def _get_event_abi_types(abi_inputs: List[Dict]) -> Iterator[Union[str, Dict]]:
             yield "bytes32"
         else:
             yield collapse_if_tuple(abi_input)
+
+
+class LogInputs:
+    def __init__(self, abi: EventABI, indexed: bool):
+        self.abi = abi
+        self._indexed = indexed
+
+    @property
+    def values(self) -> List[EventABIType]:
+        return [i for i in self.abi.inputs if i.indexed == self._indexed]
+
+    @property
+    def names(self) -> List[str]:
+        return [abi.name for abi in self.values if abi.name]
+
+    @property
+    def normalized_values(self) -> List[Dict]:
+        return [abi for abi in _normalize_abi_types(self.values)]
+
+    @property
+    def types(self) -> List[Union[str, Dict]]:
+        return [t for t in _get_event_abi_types(self.normalized_values)]

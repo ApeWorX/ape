@@ -722,10 +722,9 @@ class Web3Provider(ProviderAPI, ABC):
     ) -> Iterator["ContractLog"]:
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
         for abi in abis:
-            request_dict = {"address": address, **filter_args}
-            log_result = [
-                dict(log) for log in self._web3.eth.get_logs(request_dict)
-            ]  # type: ignore
+            filter_data = {"address": address, **filter_args}
+            event_filter = self.network.ecosystem.encode_log_filter(abi, **filter_data)
+            log_result = [dict(e) for e in self._web3.eth.get_logs(event_filter)]  # type: ignore
             for log in self.network.ecosystem.decode_logs(abi, log_result):
                 yield log
 

@@ -117,7 +117,7 @@ class ContractCallHandler(ManagerAccessMixin):
         self.abis = abis
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
+        abis = sorted(self.abis, key=lambda abi: len(abi.values or []))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -129,7 +129,7 @@ class ContractCallHandler(ManagerAccessMixin):
             raise _get_non_contract_error(self.contract.address, network)
 
         args = self._convert_tuple(args)
-        selected_abi = _select_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args)
         if not selected_abi:
             raise ArgumentsLengthError(len(args))
 
@@ -139,7 +139,7 @@ class ContractCallHandler(ManagerAccessMixin):
         )(*args, **kwargs)
 
 
-def _select_abi(abis, args):
+def _select_method_abi(abis, args) -> MethodABI:
     args = args or []
     selected_abi = None
     for abi in abis:
@@ -194,7 +194,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
         self.abis = abis
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
+        abis = sorted(self.abis, key=lambda abi: len(abi.values or []))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -206,7 +206,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
             raise _get_non_contract_error(self.contract.address, network)
 
         args = self._convert_tuple(args)
-        selected_abi = _select_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args)
         if not selected_abi:
             raise ArgumentsLengthError(len(args))
 
@@ -292,7 +292,7 @@ class ContractEvent(ManagerAccessMixin):
         except IndexError as err:
             raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
 
-    def filter(self, operator="AND", **kwargs) -> Iterator[ContractLog]:
+    def filter(self, **kwargs) -> Iterator[ContractLog]:
         """
         Search through the logs for this event using the given filter parameters.
 
@@ -300,13 +300,7 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
-        if operator.upper() not in ("OR", "AND"):
-            raise ValueError(f"Expecting OR or ALL for operator. Received '{operator}'.")
-
-        validate = all if operator == "AND" else any
-        for log in self._get_logs_iter(**kwargs):
-            if validate([k in log.data and log.data[k] == v for k, v in kwargs.items()]):
-                yield log
+        yield from self._get_logs_iter(**kwargs)
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """
@@ -322,11 +316,11 @@ class ContractEvent(ManagerAccessMixin):
         ecosystem = self.provider.network.ecosystem
         yield from ecosystem.decode_logs(self.abi, receipt.logs)
 
-    def _get_logs_list(self) -> List[ContractLog]:
-        return [log for log in self._get_logs_iter()]
+    def _get_logs_list(self, **kwargs) -> List[ContractLog]:
+        return [log for log in self._get_logs_iter(**kwargs)]
 
-    def _get_logs_iter(self, **filter_args) -> Iterator[ContractLog]:
-        yield from self.provider.get_contract_logs(self.contract.address, self.abi, **filter_args)
+    def _get_logs_iter(self, **kwargs) -> Iterator[ContractLog]:
+        yield from self.provider.get_contract_logs(self.contract.address, self.abi, **kwargs)
 
 
 class ContractInstance(BaseAddress):
