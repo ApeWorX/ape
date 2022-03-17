@@ -336,7 +336,7 @@ def add_padding_to_strings(
     they all have the same length.
 
     Args:
-        str_list (List[str]): The list of strings to add padding to.
+        str_list (List[str]): The list of strings that need padding.
         extra_spaces (int): Optionally append extra spacing. Defaults to ``0``.
         space_character (str): The character to use in the padding. Defaults to ``" "``.
 
