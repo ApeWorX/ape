@@ -3,6 +3,7 @@ from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import pandas as pd
 
+from ape import convert
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.query import BlockQuery
@@ -491,5 +492,5 @@ class ChainManager(BaseManager):
         if timestamp:
             self.pending_timestamp = timestamp
         elif deltatime:
-            self.pending_timestamp += deltatime
+            self.pending_timestamp = convert(deltatime, int)
         self.provider.mine(num_blocks)
