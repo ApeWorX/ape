@@ -28,6 +28,16 @@ def test_contract_logs_from_receipts(owner, contract_instance):
     assert_receipt_logs(receipt_2, 2)
 
 
+def test_contract_logs_from_event_type(contract_instance, owner):
+    event_type = contract_instance.NumberChange
+
+    for i in range(3):
+        contract_instance.set_number(i, sender=owner)
+
+    logs = [log for log in event_type]
+    assert len(logs) == 3
+
+
 def assert_log_values(log: ContractLog, expected_prev_num: int, expected_new_num: int):
     assert log.prev_num == expected_prev_num
     assert log.new_num == expected_new_num

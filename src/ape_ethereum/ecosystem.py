@@ -342,7 +342,7 @@ class Ethereum(EcosystemAPI):
             filter_data["toBlock"] = filter_args.pop("toBlock")
 
         if "topics" not in filter_args:
-            event_signature_hash = keccak(text=abi.selector).hex()
+            event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
             filter_data["topics"] = [event_signature_hash]
 
             search_topics = [

@@ -722,6 +722,10 @@ class Web3Provider(ProviderAPI, ABC):
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
         for abi in abis:
             filter_data = {"address": address, **filter_args}
+
+            if "startBlock" not in filter_args:
+                filter_args["startBlock"] = 0
+
             event_filter = self.network.ecosystem.encode_log_filter(abi, **filter_data)
             log_result = [dict(e) for e in self._web3.eth.get_logs(event_filter)]  # type: ignore
             yield from self.network.ecosystem.decode_logs(abi, log_result)
