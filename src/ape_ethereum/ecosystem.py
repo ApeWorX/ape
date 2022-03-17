@@ -1,5 +1,4 @@
 import itertools
-import re
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
@@ -405,14 +404,6 @@ class Ethereum(EcosystemAPI):
             yield ContractLog(name=abi.name, data=event_args)  # type: ignore
 
 
-def _normalize_abi_types(abi_inputs: List[EventABIType]) -> Iterator[Dict]:
-    for abi_input in abi_inputs:
-        if re.match(r"^{lib_name}r'\.{enum_name}$", str(abi_input.type)):
-            yield {k: "uint8" if k == "type" else v for k, v in abi_input.dict().items()}
-        else:
-            yield abi_input.dict()
-
-
 def _get_event_abi_types(abi_inputs: List[Dict]) -> Iterator[Union[str, Dict]]:
     for abi_input in abi_inputs:
         abi_type = grammar.parse(abi_input["type"])
@@ -437,7 +428,7 @@ class LogInputs:
 
     @property
     def normalized_values(self) -> List[Dict]:
-        return [abi for abi in _normalize_abi_types(self.values)]
+        return [abi.dict() for abi in self.values]
 
     @property
     def types(self) -> List[Union[str, Dict]]:
