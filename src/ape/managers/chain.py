@@ -483,7 +483,12 @@ class ChainManager(BaseManager):
         self.provider.revert(snapshot_id)
         self.account_history.revert_to_block(self.blocks.height)
 
-    def mine(self, num_blocks: int = 1, timestamp: Optional[int] = None, deltatime: Optional[timedelta] = None) -> None:
+    def mine(
+        self,
+        num_blocks: int = 1,
+        timestamp: Optional[int] = None,
+        deltatime: Optional[timedelta] = None,
+    ) -> None:
         if timestamp:
             self.pending_timestamp = timestamp
         if deltatime:
