@@ -267,8 +267,10 @@ class ContractEvent(ManagerAccessMixin):
         if index == 0:
             logs_slice = [next(self._get_logs_iter())]
         elif index > 0:
+            # Call over to 'self.__getitem_slice'.
             logs_slice = self[: index + 1]  # type: ignore
         else:
+            # Call over to 'self.__getitem_slice'.
             logs_slice = self[index:]  # type: ignore
 
         try:
