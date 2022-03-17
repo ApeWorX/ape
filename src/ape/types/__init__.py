@@ -71,6 +71,7 @@ __all__ = [
     "Bytecode",
     "Checksum",
     "Compiler",
+    "ContractLog",
     "ContractType",
     "MessageSignature",
     "PackageManifest",

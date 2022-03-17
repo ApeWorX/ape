@@ -723,7 +723,6 @@ class Web3Provider(ProviderAPI, ABC):
         for abi in abis:
             filter_data = {"address": address, **filter_args}
             event_filter = self.network.ecosystem.encode_log_filter(abi, **filter_data)
-
             log_result = [dict(e) for e in self._web3.eth.get_logs(event_filter)]  # type: ignore
             yield from self.network.ecosystem.decode_logs(abi, log_result)
 
