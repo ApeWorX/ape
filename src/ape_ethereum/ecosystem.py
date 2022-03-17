@@ -347,7 +347,7 @@ class Ethereum(EcosystemAPI):
         # names and the data argument names.
         duplicate_names = set(log_topic_names).intersection(log_data_names)
         if duplicate_names:
-            duplicate_names_str = ", ".join(duplicate_names)
+            duplicate_names_str = ", ".join([n for n in duplicate_names if n])
             raise DecodingError(
                 "The following argument names are duplicated "
                 f"between event inputs: '{duplicate_names_str}'."
@@ -355,7 +355,7 @@ class Ethereum(EcosystemAPI):
 
         for log in matching_logs:
             indexed_data = log["topics"] if log.get("anonymous", False) else log["topics"][1:]
-            log_data = hexstr_if_str(to_bytes, log["data"])
+            log_data = hexstr_if_str(to_bytes, log["data"])  # type: ignore
 
             if len(indexed_data) != len(log_topic_types):
                 raise DecodingError(

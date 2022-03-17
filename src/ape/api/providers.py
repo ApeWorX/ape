@@ -720,8 +720,9 @@ class Web3Provider(ProviderAPI, ABC):
     ) -> Iterator["ContractLog"]:
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
         for abi in abis:
-            for log in self._web3.eth.get_logs({"address": str(address)}):
-                yield self.network.ecosystem.decode_log(abi, log)
+            log_result = [dict(log) for log in self._web3.eth.get_logs({"address": address})]
+            for log in self.network.ecosystem.decode_logs(abi, log_result):
+                yield log
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         txn_hash = self._web3.eth.send_raw_transaction(txn.serialize_transaction())
