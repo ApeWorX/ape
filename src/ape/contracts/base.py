@@ -14,7 +14,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, ContractLog
-from ape.utils import ManagerAccessMixin, cached_property
+from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 if TYPE_CHECKING:
     from ape.managers.converters import ConversionManager
@@ -42,13 +42,13 @@ class ContractConstructor(ManagerAccessMixin):
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         args = self._convert_tuple(args)
-        kwargs = dict(
-            (k, v)
+        kwargs = {
+            k: v
             for k, v in zip(
                 kwargs.keys(),
                 self._convert_tuple(tuple(kwargs.values())),
             )
-        )
+        }
         return self.provider.network.ecosystem.encode_deployment(
             self.deployment_bytecode, self.abi, *args, **kwargs
         )
@@ -76,13 +76,13 @@ class ContractCall(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        kwargs = dict(
-            (k, v)
+        kwargs = {
+            k: v
             for k, v in zip(
                 kwargs.keys(),
                 self._convert_tuple(tuple(kwargs.values())),
             )
-        )
+        }
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
@@ -166,13 +166,13 @@ class ContractTransaction(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        kwargs = dict(
-            (k, v)
+        kwargs = {
+            k: v
             for k, v in zip(
                 kwargs.keys(),
                 self._convert_tuple(tuple(kwargs.values())),
             )
-        )
+        }
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
@@ -245,7 +245,15 @@ class ContractEvent(ManagerAccessMixin):
 
         return self.abi.name
 
-    def __getitem__(self, index: int) -> ContractLog:
+    def __iter__(self) -> Iterator[ContractLog]:
+        yield from self._get_logs_iter()
+
+    @singledispatchmethod
+    def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
+        raise NotImplementedError(f"Cannot use '{type(value)}' to access logs.")
+
+    @__getitem__.register
+    def __getitem_int(self, index: int) -> ContractLog:
         """
         Access events on the contract by the index of when they occurred.
 
@@ -257,10 +265,31 @@ class ContractEvent(ManagerAccessMixin):
             :class:`~ape.contracts.base.ContractLog`
         """
 
+        if index == 0:
+            logs_slice = [next(self._get_logs_iter())]
+        elif index > 0:
+            logs_slice = self[: index + 1]  # type: ignore
+        else:
+            logs_slice = self[index:]  # type: ignore
+
         try:
-            return self._get_logs_list()[index]
+            return logs_slice[index]
         except IndexError as err:
             raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
+
+    @__getitem__.register
+    def __getitem_slice(self, value: slice) -> List[ContractLog]:
+        collected_logs = []
+        counter = 0
+        for log in self._get_logs_iter():
+            if counter < value.start:
+                counter += 1
+                continue
+            elif counter >= value.start:
+                counter += value.step
+                collected_logs.append(log)
+
+        return collected_logs
 
     def filter(self, **kwargs) -> Iterator[ContractLog]:
         """

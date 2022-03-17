@@ -48,7 +48,7 @@ def raises_not_implemented(fn):
 
 class TransactionType(Enum):
     """
-    Transaction enumerables type constants defined by
+    Transaction enumerable type constants defined by
     `EIP-2718 <https://eips.ethereum.org/EIPS/eip-2718>`__.
     """
 
@@ -723,9 +723,9 @@ class Web3Provider(ProviderAPI, ABC):
         for abi in abis:
             filter_data = {"address": address, **filter_args}
             event_filter = self.network.ecosystem.encode_log_filter(abi, **filter_data)
+
             log_result = [dict(e) for e in self._web3.eth.get_logs(event_filter)]  # type: ignore
-            for log in self.network.ecosystem.decode_logs(abi, log_result):
-                yield log
+            yield from self.network.ecosystem.decode_logs(abi, log_result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         txn_hash = self._web3.eth.send_raw_transaction(txn.serialize_transaction())

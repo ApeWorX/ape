@@ -58,10 +58,10 @@ class ContractLog:
             item (str): The name of the property.
         """
 
-        if item in self.data:
-            return self.data[item]
+        if item not in self.data:
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
 
-        raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
+        return self.data[item]
 
 
 __all__ = [
