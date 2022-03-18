@@ -344,14 +344,25 @@ class Ethereum(EcosystemAPI):
         if "topics" not in filter_args:
             event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
             filter_data["topics"] = [event_signature_hash]
+            search_topics = []
+            abi_types = []
+            topics = _LogInputs(abi, True)
 
-            search_topics = [
-                self.conversion_manager.convert(a, AddressType) if isinstance(a, AccountAPI) else a
-                for a in filter_args.values()
-            ]
+            for name, arg in filter_args.items():
+                if isinstance(arg, AccountAPI):
+                    arg = self.conversion_manager.convert(arg, AddressType)
 
-            # Add remaining kwargs as topics to filter on.
-            topics = LogInputs(abi, True)
+                abi_type = None
+                for argument in topics.values:
+                    if argument.name == name:
+                        abi_type = argument.type
+
+                if not abi_type:
+                    raise DecodingError(f"'{name}' is not an indexed topic for event '{abi.name}'.")
+
+                search_topics.append(arg)
+                abi_types.append(abi_type)
+
             encoded_topic_data = [
                 encode_single(topic_type, topic_data).hex()  # type: ignore
                 for topic_type, topic_data in zip(topics.types, search_topics)
@@ -370,8 +381,8 @@ class Ethereum(EcosystemAPI):
             matching_logs = data
 
         # Process indexed data (topics)
-        abi_topics = LogInputs(abi, indexed=True)
-        abi_data = LogInputs(abi, indexed=False)
+        abi_topics = _LogInputs(abi, indexed=True)
+        abi_data = _LogInputs(abi, indexed=False)
 
         # Verify no duplicate names
         duplicate_names = set(abi_topics.names).intersection(abi_data.names)
@@ -414,7 +425,7 @@ def _get_event_abi_types(abi_inputs: List[Dict]) -> Iterator[Union[str, Dict]]:
             yield collapse_if_tuple(abi_input)
 
 
-class LogInputs:
+class _LogInputs:
     def __init__(self, abi: EventABI, indexed: bool):
         self.abi = abi
         self._indexed = indexed

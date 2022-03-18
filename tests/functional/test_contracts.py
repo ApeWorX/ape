@@ -1,5 +1,8 @@
+import pytest
+
 from ape import Contract
 from ape.api import Address, ReceiptAPI
+from ape.exceptions import DecodingError
 from ape.types import ContractLog
 
 
@@ -23,9 +26,9 @@ def test_contract_logs_from_receipts(owner, contract_instance):
         assert len(logs) == 1
         assert_log_values(logs[0], num)
 
-    assert_receipt_logs(receipt_0, 0)
-    assert_receipt_logs(receipt_1, 1)
-    assert_receipt_logs(receipt_2, 2)
+    assert_receipt_logs(receipt_0, 1)
+    assert_receipt_logs(receipt_1, 2)
+    assert_receipt_logs(receipt_2, 3)
 
 
 def test_contract_logs_from_event_type(contract_instance, owner):
@@ -37,11 +40,24 @@ def test_contract_logs_from_event_type(contract_instance, owner):
 
     logs = [log for log in event_type]
     assert len(logs) == 3
-    assert_log_values(logs[0], 0)
-    assert_log_values(logs[1], 1)
-    assert_log_values(logs[2], 2)
+    assert_log_values(logs[0], 1)
+    assert_log_values(logs[1], 2)
+    assert_log_values(logs[2], 3)
+
+
+def test_contract_logs_from_filter(contract_instance, owner):
+    contract_instance.set_number(1, sender=owner)
+    logs = [log for log in contract_instance.NumberChange.filter(new_num=1)]
+    assert len(logs) == 1
+    assert_log_values(logs[0], 1)
+
+
+def test_contract_logs_from_non_indexed_filter(contract_instance, owner):
+    contract_instance.set_number(1, sender=owner)
+    with pytest.raises(DecodingError):
+        _ = [log for log in contract_instance.NumberChange.filter(prev_num=1)]
 
 
 def assert_log_values(log: ContractLog, number: int):
-    assert log.prev_num == number
-    assert log.new_num == number + 1
+    assert log.prev_num == number - 1
+    assert log.new_num == number
