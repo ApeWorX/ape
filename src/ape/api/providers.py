@@ -724,10 +724,10 @@ class Web3Provider(ProviderAPI, ABC):
             filter_data = {"address": address, **filter_args}
 
             if "fromBlock" not in filter_args:
-                filter_data["fromBlock"] = 0
+                filter_data["fromBlock"] = 0  # type: ignore
 
             if "toBlock" not in filter_args:
-                filter_data["toBlock"] = "latest"
+                filter_data["toBlock"] = "latest"  # type: ignore
 
             event_filter = self.network.ecosystem.encode_log_filter(abi, **filter_data)
             log_result = [dict(e) for e in self._web3.eth.get_logs(event_filter)]  # type: ignore
