@@ -526,6 +526,8 @@ class ProviderAPI(BaseInterfaceModel):
         self,
         address: Union[AddressType, List[AddressType]],
         abi: Union[List[EventABI], EventABI],
+        start_block: Optional[BlockID] = None,
+        stop_block: Optional[BlockID] = None,
         **filter_args,
     ) -> Iterator[ContractLog]:
         """
@@ -534,6 +536,10 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             abi (``EventABI``): The event of interest's ABI.
             address (``AddressType``): The contract address that defines the logs.
+            start_block (:class:`~ape.types.BlockID`): Get events that occurred
+              in blocks after the block with this ID.
+            stop_block (:class:`~ape.types.BlockID`): Get events that occurred
+              in blocks before the block with this ID.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
