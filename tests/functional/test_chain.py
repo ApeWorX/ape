@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 
 from ape.exceptions import ChainError
@@ -110,3 +112,21 @@ def test_set_pending_timestamp(chain):
     chain.pending_timestamp += 3600
     new_timestamp = chain.pending_timestamp
     assert new_timestamp - start_timestamp == 3600
+
+
+def test_set_pending_timestamp_with_deltatime(chain):
+    start_timestamp = chain.pending_timestamp
+    chain.mine(deltatime=5)
+    new_timestamp = chain.pending_timestamp
+    assert new_timestamp - start_timestamp - 5 <= 1
+
+
+def test_set_pending_timestamp_failure(chain):
+    with pytest.raises(ValueError) as err:
+        chain.mine(
+            timestamp=int(
+                datetime.datetime.now().timestamp() + datetime.timedelta(seconds=10).seconds
+            ),
+            deltatime=10,
+        )
+    assert str(err.value) == "Cannot give both `timestamp` and `deltatime` arguments together."
