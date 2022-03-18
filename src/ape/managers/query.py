@@ -23,13 +23,6 @@ class DefaultQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:
-        """
-        Estimates the time that the query will take as a timestamp
-        Args:
-            query (``QueryType``): The transaction data you want to query
-        Returns:
-             Optional[int]: Depends on whether the query can be completed
-        """
 
         return None  # can't handle this query
 
@@ -40,13 +33,6 @@ class DefaultQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> pd.DataFrame:
-        """
-        Performs a query
-        Args:
-            query (``QueryType``): The specific transaction data you want to query
-        Returns:
-            pd.DataFrame: A pandas dataframe
-        """
 
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
