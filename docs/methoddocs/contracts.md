@@ -5,7 +5,7 @@
     :members:
     :show-inheritance:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
@@ -13,6 +13,13 @@
     :members:
     :show-inheritance:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __call__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __call__, __init__
 ```
 
+```{eval-rst}
+.. autoclass:: ape.contracts.base.ContractEvent
+    :members:
+    :show-inheritance:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__, __call__, __init__
+```
