@@ -53,4 +53,4 @@ Out[1]: 1
 
 ### Global Extras
 
-You can also add an `ape_console_extras.py` file to the global ape data directory (`$HOME/.ape/ape_console_extras.py`) and it will execute regardless of project context you are in.  This may be useful for variables and utility functions you use across all of your projects.
+You can also add an `ape_console_extras.py` file to the global ape data directory (`$HOME/.ape/ape_console_extras.py`) and it will execute regardless of what project context you are in.  This may be useful for variables and utility functions you use across all of your projects.
