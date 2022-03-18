@@ -213,10 +213,6 @@ class EcosystemAPI(BaseInterfaceModel):
         ...
 
     @abstractmethod
-    def encode_log_filter(self, abi: EventABI, **filter_args) -> Dict:
-        ...
-
-    @abstractmethod
     def decode_logs(self, abi: EventABI, raw_logs: List[Dict]) -> Iterator[ContractLog]:
         ...
 

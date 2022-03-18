@@ -3,8 +3,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
-from eth_abi import grammar
-from eth_abi.abi import decode_abi, decode_single, encode_single
+from eth_abi.abi import decode_abi, decode_single
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account._utils.legacy_transactions import (
@@ -13,13 +12,11 @@ from eth_account._utils.legacy_transactions import (
 )
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address, to_int
-from eth_utils.abi import collapse_if_tuple
 from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 
 from ape.api import (
-    AccountAPI,
     BlockAPI,
     BlockConsensusAPI,
     BlockGasAPI,
@@ -33,6 +30,7 @@ from ape.api import (
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
 from ape.types import AddressType, ContractLog
+from ape.utils import LogInputABICollection
 
 NETWORKS = {
     # chain_id, network_id
@@ -324,55 +322,6 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)  # type: ignore
 
-    def encode_log_filter(self, abi: EventABI, **filter_args) -> Dict:
-        filter_data = {}
-
-        if "address" in filter_args:
-            address = filter_args.pop("address")
-            if not isinstance(address, (list, tuple)):
-                address = [address]
-
-            addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
-            filter_data["address"] = addresses
-
-        if "fromBlock" in filter_args:
-            filter_data["fromBlock"] = filter_args.pop("fromBlock")
-
-        if "toBlock" in filter_args:
-            filter_data["toBlock"] = filter_args.pop("toBlock")
-
-        if "topics" not in filter_args:
-            event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
-            filter_data["topics"] = [event_signature_hash]
-            search_topics = []
-            abi_types = []
-            topics = _LogInputs(abi, True)
-
-            for name, arg in filter_args.items():
-                if isinstance(arg, AccountAPI):
-                    arg = self.conversion_manager.convert(arg, AddressType)
-
-                abi_type = None
-                for argument in topics.values:
-                    if argument.name == name:
-                        abi_type = argument.type
-
-                if not abi_type:
-                    raise DecodingError(f"'{name}' is not an indexed topic for event '{abi.name}'.")
-
-                search_topics.append(arg)
-                abi_types.append(abi_type)
-
-            encoded_topic_data = [
-                encode_single(topic_type, topic_data).hex()  # type: ignore
-                for topic_type, topic_data in zip(topics.types, search_topics)
-            ]
-            filter_data["topics"].extend(encoded_topic_data)
-        else:
-            filter_data["topics"] = filter_args.pop("topics")
-
-        return filter_data
-
     def decode_logs(self, abi: EventABI, data: List[Dict]) -> Iterator["ContractLog"]:
         if not abi.anonymous:
             event_id_bytes = keccak(to_bytes(text=abi.selector))
@@ -380,11 +329,17 @@ class Ethereum(EcosystemAPI):
         else:
             matching_logs = data
 
-        # Process indexed data (topics)
-        abi_topics = _LogInputs(abi, indexed=True)
-        abi_data = _LogInputs(abi, indexed=False)
+        topics_list: List[EventABIType] = []
+        data_list: List[EventABIType] = []
+        for abi_input in abi.inputs:
+            if abi_input.indexed:
+                topics_list.append(abi_input)
+            else:
+                data_list.append(abi_input)
 
-        # Verify no duplicate names
+        abi_topics = LogInputABICollection(abi, topics_list)
+        abi_data = LogInputABICollection(abi, data_list)
+
         duplicate_names = set(abi_topics.names).intersection(abi_data.names)
         if duplicate_names:
             duplicate_names_str = ", ".join([n for n in duplicate_names if n])
@@ -414,34 +369,3 @@ class Ethereum(EcosystemAPI):
                 )
             )
             yield ContractLog(name=abi.name, data=event_args)  # type: ignore
-
-
-def _get_event_abi_types(abi_inputs: List[Dict]) -> Iterator[Union[str, Dict]]:
-    for abi_input in abi_inputs:
-        abi_type = grammar.parse(abi_input["type"])
-        if abi_type.is_dynamic:
-            yield "bytes32"
-        else:
-            yield collapse_if_tuple(abi_input)
-
-
-class _LogInputs:
-    def __init__(self, abi: EventABI, indexed: bool):
-        self.abi = abi
-        self._indexed = indexed
-
-    @property
-    def values(self) -> List[EventABIType]:
-        return [i for i in self.abi.inputs if i.indexed == self._indexed]
-
-    @property
-    def names(self) -> List[str]:
-        return [abi.name for abi in self.values if abi.name]
-
-    @property
-    def normalized_values(self) -> List[Dict]:
-        return [abi.dict() for abi in self.values]
-
-    @property
-    def types(self) -> List[Union[str, Dict]]:
-        return [t for t in _get_event_abi_types(self.normalized_values)]

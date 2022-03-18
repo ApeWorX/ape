@@ -11,8 +11,9 @@ from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen, call
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Union
 
+from eth_abi.abi import encode_single
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix
+from eth_utils import add_0x_prefix, keccak
 from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import Field, validator
@@ -22,6 +23,7 @@ from web3 import Web3
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
 from ape.exceptions import (
+    DecodingError,
     ProviderError,
     RPCTimeoutError,
     SubprocessError,
@@ -30,7 +32,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID, TransactionSignature
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
+from ape.utils import BaseInterfaceModel, LogInputABICollection, abstractmethod, cached_property
 
 if TYPE_CHECKING:
     from ape.api.explorers import ExplorerAPI
@@ -521,7 +523,10 @@ class ProviderAPI(BaseInterfaceModel):
 
     @abstractmethod
     def get_contract_logs(
-        self, address: AddressType, abi: Union[List[EventABI], EventABI], **filter_args
+        self,
+        address: Union[AddressType, List[AddressType]],
+        abi: Union[List[EventABI], EventABI],
+        **filter_args,
     ) -> Iterator[ContractLog]:
         """
         Get all logs matching the given set of filter parameters.
@@ -717,20 +722,60 @@ class Web3Provider(ProviderAPI, ABC):
         return receipt.await_confirmations()
 
     def get_contract_logs(
-        self, address: AddressType, abi: Union[List[EventABI], EventABI], **filter_args
+        self,
+        address: Union[AddressType, List[AddressType]],
+        abi: Union[List[EventABI], EventABI],
+        **filter_args,
     ) -> Iterator[ContractLog]:
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
         for abi in abis:
-            filter_data = {"address": address, **filter_args}
+            if not isinstance(address, (list, tuple)):
+                address = [address]
 
-            if "fromBlock" not in filter_args:
-                filter_data["fromBlock"] = 0  # type: ignore
+            addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
+            filter_arg_builder = {
+                "address": addresses,
+                "fromBlock": filter_args.pop("fromBlock", 0),
+                "toBlock": filter_args.pop("toBlock", "latest"),
+            }
 
-            if "toBlock" not in filter_args:
-                filter_data["toBlock"] = "latest"  # type: ignore
+            if "topics" not in filter_args:
+                event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
+                filter_arg_builder["topics"] = [event_signature_hash]
+                search_topics = []
+                abi_types = []
+                topics = LogInputABICollection(
+                    abi, [abi_input for abi_input in abi.inputs if abi_input.indexed]
+                )
 
-            event_filter = self.network.ecosystem.encode_log_filter(abi, **filter_data)
-            log_result = [dict(e) for e in self._web3.eth.get_logs(event_filter)]  # type: ignore
+                for name, arg in filter_args.items():
+                    if hasattr(arg, "address"):
+                        arg = self.conversion_manager.convert(arg, AddressType)
+
+                    abi_type = None
+                    for argument in topics.values:
+                        if argument.name == name:
+                            abi_type = argument.type
+
+                    if not abi_type:
+                        raise DecodingError(
+                            f"'{name}' is not an indexed topic for event '{abi.name}'."
+                        )
+
+                    search_topics.append(arg)
+                    abi_types.append(abi_type)
+
+                encoded_topic_data = [
+                    encode_single(topic_type, topic_data).hex()  # type: ignore
+                    for topic_type, topic_data in zip(topics.types, search_topics)
+                ]
+                filter_arg_builder["topics"].extend(encoded_topic_data)
+            else:
+                filter_arg_builder["topics"] = filter_args.pop("topics")
+
+            log_result = [
+                dict(e) for e in self._web3.eth.get_logs(filter_arg_builder)  # type: ignore
+            ]
             yield from self.network.ecosystem.decode_logs(abi, log_result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
