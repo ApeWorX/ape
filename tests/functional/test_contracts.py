@@ -21,7 +21,7 @@ def test_contract_logs_from_receipts(owner, contract_instance):
     def assert_receipt_logs(receipt: ReceiptAPI, num: int):
         logs = [log for log in event_type.from_receipt(receipt)]
         assert len(logs) == 1
-        assert_log_values(logs[0], num, num + 1)
+        assert_log_values(logs[0], num)
 
     assert_receipt_logs(receipt_0, 0)
     assert_receipt_logs(receipt_1, 1)
@@ -31,13 +31,17 @@ def test_contract_logs_from_receipts(owner, contract_instance):
 def test_contract_logs_from_event_type(contract_instance, owner):
     event_type = contract_instance.NumberChange
 
-    for i in range(3):
-        contract_instance.set_number(i, sender=owner)
+    contract_instance.set_number(1, sender=owner)
+    contract_instance.set_number(2, sender=owner)
+    contract_instance.set_number(3, sender=owner)
 
     logs = [log for log in event_type]
     assert len(logs) == 3
+    assert_log_values(logs[0], 0)
+    assert_log_values(logs[1], 1)
+    assert_log_values(logs[2], 2)
 
 
-def assert_log_values(log: ContractLog, expected_prev_num: int, expected_new_num: int):
-    assert log.prev_num == expected_prev_num
-    assert log.new_num == expected_new_num
+def assert_log_values(log: ContractLog, number: int):
+    assert log.prev_num == number
+    assert log.new_num == number + 1

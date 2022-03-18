@@ -366,8 +366,8 @@ class Ethereum(EcosystemAPI):
         if not abi.anonymous:
             event_id_bytes = keccak(to_bytes(text=abi.selector))
             matching_logs = [log for log in data if log["topics"][0] == event_id_bytes]
-            if not matching_logs:
-                raise DecodingError(f"No logs found with ID '{abi.selector}'.")
+        else:
+            matching_logs = data
 
         # Process indexed data (topics)
         abi_topics = LogInputs(abi, indexed=True)
