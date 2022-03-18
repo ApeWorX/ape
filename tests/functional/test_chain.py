@@ -110,3 +110,10 @@ def test_set_pending_timestamp(chain):
     chain.pending_timestamp += 3600
     new_timestamp = chain.pending_timestamp
     assert new_timestamp - start_timestamp == 3600
+
+
+def test_set_pending_timestamp_with_deltatime(chain):
+    start_timestamp = chain.pending_timestamp
+    chain.mine(deltatime=5)
+    new_timestamp = chain.pending_timestamp
+    assert new_timestamp - start_timestamp - 5 <= 1
