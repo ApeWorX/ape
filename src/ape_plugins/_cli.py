@@ -8,7 +8,7 @@ import click
 from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins import plugin_manager
-from ape.utils import github_client, load_config
+from ape.utils import add_padding_to_strings, github_client, load_config
 from ape_plugins.utils import ApePlugin, ModifyPluginResultHandler
 
 
@@ -82,7 +82,7 @@ def upgrade_option(help: str = "", **kwargs):
     return click.option("-U", "--upgrade", default=False, is_flag=True, help=help, **kwargs)
 
 
-@cli.command(name="list")
+@cli.command(name="list", short_help="Display plugins")
 @click.option(
     "-a",
     "--all",
@@ -93,76 +93,59 @@ def upgrade_option(help: str = "", **kwargs):
 )
 @ape_cli_context()
 def _list(cli_ctx, display_all):
-    """Display plugins"""
-
-    installed_first_class_plugins = set()
-    installed_second_class_plugins = set()
-    installed_second_class_plugins_no_version = set()
-    installed_third_class_plugins = set()
-
+    installed_core_plugins = set()
+    installed_org_plugins = {}
+    installed_third_party_plugins = {}
     plugin_list = plugin_manager.list_name_plugin()
-    plugin_names = [p[0] for p in plugin_list]
-    longest_plugin_name = len(max(plugin_names, key=len))
-    space_buffer = 4
+    spaced_names = add_padding_to_strings([p[0] for p in plugin_list], extra_spaces=4)
 
-    for name, _ in plugin_list:
+    for name in spaced_names:
         plugin = ApePlugin(name)
-        spacing = (longest_plugin_name - len(plugin.name) + space_buffer) * " "
+
         if plugin.is_part_of_core:
             if not display_all:
-                continue  # NOTE: Skip 1st class plugins unless specified
+                continue
 
-            installed_first_class_plugins.add(name)
+            installed_core_plugins.add(name)
 
         elif plugin.is_available:
-            installed_second_class_plugins.add(f"{name}{spacing}{plugin.current_version}")
-            installed_second_class_plugins_no_version.add(name)
-
+            installed_org_plugins[name] = plugin.current_version
         elif not plugin.is_part_of_core or not plugin.is_available:
-            installed_third_class_plugins.add(f"{name}{spacing}{plugin.current_version}")
+            installed_third_party_plugins[name] = plugin.current_version
         else:
             cli_ctx.logger.error(f"'{plugin.name}' is not a plugin.")
 
     sections = {}
-
-    # First Class Plugins
     if display_all:
-        sections["Installed Core Plugins"] = [installed_first_class_plugins]
+        sections["Installed Core Plugins"] = [installed_core_plugins]
 
-    # Second and Third Class Plugins
-    available_second = list(
-        github_client.available_plugins - installed_second_class_plugins_no_version
-    )
+    # Get all plugins that are available and not already installed.
+    available_plugins = list(github_client.available_plugins - installed_org_plugins.keys())
 
-    installed_plugins = []
-    if installed_second_class_plugins:
-        installed_plugins.append(installed_second_class_plugins)
+    # Get the list of plugin lists that are populated.
+    installed_plugin_lists = [
+        ls for ls in [installed_org_plugins, installed_third_party_plugins] if ls
+    ]
 
-    if installed_third_class_plugins:
-        installed_plugins.append(installed_third_class_plugins)
-
-    if installed_plugins:
-        sections["Installed Plugins"] = installed_plugins
-    elif not display_all:
-        # user has no plugins installed | cant verify installed plugins
-        if available_second:
-            click.echo("No secondary plugins installed. Use '--all' to see available plugins.")
+    if installed_plugin_lists:
+        sections["Installed Plugins"] = installed_plugin_lists
+    elif not display_all and available_plugins:
+        # User has no plugins installed | can't verify installed plugins
+        click.echo("No secondary plugins installed. Use '--all' to see available plugins.")
 
     if display_all:
-        available_second_output = _format_output(available_second)
+        available_second_output = _format_output(available_plugins)
         if available_second_output:
             sections["Available Plugins"] = [available_second_output]
-
-        else:
-            if github_client.available_plugins:
-                click.echo("You have installed all the available Plugins\n")
+        elif github_client.available_plugins:
+            click.echo("You have installed all the available plugins.\n")
 
     for i in range(0, len(sections)):
         header = list(sections.keys())[i]
         output = sections[header]
         _display_section(f"{header}:", output)
 
-        if i < (len(sections) - 1):
+        if i < len(sections) - 1:
             click.echo()
 
 

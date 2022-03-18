@@ -136,10 +136,10 @@ class ConfigManager(BaseInterfaceModel):
         user_config = load_config(config_file) if config_file.exists() else {}
         self.name = configs["name"] = user_config.pop("name", "")
         self.version = configs["version"] = user_config.pop("version", "")
-
         self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
             "default_ecosystem", "ethereum"
         )
+        self.network_manager.set_default_ecosystem(self.default_ecosystem)
 
         dependencies = user_config.pop("dependencies", []) or []
         if not isinstance(dependencies, list):
