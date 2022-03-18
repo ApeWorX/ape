@@ -482,7 +482,30 @@ class ChainManager(BaseManager):
         self.provider.revert(snapshot_id)
         self.account_history.revert_to_block(self.blocks.height)
 
-    def mine(self, num_blocks: int = 1, timestamp: Optional[int] = None) -> None:
+    def mine(
+        self,
+        num_blocks: int = 1,
+        timestamp: Optional[int] = None,
+        deltatime: Optional[int] = None,
+    ) -> None:
+        """
+        Mine any given number of blocks.
+
+        Raises:
+            ValueError: When a timestamp AND a deltatime argument are both passed
+
+        Args:
+            num_blocks (int): Choose the number of blocks to mine.
+                Defaults to 1 block.
+            timestamp (Optional[int]): Designate a time (in seconds) to begin mining.
+                Defaults to None.
+            deltatime (Optional[int]): Designate a change in time (in seconds) to begin mining.
+                Defaults to None
+        """
+        if timestamp and deltatime:
+            raise ValueError
         if timestamp:
             self.pending_timestamp = timestamp
+        elif deltatime:
+            self.pending_timestamp = deltatime
         self.provider.mine(num_blocks)
