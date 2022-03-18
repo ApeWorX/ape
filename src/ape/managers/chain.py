@@ -503,7 +503,7 @@ class ChainManager(BaseManager):
                 Defaults to None
         """
         if timestamp and deltatime:
-            raise ValueError
+            raise ValueError("Cannot give both `timestamp` and `deltatime` arguments together.")
         if timestamp:
             self.pending_timestamp = timestamp
         elif deltatime:
