@@ -526,8 +526,8 @@ class ProviderAPI(BaseInterfaceModel):
         self,
         address: Union[AddressType, List[AddressType]],
         abi: Union[List[EventABI], EventABI],
-        start_block: Optional[BlockID] = None,
-        stop_block: Optional[BlockID] = None,
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
         **filter_args,
     ) -> Iterator[ContractLog]:
         """
@@ -536,9 +536,9 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             abi (``EventABI``): The event of interest's ABI.
             address (``AddressType``): The contract address that defines the logs.
-            start_block (:class:`~ape.types.BlockID`): Get events that occurred
+            start_block (Optional[:class:`~ape.types.BlockID`]): Get events that occurred
               in blocks after the block with this ID.
-            stop_block (:class:`~ape.types.BlockID`): Get events that occurred
+            stop_block (Optional[:class:`~ape.types.BlockID`]): Get events that occurred
               in blocks before the block with this ID.
 
         Returns:
@@ -731,20 +731,22 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         address: Union[AddressType, List[AddressType]],
         abi: Union[List[EventABI], EventABI],
-        start_block: Optional[BlockID] = None,
-        stop_block: Optional[BlockID] = None,
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
         **filter_args,
     ) -> Iterator[ContractLog]:
+        start_block = start_block or 0
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
         for abi in abis:
             if not isinstance(address, (list, tuple)):
                 address = [address]
 
             addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
+            stop_block = stop_block or start_block + 100
             filter_arg_builder: Dict = {
                 "address": addresses,
-                "fromBlock": start_block or 0,
-                "toBlock": stop_block or "latest",
+                "fromBlock": start_block,
+                "toBlock": stop_block,
                 "topics": [],
             }
 

@@ -47,6 +47,18 @@ class ContractLog:
     data: Dict[str, Any]
     """The raw data associated with the log, including both indexed and non-indexed data."""
 
+    transaction_hash: Any
+    """The hash of the transaction containing this log."""
+
+    block_number: int
+    """The number of the block containing the transaction that produced this log."""
+
+    block_hash: Any
+    """The hash of the block containing the transaction that produced this log."""
+
+    index: int
+    """The index of the log on the transaction."""
+
     def __repr__(self) -> str:
         return f"<{self.name}>"
 
@@ -62,6 +74,9 @@ class ContractLog:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
 
         return self.data[item]
+
+    def __eq__(self, other) -> bool:
+        return self.transaction_hash == other.transaction_hash and self.index == other.index
 
 
 __all__ = [

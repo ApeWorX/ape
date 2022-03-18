@@ -245,7 +245,7 @@ class ContractEvent(ManagerAccessMixin):
         return self.abi.name
 
     def __iter__(self) -> Iterator[ContractLog]:
-        yield from self._get_logs_iter()
+        yield from self.filter()
 
     @singledispatchmethod
     def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
@@ -292,15 +292,55 @@ class ContractEvent(ManagerAccessMixin):
 
         return collected_logs
 
-    def filter(self, **kwargs) -> Iterator[ContractLog]:
+    def filter(
+        self, start_block: int = 0, stop_block: Optional[int] = None, **kwargs
+    ) -> Iterator[ContractLog]:
         """
         Search through the logs for this event using the given filter parameters.
+
+        Args:
+            start_block (Optional[int]): The earliest block number in
+              the desired log set. Defaults to ``0``.
+            stop_block (Optional[int]): The latest block number in the
+              desired log set. Defaults to ``start_block + 100``.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
-        yield from self._get_logs_iter(**kwargs)
+        BLOCK_RANGE_LIMIT = 100
+        required_confirmations = self.provider.network.required_confirmations
+        height = self.chain_manager.blocks.height
+
+        stop_block = height - required_confirmations if stop_block is None else stop_block
+        difference = stop_block - start_block
+
+        start = start_block
+        stop = start_block + BLOCK_RANGE_LIMIT if difference > BLOCK_RANGE_LIMIT else stop_block
+
+        # Cache the logs with the latest block number in the last batch
+        # to prevent yielding duplicate logs.
+        logs_cache = []
+
+        while start < stop_block:
+            kwargs = {"start_block": start, "stop_block": stop, **kwargs}
+            logs = [log for log in self._get_logs_iter(**kwargs)]
+            largest_block_num = logs[-1].block_number
+
+            if len(logs) == 0:
+                break
+
+            for log in logs:
+                # Ignore logs that were already logged last iteration.
+                if log not in logs_cache:
+                    yield log
+
+            # Reset the logs cache to the logs with the largest block_num this iteration.
+            logs_cache = [log for log in logs if log.block_number == largest_block_num]
+
+            # Start the next iteration on the largest block number to get remaining events.
+            # NOTE: Duplicate events will be filtered out.
+            start = largest_block_num
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """
