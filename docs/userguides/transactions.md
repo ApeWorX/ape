@@ -76,7 +76,7 @@ When declaring `type="0x0"` and _not_ specifying a `gas_price`, the `gas_price` 
 
 ## Transaction Logs
 
-To get logs that occurred during a transaction, you can use the [ContractEvent.from_receipt()](../methoddocs/contracts.html?highlight=contractevent#ape.contracts.base.ContractEvent.from_receipt) and access your data from the [ContractLog](../methoddocs/types.html#ape.types.ContractLog) objects that it returns.
+To get logs that occurred during a transaction, you can use the [ContractEvent.from_receipt(receipt)](../methoddocs/contracts.html?highlight=contractevent#ape.contracts.base.ContractEvent.from_receipt) and access your data from the [ContractLog](../methoddocs/types.html#ape.types.ContractLog) objects that it returns.
 
 The following is an example demonstrating how to access logs from an instance of a contract.
 
