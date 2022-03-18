@@ -585,6 +585,27 @@ See <a class="reference external" href="https://chainlist.org/">ChainList</a> fo
 <dd><p>The price for what it costs to transact.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ChainManager.mine">
+<span class="sig-name descname"><span class="pre">mine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_blocks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltatime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.chain.ChainManager.mine" title="Permalink to this definition"></a></dt>
+<dd><p>Mine any given number of blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – When a timestamp AND a deltatime argument are both passed</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>num_blocks</strong> (<em>int</em>) – Choose the number of blocks to mine.
+Defaults to 1 block.</p></li>
+<li><p><strong>timestamp</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Designate a time (in seconds) to begin mining.
+Defaults to None.</p></li>
+<li><p><strong>deltatime</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Designate a change in time (in seconds) to begin mining.
+Defaults to None</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.chain.ChainManager.pending_timestamp">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pending_timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.managers.chain.ChainManager.pending_timestamp" title="Permalink to this definition"></a></dt>
