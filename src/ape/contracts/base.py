@@ -316,9 +316,6 @@ class ContractEvent(ManagerAccessMixin):
         ecosystem = self.provider.network.ecosystem
         yield from ecosystem.decode_logs(self.abi, receipt.logs)
 
-    def _get_logs_list(self, **kwargs) -> List[ContractLog]:
-        return [log for log in self._get_logs_iter(**kwargs)]
-
     def _get_logs_iter(self, **kwargs) -> Iterator[ContractLog]:
         yield from self.provider.get_contract_logs(self.contract.address, self.abi, **kwargs)
 
