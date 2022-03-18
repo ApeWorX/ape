@@ -689,7 +689,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
 
         #    TypeError: cannot pickle '_thread.RLock' object
 
-        keep_untouched = (cached_property,)
+        keep_untouched = (cached_property, singledispatchmethod)
         arbitrary_types_allowed = True
         underscore_attrs_are_private = True
         anystr_strip_whitespace = True
