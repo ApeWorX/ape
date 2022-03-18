@@ -124,7 +124,9 @@ def test_set_pending_timestamp_with_deltatime(chain):
 def test_set_pending_timestamp_failure(chain):
     with pytest.raises(ValueError) as err:
         chain.mine(
-            timestamp=int(datetime.datetime.now().timestamp() + datetime.timedelta(seconds=10).seconds),
-            deltatime=10
+            timestamp=int(
+                datetime.datetime.now().timestamp() + datetime.timedelta(seconds=10).seconds
+            ),
+            deltatime=10,
         )
     assert str(err.value) == "Cannot give both `timestamp` and `deltatime` arguments together."
