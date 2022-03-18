@@ -19,7 +19,8 @@ An example file might look something like this:
 from eth_utils import encode_hex, decode_hex
 
 
-latest = lambda key: getattr(networks.active_provider.get_block("latest"), key)
+def latest(key):
+    return getattr(networks.active_provider.get_block("latest"), key)
 ```
 
 Then both imported util functions and `WETH_ADDRESS` will be available when you launch the console.
