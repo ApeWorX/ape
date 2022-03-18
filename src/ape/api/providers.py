@@ -725,6 +725,8 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         address: Union[AddressType, List[AddressType]],
         abi: Union[List[EventABI], EventABI],
+        start_block: Optional[BlockID] = None,
+        stop_block: Optional[BlockID] = None,
         **filter_args,
     ) -> Iterator[ContractLog]:
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
@@ -733,10 +735,11 @@ class Web3Provider(ProviderAPI, ABC):
                 address = [address]
 
             addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
-            filter_arg_builder = {
+            filter_arg_builder: Dict = {
                 "address": addresses,
-                "fromBlock": filter_args.pop("fromBlock", 0),
-                "toBlock": filter_args.pop("toBlock", "latest"),
+                "fromBlock": start_block or 0,
+                "toBlock": stop_block or "latest",
+                "topics": [],
             }
 
             if "topics" not in filter_args:
