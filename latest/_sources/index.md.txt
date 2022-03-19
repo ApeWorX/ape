@@ -10,6 +10,7 @@
    userguides/plugins
    userguides/config
    userguides/transactions
+   userguides/console
 ```
 
 ```{eval-rst}
