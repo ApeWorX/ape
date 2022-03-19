@@ -212,7 +212,7 @@ class Ethereum(EcosystemAPI):
             size=data.get("size"),
             timestamp=data.get("timestamp"),
             hash=data.get("hash"),
-            parent_hash=data.get("hash"),
+            parent_hash=data.get("parentHash"),
         )
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
