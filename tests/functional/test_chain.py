@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+from hexbytes import HexBytes
 
 from ape.exceptions import ChainError
 
@@ -90,9 +91,12 @@ def test_blocks_range(chain_at_block_5):
     assert len(blocks) == expected_number_of_blocks
 
     expected_number = 0
+    prev_block_hash = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
     for block in blocks:
         assert block.number == expected_number
         expected_number += 1
+        assert block.parent_hash == prev_block_hash
+        prev_block_hash = block.hash
 
 
 def test_blocks_range_too_high_stop(chain_at_block_5):
