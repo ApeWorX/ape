@@ -1,10 +1,25 @@
-from typing import Dict, Iterator, List, Type
+from typing import Dict, Iterator, List, Optional, Type
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
-from ape.types import AddressType
+from ape.api.providers import TransactionAPI
+from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.utils import cached_property, singledispatchmethod
 
 from .base import BaseManager
+
+
+class ImpersonatedAccount(AccountAPI):
+    raw_address: AddressType
+
+    @property
+    def address(self) -> AddressType:
+        return self.raw_address
+
+    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
+        raise NotImplementedError("This account cannot sign messages")
+
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
+        return None
 
 
 class AccountManager(BaseManager):
@@ -174,7 +189,8 @@ class AccountManager(BaseManager):
     @__getitem__.register
     def __getitem_str(self, account_str: str) -> AccountAPI:
         """
-        Get an account by address.
+        Get an account by address. If we are using a provider that supports unlocking
+        accounts, this method will return an impersonated account at that address.
 
         Raises:
             IndexError: When there is no local account with the given address.
@@ -189,7 +205,18 @@ class AccountManager(BaseManager):
             if account_id in container.accounts:
                 return container[account_id]
 
-        raise IndexError(f"No account with address '{account_id}'.")
+        can_impersonate = False
+        try:
+            if self.network_manager.active_provider:
+                can_impersonate = self.network_manager.active_provider.unlock_account(account_id)
+            # else: fall through to `IndexError`
+        except NotImplementedError:
+            pass  # fall through to `IndexError`
+
+        if can_impersonate:
+            return ImpersonatedAccount(raw_address=account_id)
+        else:
+            raise IndexError(f"No account with address '{account_id}'.")
 
     def __contains__(self, address: AddressType) -> bool:
         """
