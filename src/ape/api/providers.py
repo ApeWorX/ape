@@ -528,6 +528,7 @@ class ProviderAPI(BaseInterfaceModel):
         abi: Union[List[EventABI], EventABI],
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
+        block_page_size: Optional[int] = None,
         **filter_args,
     ) -> Iterator[ContractLog]:
         """
@@ -536,10 +537,12 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             abi (``EventABI``): The event of interest's ABI.
             address (``AddressType``): The contract address that defines the logs.
-            start_block (Optional[:class:`~ape.types.BlockID`]): Get events that occurred
+            start_block (Optional[int]): Get events that occurred
               in blocks after the block with this ID.
-            stop_block (Optional[:class:`~ape.types.BlockID`]): Get events that occurred
+            stop_block (Optional[int]): Get events that occurred
               in blocks before the block with this ID.
+            block_page_size (Optional[int]): Use this parameter to adjust
+              request block range sizes.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
@@ -733,17 +736,84 @@ class Web3Provider(ProviderAPI, ABC):
         abi: Union[List[EventABI], EventABI],
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
+        block_page_size: Optional[int] = None,
         **filter_args,
     ) -> Iterator[ContractLog]:
+        block_page_size = block_page_size or 100
+        required_confirmations = self.provider.network.required_confirmations
+        height = self.chain_manager.blocks.height
+
+        stop_block = height - required_confirmations if stop_block is None else stop_block
+        if stop_block > height:
+            raise ValueError(f"Stop-block '{stop_block}' greater than height '{height}'.")
+
+        start_block = start_block or 0
+        if start_block > stop_block:
+            raise ValueError("Start block cannot be greater than stop block.")
+
+        start = start_block
+        stop_increment = block_page_size - 1
+        incremented_stop = start_block + stop_increment
+        stop = min(incremented_stop, stop_block)
+
+        # Cache the logs with the latest block number in the last batch
+        # to prevent yielding duplicate logs.
+        dedup_cache: List[ContractLog] = []
+
+        while start <= stop_block:
+            kwargs = {
+                "start_block": start,
+                "stop_block": stop,
+                "block_page_size": block_page_size,
+                **filter_args,
+            }
+            logs = [log for log in self._get_logs_in_block_range(address, abi, **kwargs)]
+
+            # Ignore logs that were logged at the end of the last page.
+            new_logs = [log for log in logs if log not in dedup_cache]
+            if len(new_logs) == 0:
+                # No events happened in this sub-block range. Go to next page.
+                dedup_cache = []
+                start = stop + 1
+
+                if start < stop_block:
+                    stop = start + stop_increment
+                elif start == stop_block:
+                    stop = start
+
+                continue
+
+            for log in new_logs:
+                yield log
+
+            # Reset the logs cache to the logs with the largest block_num this iteration.
+            largest_block_num = logs[-1].block_number
+            dedup_cache = [log for log in new_logs if log.block_number == largest_block_num]
+
+            # Start the next iteration on the largest block number to get remaining events.
+            # NOTE: Duplicate events will be filtered out.
+            start = largest_block_num
+            stop = min(start + block_page_size, start + (stop_block - stop))
+
+    def _get_logs_in_block_range(
+        self,
+        address: Union[AddressType, List[AddressType]],
+        abi: Union[List[EventABI], EventABI],
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
+        block_page_size: Optional[int] = None,
+        **filter_args,
+    ):
         start_block = start_block or 0
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
+        block_page_size = block_page_size or 100
+        stop_block = start_block + block_page_size if stop_block is None else stop_block
         for abi in abis:
             if not isinstance(address, (list, tuple)):
                 address = [address]
 
             addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
-            stop_block = stop_block or start_block + 100
-            filter_arg_builder: Dict = {
+            log_filter: Dict = {
                 "address": addresses,
                 "fromBlock": start_block,
                 "toBlock": stop_block,
@@ -752,7 +822,7 @@ class Web3Provider(ProviderAPI, ABC):
 
             if "topics" not in filter_args:
                 event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
-                filter_arg_builder["topics"] = [event_signature_hash]
+                log_filter["topics"] = [event_signature_hash]
                 search_topics = []
                 abi_types = []
                 topics = LogInputABICollection(
@@ -780,13 +850,11 @@ class Web3Provider(ProviderAPI, ABC):
                     encode_single(topic_type, topic_data).hex()  # type: ignore
                     for topic_type, topic_data in zip(topics.types, search_topics)
                 ]
-                filter_arg_builder["topics"].extend(encoded_topic_data)
+                log_filter["topics"].extend(encoded_topic_data)
             else:
-                filter_arg_builder["topics"] = filter_args.pop("topics")
+                log_filter["topics"] = filter_args.pop("topics")
 
-            log_result = [
-                dict(e) for e in self._web3.eth.get_logs(filter_arg_builder)  # type: ignore
-            ]
+            log_result = [dict(log) for log in self._web3.eth.get_logs(log_filter)]  # type: ignore
             yield from self.network.ecosystem.decode_logs(abi, log_result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:

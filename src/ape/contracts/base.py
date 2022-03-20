@@ -280,20 +280,31 @@ class ContractEvent(ManagerAccessMixin):
 
     @__getitem__.register
     def __getitem_slice(self, value: slice) -> List[ContractLog]:
-        collected_logs = []
+        start = value.start or 0
+        stop = value.stop if value.stop is not None else self.chain_manager.blocks.height
+        step = value.step or 1
+        collected_logs: List[ContractLog] = []
         counter = 0
         for log in self._get_logs_iter():
-            if counter < value.start:
+            if counter < start:
                 counter += 1
                 continue
-            elif counter >= value.start:
-                counter += value.step
+
+            elif counter >= stop:
+                return collected_logs
+
+            elif counter >= start:
                 collected_logs.append(log)
+                counter += step
 
         return collected_logs
 
     def filter(
-        self, start_block: int = 0, stop_block: Optional[int] = None, **kwargs
+        self,
+        start_block: int = 0,
+        stop_block: Optional[int] = None,
+        block_page_size: Optional[int] = None,
+        **kwargs,
     ) -> Iterator[ContractLog]:
         """
         Search through the logs for this event using the given filter parameters.
@@ -303,44 +314,22 @@ class ContractEvent(ManagerAccessMixin):
               the desired log set. Defaults to ``0``.
             stop_block (Optional[int]): The latest block number in the
               desired log set. Defaults to ``start_block + 100``.
+            block_page_size (Optional[int]): The amount of block to request
+              on each page.
+            kwargs: Additional indexed topics to filter on.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
-        BLOCK_RANGE_LIMIT = 100
-        required_confirmations = self.provider.network.required_confirmations
-        height = self.chain_manager.blocks.height
-
-        stop_block = height - required_confirmations if stop_block is None else stop_block
-        difference = stop_block - start_block
-
-        start = start_block
-        stop = start_block + BLOCK_RANGE_LIMIT if difference > BLOCK_RANGE_LIMIT else stop_block
-
-        # Cache the logs with the latest block number in the last batch
-        # to prevent yielding duplicate logs.
-        logs_cache = []
-
-        while start < stop_block:
-            kwargs = {"start_block": start, "stop_block": stop, **kwargs}
-            logs = [log for log in self._get_logs_iter(**kwargs)]
-            largest_block_num = logs[-1].block_number
-
-            if len(logs) == 0:
-                break
-
-            for log in logs:
-                # Ignore logs that were already logged last iteration.
-                if log not in logs_cache:
-                    yield log
-
-            # Reset the logs cache to the logs with the largest block_num this iteration.
-            logs_cache = [log for log in logs if log.block_number == largest_block_num]
-
-            # Start the next iteration on the largest block number to get remaining events.
-            # NOTE: Duplicate events will be filtered out.
-            start = largest_block_num
+        yield from self.provider.get_contract_logs(
+            self.contract.address,
+            self.abi,
+            start_block=start_block,
+            stop_block=stop_block,
+            block_page_size=block_page_size,
+            **kwargs,
+        )
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """
@@ -356,8 +345,17 @@ class ContractEvent(ManagerAccessMixin):
         ecosystem = self.provider.network.ecosystem
         yield from ecosystem.decode_logs(self.abi, receipt.logs)
 
-    def _get_logs_iter(self, **kwargs) -> Iterator[ContractLog]:
-        yield from self.provider.get_contract_logs(self.contract.address, self.abi, **kwargs)
+    def _get_logs_iter(
+        self, start_block: int = 0, stop_block: int = None, **kwargs
+    ) -> Iterator[ContractLog]:
+        stop_block = stop_block or self.chain_manager.blocks.height
+        yield from self.provider.get_contract_logs(
+            self.contract.address,
+            self.abi,
+            start_block=start_block,
+            stop_block=stop_block,
+            **kwargs,
+        )
 
 
 class ContractInstance(BaseAddress):
