@@ -28,7 +28,7 @@ from ape.exceptions import (
     TransactionError,
 )
 from ape.logging import logger
-from ape.types import BlockID, SnapshotID, TransactionSignature
+from ape.types import AddressType, BlockID, SnapshotID, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 if TYPE_CHECKING:
@@ -573,6 +573,18 @@ class ProviderAPI(BaseInterfaceModel):
         Raises:
             NotImplementedError: Unless overridden.
         """
+
+    def unlock_account(self, address: AddressType) -> bool:
+        """
+        Ask the provider to allow an address to submit transactions without validating
+        signatures. This feature is intended to be subclassed by a
+        :class:`~ape.api.providers.TestProviderAPI` so that during a fork-mode test,
+        a transaction can be submitted by an arbitrary account or contract without a private key.
+
+        Raises:
+            NotImplementedError: When this provider does not support unlocking an account.
+        """
+        raise NotImplementedError("`unlock_account` is not implemented by this provider")
 
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self.chain_manager:
