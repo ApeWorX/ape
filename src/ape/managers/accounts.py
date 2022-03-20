@@ -3,7 +3,7 @@ from typing import Dict, Iterator, List, Optional, Type
 from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
 from ape.api.providers import TransactionAPI
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
-from ape.utils import cached_property, singledispatchmethod
+from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 from .base import BaseManager
 
@@ -20,6 +20,60 @@ class ImpersonatedAccount(AccountAPI):
 
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         return None
+
+
+class TestAccountContainer(list, ManagerAccessMixin):
+    @property
+    def accounts(self) -> Iterator[AccountAPI]:
+        for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
+            if not issubclass(account_type, TestAccountAPI):
+                continue
+
+            # pydantic validation won't allow passing None for data_folder/required attr
+            container = container_type(data_folder="", account_type=account_type)
+            for account in container.accounts:
+                yield account
+
+    def aliases(self) -> Iterator[str]:
+        for account in self.accounts:
+            if account.alias:
+                yield account.alias
+
+    def __len__(self) -> int:
+        return len(list(self.accounts))
+
+    @singledispatchmethod
+    def __getitem__(self, account_id):
+        raise NotImplementedError(f"Cannot use {type(account_id)} as account ID.")
+
+    @__getitem__.register
+    def __getitem_int(self, account_id: int):
+        for idx, account in enumerate(self.accounts):
+            if account_id == idx:
+                return account
+
+        raise IndexError(f"No account at index '{account_id}'.")
+
+    @__getitem__.register
+    def __getitem_str(self, account_str: str):
+        account_id = self.conversion_manager.convert(account_str, AddressType)
+
+        for account in self.accounts:
+            if account.address == account_id:
+                return account
+
+        can_impersonate = False
+        try:
+            if self.network_manager.active_provider:
+                can_impersonate = self.network_manager.active_provider.unlock_account(account_id)
+            # else: fall through to `IndexError`
+        except NotImplementedError:
+            pass  # fall through to `IndexError`
+
+        if can_impersonate:
+            return ImpersonatedAccount(raw_address=account_id)
+        else:
+            raise IndexError(f"No account with address '{account_id}'.")
 
 
 class AccountManager(BaseManager):
@@ -113,7 +167,7 @@ class AccountManager(BaseManager):
         return "[" + ", ".join(repr(a) for a in self) + "]"
 
     @cached_property
-    def test_accounts(self) -> List[TestAccountAPI]:
+    def test_accounts(self) -> TestAccountContainer:
         """
         Accounts generated from the configured test mnemonic. These accounts
         are also the subject of a fixture available in the ``test`` plugin called
@@ -129,18 +183,9 @@ class AccountManager(BaseManager):
                ...
 
         Returns:
-            List[:class:`~ape.api.accounts.TestAccountAPI`]
+            :class:`TestAccountContainer`
         """
-        accounts = []
-        for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
-            if not issubclass(account_type, TestAccountAPI):
-                continue
-
-            # pydantic validation won't allow passing None for data_folder/required attr
-            container = container_type(data_folder="", account_type=account_type)
-            accounts.extend([acc for acc in container.accounts])
-
-        return accounts
+        return TestAccountContainer()
 
     def load(self, alias: str) -> AccountAPI:
         """
@@ -205,18 +250,8 @@ class AccountManager(BaseManager):
             if account_id in container.accounts:
                 return container[account_id]
 
-        can_impersonate = False
-        try:
-            if self.network_manager.active_provider:
-                can_impersonate = self.network_manager.active_provider.unlock_account(account_id)
-            # else: fall through to `IndexError`
-        except NotImplementedError:
-            pass  # fall through to `IndexError`
-
-        if can_impersonate:
-            return ImpersonatedAccount(raw_address=account_id)
-        else:
-            raise IndexError(f"No account with address '{account_id}'.")
+        # NOTE: Fallback to `TestAccountContainer`'s method for loading items
+        return self.test_accounts[account_id]
 
     def __contains__(self, address: AddressType) -> bool:
         """
