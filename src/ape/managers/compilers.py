@@ -115,9 +115,9 @@ class CompilerManager(BaseManager):
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = set(path.suffix for path in contract_filepaths)
-        unhandled_extensions = extensions - set(self.registered_compilers)
+        unhandled_extensions = {s for s in extensions - set(self.registered_compilers) if s}
         if len(unhandled_extensions) > 0:
             unhandled_extensions_str = ", ".join(unhandled_extensions)
             raise CompilerError(f"No compiler found for extensions [{unhandled_extensions_str}].")
 
-        return extensions
+        return {e for e in extensions if e}

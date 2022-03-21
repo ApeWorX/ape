@@ -62,7 +62,7 @@ def test_compile_specified_contracts(ape_cli, runner, project, contract_path, cl
 
 
 @skip_projects_except(["one-interface"])
-def test_compile_partial_extension_does_not_compile(ape_cli, runner, project, clean_cache):
+def test_compile_unknown_extension_does_not_compile(ape_cli, runner, project, clean_cache):
     result = runner.invoke(
         ape_cli, ["compile", "Interface.js"], catch_exceptions=False
     )  # Suffix to existing extension
@@ -80,8 +80,24 @@ def test_compile_contracts(ape_cli, runner, project):
 
 
 @skip_projects_except(["with-dependency"])
-def test_compile_with_dependency(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
+@pytest.mark.parametrize(
+    "contract_path",
+    (None, "contracts/", "Project", "contracts/Project.json"),
+)
+def test_compile_with_dependency(ape_cli, runner, project, contract_path):
+    cmd = ["compile", "--force"]
+
+    if contract_path:
+        cmd.append(contract_path)
+
+    result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "__test_dependency__" in project.dependencies
     assert type(project.dependencies["__test_dependency__"].Dependency) == ContractContainer
+
+
+@skip_projects_except(["with-dependency"])
+def test_compile_individual_contract_excludes_other_contract(ape_cli, runner, project):
+    result = runner.invoke(ape_cli, ["compile", "Project", "--force"], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "Other" not in result.output
