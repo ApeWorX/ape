@@ -535,8 +535,8 @@ class ProviderAPI(BaseInterfaceModel):
         Get all logs matching the given set of filter parameters.
 
         Args:
-            abi (``EventABI``): The event of interest's ABI.
             address (``AddressType``): The contract address that defines the logs.
+            abi (``EventABI``): The event of interest's ABI.
             start_block (Optional[int]): Get events that occurred
               in blocks after the block with this ID.
             stop_block (Optional[int]): Get events that occurred
