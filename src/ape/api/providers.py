@@ -574,6 +574,7 @@ class ProviderAPI(BaseInterfaceModel):
             NotImplementedError: Unless overridden.
         """
 
+    @raises_not_implemented
     def unlock_account(self, address: AddressType) -> bool:
         """
         Ask the provider to allow an address to submit transactions without validating
@@ -584,7 +585,6 @@ class ProviderAPI(BaseInterfaceModel):
         Raises:
             NotImplementedError: When this provider does not support unlocking an account.
         """
-        raise NotImplementedError("`unlock_account` is not implemented by this provider")
 
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self.chain_manager:
