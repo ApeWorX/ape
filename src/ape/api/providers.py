@@ -584,6 +584,12 @@ class ProviderAPI(BaseInterfaceModel):
 
         Raises:
             NotImplementedError: When this provider does not support unlocking an account.
+
+        Args:
+            address (``AddressType``): The address to unlock.
+
+        Returns:
+            bool: ``True`` if successfully unlocked account and ``False`` otherwise.
         """
 
     def _try_track_receipt(self, receipt: ReceiptAPI):

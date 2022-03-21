@@ -65,15 +65,15 @@ class TestAccountContainer(list, ManagerAccessMixin):
         can_impersonate = False
         try:
             if self.network_manager.active_provider:
-                can_impersonate = self.network_manager.active_provider.unlock_account(account_id)
+                can_impersonate = self.provider.unlock_account(account_id)
             # else: fall through to `IndexError`
         except NotImplementedError:
             pass  # fall through to `IndexError`
 
-        if can_impersonate:
-            return ImpersonatedAccount(raw_address=account_id)
-        else:
+        if not can_impersonate:
             raise IndexError(f"No account with address '{account_id}'.")
+
+        return ImpersonatedAccount(raw_address=account_id)
 
 
 class AccountManager(BaseManager):
