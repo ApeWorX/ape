@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
+from hexbytes import HexBytes
 from pydantic import root_validator
 
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
@@ -42,6 +43,8 @@ class DeploymentConfigCollection(dict):
                         )
 
                     address = deployment["address"]
+                    if isinstance(address, int):
+                        address = HexBytes(address)
 
                     try:
                         deployment["address"] = to_address(address)
