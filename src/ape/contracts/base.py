@@ -301,7 +301,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def filter(
         self,
-        start_block: int = 0,
+        start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
         **kwargs,
@@ -311,9 +311,9 @@ class ContractEvent(ManagerAccessMixin):
 
         Args:
             start_block (Optional[int]): The earliest block number in
-              the desired log set. Defaults to ``0``.
+              the desired log set. Defaults to delegating to provider.
             stop_block (Optional[int]): The latest block number in the
-              desired log set. Defaults to ``start_block + 100``.
+              desired log set. Defaults to delegating to provider.
             block_page_size (Optional[int]): The amount of block to request
               on each page.
             kwargs: Additional indexed topics to filter on.
@@ -321,7 +321,6 @@ class ContractEvent(ManagerAccessMixin):
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
-
         yield from self.provider.get_contract_logs(
             self.contract.address,
             self.abi,
@@ -356,6 +355,39 @@ class ContractEvent(ManagerAccessMixin):
             stop_block=stop_block,
             **kwargs,
         )
+
+    def poll_logs(
+        self,
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
+    ) -> Iterator[ContractLog]:
+        """
+        Poll new blocks. Optionally set a start block to include historical blocks.
+        **NOTE**: This is a daemon method; it does not terminate unless an exception occurrs.
+
+        Usage example::
+
+            from ape import chain
+
+            for new_block in chain.blocks.poll_blocks():
+                print(f"New block found: number={new_block.number}")
+
+        Args:
+            start_block (Optional[int]): The block number to start with. Defaults to the pending
+              block number.
+            stop_block (Optional[int]): Optionally set a future block number to stop at.
+              Defaults to infinity.
+            required_confirmations (Optional[int]): The amount of confirmations to wait
+              before yielding the block. The more confirmations, the less likely a reorg will occur.
+              Defaults to the network's configured required confirmations.
+
+        Returns:
+            Iterator[:class:`~ape.types.ContractLog`]
+        """
+
+        for new_block in self.chain_manager.blocks.poll_blocks(start=start_block, stop=stop_block):
+            yield from self.filter(start_block=new_block.number, stop_block=new_block.number)
 
 
 class ContractInstance(BaseAddress):

@@ -484,8 +484,20 @@ class ProjectManager(BaseManager):
 
     def get_contract(self, contract_name: str) -> ContractContainer:
         """
-        Get a contract by name.
+        Get a contract container from an existing contract type in
+        the local project by name.
 
+        **NOTE**: To get a dependency contract, use
+        :py:attr:`~ape.managers.project.ProjectManager.dependencies`.
+
+        Raises:
+            KeyError: When the given name is not a contract in the project.
+
+        Args:
+            contract_name (str): The name of the contract in the project.
+
+        Returns:
+            :class:`~ape.contracts.ContractContainer`
         """
 
         contract = self._get_contract(contract_name)

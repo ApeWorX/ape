@@ -188,6 +188,7 @@ class BlockContainer(BaseManager):
     def poll_blocks(
         self,
         start: Optional[int] = None,
+        stop: Optional[int] = None,
         required_confirmations: Optional[int] = None,
     ) -> Iterator[BlockAPI]:
         """
@@ -204,14 +205,20 @@ class BlockContainer(BaseManager):
         Args:
             start (Optional[int]): The block number to start with. Defaults to the pending
               block number.
+            stop (Optional[int]): Optionally set a future block number to stop at.
+              Defaults to infinity.
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
+              Defaults to the network's configured required confirmations.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
         """
         if required_confirmations is None:
             required_confirmations = self.network_confirmations
+
+        if stop and stop <= self.chain_manager.blocks.height:
+            raise ValueError("'stop' argument must be in the future.")
 
         # Get number of last block with the necessary amount of confirmations.
         latest_confirmed_block_number = self.height - required_confirmations
@@ -237,7 +244,11 @@ class BlockContainer(BaseManager):
                 for i in range(new_blocks_count):
                     block_num = latest_confirmed_block_number + i
                     block = self._get_block(block_num)
+
                     yield block
+
+                    if stop and block.number == stop:
+                        return
 
                 has_yielded = True
                 latest_confirmed_block_number = confirmable_block_number
