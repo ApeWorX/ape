@@ -506,7 +506,7 @@ class ContractInstance(BaseAddress):
             attr_name (str): The name of the method or property to access.
 
         Returns:
-            any: The return value from the contract call, or a transaction receipt.
+            Any: The return value from the contract call, or a transaction receipt.
         """
 
         if attr_name in set(super(BaseAddress, self).__dir__()):
