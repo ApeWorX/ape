@@ -257,8 +257,8 @@ class ContractEvent(ManagerAccessMixin):
         Access events on the contract by the index of when they occurred.
 
         Args:
-            index (int): The index such that ``0`` is the first event to have occurred
-              and ``-1`` is the last event.
+            index (int): The index such that ``0`` is the first log to have occurred
+              and ``-1`` is the last.
 
         Returns:
             :class:`~ape.contracts.base.ContractLog`
