@@ -94,6 +94,28 @@ def test_contract_logs_filtering_with_paging(contract_instance, owner, chain):
     assert_log_values(logs[3], 100, previous_number=3)
 
 
+def test_contracts_log_filtering_when_changed_required_confirmations(
+    contract_instance, owner, chain
+):
+    # Create 4 total logs
+    for i in range(4):
+        contract_instance.set_number(i + 1, sender=owner)
+
+    # Only 2 logs are past the requried confirmations.
+    logs = [log for log in contract_instance.NumberChange.filter(required_confirmations=2)]
+    assert len(logs) == 2, "Unexpected number of logs"
+
+    # Mine to get another log (total of 3) past the required confirmations
+    chain.mine()
+    logs = [log for log in contract_instance.NumberChange.filter(required_confirmations=2)]
+    assert len(logs) == 3, "Unexpected number of logs"
+
+    # Mine to get the remaining log.
+    chain.mine()
+    logs = [log for log in contract_instance.NumberChange.filter(required_confirmations=2)]
+    assert len(logs) == 4, "Unexpected number of logs"
+
+
 def test_contract_logs_from_non_indexed_filter(contract_instance, owner):
     contract_instance.set_number(1, sender=owner)
     with pytest.raises(DecodingError):

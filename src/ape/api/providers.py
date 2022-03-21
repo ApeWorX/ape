@@ -529,6 +529,7 @@ class ProviderAPI(BaseInterfaceModel):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
         **filter_args,
     ) -> Iterator[ContractLog]:
         """
@@ -543,6 +544,8 @@ class ProviderAPI(BaseInterfaceModel):
               in blocks before the block with this ID.
             block_page_size (Optional[int]): Use this parameter to adjust
               request block range sizes.
+            required_confirmations (Optional[int]): The amount of blocks to
+              wait before yielding a block. Defaults to the network confirmations.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
@@ -737,10 +740,15 @@ class Web3Provider(ProviderAPI, ABC):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
         **filter_args,
     ) -> Iterator[ContractLog]:
         block_page_size = block_page_size or 100
-        required_confirmations = self.provider.network.required_confirmations
+        required_confirmations = (
+            required_confirmations
+            if required_confirmations is not None
+            else self.provider.network.required_confirmations
+        )
         height = self.chain_manager.blocks.height
 
         stop_block = height - required_confirmations if stop_block is None else stop_block

@@ -304,6 +304,7 @@ class ContractEvent(ManagerAccessMixin):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
         **kwargs,
     ) -> Iterator[ContractLog]:
         """
@@ -316,7 +317,8 @@ class ContractEvent(ManagerAccessMixin):
               desired log set. Defaults to delegating to provider.
             block_page_size (Optional[int]): The amount of block to request
               on each page.
-            kwargs: Additional indexed topics to filter on.
+            required_confirmations (Optional[int]): The amount of blocks to
+              wait before yielding a block. Defaults to the network confirmations.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
@@ -327,6 +329,7 @@ class ContractEvent(ManagerAccessMixin):
             start_block=start_block,
             stop_block=stop_block,
             block_page_size=block_page_size,
+            required_confirmations=required_confirmations,
             **kwargs,
         )
 
