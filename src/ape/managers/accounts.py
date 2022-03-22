@@ -1,25 +1,10 @@
-from typing import Dict, Iterator, List, Optional, Type
+from typing import Dict, Iterator, List, Type
 
-from ape.api.accounts import AccountAPI, AccountContainerAPI, TestAccountAPI
-from ape.api.providers import TransactionAPI
-from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
+from ape.api.accounts import AccountAPI, AccountContainerAPI, AnonymousAccount, TestAccountAPI
+from ape.types import AddressType
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 from .base import BaseManager
-
-
-class ImpersonatedAccount(AccountAPI):
-    raw_address: AddressType
-
-    @property
-    def address(self) -> AddressType:
-        return self.raw_address
-
-    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
-        raise NotImplementedError("This account cannot sign messages")
-
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
-        return None
 
 
 class TestAccountContainer(list, ManagerAccessMixin):
@@ -73,7 +58,7 @@ class TestAccountContainer(list, ManagerAccessMixin):
         if not can_impersonate:
             raise IndexError(f"No account with address '{account_id}'.")
 
-        return ImpersonatedAccount(raw_address=account_id)
+        return AnonymousAccount(raw_address=account_id)
 
 
 class AccountManager(BaseManager):

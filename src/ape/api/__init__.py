@@ -1,4 +1,10 @@
-from .accounts import AccountAPI, AccountContainerAPI, TestAccountAPI, TestAccountContainerAPI
+from .accounts import (
+    AccountAPI,
+    AccountContainerAPI,
+    AnonymousAccount,
+    TestAccountAPI,
+    TestAccountContainerAPI,
+)
 from .address import Address
 from .compiler import CompilerAPI
 from .config import ConfigDict, ConfigEnum, PluginConfig
@@ -25,6 +31,7 @@ from .query import QueryAPI, QueryType
 __all__ = [
     "AccountAPI",
     "AccountContainerAPI",
+    "AnonymousAccount",
     "Address",
     "BlockAPI",
     "BlockConsensusAPI",

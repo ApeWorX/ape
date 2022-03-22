@@ -592,6 +592,31 @@ class ProviderAPI(BaseInterfaceModel):
             bool: ``True`` if successfully unlocked account and ``False`` otherwise.
         """
 
+    def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
+        txn.chain_id = self.network.chain_id
+
+        txn_type = TransactionType(txn.type)
+        if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
+            txn.gas_price = self.gas_price  # type: ignore
+        elif txn_type == TransactionType.DYNAMIC:
+            if txn.max_priority_fee is None:  # type: ignore
+                txn.max_priority_fee = self.priority_fee  # type: ignore
+
+            if txn.max_fee is None:
+                txn.max_fee = self.base_fee + txn.max_priority_fee
+            # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        if txn.gas_limit is None:
+            txn.gas_limit = self.estimate_gas_cost(txn)
+
+        if txn.required_confirmations is None:
+            txn.required_confirmations = self.network.required_confirmations
+        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
+            raise TransactionError(message="'required_confirmations' must be a positive integer.")
+
+        return txn
+
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self.chain_manager:
             self.chain_manager.account_history.append(receipt)
