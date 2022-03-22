@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Unio
 import click
 from eth_account import Account
 
-from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
+from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.types.signatures import _Signature
@@ -91,6 +91,13 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
 
         txn = self.prepare_transaction(txn)
+
+        if send_everything:
+            if txn.max_fee is None:
+                raise TransactionError(message="Max fee must not be None.")
+
+            txn.value = self.balance - txn.max_fee
+
         txn.signature = self.sign_transaction(txn)
         if not txn.signature:
             raise SignatureError("The transaction was not signed.")
