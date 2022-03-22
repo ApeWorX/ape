@@ -12,7 +12,13 @@ from ape.api.projects import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import logger
-from ape.utils import ManagerAccessMixin, cached_property, get_relative_path, github_client
+from ape.utils import (
+    ManagerAccessMixin,
+    cached_property,
+    get_all_files_in_directory,
+    get_relative_path,
+    github_client,
+)
 
 from .base import BaseManager
 from .config import CONFIG_FILE_NAME
@@ -87,7 +93,7 @@ class ApeProject(ProjectAPI):
 
         cached_sources = manifest.sources or {}
         cached_contract_types = manifest.contract_types or {}
-        sources = {s for s in self.sources if s in file_paths} if file_paths else self.sources
+        sources = {s for s in self.sources if s in file_paths} if file_paths else set(self.sources)
 
         # Filter out deleted sources
         deleted_source_ids = cached_sources.keys() - set(
@@ -126,7 +132,14 @@ class ApeProject(ProjectAPI):
             contract_types.update(compiled_contract_types)
 
             # NOTE: Update contract types & re-calculate source code entries in manifest
-            sources = {s for s in self.sources if s in file_paths} if file_paths else self.sources
+            sources = (
+                {s for s in self.sources if s in file_paths} if file_paths else set(self.sources)
+            )
+
+            dependencies = {c for c in get_all_files_in_directory(self.contracts_folder / ".cache")}
+            for contract in dependencies:
+                sources.add(contract)
+
             manifest = self._create_manifest(
                 sources,
                 self.contracts_folder,
@@ -562,10 +575,10 @@ class ProjectManager(BaseManager):
         scripts or tests in ``ape``, such as from ``ape run`` or ``ape test``.
 
         Args:
-            file_paths (List[pathlib.Path] or pathlib.Path], optional):
+            file_paths (Optional[Union[List[Path], Path]]):
               Provide one or more contract file-paths to load. If excluded,
               will load all the contracts.
-            use_cache (bool, optional): Set to ``False`` to force a re-compile.
+            use_cache (Optional[bool]): Set to ``False`` to force a re-compile.
               Defaults to ``True``.
 
         Returns:
@@ -576,12 +589,12 @@ class ProjectManager(BaseManager):
         if not self.contracts_folder.exists():
             return {}
 
-        self._load_dependencies()
-        file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
         in_source_cache = self.contracts_folder / ".cache"
-
         if not use_cache and in_source_cache.exists():
             shutil.rmtree(str(in_source_cache))
+
+        self._load_dependencies()
+        file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
 
         manifest = self._project.create_manifest(file_paths, use_cache=use_cache)
         return manifest.contract_types or {}
