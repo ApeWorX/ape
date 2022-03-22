@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from ape.api import BlockAPI, QueryAPI, QueryType
 from ape.api.query import BlockQuery, _BaseQuery
-from ape.exceptions import QueryEngineError
+from ape.exceptions import ChainError, QueryEngineError
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
@@ -42,8 +42,55 @@ class DefaultQueryProvider(QueryAPI):
         block_dicts_iter = map(partial(get_columns_from_item, query), blocks_iter)
         return pd.DataFrame(columns=query.columns, data=block_dicts_iter)
 
-    def get_blocks(self, start_or_stop: int, stop: Optional[int] = None) -> Iterator[BlockAPI]:
-        return self.chain_manager.blocks.range(start_or_stop, stop)
+    def get_blocks(
+        self, start_or_stop: int, stop: Optional[int] = None, step: int = 1
+    ) -> Iterator[BlockAPI]:
+        """
+        Iterate over blocks. Works similarly to python ``range()``.
+
+        Raises:
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is greater
+                than the chain length.
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is less
+                than ``start_block``.
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is less
+                than 0.
+            :class:`~ape.exceptions.ChainError`: When ``start`` is less
+                than 0.
+
+        Args:
+            start_or_stop (int): When given just a single value, it is the stop.
+              Otherwise, it is the start. This mimics the behavior of ``range``
+              built-in Python function.
+            stop (Optional[int]): The block number to stop before. Also the total
+              number of blocks to get. If not setting a start value, is set by
+              the first argument.
+            step (Optional[int]): The value to increment by. Defaults to ``1``.
+             number of blocks to get. Defaults to the latest block.
+
+        Returns:
+            Iterator[:class:`~ape.api.providers.BlockAPI`]
+        """
+
+        if stop is None:
+            stop = start_or_stop
+            start = 0
+        else:
+            start = start_or_stop
+
+        if stop > len(self.chain_manager.blocks):
+            raise ChainError(
+                f"'stop={stop}' cannot be greater than the chain length ({len(self.chain_manager)}). "
+                f"Use '{self.chain_manager.poll_blocks.__name__}()' to wait for future blocks."
+            )
+        elif stop < start:
+            raise ValueError(f"stop '{stop}' cannot be less than start '{start}'.")
+        elif stop < 0:
+            raise ValueError(f"start '{start}' cannot be negative.")
+        elif start_or_stop < 0:
+            raise ValueError(f"stop '{stop}' cannot be negative.")
+
+        return [self.chain_manager.blocks._get_block(i) for i in range(start, stop, step)]
 
 
 class QueryManager(ManagerAccessMixin):
