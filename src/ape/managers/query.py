@@ -80,7 +80,8 @@ class DefaultQueryProvider(QueryAPI):
 
         if stop > len(self.chain_manager.blocks):
             raise ChainError(
-                f"'stop={stop}' cannot be greater than the chain length ({len(self.chain_manager)}). "
+                f"'stop={stop}' cannot be greater than the "
+                f"chain length ({len(self.chain_manager.blocks)}). "
                 f"Use '{self.chain_manager.poll_blocks.__name__}()' to wait for future blocks."
             )
         elif stop < start:
