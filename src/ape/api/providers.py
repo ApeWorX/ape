@@ -593,6 +593,19 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+        """
+        Set default values on the transaction.
+
+        Raises:
+            :class:`~ape.exceptions.TransactionError`: When given negative required confirmations.
+
+        Args:
+            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to prepare.
+
+        Returns:
+            :class:`~ape.api.providers.TransactionAPI`
+        """
+
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
         txn.chain_id = self.network.chain_id
 

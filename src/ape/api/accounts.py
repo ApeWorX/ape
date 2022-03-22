@@ -191,6 +191,21 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             raise ValueError(f"Unsupported Message type: {type(data)}.")
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+        """
+        Set default values on a transaction.
+
+        Raises:
+            :class:`~ape.exceptions.AccountsError`: When the account cannot afford the transaction
+              or the nonce is invalid.
+            :class:`~ape.exceptions.TransactionError`: When given negative required confirmations.
+
+        Args:
+            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to prepare.
+
+        Returns:
+            :class:`~ape.api.providers.TransactionAPI`
+        """
+
         # NOTE: Allow overriding nonce, assume user understand what this does
         if txn.nonce is None:
             txn.nonce = self.nonce
