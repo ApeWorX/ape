@@ -28,5 +28,5 @@ class AllFilePaths(Path):
     ) -> List[PathLibPath]:
         path = super().convert(value, param, ctx)
 
-        # NOTE: Return the path if it does not exist so it can it can be resolved downstream.
+        # NOTE: Return the path if it does not exist so it can be resolved downstream.
         return get_all_files_in_directory(path) if path.exists() else [path]
