@@ -5,7 +5,7 @@ from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic.dataclasses import dataclass
 
-from ape.api import Address, ReceiptAPI, TransactionAPI
+from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ArgumentsLengthError, ContractError, ProviderNotConnectedError
 from ape.logging import logger
@@ -171,6 +171,10 @@ class ContractTransaction(ManagerAccessMixin):
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         txn = self.serialize_transaction(*args, **kwargs)
+
+        if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
+            return kwargs["sender"].call(txn)
+
         return self.provider.send_transaction(txn)
 
 
