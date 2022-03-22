@@ -120,7 +120,7 @@ class ProjectAPI(BaseInterfaceModel):
 
     @classmethod
     def _create_source_dict(
-        cls, contracts_paths: Collection[Path], base_path: Path
+        cls, contract_paths: Collection[Path], base_path: Path
     ) -> Dict[str, Source]:
         return {
             str(get_relative_path(source, base_path)): Source(  # type: ignore
@@ -131,7 +131,7 @@ class ProjectAPI(BaseInterfaceModel):
                 urls=[],
                 content=source.read_text(),
             )
-            for source in contracts_paths
+            for source in contract_paths
         }
 
 
