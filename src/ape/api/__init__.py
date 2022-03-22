@@ -1,7 +1,7 @@
 from .accounts import (
     AccountAPI,
     AccountContainerAPI,
-    AnonymousAccount,
+    ImpersonatedAccount,
     TestAccountAPI,
     TestAccountContainerAPI,
 )
@@ -31,7 +31,6 @@ from .query import QueryAPI, QueryType
 __all__ = [
     "AccountAPI",
     "AccountContainerAPI",
-    "AnonymousAccount",
     "Address",
     "BlockAPI",
     "BlockConsensusAPI",
@@ -44,6 +43,7 @@ __all__ = [
     "DependencyAPI",
     "EcosystemAPI",
     "ExplorerAPI",
+    "ImpersonatedAccount",
     "PluginConfig",
     "ProjectAPI",
     "ProviderAPI",

@@ -379,7 +379,7 @@ class TestAccountAPI(AccountAPI):
     """
 
 
-class AnonymousAccount(AccountAPI):
+class ImpersonatedAccount(AccountAPI):
     """
     An account to use that does not require signing.
     """

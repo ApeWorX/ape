@@ -1,6 +1,6 @@
 from typing import Dict, Iterator, List, Type
 
-from ape.api.accounts import AccountAPI, AccountContainerAPI, AnonymousAccount, TestAccountAPI
+from ape.api.accounts import AccountAPI, AccountContainerAPI, ImpersonatedAccount, TestAccountAPI
 from ape.types import AddressType
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
@@ -58,7 +58,7 @@ class TestAccountContainer(list, ManagerAccessMixin):
         if not can_impersonate:
             raise IndexError(f"No account with address '{account_id}'.")
 
-        return AnonymousAccount(raw_address=account_id)
+        return ImpersonatedAccount(raw_address=account_id)
 
 
 class AccountManager(BaseManager):
