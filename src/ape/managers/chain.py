@@ -134,6 +134,57 @@ class BlockContainer(BaseManager):
 
         return self.query_manager.query(query)
 
+    def range(
+        self, start_or_stop: int, stop: Optional[int] = None, step: int = 1
+    ) -> Iterator[BlockAPI]:
+        """
+        Iterate over blocks. Works similarly to python ``range()``.
+
+        Raises:
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is greater
+                than the chain length.
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is less
+                than ``start_block``.
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is less
+                than 0.
+            :class:`~ape.exceptions.ChainError`: When ``start`` is less
+                than 0.
+
+        Args:
+            start_or_stop (int): When given just a single value, it is the stop.
+              Otherwise, it is the start. This mimics the behavior of ``range``
+              built-in Python function.
+            stop (Optional[int]): The block number to stop before. Also the total
+              number of blocks to get. If not setting a start value, is set by
+              the first argument.
+            step (Optional[int]): The value to increment by. Defaults to ``1``.
+             number of blocks to get. Defaults to the latest block.
+
+        Returns:
+            Iterator[:class:`~ape.api.providers.BlockAPI`]
+        """
+
+        if stop is None:
+            stop = start_or_stop
+            start = 0
+        else:
+            start = start_or_stop
+
+        if stop > len(self):
+            raise ChainError(
+                f"'stop={stop}' cannot be greater than the chain length ({len(self)}). "
+                f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
+            )
+        elif stop < start:
+            raise ValueError(f"stop '{stop}' cannot be less than start '{start}'.")
+        elif stop < 0:
+            raise ValueError(f"start '{start}' cannot be negative.")
+        elif start_or_stop < 0:
+            raise ValueError(f"stop '{stop}' cannot be negative.")
+
+        for i in range(start, stop, step):
+            yield self._get_block(i)
+
     def poll_blocks(
         self,
         start: Optional[int] = None,
