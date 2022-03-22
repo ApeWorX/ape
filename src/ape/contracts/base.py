@@ -52,6 +52,12 @@ class ContractConstructor(ManagerAccessMixin):
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         txn = self.serialize_transaction(*args, **kwargs)
+
+        if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
+            sender = kwargs["sender"]
+            return sender.call(txn)
+
+        txn = self.serialize_transaction(*args, **kwargs)
         return self.provider.send_transaction(txn)
 
 
