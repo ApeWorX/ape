@@ -16,6 +16,7 @@ from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 
+from ape._utils import LogInputABICollection
 from ape.api import (
     BlockAPI,
     BlockConsensusAPI,
@@ -30,7 +31,6 @@ from ape.api import (
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
 from ape.types import AddressType, ContractLog
-from ape.utils import LogInputABICollection
 
 NETWORKS = {
     # chain_id, network_id
@@ -371,7 +371,7 @@ class Ethereum(EcosystemAPI):
             yield ContractLog(
                 name=abi.name,
                 index=log["logIndex"],
-                data=event_args,
+                event_arguments=event_args,
                 transaction_hash=log["transactionHash"],
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],

@@ -44,8 +44,8 @@ class ContractLog:
     name: str
     """The name of the event."""
 
-    data: Dict[str, Any]
-    """The raw data associated with the log, including both indexed and non-indexed data."""
+    event_arguments: Dict[str, Any]
+    """The arguments to the event, including both indexed and non-indexed data."""
 
     transaction_hash: Any
     """The hash of the transaction containing this log."""
@@ -70,13 +70,10 @@ class ContractLog:
             item (str): The name of the property.
         """
 
-        if item not in self.data:
+        if item not in self.event_arguments:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
 
         return self.data[item]
-
-    def __eq__(self, other) -> bool:
-        return self.transaction_hash == other.transaction_hash and self.index == other.index
 
 
 __all__ = [

@@ -20,6 +20,7 @@ from pydantic import Field, validator
 from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
+from ape._utils import LogInputABICollection
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
 from ape.exceptions import (
@@ -32,7 +33,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID, TransactionSignature
-from ape.utils import BaseInterfaceModel, LogInputABICollection, abstractmethod, cached_property
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 if TYPE_CHECKING:
     from ape.api.explorers import ExplorerAPI
