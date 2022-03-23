@@ -126,7 +126,7 @@ def test_contracts_log_filtering_when_changed_required_confirmations(
     assert len(logs) == 4, "Unexpected number of logs"
 
 
-def test_contract_logs_from_non_indexed_filter(contract_instance, owner):
+def test_contract_logs_from_non_indexed_search(contract_instance, owner):
     contract_instance.set_number(1, sender=owner)
     with pytest.raises(DecodingError):
         _ = [log for log in contract_instance.NumberChange.search(filter_args={"prev_num": 1})]
