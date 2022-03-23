@@ -69,7 +69,7 @@ def test_contract_logs_splicing(contract_instance, owner):
 
 def test_contract_logs_filtering(contract_instance, owner):
     contract_instance.set_number(1, sender=owner)
-    logs = [log for log in contract_instance.NumberChange.filter(new_num=1)]
+    logs = [log for log in contract_instance.NumberChange.search(filter_args={"new_num": 1})]
     assert len(logs) == 1, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
 
@@ -86,7 +86,7 @@ def test_contract_logs_filtering_with_paging(contract_instance, owner, chain):
     # Create one more log after the empty blocks.
     contract_instance.set_number(100, sender=owner)
 
-    logs = [log for log in contract_instance.NumberChange.filter(block_page_size=1)]
+    logs = [log for log in contract_instance.NumberChange.search(block_page_size=1)]
     assert len(logs) == 4, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
     assert_log_values(logs[1], 2)
@@ -100,7 +100,7 @@ def test_contract_logs_filter_over_paging(contract_instance, owner, chain):
         contract_instance.set_number(i + 1, sender=owner)
 
     # 50 is way more than 3 but it shouldn't matter.
-    logs = [log for log in contract_instance.NumberChange.filter(block_page_size=50)]
+    logs = [log for log in contract_instance.NumberChange.search(block_page_size=50)]
     assert len(logs) == 3, "Unexpected number of logs"
 
 
@@ -112,24 +112,24 @@ def test_contracts_log_filtering_when_changed_required_confirmations(
         contract_instance.set_number(i + 1, sender=owner)
 
     # Only 2 logs are past the requried confirmations.
-    logs = [log for log in contract_instance.NumberChange.filter(required_confirmations=2)]
+    logs = [log for log in contract_instance.NumberChange.search(required_confirmations=2)]
     assert len(logs) == 2, "Unexpected number of logs"
 
     # Mine to get another log (total of 3) past the required confirmations
     chain.mine()
-    logs = [log for log in contract_instance.NumberChange.filter(required_confirmations=2)]
+    logs = [log for log in contract_instance.NumberChange.search(required_confirmations=2)]
     assert len(logs) == 3, "Unexpected number of logs"
 
     # Mine to get the remaining log.
     chain.mine()
-    logs = [log for log in contract_instance.NumberChange.filter(required_confirmations=2)]
+    logs = [log for log in contract_instance.NumberChange.search(required_confirmations=2)]
     assert len(logs) == 4, "Unexpected number of logs"
 
 
 def test_contract_logs_from_non_indexed_filter(contract_instance, owner):
     contract_instance.set_number(1, sender=owner)
     with pytest.raises(DecodingError):
-        _ = [log for log in contract_instance.NumberChange.filter(prev_num=1)]
+        _ = [log for log in contract_instance.NumberChange.search(filter_args={"prev_num": 1})]
 
 
 def assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):

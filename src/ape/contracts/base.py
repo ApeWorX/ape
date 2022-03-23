@@ -245,7 +245,7 @@ class ContractEvent(ManagerAccessMixin):
         return self.abi.name
 
     def __iter__(self) -> Iterator[ContractLog]:
-        yield from self.filter()
+        yield from self.search()
 
     @singledispatchmethod
     def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
@@ -299,7 +299,7 @@ class ContractEvent(ManagerAccessMixin):
 
         return collected_logs
 
-    def filter(
+    def search(
         self,
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
@@ -389,7 +389,7 @@ class ContractEvent(ManagerAccessMixin):
         """
 
         for new_block in self.chain_manager.blocks.poll_blocks(start=start_block, stop=stop_block):
-            yield from self.filter(
+            yield from self.search(
                 start_block=new_block.number,
                 stop_block=new_block.number,
                 required_confirmations=required_confirmations,
