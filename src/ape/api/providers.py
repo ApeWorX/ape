@@ -761,12 +761,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         start = start_block
         stop_increment = block_page_size - 1
-        incremented_stop = start_block + stop_increment
-        stop = min(incremented_stop, stop_block)
-
-        # Cache the logs with the latest block number in the last batch
-        # to prevent yielding duplicate logs.
-        dedup_cache: List[ContractLog] = []
+        stop = min(start + stop_increment, stop_block)
 
         while start <= stop_block:
             kwargs = {
@@ -777,11 +772,8 @@ class Web3Provider(ProviderAPI, ABC):
             }
             logs = [log for log in self._get_logs_in_block_range(address, abi, **kwargs)]
 
-            # Ignore logs that were logged at the end of the last page.
-            new_logs = [log for log in logs if log not in dedup_cache]
-            if len(new_logs) == 0:
+            if len(logs) == 0:
                 # No events happened in this sub-block range. Go to next page.
-                dedup_cache = []
                 start = stop + 1
 
                 if start < stop_block:
@@ -791,17 +783,12 @@ class Web3Provider(ProviderAPI, ABC):
 
                 continue
 
-            for log in new_logs:
+            for log in logs:
                 yield log
 
-            # Reset the logs cache to the logs with the largest block_num this iteration.
-            largest_block_num = logs[-1].block_number
-            dedup_cache = [log for log in new_logs if log.block_number == largest_block_num]
-
             # Start the next iteration on the largest block number to get remaining events.
-            # NOTE: Duplicate events will be filtered out.
-            start = largest_block_num
-            stop = min(start + block_page_size, start + (stop_block - stop))
+            start = stop + 1
+            stop = min(start + stop_increment, stop_block)
 
     def _get_logs_in_block_range(
         self,
