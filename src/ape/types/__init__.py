@@ -73,7 +73,7 @@ class ContractLog:
         if item not in self.event_arguments:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
 
-        return self.data[item]
+        return self.event_arguments[item]
 
 
 __all__ = [

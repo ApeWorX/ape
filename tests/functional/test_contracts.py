@@ -28,6 +28,11 @@ def test_contract_logs_from_receipts(owner, contract_instance):
         assert len(logs) == 1
         assert_log_values(logs[0], num)
 
+        # Also verify can we logs the other way
+        logs = [log for log in receipt.decode_logs(event_type.abi)]
+        assert len(logs) == 1
+        assert_log_values(logs[0], num)
+
     assert_receipt_logs(receipt_0, 1)
     assert_receipt_logs(receipt_1, 2)
     assert_receipt_logs(receipt_2, 3)

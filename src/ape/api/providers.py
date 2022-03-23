@@ -244,6 +244,19 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return latest_block.number - self.block_number
 
+    def decode_logs(self, abi: EventABI) -> Iterator[ContractLog]:
+        """
+        Decode the logs on the receipt.
+
+        Args:
+            abi (``EventABI``): The ABI of the event to decode into logs.
+
+        Returns:
+            Iterator[:class:`~ape.types.ContractLog`]
+        """
+
+        yield from self.provider.network.ecosystem.decode_logs(abi, self.logs)
+
     def await_confirmations(self) -> "ReceiptAPI":
         """
         Wait for a transaction to be considered confirmed.
