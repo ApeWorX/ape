@@ -218,7 +218,7 @@ class BlockContainer(BaseManager):
         if required_confirmations is None:
             required_confirmations = self.network_confirmations
 
-        if stop and stop <= self.chain_manager.blocks.height:
+        if stop is not None and stop <= self.chain_manager.blocks.height:
             raise ValueError("'stop' argument must be in the future.")
 
         # Get number of last block with the necessary amount of confirmations.
