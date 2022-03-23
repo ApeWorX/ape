@@ -7,7 +7,7 @@ from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 from .base import BaseManager
 
 
-class TestAccountContainer(list, ManagerAccessMixin):
+class TestAccountManager(list, ManagerAccessMixin):
     @property
     def accounts(self) -> Iterator[AccountAPI]:
         for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
@@ -152,7 +152,7 @@ class AccountManager(BaseManager):
         return "[" + ", ".join(repr(a) for a in self) + "]"
 
     @cached_property
-    def test_accounts(self) -> TestAccountContainer:
+    def test_accounts(self) -> TestAccountManager:
         """
         Accounts generated from the configured test mnemonic. These accounts
         are also the subject of a fixture available in the ``test`` plugin called
@@ -170,7 +170,7 @@ class AccountManager(BaseManager):
         Returns:
             :class:`TestAccountContainer`
         """
-        return TestAccountContainer()
+        return TestAccountManager()
 
     def load(self, alias: str) -> AccountAPI:
         """
