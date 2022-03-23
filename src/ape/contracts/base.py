@@ -305,7 +305,7 @@ class ContractEvent(ManagerAccessMixin):
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
         required_confirmations: Optional[int] = None,
-        **kwargs,
+        filter_args: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
         """
         Search through the logs for this event using the given filter parameters.
@@ -319,6 +319,8 @@ class ContractEvent(ManagerAccessMixin):
               on each page.
             required_confirmations (Optional[int]): The amount of blocks to
               wait before yielding a block. Defaults to the network confirmations.
+            filter_args (Optional[Dict]): Arguments on the event that you can
+              search for.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
@@ -330,7 +332,7 @@ class ContractEvent(ManagerAccessMixin):
             stop_block=stop_block,
             block_page_size=block_page_size,
             required_confirmations=required_confirmations,
-            **kwargs,
+            filter_args=filter_args,
         )
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
@@ -347,16 +349,13 @@ class ContractEvent(ManagerAccessMixin):
         ecosystem = self.provider.network.ecosystem
         yield from ecosystem.decode_logs(self.abi, receipt.logs)
 
-    def _get_logs_iter(
-        self, start_block: int = 0, stop_block: int = None, **kwargs
-    ) -> Iterator[ContractLog]:
+    def _get_logs_iter(self, start_block: int = 0, stop_block: int = None) -> Iterator[ContractLog]:
         stop_block = stop_block or self.chain_manager.blocks.height
         yield from self.provider.get_contract_logs(
             self.contract.address,
             self.abi,
             start_block=start_block,
             stop_block=stop_block,
-            **kwargs,
         )
 
     def poll_logs(
@@ -390,7 +389,11 @@ class ContractEvent(ManagerAccessMixin):
         """
 
         for new_block in self.chain_manager.blocks.poll_blocks(start=start_block, stop=stop_block):
-            yield from self.filter(start_block=new_block.number, stop_block=new_block.number)
+            yield from self.filter(
+                start_block=new_block.number,
+                stop_block=new_block.number,
+                required_confirmations=required_confirmations,
+            )
 
 
 class ContractInstance(BaseAddress):

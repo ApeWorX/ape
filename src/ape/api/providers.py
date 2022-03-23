@@ -530,7 +530,7 @@ class ProviderAPI(BaseInterfaceModel):
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
         required_confirmations: Optional[int] = None,
-        **filter_args,
+        filter_args: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
         """
         Get all logs matching the given set of filter parameters.
@@ -546,6 +546,8 @@ class ProviderAPI(BaseInterfaceModel):
               request block range sizes.
             required_confirmations (Optional[int]): The amount of blocks to
               wait before yielding a block. Defaults to the network confirmations.
+            filter_args (Optional[Dict]): Filter arguments that are arguments
+              on the event.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
@@ -741,14 +743,21 @@ class Web3Provider(ProviderAPI, ABC):
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
         required_confirmations: Optional[int] = None,
-        **filter_args,
+        filter_args: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
-        block_page_size = block_page_size or 100
-        required_confirmations = (
-            required_confirmations
-            if required_confirmations is not None
-            else self.provider.network.required_confirmations
-        )
+        if block_page_size is not None:
+            if block_page_size < 0:
+                raise ValueError("'block_page_size' cannot be negative.")
+        else:
+            block_page_size = 100
+
+        if required_confirmations is not None:
+            if required_confirmations < 0:
+                raise ValueError("'required_confirmations' cannot be negative.")
+        else:
+            required_confirmations = self.provider.network.required_confirmations
+
+        filter_args = filter_args or {}
         height = self.chain_manager.blocks.height
 
         stop_block = height - required_confirmations if stop_block is None else stop_block
