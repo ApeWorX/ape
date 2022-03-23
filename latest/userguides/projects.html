@@ -277,6 +277,12 @@ your <code class="docutils literal notranslate"><span class="pre">ape-config.yam
 <span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
 </pre></div>
 </div>
+<p>If you are using a fork-provider, such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">Hardhat</a>, you can use impersonated accounts by accessing random addresses off the fixture:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="s2">&quot;0xab5801a7d398351b8be11c439e05c5b3259aec9b&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
 </section>
 <section id="project-fixture">
 <h4>project fixture<a class="headerlink" href="#project-fixture" title="Permalink to this headline"></a></h4>

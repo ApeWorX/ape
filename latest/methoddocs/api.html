@@ -228,6 +228,27 @@ deploying and a provider must be active.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.prepare_transaction">
+<span class="sig-name descname"><span class="pre">prepare_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.prepare_transaction" title="Permalink to this definition"></a></dt>
+<dd><p>Set default values on a transaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.AccountsError" title="ape.exceptions.AccountsError"><strong>AccountsError</strong></a> – When the account cannot afford the transaction
+    or the nonce is invalid.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.TransactionError" title="ape.exceptions.TransactionError"><strong>TransactionError</strong></a> – When given negative required confirmations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to prepare.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.sign_message">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sign_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="types.html#ape.types.signatures.SignableMessage" title="eth_account.messages.SignableMessage"><span class="pre">eth_account.messages.SignableMessage</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">ape.types.signatures.MessageSignature</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_message" title="Permalink to this definition"></a></dt>
 <dd><p>Sign a message.</p>
@@ -399,6 +420,86 @@ instances.</p>
 </dd>
 <dt class="field-even">Parameters</dt>
 <dd class="field-even"><p><strong>account</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code>) – The account to remove.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.api.accounts.ImpersonatedAccount">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.accounts.</span></span><span class="sig-name descname"><span class="pre">ImpersonatedAccount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.ImpersonatedAccount" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.accounts.AccountAPI</span></code></a></p>
+<p>An account to use that does not require signing.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.accounts.ImpersonatedAccount.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.accounts.ImpersonatedAccount.__hash__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.accounts.ImpersonatedAccount.address">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span></em><a class="headerlink" href="#ape.api.accounts.ImpersonatedAccount.address" title="Permalink to this definition"></a></dt>
+<dd><p>The address of this account. Subclasses must override and provide this value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.ImpersonatedAccount.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">send_everything</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape.api.accounts.ImpersonatedAccount.call" title="Permalink to this definition"></a></dt>
+<dd><p>Make a transaction call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.AccountsError" title="ape.exceptions.AccountsError"><strong>AccountsError</strong></a> – When the nonce is invalid or the sender does
+    not have enough funds.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.TransactionError" title="ape.exceptions.TransactionError"><strong>TransactionError</strong></a> – When the required confirmations are negative.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.SignatureError" title="ape.exceptions.SignatureError"><strong>SignatureError</strong></a> – When the user does not sign the transaction.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to submit in a call.</p></li>
+<li><p><strong>send_everything</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> will send the value difference from balance and fee.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.ImpersonatedAccount.sign_message">
+<span class="sig-name descname"><span class="pre">sign_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="types.html#ape.types.signatures.SignableMessage" title="eth_account.messages.SignableMessage"><span class="pre">eth_account.messages.SignableMessage</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">ape.types.signatures.MessageSignature</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.accounts.ImpersonatedAccount.sign_message" title="Permalink to this definition"></a></dt>
+<dd><p>Sign a message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>msg</strong> (<a class="reference internal" href="types.html#ape.types.signatures.SignableMessage" title="ape.types.signatures.SignableMessage"><code class="xref py py-class docutils literal notranslate"><span class="pre">SignableMessage</span></code></a>) – The message to sign.
+See these
+<a class="reference external" href="https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage">docs</a>  # noqa: E501
+for more type information on this type.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The signed message.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a> (optional)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.ImpersonatedAccount.sign_transaction">
+<span class="sig-name descname"><span class="pre">sign_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.signatures.TransactionSignature" title="ape.types.signatures.TransactionSignature"><span class="pre">ape.types.signatures.TransactionSignature</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.accounts.ImpersonatedAccount.sign_transaction" title="Permalink to this definition"></a></dt>
+<dd><p>Sign a transaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to sign.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The signed transaction.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.signatures.TransactionSignature" title="ape.types.signatures.TransactionSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionSignature</span></code></a> (optional)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1538,6 +1639,23 @@ Can be <code class="docutils literal notranslate"><span class="pre">&quot;latest
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.network">
 <span class="sig-name descname"><span class="pre">network</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.network" title="Permalink to this definition"></a></dt>
 <dd><p>A reference to the network this provider provides.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.prepare_transaction">
+<span class="sig-name descname"><span class="pre">prepare_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><span class="pre">ape.api.providers.TransactionAPI</span></a></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.prepare_transaction" title="Permalink to this definition"></a></dt>
+<dd><p>Set default values on the transaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.TransactionError" title="ape.exceptions.TransactionError"><strong>TransactionError</strong></a> – When given negative required confirmations.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to prepare.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">

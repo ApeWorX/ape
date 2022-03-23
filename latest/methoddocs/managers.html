@@ -229,7 +229,7 @@ to get.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.accounts.AccountManager.test_accounts">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_accounts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.TestAccountAPI" title="ape.api.accounts.TestAccountAPI"><span class="pre">ape.api.accounts.TestAccountAPI</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.accounts.AccountManager.test_accounts" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_accounts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.managers.accounts.TestAccountManager" title="ape.managers.accounts.TestAccountManager"><span class="pre">ape.managers.accounts.TestAccountManager</span></a></em><a class="headerlink" href="#ape.managers.accounts.AccountManager.test_accounts" title="Permalink to this definition"></a></dt>
 <dd><p>Accounts generated from the configured test mnemonic. These accounts
 are also the subject of a fixture available in the <code class="docutils literal notranslate"><span class="pre">test</span></code> plugin called
 <code class="docutils literal notranslate"><span class="pre">accounts</span></code>. Configure these accounts, such as the mnemonic and / or
@@ -244,9 +244,26 @@ number-of-accounts using the <code class="docutils literal notranslate"><span cl
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>List[<a class="reference internal" href="api.html#ape.api.accounts.TestAccountAPI" title="ape.api.accounts.TestAccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestAccountAPI</span></code></a>]</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">TestAccountContainer</span></code></p>
 </dd>
 </dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.accounts.TestAccountManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.accounts.</span></span><span class="sig-name descname"><span class="pre">TestAccountManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.accounts.TestAccountManager" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.accounts.TestAccountManager.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.accounts.TestAccountManager.__getitem__" title="Permalink to this definition"></a></dt>
+<dd><p>x.__getitem__(y) &lt;==&gt; x[y]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.accounts.TestAccountManager.__len__">
+<span class="sig-name descname"><span class="pre">__len__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.managers.accounts.TestAccountManager.__len__" title="Permalink to this definition"></a></dt>
+<dd><p>Return len(self).</p>
 </dd></dl>
 
 </dd></dl>
