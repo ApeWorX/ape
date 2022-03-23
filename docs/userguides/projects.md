@@ -167,6 +167,14 @@ test:
   number_of_accounts: 5
 ```
 
+If you are using a fork-provider, such as [Hardhat](https://github.com/ApeWorX/ape-hardhat), you can use impersonated accounts by accessing random addresses off the fixture:
+
+```python
+@pytest.fixture
+def vitalik(accounts):
+    return accounts["0xab5801a7d398351b8be11c439e05c5b3259aec9b"]
+```
+
 #### project fixture
 
 You also have access to the `project` you are testing. You will need this to deploy your contracts in your tests.
