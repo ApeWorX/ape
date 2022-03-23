@@ -1,3 +1,7 @@
+from tests.integration.cli.utils import skip_projects_except
+
+
+@skip_projects_except(["test"])  # Only run on single project to prevent rate-limiting in CI/CD
 def test_list_excludes_core_plugins(ape_cli, runner):
     result = runner.invoke(ape_cli, ["plugins", "list"])
     assert result.exit_code == 0, result.output
