@@ -543,7 +543,6 @@ class ProviderAPI(BaseInterfaceModel):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        required_confirmations: Optional[int] = None,
         event_parameters: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
         """
@@ -558,8 +557,6 @@ class ProviderAPI(BaseInterfaceModel):
               in blocks before the block with this ID.
             block_page_size (Optional[int]): Use this parameter to adjust
               request block range sizes.
-            required_confirmations (Optional[int]): The amount of blocks to
-              wait before yielding a block. Defaults to the network confirmations.
             event_parameters (Optional[Dict]): Filter by event parameter values.
 
         Returns:
@@ -811,7 +808,6 @@ class Web3Provider(ProviderAPI, ABC):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        required_confirmations: Optional[int] = None,
         event_parameters: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
         if block_page_size is not None:
@@ -820,15 +816,10 @@ class Web3Provider(ProviderAPI, ABC):
         else:
             block_page_size = 100
 
-        if required_confirmations is not None:
-            if required_confirmations < 0:
-                raise ValueError("'required_confirmations' cannot be negative.")
-        else:
-            required_confirmations = self.provider.network.required_confirmations
-
         event_parameters = event_parameters or {}
         height = self.chain_manager.blocks.height
 
+        required_confirmations = self.provider.network.required_confirmations
         stop_block = height - required_confirmations if stop_block is None else stop_block
         if stop_block > height:
             raise ValueError(f"Stop-block '{stop_block}' greater than height '{height}'.")

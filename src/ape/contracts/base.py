@@ -299,7 +299,6 @@ class ContractEvent(ManagerAccessMixin):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        required_confirmations: Optional[int] = None,
         event_parameters: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
         """
@@ -312,8 +311,6 @@ class ContractEvent(ManagerAccessMixin):
               desired log set. Defaults to delegating to provider.
             block_page_size (Optional[int]): The amount of block to request
               on each page.
-            required_confirmations (Optional[int]): The amount of blocks to
-              wait before yielding a block. Defaults to the network confirmations.
             event_parameters (Optional[Dict]): Arguments on the event that you can
               search for.
 
@@ -326,7 +323,6 @@ class ContractEvent(ManagerAccessMixin):
             start_block=start_block,
             stop_block=stop_block,
             block_page_size=block_page_size,
-            required_confirmations=required_confirmations,
             event_parameters=event_parameters,
         )
 
@@ -383,12 +379,17 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.types.ContractLog`]
         """
 
-        for new_block in self.chain_manager.blocks.poll_blocks(start=start_block, stop=stop_block):
-            yield from self.search(
-                start_block=new_block.number,
-                stop_block=new_block.number,
-                required_confirmations=required_confirmations,
-            )
+        required_confirmations = (
+            required_confirmations or self.provider.network.required_confirmations
+        )
+        stop_block = (
+            self.chain_manager.blocks.height if stop_block is None else stop_block
+        ) - required_confirmations
+
+        for new_block in self.chain_manager.blocks.poll_blocks(
+            start=start_block, stop=stop_block, required_confirmations=required_confirmations
+        ):
+            yield from self.search(start_block=new_block.number, stop_block=new_block.number)
 
 
 class ContractInstance(BaseAddress):

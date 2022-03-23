@@ -126,26 +126,6 @@ def test_contract_logs_search_over_paging(contract_instance, owner, chain):
     assert len(logs) == 3, "Unexpected number of logs"
 
 
-def test_contracts_log_search_when_changed_required_confirmations(contract_instance, owner, chain):
-    # Create 4 total logs
-    for i in range(4):
-        contract_instance.set_number(i + 1, sender=owner)
-
-    # Only 2 logs are past the required confirmations.
-    logs = [log for log in contract_instance.NumberChange.search(required_confirmations=2)]
-    assert len(logs) == 2, "Unexpected number of logs"
-
-    # Mine to get another log (total of 3) past the required confirmations
-    chain.mine()
-    logs = [log for log in contract_instance.NumberChange.search(required_confirmations=2)]
-    assert len(logs) == 3, "Unexpected number of logs"
-
-    # Mine to get the remaining log.
-    chain.mine()
-    logs = [log for log in contract_instance.NumberChange.search(required_confirmations=2)]
-    assert len(logs) == 4, "Unexpected number of logs"
-
-
 def test_contract_logs_from_non_indexed_search(contract_instance, owner):
     contract_instance.set_number(1, sender=owner)
     with pytest.raises(DecodingError):
