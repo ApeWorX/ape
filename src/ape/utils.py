@@ -386,14 +386,15 @@ class GithubClient:
     An HTTP client for the Github API.
     """
 
-    TOKEN_KEY = "GITHUB_ACCESS_TOKEN"
+    TOKEN_KEY_OPTIONS = ("GITHUB_ACCESS_TOKEN", "GH_ACCESS_TOKEN")
     _repo_cache: Dict[str, GithubRepository] = {}
 
     def __init__(self):
         token = None
-        self.has_auth = self.TOKEN_KEY in os.environ
-        if self.has_auth:
-            token = os.environ[self.TOKEN_KEY]
+        for key in self.TOKEN_KEY_OPTIONS:
+            if key in os.environ:
+                token = os.environ[key]
+                break
 
         self._client = Github(login_or_token=token, user_agent=USER_AGENT)
 
