@@ -300,7 +300,7 @@ class ContractEvent(ManagerAccessMixin):
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
         required_confirmations: Optional[int] = None,
-        filter_args: Optional[Dict] = None,
+        event_parameters: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
         """
         Search through the logs for this event using the given filter parameters.
@@ -314,7 +314,7 @@ class ContractEvent(ManagerAccessMixin):
               on each page.
             required_confirmations (Optional[int]): The amount of blocks to
               wait before yielding a block. Defaults to the network confirmations.
-            filter_args (Optional[Dict]): Arguments on the event that you can
+            event_parameters (Optional[Dict]): Arguments on the event that you can
               search for.
 
         Returns:
@@ -327,7 +327,7 @@ class ContractEvent(ManagerAccessMixin):
             stop_block=stop_block,
             block_page_size=block_page_size,
             required_confirmations=required_confirmations,
-            filter_args=filter_args,
+            event_parameters=event_parameters,
         )
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:

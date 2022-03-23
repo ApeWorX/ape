@@ -91,7 +91,7 @@ def test_contract_logs_splicing(contract_instance, owner):
 
 def test_contract_logs_search(contract_instance, owner):
     contract_instance.set_number(1, sender=owner)
-    logs = [log for log in contract_instance.NumberChange.search(filter_args={"new_num": 1})]
+    logs = [log for log in contract_instance.NumberChange.search(event_parameters={"new_num": 1})]
     assert len(logs) == 1, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
 
@@ -149,7 +149,7 @@ def test_contracts_log_search_when_changed_required_confirmations(contract_insta
 def test_contract_logs_from_non_indexed_search(contract_instance, owner):
     contract_instance.set_number(1, sender=owner)
     with pytest.raises(DecodingError):
-        _ = [log for log in contract_instance.NumberChange.search(filter_args={"prev_num": 1})]
+        _ = [log for log in contract_instance.NumberChange.search(event_parameters={"prev_num": 1})]
 
 
 def assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):

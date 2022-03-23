@@ -544,7 +544,7 @@ class ProviderAPI(BaseInterfaceModel):
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
         required_confirmations: Optional[int] = None,
-        filter_args: Optional[Dict] = None,
+        event_parameters: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
         """
         Get all logs matching the given set of filter parameters.
@@ -560,8 +560,7 @@ class ProviderAPI(BaseInterfaceModel):
               request block range sizes.
             required_confirmations (Optional[int]): The amount of blocks to
               wait before yielding a block. Defaults to the network confirmations.
-            filter_args (Optional[Dict]): Filter arguments that are arguments
-              on the event.
+            event_parameters (Optional[Dict]): Filter by event parameter values.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
@@ -813,7 +812,7 @@ class Web3Provider(ProviderAPI, ABC):
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
         required_confirmations: Optional[int] = None,
-        filter_args: Optional[Dict] = None,
+        event_parameters: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
         if block_page_size is not None:
             if block_page_size < 0:
@@ -827,7 +826,7 @@ class Web3Provider(ProviderAPI, ABC):
         else:
             required_confirmations = self.provider.network.required_confirmations
 
-        filter_args = filter_args or {}
+        event_parameters = event_parameters or {}
         height = self.chain_manager.blocks.height
 
         stop_block = height - required_confirmations if stop_block is None else stop_block
@@ -843,13 +842,17 @@ class Web3Provider(ProviderAPI, ABC):
         stop = min(start + stop_increment, stop_block)
 
         while start <= stop_block:
-            kwargs = {
-                "start_block": start,
-                "stop_block": stop,
-                "block_page_size": block_page_size,
-                **filter_args,
-            }
-            logs = [log for log in self._get_logs_in_block_range(address, abi, **kwargs)]
+            logs = [
+                log
+                for log in self._get_logs_in_block_range(
+                    address,
+                    abi,
+                    start_block=start,
+                    stop_block=stop,
+                    block_page_size=block_page_size,
+                    event_parameters=event_parameters,
+                )
+            ]
 
             if len(logs) == 0:
                 # No events happened in this sub-block range. Go to next page.
@@ -876,12 +879,13 @@ class Web3Provider(ProviderAPI, ABC):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        **filter_args,
+        event_parameters: Optional[Dict] = None,
     ):
         start_block = start_block or 0
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
         block_page_size = block_page_size or 100
         stop_block = start_block + block_page_size if stop_block is None else stop_block
+        event_parameters = event_parameters or {}
         for abi in abis:
             if not isinstance(address, (list, tuple)):
                 address = [address]
@@ -894,7 +898,7 @@ class Web3Provider(ProviderAPI, ABC):
                 "topics": [],
             }
 
-            if "topics" not in filter_args:
+            if "topics" not in event_parameters:
                 event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
                 log_filter["topics"] = [event_signature_hash]
                 search_topics = []
@@ -903,7 +907,7 @@ class Web3Provider(ProviderAPI, ABC):
                     abi, [abi_input for abi_input in abi.inputs if abi_input.indexed]
                 )
 
-                for name, arg in filter_args.items():
+                for name, arg in event_parameters.items():
                     if hasattr(arg, "address"):
                         arg = self.conversion_manager.convert(arg, AddressType)
 
@@ -926,7 +930,7 @@ class Web3Provider(ProviderAPI, ABC):
                 ]
                 log_filter["topics"].extend(encoded_topic_data)
             else:
-                log_filter["topics"] = filter_args.pop("topics")
+                log_filter["topics"] = event_parameters.pop("topics")
 
             log_result = [dict(log) for log in self._web3.eth.get_logs(log_filter)]  # type: ignore
             yield from self.network.ecosystem.decode_logs(abi, log_result)
