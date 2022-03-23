@@ -57,7 +57,6 @@ class ContractConstructor(ManagerAccessMixin):
             sender = kwargs["sender"]
             return sender.call(txn)
 
-        txn = self.serialize_transaction(*args, **kwargs)
         return self.provider.send_transaction(txn)
 
 
