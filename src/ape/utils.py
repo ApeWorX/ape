@@ -581,8 +581,11 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     Returns:
         List[pathlib.Path]: A list of files in the given directory.
     """
+    if not path.exists():
+        return []
+
     if path.is_dir():
-        return list(path.rglob("*.*"))
+        return [p for p in list(path.rglob("*.*")) if not p.is_dir() and p.exists()]
 
     return [path]
 
