@@ -74,7 +74,7 @@ def test_contract_logs_search(contract_instance, owner):
     assert_log_values(logs[0], 1)
 
 
-def test_contract_logs_filtering_with_paging(contract_instance, owner, chain):
+def test_contract_logs_search_with_paging(contract_instance, owner, chain):
     # Create 1 log each in the first 3 blocks.
     for i in range(3):
         contract_instance.set_number(i + 1, sender=owner)
