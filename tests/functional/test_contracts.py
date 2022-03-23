@@ -109,9 +109,7 @@ def test_contract_logs_search_over_paging(contract_instance, owner, chain):
     assert len(logs) == 3, "Unexpected number of logs"
 
 
-def test_contracts_log_search_when_changed_required_confirmations(
-    contract_instance, owner, chain
-):
+def test_contracts_log_search_when_changed_required_confirmations(contract_instance, owner, chain):
     # Create 4 total logs
     for i in range(4):
         contract_instance.set_number(i + 1, sender=owner)
