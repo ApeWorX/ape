@@ -52,6 +52,23 @@ def test_contract_logs_from_event_type(contract_instance, owner):
     assert_log_values(logs[2], 3)
 
 
+def test_contract_logs_index_access(contract_instance, owner):
+    event_type = contract_instance.NumberChange
+
+    contract_instance.set_number(1, sender=owner)
+    contract_instance.set_number(2, sender=owner)
+    contract_instance.set_number(3, sender=owner)
+
+    assert_log_values(event_type[0], 1)
+    assert_log_values(event_type[1], 2)
+    assert_log_values(event_type[2], 3)
+
+    # Verify negative index access
+    assert_log_values(event_type[-3], 1)
+    assert_log_values(event_type[-2], 2)
+    assert_log_values(event_type[-1], 3)
+
+
 def test_contract_logs_splicing(contract_instance, owner):
     event_type = contract_instance.NumberChange
 
@@ -114,7 +131,7 @@ def test_contracts_log_search_when_changed_required_confirmations(contract_insta
     for i in range(4):
         contract_instance.set_number(i + 1, sender=owner)
 
-    # Only 2 logs are past the requried confirmations.
+    # Only 2 logs are past the required confirmations.
     logs = [log for log in contract_instance.NumberChange.search(required_confirmations=2)]
     assert len(logs) == 2, "Unexpected number of logs"
 
