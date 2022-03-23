@@ -11,7 +11,7 @@ from ape.types.signatures import _Signature
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 from .address import BaseAddress
-from .providers import ReceiptAPI, TransactionAPI, TransactionType
+from .providers import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance
@@ -89,47 +89,14 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             :class:`~ape.api.providers.ReceiptAPI`
         """
-        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
-        txn.chain_id = self.provider.network.chain_id
 
-        # NOTE: Allow overriding nonce, assume user understand what this does
-        if txn.nonce is None:
-            txn.nonce = self.nonce
-        elif txn.nonce < self.nonce:
-            raise AccountsError("Invalid nonce, will not publish.")
-
-        txn_type = TransactionType(txn.type)
-        if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
-            txn.gas_price = self.provider.gas_price  # type: ignore
-        elif txn_type == TransactionType.DYNAMIC:
-            if txn.max_priority_fee is None:  # type: ignore
-                txn.max_priority_fee = self.provider.priority_fee  # type: ignore
-
-            if txn.max_fee is None:
-                txn.max_fee = self.provider.base_fee + txn.max_priority_fee
-            # else: Assume user specified the correct amount or txn will fail and waste gas
-
-        if txn.gas_limit is None:
-            txn.gas_limit = self.provider.estimate_gas_cost(txn)
-        # else: Assume user specified the correct amount or txn will fail and waste gas
+        txn = self.prepare_transaction(txn)
 
         if send_everything:
             if txn.max_fee is None:
                 raise TransactionError(message="Max fee must not be None.")
 
             txn.value = self.balance - txn.max_fee
-
-        if txn.total_transfer_value > self.balance:
-            raise AccountsError(
-                "Transfer value meets or exceeds account balance.\n"
-                "Are you using the correct provider/account combination?\n"
-                f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
-            )
-
-        if txn.required_confirmations is None:
-            txn.required_confirmations = self.provider.network.required_confirmations
-        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
-            raise TransactionError(message="'required_confirmations' must be a positive integer.")
 
         txn.signature = self.sign_transaction(txn)
         if not txn.signature:
@@ -229,6 +196,39 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             return self.address == Account.recover_transaction(data.serialize_transaction())
         else:
             raise ValueError(f"Unsupported Message type: {type(data)}.")
+
+    def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+        """
+        Set default values on a transaction.
+
+        Raises:
+            :class:`~ape.exceptions.AccountsError`: When the account cannot afford the transaction
+              or the nonce is invalid.
+            :class:`~ape.exceptions.TransactionError`: When given negative required confirmations.
+
+        Args:
+            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to prepare.
+
+        Returns:
+            :class:`~ape.api.providers.TransactionAPI`
+        """
+
+        # NOTE: Allow overriding nonce, assume user understand what this does
+        if txn.nonce is None:
+            txn.nonce = self.nonce
+        elif txn.nonce < self.nonce:
+            raise AccountsError("Invalid nonce, will not publish.")
+
+        txn = self.provider.prepare_transaction(txn)
+
+        if txn.total_transfer_value > self.balance:
+            raise AccountsError(
+                "Transfer value meets or exceeds account balance.\n"
+                "Are you using the correct provider/account combination?\n"
+                f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
+            )
+
+        return txn
 
 
 class AccountContainerAPI(BaseInterfaceModel):
@@ -384,3 +384,25 @@ class TestAccountAPI(AccountAPI):
     :class:`~ape.utils.GeneratedDevAccounts`) should implement this API
     instead of ``AccountAPI`` directly. This is how they show up in the ``accounts`` test fixture.
     """
+
+
+class ImpersonatedAccount(AccountAPI):
+    """
+    An account to use that does not require signing.
+    """
+
+    raw_address: AddressType
+
+    @property
+    def address(self) -> AddressType:
+        return self.raw_address
+
+    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
+        raise NotImplementedError("This account cannot sign messages")
+
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
+        return None
+
+    def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
+        txn = self.prepare_transaction(txn)
+        return self.provider.send_transaction(txn)

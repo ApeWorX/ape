@@ -155,24 +155,7 @@ class Ethereum(EcosystemAPI):
         return self.config_manager.get_config("ethereum")  # type: ignore
 
     def serialize_transaction(self, transaction: TransactionAPI) -> bytes:
-        if not transaction.signature:
-            raise SignatureError("The transaction is not signed.")
-
-        txn_data = transaction.dict()
-
-        unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
-        signature = (
-            transaction.signature.v,
-            to_int(transaction.signature.r),
-            to_int(transaction.signature.s),
-        )
-
-        signed_txn = encode_transaction(unsigned_txn, signature)
-
-        if transaction.sender and EthAccount.recover_transaction(signed_txn) != transaction.sender:
-            raise SignatureError("Recovered Signer doesn't match sender!")
-
-        return signed_txn
+        return transaction.serialize_transaction()
 
     def decode_receipt(self, data: dict) -> ReceiptAPI:
         status = data.get("status")
