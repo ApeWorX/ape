@@ -155,7 +155,8 @@ class QueryManager(ManagerAccessMixin):
             raise ChainError(
                 f"'stop={stop}' cannot be greater than the "
                 f"chain length ({len(self.chain_manager.blocks)}). "
-                f"Use '{self.chain_manager.blocks.poll_blocks.__name__}()' to wait for future blocks."
+                f"Use '{self.chain_manager.blocks.poll_blocks.__name__}()' "
+                f"to wait for future blocks."
             )
         elif stop < start:
             raise ValueError(f"stop '{stop}' cannot be less than start '{start}'.")
