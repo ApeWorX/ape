@@ -525,7 +525,7 @@ class ProviderAPI(BaseInterfaceModel):
     def get_contract_logs(
         self,
         address: Union[AddressType, List[AddressType]],
-        abi: Union[List[EventABI], EventABI],
+        abi: Union[EventABI, List[EventABI]],
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
