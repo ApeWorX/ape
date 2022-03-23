@@ -28,7 +28,7 @@ from ape.exceptions import (
     TransactionError,
 )
 from ape.logging import logger
-from ape.types import BlockID, SnapshotID, TransactionSignature
+from ape.types import AddressType, BlockID, SnapshotID, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 if TYPE_CHECKING:
@@ -573,6 +573,62 @@ class ProviderAPI(BaseInterfaceModel):
         Raises:
             NotImplementedError: Unless overridden.
         """
+
+    @raises_not_implemented
+    def unlock_account(self, address: AddressType) -> bool:
+        """
+        Ask the provider to allow an address to submit transactions without validating
+        signatures. This feature is intended to be subclassed by a
+        :class:`~ape.api.providers.TestProviderAPI` so that during a fork-mode test,
+        a transaction can be submitted by an arbitrary account or contract without a private key.
+
+        Raises:
+            NotImplementedError: When this provider does not support unlocking an account.
+
+        Args:
+            address (``AddressType``): The address to unlock.
+
+        Returns:
+            bool: ``True`` if successfully unlocked account and ``False`` otherwise.
+        """
+
+    def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+        """
+        Set default values on the transaction.
+
+        Raises:
+            :class:`~ape.exceptions.TransactionError`: When given negative required confirmations.
+
+        Args:
+            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to prepare.
+
+        Returns:
+            :class:`~ape.api.providers.TransactionAPI`
+        """
+
+        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
+        txn.chain_id = self.network.chain_id
+
+        txn_type = TransactionType(txn.type)
+        if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
+            txn.gas_price = self.gas_price  # type: ignore
+        elif txn_type == TransactionType.DYNAMIC:
+            if txn.max_priority_fee is None:  # type: ignore
+                txn.max_priority_fee = self.priority_fee  # type: ignore
+
+            if txn.max_fee is None:
+                txn.max_fee = self.base_fee + txn.max_priority_fee
+            # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        if txn.gas_limit is None:
+            txn.gas_limit = self.estimate_gas_cost(txn)
+
+        if txn.required_confirmations is None:
+            txn.required_confirmations = self.network.required_confirmations
+        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
+            raise TransactionError(message="'required_confirmations' must be a positive integer.")
+
+        return txn
 
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self.chain_manager:

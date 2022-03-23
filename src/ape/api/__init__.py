@@ -1,4 +1,10 @@
-from .accounts import AccountAPI, AccountContainerAPI, TestAccountAPI, TestAccountContainerAPI
+from .accounts import (
+    AccountAPI,
+    AccountContainerAPI,
+    ImpersonatedAccount,
+    TestAccountAPI,
+    TestAccountContainerAPI,
+)
 from .address import Address
 from .compiler import CompilerAPI
 from .config import ConfigDict, ConfigEnum, PluginConfig
@@ -37,6 +43,7 @@ __all__ = [
     "DependencyAPI",
     "EcosystemAPI",
     "ExplorerAPI",
+    "ImpersonatedAccount",
     "PluginConfig",
     "ProjectAPI",
     "ProviderAPI",
