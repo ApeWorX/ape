@@ -134,9 +134,7 @@ class BlockContainer(BaseManager):
 
         return self.query_manager.query(query)
 
-    def range(
-        self, start_or_stop: int, step: int = 1
-    ) -> Iterator[BlockAPI]:
+    def range(self, start_or_stop: int, step: int = 1) -> Iterator[BlockAPI]:
         return self.query_manager.get_blocks(start_or_stop, stop=None, step=step)
 
     def poll_blocks(
