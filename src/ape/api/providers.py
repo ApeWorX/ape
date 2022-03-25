@@ -351,7 +351,11 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     def __repr__(self) -> str:
-        chain_id_output = f" chain_id={self.chain_id}" if self.chain_id is not None else ""
+        try:
+            chain_id_output = f" chain_id={self.chain_id}"
+        except AttributeError:
+            chain_id_output = ""
+
         return f"<{self.name}{chain_id_output}>"
 
     @raises_not_implemented
