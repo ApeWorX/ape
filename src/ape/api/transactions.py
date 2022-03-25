@@ -4,7 +4,7 @@ from typing import Iterator, List, Optional
 
 from ethpm_types.abi import EventABI
 from pydantic.fields import Field
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError

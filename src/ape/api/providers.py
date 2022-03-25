@@ -351,8 +351,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     def __repr__(self) -> str:
-        chain_id_output = f" chain_id={self.chain_id}" if self._web3 is not None else ""
-        return f"<{self.name}{chain_id_output}>"
+        return f"<{self.name} chain_id={self.chain_id}>"
 
     @raises_not_implemented
     def unlock_account(self, address: AddressType) -> bool:
@@ -486,7 +485,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def chain_id(self) -> int:
-        return self._web3.eth.chain_id
+        if hasattr(self._web3, "eth"):
+            return self._web3.eth.chain_id
+        else:
+            return self.network.chain_id
 
     @property
     def gas_price(self) -> int:
