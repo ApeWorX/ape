@@ -14,6 +14,7 @@ from eth_abi.abi import encode_single
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak
 from ethpm_types.abi import EventABI
+from evm_trace import TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, validator
 from web3 import Web3
@@ -370,6 +371,15 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             bool: ``True`` if successfully unlocked account and ``False`` otherwise.
         """
+
+    def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
+        """
+        Provides a detailed description of CALL and RETURN opcodes.
+
+        Returns:
+            Iterator(EvmTrace): EVM stack trace object.
+        """
+        raise NotImplementedError("Transaction tracing is not supported.")
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
         """
