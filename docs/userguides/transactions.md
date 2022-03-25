@@ -86,7 +86,7 @@ for log in contract.MyFundEvent.from_receipt(receipt):
     print(log.amount)  # Assuming 'amount' is a property on the event.
 ```
 
-You can also access the log from the receipt itself if you know the ABI:
+You can also access the logs from the receipt itself if you know the ABI:
 
 ```python
 event_type = contract.MyEvent
