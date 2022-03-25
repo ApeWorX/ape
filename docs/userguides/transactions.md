@@ -83,7 +83,7 @@ The following is an example demonstrating how to access logs from an instance of
 ```python
 receipt = contract.fundMyContract(value="1 gwei", type="0x0", sender=sender)
 for log in contract.MyFundEvent.from_receipt(receipt):
-    print(log).amount  # Assuming 'amount' is a property on the event.
+    print(log.amount)  # Assuming 'amount' is a property on the event.
 ```
 
 You can also access the log from the receipt itself if you know the ABI:
@@ -91,5 +91,5 @@ You can also access the log from the receipt itself if you know the ABI:
 ```python
 event_type = contract.MyEvent
 for log in receipt.decode_logs(event_type.abi):
-    print(log).amount  # Assuming 'amount' is a property on the event.
+    print(log.amount)  # Assuming 'amount' is a property on the event.
 ```
