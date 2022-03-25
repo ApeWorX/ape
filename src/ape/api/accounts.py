@@ -11,7 +11,7 @@ from ape.types.signatures import _Signature
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 from .address import BaseAddress
-from .providers import ReceiptAPI, TransactionAPI
+from .transactions import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance

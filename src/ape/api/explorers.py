@@ -1,12 +1,13 @@
-from typing import Iterator, Optional
+from typing import TYPE_CHECKING, Iterator, Optional
 
 from ethpm_types import ContractType
 
+from ape.api import networks
 from ape.types import AddressType
 from ape.utils import BaseInterfaceModel, abstractmethod
 
-from . import networks
-from .providers import ReceiptAPI
+if TYPE_CHECKING:
+    from ape.api.transactions import ReceiptAPI
 
 
 class ExplorerAPI(BaseInterfaceModel):
@@ -55,7 +56,7 @@ class ExplorerAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_account_transactions(self, address: AddressType) -> Iterator[ReceiptAPI]:
+    def get_account_transactions(self, address: AddressType) -> Iterator["ReceiptAPI"]:
         """
         Get a list of list of transactions performed by an address.
 

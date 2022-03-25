@@ -240,7 +240,7 @@ class ContractEvent(ManagerAccessMixin):
         return self.abi.name
 
     def __iter__(self) -> Iterator[ContractLog]:
-        yield from self.search()
+        yield from self.range()
 
     @singledispatchmethod
     def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
@@ -294,10 +294,10 @@ class ContractEvent(ManagerAccessMixin):
 
         return collected_logs
 
-    def search(
+    def range(
         self,
-        start_block: Optional[int] = None,
-        stop_block: Optional[int] = None,
+        start_or_stop: int = 0,
+        stop: Optional[int] = None,
         block_page_size: Optional[int] = None,
         event_parameters: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
@@ -305,9 +305,12 @@ class ContractEvent(ManagerAccessMixin):
         Search through the logs for this event using the given filter parameters.
 
         Args:
-            start_block (Optional[int]): The earliest block number in
-              the desired log set. Defaults to delegating to provider.
-            stop_block (Optional[int]): The latest block number in the
+            start_or_stop (int): When also given ``stop``, this is the the
+              earliest block number in the desired log set.
+              Otherwise, it is the total amount of blocks to get starting from ``0``.
+              When not given either ``start`` or ``stop``, defaults to ``0`` and acts
+              as ``start``.
+            stop (Optional[int]): The latest block number in the
               desired log set. Defaults to delegating to provider.
             block_page_size (Optional[int]): The amount of block to request
               on each page.
@@ -317,11 +320,19 @@ class ContractEvent(ManagerAccessMixin):
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
+
+        start = start_or_stop
+        if stop is None and start is not None:
+            stop = start - 1
+        else:
+            start = 0
+            stop = start
+
         yield from self.provider.get_contract_logs(
             self.contract.address,
             self.abi,
-            start_block=start_block,
-            stop_block=stop_block,
+            start_block=start,
+            stop_block=stop,
             block_page_size=block_page_size,
             event_parameters=event_parameters,
         )
@@ -370,7 +381,7 @@ class ContractEvent(ManagerAccessMixin):
             start_block (Optional[int]): The block number to start with. Defaults to the pending
               block number.
             stop_block (Optional[int]): Optionally set a future block number to stop at.
-              Defaults to infinity.
+              Defaults to never-ending.
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
               Defaults to the network's configured required confirmations.
@@ -389,7 +400,11 @@ class ContractEvent(ManagerAccessMixin):
         for new_block in self.chain_manager.blocks.poll_blocks(
             start=start_block, stop=stop_block, required_confirmations=required_confirmations
         ):
-            yield from self.search(start_block=new_block.number, stop_block=new_block.number)
+            if new_block.number is None:
+                continue
+
+            # Get all events in the new block.
+            yield from self.range(new_block.number, stop=new_block.number)
 
 
 class ContractInstance(BaseAddress):

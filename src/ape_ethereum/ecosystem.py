@@ -16,7 +16,6 @@ from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 
-from ape._utils import LogInputABICollection
 from ape.api import (
     BlockAPI,
     BlockConsensusAPI,
@@ -29,6 +28,7 @@ from ape.api import (
     TransactionType,
 )
 from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
 from ape.types import AddressType, ContractLog
 
