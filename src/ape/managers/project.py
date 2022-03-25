@@ -515,7 +515,7 @@ class ProjectManager(BaseManager):
 
         contract = self._get_contract(contract_name)
         if not contract:
-            raise KeyError(f"No contract found with name '{contract_name}'.")
+            raise ValueError(f"No contract found with name '{contract_name}'.")
 
         return contract
 
