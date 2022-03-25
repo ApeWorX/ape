@@ -56,7 +56,7 @@ jobs:
                 python-version: [3.7, 3.8, 3.9, "3.10"]
 
         env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         steps:
         - uses: actions/checkout@v2

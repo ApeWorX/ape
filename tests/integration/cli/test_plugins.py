@@ -1,6 +1,9 @@
+import pytest
+
 from tests.integration.cli.utils import skip_projects_except
 
 
+@pytest.mark.xfail(strict=False, reason="Github rate limiting issues")
 @skip_projects_except(["test"])  # Only run on single project to prevent rate-limiting in CI/CD
 def test_list_excludes_core_plugins(ape_cli, runner):
     result = runner.invoke(ape_cli, ["plugins", "list"])
