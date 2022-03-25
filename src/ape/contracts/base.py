@@ -240,6 +240,10 @@ class ContractEvent(ManagerAccessMixin):
         return self.abi.name
 
     def __iter__(self) -> Iterator[ContractLog]:
+        """
+        Get all logs that have occurred for this event.
+        """
+
         yield from self.range(self.chain_manager.blocks.height + 1)
 
     @singledispatchmethod
@@ -275,6 +279,16 @@ class ContractEvent(ManagerAccessMixin):
 
     @__getitem__.register
     def __getitem_slice(self, value: slice) -> List[ContractLog]:
+        """
+        Access a slice of logs from this event.
+
+        Args:
+            value (slice): The range of log to get, e.g. ``[5:10]``.
+
+        Returns:
+            Iterator[:class:`~ape.contracts.base.ContractLog`]
+        """
+
         start = value.start or 0
         stop = value.stop if value.stop is not None else self.chain_manager.blocks.height
         step = value.step or 1
@@ -308,8 +322,6 @@ class ContractEvent(ManagerAccessMixin):
             start_or_stop (int): When also given ``stop``, this is the the
               earliest block number in the desired log set.
               Otherwise, it is the total amount of blocks to get starting from ``0``.
-              When not given either ``start`` or ``stop``, defaults to ``0`` and acts
-              as ``start``.
             stop (Optional[int]): The latest block number in the
               desired log set. Defaults to delegating to provider.
             block_page_size (Optional[int]): The amount of block to request
