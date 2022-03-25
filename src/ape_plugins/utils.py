@@ -82,7 +82,7 @@ class ApePlugin:
 
     @property
     def is_part_of_core(self) -> bool:
-        return self.module_name in CORE_PLUGINS
+        return self.module_name.strip() in CORE_PLUGINS
 
     @property
     def is_installed(self) -> bool:
