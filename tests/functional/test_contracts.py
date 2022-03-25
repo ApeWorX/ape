@@ -157,7 +157,9 @@ def test_contract_logs_range_over_paging(contract_instance, owner, chain):
 def test_contract_logs_from_non_indexed_range(contract_instance, owner):
     contract_instance.set_number(1, sender=owner)
     with pytest.raises(DecodingError):
-        _ = [log for log in contract_instance.NumberChange.range(event_parameters={"prev_num": 1})]
+        _ = [
+            log for log in contract_instance.NumberChange.range(0, event_parameters={"prev_num": 1})
+        ]
 
 
 def assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):

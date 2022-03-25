@@ -272,7 +272,7 @@ def generate_dev_accounts(
     seed = seed_from_mnemonic(mnemonic, "")
     accounts = []
 
-    for i in range(0, number_of_accounts):
+    for i in range(number_of_accounts):
         hd_path = HDPath(hd_path_format.format(i))
         private_key = HexBytes(hd_path.derive(seed)).hex()
         address = Account.from_key(private_key).address

@@ -310,7 +310,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def range(
         self,
-        start_or_stop: int = 0,
+        start_or_stop: int,
         stop: Optional[int] = None,
         block_page_size: Optional[int] = None,
         event_parameters: Optional[Dict] = None,
