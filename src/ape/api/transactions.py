@@ -1,6 +1,6 @@
 import time
 from enum import Enum, IntEnum
-from typing import Iterator, List, Optional
+from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
 from ethpm_types.abi import EventABI
 from pydantic.fields import Field
@@ -11,6 +11,9 @@ from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod
+
+if TYPE_CHECKING:
+    from ape.contracts import ContractEvent
 
 
 class TransactionType(Enum):
@@ -208,7 +211,7 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return latest_block.number - self.block_number
 
-    def decode_logs(self, abi: EventABI) -> Iterator[ContractLog]:
+    def decode_logs(self, abi: Union[EventABI, "ContractEvent"]) -> Iterator[ContractLog]:
         """
         Decode the logs on the receipt.
 
@@ -218,6 +221,8 @@ class ReceiptAPI(BaseInterfaceModel):
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
         """
+        if not isinstance(abi, EventABI):
+            abi = abi.abi
 
         yield from self.provider.network.ecosystem.decode_logs(abi, self.logs)
 
