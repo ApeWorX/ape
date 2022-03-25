@@ -101,7 +101,6 @@ def _list(cli_ctx, display_all):
 
     for name in spaced_names:
         plugin = ApePlugin(name)
-
         if plugin.is_part_of_core:
             if not display_all:
                 continue
@@ -126,7 +125,6 @@ def _list(cli_ctx, display_all):
     installed_plugin_lists = [
         ls for ls in [installed_org_plugins, installed_third_party_plugins] if ls
     ]
-
     if installed_plugin_lists:
         sections["Installed Plugins"] = installed_plugin_lists
     elif not display_all and available_plugins:

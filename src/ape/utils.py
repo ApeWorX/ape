@@ -390,11 +390,7 @@ class GithubClient:
     _repo_cache: Dict[str, GithubRepository] = {}
 
     def __init__(self):
-        token = None
-        self.has_auth = self.TOKEN_KEY in os.environ
-        if self.has_auth:
-            token = os.environ[self.TOKEN_KEY]
-
+        token = os.environ[self.TOKEN_KEY] if self.TOKEN_KEY in os.environ else None
         self._client = Github(login_or_token=token, user_agent=USER_AGENT)
 
     @cached_property
