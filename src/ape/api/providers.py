@@ -569,7 +569,9 @@ class Web3Provider(ProviderAPI, ABC):
 
         start_block = start_block or 0
         if start_block > stop_block:
-            raise ValueError("Start block cannot be greater than stop block.")
+            raise ValueError(
+                f"Start block '{start_block}' cannot be greater than stop block '{stop_block}'."
+            )
 
         start = start_block
         stop_increment = block_page_size - 1

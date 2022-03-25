@@ -321,18 +321,21 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
-        start = start_or_stop
-        if stop is None and start is not None:
-            stop = start - 1
-        else:
-            start = 0
-            stop = start
+        start_block = None
+        stop_block = None
+
+        if stop is None:
+            start_block = start_or_stop
+            stop_block = None  # Delegate to provider
+        elif start_or_stop is not None and stop is not None:
+            start_block = start_or_stop
+            stop_block = stop - 1
 
         yield from self.provider.get_contract_logs(
             self.contract.address,
             self.abi,
-            start_block=start,
-            stop_block=stop,
+            start_block=start_block,
+            stop_block=stop_block,
             block_page_size=block_page_size,
             event_parameters=event_parameters,
         )
@@ -404,7 +407,7 @@ class ContractEvent(ManagerAccessMixin):
                 continue
 
             # Get all events in the new block.
-            yield from self.range(new_block.number, stop=new_block.number)
+            yield from self.range(new_block.number, stop=new_block.number + 1)
 
 
 class ContractInstance(BaseAddress):
