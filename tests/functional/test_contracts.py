@@ -89,14 +89,42 @@ def test_contract_logs_splicing(contract_instance, owner):
     assert_log_values(log, 2)
 
 
-def test_contract_logs_search(contract_instance, owner):
+def test_contract_logs_range(contract_instance, owner):
     contract_instance.set_number(1, sender=owner)
-    logs = [log for log in contract_instance.NumberChange.range(event_parameters={"new_num": 1})]
+    logs = [
+        log for log in contract_instance.NumberChange.range(100, event_parameters={"new_num": 1})
+    ]
     assert len(logs) == 1, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
 
 
-def test_contract_logs_search_with_paging(contract_instance, owner, chain):
+def test_contract_logs_range_start_and_stop(contract_instance, owner, chain):
+    # Create 1 event
+    contract_instance.set_number(1, sender=owner)
+
+    # Grab start block after first event
+    start_block = chain.blocks.height
+
+    contract_instance.set_number(2, sender=owner)
+    contract_instance.set_number(3, sender=owner)
+
+    stop = 30  # Stop can be bigger than height, it doesn't not matter
+    logs = [log for log in contract_instance.NumberChange.range(start_block, stop=stop)]
+    assert len(logs) == 3, "Unexpected number of logs"
+
+
+def test_contract_logs_range_only_stop(contract_instance, owner, chain):
+    # Create 1 event
+    contract_instance.set_number(1, sender=owner)
+    contract_instance.set_number(2, sender=owner)
+    contract_instance.set_number(3, sender=owner)
+
+    stop = 100  # Stop can be bigger than height, it doesn't not matter
+    logs = [log for log in contract_instance.NumberChange.range(stop)]
+    assert len(logs) == 3, "Unexpected number of logs"
+
+
+def test_contract_logs_range_with_paging(contract_instance, owner, chain):
     # Create 1 log each in the first 3 blocks.
     for i in range(3):
         contract_instance.set_number(i + 1, sender=owner)
@@ -108,7 +136,7 @@ def test_contract_logs_search_with_paging(contract_instance, owner, chain):
     # Create one more log after the empty blocks.
     contract_instance.set_number(100, sender=owner)
 
-    logs = [log for log in contract_instance.NumberChange.range(block_page_size=1)]
+    logs = [log for log in contract_instance.NumberChange.range(100, block_page_size=1)]
     assert len(logs) == 4, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
     assert_log_values(logs[1], 2)
@@ -116,17 +144,17 @@ def test_contract_logs_search_with_paging(contract_instance, owner, chain):
     assert_log_values(logs[3], 100, previous_number=3)
 
 
-def test_contract_logs_search_over_paging(contract_instance, owner, chain):
+def test_contract_logs_range_over_paging(contract_instance, owner, chain):
     # Create 1 log each in the first 3 blocks.
     for i in range(3):
         contract_instance.set_number(i + 1, sender=owner)
 
     # 50 is way more than 3 but it shouldn't matter.
-    logs = [log for log in contract_instance.NumberChange.range(block_page_size=50)]
+    logs = [log for log in contract_instance.NumberChange.range(100, block_page_size=50)]
     assert len(logs) == 3, "Unexpected number of logs"
 
 
-def test_contract_logs_from_non_indexed_search(contract_instance, owner):
+def test_contract_logs_from_non_indexed_range(contract_instance, owner):
     contract_instance.set_number(1, sender=owner)
     with pytest.raises(DecodingError):
         _ = [log for log in contract_instance.NumberChange.range(event_parameters={"prev_num": 1})]

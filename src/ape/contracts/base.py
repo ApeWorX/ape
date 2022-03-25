@@ -240,7 +240,7 @@ class ContractEvent(ManagerAccessMixin):
         return self.abi.name
 
     def __iter__(self) -> Iterator[ContractLog]:
-        yield from self.range()
+        yield from self.range(self.chain_manager.blocks.height + 1)
 
     @singledispatchmethod
     def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
@@ -325,12 +325,13 @@ class ContractEvent(ManagerAccessMixin):
         stop_block = None
 
         if stop is None:
-            start_block = start_or_stop
-            stop_block = None  # Delegate to provider
+            start_block = 0
+            stop_block = start_or_stop
         elif start_or_stop is not None and stop is not None:
             start_block = start_or_stop
             stop_block = stop - 1
 
+        stop_block = min(stop_block, self.chain_manager.blocks.height)
         yield from self.provider.get_contract_logs(
             self.contract.address,
             self.abi,
