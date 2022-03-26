@@ -132,6 +132,48 @@ as well as a block number or hash (HexBytes).</p>
 <p>alias of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">hexbytes.main.HexBytes</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code>[‘earliest’, ‘latest’, ‘pending’]]</p>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.ContractLog">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.</span></span><span class="sig-name descname"><span class="pre">ContractLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_arguments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.ContractLog" title="Permalink to this definition"></a></dt>
+<dd><p>An instance of a log from a contract.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.ContractLog.block_hash">
+<span class="sig-name descname"><span class="pre">block_hash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#ape.types.ContractLog.block_hash" title="Permalink to this definition"></a></dt>
+<dd><p>The hash of the block containing the transaction that produced this log.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.ContractLog.block_number">
+<span class="sig-name descname"><span class="pre">block_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.ContractLog.block_number" title="Permalink to this definition"></a></dt>
+<dd><p>The number of the block containing the transaction that produced this log.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.ContractLog.event_arguments">
+<span class="sig-name descname"><span class="pre">event_arguments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.ContractLog.event_arguments" title="Permalink to this definition"></a></dt>
+<dd><p>The arguments to the event, including both indexed and non-indexed data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.ContractLog.index">
+<span class="sig-name descname"><span class="pre">index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.ContractLog.index" title="Permalink to this definition"></a></dt>
+<dd><p>The index of the log on the transaction.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.ContractLog.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.types.ContractLog.name" title="Permalink to this definition"></a></dt>
+<dd><p>The name of the event.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.ContractLog.transaction_hash">
+<span class="sig-name descname"><span class="pre">transaction_hash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#ape.types.ContractLog.transaction_hash" title="Permalink to this definition"></a></dt>
+<dd><p>The hash of the transaction containing this log.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-ape.types.signatures">
 <span id="signatures"></span><h2>Signatures<a class="headerlink" href="#module-ape.types.signatures" title="Permalink to this headline"></a></h2>

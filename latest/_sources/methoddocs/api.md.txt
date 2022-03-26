@@ -7,7 +7,7 @@
     :members:
     :show-inheritance:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Address
@@ -33,7 +33,7 @@
     :members:
     :show-inheritance:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Convert
@@ -59,7 +59,7 @@
     :members:
     :show-inheritance:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Projects
@@ -85,5 +85,5 @@
     :members:
     :show-inheritance:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```

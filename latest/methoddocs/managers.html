@@ -333,7 +333,7 @@ to compiler API classes.</p>
 <dd><p>A container mapping account addresses to the transaction from the active session.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.__getitem__">
-<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">ape.api.address.BaseAddress</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.__getitem__" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">ape.api.address.BaseAddress</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.api.transactions.ReceiptAPI</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.__getitem__" title="Permalink to this definition"></a></dt>
 <dd><p>Get the list of transactions from the active session for the given address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -344,7 +344,7 @@ to compiler API classes.</p>
 are no recorded transactions, returns an empty list.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>List[<a class="reference internal" href="api.html#ape.api.providers.TransactionAPI" title="ape.api.providers.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>]</p>
+<dd class="field-odd"><p>List[<code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -362,7 +362,7 @@ are no recorded transactions, returns an empty list.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.append">
-<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory.append" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ape.api.transactions.ReceiptAPI</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory.append" title="Permalink to this definition"></a></dt>
 <dd><p>Add a transaction to the stored list for the given account address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
@@ -370,7 +370,7 @@ are no recorded transactions, returns an empty list.</p>
     receipt that is already in the list.</p>
 </dd>
 <dt class="field-even">Parameters</dt>
-<dd class="field-even"><p><strong>txn_receipt</strong> (<a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>) – The transaction receipt to append.
+<dd class="field-even"><p><strong>txn_receipt</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code>) – The transaction receipt to append.
 <strong>NOTE</strong>: The receipt is accessible in the list returned from
 <a class="reference internal" href="#ape.managers.chain.AccountHistory.__getitem__" title="ape.managers.chain.AccountHistory.__getitem__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__getitem__()</span></code></a>.</p>
 </dd>
@@ -379,11 +379,11 @@ are no recorded transactions, returns an empty list.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.items">
-<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><span class="pre">ape.api.providers.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.items" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.api.transactions.ReceiptAPI</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.items" title="Permalink to this definition"></a></dt>
 <dd><p>Iterate through the list of address-types to list of transaction receipts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Iterator[Tuple[<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>, <a class="reference internal" href="api.html#ape.api.providers.ReceiptAPI" title="ape.api.providers.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>]]</p>
+<dd class="field-odd"><p>Iterator[Tuple[<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -463,9 +463,10 @@ move backwards. For example, <code class="docutils literal notranslate"><span cl
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.BlockContainer.poll_blocks">
-<span class="sig-name descname"><span class="pre">poll_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_confirmations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">ape.api.providers.BlockAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.BlockContainer.poll_blocks" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">poll_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_confirmations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">ape.api.providers.BlockAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.BlockContainer.poll_blocks" title="Permalink to this definition"></a></dt>
 <dd><p>Poll new blocks. Optionally set a start block to include historical blocks.
-<strong>NOTE</strong>: This is a daemon method; it does not terminate unless an exception occurrs.</p>
+<strong>NOTE</strong>: This is a daemon method; it does not terminate unless an exception occurrs
+or a <code class="docutils literal notranslate"><span class="pre">stop</span></code> is given.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
 
@@ -478,8 +479,11 @@ move backwards. For example, <code class="docutils literal notranslate"><span cl
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>start</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The block number to start with. Defaults to the pending
 block number.</p></li>
+<li><p><strong>stop</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Optionally set a future block number to stop at.
+Defaults to never-ending.</p></li>
 <li><p><strong>required_confirmations</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The amount of confirmations to wait
-before yielding the block. The more confirmations, the less likely a reorg will occur.</p></li>
+before yielding the block. The more confirmations, the less likely a reorg will occur.
+Defaults to the network’s configured required confirmations.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -818,12 +822,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">&lt;pro
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.config.DeploymentConfigCollection">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.config.</span></span><span class="sig-name descname"><span class="pre">DeploymentConfigCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_ecosystem_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_network_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.config.DeploymentConfigCollection" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.config.DeploymentConfigCollection.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_ecosystem_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_network_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.config.DeploymentConfigCollection.__init__" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
-
-</dd></dl>
 
 </section>
 <section id="module-ape.managers.converters">
@@ -1488,11 +1487,6 @@ the local project using <code class="docutils literal notranslate"><span class="
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.project.ProjectManager.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.project.ProjectManager.__init__" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.ProjectManager.__str__">
 <span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.managers.project.ProjectManager.__str__" title="Permalink to this definition"></a></dt>
 <dd><p>Return str(self).</p>
@@ -1555,6 +1549,26 @@ that do not have associated compilers installed.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.ProjectManager.get_contract">
+<span class="sig-name descname"><span class="pre">get_contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ape.contracts.base.ContractContainer</span></a></span></span><a class="headerlink" href="#ape.managers.project.ProjectManager.get_contract" title="Permalink to this definition"></a></dt>
+<dd><p>Get a contract container from an existing contract type in
+the local project by name.</p>
+<p><strong>NOTE</strong>: To get a dependency contract, use
+<a class="reference internal" href="#ape.managers.project.ProjectManager.dependencies" title="ape.managers.project.ProjectManager.dependencies"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dependencies</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>KeyError</strong> – When the given name is not a contract in the project.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>contract_name</strong> (<em>str</em>) – The name of the contract in the project.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractContainer</span></code></p>
 </dd>
 </dl>
 </dd></dl>
