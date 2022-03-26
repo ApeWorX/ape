@@ -33,17 +33,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
-
-
-def raises_not_implemented(fn):
-    def inner(*args, **kwargs):
-        raise NotImplementedError(
-            f"Attempted to call method '{fn.__name__}' in 'ProviderAPI', "
-            f"which is only available in 'TestProviderAPI'."
-        )
-
-    return inner
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
 
 
 class BlockGasAPI(BaseInterfaceModel):
@@ -372,6 +362,7 @@ class ProviderAPI(BaseInterfaceModel):
             bool: ``True`` if successfully unlocked account and ``False`` otherwise.
         """
 
+    @raises_not_implemented
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
         """
         Provides a detailed description of CALL and RETURN opcodes.
@@ -379,7 +370,6 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             Iterator(EvmTrace): EVM stack trace object.
         """
-        raise NotImplementedError("Transaction tracing is not supported.")
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
         """
