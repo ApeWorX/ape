@@ -7,12 +7,7 @@ from hexbytes import HexBytes
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
-from ape.exceptions import (
-    ArgumentsLengthError,
-    ContractError,
-    ProviderNotConnectedError,
-    SignatureError,
-)
+from ape.exceptions import ArgumentsLengthError, ContractError, ProviderNotConnectedError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -644,16 +639,11 @@ class ContractContainer(ManagerAccessMixin):
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             # Handle account-related preparation if needed, such as signing
-            txn = kwargs["sender"].prepare_transaction(txn)
-
-            txn.signature = kwargs["sender"].sign_transaction(txn)
-            if not txn.signature:
-                raise SignatureError("The transaction was not signed.")
+            receipt = kwargs["sender"].call(txn)
 
         else:
             txn = self.provider.prepare_transaction(txn)
-
-        receipt = self.provider.send_transaction(txn)
+            receipt = self.provider.send_transaction(txn)
 
         if not receipt.contract_address:
             raise ContractError(f"'{receipt.txn_hash}' did not create a contract.")
