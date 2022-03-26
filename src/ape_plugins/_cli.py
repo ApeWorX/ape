@@ -138,7 +138,7 @@ def _list(cli_ctx, display_all):
         elif github_client.available_plugins:
             click.echo("You have installed all the available plugins.\n")
 
-    for i in range(0, len(sections)):
+    for i in range(len(sections)):
         header = list(sections.keys())[i]
         output = sections[header]
         _display_section(f"{header}:", output)

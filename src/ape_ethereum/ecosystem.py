@@ -1,7 +1,9 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+import itertools
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
+from eth_abi.abi import decode_abi, decode_single
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account._utils.legacy_transactions import (
@@ -9,8 +11,8 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, keccak, to_bytes, to_checksum_address, to_int
-from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address, to_int
+from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 
@@ -26,9 +28,9 @@ from ape.api import (
     TransactionType,
 )
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.contracts import ContractLog
+from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
-from ape.types import AddressType
+from ape.types import AddressType, ContractLog
 
 NETWORKS = {
     # chain_id, network_id
@@ -303,11 +305,57 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)  # type: ignore
 
-    def decode_event(self, abi: EventABI, receipt: "ReceiptAPI") -> "ContractLog":
-        filter_id = keccak(to_bytes(text=abi.selector))
-        event_data = next(log for log in receipt.logs if log["filter_id"] == filter_id)
+    def decode_logs(self, abi: EventABI, data: List[Dict]) -> Iterator["ContractLog"]:
+        if not abi.anonymous:
+            event_id_bytes = keccak(to_bytes(text=abi.selector))
+            matching_logs = [log for log in data if log["topics"][0] == event_id_bytes]
+        else:
+            matching_logs = data
 
-        return ContractLog(  # type: ignore
-            name=abi.name,
-            inputs={i.name: event_data[i.name] for i in abi.inputs},  # type: ignore
-        )
+        topics_list: List[EventABIType] = []
+        data_list: List[EventABIType] = []
+        for abi_input in abi.inputs:
+            if abi_input.indexed:
+                topics_list.append(abi_input)
+            else:
+                data_list.append(abi_input)
+
+        abi_topics = LogInputABICollection(abi, topics_list)
+        abi_data = LogInputABICollection(abi, data_list)
+
+        duplicate_names = set(abi_topics.names).intersection(abi_data.names)
+        if duplicate_names:
+            duplicate_names_str = ", ".join([n for n in duplicate_names if n])
+            raise DecodingError(
+                "The following argument names are duplicated "
+                f"between event inputs: '{duplicate_names_str}'."
+            )
+
+        for log in matching_logs:
+            indexed_data = log["topics"] if log.get("anonymous", False) else log["topics"][1:]
+            log_data = hexstr_if_str(to_bytes, log["data"])  # type: ignore
+
+            if len(indexed_data) != len(abi_topics.types):
+                raise DecodingError(
+                    f"Expected '{len(indexed_data)}' log topics.  Got '{len(abi_topics.types)}'."
+                )
+
+            decoded_topic_data = [
+                decode_single(topic_type, topic_data)  # type: ignore
+                for topic_type, topic_data in zip(abi_topics.types, indexed_data)
+            ]
+            decoded_log_data = decode_abi(abi_data.types, log_data)  # type: ignore
+            event_args = dict(
+                itertools.chain(
+                    zip(abi_topics.names, decoded_topic_data),
+                    zip(abi_data.names, decoded_log_data),
+                )
+            )
+            yield ContractLog(
+                name=abi.name,
+                index=log["logIndex"],
+                event_arguments=event_args,
+                transaction_hash=log["transactionHash"],
+                block_hash=log["blockHash"],
+                block_number=log["blockNumber"],
+            )  # type: ignore

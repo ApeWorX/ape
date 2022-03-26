@@ -487,14 +487,37 @@ class ProjectManager(BaseManager):
             :class:`~ape.contracts.ContractContainer`
         """
 
-        if attr_name in self.contracts:
-            return self.create_contract_container(
-                contract_type=self.contracts[attr_name],
-            )
+        contract = self._get_contract(attr_name)
+        if not contract:
+            # Fixes anomaly when accessing non-ContractType attributes.
+            # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
+            return self.__getattribute__(attr_name)  # type: ignore
 
-        # Fixes anomaly when accessing non-ContractType attributes.
-        # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
-        return self.__getattribute__(attr_name)  # type: ignore
+        return contract
+
+    def get_contract(self, contract_name: str) -> ContractContainer:
+        """
+        Get a contract container from an existing contract type in
+        the local project by name.
+
+        **NOTE**: To get a dependency contract, use
+        :py:attr:`~ape.managers.project.ProjectManager.dependencies`.
+
+        Raises:
+            KeyError: When the given name is not a contract in the project.
+
+        Args:
+            contract_name (str): The name of the contract in the project.
+
+        Returns:
+            :class:`~ape.contracts.ContractContainer`
+        """
+
+        contract = self._get_contract(contract_name)
+        if not contract:
+            raise ValueError(f"No contract found with name '{contract_name}'.")
+
+        return contract
 
     def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
         """
@@ -608,6 +631,14 @@ class ProjectManager(BaseManager):
             self._cached_dependencies[self.path.name] = deps
 
         return self._cached_dependencies[self.path.name]
+
+    def _get_contract(self, name: str) -> Optional[ContractContainer]:
+        if name in self.contracts:
+            return self.create_contract_container(
+                contract_type=self.contracts[name],
+            )
+
+        return None
 
     # @property
     # def meta(self) -> PackageMeta:

@@ -21,12 +21,12 @@ class TestAccountContainer(TestAccountContainerAPI):
 
     @property
     def aliases(self) -> Iterator[str]:
-        for index in range(0, len(self)):
+        for index in range(len(self)):
             yield f"dev_{index}"
 
     @property
     def accounts(self) -> Iterator["TestAccount"]:
-        for index in range(0, len(self)):
+        for index in range(len(self)):
             account = self._dev_accounts[index]
             yield TestAccount(
                 index=index,

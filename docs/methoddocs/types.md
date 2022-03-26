@@ -4,7 +4,7 @@
 
 ```{eval-rst}
 .. automodule:: ape.types
-    :members: BlockID, AddressType
+    :members: BlockID, AddressType, ContractLog
 ```
 
 ## Signatures

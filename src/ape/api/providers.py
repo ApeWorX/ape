@@ -5,22 +5,25 @@ import shutil
 import sys
 import time
 from abc import ABC
-from enum import Enum, IntEnum
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen, call
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional
+from typing import Any, Callable, Dict, Iterator, List, Optional, Union
 
+from eth_abi.abi import encode_single
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix
+from eth_utils import add_0x_prefix, keccak
+from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import Field, validator
-from tqdm import tqdm  # type: ignore
 from web3 import Web3
 
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
+from ape.api.transactions import ReceiptAPI, TransactionAPI, TransactionType
+from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import (
+    DecodingError,
     ProviderError,
     RPCTimeoutError,
     SubprocessError,
@@ -28,11 +31,8 @@ from ape.exceptions import (
     TransactionError,
 )
 from ape.logging import logger
-from ape.types import AddressType, BlockID, SnapshotID, TransactionSignature
+from ape.types import AddressType, BlockID, ContractLog, SnapshotID
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
-
-if TYPE_CHECKING:
-    from ape.api.explorers import ExplorerAPI
 
 
 def raises_not_implemented(fn):
@@ -43,246 +43,6 @@ def raises_not_implemented(fn):
         )
 
     return inner
-
-
-class TransactionType(Enum):
-    """
-    Transaction enumerables type constants defined by
-    `EIP-2718 <https://eips.ethereum.org/EIPS/eip-2718>`__.
-    """
-
-    STATIC = "0x00"
-    DYNAMIC = "0x02"  # EIP-1559
-
-
-class TransactionAPI(BaseInterfaceModel):
-    """
-    An API class representing a transaction.
-    Ecosystem plugins implement one or more of transaction APIs
-    depending on which schemas they permit,
-    such as typed-transactions from `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
-    """
-
-    chain_id: int = Field(0, alias="chainId")
-    receiver: Optional[str] = Field(None, alias="to")
-    sender: Optional[str] = Field(None, alias="from")
-    gas_limit: Optional[int] = Field(None, alias="gas")
-    nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
-    value: int = 0
-    data: bytes = b""
-    type: TransactionType = TransactionType.STATIC
-    max_fee: Optional[int] = None
-    max_priority_fee: Optional[int] = None
-
-    # If left as None, will get set to the network's default required confirmations.
-    required_confirmations: Optional[int] = Field(None, exclude=True)
-
-    signature: Optional[TransactionSignature] = Field(exclude=True)
-
-    class Config:
-        allow_population_by_field_name = True
-
-    @property
-    def total_transfer_value(self) -> int:
-        """
-        The total amount of WEI that a transaction could use.
-        Useful for determining if an account balance can afford
-        to submit the transaction.
-        """
-        if self.max_fee is None:
-            raise TransactionError(message="Max fee must not be null.")
-
-        return self.value + self.max_fee
-
-    @abstractmethod
-    def serialize_transaction(self) -> bytes:
-        """
-        Serialize the transaction
-        """
-
-    def __repr__(self) -> str:
-        data = self.dict()
-        params = ", ".join(f"{k}={v}" for k, v in data.items())
-        return f"<{self.__class__.__name__} {params}>"
-
-    def __str__(self) -> str:
-        data = self.dict()
-        if len(data["data"]) > 9:
-            data["data"] = (
-                "0x" + bytes(data["data"][:3]).hex() + "..." + bytes(data["data"][-3:]).hex()
-            )
-        else:
-            data["data"] = "0x" + bytes(data["data"]).hex()
-        params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
-        return f"{self.__class__.__name__}:\n  {params}"
-
-
-class TransactionStatusEnum(IntEnum):
-    """
-    An ``Enum`` class representing the status of a transaction.
-    """
-
-    FAILING = 0
-    """The transaction has failed or is in the process of failing."""
-
-    NO_ERROR = 1
-    """
-    The transaction is successful and is confirmed or is in the process
-    of getting confirmed.
-    """
-
-
-class ConfirmationsProgressBar:
-    """
-    A progress bar tracking the confirmations of a transaction.
-    """
-
-    def __init__(self, confirmations: int):
-        self._req_confs = confirmations
-        self._bar = tqdm(range(confirmations))
-        self._confs = 0
-
-    def __enter__(self):
-        self._update_bar(0)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._bar.close()
-
-    @property
-    def confs(self) -> int:
-        """
-        The number of confirmations that have occurred.
-
-        Returns:
-            int: The total number of confirmations that have occurred.
-        """
-        return self._confs
-
-    @confs.setter
-    def confs(self, new_value):
-        if new_value == self._confs:
-            return
-
-        diff = new_value - self._confs
-        self._confs = new_value
-        self._update_bar(diff)
-
-    def _update_bar(self, amount: int):
-        self._set_description()
-        self._bar.update(amount)
-        self._bar.refresh()
-
-    def _set_description(self):
-        self._bar.set_description(f"Confirmations ({self._confs}/{self._req_confs})")
-
-
-class ReceiptAPI(BaseInterfaceModel):
-    """
-    An abstract class to represent a transaction receipt. The receipt
-    contains information about the transaction, such as the status
-    and required confirmations.
-
-    **NOTE**: Use a ``required_confirmations`` of ``0`` in your transaction
-    to not wait for confirmations.
-
-    Get a receipt by making transactions in ``ape``, such as interacting with
-    a :class:`ape.contracts.base.ContractInstance`.
-    """
-
-    txn_hash: str
-    status: TransactionStatusEnum
-    block_number: int
-    gas_used: int
-    gas_price: int
-    gas_limit: int
-    logs: List[dict] = []
-    contract_address: Optional[str] = None
-    required_confirmations: int = 0
-    sender: str
-    receiver: str
-    nonce: Optional[int] = None
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.txn_hash}>"
-
-    def raise_for_status(self):
-        """
-        Handle provider-specific errors regarding a non-successful
-        :class:`~api.providers.TransactionStatusEnum`.
-        """
-
-    @property
-    def ran_out_of_gas(self) -> bool:
-        """
-        Check if a transaction has ran out of gas and failed.
-
-        Returns:
-            bool:  ``True`` when the transaction failed and used the
-            same amount of gas as the given ``gas_limit``.
-        """
-        return self.status == TransactionStatusEnum.FAILING and self.gas_used == self.gas_limit
-
-    @property
-    def _explorer(self) -> Optional["ExplorerAPI"]:
-        return self.provider.network.explorer
-
-    @property
-    def _block_time(self) -> int:
-        return self.provider.network.block_time
-
-    @property
-    def _confirmations_occurred(self) -> int:
-        latest_block = self.provider.get_block("latest")
-
-        if latest_block.number is None:
-            return 0
-
-        return latest_block.number - self.block_number
-
-    def await_confirmations(self) -> "ReceiptAPI":
-        """
-        Wait for a transaction to be considered confirmed.
-
-        Returns:
-            :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
-        """
-        # Wait for nonce from provider to increment.
-        sender_nonce = self.provider.get_nonce(self.sender)
-        while sender_nonce == self.nonce:  # type: ignore
-            time.sleep(1)
-            sender_nonce = self.provider.get_nonce(self.sender)
-
-        if self.required_confirmations == 0:
-            # The transaction might not yet be confirmed but
-            # the user is aware of this. Or, this is a development environment.
-            return self
-
-        confirmations_occurred = self._confirmations_occurred
-        if confirmations_occurred >= self.required_confirmations:
-            return self
-
-        # If we get here, that means the transaction has been recently submitted.
-        log_message = f"Submitted {self.txn_hash}"
-        if self._explorer:
-            explorer_url = self._explorer.get_transaction_url(self.txn_hash)
-            if explorer_url:
-                log_message = f"{log_message}\n{self._explorer.name} URL: {explorer_url}"
-
-        logger.info(log_message)
-
-        with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
-            while confirmations_occurred < self.required_confirmations:
-                confirmations_occurred = self._confirmations_occurred
-                progress_bar.confs = confirmations_occurred
-
-                if confirmations_occurred == self.required_confirmations:
-                    break
-
-                time_to_sleep = int(self._block_time / 2)
-                time.sleep(time_to_sleep)
-
-        return self
 
 
 class BlockGasAPI(BaseInterfaceModel):
@@ -519,15 +279,31 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_events(self, **filter_params) -> Iterator[dict]:
+    def get_contract_logs(
+        self,
+        address: Union[AddressType, List[AddressType]],
+        abi: Union[EventABI, List[EventABI]],
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
+        block_page_size: Optional[int] = None,
+        event_parameters: Optional[Dict] = None,
+    ) -> Iterator[ContractLog]:
         """
-        Get all logs matching a given set of filter parameters.
+        Get all logs matching the given set of filter parameters.
 
         Args:
-            `filter_params`: Filter which logs you get.
+            address (``AddressType``): The contract address that defines the logs.
+            abi (``EventABI``): The event of interest's ABI.
+            start_block (Optional[int]): Get events that occurred
+              in blocks after the block with this ID.
+            stop_block (Optional[int]): Get events that occurred
+              in blocks before the block with this ID.
+            block_page_size (Optional[int]): Use this parameter to adjust
+              request block range sizes.
+            event_parameters (Optional[Dict]): Filter by event parameter values.
 
         Returns:
-            Iterator[dict]: A dictionary of events.
+            Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
     @raises_not_implemented
@@ -573,6 +349,9 @@ class ProviderAPI(BaseInterfaceModel):
         Raises:
             NotImplementedError: Unless overridden.
         """
+
+    def __repr__(self) -> str:
+        return f"<{self.name} chain_id={self.chain_id}>"
 
     @raises_not_implemented
     def unlock_account(self, address: AddressType) -> bool:
@@ -706,7 +485,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def chain_id(self) -> int:
-        return self._web3.eth.chain_id
+        if hasattr(self._web3, "eth"):
+            return self._web3.eth.chain_id
+        else:
+            return self.network.chain_id
 
     @property
     def gas_price(self) -> int:
@@ -764,8 +546,132 @@ class Web3Provider(ProviderAPI, ABC):
         )
         return receipt.await_confirmations()
 
-    def get_events(self, **filter_params) -> Iterator[dict]:
-        return iter(self._web3.eth.get_logs(filter_params))  # type: ignore
+    def get_contract_logs(
+        self,
+        address: Union[AddressType, List[AddressType]],
+        abi: Union[List[EventABI], EventABI],
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
+        block_page_size: Optional[int] = None,
+        event_parameters: Optional[Dict] = None,
+    ) -> Iterator[ContractLog]:
+        if block_page_size is not None:
+            if block_page_size < 0:
+                raise ValueError("'block_page_size' cannot be negative.")
+        else:
+            block_page_size = 100
+
+        event_parameters = event_parameters or {}
+        height = self.chain_manager.blocks.height
+
+        required_confirmations = self.provider.network.required_confirmations
+        stop_block = height - required_confirmations if stop_block is None else stop_block
+        if stop_block > height:
+            raise ValueError(f"Stop-block '{stop_block}' greater than height '{height}'.")
+
+        start_block = start_block or 0
+        if start_block > stop_block:
+            raise ValueError(
+                f"Start block '{start_block}' cannot be greater than stop block '{stop_block}'."
+            )
+
+        start = start_block
+        stop_increment = block_page_size - 1
+        stop = min(start + stop_increment, stop_block)
+
+        while start <= stop_block:
+            logs = [
+                log
+                for log in self._get_logs_in_block_range(
+                    address,
+                    abi,
+                    start_block=start,
+                    stop_block=stop,
+                    block_page_size=block_page_size,
+                    event_parameters=event_parameters,
+                )
+            ]
+
+            if len(logs) == 0:
+                # No events happened in this sub-block range. Go to next page.
+                start = stop + 1
+
+                if start < stop_block:
+                    stop = start + stop_increment
+                elif start == stop_block:
+                    stop = start
+
+                continue
+
+            for log in logs:
+                yield log
+
+            # Start the next iteration on the largest block number to get remaining events.
+            start = stop + 1
+            stop = min(start + stop_increment, stop_block)
+
+    def _get_logs_in_block_range(
+        self,
+        address: Union[AddressType, List[AddressType]],
+        abi: Union[List[EventABI], EventABI],
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
+        block_page_size: Optional[int] = None,
+        event_parameters: Optional[Dict] = None,
+    ):
+        start_block = start_block or 0
+        abis = abi if isinstance(abi, (list, tuple)) else [abi]
+        block_page_size = block_page_size or 100
+        stop_block = start_block + block_page_size if stop_block is None else stop_block
+        event_parameters = event_parameters or {}
+        for abi in abis:
+            if not isinstance(address, (list, tuple)):
+                address = [address]
+
+            addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
+            log_filter: Dict = {
+                "address": addresses,
+                "fromBlock": start_block,
+                "toBlock": stop_block,
+                "topics": [],
+            }
+
+            if "topics" not in event_parameters:
+                event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
+                log_filter["topics"] = [event_signature_hash]
+                search_topics = []
+                abi_types = []
+                topics = LogInputABICollection(
+                    abi, [abi_input for abi_input in abi.inputs if abi_input.indexed]
+                )
+
+                for name, arg in event_parameters.items():
+                    if hasattr(arg, "address"):
+                        arg = self.conversion_manager.convert(arg, AddressType)
+
+                    abi_type = None
+                    for argument in topics.values:
+                        if argument.name == name:
+                            abi_type = argument.type
+
+                    if not abi_type:
+                        raise DecodingError(
+                            f"'{name}' is not an indexed topic for event '{abi.name}'."
+                        )
+
+                    search_topics.append(arg)
+                    abi_types.append(abi_type)
+
+                encoded_topic_data = [
+                    encode_single(topic_type, topic_data).hex()  # type: ignore
+                    for topic_type, topic_data in zip(topics.types, search_topics)
+                ]
+                log_filter["topics"].extend(encoded_topic_data)
+            else:
+                log_filter["topics"] = event_parameters.pop("topics")
+
+            log_result = [dict(log) for log in self._web3.eth.get_logs(log_filter)]  # type: ignore
+            yield from self.network.ecosystem.decode_logs(abi, log_result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         txn_hash = self._web3.eth.send_raw_transaction(txn.serialize_transaction())

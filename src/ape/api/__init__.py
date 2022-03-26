@@ -17,16 +17,13 @@ from .providers import (
     BlockConsensusAPI,
     BlockGasAPI,
     ProviderAPI,
-    ReceiptAPI,
     SubprocessProvider,
     TestProviderAPI,
-    TransactionAPI,
-    TransactionStatusEnum,
-    TransactionType,
     UpstreamProvider,
     Web3Provider,
 )
 from .query import QueryAPI, QueryType
+from .transactions import ReceiptAPI, TransactionAPI, TransactionStatusEnum, TransactionType
 
 __all__ = [
     "AccountAPI",

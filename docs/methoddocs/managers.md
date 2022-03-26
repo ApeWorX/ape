@@ -6,7 +6,7 @@
 .. automodule:: ape.managers.accounts
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Compilers
@@ -22,7 +22,7 @@
 .. automodule:: ape.managers.chain
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Config
@@ -31,7 +31,7 @@
 .. automodule:: ape.managers.config
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Converters
@@ -54,7 +54,7 @@
 .. automodule:: ape.managers.project
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Query
@@ -63,5 +63,5 @@
 .. automodule:: ape.managers.query
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```

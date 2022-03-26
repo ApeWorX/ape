@@ -3,7 +3,7 @@ import logging
 import sys
 import traceback
 from enum import IntEnum
-from typing import IO
+from typing import IO, Union
 
 import click
 
@@ -109,13 +109,20 @@ class CliLogger:
     def level(self) -> int:
         return self._logger.level
 
-    def set_level(self, level_name: str):
-        if level_name == self._logger.level:
+    def set_level(self, level: Union[str, int]):
+        """
+        Change the global ape logger log-level.
+
+        Args:
+            level (str): The name of the level or the value of the log-level.
+        """
+
+        if level == self._logger.level:
             return
 
-        self._logger.setLevel(level_name)
-        self._web3_request_manager_logger.setLevel(level_name)
-        self._web3_http_provider_logger.setLevel(level_name)
+        self._logger.setLevel(level)
+        self._web3_request_manager_logger.setLevel(level)
+        self._web3_http_provider_logger.setLevel(level)
 
     def log_error(self, err: Exception):
         """

@@ -1,16 +1,15 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
-from pydantic.dataclasses import dataclass
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ArgumentsLengthError, ContractError, ProviderNotConnectedError
 from ape.logging import logger
-from ape.types import AddressType
-from ape.utils import ManagerAccessMixin, cached_property
+from ape.types import AddressType, ContractLog
+from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 if TYPE_CHECKING:
     from ape.managers.converters import ConversionManager
@@ -37,15 +36,14 @@ class ContractConstructor(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-
         args = self._convert_tuple(args)
-        kwargs = dict(
-            (k, v)
+        kwargs = {
+            k: v
             for k, v in zip(
                 kwargs.keys(),
                 self._convert_tuple(tuple(kwargs.values())),
             )
-        )
+        }
         return self.provider.network.ecosystem.encode_deployment(
             self.deployment_bytecode, self.abi, *args, **kwargs
         )
@@ -73,13 +71,13 @@ class ContractCall(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        kwargs = dict(
-            (k, v)
+        kwargs = {
+            k: v
             for k, v in zip(
                 kwargs.keys(),
                 self._convert_tuple(tuple(kwargs.values())),
             )
-        )
+        }
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
@@ -113,7 +111,7 @@ class ContractCallHandler(ManagerAccessMixin):
         self.abis = abis
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
+        abis = sorted(self.abis, key=lambda abi: len(abi.values or []))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -125,9 +123,7 @@ class ContractCallHandler(ManagerAccessMixin):
             raise _get_non_contract_error(self.contract.address, network)
 
         args = self._convert_tuple(args)
-        selected_abi = _select_abi(self.abis, args)
-        if not selected_abi:
-            raise ArgumentsLengthError(len(args))
+        selected_abi = _select_method_abi(self.abis, args)
 
         return ContractCall(  # type: ignore
             abi=selected_abi,
@@ -135,13 +131,16 @@ class ContractCallHandler(ManagerAccessMixin):
         )(*args, **kwargs)
 
 
-def _select_abi(abis, args):
+def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> MethodABI:
     args = args or []
     selected_abi = None
     for abi in abis:
         inputs = abi.inputs or []
         if len(args) == len(inputs):
             selected_abi = abi
+
+    if not selected_abi:
+        raise ArgumentsLengthError(len(args))
 
     return selected_abi
 
@@ -163,13 +162,13 @@ class ContractTransaction(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        kwargs = dict(
-            (k, v)
+        kwargs = {
+            k: v
             for k, v in zip(
                 kwargs.keys(),
                 self._convert_tuple(tuple(kwargs.values())),
             )
-        )
+        }
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
@@ -190,7 +189,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
         self.abis = abis
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))  # type: ignore
+        abis = sorted(self.abis, key=lambda abi: len(abi.values or []))  # type: ignore
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -202,9 +201,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
             raise _get_non_contract_error(self.contract.address, network)
 
         args = self._convert_tuple(args)
-        selected_abi = _select_abi(self.abis, args)
-        if not selected_abi:
-            raise ArgumentsLengthError(len(args))
+        selected_abi = _select_method_abi(self.abis, args)
 
         return ContractTransaction(  # type: ignore
             abi=selected_abi,
@@ -212,23 +209,218 @@ class ContractTransactionHandler(ManagerAccessMixin):
         )(*args, **kwargs)
 
 
-@dataclass
-class ContractLog:
-    name: str
-    data: Dict[str, Any]
-
-
 class ContractEvent(ManagerAccessMixin):
+    """
+    The types of events on a :class:`~ape.contracts.base.ContractInstance`.
+    Use the event types via ``.`` access on the contract instances.
+
+    Usage example::
+
+         # 'my_contract' refers to a ContractInstance in this case.
+         my_event_type = my_contract.MyEvent
+    """
+
     def __init__(
         self,
         contract: "ContractInstance",
-        abis: List[EventABI],
+        abi: EventABI,
         cached_logs: List[ContractLog] = None,
     ) -> None:
         super().__init__()
         self.contract = contract
-        self.abis = abis
+        self.abi = abi
         self.cached_logs = cached_logs or []
+
+    @property
+    def name(self) -> str:
+        """
+        The name of the contract event, as defined in the contract.
+        """
+
+        return self.abi.name
+
+    def __iter__(self) -> Iterator[ContractLog]:
+        """
+        Get all logs that have occurred for this event.
+        """
+
+        yield from self.range(self.chain_manager.blocks.height + 1)
+
+    @singledispatchmethod
+    def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
+        raise NotImplementedError(f"Cannot use '{type(value)}' to access logs.")
+
+    @__getitem__.register
+    def __getitem_int(self, index: int) -> ContractLog:
+        """
+        Access events on the contract by the index of when they occurred.
+
+        Args:
+            index (int): The index such that ``0`` is the first log to have occurred
+              and ``-1`` is the last.
+
+        Returns:
+            :class:`~ape.contracts.base.ContractLog`
+        """
+
+        if index == 0:
+            logs_slice = [next(self._get_logs_iter())]
+        elif index > 0:
+            # Call over to 'self.__getitem_slice'.
+            logs_slice = self[: index + 1]  # type: ignore
+        else:
+            # Call over to 'self.__getitem_slice'.
+            logs_slice = self[index:]  # type: ignore
+
+        try:
+            return logs_slice[index]
+        except IndexError as err:
+            raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
+
+    @__getitem__.register
+    def __getitem_slice(self, value: slice) -> List[ContractLog]:
+        """
+        Access a slice of logs from this event.
+
+        Args:
+            value (slice): The range of log to get, e.g. ``[5:10]``.
+
+        Returns:
+            Iterator[:class:`~ape.contracts.base.ContractLog`]
+        """
+
+        start = value.start or 0
+        stop = value.stop if value.stop is not None else self.chain_manager.blocks.height
+        step = value.step or 1
+        collected_logs: List[ContractLog] = []
+        counter = 0
+        for log in self._get_logs_iter():
+            if counter < start:
+                counter += 1
+                continue
+
+            elif counter >= stop:
+                return collected_logs
+
+            elif counter >= start:
+                collected_logs.append(log)
+                counter += step
+
+        return collected_logs
+
+    def range(
+        self,
+        start_or_stop: int,
+        stop: Optional[int] = None,
+        block_page_size: Optional[int] = None,
+        event_parameters: Optional[Dict] = None,
+    ) -> Iterator[ContractLog]:
+        """
+        Search through the logs for this event using the given filter parameters.
+
+        Args:
+            start_or_stop (int): When also given ``stop``, this is the the
+              earliest block number in the desired log set.
+              Otherwise, it is the total amount of blocks to get starting from ``0``.
+            stop (Optional[int]): The latest block number in the
+              desired log set. Defaults to delegating to provider.
+            block_page_size (Optional[int]): The amount of block to request
+              on each page.
+            event_parameters (Optional[Dict]): Arguments on the event that you can
+              search for.
+
+        Returns:
+            Iterator[:class:`~ape.contracts.base.ContractLog`]
+        """
+
+        start_block = None
+        stop_block = None
+
+        if stop is None:
+            start_block = 0
+            stop_block = start_or_stop
+        elif start_or_stop is not None and stop is not None:
+            start_block = start_or_stop
+            stop_block = stop - 1
+
+        stop_block = min(stop_block, self.chain_manager.blocks.height)
+        yield from self.provider.get_contract_logs(
+            self.contract.address,
+            self.abi,
+            start_block=start_block,
+            stop_block=stop_block,
+            block_page_size=block_page_size,
+            event_parameters=event_parameters,
+        )
+
+    def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
+        """
+        Get all the events from the given receipt.
+
+        Args:
+            receipt (:class:`~ape.api.providers.ReceiptAPI`): The receipt containing the logs.
+
+        Returns:
+            Iterator[:class:`~ape.contracts.base.ContractLog`]
+        """
+
+        ecosystem = self.provider.network.ecosystem
+        yield from ecosystem.decode_logs(self.abi, receipt.logs)
+
+    def _get_logs_iter(self, start_block: int = 0, stop_block: int = None) -> Iterator[ContractLog]:
+        stop_block = stop_block or self.chain_manager.blocks.height
+        yield from self.provider.get_contract_logs(
+            self.contract.address,
+            self.abi,
+            start_block=start_block,
+            stop_block=stop_block,
+        )
+
+    def poll_logs(
+        self,
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
+    ) -> Iterator[ContractLog]:
+        """
+        Poll new blocks. Optionally set a start block to include historical blocks.
+        **NOTE**: This is a daemon method; it does not terminate unless an exception occurrs.
+
+        Usage example::
+
+            from ape import chain
+
+            for new_block in chain.blocks.poll_blocks():
+                print(f"New block found: number={new_block.number}")
+
+        Args:
+            start_block (Optional[int]): The block number to start with. Defaults to the pending
+              block number.
+            stop_block (Optional[int]): Optionally set a future block number to stop at.
+              Defaults to never-ending.
+            required_confirmations (Optional[int]): The amount of confirmations to wait
+              before yielding the block. The more confirmations, the less likely a reorg will occur.
+              Defaults to the network's configured required confirmations.
+
+        Returns:
+            Iterator[:class:`~ape.types.ContractLog`]
+        """
+
+        required_confirmations = (
+            required_confirmations or self.provider.network.required_confirmations
+        )
+        stop_block = (
+            self.chain_manager.blocks.height if stop_block is None else stop_block
+        ) - required_confirmations
+
+        for new_block in self.chain_manager.blocks.poll_blocks(
+            start=start_block, stop=stop_block, required_confirmations=required_confirmations
+        ):
+            if new_block.number is None:
+                continue
+
+            # Get all events in the new block.
+            yield from self.range(new_block.number, stop=new_block.number + 1)
 
 
 class ContractInstance(BaseAddress):
@@ -251,7 +443,7 @@ class ContractInstance(BaseAddress):
         self._contract_type = contract_type
 
     def __repr__(self) -> str:
-        contract_name = self._contract_type.name or "<Unnamed Contract>"
+        contract_name = self._contract_type.name or "Unnamed contract"
         return f"<{contract_name} {self.address}>"
 
     @property
@@ -279,9 +471,9 @@ class ContractInstance(BaseAddress):
                 abi_name: ContractCallHandler(contract=self, abis=abis)
                 for abi_name, abis in view_methods.items()
             }
-        except Exception as e:
+        except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise AttributeError(str(e)) from e
+            raise AttributeError(str(err)) from err
 
     @cached_property
     def _mutable_methods_(self) -> Dict[str, ContractTransactionHandler]:
@@ -298,28 +490,29 @@ class ContractInstance(BaseAddress):
                 abi_name: ContractTransactionHandler(contract=self, abis=abis)
                 for abi_name, abis in mutable_methods.items()
             }
-        except Exception as e:
+        except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise AttributeError(str(e)) from e
+            raise AttributeError(str(err)) from err
 
     @cached_property
     def _events_(self) -> Dict[str, ContractEvent]:
-        events: Dict[str, List[EventABI]] = dict()
+        events: Dict[str, EventABI] = {}
 
         for abi in self._contract_type.events:
             if abi.name in events:
-                events[abi.name].append(abi)
-            else:
-                events[abi.name] = [abi]
+                raise ContractError(
+                    f"Multiple events with the same ABI defined in '{self._contract_type.name}'."
+                )
+
+            events[abi.name] = abi
 
         try:
             return {
-                abi_name: ContractEvent(contract=self, abis=abis)
-                for abi_name, abis in events.items()
+                abi_name: ContractEvent(contract=self, abi=abi) for abi_name, abi in events.items()
             }
-        except Exception as e:
+        except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise AttributeError(str(e)) from e
+            raise AttributeError(str(err)) from err
 
     def __dir__(self) -> List[str]:
         """
@@ -336,7 +529,7 @@ class ContractInstance(BaseAddress):
 
     def __getattr__(self, attr_name: str) -> Any:
         """
-        Access a method or property on the contract using ``.`` access.
+        Access a method, property, or event on the contract using ``.`` access.
 
         Usage example::
 
@@ -346,13 +539,13 @@ class ContractInstance(BaseAddress):
             attr_name (str): The name of the method or property to access.
 
         Returns:
-            any: The return value from the contract call, or a transaction receipt.
+            Any: The return value from the contract call, or a transaction receipt.
         """
 
         if attr_name in set(super(BaseAddress, self).__dir__()):
             return super(BaseAddress, self).__getattribute__(attr_name)
 
-        if attr_name not in set((*self._view_methods_, *self._mutable_methods_, *self._events_)):
+        if attr_name not in {*self._view_methods_, *self._mutable_methods_, *self._events_}:
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
             name = self._contract_type.name or self.__class__.__name__

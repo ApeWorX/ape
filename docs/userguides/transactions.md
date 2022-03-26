@@ -32,14 +32,14 @@ Calling certain methods on a deployed-contract is one way to transact.
 
 ```python
 contract = deploy()  # Example from above, that returns a contract instance.
-contract.fundMyContract(value="1 gwei")  # Assuming there is a method named 'fundMyContract' on MyContract.
+contract.fundMyContract(value="1 gwei", sender=sender)  # Assuming there is a method named 'fundMyContract' on MyContract.
 ```
 
 In the example above, the call to `fundMyContract()` invokes a dynamic-fee transaction.
 To have more control of the fee-values, you can specify the `max_fee`, the `max_priority_fee`, or both.
 
 ```python
-contract.fundMyContract(value="1 gwei", max_priority_fee="50 gwei", max_fee="100 gwei")
+contract.fundMyContract(value="1 gwei", max_priority_fee="50 gwei", max_fee="100 gwei", sender=sender)
 ```
 
 The `max_priority_fee` cannot exceed the `max_fee`, as the `max_fee` includes both the base fee and the priority fee.
@@ -60,7 +60,7 @@ Static-fee transactions are the transactions that Ethereum used before the Londo
 One way to use a static-fee transaction is by specifying the `gas_price` as a key-value argument:
 
 ```python
-contract.fundMyContract(value="1 gwei", gas_price="100 gwei")
+contract.fundMyContract(value="1 gwei", gas_price="100 gwei", sender=sender)
 ```
 
 **NOTE**: Miners prioritize static-fee transactions based on the highest `gas_price`.
@@ -69,7 +69,27 @@ Another way to use a static-fee transaction (without having to provide `gas_pric
 argument `type` equal to `0x00`.
 
 ```python
-contract.fundMyContract(value="1 gwei", type="0x0")
+contract.fundMyContract(value="1 gwei", type="0x0", sender=sender)
 ```
 
 When declaring `type="0x0"` and _not_ specifying a `gas_price`, the `gas_price` gets set using the provider's estimation.
+
+## Transaction Logs
+
+To get logs that occurred during a transaction, you can use the [ContractEvent.from_receipt(receipt)](../methoddocs/contracts.html?highlight=contractevent#ape.contracts.base.ContractEvent.from_receipt) and access your data from the [ContractLog](../methoddocs/types.html#ape.types.ContractLog) objects that it returns.
+
+The following is an example demonstrating how to access logs from an instance of a contract:
+
+```python
+receipt = contract.fundMyContract(value="1 gwei", type="0x0", sender=sender)
+for log in contract.MyFundEvent.from_receipt(receipt):
+    print(log.amount)  # Assuming 'amount' is a property on the event.
+```
+
+You can also access the logs from the receipt itself if you know the ABI:
+
+```python
+event_type = contract.MyEvent
+for log in receipt.decode_logs(event_type.abi):
+    print(log.amount)  # Assuming 'amount' is a property on the event.
+```

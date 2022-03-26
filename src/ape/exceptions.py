@@ -62,11 +62,12 @@ class ArgumentsLengthError(ContractError):
 class DecodingError(ContractError):
     """
     Raised when issues occur while decoding data from
-    a contract call or transaction.
+    a contract call, transaction, or event.
     """
 
-    def __init__(self):
-        super().__init__("Output corrupted.")
+    def __init__(self, message: Optional[str] = None):
+        message = message or "Output corrupted."
+        super().__init__(message)
 
 
 class TransactionError(ContractError):
