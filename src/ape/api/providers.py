@@ -365,10 +365,13 @@ class ProviderAPI(BaseInterfaceModel):
     @raises_not_implemented
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
         """
-        Provides a detailed description of CALL and RETURN opcodes.
+        Provide a detailed description of opcodes.
+
+        Args:
+            txn_hash (str): The hash of a transaction to trace.
 
         Returns:
-            Iterator(EvmTrace): EVM stack trace object.
+            Iterator(EvmTrace): Transaction execution trace object.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:

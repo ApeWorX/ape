@@ -728,9 +728,13 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
 
 
 def raises_not_implemented(fn):
+    """
+    Decorator for raising helpful not implemented error.
+    """
+
     def inner(*args, **kwargs):
         raise NotImplementedError(
-            f"Attempted to call method '{fn.__qualname__}', " "method not supported."
+            f"Attempted to call method '{fn.__qualname__}', method not supported."
         )
 
     return inner
