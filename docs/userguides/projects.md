@@ -43,7 +43,7 @@ The contract containers are then accessible from the `project` manager; deploy t
 ```python
 from ape import accounts, project
 
-account = accounts.load("metamask_0")
+account = accounts.load("my_account_alias")
 account.deploy(project.MyContract)
 ```
 
@@ -52,7 +52,7 @@ account.deploy(project.MyContract)
 ```python
 from ape import accounts, project
 
-account = accounts.load("metamask_0")
+account = accounts.load("my_account_alias")
 project.MyContract.deploy(sender=account)
 ```
 
