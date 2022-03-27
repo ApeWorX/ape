@@ -371,7 +371,7 @@ class ProviderAPI(BaseInterfaceModel):
             txn_hash (str): The hash of a transaction to trace.
 
         Returns:
-            Iterator(EvmTrace): Transaction execution trace object.
+            Iterator(TraceFrame): Transaction execution trace object.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
