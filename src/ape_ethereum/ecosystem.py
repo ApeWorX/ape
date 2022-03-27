@@ -30,7 +30,7 @@ from ape.api import (
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
-from ape.types import AddressType, ContractLog
+from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import to_address
 
 NETWORKS = {
@@ -157,13 +157,13 @@ class Ethereum(EcosystemAPI):
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
 
-    def decode_address(self, raw_address: Union[str, int, HexBytes]) -> AddressType:
+    def decode_address(self, raw_address: RawAddress) -> AddressType:
         if isinstance(raw_address, int):
             raw_address = HexBytes(raw_address)
 
         return to_address(raw_address)
 
-    def encode_address(self, address: AddressType) -> Union[str, int]:
+    def encode_address(self, address: AddressType) -> RawAddress:
         return str(address)
 
     def serialize_transaction(self, transaction: TransactionAPI) -> bytes:

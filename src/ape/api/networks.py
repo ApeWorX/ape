@@ -1,12 +1,12 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
 
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
-from ape.types import AddressType, ContractLog
+from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 from .config import PluginConfig
@@ -40,7 +40,7 @@ class EcosystemAPI(BaseInterfaceModel):
     _default_network: str = LOCAL_NETWORK_NAME
 
     @abstractmethod
-    def decode_address(self, raw_address: Union[str, int]) -> AddressType:
+    def decode_address(self, raw_address: RawAddress) -> AddressType:
         """
         Convert a raw address to the ecosystem's native address type.
 
@@ -52,7 +52,7 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def encode_address(self, address: AddressType) -> Union[str, int]:
+    def encode_address(self, address: AddressType) -> RawAddress:
         """
         Convert the ecosystem's native address type to a raw integer or str address.
 
