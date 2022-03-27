@@ -157,7 +157,7 @@ class Ethereum(EcosystemAPI):
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
 
-    def decode_address(self, raw_address: Union[str, int]) -> AddressType:
+    def decode_address(self, raw_address: Union[str, int, HexBytes]) -> AddressType:
         if isinstance(raw_address, int):
             raw_address = HexBytes(raw_address)
 
