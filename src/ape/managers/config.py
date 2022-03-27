@@ -3,7 +3,6 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
-from hexbytes import HexBytes
 from pydantic import root_validator
 
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
@@ -41,13 +40,9 @@ class DeploymentConfigCollection(dict):
                             f"(ecosystem={ecosystem_name}, network={network_name})"
                         )
 
-                    address = deployment["address"]
-                    if isinstance(address, int):
-                        address = HexBytes(address)
-
                     try:
                         ecosystem = network_manager[ecosystem_name]
-                        deployment["address"] = ecosystem.decode_address(address)
+                        deployment["address"] = ecosystem.decode_address(deployment["address"])
                     except ValueError as err:
                         raise ConfigError(str(err)) from err
 

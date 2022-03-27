@@ -16,8 +16,14 @@ def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
     assert txn.type == TransactionType.DYNAMIC.value
 
 
-def test_decode_address(ethereum):
-    address = "0x63953eB1B3D8DB28334E7C1C69456C851F934199".lower()
+@pytest.mark.parametrize(
+    "address",
+    (
+        "0x63953eB1B3D8DB28334E7C1C69456C851F934199".lower(),
+        0x63953EB1B3D8DB28334E7C1C69456C851F934199,
+    ),
+)
+def test_decode_address(ethereum, address):
     expected = "0x63953eB1B3D8DB28334E7C1C69456C851F934199"
     actual = ethereum.decode_address(address)
     assert actual == expected
