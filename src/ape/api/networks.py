@@ -1,6 +1,6 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type, Union
 
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
@@ -38,6 +38,30 @@ class EcosystemAPI(BaseInterfaceModel):
     """A shareable HTTP header for network requests."""
 
     _default_network: str = LOCAL_NETWORK_NAME
+
+    @abstractmethod
+    def decode_address(self, raw_address: Union[str, int]) -> AddressType:
+        """
+        Convert a raw address to the ecosystem's native address type.
+
+        Args:
+            raw_address (Union[str, int]): The address to convert.
+
+        Returns:
+            ``AddressType``
+        """
+
+    @abstractmethod
+    def encode_address(self, address: AddressType) -> Union[str, int]:
+        """
+        Convert the ecosystem's native address type to a raw integer or str address.
+
+        Args:
+            address (Union[str, int]): The address to convert.
+
+        Returns:
+            Union[str, int]
+        """
 
     @abstractmethod
     def serialize_transaction(self, transaction: "TransactionAPI") -> bytes:

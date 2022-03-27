@@ -11,7 +11,7 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address, to_int
+from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_int
 from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
@@ -31,6 +31,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
 from ape.types import AddressType, ContractLog
+from ape.utils import to_address
 
 NETWORKS = {
     # chain_id, network_id
@@ -156,6 +157,12 @@ class Ethereum(EcosystemAPI):
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
 
+    def decode_address(self, raw_address: Union[str, int]) -> AddressType:
+        return to_address(raw_address)
+
+    def encode_address(self, address: AddressType) -> Union[str, int]:
+        return str(address)
+
     def serialize_transaction(self, transaction: TransactionAPI) -> bytes:
         return transaction.serialize_transaction()
 
@@ -222,7 +229,7 @@ class Ethereum(EcosystemAPI):
             for index in range(len(vm_return_values)):
                 value = vm_return_values[index]
                 if index < len(output_types) and output_types[index] == "address":
-                    value = to_checksum_address(value)
+                    value = self.decode_address(value)
 
                 output_values.append(value)
 

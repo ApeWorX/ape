@@ -9,7 +9,6 @@ from eth_utils import to_bytes
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.exceptions import AccountsError
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
-from ape.utils import to_address
 
 
 class InvalidPasswordError(AccountsError):
@@ -60,7 +59,8 @@ class KeyfileAccount(AccountAPI):
 
     @property
     def address(self) -> AddressType:
-        return to_address(self.keyfile["address"])
+        ecosystem = self.provider.network.ecosystem
+        return ecosystem.decode_address(self.keyfile["address"])
 
     @property
     def __key(self) -> EthAccount:
