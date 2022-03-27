@@ -14,6 +14,7 @@ from eth_abi.abi import encode_single
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak
 from ethpm_types.abi import EventABI
+from evm_trace import TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, validator
 from web3 import Web3
@@ -32,17 +33,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
-
-
-def raises_not_implemented(fn):
-    def inner(*args, **kwargs):
-        raise NotImplementedError(
-            f"Attempted to call method '{fn.__name__}' in 'ProviderAPI', "
-            f"which is only available in 'TestProviderAPI'."
-        )
-
-    return inner
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
 
 
 class BlockGasAPI(BaseInterfaceModel):
@@ -369,6 +360,18 @@ class ProviderAPI(BaseInterfaceModel):
 
         Returns:
             bool: ``True`` if successfully unlocked account and ``False`` otherwise.
+        """
+
+    @raises_not_implemented
+    def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
+        """
+        Provide a detailed description of opcodes.
+
+        Args:
+            txn_hash (str): The hash of a transaction to trace.
+
+        Returns:
+            Iterator(EvmTrace): Transaction execution trace object.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:

@@ -727,6 +727,19 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
         return super().json(*args, **kwargs)
 
 
+def raises_not_implemented(fn):
+    """
+    Decorator for raising helpful not implemented error.
+    """
+
+    def inner(*args, **kwargs):
+        raise NotImplementedError(
+            f"Attempted to call method '{fn.__qualname__}', method not supported."
+        )
+
+    return inner
+
+
 __all__ = [
     "abstractmethod",
     "BaseInterfaceModel",
@@ -742,6 +755,7 @@ __all__ = [
     "get_all_files_in_directory",
     "injected_before_use",
     "load_config",
+    "raises_not_implemented",
     "singledispatchmethod",
     "stream_response",
     "to_address",
