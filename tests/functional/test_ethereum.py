@@ -1,8 +1,10 @@
 import pytest
+from eth_typing import HexAddress, HexStr
 from hexbytes import HexBytes
 
 from ape.api import TransactionStatusEnum, TransactionType
 from ape.exceptions import OutOfGasError
+from ape.types import AddressType
 from ape_ethereum.ecosystem import BaseTransaction, Receipt
 
 
@@ -29,6 +31,13 @@ def test_decode_address(ethereum, address):
     expected = "0x63953eB1B3D8DB28334E7C1C69456C851F934199"
     actual = ethereum.decode_address(address)
     assert actual == expected
+
+
+def test_encode_address(ethereum):
+    raw_address = "0x63953eB1B3D8DB28334E7C1C69456C851F934199"
+    address = AddressType(HexAddress(HexStr(raw_address)))
+    actual = ethereum.encode_address(address)
+    assert actual == raw_address
 
 
 def test_base_transaction_dict_excludes_none_values():
