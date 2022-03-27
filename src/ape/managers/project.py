@@ -112,13 +112,12 @@ class ApeProject(ProjectAPI):
                 return True  # New file added
 
             cached = cached_sources[path]
-            cached.compute_checksum(algorithm="md5")
+            cached.calculate_checksum()
             assert cached.checksum  # For mypy
 
             source_file = self.contracts_folder / source
             checksum = compute_checksum(
-                source_file.read_bytes(),
-                algorithm=cached.checksum.algorithm,
+                content=source_file.read_bytes(),
             )
 
             return checksum != cached.checksum.hash  # Contents changed
