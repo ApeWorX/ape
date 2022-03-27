@@ -38,13 +38,22 @@ ape compile
 
 **NOTE**: Compiler plugins download missing compiler version binaries, based on the contracts' pragma-spec.
 
-The contract types are then accessible from the `project` manager; deploy them in the `console` or in scripts:
+The contract containers are then accessible from the `project` manager; deploy them in the `console` or in scripts:
 
 ```python
 from ape import accounts, project
 
-a = accounts.load("metamask_0")
-a.deploy(project.MyContract)
+account = accounts.load("my_account_alias")
+account.deploy(project.MyContract)
+```
+
+**NOTE**: You can also deploy contracts from the container itself:
+
+```python
+from ape import accounts, project
+
+account = accounts.load("my_account_alias")
+project.MyContract.deploy(sender=account)
 ```
 
 ### Dependencies

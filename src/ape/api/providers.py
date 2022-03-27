@@ -404,6 +404,7 @@ class ProviderAPI(BaseInterfaceModel):
 
         if txn.gas_limit is None:
             txn.gas_limit = self.estimate_gas_cost(txn)
+        # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.required_confirmations is None:
             txn.required_confirmations = self.network.required_confirmations

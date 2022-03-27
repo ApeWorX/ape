@@ -7,12 +7,18 @@ from ape.api import Address, ReceiptAPI
 from ape.exceptions import DecodingError
 from ape.types import ContractLog
 
+CONTRACT_ADDRESS = "0x274b028b03A250cA03644E6c578D81f019eE1323"
+
 
 def test_init_at_unknown_address():
-    address = "0x274b028b03A250cA03644E6c578D81f019eE1323"
-    contract = Contract(address)
+    contract = Contract(CONTRACT_ADDRESS)
     assert type(contract) == Address
-    assert contract.address == address
+    assert contract.address == CONTRACT_ADDRESS
+
+
+def test_deploy(sender, contract_container):
+    contract = contract_container.deploy(sender=sender)
+    assert contract.address == CONTRACT_ADDRESS
 
 
 def test_contract_logs_from_receipts(owner, contract_instance):
