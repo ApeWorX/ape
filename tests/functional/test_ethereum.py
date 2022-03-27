@@ -14,3 +14,10 @@ def test_create_static_fee_transaction(ethereum, type_kwarg):
 def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
     txn = ethereum.create_transaction(type=type_kwarg)
     assert txn.type == TransactionType.DYNAMIC.value
+
+
+def test_decode_address(ethereum):
+    address = "0x63953eB1B3D8DB28334E7C1C69456C851F934199".lower()
+    expected = "0x63953eB1B3D8DB28334E7C1C69456C851F934199"
+    actual = ethereum.decode_address(address)
+    assert actual == expected
