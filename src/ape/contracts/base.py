@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
 
+import click
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
@@ -632,6 +633,29 @@ class ContractContainer(ManagerAccessMixin):
             raise ArgumentsLengthError(args_length, inputs_length=inputs_length)
 
         return constructor.serialize_transaction(*args, **kwargs)
+
+    def deploy(self, *args, **kwargs) -> ContractInstance:
+        txn = self(*args, **kwargs)
+
+        if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
+            # Handle account-related preparation if needed, such as signing
+            receipt = kwargs["sender"].call(txn)
+
+        else:
+            txn = self.provider.prepare_transaction(txn)
+            receipt = self.provider.send_transaction(txn)
+
+        if not receipt.contract_address:
+            raise ContractError(f"'{receipt.txn_hash}' did not create a contract.")
+
+        address = click.style(receipt.contract_address, bold=True)
+        contract_name = self.contract_type.name or "<Unnamed Contract>"
+        logger.success(f"Contract '{contract_name}' deployed to: {address}")
+
+        return ContractInstance(
+            address=receipt.contract_address,  # type: ignore
+            contract_type=self.contract_type,
+        )
 
 
 def _Contract(

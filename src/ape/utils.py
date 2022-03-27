@@ -31,6 +31,7 @@ from tqdm import tqdm  # type: ignore
 
 from ape.exceptions import CompilerError, ProjectError, ProviderNotConnectedError
 from ape.logging import logger
+from ape.types import AddressType
 
 try:
     from functools import cached_property  # type: ignore
@@ -42,7 +43,6 @@ except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
 if TYPE_CHECKING:
-    from ape.api.address import AddressType
     from ape.api.providers import ProviderAPI
     from ape.contracts.base import ContractContainer, ContractInstance, ContractType
     from ape.managers.accounts import AccountManager
