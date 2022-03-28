@@ -18,7 +18,7 @@ class TestEthereumProvider:
             network=mock_network_api,
             config=mock_config_item,
             provider_settings={},
-            data_folder=Path("geth"),
+            data_folder=Path("."),
             request_header="",
         )
         provider._web3 = mock_web3
@@ -41,7 +41,7 @@ class TestEthereumProvider:
             network=mock_network_api,
             config=mock_config_item,
             provider_settings={},
-            data_folder=Path("geth"),
+            data_folder=Path("."),
             request_header="",
         )
         provider._web3 = mock_web3
@@ -61,7 +61,7 @@ class TestEthereumProvider:
             network=mock_network_api,
             config=mock_config_item,
             provider_settings={},
-            data_folder=Path("geth"),
+            data_folder=Path("."),
             request_header="",
         )
         provider._web3 = mock_web3
