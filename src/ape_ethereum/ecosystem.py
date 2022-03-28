@@ -11,7 +11,7 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_int
+from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address, to_int
 from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
@@ -31,7 +31,6 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
 from ape.types import AddressType, ContractLog, RawAddress
-from ape.utils import to_address
 
 NETWORKS = {
     # chain_id, network_id
@@ -161,7 +160,7 @@ class Ethereum(EcosystemAPI):
         if isinstance(raw_address, int):
             raw_address = HexBytes(raw_address)
 
-        return to_address(raw_address)
+        return to_checksum_address(raw_address)
 
     def encode_address(self, address: AddressType) -> RawAddress:
         return str(address)
