@@ -11,8 +11,8 @@ from ape_ethereum._converters import ETHER_UNITS
 @pytest.mark.fuzzing
 @given(
     value=st.decimals(
-        min_value=-(2 ** 255),
-        max_value=2 ** 256 - 1,
+        min_value=-(2**255),
+        max_value=2**256 - 1,
         allow_infinity=False,
         allow_nan=False,
     ),
