@@ -17,6 +17,17 @@ if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
+def _convert_kwargs(kwargs, converter):
+    return {
+        k: converter(
+            v,
+            # TODO: Upstream, `TransactionAPI.sender` should be `AddressType` (not `str`)
+            AddressType if k == "sender" else TransactionAPI.__fields__[k].type_,
+        )
+        for k, v in kwargs.items()
+    }
+
+
 class ContractConstructor(ManagerAccessMixin):
     def __init__(
         self,
@@ -35,14 +46,7 @@ class ContractConstructor(ManagerAccessMixin):
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
-        kwargs = {
-            k: self.conversion_manager.convert(
-                v,
-                # TODO: Upstream, `TransactionAPI.sender` should be `AddressType` (not `str`)
-                AddressType if k == "sender" else TransactionAPI.__fields__[k].type_,
-            )
-            for k, v in kwargs.items()
-        }
+        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.provider.network.ecosystem.encode_deployment(
             self.deployment_bytecode, self.abi, *args, **kwargs
         )
@@ -67,14 +71,7 @@ class ContractCall(ManagerAccessMixin):
         return self.abi.signature
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        kwargs = {
-            k: self.conversion_manager.convert(
-                v,
-                # TODO: Upstream, `TransactionAPI.sender` should be `AddressType` (not `str`)
-                AddressType if k == "sender" else TransactionAPI.__fields__[k].type_,
-            )
-            for k, v in kwargs.items()
-        }
+        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
@@ -156,14 +153,7 @@ class ContractTransaction(ManagerAccessMixin):
         return self.abi.signature
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        kwargs = {
-            k: self.conversion_manager.convert(
-                v,
-                # TODO: Upstream, `TransactionAPI.sender` should be `AddressType` (not `str`)
-                AddressType if k == "sender" else TransactionAPI.__fields__[k].type_,
-            )
-            for k, v in kwargs.items()
-        }
+        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
