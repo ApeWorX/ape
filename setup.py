@@ -18,7 +18,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=21.12b0,<22.0",  # auto-formatter and linter
+        "black>=22.3.0,<23.0",  # auto-formatter and linter
         "mypy>=0.941,<1.0",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
@@ -74,7 +74,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "backports.cached_property ; python_version<'3.8'",
-        "click>=8.0.0",
+        "click>=8.1.0",
         "eth-account==0.5.7",
         # TODO: update when ethpm-types v0.1.1 is released, after ape v0.2.0 release
         "ethpm-types>=0.1.0b7,<0.1.1",
