@@ -42,7 +42,7 @@ class TestAccountManager(list, ManagerAccessMixin):
         raise IndexError(f"No account at index '{account_id}'.")
 
     @__getitem__.register
-    def __getitem_slice(self, account_id: slice) -> List[AccountAPI]:
+    def __getitem_slice(self, account_id: slice):
         start_idx = account_id.start or 0
         if start_idx < 0:
             start_idx += len(self)
@@ -232,7 +232,7 @@ class AccountManager(BaseManager):
         raise IndexError(f"No account at index '{account_id}'.")
 
     @__getitem__.register
-    def __getitem_slice(self, account_id: slice) -> List[AccountAPI]:
+    def __getitem_slice(self, account_id: slice):
         """
         Get list of accounts by slice. For example, when you do the CLI command
         ``ape accounts list --all``, you will see a list of enumerated accounts
