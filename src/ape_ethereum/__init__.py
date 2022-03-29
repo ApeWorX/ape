@@ -24,7 +24,8 @@ def ecosystems():
 @plugins.register(plugins.NetworkPlugin)
 def networks():
     for network_name, network_params in NETWORKS.items():
-        yield "ethereum", network_name, create_network_type(*network_params)
+        network_api = create_network_type(*network_params)
+        yield "ethereum", network_name, network_api
 
     # NOTE: This works for development providers, as they get chain_id from themselves
     yield "ethereum", LOCAL_NETWORK_NAME, NetworkAPI

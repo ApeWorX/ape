@@ -8,6 +8,8 @@ from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, 
 from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
 
+DEFAULT_CHAIN_ID = 61
+
 
 class LocalProvider(TestProviderAPI, Web3Provider):
 
@@ -40,6 +42,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             raise TransactionError(base_err=err, message=message) from err
         except TransactionFailed as err:
             raise _get_vm_err(err) from err
+
+    @property
+    def chain_id(self) -> int:
+        if hasattr(self._web3, "eth"):
+            return self._web3.eth.chain_id
+
+        return DEFAULT_CHAIN_ID
 
     @property
     def gas_price(self) -> int:
