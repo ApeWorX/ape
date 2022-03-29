@@ -45,7 +45,6 @@ class ContractConstructor(ManagerAccessMixin):
                 self._convert_tuple(tuple(kwargs.values())),
             )
         }
-
         return self.provider.network.ecosystem.encode_deployment(
             self.deployment_bytecode, self.abi, *args, **kwargs
         )

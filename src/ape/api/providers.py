@@ -491,8 +491,8 @@ class Web3Provider(ProviderAPI, ABC):
     def chain_id(self) -> int:
         if hasattr(self._web3, "eth"):
             return self._web3.eth.chain_id
-
-        return self.network.chain_id
+        else:
+            return self.network.chain_id
 
     @property
     def gas_price(self) -> int:
