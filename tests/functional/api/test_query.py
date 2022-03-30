@@ -27,12 +27,12 @@ def test_basic_query(eth_tester_provider):
 def test_block_query(eth_tester_provider):
     chain.mine(3)
     with pytest.raises(ValidationError) as err:
-        BlockQuery(columns=["columns"], start_block=0, stop_block=2)
-    assert "Unrecognized field 'columns" in str(err.value)
+        BlockQuery(columns=["numbr"], start_block=0, stop_block=2)
+    assert "Unrecognized field 'numbr'" in str(err.value)
 
 
 def test_account_query(eth_tester_provider):
     chain.mine(3)
     with pytest.raises(ValidationError) as err:
-        AccountQuery(columns=["colu"], start_nonce=0, stop_nonce=2)
+        AccountQuery(columns=["none"], start_nonce=0, stop_nonce=2)
     assert "validation error for AccountQuery" in str(err.value)
