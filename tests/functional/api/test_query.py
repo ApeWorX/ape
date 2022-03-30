@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from ape import chain
-from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery, ContractMethodQuery
+from ape.api.query import AccountQuery, BlockQuery
 
 
 def test_basic_query(eth_tester_provider):
