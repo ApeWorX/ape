@@ -38,10 +38,8 @@ class DefaultQueryProvider(QueryAPI):
 
     @perform_query.register
     def perform_block_query(self, query: BlockQuery) -> pd.DataFrame:
-        if not self.network_manager.active_provider:
-            raise QueryEngineError("Not connected to an active network")
         blocks_iter = map(
-            self.network_manager.active_provider.get_block,
+            self.provider.get_block,
             # NOTE: the range stop block is a non-inclusive stop.
             #       Where as the query method is an inclusive stop.
             range(query.start_block, query.stop_block + 1),

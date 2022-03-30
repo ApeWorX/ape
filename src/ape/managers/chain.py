@@ -182,8 +182,8 @@ class BlockContainer(BaseManager):
         elif start_or_stop < 0:
             raise ValueError(f"stop '{stop}' cannot be negative.")
 
-        # Note: the range stop block is a non-inclusive stop.
-        #       Where as the query method is an inclusive stop.
+        # Note: the range `stop_block` is a non-inclusive stop, while the
+        #       `.query` method uses an inclusive stop, so we must adjust downwards.
         results = self.query("*", start_block=start, stop_block=stop - 1)  # type: ignore
         for _, row in results.iterrows():
             yield BlockAPI.parse_obj(row.to_dict())

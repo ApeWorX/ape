@@ -13,7 +13,7 @@ def test_basic_query(eth_tester_provider):
     assert df["timestamp"][3] > df["timestamp"][2] >= df["timestamp"][1] >= df["timestamp"][0]
     df_all = chain.blocks.query("*")
     columns = list(df_all.columns)
-    assert [
+    assert columns == [
         "gas_data",
         "consensus_data",
         "hash",
@@ -21,7 +21,7 @@ def test_basic_query(eth_tester_provider):
         "parent_hash",
         "size",
         "timestamp",
-    ] == columns
+    ]
 
 
 def test_block_query(eth_tester_provider):

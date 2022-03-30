@@ -20,17 +20,26 @@ class _BaseQuery(BaseModel):
     @classmethod
     @abstractmethod
     def all_fields(cls) -> List[str]:
+        """
+        Validates fields that are called during a block query.
+
+        Returns:
+            List[str]: list of columns to be returned in pandas
+                dataframes during block query.
+        """
         ...
 
     @validator("columns")
-    def check_columns(cls, data):
+    def check_columns(cls, data: str) -> Union[List[str], str]:
         all_fields = cls.all_fields()
         if len(data) == 1 and data[0] == "*":
             return all_fields
         else:
-            assert len(set(data)) == len(data), f"Duplicate fields in {data}"
+            if len(set(data)) != len(data):
+                raise ValueError(f"Duplicate fields in {data}")
             for d in data:
-                assert d in all_fields, f"Unrecognized field '{d}', must be one of {all_fields}"
+                if d not in all_fields:
+                    raise ValueError(f"Unrecognized field '{d}', must be one of {all_fields}")
         return data
 
 
@@ -65,7 +74,7 @@ class _BaseAccountQuery(BaseModel):
     stop_nonce: NonNegativeInt
 
     @root_validator(pre=True)
-    def check_start_nonce_before_stop_nonce(cls, values):
+    def check_start_nonce_before_stop_nonce(cls, values: Dict):
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
                 f"stop_nonce: '{values['stop_nonce']}' cannot be less than "
@@ -118,7 +127,7 @@ class ContractMethodQuery(_BaseBlockQuery):
 
     @classmethod
     def all_fields(cls) -> List[str]:
-        # TODO: Figure out how to get the event ABI as a class property
+        # TODO: Figure out how to get the method ABI as a class property
         #   for the validator
         return [o.name for o in cls.method.outputs if o.name is not None]  # just for mypy
 
