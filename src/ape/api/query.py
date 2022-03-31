@@ -30,7 +30,7 @@ class _BaseQuery(BaseModel):
         ...
 
     @validator("columns")
-    def check_columns(cls, data: str) -> Union[List[str], str]:
+    def check_columns(cls, data: List[str]) -> List[str]:
         all_fields = cls.all_fields()
         if len(data) == 1 and data[0] == "*":
             return all_fields
