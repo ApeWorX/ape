@@ -74,7 +74,7 @@ class _BaseAccountQuery(BaseModel):
     stop_nonce: NonNegativeInt
 
     @root_validator(pre=True)
-    def check_start_nonce_before_stop_nonce(cls, values: Dict):
+    def check_start_nonce_before_stop_nonce(cls, values: Dict) -> Dict:
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
                 f"stop_nonce: '{values['stop_nonce']}' cannot be less than "
