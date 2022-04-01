@@ -8,14 +8,16 @@ from ape.managers.config import DeploymentConfigCollection
 
 def test_integer_deployment_addresses(networks):
     deployments_data = _create_deployments()
-    config = DeploymentConfigCollection(deployments_data, networks)
+    config = DeploymentConfigCollection(
+        deployments_data, {"ethereum": networks.ethereum}, ["local"]
+    )
     assert config["ethereum"]["local"][0]["address"] == "0x0c25212c557d00024b7Ca3df3238683A35541354"
 
 
 def test_bad_ecosystem_in_deployments(networks):
     deployments = _create_deployments(ecosystem_name="FAKE-ECOSYSTEM")
     with pytest.raises(ConfigError) as err:
-        DeploymentConfigCollection(deployments, networks)
+        DeploymentConfigCollection(deployments, {"ethereum": networks.ethereum}, ["local"])
 
     assert "Invalid ecosystem" in str(err.value)
 
@@ -23,7 +25,7 @@ def test_bad_ecosystem_in_deployments(networks):
 def test_bad_network_in_deployments(networks):
     deployments = _create_deployments(network_name="FAKE-NETWORK")
     with pytest.raises(ConfigError) as err:
-        DeploymentConfigCollection(deployments, networks)
+        DeploymentConfigCollection(deployments, {"ethereum": networks.ethereum}, ["local"])
 
     assert "Invalid network" in str(err.value)
 
