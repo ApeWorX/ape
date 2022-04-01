@@ -156,13 +156,15 @@ class Ethereum(EcosystemAPI):
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
 
-    def decode_address(self, raw_address: RawAddress) -> AddressType:
+    @classmethod
+    def decode_address(cls, raw_address: RawAddress) -> AddressType:
         if isinstance(raw_address, int):
             raw_address = HexBytes(raw_address)
 
         return to_checksum_address(raw_address)
 
-    def encode_address(self, address: AddressType) -> RawAddress:
+    @classmethod
+    def encode_address(cls, address: AddressType) -> RawAddress:
         return str(address)
 
     def serialize_transaction(self, transaction: TransactionAPI) -> bytes:

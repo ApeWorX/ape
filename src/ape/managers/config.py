@@ -11,7 +11,6 @@ from ape.logging import logger
 from ape.utils import BaseInterfaceModel, load_config
 
 if TYPE_CHECKING:
-    from .networks import NetworkManager
     from .project import ProjectManager
 
 
@@ -24,25 +23,26 @@ class DeploymentConfig(PluginConfig):
 
 
 class DeploymentConfigCollection(dict):
-    def __init__(self, data: Dict, network_manager: "NetworkManager"):
+    def __init__(self, data: Dict, valid_ecosystems: Dict, valid_networks: List[str]):
         for ecosystem_name, networks in data.items():
-            if ecosystem_name not in network_manager.ecosystem_names:
+            if ecosystem_name not in valid_ecosystems:
                 raise ConfigError(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
 
+            ecosystem = valid_ecosystems[ecosystem_name]
             for network_name, contract_deployments in networks.items():
-                if network_name not in network_manager.network_names:
+                if network_name not in valid_networks:
                     raise ConfigError(f"Invalid network '{network_name}' in deployments config.")
 
                 for deployment in [d for d in contract_deployments]:
-                    if "address" not in deployment:
+                    address = deployment.get("address", None)
+                    if not address:
                         raise ConfigError(
                             f"Missing 'address' field in deployment "
                             f"(ecosystem={ecosystem_name}, network={network_name})"
                         )
 
                     try:
-                        ecosystem = network_manager[ecosystem_name]
-                        deployment["address"] = ecosystem.decode_address(deployment["address"])
+                        deployment["address"] = ecosystem.decode_address(address)
                     except ValueError as err:
                         raise ConfigError(str(err)) from err
 
@@ -156,8 +156,10 @@ class ConfigManager(BaseInterfaceModel):
         self.contracts_folder = configs["contracts_folder"] = contracts_folder
 
         deployments = user_config.pop("deployments", {})
+        valid_ecosystems = dict(self.plugin_manager.ecosystems)
+        valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
         self.deployments = configs["deployments"] = DeploymentConfigCollection(
-            deployments, self.network_manager
+            deployments, valid_ecosystems, valid_network_names
         )
 
         for plugin_name, config_class in self.plugin_manager.config_class:

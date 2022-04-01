@@ -106,6 +106,7 @@ class CliLogger:
         self._web3_http_provider_logger = _get_logger("web3.providers.HTTPProvider")
 
         # NOTE: We need to set the verbosity from the CLI option earlier than click lets us.
+        log_level = DEFAULT_LOG_LEVEL
         for arg_i in range(len(sys.argv) - 1):
             if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
                 level = sys.argv[arg_i + 1].upper()
@@ -118,9 +119,6 @@ class CliLogger:
                     names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
                     _logger.error(f"Must be one of '{names_str}', not '{level}'.")
                     sys.exit(2)
-
-            else:
-                log_level = DEFAULT_LOG_LEVEL
 
         self._logger.setLevel(log_level)
         self._web3_request_manager_logger.setLevel(log_level)
