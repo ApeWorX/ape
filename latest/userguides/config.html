@@ -162,6 +162,7 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 <span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span><span class="w"></span>
 </pre></div>
 </div>
+<p>will download the <a class="reference external" href="https://github.com/OpenZeppelin/openzeppelin-contracts">Open Zeppelin</a> package with version <code class="docutils literal notranslate"><span class="pre">4.4.2</span></code>.</p>
 <p>To ignore files from a dependency project, use the <code class="docutils literal notranslate"><span class="pre">exclude</span></code> setting to specify glob patterns:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dependency-project-name</span><span class="w"></span>
@@ -171,7 +172,6 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mocks/**/*</span><span class="w">      </span><span class="c1"># Ignore all files in the &#39;mocks&#39; directory</span><span class="w"></span>
 </pre></div>
 </div>
-<p>will download the <a class="reference external" href="https://github.com/OpenZeppelin/openzeppelin-contracts">Open Zeppelin</a> package with version <code class="docutils literal notranslate"><span class="pre">4.4.2</span></code>.</p>
 <p>To use dependencies in the <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> plugin, configure <code class="docutils literal notranslate"><span class="pre">import_remappings</span></code>:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">solidity</span><span class="p">:</span><span class="w"> </span>
 <span class="w">  </span><span class="nt">import_remapping</span><span class="p">:</span><span class="w"></span>
