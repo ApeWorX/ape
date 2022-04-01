@@ -96,16 +96,6 @@ class DynamicFeeTransaction(BaseTransaction):
 
 class Receipt(ReceiptAPI):
     def raise_for_status(self):
-        """
-        Raise an error for the given transaction, if the transaction has failed.
-
-        Raises:
-            :class:`~ape.exceptions.OutOfGasError`: When the transaction failed
-              and ran out of gas.
-            :class:`~ape.exceptions.TransactionError`: When the transaction has a
-              failing status otherwise.
-        """
-
         if self.gas_limit and self.ran_out_of_gas:
             raise OutOfGasError()
         elif self.status != TransactionStatusEnum.NO_ERROR:

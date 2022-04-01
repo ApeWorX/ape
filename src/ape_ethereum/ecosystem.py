@@ -1,5 +1,4 @@
 import itertools
-from enum import Enum
 from typing import Any, Dict, Iterator, List, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
@@ -79,8 +78,6 @@ class Block(BlockAPI):
 
 
 class Ethereum(EcosystemAPI):
-    transaction_type_enum: Enum
-
     @property
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
