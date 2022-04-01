@@ -21,7 +21,7 @@ from web3 import Web3
 
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
-from ape.api.transactions import ReceiptAPI, TransactionAPI, TransactionType
+from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import (
     DecodingError,
@@ -390,6 +390,8 @@ class ProviderAPI(BaseInterfaceModel):
 
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
         txn.chain_id = self.network.chain_id
+
+        from ape_ethereum.transactions import TransactionType
 
         txn_type = TransactionType(txn.type)
         if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
