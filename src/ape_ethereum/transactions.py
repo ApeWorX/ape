@@ -1,5 +1,5 @@
 from enum import Enum, IntEnum
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account._utils.legacy_transactions import (
@@ -65,7 +65,7 @@ class StaticFeeTransaction(BaseTransaction):
 
     gas_price: Optional[int] = Field(None, alias="gasPrice")
     max_priority_fee: Optional[int] = Field(None, exclude=True)
-    type: int = Field(TransactionType.STATIC.value, exclude=True)
+    type: Union[str, int, bytes] = Field(TransactionType.STATIC.value, exclude=True)
     max_fee: Optional[int] = Field(None, exclude=True)
 
     @root_validator(pre=True)
@@ -83,7 +83,7 @@ class DynamicFeeTransaction(BaseTransaction):
 
     max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")
     max_fee: Optional[int] = Field(None, alias="maxFeePerGas")
-    type: int = Field(TransactionType.DYNAMIC.value)
+    type: Union[int, str, bytes] = Field(TransactionType.DYNAMIC.value)
 
     @validator("type")
     def check_type(cls, value):
@@ -96,12 +96,13 @@ class DynamicFeeTransaction(BaseTransaction):
 
 class Receipt(ReceiptAPI):
     def raise_for_status(self):
-        if self.gas_limit and self.ran_out_of_gas:
+        if self.gas_limit is not None and self.ran_out_of_gas:
             raise OutOfGasError()
         elif self.status != TransactionStatusEnum.NO_ERROR:
             txn_hash = HexBytes(self.txn_hash).hex()
             raise TransactionError(message=f"Transaction '{txn_hash}' failed.")
 
+    @property
     def ran_out_of_gas(self) -> bool:
         return (
             self.status == TransactionStatusEnum.FAILING.value and self.gas_used == self.gas_limit

@@ -157,8 +157,8 @@ class ReceiptAPI(BaseInterfaceModel):
         :class:`~api.providers.TransactionStatusEnum`.
         """
 
-    @abstractmethod
     @property
+    @abstractmethod
     def ran_out_of_gas(self) -> bool:
         """
         Check if a transaction has ran out of gas and failed.
