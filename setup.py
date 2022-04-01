@@ -77,7 +77,7 @@ setup(
         "click>=8.1.0",
         "eth-account==0.5.7",
         # TODO: update when ethpm-types v0.1.1 is released, after ape v0.2.0 release
-        "ethpm-types>=0.1.0b7",
+        "ethpm-types>=0.1.0b7,<0.1.1",
         "evm-trace>=0.1.0.a2",
         "hexbytes>=0.2.2,<1.0.0",
         "packaging>=20.9,<21.0",
