@@ -33,11 +33,24 @@ class TestAccountManager(list, ManagerAccessMixin):
 
     @__getitem__.register
     def __getitem_int(self, account_id: int):
+        if account_id < 0:
+            account_id = len(self) + account_id
         for idx, account in enumerate(self.accounts):
             if account_id == idx:
                 return account
 
         raise IndexError(f"No account at index '{account_id}'.")
+
+    @__getitem__.register
+    def __getitem_slice(self, account_id: slice):
+        start_idx = account_id.start or 0
+        if start_idx < 0:
+            start_idx += len(self)
+        stop_idx = account_id.stop or len(self)
+        if stop_idx < 0:
+            stop_idx += len(self)
+        step_size = account_id.step or 1
+        return [self[i] for i in range(start_idx, stop_idx, step_size)]
 
     @__getitem__.register
     def __getitem_str(self, account_str: str):
@@ -210,11 +223,36 @@ class AccountManager(BaseManager):
             :class:`~ape.api.accounts.AccountAPI`
         """
 
+        if account_id < 0:
+            account_id = len(self) + account_id
         for idx, account in enumerate(self):
             if account_id == idx:
                 return account
 
         raise IndexError(f"No account at index '{account_id}'.")
+
+    @__getitem__.register
+    def __getitem_slice(self, account_id: slice):
+        """
+        Get list of accounts by slice. For example, when you do the CLI command
+        ``ape accounts list --all``, you will see a list of enumerated accounts
+        by their indices. Use this method as a quicker, ad-hoc way to get an
+        accounts from a slice. **NOTE**: It is generally preferred to use
+        :meth:`~ape.managers.accounts.AccountManager.load` or
+        :meth:`~ape.managers.accounts.AccountManager.__getitem_str`.
+
+        Returns:
+            List[:class:`~ape.api.accounts.AccountAPI`]
+        """
+
+        start_idx = account_id.start or 0
+        if start_idx < 0:
+            start_idx += len(self)
+        stop_idx = account_id.stop or len(self)
+        if stop_idx < 0:
+            stop_idx += len(self)
+        step_size = account_id.step or 1
+        return [self[i] for i in range(start_idx, stop_idx, step_size)]
 
     @__getitem__.register
     def __getitem_str(self, account_str: str) -> AccountAPI:

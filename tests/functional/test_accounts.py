@@ -73,3 +73,12 @@ def test_send_transaction_sets_defaults(sender, receiver):
     receipt = sender.transfer(receiver, "1 GWEI", gas_limit=None, required_confirmations=None)
     assert receipt.gas_limit > 0
     assert receipt.required_confirmations == 0
+
+
+def test_get_accounts(test_accounts):
+    a, b = test_accounts[:2]
+    assert a == test_accounts[0]
+    assert b == test_accounts[1]
+    c = test_accounts[-1]
+    assert c == test_accounts[len(test_accounts) - 1]
+    assert len(test_accounts[::2]) == len(test_accounts) / 2

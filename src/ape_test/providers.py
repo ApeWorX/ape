@@ -2,6 +2,7 @@ from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
 from web3 import EthereumTesterProvider, Web3
+from web3.providers.eth_tester.defaults import API_ENDPOINTS
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, VirtualMachineError
@@ -40,6 +41,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             raise TransactionError(base_err=err, message=message) from err
         except TransactionFailed as err:
             raise _get_vm_err(err) from err
+
+    @property
+    def chain_id(self) -> int:
+        if hasattr(self._web3, "eth"):
+            return self._web3.eth.chain_id
+
+        default_value = API_ENDPOINTS["eth"]["chainId"]()
+        return int(default_value, 16)
 
     @property
     def gas_price(self) -> int:
