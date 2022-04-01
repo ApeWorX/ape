@@ -11,10 +11,10 @@ from ape.api import (
     ProviderAPI,
     ReceiptAPI,
     TransactionAPI,
-    TransactionStatusEnum,
 )
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError
+from ape_ethereum.transactions import TransactionStatusEnum
 
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 RAW_CONTRACT_TYPE = {
