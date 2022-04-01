@@ -100,7 +100,7 @@ def _list(cli_ctx, display_all):
     spaced_names = add_padding_to_strings([p[0] for p in plugin_list], extra_spaces=4)
 
     for name in spaced_names:
-        plugin = ApePlugin(name)
+        plugin = ApePlugin(name.strip())
         if plugin.is_part_of_core:
             if not display_all:
                 continue
@@ -121,9 +121,13 @@ def _list(cli_ctx, display_all):
     # Get all plugins that are available and not already installed.
     available_plugins = list(github_client.available_plugins - installed_org_plugins.keys())
 
+    formatted_org_plugins = [f"{k}{v}" for k, v in installed_org_plugins.items()]
+    formateted_installed_third_party_plugins = [
+        f"{k}{v}" for k, v in installed_third_party_plugins.items()
+    ]
     # Get the list of plugin lists that are populated.
     installed_plugin_lists = [
-        ls for ls in [installed_org_plugins, installed_third_party_plugins] if ls
+        ls for ls in [formatted_org_plugins, formateted_installed_third_party_plugins] if ls
     ]
     if installed_plugin_lists:
         sections["Installed Plugins"] = installed_plugin_lists
