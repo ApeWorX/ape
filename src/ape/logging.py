@@ -122,7 +122,7 @@ class CliLogger:
 
         self._logger.setLevel(log_level)
         self._web3_request_manager_logger.setLevel(log_level)
-        self._web3_http_provider_logger(log_level)
+        self._web3_http_provider_logger.setLevel(log_level)
 
     @property
     def level(self) -> int:
