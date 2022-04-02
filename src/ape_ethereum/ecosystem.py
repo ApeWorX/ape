@@ -263,7 +263,7 @@ class Ethereum(EcosystemAPI):
         Returns a transaction using the given constructor kwargs.
 
         Returns:
-            :class:`~ape.api.providers.TransactionAPI`
+            :class:`~ape.api.transactions.TransactionAPI`
         """
 
         transaction_types = {

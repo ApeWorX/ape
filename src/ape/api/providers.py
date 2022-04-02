@@ -172,7 +172,7 @@ class ProviderAPI(BaseInterfaceModel):
         Estimate the cost of gas for a transaction.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`):
+            txn (:class:`~ape.api.transactions.TransactionAPI`):
                 The transaction to estimate the gas for.
 
         Returns:
@@ -238,7 +238,7 @@ class ProviderAPI(BaseInterfaceModel):
         transaction on the block chain.
 
         Args:
-            txn: :class:`~ape.api.providers.TransactionAPI`
+            txn: :class:`~ape.api.transactions.TransactionAPI`
 
         Returns:
             str: The result of the transaction call.
@@ -263,10 +263,10 @@ class ProviderAPI(BaseInterfaceModel):
         Send a transaction to the network.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to send.
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to send.
 
         Returns:
-            :class:`~ape.api.providers.ReceiptAPI`
+            :class:`~ape.api.transactions.ReceiptAPI`
         """
 
     @abstractmethod
@@ -382,10 +382,10 @@ class ProviderAPI(BaseInterfaceModel):
             :class:`~ape.exceptions.TransactionError`: When given negative required confirmations.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to prepare.
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to prepare.
 
         Returns:
-            :class:`~ape.api.providers.TransactionAPI`
+            :class:`~ape.api.transactions.TransactionAPI`
         """
 
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise

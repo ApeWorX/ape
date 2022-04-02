@@ -359,7 +359,7 @@ class ContractEvent(ManagerAccessMixin):
         Get all the events from the given receipt.
 
         Args:
-            receipt (:class:`~ape.api.providers.ReceiptAPI`): The receipt containing the logs.
+            receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt containing the logs.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]

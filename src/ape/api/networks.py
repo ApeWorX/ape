@@ -1,6 +1,6 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type
 
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
@@ -45,7 +45,7 @@ class EcosystemAPI(BaseInterfaceModel):
         Serialize a transaction to bytes.
 
         Args:
-            transaction (:class:`~ape.api.providers.TransactionAPI`): The transaction to encode.
+            transaction (:class:`~ape.api.transactions.TransactionAPI`): The transaction to encode.
 
         Returns:
             bytes
@@ -54,13 +54,13 @@ class EcosystemAPI(BaseInterfaceModel):
     @abstractmethod
     def decode_receipt(self, data: dict) -> "ReceiptAPI":
         """
-        Convert data to :class:`~ape.api.providers.ReceiptAPI`.
+        Convert data to :class:`~ape.api.transactions.ReceiptAPI`.
 
         Args:
             data (dict): A dictionary of Receipt properties.
 
         Returns:
-            :class:`~ape.api.providers.ReceiptAPI`
+            :class:`~ape.api.transactions.ReceiptAPI`
         """
 
     @abstractmethod
@@ -204,21 +204,73 @@ class EcosystemAPI(BaseInterfaceModel):
     def encode_deployment(
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
     ) -> "TransactionAPI":
-        ...
+        """
+        Create a deploy transaction.
+
+        Args:
+            deployment_bytecode (HexBytes): The bytecode to deploy.
+            abi (ConstructorABI): The constructor interface of the contract.
+            *args: Constructor arguments.
+            **kwargs: Transaction arguments.
+
+        Returns:
+            class:`~ape.api.transactions.TransactionAPI`
+        """
 
     @abstractmethod
     def encode_transaction(
         self, address: AddressType, abi: MethodABI, *args, **kwargs
     ) -> "TransactionAPI":
-        ...
+        """
+        Create a transaction object from a contract function call.
+
+        Args:
+            address (AddressType): The address of the contract.
+            abi (MethodABI): The function to call on the contract.
+            *args: Function arguments.
+            **kwargs: Transaction arguments.
+
+        Returns:
+            class:`~ape.api.transactions.TransactionAPI`
+        """
 
     @abstractmethod
     def decode_logs(self, abi: EventABI, raw_logs: List[Dict]) -> Iterator[ContractLog]:
-        ...
+        """
+        Get logs from raw chain data.
+
+        Args:
+            abi (EventABI): The event producing the logs.
+            raw_logs (List[Dict]): A list of raw log data from the chain.
+
+        Returns:
+            Iterator[:class:`~ape.types.ContractLog`]
+        """
 
     @abstractmethod
     def create_transaction(self, **kwargs) -> "TransactionAPI":
-        ...
+        """
+        Create a transaction using key-value arguments.
+
+        Args:
+            **kwargs: Everything the transaction needs initialize.
+
+        Returns:
+            class:`~ape.api.transactions.TransactionAPI`
+        """
+
+    @abstractmethod
+    def decode_calldata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
+        """
+        Get the result of a contract call.
+
+        Arg:
+            abi (MethodABI): The method called.
+            raw_data (bytes): Raw returned data.
+
+        Returns:
+            Tuple[Any]: All of the values returned from the contract function.
+        """
 
     def get_network(self, network_name: str) -> "NetworkAPI":
         """
