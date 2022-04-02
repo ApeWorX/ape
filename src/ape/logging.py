@@ -107,10 +107,10 @@ class CliLogger:
 
         # NOTE: We need to set the verbosity from the CLI option earlier than click lets us.
         log_level = DEFAULT_LOG_LEVEL
+        level_names = [lvl.name for lvl in LogLevel]
         for arg_i in range(len(sys.argv) - 1):
             if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
                 level = sys.argv[arg_i + 1].upper()
-                level_names = [lvl.name for lvl in LogLevel]
 
                 if level in level_names:
                     log_level = level
