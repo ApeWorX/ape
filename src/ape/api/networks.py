@@ -205,7 +205,8 @@ class EcosystemAPI(BaseInterfaceModel):
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
     ) -> "TransactionAPI":
         """
-        Create a deployment transaction in the given ecosystem. This may require connecting to other networks.
+        Create a deployment transaction in the given ecosystem.
+        This may require connecting to other networks.
 
         Args:
             deployment_bytecode (HexBytes): The bytecode to deploy.
@@ -222,7 +223,8 @@ class EcosystemAPI(BaseInterfaceModel):
         self, address: AddressType, abi: MethodABI, *args, **kwargs
     ) -> "TransactionAPI":
         """
-        Encode a transaction object from a contract function's abi and call arguments. Update the transaction arguments with the overrides in ``kwargs`` as well.
+        Encode a transaction object from a contract function's abi and call arguments.
+        Update the transaction arguments with the overrides in ``kwargs`` as well.
 
         Args:
             address (AddressType): The address of the contract.
