@@ -205,7 +205,7 @@ class EcosystemAPI(BaseInterfaceModel):
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
     ) -> "TransactionAPI":
         """
-        Create a deploy transaction.
+        Create a deployment transaction in the given ecosystem. This may require connecting to other networks.
 
         Args:
             deployment_bytecode (HexBytes): The bytecode to deploy.
