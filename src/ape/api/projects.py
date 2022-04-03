@@ -99,7 +99,7 @@ class ProjectAPI(BaseInterfaceModel):
     @classmethod
     def _create_manifest(
         cls,
-        sources: Collection[Path],
+        source_paths: Collection[Path],
         contracts_path: Path,
         contract_types: Dict[str, ContractType],
         name: Optional[str] = None,
@@ -114,7 +114,7 @@ class ProjectAPI(BaseInterfaceModel):
         if version:
             manifest.version = version
 
-        manifest.sources = cls._create_source_dict(sources, contracts_path)
+        manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
         return PackageManifest(**manifest.dict())
 
@@ -123,16 +123,35 @@ class ProjectAPI(BaseInterfaceModel):
         cls, contract_paths: Collection[Path], base_path: Path
     ) -> Dict[str, Source]:
         return {
-            str(get_relative_path(source, base_path)): Source(  # type: ignore
+            str(get_relative_path(source_path, base_path)): Source(  # type: ignore
                 checksum=Checksum(  # type: ignore
                     algorithm="md5",
-                    hash=compute_checksum(source.read_bytes()),
+                    hash=compute_checksum(source_path.read_bytes()),
                 ),
                 urls=[],
-                content=source.read_text(),
+                content=source_path.read_text(),
+                references=cls._create_source_reference_list(source_path=source_path),
             )
-            for source in contract_paths
+            for source_path in contract_paths
         }
+
+    @classmethod
+    def _create_source_reference_list(cls, source_path: Path) -> List[str]:
+        references = []
+        for ln in source_path.read_text().splitlines():
+            if ln.startswith("import"):
+                references.append(cls._clean_import_string(ln))
+
+        return references
+
+    @classmethod
+    def _clean_import_string(cls, path: str) -> str:
+        path = path.replace("import", "").replace('"', "").replace(";", "").strip()
+
+        if path.startswith("./"):
+            path = path[2:]
+
+        return path
 
 
 class DependencyAPI(BaseInterfaceModel):

@@ -45,7 +45,7 @@ class ApeProject(ProjectAPI):
         return True
 
     @property
-    def sources(self) -> List[Path]:
+    def source_paths(self) -> List[Path]:
         """
         All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
@@ -93,11 +93,18 @@ class ApeProject(ProjectAPI):
 
         cached_sources = manifest.sources or {}
         cached_contract_types = manifest.contract_types or {}
-        sources = {s for s in self.sources if s in file_paths} if file_paths else set(self.sources)
+        cached_source_references = {
+            k: getattr(v, "references", []) for k, v in cached_sources.items()
+        }
+        source_paths = (
+            {s for s in self.source_paths if s in file_paths}
+            if file_paths
+            else set(self.source_paths)
+        )
 
         # Filter out deleted sources
         deleted_source_ids = cached_sources.keys() - set(
-            map(str, [get_relative_path(s, self.contracts_folder) for s in sources])
+            map(str, [get_relative_path(sp, self.contracts_folder) for sp in source_paths])
         )
         contract_types = {
             name: contract_type
@@ -105,8 +112,8 @@ class ApeProject(ProjectAPI):
             if contract_type.source_id not in deleted_source_ids
         }
 
-        def file_needs_compiling(source: Path) -> bool:
-            path = str(get_relative_path(source, self.contracts_folder))
+        def file_needs_compiling(source_path: Path) -> bool:
+            path = str(get_relative_path(source_path, self.contracts_folder))
 
             if path not in cached_sources:
                 return True  # New file added
@@ -115,7 +122,7 @@ class ApeProject(ProjectAPI):
             cached.compute_checksum(algorithm="md5")
             assert cached.checksum  # For mypy
 
-            source_file = self.contracts_folder / source
+            source_file = self.contracts_folder / source_path
             checksum = compute_checksum(
                 source_file.read_bytes(),
                 algorithm=cached.checksum.algorithm,
@@ -124,7 +131,17 @@ class ApeProject(ProjectAPI):
             return checksum != cached.checksum.hash  # Contents changed
 
         # NOTE: Filter by checksum to only update what's needed
-        needs_compiling = list(filter(file_needs_compiling, sources))
+        needs_compiling = list(filter(file_needs_compiling, source_paths))
+
+        # search through source references and gather any dependent files
+        for source_path in needs_compiling:
+            path = str(get_relative_path(source_path, self.contracts_folder))
+
+            for k, v in cached_source_references.items():
+                if path in v:
+                    needs_compiling.append(self.contracts_folder / k)
+        # remove duplicates
+        needs_compiling = list(set(needs_compiling))
 
         # Set the context in case compiling a dependency (or anything outside the root project).
         with self.config_manager.using_project(self.path, contracts_folder=self.contracts_folder):
@@ -132,16 +149,18 @@ class ApeProject(ProjectAPI):
             contract_types.update(compiled_contract_types)
 
             # NOTE: Update contract types & re-calculate source code entries in manifest
-            sources = (
-                {s for s in self.sources if s in file_paths} if file_paths else set(self.sources)
+            source_paths = (
+                {sp for sp in self.source_paths if sp in file_paths}
+                if file_paths
+                else set(self.source_paths)
             )
 
             dependencies = {c for c in get_all_files_in_directory(self.contracts_folder / ".cache")}
             for contract in dependencies:
-                sources.add(contract)
+                source_paths.add(contract)
 
             manifest = self._create_manifest(
-                sources,
+                source_paths,
                 self.contracts_folder,
                 contract_types,
                 initial_manifest=manifest,
@@ -297,7 +316,7 @@ class ProjectManager(BaseManager):
         return self.config_manager.contracts_folder
 
     @property
-    def sources(self) -> List[Path]:
+    def source_paths(self) -> List[Path]:
         """
         All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
@@ -370,7 +389,7 @@ class ProjectManager(BaseManager):
 
         for extension, compiler in self.compiler_manager.registered_compilers.items():
             for version in compiler.get_versions(
-                [p for p in self.sources if p.suffix == extension]
+                [p for p in self.source_paths if p.suffix == extension]
             ):
                 compilers.append(Compiler(compiler.name, version))  # type: ignore
 
