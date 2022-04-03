@@ -222,7 +222,7 @@ class EcosystemAPI(BaseInterfaceModel):
         self, address: AddressType, abi: MethodABI, *args, **kwargs
     ) -> "TransactionAPI":
         """
-        Create a transaction object from a contract function call.
+        Encode a transaction object from a contract function's abi and call arguments. Update the transaction arguments with the overrides in ``kwargs`` as well.
 
         Args:
             address (AddressType): The address of the contract.
