@@ -237,7 +237,7 @@ class EcosystemAPI(BaseInterfaceModel):
     @abstractmethod
     def decode_logs(self, abi: EventABI, raw_logs: List[Dict]) -> Iterator[ContractLog]:
         """
-        Get logs from raw chain data.
+        Decode any contract logs that match the given event ABI from the raw log data.
 
         Args:
             abi (EventABI): The event producing the logs.
