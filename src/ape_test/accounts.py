@@ -2,7 +2,7 @@ from typing import Iterator, List, Optional
 
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account.messages import SignableMessage
-from eth_utils import to_bytes, to_checksum_address
+from eth_utils import to_bytes
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
 from ape.types import AddressType, MessageSignature, TransactionSignature
@@ -49,7 +49,7 @@ class TestAccount(TestAccountAPI):
 
     @property
     def address(self) -> AddressType:
-        return to_checksum_address(self.address_str)
+        return self.network_manager.ethereum.decode_address(self.address_str)
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         signed_msg = EthAccount.sign_message(msg, self.private_key)

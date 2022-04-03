@@ -4,7 +4,7 @@ from typing import Iterator, Optional
 
 import click
 from eth_account import Account as EthAccount  # type: ignore
-from eth_utils import to_bytes, to_checksum_address
+from eth_utils import to_bytes
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.exceptions import AccountsError
@@ -59,7 +59,7 @@ class KeyfileAccount(AccountAPI):
 
     @property
     def address(self) -> AddressType:
-        return to_checksum_address(self.keyfile["address"])
+        return self.network_manager.ethereum.decode_address(self.keyfile["address"])
 
     @property
     def __key(self) -> EthAccount:
