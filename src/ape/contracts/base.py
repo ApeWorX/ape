@@ -88,7 +88,7 @@ class ContractCall(ManagerAccessMixin):
         txn.chain_id = self.provider.network.chain_id
 
         raw_output = self.provider.send_call(txn)
-        tuple_output = self.provider.network.ecosystem.decode_calldata(  # type: ignore
+        tuple_output = self.provider.network.ecosystem.decode_calldata(
             self.abi,
             raw_output,
         )
