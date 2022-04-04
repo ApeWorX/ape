@@ -186,7 +186,7 @@ class BlockContainer(BaseManager):
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
         results = self.query("*", start_block=start, stop_block=stop - 1)  # type: ignore
         for _, row in results.iterrows():
-            yield BlockAPI.parse_obj(row.to_dict())
+            yield self.provider.network.ecosystem.decode_block(dict(row.to_dict()))
 
     def poll_blocks(
         self,
