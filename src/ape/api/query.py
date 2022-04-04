@@ -25,7 +25,7 @@ class _BaseQuery(BaseModel):
 
         Returns:
             List[str]: list of columns to be returned in pandas
-                dataframes during block query.
+            dataframes during block query.
         """
         ...
 
