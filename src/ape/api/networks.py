@@ -1,6 +1,6 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
 
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
@@ -262,7 +262,7 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_calldata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
+    def decode_return_data(self, abi: MethodABI, raw_data: bytes) -> Any:
         """
         Get the result of a contract call.
 
@@ -271,7 +271,7 @@ class EcosystemAPI(BaseInterfaceModel):
             raw_data (bytes): Raw returned data.
 
         Returns:
-            Tuple[Any]: All of the values returned from the contract function.
+            Any: All of the values returned from the contract function.
         """
 
     def get_network(self, network_name: str) -> "NetworkAPI":
