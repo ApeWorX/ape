@@ -36,7 +36,9 @@ def test_block_query(eth_tester_provider):
 
 def test_account_query(eth_tester_provider):
     chain.mine(3)
-    query_kwargs = dict(account="0x0000000000000000000000000000000000000000", start_nonce=0, stop_nonce=2)
+    query_kwargs = dict(
+        account="0x0000000000000000000000000000000000000000", start_nonce=0, stop_nonce=2
+    )
     with pytest.raises(ValidationError) as err:
         AccountQuery(columns=["none"], **query_kwargs)
     assert "Unrecognized field 'none'" in str(err.value)
