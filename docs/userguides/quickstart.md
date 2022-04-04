@@ -96,6 +96,45 @@ sudo rm -rf **\~/.solcx**
 sudo rm -rf **\~/.vvm**
 ```
 
+## Overview
+
+The ApeWorx project folder hierarchy:
+
+```
+project              # The root project directory
+├── contracts/       # Project source files, such as '.sol' or '.vy' files
+├── tests/           # Project tests, ran using the 'ape test' command
+├── scripts/         # Project scripts, such as deploy scripts, ran using the 'ape run <name>' command
+└── ape-config.yaml  # The ape project configuration file
+```
+
+## Enviroment Variables:
+
+Enviroment Variables are used to help connect you to your files or ecosytems outside of ApeWorx
+
+Please setup environment variables (where applicable) and follow the latest instructions from the 3rd party:
+
+Example of a use case:
+
+```bash
+export WEB3_INFURA_PROJECT_ID={YOUR_INFURA_PROJECT_ID}
+
+export WEB3_ALCHEMY_API_KEY={YOUR_ALCHEMY_KEY}
+```
+
+Visit [infura](https://infura.io/) or [alchemy](https://www.alchemy.com/) to get your free key.
+
+# Ape Console
+
+Ape provides an IPython interactive console with useful pre-defined locals to interact with your project.
+To interact with a deployed contract in a local environment, start by opening the console:
+
+```bash
+ape console --network :mainnet-fork:hardhat
+```
+
+Visit [Ape Console](https://docs.apeworx.io/ape/stable/commands/console.html) to learn how to use Ape Console.
+
 ## Quick Usage
 
 Use `-h` to list all the commands.
@@ -200,4 +239,12 @@ c = a.deploy(project.MyContract, ...)
 c.viewThis()  # Make Web3 calls
 c.doThat(sender=a)  # Make Web3 transactions
 assert c.MyEvent[-1].caller == a  # Search through Web3 events
+```
+
+## Deployments
+
+To run a file in `scripts/` use:
+
+```bash
+ape run 1_deploy
 ```
