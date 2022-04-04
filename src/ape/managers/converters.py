@@ -186,6 +186,7 @@ class ConversionManager(BaseManager):
             Decimal: [],
             list: [ListTupleConverter()],
             tuple: [ListTupleConverter()],
+            str: [],
         }
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
