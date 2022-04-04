@@ -27,7 +27,6 @@ class _BaseQuery(BaseModel):
             List[str]: list of columns to be returned in pandas
             dataframes during block query.
         """
-        ...
 
     @validator("columns")
     def check_columns(cls, data: List[str]) -> List[str]:
@@ -69,7 +68,7 @@ class BlockQuery(_BaseBlockQuery):
         return list(BlockAPI.__fields__)
 
 
-class _BaseAccountQuery(BaseModel):
+class _BaseAccountQuery(_BaseQuery):
     start_nonce: NonNegativeInt = 0
     stop_nonce: NonNegativeInt
 
