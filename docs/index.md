@@ -11,7 +11,6 @@
    userguides/config
    userguides/transactions
    userguides/console
-   userguides/testing
 ```
 
 ```{eval-rst}

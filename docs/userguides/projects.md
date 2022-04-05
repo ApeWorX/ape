@@ -3,14 +3,18 @@
 Use `ape` to create blockchain projects. A common project structure looks like this:
 
 ```
-project              # The root project directory
-├── contracts/       # Project source files, such as '.sol' or '.vy' files
-├── tests/           # Project tests, ran using the 'ape test' command
-├── scripts/         # Project scripts, such as deploy scripts, ran using the 'ape run <name>' command
-└── ape-config.yaml  # The ape project configuration file
+project                             # The root project directory
+├── contracts/                      # Project source files, such as '.sol' or '.vy' files
+    └── smart_contract_example.sol  # Sample of a smart contract
+├── tests/                          # Project tests, ran using the 'ape test' command
+    └── test_sample.py              # Sample of a test to run against your sample contract
+├── scripts/                        # Project scripts, such as deploy scripts, ran using the 'ape run <name>' command
+    └── deploy_sample.py            # Sample script to automate a specification of an ape project
+├── ape-config.yaml                 # The ape project configuration file
 ```
 
-See the [Configuration guide](config.md) for a more detailed explanation of settings you can
+
+ [Configuration guide](config.md) for a more detailed explanation of settings you can
 use in your `ape-config.yaml` files.
 
 ## Compiling Contracts
@@ -100,6 +104,9 @@ ape console --network ::hardhat
 
 ## Scripts
 
+The scripts folder is a set of files to automate your ape project to your specification. 
+For example you should keep a deployment script here.
+
 You can write scripts that run using the `ape run` command. The `ape run` command will register and run Python
 files defined under the `scripts/` directory that do not start with an `_` underscore. If the scripts take
 advantage of utilities from our [`ape.cli`](../methoddocs/cli.html#ape-cli) submodule,
@@ -113,6 +120,9 @@ installed, giving you more flexibility in how you define your scripts.
 `main` scripts will always provide a network option to the call.
 
 ## Testing
+
+Testing an ape project is important and easy.
+All tests must be stored under `tests/`. Each test must start with `test_` and end with the `.py` extension.
 
 You can test your project using the `ape test` command. The `ape test` command comes with the core-plugin `ape-test`.
 The `ape-test` plugin extends the popular python testing framework
@@ -128,11 +138,41 @@ is an example test:
 def test_add():
     assert 1 + 1 == 2
 ```
+### Test Pattern
+
+Tests are generally divisible into three parts:
+
+1. Set-up
+2. Invocation
+3. Assertion
+
+In the example above, we created a fixture that deploys our smart-contract. This is an example of a 'setup' phase.
+Next, we need to call a method on our contract. Let's assume there is a method called `is_owner()` that returns `True`
+when it is the owner of the contract making the transaction.
+
+This is an example of how that test may look:
+
+```python
+def test_is_owner(my_contract, owner, other):
+    owner_is_owner = my_contract.foo(sender=owner)
+    assert owner_is_owner
+
+    other_is_owner = my_contract.foo(sender=other)
+    assert not other_is_owner
+```
 
 ### Fixtures
 
 Fixtures are any type of re-usable instances of something with configurable scopes. `pytest` handles passing fixtures
-into each test method as test-time. You can define your own fixtures or use existing ones. The `ape-test` plugin comes
+into each test method as test-time. To learn more about [fixtures](https://docs.pytest.org/en/7.1.x/explanation/fixtures.html)
+
+Define fixtures for static data used by tests. This data can be accessed by all tests in the suite unless specified otherwise. This could be data as well as helpers of modules which will be passed to all tests.
+
+A commone place to define fixtures are in the **conftest.py** which should be saved under the test directory:
+
+conftest.py is used to import external plugins or modules. By defining the following global variable, pytest will load the module and make it available for its test.
+
+You can define your own fixtures or use existing ones. The `ape-test` plugin comes
 with fixtures you will likely want to use:
 
 #### accounts fixture
@@ -203,27 +243,22 @@ def my_contract(project, owner):
     return owner.deploy(project.MyContract)
 ```
 
-### Test Pattern
+### Ape testing commands
 
-Tests are generally divisible into three parts:
+```bash
+ape test
+```
 
-1. Set-up
-2. Invocation
-3. Assertion
+To run a particular test:
 
-In the example above, we created a fixture that deploys our smart-contract. This is an example of a 'setup' phase.
-Next, we need to call a method on our contract. Let's assume there is a method called `is_owner()` that returns `True`
-when it is the owner of the contract making the transaction.
+```bash
+ape test test_my_contract
+```
 
-This is an example of how that test may look:
+Use ape test ``-I`` to open the interactive mode at the point of exception. This allows the user to inspect the point of failure in your tests.
 
-```python
-def test_is_owner(my_contract, owner, other):
-    owner_is_owner = my_contract.foo(sender=owner)
-    assert owner_is_owner
-
-    other_is_owner = my_contract.foo(sender=other)
-    assert not other_is_owner
+```bash
+ape test test_my_contract -I -s
 ```
 
 ### Test Providers
@@ -245,6 +280,26 @@ manually installing it using the command:
 ape plugins install hardhat
 ```
 
-### Test Interactive
+### Hot Testing Tips:
 
-Use ape test ``-I`` to open the interactive mode at the point of exception. This allows the user to inspect the point of failure in your tests.
+When writing your test **files and functions**. They must begin with **test_** for `ape test` to recognize and run the test.
+
+```
+project                     # The root project directory
+├── tests/                  # Project tests folder, ran using the 'ape test' command to run all test within the folder.
+    └── conftest.py         # A file to define global variable for testing 
+    └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use 'ape test test_accounts.py' command
+    └── test_mint.py        # A test file
+
+```
+
+
+```python
+def test_account_balance(owner):
+    # ^ use the 'project' fixture from the 'ape-test' plugin
+    actual = project.balanceOf(owner)
+    expect = quantity
+    assert actual == expect
+```
+
+if you write a fixture def, include the function inside the parameter

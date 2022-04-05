@@ -96,7 +96,17 @@ sudo rm -rf **\~/.solcx**
 sudo rm -rf **\~/.vvm**
 ```
 
+If you want to deploy or test on a network. You can use any of the ape network plugins.
+Please read and install dependencies: 
+-   [ape-alchemy](https://github.com/ApeWorX/ape-alchemy)
+-   [ape-hardhat](https://github.com/ApeWorX/ape-hardhat)
+-   [ape-infura](https://github.com/ApeWorX/ape-infura)
+-   [ape-starknet](https://github.com/ApeWorX/ape-starknet)
+
 ## Overview
+
+For more indepth information about the project please look at the userguide/project.md
+It explains the purpose of each folder and how to use them effectively.
 
 The ApeWorx project folder hierarchy:
 
@@ -110,19 +120,22 @@ project              # The root project directory
 
 ## Enviroment Variables:
 
-Enviroment Variables are used to help connect you to your files or ecosytems outside of ApeWorx
+Environment Variables are used to help connect you to your files or ecosystems outside of ApeWorx.
 
 Please setup environment variables (where applicable) and follow the latest instructions from the 3rd party:
 
-Example of a use case:
+Example usecase:
 
 ```bash
-export WEB3_INFURA_PROJECT_ID={YOUR_INFURA_PROJECT_ID}
-
-export WEB3_ALCHEMY_API_KEY={YOUR_ALCHEMY_KEY}
+# Used by the `ape-infura` plugin
+export WEB3_INFURA_PROJECT_ID=<YOUR_INFURA_PROJECT_ID>
+# Used by the `ape-alchemy` plugin
+export WEB3_ALCHEMY_API_KEY=<YOUR_ALCHEMY_KEY>
 ```
 
-Visit [infura](https://infura.io/) or [alchemy](https://www.alchemy.com/) to get your free key.
+Visit [ape-alchemy](https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#quick-usage)
+
+Visit [ape-infura](https://github.com/ApeWorX/ape-infura#readme)
 
 # Ape Console
 
@@ -141,6 +154,12 @@ Use `-h` to list all the commands.
 
 ```bash
 ape -h
+```
+
+Use `ape init` to initialize your ape project folders. Visit [userguide project](~/userguide/project.md) for more information.  
+
+```bash
+ape init
 ```
 
 You can import or generate accounts.
@@ -239,12 +258,4 @@ c = a.deploy(project.MyContract, ...)
 c.viewThis()  # Make Web3 calls
 c.doThat(sender=a)  # Make Web3 transactions
 assert c.MyEvent[-1].caller == a  # Search through Web3 events
-```
-
-## Deployments
-
-To run a file in `scripts/` use:
-
-```bash
-ape run 1_deploy
 ```
