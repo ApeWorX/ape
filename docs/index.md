@@ -5,12 +5,14 @@
    :caption: User Guides
    :maxdepth: 1
 
-   userguides/quickstart
+   userguides/config
+   userguides/console
    userguides/projects
    userguides/plugins
-   userguides/config
+   userguides/quickstart
+   userguides/testing
    userguides/transactions
-   userguides/console
+   
 ```
 
 ```{eval-rst}
