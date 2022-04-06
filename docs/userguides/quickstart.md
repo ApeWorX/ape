@@ -96,7 +96,7 @@ sudo rm -rf **\~/.solcx**
 sudo rm -rf **\~/.vvm**
 ```
 
-If you want to deploy or test on a network. You can use any of the ape network plugins.
+If you want to deploy or test on a network, you can use any of the ape network plugins.
 Please read and install dependencies: 
 -   [ape-alchemy](https://github.com/ApeWorX/ape-alchemy)
 -   [ape-hardhat](https://github.com/ApeWorX/ape-hardhat)
@@ -105,7 +105,7 @@ Please read and install dependencies:
 
 ## Overview
 
-For more indepth information about the project please look at the userguide/project.md
+For more indepth information about the project please look at the [projects](docs/userguides/projects.md)
 It explains the purpose of each folder and how to use them effectively.
 
 The ApeWorx project folder hierarchy:
