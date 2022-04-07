@@ -48,17 +48,23 @@ class BaseProject(ProjectAPI):
 
     def configure(self, **kwargs):
         config_file = self.path / APE_CONFIG_FILE_NAME
-        config_data = {**kwargs}
-        if not config_file.exists():
-            if self.name:
-                config_data["name"] = self.name
-            if self.version:
-                config_data["version"] = self.version
 
-            config_data["contracts_folder"] = self.contracts_folder.name
-            with open(config_file, "w") as f:
-                yaml.safe_dump(config_data, f)
-                self.created_temporary_config_file = True
+        # Don't override existing config file.
+        if config_file.exists():
+            return
+
+        config_data = {**kwargs}
+        if self.name:
+            config_data["name"] = self.name
+        if self.version:
+            config_data["version"] = self.version
+
+        config_data["contracts_folder"] = self.contracts_folder.name
+        with open(config_file, "w") as f:
+            yaml.safe_dump(config_data, f)
+
+            # Indicate that we need to clean up the file later.
+            self.created_temporary_config_file = True
 
     def create_manifest(
         self, file_paths: Optional[List[Path]] = None, use_cache: bool = True
@@ -120,6 +126,7 @@ class BaseProject(ProjectAPI):
             with self.config_manager.using_project(
                 self.path, contracts_folder=self.contracts_folder
             ):
+                self.project_manager._load_dependencies()
                 compiled_contract_types = self.compiler_manager.compile(needs_compiling)
                 contract_types.update(compiled_contract_types)
 
@@ -221,12 +228,12 @@ class BrownieProject(BaseProject):
                         suffix = real_path_parts[1]
                         if "@" in suffix:
                             version_id = suffix.split("@")[1]
-                            import_remapping.append(
-                                f"{map_key}/{self.contracts_folder}={dependency_name}/{version_id}"
-                            )
+                            key = f"{map_key}/{self.contracts_folder.stem}"
+                            entry = f"{dependency_name}/{version_id}"
+                            import_remapping.append(f"{key}={entry}")
                         else:
                             import_remapping.append(
-                                f"{parts[0]}/{self.contracts_folder}={dependency_name}"
+                                f"{parts[0]}/{self.contracts_folder.stem}={dependency_name}"
                             )
 
         if import_remapping:
