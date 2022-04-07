@@ -10,6 +10,35 @@ from ape.exceptions import ProjectError
 from ape.utils import ManagerAccessMixin, cached_property, github_client
 
 
+class DependencyManager(ManagerAccessMixin):
+    DATA_FOLDER: Path
+
+    def __init__(self, data_folder: Path):
+        self.DATA_FOLDER = data_folder
+
+    @cached_property
+    def dependency_types(self) -> Dict[str, Type[DependencyAPI]]:
+        dependency_classes = {
+            "github": GithubDependency,
+            "local": LocalDependency,
+        }
+
+        for _, (config_key, dependency_class) in self.plugin_manager.dependencies:
+            dependency_classes[config_key] = dependency_class
+
+        return dependency_classes  # type: ignore
+
+    def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
+        for key, dependency_cls in self.dependency_types.items():
+            if key in config_dependency_data:
+                return dependency_cls(
+                    **config_dependency_data,
+                )  # type: ignore
+
+        dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))
+        raise ProjectError(f"No installed dependency API that supports '{dep_id}'.")
+
+
 class GithubDependency(DependencyAPI):
     """
     A dependency from Github. Use the ``github`` key in your ``dependencies:``
@@ -66,35 +95,6 @@ class GithubDependency(DependencyAPI):
                 )
 
             return self._extract_local_manifest(temp_project_path)
-
-
-class DependencyManager(ManagerAccessMixin):
-    DATA_FOLDER: Path
-
-    def __init__(self, data_folder: Path):
-        self.DATA_FOLDER = data_folder
-
-    @cached_property
-    def dependency_types(self) -> Dict[str, Type[DependencyAPI]]:
-        dependency_classes = {
-            "github": GithubDependency,
-            "local": LocalDependency,
-        }
-
-        for _, (config_key, dependency_class) in self.plugin_manager.dependencies:
-            dependency_classes[config_key] = dependency_class
-
-        return dependency_classes  # type: ignore
-
-    def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
-        for key, dependency_cls in self.dependency_types.items():
-            if key in config_dependency_data:
-                return dependency_cls(
-                    **config_dependency_data,
-                )  # type: ignore
-
-        dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))
-        raise ProjectError(f"No installed dependency API that supports '{dep_id}'.")
 
 
 class LocalDependency(DependencyAPI):
