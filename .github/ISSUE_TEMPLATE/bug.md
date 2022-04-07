@@ -17,7 +17,7 @@ $ ape plugins list
 # ...copy and paste result of above command here...
 ```
 
-* Contents of your `ape-config.yaml`:
+* Contents of your `ape-config.yaml` (NOTE: do not post anything private like RPC urls or secrets!):
 
 ```sh
 $ cat ape-config.yaml
