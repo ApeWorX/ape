@@ -192,10 +192,13 @@ class ConfigManager(BaseInterfaceModel):
     def __repr__(self):
         return f"<{self.__class__.__name__} project={self.PROJECT_FOLDER.name}>"
 
-    def load(self) -> "ConfigManager":
+    def load(self, force_reload: bool = False) -> "ConfigManager":
         """
         Load the user config file and return this class.
         """
+
+        if force_reload:
+            self._cached_configs = {}
 
         _ = self._plugin_configs
         return self
@@ -256,7 +259,7 @@ class ConfigManager(BaseInterfaceModel):
         self.project_manager.path = project_folder
         os.chdir(project_folder)
 
-        self.load()
+        self.load(force_reload=True)
         yield self.project_manager
 
         self.PROJECT_FOLDER = initial_project_folder
