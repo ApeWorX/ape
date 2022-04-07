@@ -8,7 +8,7 @@ from ape.api import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.managers.base import BaseManager
-from ape.managers.project.types import ApeProject
+from ape.managers.project.types import ApeProject, BrownieProject
 
 
 class ProjectManager(BaseManager):
@@ -158,6 +158,8 @@ class ProjectManager(BaseManager):
         project_classes = []
         for _, (project_class,) in self.plugin_manager.projects:
             project_classes.append(project_class)
+
+        project_classes.append(BrownieProject)
         project_classes.append(ApeProject)
 
         return project_classes
