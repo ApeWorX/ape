@@ -503,8 +503,14 @@ class GithubClient:
                 progress_parts = progress_str.split(" ")
                 fraction_str = progress_parts[1].lstrip("(").rstrip(")")
                 fraction = fraction_str.split("/")
+                if not fraction:
+                    return
 
-                GitRemoteCallbacks.total_objects = int(fraction[1])
+                total_objects = fraction[1]
+                if not str(total_objects).isnumeric():
+                    return
+
+                GitRemoteCallbacks.total_objects = int(total_objects)
                 previous_value = GitRemoteCallbacks.current_objects_cloned
                 new_value = int(fraction[0])
                 GitRemoteCallbacks.current_objects_cloned = new_value
@@ -517,8 +523,9 @@ class GithubClient:
                     GitRemoteCallbacks._progress_bar.update(difference)  # type: ignore
                     GitRemoteCallbacks._progress_bar.refresh()  # type: ignore
 
+        url = repo.git_url.replace("git://", "https://")
         clone = pygit2.clone_repository(
-            repo.git_url, str(target_path), checkout_branch=branch, callbacks=GitRemoteCallbacks()
+            url, str(target_path), checkout_branch=branch, callbacks=GitRemoteCallbacks()
         )
         return clone
 

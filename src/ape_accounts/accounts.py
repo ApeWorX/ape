@@ -5,6 +5,7 @@ from typing import Iterator, Optional
 import click
 from eth_account import Account as EthAccount  # type: ignore
 from eth_utils import to_bytes
+from hexbytes import HexBytes
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.exceptions import AccountsError
@@ -45,7 +46,7 @@ class KeyfileAccount(AccountAPI):
 
     keyfile_path: Path
     locked: bool = True
-    __cached_key: Optional[EthAccount] = None
+    __cached_key: Optional[HexBytes] = None
 
     def __repr__(self):
         return f"<{self.__class__.__name__} address={self.address} alias={self.alias}>"
@@ -63,7 +64,7 @@ class KeyfileAccount(AccountAPI):
         return to_address(self.keyfile["address"])
 
     @property
-    def __key(self) -> EthAccount:
+    def __key(self) -> HexBytes:
         if self.__cached_key is not None:
             if not self.locked:
                 click.echo(f"Using cached key for '{self.alias}'")
@@ -141,7 +142,7 @@ class KeyfileAccount(AccountAPI):
             s=to_bytes(signed_txn.s),
         )
 
-    def __decrypt_keyfile(self, passphrase: str) -> EthAccount:
+    def __decrypt_keyfile(self, passphrase: str) -> HexBytes:
         try:
             return EthAccount.decrypt(self.keyfile, passphrase)
         except ValueError as err:
