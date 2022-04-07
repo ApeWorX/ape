@@ -2,8 +2,3 @@ dependencies:
   - name: __test_dependency__
     local: ./dependency
     contracts_folder: sources
-
-  - name: ds-test
-    github: dapphub/ds-test
-    branch: master
-    contracts_folder: src
