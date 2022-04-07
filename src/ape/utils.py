@@ -27,7 +27,7 @@ from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
 from pydantic import BaseModel
 from pygit2 import Repository as GitRepository
-from tqdm import tqdm  # type: ignore
+from tqdm.auto import tqdm  # type: ignore
 
 from ape.exceptions import CompilerError, ProjectError, ProviderNotConnectedError
 from ape.logging import logger
@@ -370,7 +370,7 @@ def stream_response(download_url: str, progress_bar_description: str = "Download
     response.raise_for_status()
 
     total_size = int(response.headers.get("content-length", 0))
-    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
+    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True, leave=False)
     progress_bar.set_description(progress_bar_description)
     content = bytes()
     for data in response.iter_content(1024, decode_unicode=True):
@@ -503,8 +503,14 @@ class GithubClient:
                 progress_parts = progress_str.split(" ")
                 fraction_str = progress_parts[1].lstrip("(").rstrip(")")
                 fraction = fraction_str.split("/")
+                if not fraction:
+                    return
 
-                GitRemoteCallbacks.total_objects = int(fraction[1])
+                total_objects = fraction[1]
+                if not str(total_objects).isnumeric():
+                    return
+
+                GitRemoteCallbacks.total_objects = int(total_objects)
                 previous_value = GitRemoteCallbacks.current_objects_cloned
                 new_value = int(fraction[0])
                 GitRemoteCallbacks.current_objects_cloned = new_value
@@ -517,8 +523,9 @@ class GithubClient:
                     GitRemoteCallbacks._progress_bar.update(difference)  # type: ignore
                     GitRemoteCallbacks._progress_bar.refresh()  # type: ignore
 
+        url = repo.git_url.replace("git://", "https://")
         clone = pygit2.clone_repository(
-            repo.git_url, str(target_path), checkout_branch=branch, callbacks=GitRemoteCallbacks()
+            url, str(target_path), checkout_branch=branch, callbacks=GitRemoteCallbacks()
         )
         return clone
 
