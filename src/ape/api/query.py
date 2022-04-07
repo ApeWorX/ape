@@ -2,18 +2,44 @@ from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import BaseModel, NonNegativeInt, root_validator
+from pydantic import BaseModel, NonNegativeInt, root_validator, validator
 
-from ape._compat import Literal
 from ape.types import AddressType
 from ape.utils import BaseInterfaceModel, abstractmethod
+
+from .providers import BlockAPI
+from .transactions import TransactionAPI
 
 QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractMethodQuery"]
 
 
 class _BaseQuery(BaseModel):
-    type: str  # Used as discriminator
+
     columns: List[str]
+
+    @classmethod
+    @abstractmethod
+    def all_fields(cls) -> List[str]:
+        """
+        Validates fields that are called during a block query.
+
+        Returns:
+            List[str]: list of columns to be returned in pandas
+            dataframes during block query.
+        """
+
+    @validator("columns")
+    def check_columns(cls, data: List[str]) -> List[str]:
+        all_fields = cls.all_fields()
+        if len(data) == 1 and data[0] == "*":
+            return all_fields
+        else:
+            if len(set(data)) != len(data):
+                raise ValueError(f"Duplicate fields in {data}")
+            for d in data:
+                if d not in all_fields:
+                    raise ValueError(f"Unrecognized field '{d}', must be one of {all_fields}")
+        return data
 
 
 class _BaseBlockQuery(_BaseQuery):
@@ -37,15 +63,17 @@ class BlockQuery(_BaseBlockQuery):
     blocks between ``start_block`` and ``stop_block``.
     """
 
-    type: Literal["blocks"] = "blocks"
+    @classmethod
+    def all_fields(cls) -> List[str]:
+        return list(BlockAPI.__fields__)
 
 
-class _BaseAccountQuery(BaseModel):
+class _BaseAccountQuery(_BaseQuery):
     start_nonce: NonNegativeInt = 0
     stop_nonce: NonNegativeInt
 
     @root_validator(pre=True)
-    def check_start_nonce_before_stop_nonce(cls, values):
+    def check_start_nonce_before_stop_nonce(cls, values: Dict) -> Dict:
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
                 f"stop_nonce: '{values['stop_nonce']}' cannot be less than "
@@ -61,8 +89,11 @@ class AccountQuery(_BaseAccountQuery):
     of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
     """
 
-    type: Literal["accounts"] = "accounts"
     account: AddressType
+
+    @classmethod
+    def all_fields(cls) -> List[str]:
+        return list(TransactionAPI.__fields__)
 
 
 class ContractEventQuery(_BaseBlockQuery):
@@ -71,9 +102,16 @@ class ContractEventQuery(_BaseBlockQuery):
     logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
     """
 
-    type: Literal["contract_events"] = "contract_events"
     contract: AddressType
     event: EventABI
+
+    @classmethod
+    def all_fields(cls) -> List[str]:
+        # TODO: Figure out how to get the event ABI as a class property
+        #   for the validator
+        return [
+            i.name for i in cls.event.inputs if i.name is not None
+        ]  # if i.name is not None just for mypy
 
 
 class ContractMethodQuery(_BaseBlockQuery):
@@ -82,10 +120,15 @@ class ContractMethodQuery(_BaseBlockQuery):
     over a range of blocks between ``start_block`` and ``stop_block``.
     """
 
-    type: Literal["contract_calls"] = "contract_calls"
     contract: AddressType
     method: MethodABI
     method_args: Dict[str, Any]
+
+    @classmethod
+    def all_fields(cls) -> List[str]:
+        # TODO: Figure out how to get the method ABI as a class property
+        #   for the validator
+        return [o.name for o in cls.method.outputs if o.name is not None]  # just for mypy
 
 
 class QueryAPI(BaseInterfaceModel):

@@ -182,8 +182,11 @@ class BlockContainer(BaseManager):
         elif start_or_stop < 0:
             raise ValueError(f"stop '{stop}' cannot be negative.")
 
-        for i in range(start, stop, step):
-            yield self._get_block(i)
+        # Note: the range `stop_block` is a non-inclusive stop, while the
+        #       `.query` method uses an inclusive stop, so we must adjust downwards.
+        results = self.query("*", start_block=start, stop_block=stop - 1)  # type: ignore
+        for _, row in results.iterrows():
+            yield self.provider.network.ecosystem.decode_block(dict(row.to_dict()))
 
     def poll_blocks(
         self,
