@@ -69,87 +69,101 @@ class ApeProject(ProjectAPI):
         # Create a config file if one doesn't exist to forward values from
         # the root project's 'ape-config.yaml' 'dependencies:' config.
         config_file = self.path / CONFIG_FILE_NAME
-        if not config_file.exists():
+        created_temporary_config_file = False
+
+        try:
             config_data = {}
-            if self.name:
-                config_data["name"] = self.name
-            if self.version:
-                config_data["version"] = self.version
-            if self.contracts_folder.name != "contracts":
-                # Only sets when not default.
+            if not config_file.exists():
+                if self.name:
+                    config_data["name"] = self.name
+                if self.version:
+                    config_data["version"] = self.version
+
                 config_data["contracts_folder"] = self.contracts_folder.name
-            if config_data:
                 with open(config_file, "w") as f:
                     yaml.safe_dump(config_data, f)
+                    created_temporary_config_file = True
 
-        # Load a cached or clean manifest (to use for caching)
-        if self.cached_manifest and use_cache:
-            manifest = self.cached_manifest
-        else:
-            manifest = PackageManifest()
+            # Load a cached or clean manifest (to use for caching)
+            if self.cached_manifest and use_cache:
+                manifest = self.cached_manifest
+            else:
+                manifest = PackageManifest()
 
-            if self.manifest_cachefile.exists():
-                self.manifest_cachefile.unlink()
+                if self.manifest_cachefile.exists():
+                    self.manifest_cachefile.unlink()
 
-        cached_sources = manifest.sources or {}
-        cached_contract_types = manifest.contract_types or {}
-        sources = {s for s in self.sources if s in file_paths} if file_paths else set(self.sources)
-
-        # Filter out deleted sources
-        deleted_source_ids = cached_sources.keys() - set(
-            map(str, [get_relative_path(s, self.contracts_folder) for s in sources])
-        )
-        contract_types = {
-            name: contract_type
-            for name, contract_type in cached_contract_types.items()
-            if contract_type.source_id not in deleted_source_ids
-        }
-
-        def file_needs_compiling(source: Path) -> bool:
-            path = str(get_relative_path(source, self.contracts_folder))
-
-            if path not in cached_sources:
-                return True  # New file added
-
-            cached = cached_sources[path]
-            cached.compute_checksum(algorithm="md5")
-            assert cached.checksum  # For mypy
-
-            source_file = self.contracts_folder / source
-            checksum = compute_checksum(
-                source_file.read_bytes(),
-                algorithm=cached.checksum.algorithm,
-            )
-
-            return checksum != cached.checksum.hash  # Contents changed
-
-        # NOTE: Filter by checksum to only update what's needed
-        needs_compiling = list(filter(file_needs_compiling, sources))
-
-        # Set the context in case compiling a dependency (or anything outside the root project).
-        with self.config_manager.using_project(self.path, contracts_folder=self.contracts_folder):
-            compiled_contract_types = self.compiler_manager.compile(needs_compiling)
-            contract_types.update(compiled_contract_types)
-
-            # NOTE: Update contract types & re-calculate source code entries in manifest
+            cached_sources = manifest.sources or {}
+            cached_contract_types = manifest.contract_types or {}
             sources = (
                 {s for s in self.sources if s in file_paths} if file_paths else set(self.sources)
             )
 
-            dependencies = {c for c in get_all_files_in_directory(self.contracts_folder / ".cache")}
-            for contract in dependencies:
-                sources.add(contract)
-
-            manifest = self._create_manifest(
-                sources,
-                self.contracts_folder,
-                contract_types,
-                initial_manifest=manifest,
+            # Filter out deleted sources
+            deleted_source_ids = cached_sources.keys() - set(
+                map(str, [get_relative_path(s, self.contracts_folder) for s in sources])
             )
+            contract_types = {
+                name: contract_type
+                for name, contract_type in cached_contract_types.items()
+                if contract_type.source_id not in deleted_source_ids
+            }
 
-            # NOTE: Cache the updated manifest to disk (so ``self.cached_manifest`` reads next time)
-            self.manifest_cachefile.write_text(json.dumps(manifest.dict()))
-            return manifest
+            def file_needs_compiling(source: Path) -> bool:
+                path = str(get_relative_path(source, self.contracts_folder))
+
+                if path not in cached_sources:
+                    return True  # New file added
+
+                cached = cached_sources[path]
+                cached.compute_checksum(algorithm="md5")
+                assert cached.checksum  # For mypy
+
+                source_file = self.contracts_folder / source
+                checksum = compute_checksum(
+                    source_file.read_bytes(),
+                    algorithm=cached.checksum.algorithm,
+                )
+
+                return checksum != cached.checksum.hash  # Contents changed
+
+            # NOTE: Filter by checksum to only update what's needed
+            needs_compiling = list(filter(file_needs_compiling, sources))
+
+            # Set the context in case compiling a dependency (or anything outside the root project).
+            with self.config_manager.using_project(
+                self.path, contracts_folder=self.contracts_folder
+            ):
+                compiled_contract_types = self.compiler_manager.compile(needs_compiling)
+                contract_types.update(compiled_contract_types)
+
+                # NOTE: Update contract types & re-calculate source code entries in manifest
+                sources = (
+                    {s for s in self.sources if s in file_paths}
+                    if file_paths
+                    else set(self.sources)
+                )
+
+                dependencies = {
+                    c for c in get_all_files_in_directory(self.contracts_folder / ".cache")
+                }
+                for contract in dependencies:
+                    sources.add(contract)
+
+                manifest = self._create_manifest(
+                    sources,
+                    self.contracts_folder,
+                    contract_types,
+                    initial_manifest=manifest,
+                )
+
+                # Cache the updated manifest so `self.cached_manifest` reads it next time
+                self.manifest_cachefile.write_text(json.dumps(manifest.dict()))
+                return manifest
+
+        finally:
+            if created_temporary_config_file and config_file.is_file():
+                config_file.unlink()
 
 
 class LocalDependency(DependencyAPI):
