@@ -69,7 +69,7 @@ class ApeProject(ProjectAPI):
         # Create a config file if one doesn't exist to forward values from
         # the root project's 'ape-config.yaml' 'dependencies:' config.
         config_file = self.path / CONFIG_FILE_NAME
-        created_temporay_config_file = False
+        created_temporary_config_file = False
 
         try:
             config_data = {}
@@ -82,7 +82,7 @@ class ApeProject(ProjectAPI):
                 config_data["contracts_folder"] = self.contracts_folder.name
                 with open(config_file, "w") as f:
                     yaml.safe_dump(config_data, f)
-                    created_temporay_config_file = True
+                    created_temporary_config_file = True
 
             # Load a cached or clean manifest (to use for caching)
             if self.cached_manifest and use_cache:
@@ -162,7 +162,7 @@ class ApeProject(ProjectAPI):
                 return manifest
 
         finally:
-            if created_temporay_config_file and config_file.is_file():
+            if created_temporary_config_file and config_file.is_file():
                 config_file.unlink()
 
 
