@@ -136,7 +136,7 @@ class Receipt(ReceiptAPI):
 class BlockGasFee(BlockGasAPI):
     @classmethod
     def decode(cls, data: Dict) -> BlockGasAPI:
-        return BlockGasFee(**data)  # type: ignore
+        return BlockGasFee.parse_obj(data)
 
 
 class BlockConsensus(BlockConsensusAPI):
@@ -189,7 +189,11 @@ class Ethereum(EcosystemAPI):
         )
 
     def decode_block(self, data: Dict) -> BlockAPI:
-
+        # TODO: when we flatten the Block structure, remove these hacks
+        if "gas_data" in data:
+            data.update(data.pop("gas_data"))
+        if "consensus_data" in data:
+            data.update(data.pop("consensus_data"))
         return Block(  # type: ignore
             gas_data=BlockGasFee.decode(data),
             consensus_data=BlockConsensus.decode(data),
@@ -197,7 +201,8 @@ class Ethereum(EcosystemAPI):
             size=data.get("size"),
             timestamp=data.get("timestamp"),
             hash=data.get("hash"),
-            parent_hash=data.get("parentHash"),
+            # TODO: when we flatten the Block structure, remove this hack.
+            parent_hash=data.get("parentHash") or data.get("parent_hash"),
         )
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:

@@ -5,9 +5,11 @@ labels: 'bug'
 ---
 ### Environment information
 
+* OS: macOS / linux / win
+* Python Version: x.x.x
 * `ape` and plugin versions:
 
-```
+```sh
 $ ape --version
 # ...copy and paste result of above command here...
 
@@ -15,8 +17,12 @@ $ ape plugins list
 # ...copy and paste result of above command here...
 ```
 
-* Python Version: x.x.x
-* OS: macOS/linux/win
+* Contents of your `ape-config.yaml` (NOTE: do not post anything private like RPC urls or secrets!):
+
+```sh
+$ cat ape-config.yaml
+# ...copy and paste result of above command here...
+```
 
 ### What went wrong?
 
