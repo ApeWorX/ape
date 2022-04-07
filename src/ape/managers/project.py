@@ -80,10 +80,9 @@ class ApeProject(ProjectAPI):
                     config_data["version"] = self.version
 
                 config_data["contracts_folder"] = self.contracts_folder.name
-                if config_data:
-                    with open(config_file, "w") as f:
-                        yaml.safe_dump(config_data, f)
-                        created_temporay_config_file = True
+                with open(config_file, "w") as f:
+                    yaml.safe_dump(config_data, f)
+                    created_temporay_config_file = True
 
             # Load a cached or clean manifest (to use for caching)
             if self.cached_manifest and use_cache:
