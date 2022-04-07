@@ -91,13 +91,12 @@ def get_versions() -> List[str]:
     if not build_dir.exists():
         return []
 
+    pattern = re.compile(r"v\d+.?\d?.?\d?")
+
     versions = [
         d.name
         for d in build_dir.iterdir()
-        if d.is_dir
-        and re.match(r"v\d+.?\d?.?\d?", d.stem)
-        and "beta" not in d.name
-        and "alpha" not in d.name
+        if d.is_dir and pattern.match(d.stem) and "beta" not in d.name and "alpha" not in d.name
     ]
 
     return versions
