@@ -222,10 +222,12 @@ class BrownieProject(BaseProject):
                         if "@" in suffix:
                             version_id = suffix.split("@")[1]
                             import_remapping.append(
-                                f"{map_key}/contracts={dependency_name}/{version_id}"
+                                f"{map_key}/{self.contracts_folder}={dependency_name}/{version_id}"
                             )
                         else:
-                            import_remapping.append(f"{parts[0]}/contracts={dependency_name}")
+                            import_remapping.append(
+                                f"{parts[0]}/{self.contracts_folder}={dependency_name}"
+                            )
 
         if import_remapping:
             migrated_config_data["solidity"] = {"import_remapping": import_remapping}
