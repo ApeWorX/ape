@@ -232,6 +232,9 @@ class ContractEvent(ManagerAccessMixin):
         self.abi = abi
         self.cached_logs = cached_logs or []
 
+    def __repr__(self):
+        return self.abi.signature
+
     @property
     def name(self) -> str:
         """
