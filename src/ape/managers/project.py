@@ -59,9 +59,8 @@ class ApeProject(ProjectAPI):
             return files
 
         for extension in self.compiler_manager.registered_compilers:
-            files.extend(
-                get_all_files_in_directory(self.contracts_folder, pattern=rf"\w+\{extension}")
-            )
+            r_ext = extension.replace(".", "\\.")
+            files.extend(get_all_files_in_directory(self.contracts_folder, pattern=rf"\w+{r_ext}"))
 
         return files
 
