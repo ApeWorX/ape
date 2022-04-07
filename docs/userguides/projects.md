@@ -10,7 +10,7 @@ project                             # The root project directory
     └── test_sample.py              # Sample of a test to run against your sample contract
 ├── scripts/                        # Project scripts, such as deploy scripts, ran using the 'ape run <name>' command
     └── deploy_sample.py            # Sample script to automate a specification of an ape project
-├── ape-config.yaml                 # The ape project configuration file
+└── ape-config.yaml                 # The ape project configuration file
 ```
 
 
@@ -104,7 +104,7 @@ ape console --network ::hardhat
 
 ## Scripts
 
-The scripts folder is a set of files to automate your ape project to your specification. 
+The scripts folder contains project automation scripts, such as deploy scripts, as well as other executable jobs, such as running simulations.
 For example you should keep a deployment script here.
 
 You can write scripts that run using the `ape run` command. The `ape run` command will register and run Python
@@ -121,8 +121,10 @@ installed, giving you more flexibility in how you define your scripts.
 
 ## Testing
 
+
+Use tests to verify your project. Follow this guide to learn more about testing using Ape framework.
+[testing](docs/userguides/testing.md)
+
 You can test your project using the `ape test` command. The `ape test` command comes with the core-plugin `ape-test`.
 The `ape-test` plugin extends the popular python testing framework
 [pytest](https://docs.pytest.org/en/6.2.x/contents.html).
-
-For more information on testing visit [testing](docs/userguides/testing.md)

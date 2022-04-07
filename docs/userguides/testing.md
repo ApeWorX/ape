@@ -1,12 +1,11 @@
 # Testing
 
 Testing an ape project is important and easy.
-All tests must be stored under `tests/`. Each test must start with `test_` and end with the `.py` extension.
 
 ### Test Structure
 
-Tests must be located in a project's `tests/` directory. Each test file must start with `test_` and have the `.py`
-extension, such as `test_my_contract.py`. Each test method within the file must also start with `test_`. The following
+Tests must be located in a project's `tests/` directory. Each **test file** must start with `test_` and have the `.py`
+extension, such as `test_my_contract.py`. Each **test method** within the file must also start with `test_`. The following
 is an example test:
 
 ```python
@@ -29,8 +28,8 @@ This is an example of how that test may look:
 
 ```python
 def test_is_owner(my_contract, owner, other):
-    owner_is_owner = my_contract.foo(sender=owner)
-    assert owner_is_owner
+    my_contract.set_owner(sender=owner)
+    assert owner == my_contract.owner()
 
     other_is_owner = my_contract.foo(sender=other)
     assert not other_is_owner
@@ -155,23 +154,26 @@ manually installing it using the command:
 ape plugins install hardhat
 ```
 
-### Hot Testing Tips:
+### Hot Testing Tips
 
-When writing your test **files and functions**. They must begin with **test_** for `ape test` to recognize and run the test.
+If you want to samples of test and projects follow this link to [Ape Academy](https://github.com/ApeAcademy)
 
 ```
 project                     # The root project directory
-├── tests/                  # Project tests folder, ran using the 'ape test' command to run all test within the folder.
+└── tests/                  # Project tests folder, ran using the 'ape test' command to run all test within the folder.
     └── conftest.py         # A file to define global variable for testing 
     └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use 'ape test test_accounts.py' command
     └── test_mint.py        # A test file
 
 ```
 
+Here is a sample of test function from a sample [NFT](https://github.com/ApeAcademy/generative-nft)
 
 ```python
-def test_account_balance(owner):
+def test_account_balance(owner, receiver, buyers, nft)):
     # ^ use the 'project' fixture from the 'ape-test' plugin
+    quantity = 1
+    nft.mint(quantity, ["0"], value=nft.PRICE() * quantity, sender=receiver)
     actual = project.balanceOf(owner)
     expect = quantity
     assert actual == expect

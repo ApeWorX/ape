@@ -5,13 +5,13 @@
    :caption: User Guides
    :maxdepth: 1
 
-   userguides/config
-   userguides/console
+   userguides/quickstart
    userguides/projects
    userguides/plugins
-   userguides/quickstart
-   userguides/testing
+   userguides/config
    userguides/transactions
+   userguides/console
+   userguides/testing
    
 ```
 
