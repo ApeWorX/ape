@@ -1,8 +1,9 @@
+import tempfile
 from pathlib import Path
 
 import pytest
 
-from ape.utils import add_padding_to_strings, extract_nested_value, get_relative_path
+from ape.utils import GithubClient, add_padding_to_strings, extract_nested_value, get_relative_path
 
 _TEST_DIRECTORY_PATH = Path("/This/is/a/test/")
 _TEST_FILE_PATH = _TEST_DIRECTORY_PATH / "scripts" / "script.py"
@@ -55,3 +56,9 @@ def test_add_spacing_to_strings():
     expected = ["foo         ", "address     ", "ethereum    "]
     actual = add_padding_to_strings(string_list, extra_spaces=4)
     assert actual == expected
+
+
+def test_clone_repo():
+    client = GithubClient()
+    with tempfile.TemporaryDirectory() as temp_dir:
+        client.clone_repo("dapphub/ds-test", temp_dir, branch="master")
