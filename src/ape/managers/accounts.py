@@ -86,7 +86,7 @@ class TestAccountManager(list, ManagerAccessMixin):
 
         return ImpersonatedAccount(raw_address=account_id)
 
-    def __contains__(self, address: AddressType):
+    def __contains__(self, address: AddressType) -> bool:  # type: ignore
         return any(address in container for container in self.containers.values())
 
 
