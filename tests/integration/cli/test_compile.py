@@ -33,9 +33,16 @@ def test_no_compiler_for_extension(ape_cli, runner, project):
 def test_compile(ape_cli, runner, project, clean_cache):
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
-    # First time it compiles, it compiles fully
-    for file in project.path.glob("contracts/**/*"):
-        assert file.stem in result.output
+
+    # First time it compiles, it compiles the files with registered compilers successfully.
+    # Files with multiple extensions are currently not supported.
+    all_files = [f for f in project.path.glob("contracts/**/*")]
+    expected_files = [f for f in all_files if f.name.count(".") == 1]
+    un_expected_files = [f for f in all_files if f not in expected_files]
+
+    assert all([f.stem in result.output for f in expected_files])
+    assert not any([f.stem in result.output for f in un_expected_files])
+
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     # First time it compiles, it caches
@@ -91,9 +98,14 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         cmd.append(contract_path)
 
     result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
+
+    dep_name_a = "__test_dependency_a__"
+    dep_name_b = "__test_dependency_b__"
     assert result.exit_code == 0, result.output
-    assert "__test_dependency__" in project.dependencies
-    assert type(project.dependencies["__test_dependency__"].Dependency) == ContractContainer
+    assert dep_name_a in project.dependencies
+    assert dep_name_b in project.dependencies
+    assert type(project.dependencies[dep_name_a].DependencyA) == ContractContainer
+    assert type(project.dependencies[dep_name_b].DependencyB) == ContractContainer
 
 
 @skip_projects_except(["with-dependency"])
