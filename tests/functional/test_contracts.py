@@ -21,6 +21,16 @@ def test_deploy(sender, contract_container):
     assert contract.address == CONTRACT_ADDRESS
 
 
+def test_repr(contract_instance):
+    assert repr(contract_instance) == f"<TestContract {contract_instance.address}>"
+    assert repr(contract_instance.set_number) == "set_number(uint256 num)"
+    assert repr(contract_instance.my_number) == "my_number() -> uint256"
+    assert (
+        repr(contract_instance.NumberChange)
+        == "NumberChange(uint256 prev_num, uint256 indexed new_num)"
+    )
+
+
 def test_contract_logs_from_receipts(owner, contract_instance):
     event_type = contract_instance.NumberChange
 
