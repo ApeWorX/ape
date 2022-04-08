@@ -185,8 +185,13 @@ class BlockContainer(BaseManager):
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
         results = self.query("*", start_block=start, stop_block=stop - 1)  # type: ignore
+
+        step_tracker = step - 1  # Set right before step we log the first block
         for _, row in results.iterrows():
-            yield self.provider.network.ecosystem.decode_block(dict(row.to_dict()))
+            step_tracker += 1
+            if step_tracker == step:
+                yield self.provider.network.ecosystem.decode_block(dict(row.to_dict()))
+                step_tracker = 0
 
     def poll_blocks(
         self,
