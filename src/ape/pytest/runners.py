@@ -115,7 +115,7 @@ class PytestApeRunner(ManagerAccessMixin):
         collection and entering the run test loop.
 
         Removes `PytestAssertRewriteWarning` warnings from the terminalreporter.
-        This prevents warnings that "the `ape` oz_proxy_lib.cairo was already imported and
+        This prevents warnings that "the `ape` library was already imported and
         so related assertions cannot be rewritten". The warning is not relevant
         for end users who are performing tests with ape.
         """
