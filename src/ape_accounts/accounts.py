@@ -9,6 +9,7 @@ from hexbytes import HexBytes
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.exceptions import AccountsError
+from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.utils import to_address
 
@@ -146,6 +147,7 @@ class KeyfileAccount(AccountAPI):
         )
 
     def set_autosign(self, enabled: bool):
+        logger.warning("Danger! This account will now sign any transaction its given.")
         self.__autosign = enabled
 
     def __decrypt_keyfile(self, passphrase: str) -> HexBytes:
