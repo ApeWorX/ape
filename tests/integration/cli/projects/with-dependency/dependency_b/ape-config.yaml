@@ -1,0 +1,3 @@
+dependencies:
+  - name: __test_dependency_b_a__
+    local: ./dependency_b_a

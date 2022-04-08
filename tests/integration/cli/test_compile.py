@@ -98,9 +98,14 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         cmd.append(contract_path)
 
     result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
+
+    dep_name_a = "__test_dependency_a__"
+    dep_name_b = "__test_dependency_b__"
     assert result.exit_code == 0, result.output
-    assert "__test_dependency__" in project.dependencies
-    assert type(project.dependencies["__test_dependency__"].Dependency) == ContractContainer
+    assert dep_name_a in project.dependencies
+    assert dep_name_b in project.dependencies
+    assert type(project.dependencies[dep_name_a].DependencyA) == ContractContainer
+    assert type(project.dependencies[dep_name_b].DependencyB) == ContractContainer
 
 
 @skip_projects_except(["with-dependency"])
