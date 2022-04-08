@@ -1,8 +1,10 @@
+import traceback
 from pathlib import Path
 from runpy import run_module
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 import click
+from click import Context
 
 from ape.cli import NetworkBoundCommand, network_option
 from ape.logging import logger
@@ -15,6 +17,19 @@ class ScriptCommand(click.MultiCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, result_callback=self.result_callback)
         self._namespace = {}
+
+    def invoke(self, ctx: Context) -> Any:
+        try:
+            return super().invoke(ctx)
+        except Exception:
+            if ctx.params["interactive"]:
+                # Print the exception trace and then launch the console
+                err_info = traceback.format_exc()
+                click.echo(err_info)
+                self._launch_console()
+            else:
+                # Don't handle error - raise exception as normal.
+                raise
 
     def _get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
         relative_filepath = get_relative_path(filepath, self._project.path)
@@ -122,13 +137,14 @@ class ScriptCommand(click.MultiCommand):
 
     def result_callback(self, result, interactive):
         if interactive:
-            # TODO: Figure out how to pull out namespace for `extra_locals`
-            return console(
-                project=self._project,
-                extra_locals=self._namespace[self._command_called],
-            )
+            return self._launch_console()
 
         return result
+
+    def _launch_console(self):
+        # TODO: Figure out how to pull out namespace for `extra_locals`
+        extra_locals = {**self._namespace.get(self._command_called, {})}
+        return console(project=self._project, extra_locals=extra_locals)
 
 
 @click.command(

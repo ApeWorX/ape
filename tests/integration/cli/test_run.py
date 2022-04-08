@@ -16,8 +16,11 @@ def test_run(ape_cli, runner, project):
     # By default, no commands are run
     assert "Super secret script output" not in result.output
 
-    for script_file in project.scripts_folder.glob("*.py"):
+    scripts = [s for s in project.scripts_folder.glob("*.py") if not s.name.startswith("error")]
+    for script_file in scripts:
         result = runner.invoke(ape_cli, ["run", script_file.stem])
+        assert result.exit_code == 0, result.output
+        runner.invoke(ape_cli, ["run", "--interactive"], input="exit\n")
         assert result.exit_code == 0, result.output
 
         if script_file.stem.startswith("_"):
@@ -25,3 +28,18 @@ def test_run(ape_cli, runner, project):
 
         else:
             assert "Super secret script output" in result.output
+
+
+def test_run_when_script_errors(ape_cli, runner, project):
+    scripts = [s for s in project.scripts_folder.glob("*.py") if s.name.startswith("error")]
+    for script_file in scripts:
+        result = runner.invoke(ape_cli, ["run", script_file.stem])
+        assert result.exit_code != 0, result.output
+        runner.invoke(ape_cli, ["run", "--interactive"], input="exit\n")
+        assert result.exit_code != 0, result.output
+        assert str(result.exception) == "Expected exception"
+
+
+def test_run_interactive(ape_cli, runner, project):
+    result = runner.invoke(ape_cli, ["run", "--interactive"], input="exit\n")
+    assert result.exit_code == 0, result.output
