@@ -39,7 +39,7 @@ from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
 from pydantic import BaseModel
 from pygit2 import Repository as GitRepository
-from tqdm import tqdm  # type: ignore
+from tqdm.auto import tqdm  # type: ignore
 
 from ape.exceptions import CompilerError, ProjectError, ProviderNotConnectedError
 from ape.logging import logger
@@ -382,7 +382,7 @@ def stream_response(download_url: str, progress_bar_description: str = "Download
     response.raise_for_status()
 
     total_size = int(response.headers.get("content-length", 0))
-    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
+    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True, leave=False)
     progress_bar.set_description(progress_bar_description)
     content = bytes()
     for data in response.iter_content(1024, decode_unicode=True):
