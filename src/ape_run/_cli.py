@@ -1,3 +1,4 @@
+import traceback
 from pathlib import Path
 from runpy import run_module
 from typing import Any, Dict, Union
@@ -22,9 +23,13 @@ class ScriptCommand(click.MultiCommand):
             return super().invoke(ctx)
         except Exception:
             if ctx.params["interactive"]:
+                # Print the exception trace and then launch the console
+                err_info = traceback.format_exc()
+                click.echo(err_info)
                 self._launch_console()
-
-            raise
+            else:
+                # Don't handle error - raise exception as normal.
+                raise
 
     def _get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
         relative_filepath = get_relative_path(filepath, self._project.path)
