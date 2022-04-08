@@ -51,7 +51,21 @@
 ## Project
 
 ```{eval-rst}
-.. automodule:: ape.managers.project
+.. automodule:: ape.managers.project.manager
+    :members:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
+```
+
+```{eval-rst}
+.. automodule:: ape.managers.project.dependency
+    :members:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
+```
+
+```{eval-rst}
+.. automodule:: ape.managers.project.types
     :members:
     :special-members:
     :exclude-members: __repr__, __weakref__, __metaclass__, __init__
