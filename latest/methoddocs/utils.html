@@ -253,7 +253,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;m
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.utils.get_all_files_in_directory">
-<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">get_all_files_in_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.utils.get_all_files_in_directory" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">get_all_files_in_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Pattern</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.utils.get_all_files_in_directory" title="Permalink to this definition"></a></dt>
 <dd><p>Returns all the files in a directory structure.</p>
 <p>For example, given a directory structure like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dir_a</span><span class="p">:</span> <span class="n">dir_b</span><span class="p">,</span> <span class="n">file_a</span><span class="p">,</span> <span class="n">file_b</span>
@@ -264,7 +264,11 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;m
 the paths to <code class="docutils literal notranslate"><span class="pre">file_a</span></code>, <code class="docutils literal notranslate"><span class="pre">file_b</span></code> and <code class="docutils literal notranslate"><span class="pre">file_c</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>pathlib.Path</em>) – A directory containing files of interest.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>pathlib.Path</em>) – A directory containing files of interest.</p></li>
+<li><p><strong>pattern</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Pattern</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Optionally provide a regex
+pattern to match.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A list of files in the given directory.</p>
