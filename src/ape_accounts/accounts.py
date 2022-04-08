@@ -46,6 +46,7 @@ class KeyfileAccount(AccountAPI):
 
     keyfile_path: Path
     locked: bool = True
+    __autosign: bool = False
     __cached_key: Optional[HexBytes] = None
 
     def __repr__(self):
@@ -141,6 +142,9 @@ class KeyfileAccount(AccountAPI):
             r=to_bytes(signed_txn.r),
             s=to_bytes(signed_txn.s),
         )
+
+    def set_autosign(self, enabled: bool):
+        self.__autosign = enabled
 
     def __decrypt_keyfile(self, passphrase: str) -> HexBytes:
         try:
