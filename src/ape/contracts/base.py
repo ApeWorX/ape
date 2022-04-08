@@ -112,7 +112,7 @@ class ContractCallHandler(ManagerAccessMixin):
         self.abis = abis
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.values or []))  # type: ignore
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -190,7 +190,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
         self.abis = abis
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.values or []))  # type: ignore
+        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
@@ -231,6 +231,9 @@ class ContractEvent(ManagerAccessMixin):
         self.contract = contract
         self.abi = abi
         self.cached_logs = cached_logs or []
+
+    def __repr__(self):
+        return self.abi.signature
 
     @property
     def name(self) -> str:
