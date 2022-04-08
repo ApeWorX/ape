@@ -17,6 +17,17 @@ if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
+def _convert_kwargs(kwargs, converter):
+    return {
+        k: converter(
+            v,
+            # TODO: Upstream, `TransactionAPI.sender` should be `AddressType` (not `str`)
+            AddressType if k == "sender" else TransactionAPI.__fields__[k].type_,
+        )
+        for k, v in kwargs.items()
+    }
+
+
 class ContractConstructor(ManagerAccessMixin):
     def __init__(
         self,
@@ -33,18 +44,9 @@ class ContractConstructor(ManagerAccessMixin):
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
 
-    def _convert_tuple(self, v: tuple) -> tuple:
-        return self.conversion_manager.convert(v, tuple)
-
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        args = self._convert_tuple(args)
-        kwargs = {
-            k: v
-            for k, v in zip(
-                kwargs.keys(),
-                self._convert_tuple(tuple(kwargs.values())),
-            )
-        }
+        args = self.conversion_manager.convert(args, tuple)
+        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.provider.network.ecosystem.encode_deployment(
             self.deployment_bytecode, self.abi, *args, **kwargs
         )
@@ -68,17 +70,8 @@ class ContractCall(ManagerAccessMixin):
     def __repr__(self) -> str:
         return self.abi.signature
 
-    def _convert_tuple(self, v: tuple) -> tuple:
-        return self.conversion_manager.convert(v, tuple)
-
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        kwargs = {
-            k: v
-            for k, v in zip(
-                kwargs.keys(),
-                self._convert_tuple(tuple(kwargs.values())),
-            )
-        }
+        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
@@ -159,17 +152,8 @@ class ContractTransaction(ManagerAccessMixin):
     def __repr__(self) -> str:
         return self.abi.signature
 
-    def _convert_tuple(self, v: tuple) -> tuple:
-        return self.conversion_manager.convert(v, tuple)
-
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        kwargs = {
-            k: v
-            for k, v in zip(
-                kwargs.keys(),
-                self._convert_tuple(tuple(kwargs.values())),
-            )
-        }
+        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
         )
