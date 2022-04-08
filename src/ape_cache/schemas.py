@@ -9,8 +9,12 @@ Types to be fixed
 
 
 class BlocksBase(BaseModel):
+    gas_data: bytes
+    consensus_data: bytes
     hash: bytes
     number: int
+    parent_hash: bytes
+    size: int
     timestamp: datetime.datetime
 
 
