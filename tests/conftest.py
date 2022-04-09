@@ -13,6 +13,7 @@ ape.config.PROJECT_FOLDER = Path(mkdtemp()).resolve()
 
 ALIAS = "test"
 PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
+ADDRESS = "7e5f4552091a69125d5dfcb7b8c2659029395bdf"
 
 
 @pytest.fixture(scope="session")
@@ -64,7 +65,7 @@ def project(config):
 def keyparams():
     # NOTE: password is 'a'
     return {
-        "address": "7e5f4552091a69125d5dfcb7b8c2659029395bdf",
+        "address": ADDRESS,
         "crypto": {
             "cipher": "aes-128-ctr",
             "cipherparams": {"iv": "7bc492fb5dca4fe80fd47645b2aad0ff"},
@@ -108,5 +109,10 @@ def temp_keyfile(temp_keyfile_path, keyparams):
 
 
 @pytest.fixture
-def temp_account():
+def temp_eth_account(temp_keyfile):
     return Account.from_key(bytes.fromhex(PRIVATE_KEY))
+
+
+@pytest.fixture
+def temp_ape_account(temp_keyfile, accounts):
+    return accounts[ADDRESS]

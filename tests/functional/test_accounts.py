@@ -84,5 +84,8 @@ def test_get_accounts(test_accounts):
     assert len(test_accounts[::2]) == len(test_accounts) / 2
 
 
-def test_autosign(temp_account):
-    temp_account.sign_message("")
+def test_autosign(temp_ape_account):
+    temp_ape_account.set_autosign(True, passphrase="a")
+    message = encode_defunct(text="Hello Apes!")
+    signature = temp_ape_account.sign_message(message)
+    assert temp_ape_account.check_signature(message, signature)
