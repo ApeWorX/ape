@@ -82,3 +82,7 @@ def test_get_accounts(test_accounts):
     c = test_accounts[-1]
     assert c == test_accounts[len(test_accounts) - 1]
     assert len(test_accounts[::2]) == len(test_accounts) / 2
+
+
+def test_autosign(temp_account):
+    temp_account.sign_message("")

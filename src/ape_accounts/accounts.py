@@ -74,12 +74,7 @@ class KeyfileAccount(AccountAPI):
             else:
                 self.__cached_key = None
 
-        passphrase = click.prompt(
-            f"Enter Passphrase to unlock '{self.alias}'",
-            hide_input=True,
-            default="",  # Just in case there's no passphrase
-        )
-
+        passphrase = self._prompt_for_passphrase(default="")
         key = self.__decrypt_keyfile(passphrase)
 
         if click.confirm(f"Leave '{self.alias}' unlocked?"):
@@ -88,10 +83,9 @@ class KeyfileAccount(AccountAPI):
 
         return key
 
-    def unlock(self):
-        passphrase = click.prompt(
-            f"Enter Passphrase to permanently unlock '{self.alias}'",
-            hide_input=True,
+    def unlock(self, passphrase: Optional[str] = None):
+        passphrase = passphrase or self._prompt_for_passphrase(
+            f"Enter Passphrase to permanently unlock '{self.alias}'"
         )
         self.__cached_key = self.__decrypt_keyfile(passphrase)
         self.locked = False
@@ -103,19 +97,12 @@ class KeyfileAccount(AccountAPI):
         self.locked = True  # force entering passphrase to get key
         key = self.__key
 
-        passphrase = click.prompt(
-            "Create New Passphrase",
-            hide_input=True,
-            confirmation_prompt=True,
-        )
-
+        passphrase = self._prompt_for_passphrase("Create new passphrase", confirmation_prompt=True)
         self.keyfile_path.write_text(json.dumps(EthAccount.encrypt(key, passphrase)))
 
     def delete(self):
-        passphrase = click.prompt(
-            f"Enter Passphrase to delete '{self.alias}'",
-            hide_input=True,
-            default="",  # Just in case there's no passphrase
+        passphrase = self._prompt_for_passphrase(
+            f"Enter Passphrase to delete '{self.alias}'", default=""
         )
         self.__decrypt_keyfile(passphrase)
         self.keyfile_path.unlink()
@@ -146,9 +133,26 @@ class KeyfileAccount(AccountAPI):
             s=to_bytes(signed_txn.s),
         )
 
-    def set_autosign(self, enabled: bool):
+    def set_autosign(self, enabled: bool, passphrase: Optional[str] = None):
+        """
+        Allow this account to automatically sign messages and transactions.
+
+        Args:
+            enabled (bool): ``True`` to enable, ``False`` to disable.
+            passphrase (Optional[str]): Optionally provide the passphrase.
+              If not provided, you will be prompted to enter it.
+        """
+        self.unlock(passphrase=passphrase)
         logger.warning("Danger! This account will now sign any transaction its given.")
         self.__autosign = enabled
+
+    def _prompt_for_passphrase(self, message: Optional[str] = None, **kwargs):
+        message = message or f"Enter passphrase to unlock '{self.alias}'"
+        return click.prompt(
+            message,
+            hide_input=True,
+            **kwargs,
+        )
 
     def __decrypt_keyfile(self, passphrase: str) -> HexBytes:
         try:
