@@ -75,10 +75,18 @@ def test_send_transaction_sets_defaults(sender, receiver):
     assert receipt.required_confirmations == 0
 
 
-def test_get_accounts(test_accounts):
+def test_accounts_splice_access(test_accounts):
     a, b = test_accounts[:2]
     assert a == test_accounts[0]
     assert b == test_accounts[1]
     c = test_accounts[-1]
     assert c == test_accounts[len(test_accounts) - 1]
     assert len(test_accounts[::2]) == len(test_accounts) / 2
+
+
+def test_accounts_address_access(test_accounts, accounts):
+    assert accounts[test_accounts[0].address] == test_accounts[0]
+
+
+def test_accounts_contains(accounts, test_accounts):
+    assert test_accounts[0].address in accounts
