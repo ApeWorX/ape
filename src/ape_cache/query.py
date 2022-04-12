@@ -13,8 +13,13 @@ that databases, else go to provider to get raw data
 
 Research the database schema
 """
-from ape.managers.query import QueryAPI
+import pandas as pd
+from pydantic import BaseModel
+from typing import Dict, Any, Optional
+
+from ape.api import QueryAPI, QueryType
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
+from ape.api.query import BlockQuery, _BaseQuery
 
 
 def get_columns_from_item(query: _BaseQuery, item: BaseModel) -> Dict[str, Any]:
