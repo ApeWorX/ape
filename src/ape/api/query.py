@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import BaseModel, NonNegativeInt, root_validator, validator
+from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator, validator
 
 from ape.types import AddressType
 from ape.utils import BaseInterfaceModel, abstractmethod
@@ -45,6 +45,7 @@ class _BaseQuery(BaseModel):
 class _BaseBlockQuery(_BaseQuery):
     start_block: NonNegativeInt = 0
     stop_block: NonNegativeInt
+    step: PositiveInt = 1
 
     @root_validator(pre=True)
     def check_start_block_before_stop_block(cls, values):

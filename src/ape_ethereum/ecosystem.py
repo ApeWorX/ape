@@ -356,7 +356,7 @@ class Ethereum(EcosystemAPI):
                     zip(abi_data.names, decoded_log_data),
                 )
             )
-            yield ContractLog(
+            yield ContractLog(  # type: ignore
                 name=abi.name,
                 index=log["logIndex"],
                 event_arguments=event_args,
