@@ -191,7 +191,7 @@ class BlockContainer(BaseManager):
         results = self.query("*", start_block=start, stop_block=stop - 1, step=step)  # type: ignore
 
         for _, row in results.iterrows():
-            yield self.provider.network.ecosystem.decode_block(dict(row.to_dict()))
+            yield self.provider.network.ecosystem.decode_block(dict(row.to_dict()))  # type: ignore
 
     def poll_blocks(
         self,
