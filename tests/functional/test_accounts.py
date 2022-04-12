@@ -1,8 +1,29 @@
+import json
+
 import pytest
 from eth_account.messages import encode_defunct
 
+import ape
 from ape import convert
 from ape.exceptions import AccountsError, ContractLogicError, TransactionError
+
+ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
+
+
+@pytest.fixture
+def temp_ape_account(keyparams, temp_accounts_path):
+    test_keyfile_path = temp_accounts_path / f"{ALIAS}.json"
+
+    if test_keyfile_path.exists():
+        # Corrupted from a previous test
+        test_keyfile_path.unlink()
+
+    test_keyfile_path.write_text(json.dumps(keyparams))
+
+    yield ape.accounts.load(ALIAS)
+
+    if test_keyfile_path.exists():
+        test_keyfile_path.unlink()
 
 
 def test_sign_message(test_accounts):
@@ -75,10 +96,25 @@ def test_send_transaction_sets_defaults(sender, receiver):
     assert receipt.required_confirmations == 0
 
 
-def test_get_accounts(test_accounts):
+def test_accounts_splice_access(test_accounts):
     a, b = test_accounts[:2]
     assert a == test_accounts[0]
     assert b == test_accounts[1]
     c = test_accounts[-1]
     assert c == test_accounts[len(test_accounts) - 1]
     assert len(test_accounts[::2]) == len(test_accounts) / 2
+
+
+def test_accounts_address_access(test_accounts, accounts):
+    assert accounts[test_accounts[0].address] == test_accounts[0]
+
+
+def test_accounts_contains(accounts, test_accounts):
+    assert test_accounts[0].address in accounts
+
+
+def test_autosign(temp_ape_account):
+    temp_ape_account.set_autosign(True, passphrase="a")
+    message = encode_defunct(text="Hello Apes!")
+    signature = temp_ape_account.sign_message(message)
+    assert temp_ape_account.check_signature(message, signature)

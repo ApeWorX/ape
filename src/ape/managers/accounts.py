@@ -1,6 +1,12 @@
 from typing import Dict, Iterator, List, Type
 
-from ape.api.accounts import AccountAPI, AccountContainerAPI, ImpersonatedAccount, TestAccountAPI
+from ape.api.accounts import (
+    AccountAPI,
+    AccountContainerAPI,
+    ImpersonatedAccount,
+    TestAccountAPI,
+    TestAccountContainerAPI,
+)
 from ape.types import AddressType
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
@@ -9,13 +15,20 @@ from .base import BaseManager
 
 class TestAccountManager(list, ManagerAccessMixin):
     @property
-    def accounts(self) -> Iterator[AccountAPI]:
-        for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
-            if not issubclass(account_type, TestAccountAPI):
-                continue
+    def containers(self) -> Dict[str, TestAccountContainerAPI]:
+        containers = {}
+        account_types = [
+            t for t in self.plugin_manager.account_types if issubclass(t[1][1], TestAccountAPI)
+        ]
+        for plugin_name, (container_type, account_type) in account_types:
+            # Pydantic validation won't allow passing None for data_folder/required attr
+            containers[plugin_name] = container_type(data_folder="", account_type=account_type)
 
-            # pydantic validation won't allow passing None for data_folder/required attr
-            container = container_type(data_folder="", account_type=account_type)
+        return containers
+
+    @property
+    def accounts(self) -> Iterator[AccountAPI]:
+        for container in self.containers.values():
             for account in container.accounts:
                 yield account
 
@@ -72,6 +85,9 @@ class TestAccountManager(list, ManagerAccessMixin):
             raise IndexError(f"No account with address '{account_id}'.")
 
         return ImpersonatedAccount(raw_address=account_id)
+
+    def __contains__(self, address: AddressType) -> bool:  # type: ignore
+        return any(address in container for container in self.containers.values())
 
 
 class AccountManager(BaseManager):
@@ -287,4 +303,7 @@ class AccountManager(BaseManager):
             bool: ``True`` when the given address is found.
         """
 
-        return any(address in container for container in self.containers.values())
+        return (
+            any(address in container for container in self.containers.values())
+            or address in self.test_accounts
+        )
