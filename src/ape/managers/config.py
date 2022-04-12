@@ -43,6 +43,7 @@ class DeploymentConfigCollection(dict):
                             f"Missing 'address' field in deployment "
                             f"(ecosystem={ecosystem_name}, network={network_name})"
                         )
+                        continue
 
                     address = deployment["address"]
                     if isinstance(address, int):
