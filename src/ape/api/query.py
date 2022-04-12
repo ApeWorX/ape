@@ -45,6 +45,7 @@ class _BaseQuery(BaseModel):
 class _BaseBlockQuery(_BaseQuery):
     start_block: NonNegativeInt = 0
     stop_block: NonNegativeInt
+    step: NonNegativeInt = 1
 
     @root_validator(pre=True)
     def check_start_block_before_stop_block(cls, values):
