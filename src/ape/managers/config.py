@@ -30,10 +30,12 @@ class DeploymentConfigCollection(dict):
         for ecosystem_name, networks in data.items():
             if ecosystem_name not in valid_ecosystem_names:
                 logger.warning(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
+                continue
 
             for network_name, contract_deployments in networks.items():
                 if network_name not in valid_network_names:
                     logger.warning(f"Invalid network '{network_name}' in deployments config.")
+                    continue
 
                 for deployment in [d for d in contract_deployments]:
                     if "address" not in deployment:
