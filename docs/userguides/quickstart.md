@@ -96,13 +96,6 @@ sudo rm -rf **\~/.solcx**
 sudo rm -rf **\~/.vvm**
 ```
 
-If you want to deploy or test on a network, you can use any of the ape network plugins.
-Please read and install dependencies: 
--   [ape-alchemy](https://github.com/ApeWorX/ape-alchemy)
--   [ape-hardhat](https://github.com/ApeWorX/ape-hardhat)
--   [ape-infura](https://github.com/ApeWorX/ape-infura)
--   [ape-starknet](https://github.com/ApeWorX/ape-starknet)
-
 ## Overview
 
 For more indepth information about the project please look at the [projects](docs/userguides/projects.md)
@@ -116,6 +109,12 @@ project              # The root project directory
 ├── tests/           # Project tests, ran using the 'ape test' command
 ├── scripts/         # Project scripts, such as deploy scripts, ran using the 'ape run <name>' command
 └── ape-config.yaml  # The ape project configuration file
+```
+
+Use `ape init` to initialize your ape project folders. Visit [userguide project](~/userguide/project.md) for more information.  
+
+```bash
+ape init
 ```
 
 ## Enviroment Variables:
