@@ -33,7 +33,6 @@ class DefaultQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> pd.DataFrame:
-
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
     @perform_query.register
@@ -42,7 +41,7 @@ class DefaultQueryProvider(QueryAPI):
             self.provider.get_block,
             # NOTE: the range stop block is a non-inclusive stop.
             #       Where as the query method is an inclusive stop.
-            range(query.start_block, query.stop_block + 1),
+            range(query.start_block, query.stop_block + 1, query.step),
         )
         block_dicts_iter = map(partial(get_columns_from_item, query), blocks_iter)
         return pd.DataFrame(columns=query.columns, data=block_dicts_iter)

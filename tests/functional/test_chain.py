@@ -111,6 +111,13 @@ def test_blocks_range_too_high_stop(chain_at_block_5):
     )
 
 
+def test_block_range_with_step(chain_at_block_5):
+    blocks = [b for b in chain_at_block_5.blocks.range(3, step=2)]
+    assert len(blocks) == 2
+    assert blocks[0].number == 0
+    assert blocks[1].number == 2
+
+
 def test_set_pending_timestamp(chain):
     start_timestamp = chain.pending_timestamp
     chain.pending_timestamp += 3600

@@ -10,7 +10,19 @@ from collections import namedtuple
 from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Mapping, Optional, Set, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Pattern,
+    Set,
+    Union,
+    cast,
+)
 
 import pygit2  # type: ignore
 import requests
@@ -27,7 +39,7 @@ from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
 from pydantic import BaseModel
 from pygit2 import Repository as GitRepository
-from tqdm import tqdm  # type: ignore
+from tqdm.auto import tqdm  # type: ignore
 
 from ape.exceptions import CompilerError, ProjectError, ProviderNotConnectedError
 from ape.logging import logger
@@ -370,7 +382,7 @@ def stream_response(download_url: str, progress_bar_description: str = "Download
     response.raise_for_status()
 
     total_size = int(response.headers.get("content-length", 0))
-    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
+    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True, leave=False)
     progress_bar.set_description(progress_bar_description)
     content = bytes()
     for data in response.iter_content(1024, decode_unicode=True):
@@ -483,7 +495,9 @@ class GithubClient:
         logger.info(f"Cloning branch '{branch}' from '{repo.name}'.")
 
         class GitRemoteCallbacks(pygit2.RemoteCallbacks):
-            PERCENTAGE_PATTERN = r"[1-9]{1,2}% \([1-9]*/[1-9]*\)"  # e.g. '75% (324/432)'
+            percentage_pattern = re.compile(
+                r"[1-9]{1,2}% \([1-9]*/[1-9]*\)"
+            )  # e.g. '75% (324/432)'
             total_objects: int = 0
             current_objects_cloned: int = 0
             _progress_bar = None
@@ -497,7 +511,7 @@ class GithubClient:
 
                 progress_str = string.split(expected_prefix)[-1].strip()
 
-                if not re.match(self.PERCENTAGE_PATTERN, progress_str):
+                if not self.percentage_pattern.match(progress_str):
                     return None
 
                 progress_parts = progress_str.split(" ")
@@ -566,7 +580,9 @@ class GithubClient:
 github_client = GithubClient()
 
 
-def get_all_files_in_directory(path: Path) -> List[Path]:
+def get_all_files_in_directory(
+    path: Path, pattern: Optional[Union[Pattern, str]] = None
+) -> List[Path]:
     """
     Returns all the files in a directory structure.
 
@@ -580,6 +596,8 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
 
     Args:
         path (pathlib.Path): A directory containing files of interest.
+        pattern (Optional[Union[Pattern, str]]): Optionally provide a regex
+          pattern to match.
 
     Returns:
         List[pathlib.Path]: A list of files in the given directory.
@@ -587,8 +605,16 @@ def get_all_files_in_directory(path: Path) -> List[Path]:
     if not path.exists():
         return []
 
+    if isinstance(pattern, str):
+        pattern = re.compile(pattern)
+
     if path.is_dir():
-        return [p for p in list(path.rglob("*.*")) if not p.is_dir() and p.exists()]
+        all_files = [p for p in list(path.rglob("*.*")) if not p.is_dir() and p.exists()]
+
+        if pattern:
+            return [f for f in all_files if pattern.match(f.name)]
+
+        return all_files
 
     return [path]
 

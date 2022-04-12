@@ -1,4 +1,7 @@
 dependencies:
-  - name: __test_dependency__
-    local: ./dependency
+  - name: __test_dependency_a__
+    local: ./dependency_a
     contracts_folder: sources
+
+  - name: __test_dependency_b__
+    local: ./dependency_b
