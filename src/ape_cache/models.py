@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.sql import func
 
-from base import Base
+from .base import Base
 
 
 class Blocks(Base):

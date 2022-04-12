@@ -107,6 +107,7 @@ setup(
         "pytest11": ["ape_test=ape.pytest.plugin"],
         "ape_cli_subcommands": [
             "ape_accounts=ape_accounts._cli:cli",
+            "ape_cache=ape_cache._cli:cli",
             "ape_compile=ape_compile._cli:cli",
             "ape_console=ape_console._cli:cli",
             "ape_plugins=ape_plugins._cli:cli",
