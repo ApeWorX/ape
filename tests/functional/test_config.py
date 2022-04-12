@@ -27,4 +27,4 @@ def test_integer_deployment_addresses():
 def test_bad_value_in_deployments(ecosystems, networks, err_part, caplog):
     with caplog.at_level(logging.WARNING):
         DeploymentConfigCollection(DEPLOYMENTS, ecosystems, networks)
-        assert "Invalid ecosystem 'ethereum' in deployments config." in caplog.records[0].message
+        assert f"Invalid {err_part}" in caplog.records[0].message
