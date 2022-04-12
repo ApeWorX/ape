@@ -21,7 +21,7 @@ def deploy():
     return account.deploy(project.MyContract)
     
 ```
-include information about how to feed arguments into transactions / deployment constructor transaction
+<!-- include information about how to feed arguments into transactions / deployment constructor transaction -->
 
 ## Dynamic-Fee Transactions
 

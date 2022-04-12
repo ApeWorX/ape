@@ -101,16 +101,6 @@ sudo rm -rf **\~/.vvm**
 For more indepth information about the project please look at the [projects](docs/userguides/projects.md)
 It explains the purpose of each folder and how to use them effectively.
 
-The ApeWorx project folder hierarchy:
-
-```
-project              # The root project directory
-├── contracts/       # Project source files, such as '.sol' or '.vy' files
-├── tests/           # Project tests, ran using the 'ape test' command
-├── scripts/         # Project scripts, such as deploy scripts, ran using the 'ape run <name>' command
-└── ape-config.yaml  # The ape project configuration file
-```
-
 Use `ape init` to initialize your ape project folders. Visit [userguide project](~/userguide/project.md) for more information.  
 
 ```bash
@@ -119,7 +109,7 @@ ape init
 
 ## Enviroment Variables:
 
-Environment Variables are used to help connect you to your files or ecosystems outside of ApeWorx.
+Environment Variables are used to help connect you to your files or ecosystems outside of ApeWorX.
 
 Please setup environment variables (where applicable) and follow the latest instructions from the 3rd party:
 
@@ -153,12 +143,6 @@ Use `-h` to list all the commands.
 
 ```bash
 ape -h
-```
-
-Use `ape init` to initialize your ape project folders. Visit [userguide project](~/userguide/project.md) for more information.  
-
-```bash
-ape init
 ```
 
 You can import or generate accounts.

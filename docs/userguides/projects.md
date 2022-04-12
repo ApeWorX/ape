@@ -1,6 +1,6 @@
 # Developing Projects with Ape
 
-Use `ape` to create blockchain projects. A common project structure looks like this:
+Use `ape init` to create your project. A common project structure looks like this:
 
 ```
 project                             # The root project directory
@@ -8,8 +8,8 @@ project                             # The root project directory
     └── smart_contract_example.sol  # Sample of a smart contract
 ├── tests/                          # Project tests, ran using the 'ape test' command
     └── test_sample.py              # Sample of a test to run against your sample contract
-├── scripts/                        # Project scripts, such as deploy scripts, ran using the 'ape run <name>' command
-    └── deploy_sample.py            # Sample script to automate a specification of an ape project
+├── scripts/                        # Project scripts, such as deploy scripts, ran using the 'ape run   <`name>' command
+    └── deploy.py                   # Sample script to automate a deployment of an ape project
 └── ape-config.yaml                 # The ape project configuration file
 ```
 
@@ -105,7 +105,7 @@ ape console --network ::hardhat
 ## Scripts
 
 The scripts folder contains project automation scripts, such as deploy scripts, as well as other executable jobs, such as running simulations.
-For example you should keep a deployment script here.
+For example you would write and run a deployment script here.
 
 You can write scripts that run using the `ape run` command. The `ape run` command will register and run Python
 files defined under the `scripts/` directory that do not start with an `_` underscore. If the scripts take
@@ -122,8 +122,8 @@ installed, giving you more flexibility in how you define your scripts.
 ## Testing
 
 
-Use tests to verify your project. Follow this guide to learn more about testing using Ape framework.
-[testing](docs/userguides/testing.md)
+Use tests to verify your project. Testing is a complex topic, learn more about testing using Ape framework
+[here](docs/userguides/testing.md)
 
 You can test your project using the `ape test` command. The `ape test` command comes with the core-plugin `ape-test`.
 The `ape-test` plugin extends the popular python testing framework
