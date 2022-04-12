@@ -10,10 +10,11 @@ class Blocks(Base):
     gas_data = Column(String)
     consensus_data: Column(String)
     hash = Column(String, primary_key=True, index=True)
+    chain_id = Column(Integer, nullable=False)
     number = Column(Integer, nullable=False)
     parent_hash = Column(String)
     size = Column(Integer)
-    timestamp = Column(DateTime, DateTime(timezone=True), server_default=func.now(), index=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
 
 class Transactions(Base):
@@ -33,4 +34,5 @@ class ContractEvents(Base):
     contract = Column(String, nullable=False)
     event_data = Column(String, nullable=False)
     transaction_hash = Column(String, ForeignKey("transactions.hash", ondelete="CASCADE"), nullable=False)
+    chain_id = Column(Integer, nullable=False)
     event_id = Column(String, nullable=False)
