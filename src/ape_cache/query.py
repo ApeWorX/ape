@@ -13,28 +13,42 @@ that databases, else go to provider to get raw data
 
 Research the database schema
 """
-from ape.managers.query import DefaultQueryProvider
+from ape.managers.query import QueryAPI
+from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 
-class QueryManager(DefaultQueryProvider):
+def get_columns_from_item(query: _BaseQuery, item: BaseModel) -> Dict[str, Any]:
+    return {k: v for k, v in item.dict().items() if k in query.columns}
 
-    def __init__(self):
-        self.db = get_db()
 
-    def does_query_exist(self):
-        """
-        SQLAlchemy ORM to SQLite database
-        Checks for exact query
-        """
+class CacheQueryProvider(QueryAPI):
+    """
+    Default implementation of the ape.api.query.QueryAPI
+    Allows for the query of blockchain data using connected provider
+    """
 
-    def query_cache(self):
-        """
-        if query exists
-        query the cache database
-        """
+    @singledispatchmethod
+    def estimate_query(self, query: QueryType) -> Optional[int]:
 
-    def query_provider(self):
-        """
-        if query does not exist
-        query the provider
-        """
+        return None  # can't handle this query
+
+    @estimate_query.register
+    def estimate_block_query(self, query: BlockQuery) -> Optional[int]:
+        # NOTE: Very loose estimate of 100ms per block
+        return (query.stop_block - query.start_block) * 100
+
+    @singledispatchmethod
+    def perform_query(self, query: QueryType) -> pd.DataFrame:
+
+        raise QueryEngineError(f"Cannot handle '{type(query)}'.")
+
+    @perform_query.register
+    def perform_block_query(self, query: BlockQuery) -> pd.DataFrame:
+        blocks_iter = map(
+            self.provider.get_block,
+            # NOTE: the range stop block is a non-inclusive stop.
+            #       Where as the query method is an inclusive stop.
+            range(query.start_block, query.stop_block + 1),
+        )
+        block_dicts_iter = map(partial(get_columns_from_item, query), blocks_iter)
+        return pd.DataFrame(columns=query.columns, data=block_dicts_iter)
