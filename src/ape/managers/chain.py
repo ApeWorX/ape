@@ -91,6 +91,7 @@ class BlockContainer(BaseManager):
         *columns: List[str],
         start_block: int = 0,
         stop_block: Optional[int] = None,
+        step: int = 1,
         engine_to_use: Optional[str] = None,
     ) -> pd.DataFrame:
         """
@@ -109,6 +110,8 @@ class BlockContainer(BaseManager):
               query. Defaults to 0.
             stop_block (Optional[int]): The last block, by number, to include
               in the query. Defaults to the latest block.
+            step (int): The number of blocks to iterate between block numbers.
+              Defaults to ``1``.
             engine_to_use (Optional[str]): query engine to use, bypasses query
               engine selection algorithm.
 
@@ -129,6 +132,7 @@ class BlockContainer(BaseManager):
             columns=columns,
             start_block=start_block,
             stop_block=stop_block,
+            step=step,
             engine_to_use=engine_to_use,
         )
 
@@ -184,7 +188,8 @@ class BlockContainer(BaseManager):
 
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
-        results = self.query("*", start_block=start, stop_block=stop - 1)  # type: ignore
+        results = self.query("*", start_block=start, stop_block=stop - 1, step=step)  # type: ignore
+
         for _, row in results.iterrows():
             yield self.provider.network.ecosystem.decode_block(dict(row.to_dict()))  # type: ignore
 
