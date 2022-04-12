@@ -18,6 +18,9 @@ from ape.managers.query import DefaultQueryProvider
 
 class QueryManager(DefaultQueryProvider):
 
+    def __init__(self):
+        self.db = get_db()
+
     def does_query_exist(self):
         """
         SQLAlchemy ORM to SQLite database

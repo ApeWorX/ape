@@ -1,4 +1,5 @@
 import click
+import pandas as pd
 from sqlalchemy.orm import Session
 
 from ape_cache.db import engine
@@ -17,5 +18,11 @@ def init():
     models.Base.metadata.create_all(bind=engine)
 
 @cli.command(short_help="")
-def migrate():
-    db = get_db()
+def query_blocks():
+    with get_db() as db:
+        query = db.query(models.Blocks)
+        return pd.read_sql(query.statement, db.connection())
+
+@cli.command(short_help="")
+def migrate(db: Session = get_db):
+    pass
