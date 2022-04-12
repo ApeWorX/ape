@@ -107,7 +107,10 @@ class CompilerManager(BaseManager):
             for contract_type in compiled_contracts:
 
                 if contract_type.name in contract_types_dict:
-                    raise CompilerError("ContractType collision across compiler plugins.")
+                    raise CompilerError(
+                        "ContractType collision across compiler plugins "
+                        f"with contract name: {contract_type.name}"
+                    )
 
                 contract_types_dict[contract_type.name] = contract_type
 
