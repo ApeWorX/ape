@@ -85,7 +85,7 @@ class KeyfileAccount(AccountAPI):
 
     def unlock(self, passphrase: Optional[str] = None):
         passphrase = passphrase or self._prompt_for_passphrase(
-            f"Enter Passphrase to permanently unlock '{self.alias}'"
+            f"Enter passphrase to permanently unlock '{self.alias}'"
         )
         self.__cached_key = self.__decrypt_keyfile(passphrase)
         self.locked = False
@@ -102,7 +102,7 @@ class KeyfileAccount(AccountAPI):
 
     def delete(self):
         passphrase = self._prompt_for_passphrase(
-            f"Enter Passphrase to delete '{self.alias}'", default=""
+            f"Enter passphrase to delete '{self.alias}'", default=""
         )
         self.__decrypt_keyfile(passphrase)
         self.keyfile_path.unlink()

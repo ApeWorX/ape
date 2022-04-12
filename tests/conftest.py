@@ -1,19 +1,14 @@
-import json
+import shutil
 from pathlib import Path
 from tempfile import mkdtemp
 
 import pytest
-from eth_account import Account
 
 import ape
 
 # NOTE: Ensure that we don't use local paths for these
 ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
 ape.config.PROJECT_FOLDER = Path(mkdtemp()).resolve()
-
-ALIAS = "test"
-PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
-ADDRESS = "7e5f4552091a69125d5dfcb7b8c2659029395bdf"
 
 
 @pytest.fixture(scope="session")
@@ -65,7 +60,7 @@ def project(config):
 def keyparams():
     # NOTE: password is 'a'
     return {
-        "address": ADDRESS,
+        "address": "7e5f4552091a69125d5dfcb7b8c2659029395bdf",
         "crypto": {
             "cipher": "aes-128-ctr",
             "cipherparams": {"iv": "7bc492fb5dca4fe80fd47645b2aad0ff"},
@@ -85,34 +80,12 @@ def keyparams():
     }
 
 
-@pytest.fixture(autouse=True)
-def temp_keyfile_path(config):
-    temp_accounts_dir = Path(config.DATA_FOLDER) / "accounts"
-    temp_accounts_dir.mkdir(exist_ok=True, parents=True)
-    test_keyfile_path = temp_accounts_dir / f"{ALIAS}.json"
-
-    if test_keyfile_path.exists():
-        # Corrupted from a previous test
-        test_keyfile_path.unlink()
-
-    return test_keyfile_path
-
-
 @pytest.fixture
-def temp_keyfile(temp_keyfile_path, keyparams):
-    temp_keyfile_path.write_text(json.dumps(keyparams))
+def temp_accounts_path(config):
+    path = Path(config.DATA_FOLDER) / "accounts"
+    path.mkdir(exist_ok=True, parents=True)
 
-    yield temp_keyfile_path
+    yield path
 
-    if temp_keyfile_path.exists():
-        temp_keyfile_path.unlink()
-
-
-@pytest.fixture
-def temp_eth_account(temp_keyfile):
-    return Account.from_key(bytes.fromhex(PRIVATE_KEY))
-
-
-@pytest.fixture
-def temp_ape_account(temp_keyfile, accounts):
-    return accounts[ADDRESS]
+    if path.exists():
+        shutil.rmtree(path)
