@@ -17,11 +17,11 @@ def cli():
 def init():
     models.Base.metadata.create_all(bind=engine)
 
-@cli.command(short_help="")
-def query_blocks():
+@cli.command(short_help="Call and print a debug SQL Statement to the cache db")
+@click.argument("sql")
+def query(sql):
     with get_db() as db:
-        query = db.query(models.Blocks)
-        return pd.read_sql(query.statement, db.connection())
+        click.echo(pd.DataFrame(db.execute(sql)))
 
 @cli.command(short_help="")
 def migrate(db: Session = get_db):
