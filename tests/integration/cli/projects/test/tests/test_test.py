@@ -12,8 +12,10 @@ def bob(accounts):
 
 
 @pytest.fixture(scope="module", autouse=True)
-def setup(alice, bob):
+def setup(alice, bob, chain):
+    assert chain.provider.get_block("latest").number == 0
     alice.transfer(bob, 10**18)
+    assert chain.provider.get_block("latest").number == 1
 
 
 def test_test():
