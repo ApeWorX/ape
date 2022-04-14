@@ -1,24 +1,22 @@
 """
-sub-class the QueryAPI
-move the default_query_provider here
-Some refactoring that has to be done
-
 2nd step:
 Third method added to QueryAPI (update_cache) defaults to doing nothing
 override QueryAPI.update_cache
 start pushing queries to be on_disk (sqlite)
 push the sqlite database to the data folder
 update the first two methods to first query the database, if exists, respond with data from
-that databases, else go to provider to get raw data
+that database, else go to provider to get raw data
 
 Research the database schema
 """
+from functools import partial
 import pandas as pd
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
 
 from ape.api import QueryAPI, QueryType
-from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
+from ape.exceptions import QueryEngineError
+from ape.utils import singledispatchmethod
 from ape.api.query import BlockQuery, _BaseQuery
 
 

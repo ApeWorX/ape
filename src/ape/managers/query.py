@@ -1,14 +1,11 @@
-from functools import partial
-from typing import Any, Dict, Optional
-
+from typing import Dict, Optional
 import pandas as pd
-from pydantic import BaseModel
 
 from ape.api import QueryAPI, QueryType
-from ape.api.query import BlockQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
+from ape_cache.query import CacheQueryProvider
 from ape.plugins import clean_plugin_name
-from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
+from ape.utils import ManagerAccessMixin, cached_property
 
 
 class QueryManager(ManagerAccessMixin):
@@ -33,7 +30,7 @@ class QueryManager(ManagerAccessMixin):
             dict[str, :class:`~ape.api.query.QueryAPI`]
         """
 
-        engines: Dict[str, QueryAPI] = {"__default__": DefaultQueryProvider()}
+        engines: Dict[str, QueryAPI] = {"__default__": CacheQueryProvider()}
 
         for plugin_name, (engine_class,) in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)
