@@ -3,7 +3,6 @@ import pandas as pd
 
 from ape.api import QueryAPI, QueryType
 from ape.exceptions import QueryEngineError
-from ape_cache.query import CacheQueryProvider
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property
 
@@ -30,9 +29,9 @@ class QueryManager(ManagerAccessMixin):
             dict[str, :class:`~ape.api.query.QueryAPI`]
         """
 
-        engines: Dict[str, QueryAPI] = {"__default__": CacheQueryProvider()}
+        engines: Dict[str, QueryAPI] = {}
 
-        for plugin_name, (engine_class,) in self.plugin_manager.query_engines:
+        for plugin_name, engine_class in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)
             engines[engine_name] = engine_class()
 
