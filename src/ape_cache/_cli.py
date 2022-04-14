@@ -1,6 +1,7 @@
+import os
+
 import click
 import pandas as pd
-from sqlalchemy.orm import Session
 
 from ape_cache.db import engine
 import ape_cache.models as models
@@ -26,6 +27,7 @@ def query(sql):
         click.echo(pd.DataFrame(db.execute(sql)))
 
 
-@cli.command(short_help="")
-def migrate():
-    pass
+@cli.command(short_help="Purges entire database")
+def purge():
+    os.remove("./query.db")
+    models.Base.metadata.create_all(bind=engine)
