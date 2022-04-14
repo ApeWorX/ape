@@ -61,6 +61,7 @@
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html#ape-console">Ape Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
@@ -72,6 +73,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -141,11 +143,12 @@ as we care about the contract instance. That is why the return value from
     <span class="k">return</span> <span class="n">account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
 </pre></div>
 </div>
+<!-- TODO include information about how to feed arguments into transactions / deployment constructor transaction -->
 </section>
 <section id="dynamic-fee-transactions">
 <h2>Dynamic-Fee Transactions<a class="headerlink" href="#dynamic-fee-transactions" title="Permalink to this headline"></a></h2>
 <p>Before <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>, all transactions used a <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>.
-After the London fork of Etheruem, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> got broken up into two values, <code class="docutils literal notranslate"><span class="pre">max_fee</span></code> and <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>.
+After the London fork of Ethereum, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> got broken up into two values, <code class="docutils literal notranslate"><span class="pre">max_fee</span></code> and <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">ape</span></code> framework supports both types of transactions. By default, transactions use the dynamic-fee model.
 Making contract calls without specifying any additional <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> will use a dynamic-fee transaction.</p>
 <p>Calling certain methods on a deployed-contract is one way to transact.</p>

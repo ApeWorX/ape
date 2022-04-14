@@ -28,7 +28,7 @@
   </script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="accounts" href="../commands/accounts.html" />
+    <link rel="next" title="Testing" href="testing.html" />
     <link rel="prev" title="Making Transactions" href="transactions.html" /> 
 </head>
 
@@ -61,6 +61,7 @@
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html#ape-console">Ape Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
@@ -73,6 +74,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -153,7 +155,7 @@ Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>: <sp
 </div>
 <section id="init-function">
 <h3>Init Function<a class="headerlink" href="#init-function" title="Permalink to this headline"></a></h3>
-<p>If you include a function named <code class="docutils literal notranslate"><span class="pre">ape_init_extras</span></code>, it will be executed with the symbols from the existing namespace being provided as keyword arguments.  This allows you to alter the scripts namespace using locals already included in the Ape namespace.  If you return a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, these values will be added to the console namespace.  For example, you could setup an initialized Web3.py object by using one from an existing Ape Provider.</p>
+<p>If you include a function named <code class="docutils literal notranslate"><span class="pre">ape_init_extras</span></code>, it will be executed with the symbols from the existing namespace being provided as keyword arguments.  This allows you to alter the scripts namespace using locals already included in the Ape namespace.  If you return a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, these values will be added to the console namespace.  For example, you could set up an initialized Web3.py object by using one from an existing Ape Provider.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">ape_init_extras</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;web3&quot;</span><span class="p">:</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">_web3</span><span class="p">}</span>
 </pre></div>
@@ -176,7 +178,7 @@ Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>: <sp
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="transactions.html" class="btn btn-neutral float-left" title="Making Transactions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../commands/accounts.html" class="btn btn-neutral float-right" title="accounts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="testing.html" class="btn btn-neutral float-right" title="Testing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -61,6 +61,7 @@
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html#ape-console">Ape Console</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Developing Projects with Ape</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#compiling-contracts">Compiling Contracts</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
@@ -68,24 +69,14 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#networks">Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scripts">Scripts</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#test-structure">Test Structure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#fixtures">Fixtures</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#accounts-fixture">accounts fixture</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#project-fixture">project fixture</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#test-pattern">Test Pattern</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#test-providers">Test Providers</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#test-interactive">Test Interactive</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -138,15 +129,18 @@
              
   <section id="developing-projects-with-ape">
 <h1>Developing Projects with Ape<a class="headerlink" href="#developing-projects-with-ape" title="Permalink to this headline"></a></h1>
-<p>Use <code class="docutils literal notranslate"><span class="pre">ape</span></code> to create blockchain projects. A common project structure looks like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>project              # The root project directory
-├── contracts/       # Project source files, such as &#39;.sol&#39; or &#39;.vy&#39; files
-├── tests/           # Project tests, ran using the &#39;ape test&#39; command
-├── scripts/         # Project scripts, such as deploy scripts, ran using the &#39;ape run &lt;name&gt;&#39; command
-└── ape-config.yaml  # The ape project configuration file
+<p>Use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">init</span></code> to create your project. A common project structure looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>project                             # The root project directory
+├── contracts/                      # Project source files, such as &#39;.sol&#39; or &#39;.vy&#39; files
+    └── smart_contract_example.sol  # Sample of a smart contract
+├── tests/                          # Project tests, ran using the &#39;ape test&#39; command
+    └── test_sample.py              # Sample of a test to run against your sample contract
+├── scripts/                        # Project scripts, such as deploy scripts, ran using the &#39;ape run   &lt;`name&gt;&#39; command
+    └── deploy.py                   # Sample script to automate a deployment of an ape project
+└── ape-config.yaml                 # The ape project configuration file
 </pre></div>
 </div>
-<p>See the <a class="reference external" href="config.md">Configuration guide</a> for a more detailed explanation of settings you can
+<p><a class="reference external" href="config.md">Configuration guide</a> for a more detailed explanation of settings you can
 use in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> files.</p>
 <section id="compiling-contracts">
 <h2>Compiling Contracts<a class="headerlink" href="#compiling-contracts" title="Permalink to this headline"></a></h2>
@@ -156,7 +150,7 @@ use in your <code class="docutils literal notranslate"><span class="pre">ape-con
 </div>
 <p>Your <code class="docutils literal notranslate"><span class="pre">project</span></code> contains all the “relevant” files, such as source files in the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory. The
 <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory is where compilers look for contracts to compile. File extensions found within the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code>
-directory determine which compiler plugin <code class="docutils literal notranslate"><span class="pre">ape</span></code> uses. Make sure to install the compiler plugins you need if they are
+directory determines which compiler plugin <code class="docutils literal notranslate"><span class="pre">ape</span></code> uses. Make sure to install the compiler plugins you need if they are
 missing by adding them to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>’s <code class="docutils literal notranslate"><span class="pre">plugin</span></code> section, or manually adding via the following:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install solidity vyper
 </pre></div>
@@ -218,6 +212,7 @@ option:</p>
 </section>
 <section id="scripts">
 <h2>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline"></a></h2>
+<p>The scripts folder contains project automation scripts, such as deploy scripts, as well as other executable jobs, such as scripts for running simulations.</p>
 <p>You can write scripts that run using the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> command. The <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> command will register and run Python
 files defined under the <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> directory that do not start with an <code class="docutils literal notranslate"><span class="pre">_</span></code> underscore. If the scripts take
 advantage of utilities from our <a class="reference external" href="../methoddocs/cli.html#ape-cli"><code class="docutils literal notranslate"><span class="pre">ape.cli</span></code></a> submodule,
@@ -231,125 +226,11 @@ installed, giving you more flexibility in how you define your scripts.
 </section>
 <section id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline"></a></h2>
+<p>Use tests to verify your project. Testing is a complex topic, learn more about testing using Ape framework
+<a class="reference external" href="docs/userguides/testing.md">here</a></p>
 <p>You can test your project using the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> command. The <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> command comes with the core-plugin <code class="docutils literal notranslate"><span class="pre">ape-test</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">ape-test</span></code> plugin extends the popular python testing framework
 <a class="reference external" href="https://docs.pytest.org/en/6.2.x/contents.html">pytest</a>.</p>
-<section id="test-structure">
-<h3>Test Structure<a class="headerlink" href="#test-structure" title="Permalink to this headline"></a></h3>
-<p>Tests must be located in a project’s <code class="docutils literal notranslate"><span class="pre">tests/</span></code> directory. Each test file must start with <code class="docutils literal notranslate"><span class="pre">test_</span></code> and have the <code class="docutils literal notranslate"><span class="pre">.py</span></code>
-extension, such as <code class="docutils literal notranslate"><span class="pre">test_my_contract.py</span></code>. Each test method within the file must also start with <code class="docutils literal notranslate"><span class="pre">test_</span></code>. The following
-is an example test:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_add</span><span class="p">():</span>
-    <span class="k">assert</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span>
-</pre></div>
-</div>
-</section>
-<section id="fixtures">
-<h3>Fixtures<a class="headerlink" href="#fixtures" title="Permalink to this headline"></a></h3>
-<p>Fixtures are any type of re-usable instances of something with configurable scopes. <code class="docutils literal notranslate"><span class="pre">pytest</span></code> handles passing fixtures
-into each test method as test-time. You can define your own fixtures or use existing ones. The <code class="docutils literal notranslate"><span class="pre">ape-test</span></code> plugin comes
-with fixtures you will likely want to use:</p>
-<section id="accounts-fixture">
-<h4>accounts fixture<a class="headerlink" href="#accounts-fixture" title="Permalink to this headline"></a></h4>
-<p>You have access to test accounts. These accounts are automatically funded, and you can use them to transact in your
-tests. Access each <a class="reference external" href="../methoddocs/api.html?highlight=testaccount#ape.api.accounts.TestAccountAPI">test account</a> by
-index from the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
-    <span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">other</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>For code readability and sustainability, create your own fixtures using the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
-
-
-<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-<span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-
-<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-<span class="k">def</span> <span class="nf">other</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-
-<span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-    <span class="o">...</span>
-</pre></div>
-</div>
-<p>You can configure your accounts by changing the <code class="docutils literal notranslate"><span class="pre">mnemonic</span></code> or <code class="docutils literal notranslate"><span class="pre">number_of_accounts</span></code> settings in the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of
-your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span><span class="w"></span>
-<span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
-</pre></div>
-</div>
-<p>If you are using a fork-provider, such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">Hardhat</a>, you can use impersonated accounts by accessing random addresses off the fixture:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-<span class="k">def</span> <span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="s2">&quot;0xab5801a7d398351b8be11c439e05c5b3259aec9b&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-</section>
-<section id="project-fixture">
-<h4>project fixture<a class="headerlink" href="#project-fixture" title="Permalink to this headline"></a></h4>
-<p>You also have access to the <code class="docutils literal notranslate"><span class="pre">project</span></code> you are testing. You will need this to deploy your contracts in your tests.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
-
-
-<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-<span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-
-<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-<span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
-    <span class="c1"># ^ use the &#39;project&#39; fixture from the &#39;ape-test&#39; plugin</span>
-    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-</section>
-<section id="test-pattern">
-<h3>Test Pattern<a class="headerlink" href="#test-pattern" title="Permalink to this headline"></a></h3>
-<p>Tests are generally divisible into three parts:</p>
-<ol class="arabic simple">
-<li><p>Set-up</p></li>
-<li><p>Invocation</p></li>
-<li><p>Assertion</p></li>
-</ol>
-<p>In the example above, we created a fixture that deploys our smart-contract. This is an example of a ‘setup’ phase.
-Next, we need to call a method on our contract. Let’s assume there is a method called <code class="docutils literal notranslate"><span class="pre">is_owner()</span></code> that returns <code class="docutils literal notranslate"><span class="pre">True</span></code>
-when it is the owner of the contract making the transaction.</p>
-<p>This is an example of how that test may look:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_is_owner</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-    <span class="n">owner_is_owner</span> <span class="o">=</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">foo</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">owner_is_owner</span>
-
-    <span class="n">other_is_owner</span> <span class="o">=</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">foo</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="ow">not</span> <span class="n">other_is_owner</span>
-</pre></div>
-</div>
-</section>
-<section id="test-providers">
-<h3>Test Providers<a class="headerlink" href="#test-providers" title="Permalink to this headline"></a></h3>
-<p>Out-of-the-box, your tests run using the <code class="docutils literal notranslate"><span class="pre">eth-tester</span></code> provider, which comes bundled with ape. If you have <code class="docutils literal notranslate"><span class="pre">geth</span></code>
-installed, you can use the <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> plugin that also comes with ape.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --network ethereum:local:geth
-</pre></div>
-</div>
-<p>Each testing plugin should work the same way. You will have access to the same test accounts.</p>
-<p>Another option for testing providers is the <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat plugin</a>, which does
-not come with <code class="docutils literal notranslate"><span class="pre">ape</span></code> but can be installed by including it in the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file or
-manually installing it using the command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install hardhat
-</pre></div>
-</div>
-</section>
-<section id="test-interactive">
-<h3>Test Interactive<a class="headerlink" href="#test-interactive" title="Permalink to this headline"></a></h3>
-<p>Use ape test <code class="docutils literal notranslate"><span class="pre">-I</span></code> to open the interactive mode at the point of exception. This allows the user to inspect the point of failure in your tests.</p>
-</section>
 </section>
 </section>
 
