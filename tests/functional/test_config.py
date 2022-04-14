@@ -1,6 +1,7 @@
+import logging
+
 import pytest
 
-from ape.exceptions import ConfigError
 from ape.managers.config import DeploymentConfigCollection
 
 DEPLOYMENTS = {
@@ -23,8 +24,7 @@ def test_integer_deployment_addresses():
     "ecosystems,networks,err_part",
     [(["fantom"], ["mainnet"], "ecosystem"), (["ethereum"], ["local"], "network")],
 )
-def test_bad_value_in_deployments(ecosystems, networks, err_part):
-    with pytest.raises(ConfigError) as err:
+def test_bad_value_in_deployments(ecosystems, networks, err_part, caplog):
+    with caplog.at_level(logging.WARNING):
         DeploymentConfigCollection(DEPLOYMENTS, ecosystems, networks)
-
-    assert f"Invalid {err_part}" in str(err.value)
+        assert f"Invalid {err_part}" in caplog.records[0].message
