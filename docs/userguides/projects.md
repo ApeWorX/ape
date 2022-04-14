@@ -104,8 +104,7 @@ ape console --network ::hardhat
 
 ## Scripts
 
-The scripts folder contains project automation scripts, such as deploy scripts, as well as other executable jobs, such as running simulations.
-For example you would write and run a deployment script here.
+The scripts folder contains project automation scripts, such as deploy scripts, as well as other executable jobs, such as scripts for running simulations.
 
 You can write scripts that run using the `ape run` command. The `ape run` command will register and run Python
 files defined under the `scripts/` directory that do not start with an `_` underscore. If the scripts take

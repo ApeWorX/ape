@@ -98,7 +98,7 @@ sudo rm -rf **\~/.vvm**
 
 ## Overview
 
-For more in depth information about the project please look at the [projects](docs/userguides/projects.md)
+For more in-depth information about the project please look at the [projects](~/userguides/project.md)
 It explains the purpose of each folder and how to use them effectively.
 
 Use `ape init` to initialize your ape project folders. Visit [userguide project](~/userguide/project.md) for more information.  

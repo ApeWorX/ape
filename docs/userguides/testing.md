@@ -2,7 +2,7 @@
 
 Testing an ape project is important and easy.
 
-### Test Structure
+## Test Structure
 
 Tests must be located in a project's `tests/` directory. Each **test file** must start with `test_` and have the `.py`
 extension, such as `test_my_contract.py`. Each **test method** within the file must also start with `test_`. The following
@@ -12,7 +12,7 @@ is an example test:
 def test_add():
     assert 1 + 1 == 2
 ```
-### Test Pattern
+## Test Pattern
 
 Tests are generally divisible into three parts:
 
@@ -35,7 +35,7 @@ def test_is_owner(my_contract, owner, other):
     assert not other_is_owner
 ```
 
-### Fixtures
+## Fixtures
 
 Fixtures are any type of reusable instances of something with configurable scopes. `pytest` handles passing fixtures
 into each test method as test-time. To learn more about [fixtures](https://docs.pytest.org/en/7.1.x/explanation/fixtures.html)
@@ -49,7 +49,7 @@ conftest.py is used to import external plugins or modules. By defining the follo
 You can define your own fixtures or use existing ones. The `ape-test` plugin comes
 with fixtures you will likely want to use:
 
-#### accounts fixture
+### accounts fixture
 
 You have access to test accounts. These accounts are automatically funded, and you can use them to transact in your
 tests. Access each [test account](../methoddocs/api.html?highlight=testaccount#ape.api.accounts.TestAccountAPI) by
@@ -98,7 +98,7 @@ def vitalik(accounts):
     return accounts["0xab5801a7d398351b8be11c439e05c5b3259aec9b"]
 ```
 
-#### project fixture
+### project fixture
 
 You also have access to the `project` you are testing. You will need this to deploy your contracts in your tests.
 
@@ -117,7 +117,7 @@ def my_contract(project, owner):
     return owner.deploy(project.MyContract)
 ```
 
-### Ape testing commands
+## Ape testing commands
 
 ```bash
 ape test
@@ -129,13 +129,13 @@ To run a particular test:
 ape test test_my_contract
 ```
 
-Use ape test ``-I`` to open the interactive mode at the point of exception. This allows the user to inspect the point of failure in your tests.
+Use ape test `-I` to open the interactive mode at the point of exception. This allows the user to inspect the point of failure in your tests.
 
 ```bash
 ape test test_my_contract -I -s
 ```
 
-### Test Providers
+## Test Providers
 
 Out-of-the-box, your tests run using the `eth-tester` provider, which comes bundled with ape. If you have `geth`
 installed, you can use the `ape-geth` plugin that also comes with ape.
@@ -154,9 +154,9 @@ manually installing it using the command:
 ape plugins install hardhat
 ```
 
-### Hot Testing Tips
+## Advanced Testing Tips
 
-If you want to samples of test and projects follow this link to [Ape Academy](https://github.com/ApeAcademy)
+If you want to use Samples test and projects follow this link to [Ape Academy](https://github.com/ApeAcademy)
 
 ```
 project                     # The root project directory
@@ -166,7 +166,6 @@ project                     # The root project directory
     └── test_mint.py        # A test file
 
 ```
-
 Here is a sample of test function from a sample [NFT](https://github.com/ApeAcademy/generative-nft)
 
 ```python
@@ -178,4 +177,3 @@ def test_account_balance(owner, receiver, buyers, nft)):
     expect = quantity
     assert actual == expect
 ```
-
