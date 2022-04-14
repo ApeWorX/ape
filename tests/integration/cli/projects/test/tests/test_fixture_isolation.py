@@ -18,10 +18,6 @@ def setup(alice, bob, chain):
     assert chain.provider.get_block("latest").number == 1
 
 
-def test_test():
-    assert True
-
-
 def test_isolation_first(alice, bob, chain):
     assert chain.provider.get_block("latest").number == 1
     assert bob.balance == 1_000_001 * 10**18
