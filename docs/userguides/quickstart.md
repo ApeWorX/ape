@@ -98,7 +98,7 @@ sudo rm -rf **\~/.vvm**
 
 ## Overview
 
-For more indepth information about the project please look at the [projects](docs/userguides/projects.md)
+For more in depth information about the project please look at the [projects](docs/userguides/projects.md)
 It explains the purpose of each folder and how to use them effectively.
 
 Use `ape init` to initialize your ape project folders. Visit [userguide project](~/userguide/project.md) for more information.  
@@ -107,13 +107,13 @@ Use `ape init` to initialize your ape project folders. Visit [userguide project]
 ape init
 ```
 
-## Enviroment Variables:
+## Environment Variables:
 
 Environment Variables are used to help connect you to your files or ecosystems outside of ApeWorX.
 
 Please setup environment variables (where applicable) and follow the latest instructions from the 3rd party:
 
-Example usecase:
+Example use case:
 
 ```bash
 # Used by the `ape-infura` plugin
@@ -199,7 +199,7 @@ Connect an IPython session through your favorite provider.
 ape console --network ethereum:mainnet:infura
 ```
 
-If you want to run specific files in a `scripts/` directory, you can do it with using the `ape run` command.
+If you want to run specific files in a `scripts/` directory, you can do it using the `ape run` command.
 
 ```bash
 # This command will run a file named deploy in the scripts/ directory

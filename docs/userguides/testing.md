@@ -37,12 +37,12 @@ def test_is_owner(my_contract, owner, other):
 
 ### Fixtures
 
-Fixtures are any type of re-usable instances of something with configurable scopes. `pytest` handles passing fixtures
+Fixtures are any type of reusable instances of something with configurable scopes. `pytest` handles passing fixtures
 into each test method as test-time. To learn more about [fixtures](https://docs.pytest.org/en/7.1.x/explanation/fixtures.html)
 
 Define fixtures for static data used by tests. This data can be accessed by all tests in the suite unless specified otherwise. This could be data as well as helpers of modules which will be passed to all tests.
 
-A commone place to define fixtures are in the **conftest.py** which should be saved under the test directory:
+A common place to define fixtures are in the **conftest.py** which should be saved under the test directory:
 
 conftest.py is used to import external plugins or modules. By defining the following global variable, pytest will load the module and make it available for its test.
 
@@ -160,7 +160,7 @@ If you want to samples of test and projects follow this link to [Ape Academy](ht
 
 ```
 project                     # The root project directory
-└── tests/                  # Project tests folder, ran using the 'ape test' command to run all test within the folder.
+└── tests/                  # Project tests folder, ran using the 'ape test' command to run all tests within the folder.
     └── conftest.py         # A file to define global variable for testing 
     └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use 'ape test test_accounts.py' command
     └── test_mint.py        # A test file
