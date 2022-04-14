@@ -83,7 +83,14 @@ class PytestApeRunner(ManagerAccessMixin):
                 capman.resume_global_capture()
 
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_protocol(self, item, nextitem):
+    def pytest_runtest_call(self, item):
+        """
+        By default, snapshot the chain before each test case is ran and restore the chain state
+        right after. This is done as close as possible to test execution, after fixtures have been
+        setup and fixture teardown.
+
+        https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_runtest_call
+        """
         snapshot_id = None
 
         # Try to snapshot if the provider supported it.
@@ -91,12 +98,11 @@ class PytestApeRunner(ManagerAccessMixin):
             snapshot_id = self.chain_manager.snapshot()
         except NotImplementedError:
             self._warn_for_unimplemented_snapshot()
-            pass
 
         yield
 
         # Try to revert to the state before the test began.
-        if snapshot_id:
+        if snapshot_id is not None:
             self.chain_manager.restore(snapshot_id)
 
     def _warn_for_unimplemented_snapshot(self):
