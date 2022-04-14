@@ -156,7 +156,7 @@ ape plugins install hardhat
 
 ## Advanced Testing Tips
 
-If you want to use Samples test and projects follow this link to [Ape Academy](https://github.com/ApeAcademy)
+If you want to use sample projects, follow this link to [Ape Academy](https://github.com/ApeAcademy).
 
 ```
 project                     # The root project directory
@@ -164,7 +164,6 @@ project                     # The root project directory
     └── conftest.py         # A file to define global variable for testing 
     └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use 'ape test test_accounts.py' command
     └── test_mint.py        # A test file
-
 ```
 Here is a sample of test function from a sample [NFT](https://github.com/ApeAcademy/generative-nft)
 

@@ -20,7 +20,7 @@ def deploy():
     account = accounts.load("MyAccount")
     return account.deploy(project.MyContract)
 ```
-<!-- include information about how to feed arguments into transactions / deployment constructor transaction -->
+<!-- TODO include information about how to feed arguments into transactions / deployment constructor transaction -->
 
 ## Dynamic-Fee Transactions
 
