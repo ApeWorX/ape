@@ -25,6 +25,11 @@ def pytest_addoption(parser):
         action="store_true",
         help="Open an interactive console each time a test fails",
     )
+    parser.addoption(
+        "--disable-isolation",
+        action="store_true",
+        help="Disable built-in test and fixture isolation",
+    )
 
     # NOTE: Other pytest plugins, such as hypothesis, should integrate with pytest separately
 
