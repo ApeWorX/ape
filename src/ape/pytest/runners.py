@@ -87,23 +87,27 @@ class PytestApeRunner(ManagerAccessMixin):
         """
         By default, snapshot the chain before each test case is ran and restore the chain state
         right after. This is done as close as possible to test execution, after fixtures have been
-        setup and fixture teardown.
+        setup and before fixture teardown.
 
         https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_runtest_call
         """
-        snapshot_id = None
+        if self.pytest_config.getoption("disable_isolation") is True:
+            # default isolation is disabled
+            yield
+        else:
+            snapshot_id = None
 
-        # Try to snapshot if the provider supported it.
-        try:
-            snapshot_id = self.chain_manager.snapshot()
-        except NotImplementedError:
-            self._warn_for_unimplemented_snapshot()
+            # Try to snapshot if the provider supported it.
+            try:
+                snapshot_id = self.chain_manager.snapshot()
+            except NotImplementedError:
+                self._warn_for_unimplemented_snapshot()
 
-        yield
+            yield
 
-        # Try to revert to the state before the test began.
-        if snapshot_id is not None:
-            self.chain_manager.restore(snapshot_id)
+            # Try to revert to the state before the test began.
+            if snapshot_id is not None:
+                self.chain_manager.restore(snapshot_id)
 
     def _warn_for_unimplemented_snapshot(self):
         if self._warned_for_missing_features:
