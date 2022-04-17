@@ -1,8 +1,8 @@
+import logging
 from typing import Dict
 
 import pytest
 
-from ape.exceptions import ConfigError
 from ape.managers.config import DeploymentConfigCollection
 
 
@@ -14,20 +14,18 @@ def test_integer_deployment_addresses(networks):
     assert config["ethereum"]["local"][0]["address"] == "0x0c25212c557d00024b7Ca3df3238683A35541354"
 
 
-def test_bad_ecosystem_in_deployments(networks):
-    deployments = _create_deployments(ecosystem_name="FAKE-ECOSYSTEM")
-    with pytest.raises(ConfigError) as err:
-        DeploymentConfigCollection(deployments, {"ethereum": networks.ethereum}, ["local"])
-
-    assert "Invalid ecosystem" in str(err.value)
-
-
-def test_bad_network_in_deployments(networks):
-    deployments = _create_deployments(network_name="FAKE-NETWORK")
-    with pytest.raises(ConfigError) as err:
-        DeploymentConfigCollection(deployments, {"ethereum": networks.ethereum}, ["local"])
-
-    assert "Invalid network" in str(err.value)
+@pytest.mark.parametrize(
+    "ecosystems,networks,err_part",
+    [(["ERRORS"], ["mainnet"], "ecosystem"), (["ethereum"], ["ERRORS"], "network")],
+)
+def test_bad_value_in_deployments(ecosystems, networks, err_part, caplog, plugin_manager):
+    deployments = _create_deployments()
+    with caplog.at_level(logging.WARNING):
+        all_ecosystems = dict(plugin_manager.ecosystems)
+        ecosystem_dict = {e: all_ecosystems[e] for e in ecosystems if e in all_ecosystems}
+        DeploymentConfigCollection(deployments, ecosystem_dict, networks)
+        assert len(caplog.records) > 0, "Nothing was logged"
+        assert f"Invalid {err_part}" in caplog.records[0].message
 
 
 def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "local") -> Dict:

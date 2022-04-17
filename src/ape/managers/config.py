@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 from pydantic import root_validator
 
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
-from ape.exceptions import ConfigError
+from ape.exceptions import ConfigError, NetworkError
 from ape.logging import logger
 from ape.utils import BaseInterfaceModel, load_config
 
@@ -26,25 +26,28 @@ class DeploymentConfigCollection(dict):
     def __init__(self, data: Dict, valid_ecosystems: Dict, valid_networks: List[str]):
         for ecosystem_name, networks in data.items():
             if ecosystem_name not in valid_ecosystems:
-                raise ConfigError(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
+                logger.warning(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
+                continue
 
             ecosystem = valid_ecosystems[ecosystem_name]
             for network_name, contract_deployments in networks.items():
                 if network_name not in valid_networks:
-                    raise ConfigError(f"Invalid network '{network_name}' in deployments config.")
+                    logger.warning(f"Invalid network '{network_name}' in deployments config.")
+                    continue
 
                 for deployment in [d for d in contract_deployments]:
                     address = deployment.get("address", None)
-                    if not address:
-                        raise ConfigError(
+                    if "address" not in deployment:
+                        logger.warning(
                             f"Missing 'address' field in deployment "
                             f"(ecosystem={ecosystem_name}, network={network_name})"
                         )
+                        continue
 
                     try:
                         deployment["address"] = ecosystem.decode_address(address)
                     except ValueError as err:
-                        raise ConfigError(str(err)) from err
+                        logger.warning(str(err))
 
         super().__init__(data)
 
@@ -137,7 +140,11 @@ class ConfigManager(BaseInterfaceModel):
         self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
             "default_ecosystem", "ethereum"
         )
-        self.network_manager.set_default_ecosystem(self.default_ecosystem)
+
+        try:
+            self.network_manager.set_default_ecosystem(self.default_ecosystem)
+        except NetworkError as err:
+            logger.warning(str(err))
 
         dependencies = user_config.pop("dependencies", []) or []
         if not isinstance(dependencies, list):
