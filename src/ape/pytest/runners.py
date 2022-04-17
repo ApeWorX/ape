@@ -18,7 +18,6 @@ class PytestApeRunner(ManagerAccessMixin):
         pytest_config: PytestConfig,
     ):
         self.pytest_config = pytest_config
-        self._warned_for_missing_features = False
         self._provider_is_connected = False
         ape.reverts = RevertsContextManager  # type: ignore
 
@@ -115,16 +114,6 @@ class PytestApeRunner(ManagerAccessMixin):
             item.fixturenames.insert(scopes.index("function", idx), "_function_isolation")
         except ValueError:
             item.fixturenames.append("_function_isolation")
-
-    def _warn_for_unimplemented_snapshot(self):
-        if self._warned_for_missing_features:
-            return
-
-        logger.warning(
-            "The connected provider does not support snapshotting. "
-            "Tests will not be completely isolated."
-        )
-        self._warned_for_missing_features = True
 
     def pytest_sessionstart(self):
         """
