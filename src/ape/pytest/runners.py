@@ -82,32 +82,39 @@ class PytestApeRunner(ManagerAccessMixin):
             if capman:
                 capman.resume_global_capture()
 
-    @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_call(self, item):
+    def pytest_runtest_setup(self, item):
         """
-        By default, snapshot the chain before each test case is ran and restore the chain state
-        right after. This is done as close as possible to test execution, after fixtures have been
-        setup and before fixture teardown.
+        By default insert isolation fixtures into each test cases list of fixtures
+        prior to actually executing the test case.
 
-        https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_runtest_call
+        https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_runtest_setup
         """
         if self.pytest_config.getoption("disable_isolation") is True:
-            # default isolation is disabled
-            yield
-        else:
-            snapshot_id = None
+            # isolation is disabled via cmdline option
+            return
 
-            # Try to snapshot if the provider supported it.
+        # list of scopes for each fixture of the test
+        scopes = [item._fixtureinfo.name2fixturedefs[f][0].scope for f in item.fixturenames]
+
+        idx = 0
+        for scope in ["session", "package", "module", "class"]:
+            # iterate through scope levels and insert the isolation fixture
+            # prior to the first fixture with that scope
             try:
-                snapshot_id = self.chain_manager.snapshot()
-            except NotImplementedError:
-                self._warn_for_unimplemented_snapshot()
+                idx = scopes.index(scope, idx)
+            except ValueError:
+                # intermediate scope isolations are filled in by later fixtures
+                # even if they are skipped (which will only happen if no fixture
+                # is defined at that scope level)
+                continue
+            item.fixturenames.insert(idx, f"_{scope}_isolation")
+            scopes.insert(idx, scope)
 
-            yield
-
-            # Try to revert to the state before the test began.
-            if snapshot_id is not None:
-                self.chain_manager.restore(snapshot_id)
+        # lastly insert function isolation
+        try:
+            item.fixturenames.insert(scopes.index("function", idx), "_function_isolation")
+        except ValueError:
+            item.fixturenames.append("_function_isolation")
 
     def _warn_for_unimplemented_snapshot(self):
         if self._warned_for_missing_features:
