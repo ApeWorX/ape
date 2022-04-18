@@ -1,4 +1,4 @@
-from typing import Iterator, List
+from typing import List
 
 import pytest
 
@@ -25,8 +25,7 @@ class PytestApeFixtures(ManagerAccessMixin):
     def project(self) -> ProjectManager:
         return self.project_manager
 
-    @pytest.fixture(scope="session")
-    def _session_isolation(self) -> Iterator[None]:
+    def _isolation(self):
         snapshot_id = None
         try:
             snapshot_id = self.chain_manager.snapshot()
@@ -38,57 +37,11 @@ class PytestApeFixtures(ManagerAccessMixin):
         if snapshot_id is not None and snapshot_id in self.chain_manager._snapshots:
             self.chain_manager.restore(snapshot_id)
 
-    @pytest.fixture(scope="package")
-    def _package_isolation(self, _session_isolation) -> Iterator[None]:
-        snapshot_id = None
-        try:
-            snapshot_id = self.chain_manager.snapshot()
-        except NotImplementedError:
-            self._warn_for_unimplemented_snapshot()
-
-        yield
-
-        if snapshot_id is not None and snapshot_id in self.chain_manager._snapshots:
-            self.chain_manager.restore(snapshot_id)
-
-    @pytest.fixture(scope="module")
-    def _module_isolation(self, _package_isolation) -> Iterator[None]:
-        snapshot_id = None
-        try:
-            snapshot_id = self.chain_manager.snapshot()
-        except NotImplementedError:
-            self._warn_for_unimplemented_snapshot()
-
-        yield
-
-        if snapshot_id is not None and snapshot_id in self.chain_manager._snapshots:
-            self.chain_manager.restore(snapshot_id)
-
-    @pytest.fixture(scope="class")
-    def _class_isolation(self, _module_isolation) -> Iterator[None]:
-        snapshot_id = None
-        try:
-            snapshot_id = self.chain_manager.snapshot()
-        except NotImplementedError:
-            self._warn_for_unimplemented_snapshot()
-
-        yield
-
-        if snapshot_id is not None and snapshot_id in self.chain_manager._snapshots:
-            self.chain_manager.restore(snapshot_id)
-
-    @pytest.fixture(scope="function")
-    def _function_isolation(self, _class_isolation) -> Iterator[None]:
-        snapshot_id = None
-        try:
-            snapshot_id = self.chain_manager.snapshot()
-        except NotImplementedError:
-            self._warn_for_unimplemented_snapshot()
-
-        yield
-
-        if snapshot_id is not None and snapshot_id in self.chain_manager._snapshots:
-            self.chain_manager.restore(snapshot_id)
+    _session_isolation = pytest.fixture(_isolation, scope="session")
+    _package_isolation = pytest.fixture(_isolation, scope="package")
+    _module_isolation = pytest.fixture(_isolation, scope="module")
+    _class_isolation = pytest.fixture(_isolation, scope="class")
+    _function_isolation = pytest.fixture(_isolation, scope="function")
 
     def _warn_for_unimplemented_snapshot(self):
         if self._warned_for_missing_features:
