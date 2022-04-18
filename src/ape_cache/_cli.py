@@ -1,11 +1,12 @@
-import os
-
 import click
 import pandas as pd
 
-from ape_cache.db import engine
-import ape_cache.models as models
-from .dependencies import get_db
+from ape.utils import ManagerAccessMixin
+from . import models
+
+
+def get_engine():
+    return ManagerAccessMixin.query_manager.engines["cache"]
 
 
 @click.group(short_help="Query from caching database")
@@ -17,17 +18,17 @@ def cli():
 
 @cli.command(short_help="Initialize a new cache db")
 def init():
-    models.Base.metadata.create_all(bind=engine)
+    models.Base.metadata.create_all(bind=get_engine().engine)
 
 
 @cli.command(short_help="Call and print SQL Statement to the cache db")
 @click.argument("sql")
 def query(sql):
-    with get_db() as db:
+    with get_engine().db as db:
         click.echo(pd.DataFrame(db.execute(sql)))
 
 
 @cli.command(short_help="Purges entire database")
 def purge():
-    os.remove("./query.db")
-    models.Base.metadata.create_all(bind=engine)
+    db_file = get_engine().database_file
+    db_file.unlink()

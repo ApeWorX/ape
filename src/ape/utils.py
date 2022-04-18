@@ -788,6 +788,7 @@ __all__ = [
     "get_all_files_in_directory",
     "injected_before_use",
     "load_config",
+    "ManagerAccessMixin",
     "raises_not_implemented",
     "singledispatchmethod",
     "stream_response",
