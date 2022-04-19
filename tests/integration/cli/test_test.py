@@ -11,6 +11,6 @@ def test_test(ape_cli, runner):
 @skip_projects_except(["test"])
 def test_test_isolation_disabled(ape_cli, runner):
     # check the disable isolation option actually disables built-in isolation
-    # also don't run the tests just show what fixtures/tests would be run
-    result = runner.invoke(ape_cli, ["test", "--disable-isolation", "--setup-plan"])
+    result = runner.invoke(ape_cli, ["test", "--disable-isolation", "--setup-show"])
+    assert result.exit_code == 1
     assert "F _function_isolation" not in result.output
