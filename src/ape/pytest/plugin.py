@@ -28,7 +28,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--disable-isolation",
         action="store_true",
-        help="Disable built-in test and fixture isolation",
+        help="Disable test and fixture isolation (see provider for info on snapshot availability)",
     )
 
     # NOTE: Other pytest plugins, such as hypothesis, should integrate with pytest separately
