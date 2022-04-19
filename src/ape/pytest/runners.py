@@ -92,27 +92,25 @@ class PytestApeRunner(ManagerAccessMixin):
             # isolation is disabled via cmdline option
             return
 
-        # list of scopes for each fixture of the test
+        # list of scopes for each fixture of the test (including `autouse` fixtures)
         scopes = [item._fixtureinfo.name2fixturedefs[f][0].scope for f in item.fixturenames]
 
-        idx = 0
         for scope in ["session", "package", "module", "class"]:
             # iterate through scope levels and insert the isolation fixture
             # prior to the first fixture with that scope
             try:
-                idx = scopes.index(scope, idx)
+                idx = scopes.index(scope)  # will raise ValueError if `scope` not found
+                item.fixturenames.insert(idx, f"_{scope}_isolation")
+                scopes.insert(idx, scope)
             except ValueError:
-                # intermediate scope isolations are filled in by later fixtures
-                # even if they are skipped (which will only happen if no fixture
-                # is defined at that scope level)
+                # intermediate scope isolations aren't filled in
                 continue
-            item.fixturenames.insert(idx, f"_{scope}_isolation")
-            scopes.insert(idx, scope)
 
-        # lastly insert function isolation
+        # insert function isolation by default
         try:
-            item.fixturenames.insert(scopes.index("function", idx), "_function_isolation")
+            item.fixturenames.insert(scopes.index("function"), "_function_isolation")
         except ValueError:
+            # no fixtures with function scope, so append function isolation
             item.fixturenames.append("_function_isolation")
 
     def pytest_sessionstart(self):
