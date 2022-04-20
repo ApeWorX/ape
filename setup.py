@@ -111,6 +111,7 @@ setup(
             "ape_plugins=ape_plugins._cli:cli",
             "ape_run=ape_run._cli:cli",
             "ape_networks=ape_networks._cli:cli",
+            "ape_notebook=ape_notebook._cli:cli",
             "ape_test=ape_test._cli:cli",
             "ape_init=ape_init._cli:cli",
         ],

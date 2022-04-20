@@ -7,6 +7,7 @@ __modules__ = [
     "ape_geth",
     "ape_init",
     "ape_networks",
+    "ape_notebook",
     "ape_plugins",
     "ape_run",
     "ape_test",
