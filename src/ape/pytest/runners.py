@@ -88,7 +88,10 @@ class PytestApeRunner(ManagerAccessMixin):
 
         https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_runtest_setup
         """
-        if self.pytest_config.getoption("disable_isolation") is True:
+        if (
+            self.pytest_config.getoption("disable_isolation") is True
+            or "_function_isolation" in item.fixturenames  # prevent double injection
+        ):
             # isolation is disabled via cmdline option
             return
 
