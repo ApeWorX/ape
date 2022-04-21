@@ -18,7 +18,6 @@ class PytestApeRunner(ManagerAccessMixin):
         pytest_config: PytestConfig,
     ):
         self.pytest_config = pytest_config
-        self._warned_for_missing_features = False
         self._provider_is_connected = False
         ape.reverts = RevertsContextManager  # type: ignore
 
@@ -82,32 +81,40 @@ class PytestApeRunner(ManagerAccessMixin):
             if capman:
                 capman.resume_global_capture()
 
-    @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_protocol(self, item, nextitem):
-        snapshot_id = None
+    def pytest_runtest_setup(self, item):
+        """
+        By default insert isolation fixtures into each test cases list of fixtures
+        prior to actually executing the test case.
 
-        # Try to snapshot if the provider supported it.
-        try:
-            snapshot_id = self.chain_manager.snapshot()
-        except NotImplementedError:
-            self._warn_for_unimplemented_snapshot()
-            pass
-
-        yield
-
-        # Try to revert to the state before the test began.
-        if snapshot_id:
-            self.chain_manager.restore(snapshot_id)
-
-    def _warn_for_unimplemented_snapshot(self):
-        if self._warned_for_missing_features:
+        https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_runtest_setup
+        """
+        if (
+            self.pytest_config.getoption("disable_isolation") is True
+            or "_function_isolation" in item.fixturenames  # prevent double injection
+        ):
+            # isolation is disabled via cmdline option
             return
 
-        logger.warning(
-            "The connected provider does not support snapshotting. "
-            "Tests will not be completely isolated."
-        )
-        self._warned_for_missing_features = True
+        # list of scopes for each fixture of the test (including `autouse` fixtures)
+        scopes = [item._fixtureinfo.name2fixturedefs[f][0].scope for f in item.fixturenames]
+
+        for scope in ["session", "package", "module", "class"]:
+            # iterate through scope levels and insert the isolation fixture
+            # prior to the first fixture with that scope
+            try:
+                idx = scopes.index(scope)  # will raise ValueError if `scope` not found
+                item.fixturenames.insert(idx, f"_{scope}_isolation")
+                scopes.insert(idx, scope)
+            except ValueError:
+                # intermediate scope isolations aren't filled in
+                continue
+
+        # insert function isolation by default
+        try:
+            item.fixturenames.insert(scopes.index("function"), "_function_isolation")
+        except ValueError:
+            # no fixtures with function scope, so append function isolation
+            item.fixturenames.append("_function_isolation")
 
     def pytest_sessionstart(self):
         """
