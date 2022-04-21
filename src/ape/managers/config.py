@@ -3,13 +3,12 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
-from hexbytes import HexBytes
 from pydantic import root_validator
 
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
 from ape.exceptions import ConfigError, NetworkError
 from ape.logging import logger
-from ape.utils import BaseInterfaceModel, load_config, to_address
+from ape.utils import BaseInterfaceModel, load_config
 
 if TYPE_CHECKING:
     from .project import ProjectManager
@@ -24,20 +23,20 @@ class DeploymentConfig(PluginConfig):
 
 
 class DeploymentConfigCollection(dict):
-    def __init__(
-        self, data: Dict, valid_ecosystem_names: List[str], valid_network_names: List[str]
-    ):
+    def __init__(self, data: Dict, valid_ecosystems: Dict, valid_networks: List[str]):
         for ecosystem_name, networks in data.items():
-            if ecosystem_name not in valid_ecosystem_names:
+            if ecosystem_name not in valid_ecosystems:
                 logger.warning(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
                 continue
 
+            ecosystem = valid_ecosystems[ecosystem_name]
             for network_name, contract_deployments in networks.items():
-                if network_name not in valid_network_names:
+                if network_name not in valid_networks:
                     logger.warning(f"Invalid network '{network_name}' in deployments config.")
                     continue
 
                 for deployment in [d for d in contract_deployments]:
+                    address = deployment.get("address", None)
                     if "address" not in deployment:
                         logger.warning(
                             f"Missing 'address' field in deployment "
@@ -45,12 +44,8 @@ class DeploymentConfigCollection(dict):
                         )
                         continue
 
-                    address = deployment["address"]
-                    if isinstance(address, int):
-                        address = HexBytes(address)
-
                     try:
-                        deployment["address"] = to_address(address)
+                        deployment["address"] = ecosystem.decode_address(address)
                     except ValueError as err:
                         logger.warning(str(err))
 
@@ -168,10 +163,10 @@ class ConfigManager(BaseInterfaceModel):
         self.contracts_folder = configs["contracts_folder"] = contracts_folder
 
         deployments = user_config.pop("deployments", {})
-        valid_ecosystem_names = [e[0] for e in self.plugin_manager.ecosystems]
+        valid_ecosystems = dict(self.plugin_manager.ecosystems)
         valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
         self.deployments = configs["deployments"] = DeploymentConfigCollection(
-            deployments, valid_ecosystem_names, valid_network_names
+            deployments, valid_ecosystems, valid_network_names
         )
 
         for plugin_name, config_class in self.plugin_manager.config_class:

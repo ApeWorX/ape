@@ -6,7 +6,7 @@ from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
-from ape.types import AddressType, ContractLog
+from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 from .config import PluginConfig
@@ -38,6 +38,32 @@ class EcosystemAPI(BaseInterfaceModel):
     """A shareable HTTP header for network requests."""
 
     _default_network: str = LOCAL_NETWORK_NAME
+
+    @classmethod
+    @abstractmethod
+    def decode_address(cls, raw_address: RawAddress) -> AddressType:
+        """
+        Convert a raw address to the ecosystem's native address type.
+
+        Args:
+            raw_address (Union[str, int]): The address to convert.
+
+        Returns:
+            ``AddressType``
+        """
+
+    @classmethod
+    @abstractmethod
+    def encode_address(cls, address: AddressType) -> RawAddress:
+        """
+        Convert the ecosystem's native address type to a raw integer or str address.
+
+        Args:
+            address (Union[str, int]): The address to convert.
+
+        Returns:
+            Union[str, int]
+        """
 
     @abstractmethod
     def serialize_transaction(self, transaction: "TransactionAPI") -> bytes:

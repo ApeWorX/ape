@@ -22,7 +22,7 @@ from ape.api import (
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError
-from ape.types import AddressType, ContractLog
+from ape.types import AddressType, ContractLog, RawAddress
 from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
@@ -81,6 +81,17 @@ class Ethereum(EcosystemAPI):
     @property
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
+
+    @classmethod
+    def decode_address(cls, raw_address: RawAddress) -> AddressType:
+        if isinstance(raw_address, int):
+            raw_address = HexBytes(raw_address)
+
+        return to_checksum_address(raw_address)
+
+    @classmethod
+    def encode_address(cls, address: AddressType) -> RawAddress:
+        return str(address)
 
     def serialize_transaction(self, transaction: TransactionAPI) -> bytes:
         return transaction.serialize_transaction()
@@ -153,7 +164,7 @@ class Ethereum(EcosystemAPI):
             for index in range(len(vm_return_values)):
                 value = vm_return_values[index]
                 if index < len(output_types) and output_types[index] == "address":
-                    value = to_checksum_address(value)
+                    value = self.decode_address(value)
 
                 output_values.append(value)
 

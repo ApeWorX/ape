@@ -11,7 +11,6 @@ from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.exceptions import AccountsError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
-from ape.utils import to_address
 
 
 class InvalidPasswordError(AccountsError):
@@ -63,7 +62,7 @@ class KeyfileAccount(AccountAPI):
 
     @property
     def address(self) -> AddressType:
-        return to_address(self.keyfile["address"])
+        return self.network_manager.ethereum.decode_address(self.keyfile["address"])
 
     @property
     def __key(self) -> HexBytes:

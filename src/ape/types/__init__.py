@@ -34,6 +34,11 @@ providers when using this feature, so there should not be confusion over this ty
 cases.
 """
 
+RawAddress = Union[str, int, HexBytes]
+"""
+A raw data-type representation of an address.
+"""
+
 
 @dataclass
 class ContractLog:

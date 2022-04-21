@@ -29,7 +29,6 @@ import requests
 import yaml
 from eth_account import Account
 from eth_account.hdaccount import HDPath, seed_from_mnemonic
-from eth_utils import to_checksum_address as to_address
 from github import Github, UnknownObjectException
 from github.GitRelease import GitRelease
 from github.Organization import Organization
@@ -791,6 +790,5 @@ __all__ = [
     "raises_not_implemented",
     "singledispatchmethod",
     "stream_response",
-    "to_address",
     "USER_AGENT",
 ]

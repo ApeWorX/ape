@@ -87,8 +87,12 @@ def test_generate_alias_already_in_use(ape_cli, runner, temp_account):
 def test_list(ape_cli, runner, temp_keyfile):
     # Check availability
     assert temp_keyfile.exists()
-    result = runner.invoke(ape_cli, ["accounts", "list"])
+    result = runner.invoke(ape_cli, ["accounts", "list"], catch_exceptions=False)
     assert ALIAS in result.output
+
+    # NOTE: the un-checksummed version of this address is found in the temp_keyfile fixture.
+    expected_address = "0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf"
+    assert expected_address in result.output
 
 
 def test_list_all(ape_cli, runner, temp_keyfile):
