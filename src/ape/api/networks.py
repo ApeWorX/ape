@@ -262,7 +262,7 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_return_data(self, abi: MethodABI, raw_data: bytes) -> Any:
+    def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Any:
         """
         Get the result of a contract call.
 
