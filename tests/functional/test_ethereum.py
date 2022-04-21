@@ -5,8 +5,8 @@ from hexbytes import HexBytes
 from ape.exceptions import OutOfGasError
 from ape.types import AddressType
 from ape_ethereum.transactions import (
-    BaseTransaction,
     Receipt,
+    StaticFeeTransaction,
     TransactionStatusEnum,
     TransactionType,
 )
@@ -44,8 +44,8 @@ def test_encode_address(ethereum):
     assert actual == raw_address
 
 
-def test_base_transaction_dict_excludes_none_values():
-    txn = BaseTransaction()
+def test_transaction_dict_excludes_none_values():
+    txn = StaticFeeTransaction()
     txn.value = 1000000
     actual = txn.dict()
     assert "value" in actual
