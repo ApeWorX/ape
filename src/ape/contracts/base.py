@@ -81,17 +81,20 @@ class ContractCall(ManagerAccessMixin):
         txn.chain_id = self.provider.network.chain_id
 
         raw_output = self.provider.send_call(txn)
-        tuple_output = self.provider.network.ecosystem.decode_calldata(  # type: ignore
+        output = self.provider.network.ecosystem.decode_returndata(
             self.abi,
             raw_output,
         )
 
-        # NOTE: Returns a tuple, so make sure to handle all the cases
-        if len(tuple_output) < 2:
-            return tuple_output[0] if len(tuple_output) == 1 else None
-
         # TODO: Handle struct output
-        return tuple_output
+        if not isinstance(output, (list, tuple)):
+            return output
+
+        # NOTE: Returns a tuple, so make sure to handle all the cases
+        elif len(output) < 2:
+            return output[0] if len(output) == 1 else None
+
+        return output
 
 
 class ContractCallHandler(ManagerAccessMixin):
@@ -346,7 +349,7 @@ class ContractEvent(ManagerAccessMixin):
         Get all the events from the given receipt.
 
         Args:
-            receipt (:class:`~ape.api.providers.ReceiptAPI`): The receipt containing the logs.
+            receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt containing the logs.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]

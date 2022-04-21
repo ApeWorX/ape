@@ -35,6 +35,11 @@ def test_is_owner(my_contract, owner, other):
     assert not other_is_owner
 ```
 
+```{note}
+Ape has built-in test and fixture isolation for all pytest scopes.
+To disable isolation add the `--disable-isolation` flag when running `ape test`
+```
+
 ## Fixtures
 
 Fixtures are any type of reusable instances of something with configurable scopes. `pytest` handles passing fixtures

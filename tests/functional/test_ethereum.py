@@ -2,16 +2,20 @@ import pytest
 from eth_typing import HexAddress, HexStr
 from hexbytes import HexBytes
 
-from ape.api import TransactionStatusEnum, TransactionType
 from ape.exceptions import OutOfGasError
 from ape.types import AddressType
-from ape_ethereum.ecosystem import BaseTransaction, Receipt
+from ape_ethereum.transactions import (
+    BaseTransaction,
+    Receipt,
+    TransactionStatusEnum,
+    TransactionType,
+)
 
 
 @pytest.mark.parametrize("type_kwarg", (0, "0x0", b"\x00", "0", HexBytes("0x0"), HexBytes("0x00")))
 def test_create_static_fee_transaction(ethereum, type_kwarg):
     txn = ethereum.create_transaction(type=type_kwarg)
-    assert txn.type == TransactionType.STATIC
+    assert txn.type == TransactionType.STATIC.value
 
 
 @pytest.mark.parametrize("type_kwarg", (None, 2, "0x02", b"\x02", "2", "02", HexBytes("0x02")))
