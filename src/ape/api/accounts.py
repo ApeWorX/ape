@@ -66,7 +66,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Sign a transaction.
 
         Args:
-          txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to sign.
+          txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to sign.
 
         Returns:
           :class:`~ape.types.signatures.TransactionSignature` (optional): The signed transaction.
@@ -83,11 +83,11 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             :class:`~ape.exceptions.SignatureError`: When the user does not sign the transaction.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to submit in a call.
-            send_everything (bool): ``True`` will send the value difference from balance and fee.
+            txn (:class:`~ape.api.transactions.TransactionAPI`): An invoke-transaction.
+            send_everything (bool): ``True`` will send the difference from balance and fee.
 
         Returns:
-            :class:`~ape.api.providers.ReceiptAPI`
+            :class:`~ape.api.transactions.ReceiptAPI`
         """
 
         txn = self.prepare_transaction(txn)
@@ -124,7 +124,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             data (str): Extra data to include in the transaction.
 
         Returns:
-            :class:`~ape.api.providers.ReceiptAPI`
+            :class:`~ape.api.transactions.ReceiptAPI`
         """
 
         txn = self.provider.network.ecosystem.create_transaction(
@@ -177,7 +177,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Verify a message or transaction was signed by this account.
 
         Args:
-            data (Union[:class:`~ape.types.signatures.SignableMessage`, :class:`~ape.api.providers.TransactionAPI`]):  # noqa: E501
+            data (Union[:class:`~ape.types.signatures.SignableMessage`, :class:`~ape.api.transactions.TransactionAPI`]):  # noqa: E501
               The message or transaction to verify.
             signature (Optional[``_Signature``]): The :class:`~ape.types.signatures.MessageSignature` or the
               :class:`~ape.types.signatures.TransactionSignature`.
@@ -207,10 +207,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             :class:`~ape.exceptions.TransactionError`: When given negative required confirmations.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to prepare.
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to prepare.
 
         Returns:
-            :class:`~ape.api.providers.TransactionAPI`
+            :class:`~ape.api.transactions.TransactionAPI`
         """
 
         # NOTE: Allow overriding nonce, assume user understand what this does

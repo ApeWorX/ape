@@ -64,5 +64,5 @@ class ExplorerAPI(BaseInterfaceModel):
             address (``AddressType``): The account address.
 
         Returns:
-            Iterator[:class:`~ape.api.providers.ReceiptAPI`]
+            Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
         """

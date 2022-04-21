@@ -139,7 +139,7 @@ class Ethereum(EcosystemAPI):
         else:
             return HexBytes(b"")
 
-    def decode_calldata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
+    def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
         try:
             vm_return_values = abi_decode(output_types, raw_data)
@@ -194,7 +194,7 @@ class Ethereum(EcosystemAPI):
         Returns a transaction using the given constructor kwargs.
 
         Returns:
-            :class:`~ape.api.providers.TransactionAPI`
+            :class:`~ape.api.transactions.TransactionAPI`
         """
 
         transaction_types = {

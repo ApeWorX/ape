@@ -288,7 +288,7 @@ class AccountHistory(BaseManager):
             address (``AddressType``): The sender of the desired transactions.
 
         Returns:
-            List[:class:`~ape.api.providers.TransactionAPI`]: The list of transactions. If there
+            List[:class:`~ape.api.transactions.TransactionAPI`]: The list of transactions. If there
             are no recorded transactions, returns an empty list.
         """
 
@@ -318,7 +318,7 @@ class AccountHistory(BaseManager):
         Iterate through the list of address-types to list of transaction receipts.
 
         Returns:
-            Iterator[Tuple[``AddressType``, :class:`~ape.api.providers.ReceiptAPI`]]
+            Iterator[Tuple[``AddressType``, :class:`~ape.api.transactions.ReceiptAPI`]]
         """
         yield from self._map.items()
 
@@ -331,7 +331,7 @@ class AccountHistory(BaseManager):
               receipt that is already in the list.
 
         Args:
-            txn_receipt (:class:`~ape.api.providers.ReceiptAPI`): The transaction receipt to append.
+            txn_receipt (:class:`~ape.api.transactions.ReceiptAPI`): The transaction receipt.
               **NOTE**: The receipt is accessible in the list returned from
               :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
