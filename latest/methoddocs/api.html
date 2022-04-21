@@ -904,6 +904,20 @@ for more information on plugin configurations.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.decode_address">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">hexbytes.main.HexBytes</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ChecksumAddress</span></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_address" title="Permalink to this definition"></a></dt>
+<dd><p>Convert a raw address to the ecosystem’s native address type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>raw_address</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – The address to convert.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.decode_block">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">BlockAPI</span></a></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_block" title="Permalink to this definition"></a></dt>
 <dd><p>Decode data to a <a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockAPI</span></code></a>.</p>
@@ -974,6 +988,20 @@ raw_data (bytes): Raw returned data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.encode_address">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encode_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">hexbytes.main.HexBytes</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.encode_address" title="Permalink to this definition"></a></dt>
+<dd><p>Convert the ecosystem’s native address type to a raw integer or str address.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>address</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – The address to convert.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Union[str, int]</p>
 </dd>
 </dl>
 </dd></dl>
