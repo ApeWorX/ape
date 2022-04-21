@@ -1,20 +1,14 @@
 import itertools
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
 from eth_abi.abi import decode_abi, decode_single
 from eth_abi.exceptions import InsufficientDataBytes
-from eth_account import Account as EthAccount  # type: ignore
-from eth_account._utils.legacy_transactions import (
-    encode_transaction,
-    serializable_unsigned_transaction_from_dict,
-)
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address, to_int
+from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address
 from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
-from pydantic import Field, root_validator, validator
 
 from ape.api import (
     BlockAPI,
@@ -24,13 +18,19 @@ from ape.api import (
     PluginConfig,
     ReceiptAPI,
     TransactionAPI,
-    TransactionStatusEnum,
-    TransactionType,
 )
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
-from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
+from ape.exceptions import DecodingError
 from ape.types import AddressType, ContractLog
+from ape_ethereum.transactions import (
+    BaseTransaction,
+    DynamicFeeTransaction,
+    Receipt,
+    StaticFeeTransaction,
+    TransactionStatusEnum,
+    TransactionType,
+)
 
 NETWORKS = {
     # chain_id, network_id
@@ -57,80 +57,6 @@ class EthereumConfig(PluginConfig):
     goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
     local: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     default_network: str = LOCAL_NETWORK_NAME
-
-
-class BaseTransaction(TransactionAPI):
-    def serialize_transaction(self) -> bytes:
-
-        if not self.signature:
-            raise SignatureError("The transaction is not signed.")
-
-        txn_data = self.dict(exclude={"sender"})
-
-        unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
-        signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
-
-        signed_txn = encode_transaction(unsigned_txn, signature)
-
-        if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
-            raise SignatureError("Recovered signer doesn't match sender!")
-
-        return signed_txn
-
-
-class StaticFeeTransaction(BaseTransaction):
-    """
-    Transactions that are pre-EIP-1559 and use the ``gasPrice`` field.
-    """
-
-    gas_price: Optional[int] = Field(None, alias="gasPrice")
-    max_priority_fee: Optional[int] = Field(None, exclude=True)
-    type: TransactionType = Field(TransactionType.STATIC, exclude=True)
-    max_fee: Optional[int] = Field(None, exclude=True)
-
-    @root_validator(pre=True)
-    def calculate_read_only_max_fee(cls, values) -> Dict:
-        # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
-        values["max_fee"] = values.get("gas_limit", 0) * values.get("gas_price", 0)
-        return values
-
-
-class DynamicFeeTransaction(BaseTransaction):
-    """
-    Transactions that are post-EIP-1559 and use the ``maxFeePerGas``
-    and ``maxPriorityFeePerGas`` fields.
-    """
-
-    max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")
-    max_fee: Optional[int] = Field(None, alias="maxFeePerGas")
-    type: TransactionType = Field(TransactionType.DYNAMIC)
-
-    @validator("type")
-    def check_type(cls, value):
-
-        if isinstance(value, TransactionType):
-            return value.value
-
-        return value
-
-
-class Receipt(ReceiptAPI):
-    def raise_for_status(self):
-        """
-        Raise an error for the given transaction, if the transaction has failed.
-
-        Raises:
-            :class:`~ape.exceptions.OutOfGasError`: When the transaction failed
-              and ran out of gas.
-            :class:`~ape.exceptions.TransactionError`: When the transaction has a
-              failing status otherwise.
-        """
-
-        if self.gas_limit and self.ran_out_of_gas:
-            raise OutOfGasError()
-        elif self.status != TransactionStatusEnum.NO_ERROR:
-            txn_hash = HexBytes(self.txn_hash).hex()
-            raise TransactionError(message=f"Transaction '{txn_hash}' failed.")
 
 
 class BlockGasFee(BlockGasAPI):

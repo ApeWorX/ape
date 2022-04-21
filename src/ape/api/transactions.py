@@ -1,5 +1,4 @@
 import time
-from enum import Enum, IntEnum
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
 from ethpm_types.abi import EventABI
@@ -14,16 +13,6 @@ from ape.utils import BaseInterfaceModel, abstractmethod
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
-
-
-class TransactionType(Enum):
-    """
-    Transaction enumerable type constants defined by
-    `EIP-2718 <https://eips.ethereum.org/EIPS/eip-2718>`__.
-    """
-
-    STATIC = "0x00"
-    DYNAMIC = "0x02"  # EIP-1559
 
 
 class TransactionAPI(BaseInterfaceModel):
@@ -41,7 +30,7 @@ class TransactionAPI(BaseInterfaceModel):
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
     data: bytes = b""
-    type: TransactionType = TransactionType.STATIC
+    type: Union[int, bytes, str]
     max_fee: Optional[int] = None
     max_priority_fee: Optional[int] = None
 
@@ -86,21 +75,6 @@ class TransactionAPI(BaseInterfaceModel):
             data["data"] = "0x" + bytes(data["data"]).hex()
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         return f"{self.__class__.__name__}:\n  {params}"
-
-
-class TransactionStatusEnum(IntEnum):
-    """
-    An ``Enum`` class representing the status of a transaction.
-    """
-
-    FAILING = 0
-    """The transaction has failed or is in the process of failing."""
-
-    NO_ERROR = 1
-    """
-    The transaction is successful and is confirmed or is in the process
-    of getting confirmed.
-    """
 
 
 class ConfirmationsProgressBar:
@@ -162,7 +136,7 @@ class ReceiptAPI(BaseInterfaceModel):
     """
 
     txn_hash: str
-    status: TransactionStatusEnum
+    status: int
     block_number: int
     gas_used: int
     gas_price: int
@@ -184,6 +158,7 @@ class ReceiptAPI(BaseInterfaceModel):
         """
 
     @property
+    @abstractmethod
     def ran_out_of_gas(self) -> bool:
         """
         Check if a transaction has ran out of gas and failed.
@@ -192,7 +167,6 @@ class ReceiptAPI(BaseInterfaceModel):
             bool:  ``True`` when the transaction failed and used the
             same amount of gas as the given ``gas_limit``.
         """
-        return self.status == TransactionStatusEnum.FAILING and self.gas_used == self.gas_limit
 
     @property
     def _explorer(self) -> Optional[ExplorerAPI]:
