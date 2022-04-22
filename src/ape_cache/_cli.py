@@ -24,8 +24,8 @@ def init():
 @cli.command(short_help="Call and print SQL Statement to the cache db")
 @click.argument("sql")
 def query(sql):
-    with get_engine().db as db:
-        click.echo(pd.DataFrame(db.execute(sql)))
+    with get_engine().engine.connect() as conn:
+        click.echo(pd.DataFrame(conn.execute(sql)))
 
 
 @cli.command(short_help="Purges entire database")

@@ -4,10 +4,7 @@ from pydantic import BaseModel
 from typing import Dict, Any, Optional
 from pathlib import Path
 
-from contextlib import contextmanager
-
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from ape.api import QueryAPI, QueryType
 from ape.exceptions import QueryEngineError
@@ -31,19 +28,7 @@ class CacheQueryProvider(QueryAPI):
 
     @cached_property
     def engine(self):
-        return create_engine(f"sqlite://{self.database_file}", pool_pre_ping=True)
-
-    @cached_property
-    def session(self):
-        return sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
-
-    @contextmanager
-    def db(self):
-        db = self.session()
-        try:
-            yield db
-        finally:
-            db.close()
+        return create_engine(f"sqlite:///{self.database_file}", pool_pre_ping=True)
 
     @singledispatchmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:
