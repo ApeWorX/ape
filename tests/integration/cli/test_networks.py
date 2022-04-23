@@ -44,14 +44,14 @@ ecosystems:
     providers:
     - name: geth
       isDefault: true
+  - name: mainnet-fork
+    providers: []
   - name: local
     isDefault: true
     providers:
     - name: geth
     - name: test
       isDefault: true
-  - name: mainnet-fork
-    providers: []
 """
 _GETH_NETWORKS_YAML = """
 ethereum  (default)
