@@ -26,6 +26,8 @@ def networks():
     for network_name, network_params in NETWORKS.items():
         yield "ethereum", network_name, create_network_type(*network_params)
 
+    # These use the same values from their parent networks
+    yield "ethereum", "mainnet-fork", create_network_type(*NETWORKS["mainnet"])
+
     # NOTE: This works for development providers, as they get chain_id from themselves
     yield "ethereum", LOCAL_NETWORK_NAME, NetworkAPI
-    yield "ethereum", "mainnet-fork", NetworkAPI
