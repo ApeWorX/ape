@@ -76,7 +76,7 @@ setup(
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.1.0",
         "eth-account==0.5.7",
-        "ethpm-types>=0.1.1,<0.2.0",
+        "ethpm-types>=0.2.0,<0.3.0",
         "evm-trace>=0.1.0.a2",
         "hexbytes>=0.2.2,<1.0.0",
         "packaging>=20.9,<21.0",
