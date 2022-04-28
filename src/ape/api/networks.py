@@ -662,7 +662,9 @@ class NetworkAPI(BaseInterfaceModel):
         else:
             raise NetworkError(f"No providers found for network '{self.name}'")
 
-    def use_default_provider(self, provider_settings: Optional[Dict]) -> ProviderContextManager:
+    def use_default_provider(
+        self, provider_settings: Optional[Dict] = None
+    ) -> ProviderContextManager:
         """
         Temporarily connect and use the default provider. When entering the context, it calls
         method :meth:`ape.api.providers.ProviderAPI.connect` and when exiting, it calls
