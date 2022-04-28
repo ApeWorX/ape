@@ -126,7 +126,7 @@ def test_impersonate_not_implemented(accounts):
         _ = accounts[test_address]
 
     expected_err_msg = (
-        f"No account with address '{test_address}'. "
-        f"Also, your provider does not support impersonating accounts."
+        "Your provider does not support impersonating accounts:\n"
+        f"No account with address '{test_address}'."
     )
     assert expected_err_msg in str(err.value)
