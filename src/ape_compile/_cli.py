@@ -35,20 +35,21 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
     a project is loaded. You do not have to manually trigger a recompile.
     """
 
-    if not file_paths and cli_ctx.project_manager.sources_missing:
-        contracts_dir = cli_ctx.config_manager.contracts_folder
-        cli_ctx.logger.warning(f"No source files found in '{contracts_dir}'.")
+    sources_missing = cli_ctx.project_manager.sources_missing
+    if not file_paths and sources_missing and len(cli_ctx.project_manager.dependencies) == 0:
+        cli_ctx.logger.warning("Nothing to compile.")
         return
 
-    ext_given = [p.suffix for p in file_paths if p]
-    ext_with_missing_compilers = cli_ctx.project_manager.extensions_with_missing_compilers(
-        ext_given
-    )
+    if file_paths:
+        ext_given = [p.suffix for p in file_paths if p]
+        ext_with_missing_compilers = cli_ctx.project_manager.extensions_with_missing_compilers(
+            ext_given
+        )
 
-    if ext_with_missing_compilers:
-        extensions_str = ", ".join(ext_with_missing_compilers)
-        message = f"No compilers detected for the following extensions: {extensions_str}"
-        cli_ctx.logger.warning(message)
+        if ext_with_missing_compilers:
+            extensions_str = ", ".join(ext_with_missing_compilers)
+            message = f"No compilers detected for the following extensions: {extensions_str}"
+            cli_ctx.logger.warning(message)
 
     contract_types = cli_ctx.project_manager.load_contracts(
         file_paths=file_paths, use_cache=use_cache

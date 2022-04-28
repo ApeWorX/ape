@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 
 from ape.contracts import ContractContainer
@@ -113,3 +115,14 @@ def test_compile_individual_contract_excludes_other_contract(ape_cli, runner, pr
     result = runner.invoke(ape_cli, ["compile", "Project", "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Other" not in result.output
+
+
+@skip_projects_except(["only-dependency"])
+def test_compile_only_dependency(ape_cli, runner, project):
+    dependency_cache = project.path / "dependency_a" / ".build"
+    if dependency_cache.is_dir():
+        shutil.rmtree(str(dependency_cache))
+
+    result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "Compiling 'DependencyA.json'" in result.output

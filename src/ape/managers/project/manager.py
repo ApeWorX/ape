@@ -383,6 +383,8 @@ class ProjectManager(BaseManager):
             types for each compiled contract.
         """
 
+        self._load_dependencies()
+
         if not self.contracts_folder.exists():
             return {}
 
@@ -390,9 +392,7 @@ class ProjectManager(BaseManager):
         if not use_cache and in_source_cache.exists():
             shutil.rmtree(str(in_source_cache))
 
-        self._load_dependencies()
         file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
-
         manifest = self._project.create_manifest(file_paths, use_cache=use_cache)
         return manifest.contract_types or {}
 
