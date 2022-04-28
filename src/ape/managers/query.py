@@ -22,7 +22,7 @@ class DefaultQueryProvider(QueryAPI):
     """
 
     @singledispatchmethod
-    def estimate_query(self, query: QueryType) -> Optional[int]:
+    def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
 
         return None  # can't handle this query
 
@@ -32,7 +32,7 @@ class DefaultQueryProvider(QueryAPI):
         return (query.stop_block - query.start_block) * 100
 
     @singledispatchmethod
-    def perform_query(self, query: QueryType) -> pd.DataFrame:
+    def perform_query(self, query: QueryType) -> pd.DataFrame:  # type: ignore
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
     @perform_query.register
