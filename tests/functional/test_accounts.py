@@ -118,3 +118,15 @@ def test_autosign(temp_ape_account):
     message = encode_defunct(text="Hello Apes!")
     signature = temp_ape_account.sign_message(message)
     assert temp_ape_account.check_signature(message, signature)
+
+
+def test_impersonate_not_implemented(accounts):
+    test_address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+    with pytest.raises(IndexError) as err:
+        _ = accounts[test_address]
+
+    expected_err_msg = (
+        "Your provider does not support impersonating accounts:\n"
+        f"No account with address '{test_address}'."
+    )
+    assert expected_err_msg in str(err.value)
