@@ -36,8 +36,8 @@ class CacheQueryProvider(QueryAPI):
 
     @estimate_query.register
     def estimate_block_query(self, query: BlockQuery) -> Optional[int]:
-        with self.db() as db:
-            q = db.execute("SELECT COUNT(*) FROM blocks")
+        with self.engine.connect() as conn:
+            q = conn.execute("SELECT COUNT(*) FROM blocks")
             if q == (query.stop_block - query.start_block):
                 # I can use the cache database
                 return 50  # msec, assume static amount of time to fulfil
@@ -53,9 +53,10 @@ class CacheQueryProvider(QueryAPI):
 
     @perform_query.register
     def perform_block_query(self, query: BlockQuery) -> pd.DataFrame:
-        with self.db() as db:
-            q = db.execute("SELECT COUNT(*) FROM blocks")
-            if q > 0:
+        with self.engine.connect() as conn:
+            q = conn.execute("SELECT COUNT(*) FROM blocks")
+            breakpoint()
+            if q.all() > 0:
                 return pd.Dataframe("SELECT * FROM blocks")
             #else: fall through to brute force query
         blocks_iter = map(
