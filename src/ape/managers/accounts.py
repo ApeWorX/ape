@@ -81,7 +81,7 @@ class TestAccountManager(list, ManagerAccessMixin):
             # else: fall through to `IndexError`
         except NotImplementedError as err:
             raise IndexError(
-                f"{err_message} Also, your provider does not support impersonating accounts."
+                f"Your provider does not support impersonating accounts:\n{err_message}"
             ) from err
 
         if not can_impersonate:
