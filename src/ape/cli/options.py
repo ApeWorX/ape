@@ -54,17 +54,10 @@ def verbosity_option(cli_logger):
     names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
 
     def decorator(f):
-        def _set_level(ctx, param, value):
-            log_level = getattr(LogLevel, value.upper(), None)
-            if log_level is None:
-                raise click.BadParameter(f"Must be one of {names_str}, not {value}.")
-
-            cli_logger.set_level(log_level.name)
-
         return click.option(
             "--verbosity",
             "-v",
-            callback=_set_level,
+            callback=lambda ctx, param, value: cli_logger._load_from_sys_argv(),
             default=DEFAULT_LOG_LEVEL,
             metavar="LVL",
             expose_value=False,

@@ -104,8 +104,12 @@ class CliLogger:
         self._logger = _logger
         self._web3_request_manager_logger = _get_logger("web3.RequestManager")
         self._web3_http_provider_logger = _get_logger("web3.providers.HTTPProvider")
+        self._load_from_sys_argv()
 
-        # NOTE: We need to set the verbosity from the CLI option earlier than click lets us.
+    def _load_from_sys_argv(self):
+        """
+        Load from sys.argv to beat race condition with `click`.
+        """
         log_level = DEFAULT_LOG_LEVEL
         level_names = [lvl.name for lvl in LogLevel]
         for arg_i in range(len(sys.argv) - 1):
