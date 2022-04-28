@@ -77,7 +77,7 @@ class ApeCLI(click.MultiCommand):
             try:
                 entry_points = metadata.entry_points(group=group_name)  # type: ignore
             except TypeError:
-                entry_points = metadata.entry_points()
+                entry_points = metadata.entry_points()  # type: ignore
                 entry_points = (
                     entry_points[group_name] if group_name in entry_points else []  # type: ignore
                 )
