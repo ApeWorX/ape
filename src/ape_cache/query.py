@@ -9,7 +9,14 @@ from sqlalchemy import create_engine
 from ape.api import QueryAPI, QueryType
 from ape.exceptions import QueryEngineError
 from ape.utils import singledispatchmethod, cached_property
-from ape.api.query import BlockQuery, _BaseQuery
+from ape.api.query import BlockQuery, _BaseQuery, AccountQuery, ContractEventQuery
+
+
+TABLE_NAME = {
+    BlockQuery: "blocks",
+    AccountQuery: "transactions",
+    ContractEventQuery: "contract_events"
+}
 
 
 def get_columns_from_item(query: _BaseQuery, item: BaseModel) -> Dict[str, Any]:
@@ -37,14 +44,20 @@ class CacheQueryProvider(QueryAPI):
     @estimate_query.register
     def estimate_block_query(self, query: BlockQuery) -> Optional[int]:
         with self.engine.connect() as conn:
-            q = conn.execute("SELECT COUNT(*) FROM blocks")
-            if q == (query.stop_block - query.start_block):
-                # I can use the cache database
-                return 50  # msec, assume static amount of time to fulfil
-            # else: can't use the cache, fall through to brute force provider calls
-
-        # NOTE: Very loose estimate of 100ms per block
-        return (query.stop_block - query.start_block) * 100
+            q = conn.execute(
+                f"""
+                SELECT COUNT(*) 
+                FROM blocks 
+                WHERE blocks.number >= {query.start_block} 
+                AND blocks.number <= {query.stop_block}
+                """
+            )
+            number_of_rows = q.rowcount
+        # NOTE: Assume 200 msec to get data from database
+        time_to_get_cached_records = 200 if number_of_rows > 0 else 0
+        # NOTE: Very loose estimate of 0.75ms per block
+        time_to_get_uncached_records = int((query.stop_block - query.start_block - number_of_rows) * 0.75)
+        return time_to_get_cached_records + time_to_get_uncached_records
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> pd.DataFrame:
@@ -54,21 +67,35 @@ class CacheQueryProvider(QueryAPI):
     @perform_query.register
     def perform_block_query(self, query: BlockQuery) -> pd.DataFrame:
         with self.engine.connect() as conn:
-            q = conn.execute("SELECT COUNT(*) FROM blocks")
-            breakpoint()
-            if q.all() > 0:
-                return pd.Dataframe("SELECT * FROM blocks")
-            #else: fall through to brute force query
+            q = conn.execute(
+                f"""
+                SELECT {','.join(query.columns)} 
+                FROM blocks 
+                WHERE blocks.number >= {query.start_block} 
+                AND blocks.number <= {query.stop_block}
+                """
+            )
+            cached_records = pd.DataFrame(columns=query.columns, data=q.fetchall())
+        if len(cached_records) == query.stop_block - query.start_block:
+            return cached_records
         blocks_iter = map(
             self.provider.get_block,
             # NOTE: the range stop block is a non-inclusive stop.
             #       Where as the query method is an inclusive stop.
-            range(query.start_block, query.stop_block + 1),
+            range(query.start_block + len(cached_records), query.stop_block + 1),
         )
         block_dicts_iter = map(partial(get_columns_from_item, query), blocks_iter)
-        return pd.DataFrame(columns=query.columns, data=block_dicts_iter)
+        return pd.concat(
+            [
+                cached_records,
+                pd.DataFrame(columns=query.columns, data=block_dicts_iter),
+            ]
+        )
 
     def update_cache(self, query: QueryType, result: pd.DataFrame):
-        with self.db() as db:
-            breakpoint()
-            result.to_sql("blocks", db.connection(), if_exists="replace")
+        # TODO: Add handling of having primary key and potentially
+        #  updating table with certain columns
+        if set(result.columns) != set(query.all_fields()):
+            return  # We do not have all the data to update the database
+        with self.engine.connect() as conn:
+            result.to_sql(TABLE_NAME[type(query)], conn, if_exists="append")

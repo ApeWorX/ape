@@ -4,6 +4,7 @@ from ape.api import PluginConfig
 
 from .query import CacheQueryProvider
 
+
 class CacheConfig(PluginConfig):
     size: int = 1024 ** 3  # 1gb
 
