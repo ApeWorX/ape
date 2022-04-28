@@ -57,7 +57,7 @@ def verbosity_option(cli_logger):
         return click.option(
             "--verbosity",
             "-v",
-            callback=lambda ctx, param, value: cli_logger._load_from_sys_argv(),
+            callback=lambda ctx, param, value: cli_logger._load_from_sys_argv(default=value),
             default=DEFAULT_LOG_LEVEL,
             metavar="LVL",
             expose_value=False,
