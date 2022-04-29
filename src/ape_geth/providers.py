@@ -243,7 +243,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
     @property
     def _node_info(self) -> Optional[NodeInfo]:
         try:
-            return self._web3.geth.admin.node_info()
+            return self.web3.geth.admin.node_info()
         except ValueError:
             # Unsupported API in user's geth.
             return None

@@ -155,8 +155,8 @@ def ethereum(networks_connected_to_tester):
 
 
 @pytest.fixture
-def eth_tester_provider(networks):
-    yield networks.active_provider
+def eth_tester_provider(networks_connected_to_tester):
+    yield networks_connected_to_tester.active_provider
 
 
 @pytest.fixture
