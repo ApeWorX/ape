@@ -54,7 +54,7 @@ def verbosity_option(cli_logger):
     names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
 
     def set_level(ctx, param, value):
-        cli_logger._load_from_sys_argv(default=value)
+        cli_logger._load_from_sys_argv(default=value.upper())
 
     def decorator(f):
         return click.option(
