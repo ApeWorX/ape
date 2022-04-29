@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 import pandas as pd
 from pydantic import BaseModel
 from sqlalchemy import create_engine  # type: ignore
-from sqlalchemy.sql import text
+from sqlalchemy.sql import text  # type: ignore
 
 from ape.api import QueryAPI, QueryType
 from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery, _BaseQuery
@@ -47,9 +47,9 @@ class CacheQueryProvider(QueryAPI):
             q = conn.execute(
                 text(
                     """
-                    SELECT COUNT(*) 
-                    FROM blocks 
-                    WHERE blocks.number >= :start_block 
+                    SELECT COUNT(*)
+                    FROM blocks
+                    WHERE blocks.number >= :start_block
                     AND blocks.number <= :stop_block
                     """
                 ),
