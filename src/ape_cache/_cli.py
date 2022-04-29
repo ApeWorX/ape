@@ -23,7 +23,9 @@ def init(network):
     click.echo("Caching database initialized.")
 
 
-@cli.command(cls=NetworkBoundCommand, short_help="Call and print SQL statement to the cache database")
+@cli.command(
+    cls=NetworkBoundCommand, short_help="Call and print SQL statement to the cache database"
+)
 @network_option()
 @click.argument("sql")
 def query(sql, network):

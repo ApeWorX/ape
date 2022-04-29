@@ -1,18 +1,19 @@
+import math
 from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-import math
 import pandas as pd
 from pydantic import BaseModel
 from sqlalchemy import create_engine  # type: ignore
 from sqlalchemy.sql import text  # type: ignore
 
-from . import models
 from ape.api import QueryAPI, QueryType
 from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
-from ape.utils import cached_property, singledispatchmethod, logger
+from ape.utils import logger, singledispatchmethod
+
+from . import models
 
 TABLE_NAME = {
     BlockQuery: "blocks",
