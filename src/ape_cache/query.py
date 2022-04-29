@@ -2,6 +2,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+import math
 import pandas as pd
 from pydantic import BaseModel
 from sqlalchemy import create_engine  # type: ignore
@@ -11,7 +12,7 @@ from . import models
 from ape.api import QueryAPI, QueryType
 from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
-from ape.utils import cached_property, singledispatchmethod
+from ape.utils import cached_property, singledispatchmethod, logger
 
 TABLE_NAME = {
     BlockQuery: "blocks",
@@ -32,9 +33,23 @@ class CacheQueryProvider(QueryAPI):
 
     @property
     def database_file(self) -> Path:
-        return self.config_manager.DATA_FOLDER / "cache.db"
+        if not self.network_manager.active_provider:
+            raise QueryEngineError("Not connected to a network")
 
-    @cached_property
+        ecosystem_name = self.network_manager.active_provider.network.ecosystem.name
+        network_name = self.network_manager.active_provider.network.name
+        if network_name == "local":
+            raise QueryEngineError("Cannot cache local network")
+
+        if "-fork" in network_name:
+            network_name = network_name.replace("-fork", "")
+
+        if not (self.config_manager.DATA_FOLDER / ecosystem_name).exists():
+            (self.config_manager.DATA_FOLDER / ecosystem_name).mkdir()
+
+        return self.config_manager.DATA_FOLDER / ecosystem_name / f"{network_name}.db"
+
+    @property
     def engine(self):
         return create_engine(f"sqlite:///{self.database_file}", pool_pre_ping=True)
 
@@ -57,25 +72,35 @@ class CacheQueryProvider(QueryAPI):
 
     @estimate_query.register
     def estimate_block_query(self, query: BlockQuery) -> Optional[int]:
-        with self.engine.connect() as conn:
-            q = conn.execute(
-                text(
-                    """
-                    SELECT COUNT(*)
-                    FROM blocks
-                    WHERE blocks.number >= :start_block
-                    AND blocks.number <= :stop_block
-                    """
-                ),
-                start_block=query.start_block,
-                stop_block=query.stop_block,
-            )
-            number_of_rows = q.rowcount
+        try:
+            with self.engine.connect() as conn:
+                q = conn.execute(
+                    text(
+                        """
+                        SELECT COUNT(*)
+                        FROM blocks
+                        WHERE blocks.number >= :start_block
+                        AND blocks.number <= :stop_block
+                        AND blocks.number mod :step = 0
+                        """
+                    ),
+                    start_block=query.start_block,
+                    stop_block=query.stop_block,
+                    step=query.step,
+                )
+                number_of_rows = q.rowcount
+
+        except Exception as err:
+            # Note: If any error, skip the data from the cache and continue to
+            #       query from provider.
+            logger.debug(err)
+            number_of_rows = 0
+
         # NOTE: Assume 200 msec to get data from database
         time_to_get_cached_records = 200 if number_of_rows > 0 else 0
         # NOTE: Very loose estimate of 0.75ms per block
         time_to_get_uncached_records = int(
-            (query.stop_block - query.start_block - number_of_rows) * 0.75
+            ((query.stop_block - query.start_block) / query.step - number_of_rows) * 0.75
         )
         return time_to_get_cached_records + time_to_get_uncached_records
 
@@ -85,28 +110,39 @@ class CacheQueryProvider(QueryAPI):
 
     @perform_query.register
     def perform_block_query(self, query: BlockQuery) -> pd.DataFrame:
-        with self.engine.connect() as conn:
-            q = conn.execute(
-                text(
-                    """
-                    SELECT :columns
-                    FROM blocks
-                    WHERE blocks.number >= :start_block
-                    AND blocks.number <= :stop_block
-                    """
-                ),
-                columns=",".join(query.columns),
-                start_block=query.start_block,
-                stop_block=query.stop_block,
-            )
-            cached_records = pd.DataFrame(columns=query.columns, data=q.fetchall())
-        if len(cached_records) == query.stop_block - query.start_block:
+        try:
+            with self.engine.connect() as conn:
+                q = conn.execute(
+                    text(
+                        """
+                        SELECT :columns
+                        FROM blocks
+                        WHERE blocks.number >= :start_block
+                        AND blocks.number <= :stop_block
+                        AND blocks.number mod :step = 0
+                        """
+                    ),
+                    columns=",".join(query.columns),
+                    start_block=query.start_block,
+                    stop_block=query.stop_block,
+                    step=query.step,
+                )
+                cached_records = pd.DataFrame(columns=query.columns, data=q.fetchall())
+
+        except Exception as err:
+            # Note: If any error, skip the data from the cache and continue to
+            #       query from provider.
+            logger.debug(err)
+            cached_records = pd.DataFrame(columns=query.columns)
+
+        if len(cached_records) == math.ceil((query.stop_block - query.start_block) / query.step):
             return cached_records
+
         blocks_iter = map(
             self.provider.get_block,
             # NOTE: the range stop block is a non-inclusive stop.
             #       Where as the query method is an inclusive stop.
-            range(query.start_block + len(cached_records), query.stop_block + 1),
+            range(query.start_block + len(cached_records), query.stop_block + 1, query.step),
         )
         block_dicts_iter = map(partial(get_columns_from_item, query), blocks_iter)
         return pd.concat(
@@ -119,9 +155,14 @@ class CacheQueryProvider(QueryAPI):
     def update_cache(self, query: QueryType, result: pd.DataFrame):
         # TODO: Add handling of having primary key and potentially
         #  updating table with certain columns
-        # if set(result.columns) != set(query.all_fields()):
-        #     breakpoint()
-        #     return  # We do not have all the data to update the database
+        if set(result.columns) != set(query.all_fields()):
+            return  # We do not have all the data to update the database
 
-        with self.engine.connect() as conn:
-            result.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
+        try:
+            with self.engine.connect() as conn:
+                result.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
+
+        except Exception as err:
+            # Note: If any error, skip the data from the cache and continue to
+            #       query from provider.
+            logger.debug(err)

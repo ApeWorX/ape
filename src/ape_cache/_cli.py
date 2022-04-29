@@ -1,9 +1,8 @@
 import click
 import pandas as pd
 
+from ape.cli import NetworkBoundCommand, network_option
 from ape.utils import ManagerAccessMixin
-
-from . import models
 
 
 def get_engine():
@@ -17,20 +16,23 @@ def cli():
     """
 
 
-@cli.command(short_help="Initialize a new cache database")
-def init():
+@cli.command(cls=NetworkBoundCommand, short_help="Initialize a new cache database")
+@network_option()
+def init(network):
     get_engine().init_db()
     click.echo("Caching database initialized.")
 
 
-@cli.command(short_help="Call and print SQL statement to the cache database")
+@cli.command(cls=NetworkBoundCommand, short_help="Call and print SQL statement to the cache database")
+@network_option()
 @click.argument("sql")
-def query(sql):
+def query(sql, network):
     with get_engine().engine.connect() as conn:
         click.echo(pd.DataFrame(conn.execute(sql)))
 
 
-@cli.command(short_help="Purges entire database")
-def purge():
+@cli.command(cls=NetworkBoundCommand, short_help="Purges entire database")
+@network_option()
+def purge(network):
     get_engine().purge_db()
     click.echo("Caching database purged.")
