@@ -309,6 +309,9 @@ class ProjectManager(BaseManager):
         extensions_found = []
 
         def _append_extensions_in_dir(directory: Path):
+            if not directory.is_dir():
+                return
+
             for file in directory.iterdir():
                 if file.is_dir():
                     _append_extensions_in_dir(file)

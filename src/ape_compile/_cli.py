@@ -40,16 +40,15 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
         cli_ctx.logger.warning("Nothing to compile.")
         return
 
-    if file_paths:
-        ext_given = [p.suffix for p in file_paths if p]
-        ext_with_missing_compilers = cli_ctx.project_manager.extensions_with_missing_compilers(
-            ext_given
-        )
+    ext_given = [p.suffix for p in file_paths if p]
+    ext_with_missing_compilers = cli_ctx.project_manager.extensions_with_missing_compilers(
+        ext_given
+    )
 
-        if ext_with_missing_compilers:
-            extensions_str = ", ".join(ext_with_missing_compilers)
-            message = f"No compilers detected for the following extensions: {extensions_str}"
-            cli_ctx.logger.warning(message)
+    if ext_with_missing_compilers:
+        extensions_str = ", ".join(ext_with_missing_compilers)
+        message = f"No compilers detected for the following extensions: {extensions_str}"
+        cli_ctx.logger.warning(message)
 
     contract_types = cli_ctx.project_manager.load_contracts(
         file_paths=file_paths, use_cache=use_cache
