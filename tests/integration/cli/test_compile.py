@@ -117,6 +117,13 @@ def test_compile_individual_contract_excludes_other_contract(ape_cli, runner, pr
     assert "Other" not in result.output
 
 
+@skip_projects_except(["with-dependency"])
+def test_compile_non_ape_project_deletes_ape_config_file(ape_cli, runner, project):
+    result = runner.invoke(ape_cli, ["compile", "Project", "--force"], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "ape-config.yaml" not in [f.name for f in (project.path / "dependency_c").iterdir()]
+
+
 @skip_projects_except(["only-dependency"])
 def test_compile_only_dependency(ape_cli, runner, project):
     dependency_cache = project.path / "dependency_a" / ".build"
