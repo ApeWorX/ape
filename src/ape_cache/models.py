@@ -7,11 +7,12 @@ from .base import Base
 class Blocks(Base):
     __tablename__ = "blocks"  # type: ignore
 
+    id = Column(Integer, primary_key=True, index=True)
     gas_data = Column(String)
     consensus_data = Column(String)
-    hash = Column(String, primary_key=True, index=True)
-    chain_id = Column(Integer, nullable=False)
-    number = Column(Integer, nullable=False)
+    hash = Column(String)
+    chain_id = Column(Integer)
+    number = Column(Integer)
     parent_hash = Column(String)
     size = Column(Integer)
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), index=True)
