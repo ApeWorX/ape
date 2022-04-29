@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 import pandas as pd
 from pydantic import BaseModel
 from sqlalchemy import create_engine  # type: ignore
+from sqlalchemy.sql import text
 
 from ape.api import QueryAPI, QueryType
 from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery, _BaseQuery
@@ -44,12 +45,16 @@ class CacheQueryProvider(QueryAPI):
     def estimate_block_query(self, query: BlockQuery) -> Optional[int]:
         with self.engine.connect() as conn:
             q = conn.execute(
-                f"""
-                SELECT COUNT(*)
-                FROM blocks
-                WHERE blocks.number >= {query.start_block}
-                AND blocks.number <= {query.stop_block}
-                """
+                text(
+                    """
+                    SELECT COUNT(*) 
+                    FROM blocks 
+                    WHERE blocks.number >= :start_block 
+                    AND blocks.number <= :stop_block
+                    """
+                ),
+                start_block=query.start_block,
+                stop_block=query.stop_block,
             )
             number_of_rows = q.rowcount
         # NOTE: Assume 200 msec to get data from database
@@ -62,19 +67,23 @@ class CacheQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> pd.DataFrame:  # type: ignore
-
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
     @perform_query.register
     def perform_block_query(self, query: BlockQuery) -> pd.DataFrame:
         with self.engine.connect() as conn:
             q = conn.execute(
-                f"""
-                SELECT {','.join(query.columns)}
-                FROM blocks
-                WHERE blocks.number >= {query.start_block}
-                AND blocks.number <= {query.stop_block}
-                """
+                text(
+                    """
+                    SELECT :columns
+                    FROM blocks
+                    WHERE blocks.number >= :start_block
+                    AND blocks.number <= :stop_block
+                    """
+                ),
+                columns=",".join(query.columns),
+                start_block=query.start_block,
+                stop_block=query.stop_block,
             )
             cached_records = pd.DataFrame(columns=query.columns, data=q.fetchall())
         if len(cached_records) == query.stop_block - query.start_block:
@@ -98,5 +107,6 @@ class CacheQueryProvider(QueryAPI):
         #  updating table with certain columns
         if set(result.columns) != set(query.all_fields()):
             return  # We do not have all the data to update the database
+
         with self.engine.connect() as conn:
             result.to_sql(TABLE_NAME[type(query)], conn, if_exists="append")

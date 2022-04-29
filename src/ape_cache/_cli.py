@@ -17,20 +17,17 @@ def cli():
     """
 
 
-@cli.command(short_help="Initialize a new cache db")
+@cli.command(short_help="Initialize a new cache database")
 def init():
     db_file = get_engine().database_file
     if not db_file.is_file():
-        click.echo("initializing database")
+        click.echo("Initializing database.")
         models.Base.metadata.create_all(bind=get_engine().engine)
-        return click.echo("caching database initialized")
-    click.echo("caching database already exists!")
+        return click.echo("Caching database initialized.")
+    click.echo("Caching database already exists!")
 
 
-# TODO: add migrate command
-
-
-@cli.command(short_help="Call and print SQL Statement to the cache db")
+@cli.command(short_help="Call and print SQL statement to the cache database")
 @click.argument("sql")
 def query(sql):
     with get_engine().engine.connect() as conn:
@@ -42,6 +39,6 @@ def purge():
     db_file = get_engine().database_file
     if not db_file.is_file():
         # Add check here to show we have a file that exists
-        return click.echo("caching database must be initialized with `ape cache init`")
+        return click.echo("Caching database must be initialized with `ape cache init`")
     db_file.unlink()
-    click.echo("caching database purged")
+    click.echo("Caching database purged.")
