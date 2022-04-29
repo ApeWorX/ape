@@ -15,7 +15,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     _tester: PyEVMBackend
 
-    def __init__(self, **data):
+    def __init__(self, **data) -> None:
         super().__init__(**data)
         self._tester = PyEVMBackend.from_mnemonic(
             mnemonic=self.config["mnemonic"],
