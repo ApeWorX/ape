@@ -24,9 +24,7 @@ def test_chain_id_is_cached(eth_tester_provider):
 def test_chain_id_when_none_raises(eth_tester_provider):
     eth_tester_provider.disconnect()
 
-    with pytest.raises(ProviderNotConnectedError) as err:
+    with pytest.raises(ProviderNotConnectedError, match="Not connected to a network provider."):
         _ = eth_tester_provider.chain_id
-
-    assert str(err.value) == "Not connected to a network provider."
 
     eth_tester_provider.connect()  # Undo
