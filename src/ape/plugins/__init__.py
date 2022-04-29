@@ -3,6 +3,7 @@ import importlib
 import pkgutil
 from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, Type, cast
 
+from ape.__modules__ import __modules__
 from ape.logging import logger
 
 from .account import AccountPlugin
@@ -128,6 +129,10 @@ class PluginManager:
                 try:
                     plugin_manager.register(importlib.import_module(name))
                 except Exception as err:
+                    if name in __modules__:
+                        # Don't except errors from first class plugins.
+                        raise
+
                     logger.warn_from_exception(err, f"Error loading plugin package '{name}'.")
 
     def __repr__(self):
