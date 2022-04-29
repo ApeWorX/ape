@@ -2,6 +2,7 @@ import click
 import pandas as pd
 
 from ape.utils import ManagerAccessMixin
+
 from . import models
 
 

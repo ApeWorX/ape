@@ -6,7 +6,7 @@ from .query import CacheQueryProvider
 
 
 class CacheConfig(PluginConfig):
-    size: int = 1024 ** 3  # 1gb
+    size: int = 1024**3  # 1gb
 
 
 @plugins.register(plugins.Config)

@@ -1,21 +1,20 @@
 from functools import partial
+from pathlib import Path
+from typing import Any, Dict, Optional
+
 import pandas as pd
 from pydantic import BaseModel
-from typing import Dict, Any, Optional
-from pathlib import Path
-
 from sqlalchemy import create_engine
 
 from ape.api import QueryAPI, QueryType
+from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
-from ape.utils import singledispatchmethod, cached_property
-from ape.api.query import BlockQuery, _BaseQuery, AccountQuery, ContractEventQuery
-
+from ape.utils import cached_property, singledispatchmethod
 
 TABLE_NAME = {
     BlockQuery: "blocks",
     AccountQuery: "transactions",
-    ContractEventQuery: "contract_events"
+    ContractEventQuery: "contract_events",
 }
 
 
@@ -56,7 +55,9 @@ class CacheQueryProvider(QueryAPI):
         # NOTE: Assume 200 msec to get data from database
         time_to_get_cached_records = 200 if number_of_rows > 0 else 0
         # NOTE: Very loose estimate of 0.75ms per block
-        time_to_get_uncached_records = int((query.stop_block - query.start_block - number_of_rows) * 0.75)
+        time_to_get_uncached_records = int(
+            (query.stop_block - query.start_block - number_of_rows) * 0.75
+        )
         return time_to_get_cached_records + time_to_get_uncached_records
 
     @singledispatchmethod

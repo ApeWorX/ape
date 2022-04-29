@@ -1,5 +1,4 @@
-
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.sql import func
 
 from .base import Base
@@ -34,6 +33,8 @@ class ContractEvents(Base):
     id = Column(Integer, primary_key=True, index=True)
     contract = Column(String, nullable=False)
     event_data = Column(String, nullable=False)
-    transaction_hash = Column(String, ForeignKey("transactions.hash", ondelete="CASCADE"), nullable=False)
+    transaction_hash = Column(
+        String, ForeignKey("transactions.hash", ondelete="CASCADE"), nullable=False
+    )
     chain_id = Column(Integer, nullable=False)
     event_id = Column(String, nullable=False)

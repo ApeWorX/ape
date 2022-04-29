@@ -1,8 +1,6 @@
-
 import datetime
 
 from pydantic import BaseModel
-
 
 """
 Types to be fixed
