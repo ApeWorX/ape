@@ -19,13 +19,8 @@ def cli():
 
 @cli.command(short_help="Initialize a new cache database")
 def init():
-    db_file = get_engine().database_file
-    if not db_file.is_file():
-        click.echo("Initializing database.")
-        models.Base.metadata.create_all(bind=get_engine().engine)
-        return click.echo("Caching database initialized.")
-
-    click.echo("Caching database already exists!")
+    get_engine().init_db()
+    click.echo("Caching database initialized.")
 
 
 @cli.command(short_help="Call and print SQL statement to the cache database")
@@ -37,10 +32,5 @@ def query(sql):
 
 @cli.command(short_help="Purges entire database")
 def purge():
-    db_file = get_engine().database_file
-    if not db_file.is_file():
-        # Add check here to show we have a file that exists
-        return click.echo("Caching database must be initialized with `ape cache init`")
-
-    db_file.unlink()
+    get_engine().purge_db()
     click.echo("Caching database purged.")

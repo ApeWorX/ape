@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine  # type: ignore
 from sqlalchemy.sql import text  # type: ignore
 
+from . import models
 from ape.api import QueryAPI, QueryType
 from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
@@ -36,6 +37,19 @@ class CacheQueryProvider(QueryAPI):
     @cached_property
     def engine(self):
         return create_engine(f"sqlite:///{self.database_file}", pool_pre_ping=True)
+
+    def init_db(self):
+        if self.database_file.is_file():
+            raise QueryEngineError("Database has already been initialized")
+
+        models.Base.metadata.create_all(bind=self.engine)
+
+    def purge_db(self):
+        if not self.database_file.is_file():
+            # Add check here to show we have a file that exists
+            raise QueryEngineError("Database must be initialized")
+
+        self.database_file.unlink()
 
     @singledispatchmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
