@@ -64,8 +64,6 @@ def test_default_provider_not_found(config, networks):
     eth_config = {"ethereum": {"mainnet": {"default_provider": "DOES_NOT_EXIST"}}}
 
     with temp_config(eth_config, config):
-        with pytest.raises(NetworkError) as err:
+        with pytest.raises(NetworkError, match="Provider 'DOES_NOT_EXIST' not found."):
             # Trigger re-loading the Ethereum config.
             _ = networks.ecosystems
-
-        assert str(err.value) == "Provider 'DOES_NOT_EXIST' not found."
