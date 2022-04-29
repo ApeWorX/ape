@@ -10,6 +10,11 @@ from ape.exceptions import AccountsError, ContractLogicError, TransactionError
 ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
 
 
+@pytest.fixture(autouse=True, scope="module")
+def connected(eth_tester_provider):
+    yield
+
+
 @pytest.fixture
 def temp_ape_account(keyparams, temp_accounts_path):
     test_keyfile_path = temp_accounts_path / f"{ALIAS}.json"
