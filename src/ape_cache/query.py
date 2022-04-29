@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 from pydantic import BaseModel
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine  # type: ignore
 
 from ape.api import QueryAPI, QueryType
 from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery, _BaseQuery
@@ -37,7 +37,7 @@ class CacheQueryProvider(QueryAPI):
         return create_engine(f"sqlite:///{self.database_file}", pool_pre_ping=True)
 
     @singledispatchmethod
-    def estimate_query(self, query: QueryType) -> Optional[int]:
+    def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
         return None  # can't handle this query
 
     @estimate_query.register
@@ -45,9 +45,9 @@ class CacheQueryProvider(QueryAPI):
         with self.engine.connect() as conn:
             q = conn.execute(
                 f"""
-                SELECT COUNT(*) 
-                FROM blocks 
-                WHERE blocks.number >= {query.start_block} 
+                SELECT COUNT(*)
+                FROM blocks
+                WHERE blocks.number >= {query.start_block}
                 AND blocks.number <= {query.stop_block}
                 """
             )
@@ -61,7 +61,7 @@ class CacheQueryProvider(QueryAPI):
         return time_to_get_cached_records + time_to_get_uncached_records
 
     @singledispatchmethod
-    def perform_query(self, query: QueryType) -> pd.DataFrame:
+    def perform_query(self, query: QueryType) -> pd.DataFrame:  # type: ignore
 
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
@@ -70,9 +70,9 @@ class CacheQueryProvider(QueryAPI):
         with self.engine.connect() as conn:
             q = conn.execute(
                 f"""
-                SELECT {','.join(query.columns)} 
-                FROM blocks 
-                WHERE blocks.number >= {query.start_block} 
+                SELECT {','.join(query.columns)}
+                FROM blocks
+                WHERE blocks.number >= {query.start_block}
                 AND blocks.number <= {query.stop_block}
                 """
             )

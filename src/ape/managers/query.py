@@ -93,7 +93,7 @@ class QueryManager(ManagerAccessMixin):
 
         for plugin_name, (engine_class,) in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)
-            engines[engine_name] = engine_class()
+            engines[engine_name] = engine_class()  # type: ignore
 
         return engines
 
