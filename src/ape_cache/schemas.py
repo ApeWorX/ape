@@ -2,9 +2,7 @@ import datetime
 
 from pydantic import BaseModel
 
-"""
-Types to be fixed
-"""
+# TODO: set these schemas up properly, add in orm mode
 
 
 class BlocksBase(BaseModel):

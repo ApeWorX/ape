@@ -24,6 +24,7 @@ def init():
         click.echo("Initializing database.")
         models.Base.metadata.create_all(bind=get_engine().engine)
         return click.echo("Caching database initialized.")
+
     click.echo("Caching database already exists!")
 
 
@@ -40,5 +41,6 @@ def purge():
     if not db_file.is_file():
         # Add check here to show we have a file that exists
         return click.echo("Caching database must be initialized with `ape cache init`")
+
     db_file.unlink()
     click.echo("Caching database purged.")

@@ -110,6 +110,7 @@ class QueryManager(ManagerAccessMixin):
         Returns:
             Iterator[QueryAPI]
         """
+
         if engine_to_use:
             if engine_to_use not in self.engines:
                 raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")

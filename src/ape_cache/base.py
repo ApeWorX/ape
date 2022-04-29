@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import as_declarative, declared_attr  # type: ig
 @as_declarative()
 class Base:
     """
-    Base class to generate __tablename__ automatically
+    Base class to generate ``__tablename__`` automatically
     """
 
     id: Any
