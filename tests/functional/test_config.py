@@ -20,6 +20,8 @@ def temp_config(data: Dict, config):
         config_file.touch()
         config_file.write_text(yaml.dump(data))
         yield
+        config_file.unlink()
+        config.load(force_reload=True)
 
 
 def test_integer_deployment_addresses(networks):
