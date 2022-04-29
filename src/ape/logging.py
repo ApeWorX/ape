@@ -3,7 +3,7 @@ import logging
 import sys
 import traceback
 from enum import IntEnum
-from typing import IO, Union
+from typing import IO, Optional, Union
 
 import click
 
@@ -104,9 +104,13 @@ class CliLogger:
         self._logger = _logger
         self._web3_request_manager_logger = _get_logger("web3.RequestManager")
         self._web3_http_provider_logger = _get_logger("web3.providers.HTTPProvider")
+        self._load_from_sys_argv()
 
-        # NOTE: We need to set the verbosity from the CLI option earlier than click lets us.
-        log_level = DEFAULT_LOG_LEVEL
+    def _load_from_sys_argv(self, default: Optional[str] = None):
+        """
+        Load from sys.argv to beat race condition with `click`.
+        """
+        log_level = default or DEFAULT_LOG_LEVEL
         level_names = [lvl.name for lvl in LogLevel]
         for arg_i in range(len(sys.argv) - 1):
             if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
