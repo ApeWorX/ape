@@ -159,7 +159,7 @@ class BaseProject(ProjectAPI):
 
         finally:
             if self.created_temporary_config_file and config_file.is_file():
-                # config_file.unlink()
+                config_file.unlink()
                 self.created_temporary_config_file = False
 
 
