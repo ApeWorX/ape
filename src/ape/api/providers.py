@@ -489,7 +489,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_dict = txn.dict()
         return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
 
-    @property
+    @cached_property
     def chain_id(self) -> int:
         if hasattr(self._web3, "eth"):
             return self._web3.eth.chain_id

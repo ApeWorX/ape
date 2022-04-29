@@ -2,12 +2,13 @@ from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
 from web3 import EthereumTesterProvider, Web3
+from web3.middleware import simple_cache_middleware
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, VirtualMachineError
 from ape.types import SnapshotID
-from ape.utils import gas_estimation_error_message
+from ape.utils import cached_property, gas_estimation_error_message
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
@@ -23,6 +24,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             num_accounts=self.config["number_of_accounts"],
         )
         self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
+        self._web3.middleware_onion.add(simple_cache_middleware)
 
     def connect(self):
         pass
@@ -42,7 +44,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         except TransactionFailed as err:
             raise _get_vm_err(err) from err
 
-    @property
+    @cached_property
     def chain_id(self) -> int:
         if hasattr(self._web3, "eth"):
             return self._web3.eth.chain_id
