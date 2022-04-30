@@ -154,24 +154,27 @@ class Ethereum(EcosystemAPI):
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
         try:
             vm_return_values = abi_decode(output_types, raw_data)
-            if not vm_return_values:
-                return vm_return_values
-
-            if not isinstance(vm_return_values, (tuple, list)):
-                vm_return_values = (vm_return_values,)
-
-            output_values: List[Any] = []
-            for index in range(len(vm_return_values)):
-                value = vm_return_values[index]
-                if index < len(output_types) and output_types[index] == "address":
-                    value = self.decode_address(value)
-
-                output_values.append(value)
-
-            return tuple(output_values)
-
         except InsufficientDataBytes as err:
             raise DecodingError() from err
+
+        if not vm_return_values:
+            return vm_return_values
+
+        if not isinstance(vm_return_values, (tuple, list)):
+            vm_return_values = (vm_return_values,)
+
+        output_values: List[Any] = []
+        for index in range(len(vm_return_values)):
+            value = vm_return_values[index]
+            if index < len(output_types) and output_types[index] == "address":
+                try:
+                    value = self.decode_address(value)
+                except InsufficientDataBytes as err:
+                    raise DecodingError() from err
+
+            output_values.append(value)
+
+        return tuple(output_values)
 
     def encode_deployment(
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
