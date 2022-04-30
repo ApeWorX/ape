@@ -1,4 +1,5 @@
 import itertools
+from dataclasses import make_dataclass
 from typing import Any, Dict, Iterator, List, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
@@ -7,7 +8,7 @@ from eth_abi.abi import decode_abi, decode_single
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address
-from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
+from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 
 from ape.api import (
@@ -174,7 +175,35 @@ class Ethereum(EcosystemAPI):
 
             output_values.append(value)
 
-        return tuple(output_values)
+        if (
+            len(abi.outputs) == 1
+            and abi.outputs[0].components
+            and all(c.name != "" for c in abi.outputs[0].components)
+        ):
+
+            def create_struct(name: str, types: List[ABIType]):
+                return make_dataclass(
+                    name,
+                    # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
+                    list(m.name or f"_{i}" for i, m in enumerate(types)),
+                    namespace={
+                        # NOTE: Allow struct to function as a tuple as well
+                        "__getitem__": lambda self, index: tuple(
+                            getattr(self, field) for field in self.__dataclass_fields__
+                        ).__getitem__(index)
+                    },
+                )
+
+            struct_def = create_struct(
+                # NOTE: unnamed output structs appear as tuples with named members,
+                #       but we don't know of what struct type they are (because ABI encoding sucks)
+                abi.outputs[0].name or f"{abi.name}_return",
+                abi.outputs[0].components,
+            )
+            return struct_def(*output_values[0])
+
+        else:
+            return tuple(output_values)
 
     def encode_deployment(
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
