@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 
 from ape.contracts import ContractContainer
@@ -5,17 +7,19 @@ from ape.contracts import ContractContainer
 from .utils import skip_projects, skip_projects_except
 
 
-@skip_projects(["unregistered-contracts", "one-interface", "geth", "with-dependency"])
+@skip_projects(
+    ["unregistered-contracts", "one-interface", "geth", "only-dependency", "with-dependency"]
+)
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
     assert result.exit_code == 0, result.output
     assert "WARNING" in result.output, result.output
-    assert "No source files found in" in result.output
+    assert "Nothing to compile" in result.output
 
 
 @skip_projects_except(["unregistered-contracts"])
 def test_missing_extensions(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["compile"])
+    result = runner.invoke(ape_cli, ["compile", "--force"])
     assert result.exit_code == 0, result.output
     assert "WARNING: No compilers detected for the following extensions:" in result.output
     assert ".test" in result.output
@@ -29,7 +33,17 @@ def test_no_compiler_for_extension(ape_cli, runner, project):
     assert "WARNING: No compilers detected for the following extensions: .test" in result.output
 
 
-@skip_projects(["empty-config", "no-config", "script", "unregistered-contracts", "test", "geth"])
+@skip_projects(
+    [
+        "empty-config",
+        "no-config",
+        "script",
+        "only-dependency",
+        "unregistered-contracts",
+        "test",
+        "geth",
+    ]
+)
 def test_compile(ape_cli, runner, project, clean_cache):
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
@@ -120,3 +134,14 @@ def test_compile_non_ape_project_deletes_ape_config_file(ape_cli, runner, projec
     result = runner.invoke(ape_cli, ["compile", "Project", "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "ape-config.yaml" not in [f.name for f in (project.path / "dependency_c").iterdir()]
+
+
+@skip_projects_except(["only-dependency"])
+def test_compile_only_dependency(ape_cli, runner, project, clean_cache):
+    dependency_cache = project.path / "dependency_a" / ".build"
+    if dependency_cache.is_dir():
+        shutil.rmtree(str(dependency_cache))
+
+    result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "Compiling 'DependencyA.json'" in result.output
