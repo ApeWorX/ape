@@ -35,9 +35,9 @@ def cli(cli_ctx, file_paths, use_cache, display_size):
     a project is loaded. You do not have to manually trigger a recompile.
     """
 
-    if not file_paths and cli_ctx.project_manager.sources_missing:
-        contracts_dir = cli_ctx.config_manager.contracts_folder
-        cli_ctx.logger.warning(f"No source files found in '{contracts_dir}'.")
+    sources_missing = cli_ctx.project_manager.sources_missing
+    if not file_paths and sources_missing and len(cli_ctx.project_manager.dependencies) == 0:
+        cli_ctx.logger.warning("Nothing to compile.")
         return
 
     ext_given = [p.suffix for p in file_paths if p]
