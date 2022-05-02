@@ -175,32 +175,36 @@ class Ethereum(EcosystemAPI):
 
             output_values.append(value)
 
+        def create_struct(name: str, types: List[ABIType], output_values: List[Any]):
+            struct_def = make_dataclass(
+                name,
+                # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
+                [m.name or f"_{i}" for i, m in enumerate(types)],
+                namespace={
+                    # NOTE: Allow struct to function as a tuple as well
+                    "__getitem__": lambda self, index: tuple(
+                        getattr(self, field) for field in self.__dataclass_fields__
+                    ).__getitem__(index)
+                },
+            )
+            return struct_def(*output_values)
+
         if (
             len(abi.outputs) == 1
             and abi.outputs[0].components
             and all(c.name != "" for c in abi.outputs[0].components)
         ):
-
-            def create_struct(name: str, types: List[ABIType]):
-                return make_dataclass(
-                    name,
-                    # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
-                    list(m.name or f"_{i}" for i, m in enumerate(types)),
-                    namespace={
-                        # NOTE: Allow struct to function as a tuple as well
-                        "__getitem__": lambda self, index: tuple(
-                            getattr(self, field) for field in self.__dataclass_fields__
-                        ).__getitem__(index)
-                    },
-                )
-
-            struct_def = create_struct(
-                # NOTE: unnamed output structs appear as tuples with named members,
-                #       but we don't know of what struct type they are (because ABI encoding sucks)
-                abi.outputs[0].name or f"{abi.name}_return",
+            return create_struct(
+                abi.outputs[0].name,
                 abi.outputs[0].components,
+                output_values[0],
             )
-            return struct_def(*output_values[0])
+
+        elif all(o.name for o in abi.outputs):
+            # NOTE: unnamed output structs appear as tuples with named members,
+            #       but we don't know of what struct type they are because of ABI encoding
+            #       limitation.
+            return create_struct(f"{abi.name}_return", abi.outputs, output_values)
 
         else:
             return tuple(output_values)

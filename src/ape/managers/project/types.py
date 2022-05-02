@@ -16,8 +16,12 @@ class BaseProject(ProjectAPI):
     created_temporary_config_file: bool = False
 
     @property
+    def config_file(self) -> Path:
+        return self.path / APE_CONFIG_FILE_NAME
+
+    @property
     def is_valid(self) -> bool:
-        if (self.path / APE_CONFIG_FILE_NAME).exists():
+        if self.config_file.exists():
             return True
 
         logger.warning(
@@ -50,10 +54,8 @@ class BaseProject(ProjectAPI):
         return files
 
     def configure(self, **kwargs):
-        config_file = self.path / APE_CONFIG_FILE_NAME
-
         # Don't override existing config file.
-        if config_file.exists():
+        if self.config_file.exists():
             return
 
         config_data = {**kwargs}
@@ -63,7 +65,7 @@ class BaseProject(ProjectAPI):
             config_data["version"] = self.version
 
         config_data["contracts_folder"] = self.contracts_folder.name
-        with open(config_file, "w") as f:
+        with open(self.config_file, "w") as f:
             yaml.safe_dump(config_data, f)
 
             # Indicate that we need to clean up the file later.
@@ -74,8 +76,6 @@ class BaseProject(ProjectAPI):
     ) -> PackageManifest:
         # Create a config file if one doesn't exist to forward values from
         # the root project's 'ape-config.yaml' 'dependencies:' config.
-        config_file = self.path / APE_CONFIG_FILE_NAME
-
         try:
             self.configure()
 
@@ -158,8 +158,8 @@ class BaseProject(ProjectAPI):
                 return manifest
 
         finally:
-            if self.created_temporary_config_file and config_file.is_file():
-                config_file.unlink()
+            if self.created_temporary_config_file and self.config_file.is_file():
+                self.config_file.unlink()
                 self.created_temporary_config_file = False
 
 

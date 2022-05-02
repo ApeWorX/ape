@@ -182,3 +182,11 @@ def assert_log_values(log: ContractLog, number: int, previous_number: Optional[i
     expected_previous_number = number - 1 if previous_number is None else previous_number
     assert log.prev_num == expected_previous_number, "Event param 'prev_num' has unexpected value"
     assert log.new_num == number, "Event param 'new_num' has unexpected value"
+
+
+def test_structs(contract_instance, sender, chain):
+    actual = contract_instance.create_struct()
+
+    # The struct returns a struct with components {a: msg.sender, b: block.prevhash}.
+    assert actual.a == sender
+    assert actual.b == chain.blocks[-2].hash
