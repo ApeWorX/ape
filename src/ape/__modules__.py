@@ -1,6 +1,7 @@
 __modules__ = [
     "ape",
     "ape_accounts",
+    "ape_cache",
     "ape_compile",
     "ape_console",
     "ape_ethereum",
