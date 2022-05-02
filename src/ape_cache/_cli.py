@@ -16,7 +16,10 @@ def cli():
     """
 
 
-@cli.command(cls=NetworkBoundCommand, short_help="Initialize a new cache database")
+@cli.command(
+    cls=NetworkBoundCommand,
+    short_help="Initialize a new cache database"
+)
 @network_option()
 def init(network):
     get_engine().init_db()
@@ -24,7 +27,8 @@ def init(network):
 
 
 @cli.command(
-    cls=NetworkBoundCommand, short_help="Call and print SQL statement to the cache database"
+    cls=NetworkBoundCommand,
+    short_help="Call and print SQL statement to the cache database"
 )
 @network_option()
 @click.argument("sql")
