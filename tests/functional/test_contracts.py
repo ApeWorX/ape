@@ -187,6 +187,6 @@ def assert_log_values(log: ContractLog, number: int, previous_number: Optional[i
 def test_structs(contract_instance, sender, chain):
     actual = contract_instance.create_struct()
 
-    # The struct returns a struct with components {a: msg.sender, b: block.prevhash}.
-    assert actual.a == sender
-    assert actual.b == chain.blocks[-2].hash
+    # Expected struct components: a=msg.sender, b=block.prevhash.
+    assert actual.a == actual[0] == sender
+    assert actual.b == actual[1] == chain.blocks[-2].hash
