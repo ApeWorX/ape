@@ -2,6 +2,7 @@ from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
 from web3 import EthereumTesterProvider, Web3
+from web3.middleware import simple_cache_middleware
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
@@ -13,29 +14,29 @@ from ape.utils import gas_estimation_error_message
 class LocalProvider(TestProviderAPI, Web3Provider):
 
     _tester: PyEVMBackend
-    _web3: Web3
 
     def __init__(self, **data) -> None:
         super().__init__(**data)
-
         self._tester = PyEVMBackend.from_mnemonic(
             mnemonic=self.config["mnemonic"],
             num_accounts=self.config["number_of_accounts"],
         )
-        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
 
     def connect(self):
-        pass
+        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
+        self._web3.middleware_onion.add(simple_cache_middleware)
 
     def disconnect(self):
-        pass
+        self.cached_chain_id = None
+        self._web3 = None
 
     def update_settings(self, new_settings: dict):
         pass
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         try:
-            return self._web3.eth.estimate_gas(txn.dict())  # type: ignore
+            result = self.web3.eth.estimate_gas(txn.dict())  # type: ignore
+            return result
         except ValidationError as err:
             message = gas_estimation_error_message(err)
             raise TransactionError(base_err=err, message=message) from err
@@ -44,11 +45,16 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     @property
     def chain_id(self) -> int:
-        if hasattr(self._web3, "eth"):
-            return self._web3.eth.chain_id
+        if self.cached_chain_id is not None:
+            return self.cached_chain_id
+        elif hasattr(self.web3, "eth"):
+            chain_id = self.web3.eth.chain_id
+        else:
+            default_value = API_ENDPOINTS["eth"]["chainId"]()
+            chain_id = int(default_value, 16)
 
-        default_value = API_ENDPOINTS["eth"]["chainId"]()
-        return int(default_value, 16)
+        self.cached_chain_id = chain_id
+        return chain_id
 
     @property
     def gas_price(self) -> int:
@@ -65,7 +71,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             data["gas"] = int(1e12)
 
         try:
-            return self._web3.eth.call(data)
+            return self.web3.eth.call(data)
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:
@@ -73,7 +79,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
-            txn_hash = self._web3.eth.send_raw_transaction(txn.serialize_transaction())
+            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:

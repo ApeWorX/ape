@@ -13,7 +13,7 @@ from ape.api import (
     TransactionAPI,
 )
 from ape.contracts import ContractContainer, ContractInstance
-from ape.exceptions import ChainError, ContractLogicError
+from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
 from ape_ethereum.transactions import TransactionStatusEnum
 
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
@@ -137,26 +137,26 @@ def pytest_runtest_protocol(item, nextitem):
 
         try:
             ape.chain.restore(snapshot_id)
-        except (HeaderNotFound, ChainError):
+        except (HeaderNotFound, ChainError, ProviderNotConnectedError):
             pass
     else:
         yield
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def networks_connected_to_tester():
     with ape.networks.parse_network_choice("::test"):
         yield ape.networks
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def ethereum(networks_connected_to_tester):
     return networks_connected_to_tester.ethereum
 
 
-@pytest.fixture
-def eth_tester_provider(networks):
-    yield networks.active_provider
+@pytest.fixture(scope="session")
+def eth_tester_provider(networks_connected_to_tester):
+    yield networks_connected_to_tester.active_provider
 
 
 @pytest.fixture
