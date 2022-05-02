@@ -1,9 +1,28 @@
 import logging
+import tempfile
+from contextlib import contextmanager
+from pathlib import Path
 from typing import Dict
 
 import pytest
+import yaml
 
-from ape.managers.config import DeploymentConfigCollection
+from ape.exceptions import NetworkError
+from ape.managers.config import CONFIG_FILE_NAME, DeploymentConfigCollection
+
+
+@contextmanager
+def temp_config(data: Dict, config):
+    with tempfile.TemporaryDirectory() as temp_dir_str:
+        temp_dir = Path(temp_dir_str)
+        with config.using_project(temp_dir):
+            config._cached_configs = {}
+            config_file = temp_dir / CONFIG_FILE_NAME
+            config_file.touch()
+            config_file.write_text(yaml.dump(data))
+            yield
+            config_file.unlink()
+            config._cached_configs = {}
 
 
 def test_integer_deployment_addresses(networks):
@@ -39,3 +58,12 @@ def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "l
             ]
         }
     }
+
+
+def test_default_provider_not_found(config, networks):
+    eth_config = {"ethereum": {"mainnet": {"default_provider": "DOES_NOT_EXIST"}}}
+
+    with temp_config(eth_config, config):
+        with pytest.raises(NetworkError, match="Provider 'DOES_NOT_EXIST' not found."):
+            # Trigger re-loading the Ethereum config.
+            _ = networks.ecosystems
