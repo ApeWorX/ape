@@ -17,15 +17,18 @@ if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
-def _convert_kwargs(kwargs, converter):
-    return {
+def _convert_kwargs(kwargs, converter) -> Dict:
+    fields = TransactionAPI.__fields__
+    kwargs_to_convert = {k: v for k, v in kwargs.items() if k == "sender" or k in fields}
+    converted_fields = {
         k: converter(
             v,
             # TODO: Upstream, `TransactionAPI.sender` should be `AddressType` (not `str`)
-            AddressType if k == "sender" else TransactionAPI.__fields__[k].type_,
+            AddressType if k == "sender" else fields[k].type_,
         )
-        for k, v in kwargs.items()
+        for k, v in kwargs_to_convert.items()
     }
+    return {**kwargs, **converted_fields}
 
 
 class ContractConstructor(ManagerAccessMixin):
