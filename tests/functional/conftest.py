@@ -438,15 +438,9 @@ def vyper_contract_instance(
 def contract_container(
     request, solidity_contract_container, vyper_contract_container, networks_connected_to_tester
 ):
-    if request.param == "solidity":
-        yield solidity_contract_container
-    elif request.param == "vyper":
-        yield vyper_contract_container
+    return solidity_contract_container if request.param == "solidity" else vyper_contract_container
 
 
 @pytest.fixture(params=("solidity", "vyper"))
 def contract_instance(request, solidity_contract_instance, vyper_contract_instance):
-    if request.param == "solidity":
-        yield solidity_contract_instance
-    elif request.param == "vyper":
-        yield vyper_contract_instance
+    return solidity_contract_instance if request.param == "solidity" else vyper_contract_instance

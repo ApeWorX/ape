@@ -1,6 +1,5 @@
 import itertools
 import re
-from dataclasses import make_dataclass
 from typing import Any, Dict, Iterator, List, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
@@ -9,7 +8,7 @@ from eth_abi.abi import decode_abi, decode_single
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address
-from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
+from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 
 from ape.api import (
@@ -25,6 +24,12 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
+from ape_ethereum._utils import (
+    output_is_named_tuple,
+    output_is_struct,
+    parse_output_struct,
+    parse_output_type,
+)
 from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
@@ -167,96 +172,42 @@ class Ethereum(EcosystemAPI):
             vm_return_values = (vm_return_values,)
 
         output_values: List[Any] = []
-
-        def decode_value(value, output_type):
-            if output_type == "address":
-                try:
-                    return self.decode_address(value)
-                except InsufficientDataBytes as err:
-                    raise DecodingError() from err
-
-            elif isinstance(value, bytes):
-                return HexBytes(value)
-
-            elif _ARRAY_PATTERN.match(output_type):
-                sub_type = output_type.split("[")[0]
-                return tuple([decode_value(v, sub_type) for v in value])
-
-            return value
-
         for index in range(len(vm_return_values)):
             if index >= len(output_types):
                 break
 
             value = vm_return_values[index]
-            output_type = output_types[index]
-            output_values.append(decode_value(value, output_type))
+            output_type = parse_output_type(output_types[index])
+            output_values.append(self._decode_primitive_value(value, output_type))
 
-        def create_struct(name: str, types: List[ABIType], output_values: List[Any]):
-            def get_item(struct, index) -> Any:
-                # NOTE: Allow struct to function as a tuple and dict as well
-                struct_values = tuple(
-                    getattr(struct, field) for field in struct.__dataclass_fields__
-                )
-                if type(index) == str:
-                    return dict(zip(struct.__dataclass_fields__, struct_values))[index]
-
-                return struct_values[index]
-
-            def is_equal(struct, other) -> bool:
-                if not isinstance(other, tuple):
-                    return super().__eq__(other)
-
-                if len(other) != len(struct):
-                    return False
-
-                for i in range(len(other)):
-                    if struct[i] != other[i]:
-                        return False
-
-                return True
-
-            def length(struct) -> int:
-                return len(struct.__dataclass_fields__)
-
-            struct_def = make_dataclass(
-                name,
-                # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
-                [m.name or f"_{i}" for i, m in enumerate(types)],
-                namespace={"__getitem__": get_item, "__eq__": is_equal, "__len__": length},
-            )
-            return struct_def(*output_values)
-
-        default_name = f"{abi.name}_return"
-        if (
-            len(abi.outputs) == 1
-            and abi.outputs[0].components
-            and all(c.name != "" for c in abi.outputs[0].components)
-        ):
-            # Handle structs.
-            internal_type = abi.outputs[0].internalType
-            if abi.outputs[0].name == "" and internal_type and "struct" in internal_type:
-                name = internal_type.replace("struct ", "").split(".")[-1]
-            else:
-                name = abi.outputs[0].name or default_name
-
-            return create_struct(
-                name,
-                abi.outputs[0].components,
-                output_values[0],
-            )
-
-        elif all(o.name for o in abi.outputs) and len(output_values) > 1:
-            # Handle tuples. NOTE: unnamed output structs appear as tuples with named members
-            return create_struct(default_name, abi.outputs, output_values)
+        if output_is_struct(abi) or output_is_named_tuple(abi, output_values):
+            return parse_output_struct(abi, output_values)
 
         elif len(abi.outputs) == 1 and _ARRAY_PATTERN.match(abi.outputs[0].type):
-            # Handle arrays.
             return ([o for o in output_values[0]],)
 
         else:
-            # Handle multi-values where not all types are specified.
             return tuple(output_values)
+
+    def _decode_primitive_value(
+        self, value: Any, output_type: Union[str, Tuple]
+    ) -> Union[str, HexBytes, Tuple]:
+        if output_type == "address":
+            try:
+                return self.decode_address(value)
+            except InsufficientDataBytes as err:
+                raise DecodingError() from err
+
+        elif isinstance(value, bytes):
+            return HexBytes(value)
+
+        elif isinstance(output_type, str) and _ARRAY_PATTERN.match(output_type):
+            return tuple([self._decode_primitive_value(v, output_type) for v in value])
+
+        elif isinstance(output_type, tuple):
+            return tuple([self._decode_primitive_value(v, t) for v, t in zip(value, output_type)])
+
+        return value
 
     def encode_deployment(
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
