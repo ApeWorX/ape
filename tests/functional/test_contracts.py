@@ -16,8 +16,8 @@ def test_init_at_unknown_address():
     assert contract.address == CONTRACT_ADDRESS
 
 
-def test_deploy(sender, contract_container):
-    contract = contract_container.deploy(sender=sender)
+def test_deploy(sender, contract_container, networks_connected_to_tester):
+    contract = contract_container.deploy(sender=sender, something_else="IGNORED")
     assert contract.address == CONTRACT_ADDRESS
 
 
