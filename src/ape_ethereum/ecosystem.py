@@ -1,4 +1,5 @@
 import itertools
+import re
 from dataclasses import make_dataclass
 from typing import Any, Dict, Iterator, List, Tuple, Union
 
@@ -41,6 +42,7 @@ NETWORKS = {
     "rinkeby": (4, 4),
     "goerli": (5, 5),
 }
+_ARRAY_PATTERN = re.compile(r"\w+\[(\d?)\]")
 
 
 class NetworkConfig(PluginConfig):
@@ -165,48 +167,95 @@ class Ethereum(EcosystemAPI):
             vm_return_values = (vm_return_values,)
 
         output_values: List[Any] = []
-        for index in range(len(vm_return_values)):
-            value = vm_return_values[index]
-            if index < len(output_types) and output_types[index] == "address":
+
+        def decode_value(value, output_type):
+            if output_type == "address":
                 try:
-                    value = self.decode_address(value)
+                    return self.decode_address(value)
                 except InsufficientDataBytes as err:
                     raise DecodingError() from err
 
-            output_values.append(value)
+            elif isinstance(value, bytes):
+                return HexBytes(value)
+
+            elif _ARRAY_PATTERN.match(output_type):
+                sub_type = output_type.split("[")[0]
+                return tuple([decode_value(v, sub_type) for v in value])
+
+            return value
+
+        for index in range(len(vm_return_values)):
+            if index >= len(output_types):
+                break
+
+            value = vm_return_values[index]
+            output_type = output_types[index]
+            output_values.append(decode_value(value, output_type))
 
         def create_struct(name: str, types: List[ABIType], output_values: List[Any]):
+            def get_item(struct, index) -> Any:
+                # NOTE: Allow struct to function as a tuple and dict as well
+                struct_values = tuple(
+                    getattr(struct, field) for field in struct.__dataclass_fields__
+                )
+                if type(index) == str:
+                    return dict(zip(struct.__dataclass_fields__, struct_values))[index]
+
+                return struct_values[index]
+
+            def is_equal(struct, other) -> bool:
+                if not isinstance(other, tuple):
+                    return super().__eq__(other)
+
+                if len(other) != len(struct):
+                    return False
+
+                for i in range(len(other)):
+                    if struct[i] != other[i]:
+                        return False
+
+                return True
+
+            def length(struct) -> int:
+                return len(struct.__dataclass_fields__)
+
             struct_def = make_dataclass(
                 name,
                 # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
                 [m.name or f"_{i}" for i, m in enumerate(types)],
-                namespace={
-                    # NOTE: Allow struct to function as a tuple as well
-                    "__getitem__": lambda self, index: tuple(
-                        getattr(self, field) for field in self.__dataclass_fields__
-                    ).__getitem__(index)
-                },
+                namespace={"__getitem__": get_item, "__eq__": is_equal, "__len__": length},
             )
             return struct_def(*output_values)
 
+        default_name = f"{abi.name}_return"
         if (
             len(abi.outputs) == 1
             and abi.outputs[0].components
             and all(c.name != "" for c in abi.outputs[0].components)
         ):
+            # Handle structs.
+            internal_type = abi.outputs[0].internalType
+            if abi.outputs[0].name == "" and internal_type and "struct" in internal_type:
+                name = internal_type.replace("struct ", "").split(".")[-1]
+            else:
+                name = abi.outputs[0].name or default_name
+
             return create_struct(
-                abi.outputs[0].name,
+                name,
                 abi.outputs[0].components,
                 output_values[0],
             )
 
-        elif all(o.name for o in abi.outputs):
-            # NOTE: unnamed output structs appear as tuples with named members,
-            #       but we don't know of what struct type they are because of ABI encoding
-            #       limitation.
-            return create_struct(f"{abi.name}_return", abi.outputs, output_values)
+        elif all(o.name for o in abi.outputs) and len(output_values) > 1:
+            # Handle tuples. NOTE: unnamed output structs appear as tuples with named members
+            return create_struct(default_name, abi.outputs, output_values)
+
+        elif len(abi.outputs) == 1 and _ARRAY_PATTERN.match(abi.outputs[0].type):
+            # Handle arrays.
+            return ([o for o in output_values[0]],)
 
         else:
+            # Handle multi-values where not all types are specified.
             return tuple(output_values)
 
     def encode_deployment(
