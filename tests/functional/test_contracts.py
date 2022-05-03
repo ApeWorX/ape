@@ -193,35 +193,28 @@ def assert_log_values(log: ContractLog, number: int, previous_number: Optional[i
 
 def test_structs(contract_instance, sender, chain):
     actual = contract_instance.getStruct()
-    actual_nested = contract_instance.getNestedStruct()
     actual_sender, actual_prev_block = actual
 
     # Expected: a == msg.sender
-    assert (
-        actual.a
-        == actual["a"]
-        == actual[0]
-        == actual_nested.t.a
-        == actual_nested.t["a"]
-        == actual_nested.t[0]
-        == actual_sender
-        == sender
-    )
+    assert actual.a == actual["a"] == actual[0] == actual_sender == sender
     assert is_checksum_address(actual.a)
 
     # Expected: b == block.prevhash.
-    assert (
-        actual.b
-        == actual["b"]
-        == actual[1]
-        == actual_nested.t.b
-        == actual_nested.t["b"]
-        == actual_nested.t[1]
-        == actual_prev_block
-        == chain.blocks[-2].hash
-    )
-    # TODO: Make sure is HexBytes
+    assert actual.b == actual["b"] == actual[1] == actual_prev_block == chain.blocks[-2].hash
     assert type(actual.b) == HexBytes
+
+
+def test_nested_structs(contract_instance, sender, chain):
+    actual = contract_instance.getNestedStruct()
+    actual_sender, actual_prev_block = actual.t
+
+    # Expected: t.a == msg.sender
+    assert actual.t.a == actual.t["a"] == actual.t[0] == actual_sender == sender
+    assert is_checksum_address(actual.t.a)
+
+    # Expected: t.b == block.prevhash.
+    assert actual.t.b == actual.t["b"] == actual.t[1] == actual_prev_block == chain.blocks[-2].hash
+    assert type(actual.t.b) == HexBytes
 
 
 def test_arrays(contract_instance, sender):
