@@ -111,7 +111,8 @@ class NetworkManager(BaseManager):
                         continue
 
                     default_provider = network_config["default_provider"]
-                    network.set_default_provider(default_provider)
+                    if default_provider:
+                        network.set_default_provider(default_provider)
 
             ecosystem_dict[plugin_name] = ecosystem
 
