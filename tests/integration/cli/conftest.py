@@ -3,7 +3,6 @@ from importlib import import_module
 from pathlib import Path
 
 import pytest
-from click.testing import CliRunner
 
 from .utils import NodeId, project_names, project_skipper, projects_directory
 
@@ -83,11 +82,6 @@ def project(request, config):
 
     with config.using_project(project_dest_dir) as project:
         yield project
-
-
-@pytest.fixture
-def runner(project):
-    yield CliRunner()
 
 
 @pytest.fixture(scope="session")
