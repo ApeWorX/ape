@@ -170,7 +170,6 @@ class CacheQueryProvider(QueryAPI):
 
         try:
             with self.engine.connect() as conn:
-                breakpoint()
                 result.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
 
         except Exception as err:
