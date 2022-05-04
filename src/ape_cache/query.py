@@ -1,6 +1,6 @@
+import itertools
 import math
 from functools import partial
-import itertools
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -147,10 +147,12 @@ class CacheQueryProvider(QueryAPI):
             range(query.start_block + len(cached_records), query.stop_block + 1, query.step),
         )
 
-        blocks_iter, blocks_iter_copy = itertools.tee(blocks_iter)
+        blocks_iter, blocks_iter_copy = itertools.tee(blocks_iter)  # type: ignore
         query_kwargs = query.dict()
         query_kwargs["columns"] = query.all_fields()
-        uncached_unfiltered_records = pd.DataFrame(columns=query.all_fields(), data=blocks_iter_copy)
+        uncached_unfiltered_records = pd.DataFrame(
+            columns=query.all_fields(), data=blocks_iter_copy
+        )
         self.update_cache(BlockQuery(**query_kwargs), uncached_unfiltered_records)
         block_dicts_iter = map(partial(get_columns_from_item, query), blocks_iter)
         return pd.concat(
