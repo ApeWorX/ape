@@ -23,7 +23,7 @@ from .providers import (
     Web3Provider,
 )
 from .query import QueryAPI, QueryType
-from .transactions import ReceiptAPI, TransactionAPI, TransactionStatusEnum, TransactionType
+from .transactions import ReceiptAPI, TransactionAPI
 
 __all__ = [
     "AccountAPI",
@@ -54,8 +54,6 @@ __all__ = [
     "TestAccountContainerAPI",
     "TestProviderAPI",
     "TransactionAPI",
-    "TransactionStatusEnum",
-    "TransactionType",
     "UpstreamProvider",
     "Web3Provider",
 ]

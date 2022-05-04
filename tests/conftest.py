@@ -23,7 +23,7 @@ def data_folder(config):
 
 @pytest.fixture(scope="session")
 def plugin_manager():
-    yield ape.plugin_manager
+    yield ape.networks.plugin_manager
 
 
 @pytest.fixture(scope="session")

@@ -21,11 +21,12 @@ from web3 import Web3
 
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
-from ape.api.transactions import ReceiptAPI, TransactionAPI, TransactionType
+from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import (
     DecodingError,
     ProviderError,
+    ProviderNotConnectedError,
     RPCTimeoutError,
     SubprocessError,
     SubprocessTimeoutError,
@@ -100,6 +101,9 @@ class ProviderAPI(BaseInterfaceModel):
     request_header: dict
     """A header to set on HTTP/RPC requests."""
 
+    cached_chain_id: Optional[int] = None
+    """Implementation providers may use this to cache and re-use chain ID."""
+
     @abstractmethod
     def connect(self):
         """
@@ -172,7 +176,7 @@ class ProviderAPI(BaseInterfaceModel):
         Estimate the cost of gas for a transaction.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`):
+            txn (:class:`~ape.api.transactions.TransactionAPI`):
                 The transaction to estimate the gas for.
 
         Returns:
@@ -238,7 +242,7 @@ class ProviderAPI(BaseInterfaceModel):
         transaction on the block chain.
 
         Args:
-            txn: :class:`~ape.api.providers.TransactionAPI`
+            txn: :class:`~ape.api.transactions.TransactionAPI`
 
         Returns:
             str: The result of the transaction call.
@@ -263,10 +267,10 @@ class ProviderAPI(BaseInterfaceModel):
         Send a transaction to the network.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to send.
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to send.
 
         Returns:
-            :class:`~ape.api.providers.ReceiptAPI`
+            :class:`~ape.api.transactions.ReceiptAPI`
         """
 
     @abstractmethod
@@ -382,14 +386,16 @@ class ProviderAPI(BaseInterfaceModel):
             :class:`~ape.exceptions.TransactionError`: When given negative required confirmations.
 
         Args:
-            txn (:class:`~ape.api.providers.TransactionAPI`): The transaction to prepare.
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to prepare.
 
         Returns:
-            :class:`~ape.api.providers.TransactionAPI`
+            :class:`~ape.api.transactions.TransactionAPI`
         """
 
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
         txn.chain_id = self.network.chain_id
+
+        from ape_ethereum.transactions import TransactionType
 
         txn_type = TransactionType(txn.type)
         if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
@@ -476,7 +482,14 @@ class Web3Provider(ProviderAPI, ABC):
     [web3.py](https://web3py.readthedocs.io/en/stable/) python package.
     """
 
-    _web3: Web3 = None  # type: ignore
+    _web3: Optional[Web3] = None
+
+    @property
+    def web3(self) -> Web3:
+        if not self._web3:
+            raise ProviderNotConnectedError()
+
+        return self._web3
 
     def update_settings(self, new_settings: dict):
         self.disconnect()
@@ -489,8 +502,8 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def chain_id(self) -> int:
-        if hasattr(self._web3, "eth"):
-            return self._web3.eth.chain_id
+        if hasattr(self.web3, "eth"):
+            return self.web3.eth.chain_id
         else:
             return self.network.chain_id
 
@@ -500,7 +513,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def priority_fee(self) -> int:
-        return self._web3.eth.max_priority_fee
+        return self.web3.eth.max_priority_fee
 
     @property
     def base_fee(self) -> int:
@@ -519,27 +532,27 @@ class Web3Provider(ProviderAPI, ABC):
             if block_id.isnumeric():
                 block_id = add_0x_prefix(block_id)
 
-        block_data = self._web3.eth.get_block(block_id)
+        block_data = self.web3.eth.get_block(block_id)
         return self.network.ecosystem.decode_block(block_data)  # type: ignore
 
     def get_nonce(self, address: str) -> int:
-        return self._web3.eth.get_transaction_count(address)  # type: ignore
+        return self.web3.eth.get_transaction_count(address)  # type: ignore
 
     def get_balance(self, address: str) -> int:
-        return self._web3.eth.get_balance(address)  # type: ignore
+        return self.web3.eth.get_balance(address)  # type: ignore
 
     def get_code(self, address: str) -> bytes:
-        return self._web3.eth.get_code(address)  # type: ignore
+        return self.web3.eth.get_code(address)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
-        return self._web3.eth.call(txn.dict())
+        return self.web3.eth.call(txn.dict())
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
 
-        receipt_data = self._web3.eth.wait_for_transaction_receipt(HexBytes(txn_hash))
-        txn = self._web3.eth.get_transaction(txn_hash)  # type: ignore
+        receipt_data = self.web3.eth.wait_for_transaction_receipt(HexBytes(txn_hash))
+        txn = self.web3.eth.get_transaction(txn_hash)  # type: ignore
         receipt = self.network.ecosystem.decode_receipt(
             {
                 "provider": self,
@@ -674,11 +687,11 @@ class Web3Provider(ProviderAPI, ABC):
             else:
                 log_filter["topics"] = event_parameters.pop("topics")
 
-            log_result = [dict(log) for log in self._web3.eth.get_logs(log_filter)]  # type: ignore
+            log_result = [dict(log) for log in self.web3.eth.get_logs(log_filter)]  # type: ignore
             yield from self.network.ecosystem.decode_logs(abi, log_result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        txn_hash = self._web3.eth.send_raw_transaction(txn.serialize_transaction())
+        txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         req_confs = (
             txn.required_confirmations
             if txn.required_confirmations is not None
@@ -762,6 +775,7 @@ class SubprocessProvider(ProviderAPI):
         Subclasses override this method to do provider-specific disconnection tasks.
         """
 
+        self.cached_chain_id = None
         if self.process:
             self.stop()
 

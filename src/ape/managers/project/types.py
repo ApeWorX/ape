@@ -43,7 +43,9 @@ class BaseProject(ProjectAPI):
 
         for extension in self.compiler_manager.registered_compilers:
             r_ext = extension.replace(".", "\\.")
-            files.extend(get_all_files_in_directory(self.contracts_folder, pattern=rf"\w+{r_ext}"))
+            files.extend(
+                get_all_files_in_directory(self.contracts_folder, pattern=rf"[\w|-]+{r_ext}")
+            )
 
         return files
 
@@ -157,7 +159,7 @@ class BaseProject(ProjectAPI):
 
         finally:
             if self.created_temporary_config_file and config_file.is_file():
-                # config_file.unlink()
+                config_file.unlink()
                 self.created_temporary_config_file = False
 
 

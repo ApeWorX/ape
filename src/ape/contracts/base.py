@@ -17,15 +17,18 @@ if TYPE_CHECKING:
     from ape.managers.networks import NetworkManager
 
 
-def _convert_kwargs(kwargs, converter):
-    return {
+def _convert_kwargs(kwargs, converter) -> Dict:
+    fields = TransactionAPI.__fields__
+    kwargs_to_convert = {k: v for k, v in kwargs.items() if k == "sender" or k in fields}
+    converted_fields = {
         k: converter(
             v,
             # TODO: Upstream, `TransactionAPI.sender` should be `AddressType` (not `str`)
-            AddressType if k == "sender" else TransactionAPI.__fields__[k].type_,
+            AddressType if k == "sender" else fields[k].type_,
         )
-        for k, v in kwargs.items()
+        for k, v in kwargs_to_convert.items()
     }
+    return {**kwargs, **converted_fields}
 
 
 class ContractConstructor(ManagerAccessMixin):
@@ -81,17 +84,20 @@ class ContractCall(ManagerAccessMixin):
         txn.chain_id = self.provider.network.chain_id
 
         raw_output = self.provider.send_call(txn)
-        tuple_output = self.provider.network.ecosystem.decode_calldata(  # type: ignore
+        output = self.provider.network.ecosystem.decode_returndata(
             self.abi,
             raw_output,
         )
 
-        # NOTE: Returns a tuple, so make sure to handle all the cases
-        if len(tuple_output) < 2:
-            return tuple_output[0] if len(tuple_output) == 1 else None
-
         # TODO: Handle struct output
-        return tuple_output
+        if not isinstance(output, (list, tuple)):
+            return output
+
+        # NOTE: Returns a tuple, so make sure to handle all the cases
+        elif len(output) < 2:
+            return output[0] if len(output) == 1 else None
+
+        return output
 
 
 class ContractCallHandler(ManagerAccessMixin):
@@ -348,7 +354,7 @@ class ContractEvent(ManagerAccessMixin):
         Get all the events from the given receipt.
 
         Args:
-            receipt (:class:`~ape.api.providers.ReceiptAPI`): The receipt containing the logs.
+            receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt containing the logs.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]

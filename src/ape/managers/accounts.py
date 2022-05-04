@@ -74,15 +74,18 @@ class TestAccountManager(list, ManagerAccessMixin):
                 return account
 
         can_impersonate = False
+        err_message = f"No account with address '{account_id}'."
         try:
             if self.network_manager.active_provider:
                 can_impersonate = self.provider.unlock_account(account_id)
             # else: fall through to `IndexError`
-        except NotImplementedError:
-            pass  # fall through to `IndexError`
+        except NotImplementedError as err:
+            raise IndexError(
+                f"Your provider does not support impersonating accounts:\n{err_message}"
+            ) from err
 
         if not can_impersonate:
-            raise IndexError(f"No account with address '{account_id}'.")
+            raise IndexError(err_message)
 
         return ImpersonatedAccount(raw_address=account_id)
 

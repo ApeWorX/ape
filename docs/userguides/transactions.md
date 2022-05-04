@@ -20,11 +20,12 @@ def deploy():
     account = accounts.load("MyAccount")
     return account.deploy(project.MyContract)
 ```
+<!-- TODO include information about how to feed arguments into transactions / deployment constructor transaction -->
 
 ## Dynamic-Fee Transactions
 
 Before [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), all transactions used a `gas_price`.
-After the London fork of Etheruem, the `gas_price` got broken up into two values, `max_fee` and `max_priority_fee`.
+After the London fork of Ethereum, the `gas_price` got broken up into two values, `max_fee` and `max_priority_fee`.
 The `ape` framework supports both types of transactions. By default, transactions use the dynamic-fee model.
 Making contract calls without specifying any additional `kwargs` will use a dynamic-fee transaction.
 

@@ -6,7 +6,7 @@ from eth_utils import to_bytes
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
 from ape.types import AddressType, MessageSignature, TransactionSignature
-from ape.utils import GeneratedDevAccount, cached_property, generate_dev_accounts, to_address
+from ape.utils import GeneratedDevAccount, cached_property, generate_dev_accounts
 
 
 class TestAccountContainer(TestAccountContainerAPI):
@@ -49,7 +49,7 @@ class TestAccount(TestAccountAPI):
 
     @property
     def address(self) -> AddressType:
-        return to_address(self.address_str)
+        return self.network_manager.ethereum.decode_address(self.address_str)
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         signed_msg = EthAccount.sign_message(msg, self.private_key)

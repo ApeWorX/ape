@@ -6,7 +6,7 @@ from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
-from ape.types import AddressType, ContractLog
+from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 from .config import PluginConfig
@@ -39,13 +39,39 @@ class EcosystemAPI(BaseInterfaceModel):
 
     _default_network: str = LOCAL_NETWORK_NAME
 
+    @classmethod
+    @abstractmethod
+    def decode_address(cls, raw_address: RawAddress) -> AddressType:
+        """
+        Convert a raw address to the ecosystem's native address type.
+
+        Args:
+            raw_address (Union[str, int]): The address to convert.
+
+        Returns:
+            ``AddressType``
+        """
+
+    @classmethod
+    @abstractmethod
+    def encode_address(cls, address: AddressType) -> RawAddress:
+        """
+        Convert the ecosystem's native address type to a raw integer or str address.
+
+        Args:
+            address (Union[str, int]): The address to convert.
+
+        Returns:
+            Union[str, int]
+        """
+
     @abstractmethod
     def serialize_transaction(self, transaction: "TransactionAPI") -> bytes:
         """
         Serialize a transaction to bytes.
 
         Args:
-            transaction (:class:`~ape.api.providers.TransactionAPI`): The transaction to encode.
+            transaction (:class:`~ape.api.transactions.TransactionAPI`): The transaction to encode.
 
         Returns:
             bytes
@@ -54,13 +80,13 @@ class EcosystemAPI(BaseInterfaceModel):
     @abstractmethod
     def decode_receipt(self, data: dict) -> "ReceiptAPI":
         """
-        Convert data to :class:`~ape.api.providers.ReceiptAPI`.
+        Convert data to :class:`~ape.api.transactions.ReceiptAPI`.
 
         Args:
             data (dict): A dictionary of Receipt properties.
 
         Returns:
-            :class:`~ape.api.providers.ReceiptAPI`
+            :class:`~ape.api.transactions.ReceiptAPI`
         """
 
     @abstractmethod
@@ -204,21 +230,75 @@ class EcosystemAPI(BaseInterfaceModel):
     def encode_deployment(
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
     ) -> "TransactionAPI":
-        ...
+        """
+        Create a deployment transaction in the given ecosystem.
+        This may require connecting to other networks.
+
+        Args:
+            deployment_bytecode (HexBytes): The bytecode to deploy.
+            abi (ConstructorABI): The constructor interface of the contract.
+            *args: Constructor arguments.
+            **kwargs: Transaction arguments.
+
+        Returns:
+            class:`~ape.api.transactions.TransactionAPI`
+        """
 
     @abstractmethod
     def encode_transaction(
         self, address: AddressType, abi: MethodABI, *args, **kwargs
     ) -> "TransactionAPI":
-        ...
+        """
+        Encode a transaction object from a contract function's abi and call arguments.
+        Update the transaction arguments with the overrides in ``kwargs`` as well.
+
+        Args:
+            address (AddressType): The address of the contract.
+            abi (MethodABI): The function to call on the contract.
+            *args: Function arguments.
+            **kwargs: Transaction arguments.
+
+        Returns:
+            class:`~ape.api.transactions.TransactionAPI`
+        """
 
     @abstractmethod
     def decode_logs(self, abi: EventABI, raw_logs: List[Dict]) -> Iterator[ContractLog]:
-        ...
+        """
+        Decode any contract logs that match the given event ABI from the raw log data.
+
+        Args:
+            abi (EventABI): The event producing the logs.
+            raw_logs (List[Dict]): A list of raw log data from the chain.
+
+        Returns:
+            Iterator[:class:`~ape.types.ContractLog`]
+        """
 
     @abstractmethod
     def create_transaction(self, **kwargs) -> "TransactionAPI":
-        ...
+        """
+        Create a transaction using key-value arguments.
+
+        Args:
+            **kwargs: Everything the transaction needs initialize.
+
+        Returns:
+            class:`~ape.api.transactions.TransactionAPI`
+        """
+
+    @abstractmethod
+    def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Any:
+        """
+        Get the result of a contract call.
+
+        Arg:
+            abi (MethodABI): The method called.
+            raw_data (bytes): Raw returned data.
+
+        Returns:
+            Any: All of the values returned from the contract function.
+        """
 
     def get_network(self, network_name: str) -> "NetworkAPI":
         """
@@ -580,9 +660,11 @@ class NetworkAPI(BaseInterfaceModel):
         if provider_name in self.providers:
             self._default_provider = provider_name
         else:
-            raise NetworkError(f"No providers found for network '{self.name}'")
+            raise NetworkError(f"Provider '{provider_name}' not found.")
 
-    def use_default_provider(self, provider_settings: Optional[Dict]) -> ProviderContextManager:
+    def use_default_provider(
+        self, provider_settings: Optional[Dict] = None
+    ) -> ProviderContextManager:
         """
         Temporarily connect and use the default provider. When entering the context, it calls
         method :meth:`ape.api.providers.ProviderAPI.connect` and when exiting, it calls
