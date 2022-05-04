@@ -1,5 +1,6 @@
 import math
 from functools import partial
+import itertools
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -9,6 +10,7 @@ from sqlalchemy import create_engine  # type: ignore
 from sqlalchemy.sql import text  # type: ignore
 
 from ape.api import QueryAPI, QueryType
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
 from ape.utils import logger, singledispatchmethod
@@ -37,16 +39,15 @@ class CacheQueryProvider(QueryAPI):
         if not self.network_manager.active_provider:
             raise QueryEngineError("Not connected to a network")
 
-        ecosystem_name = self.network_manager.active_provider.network.ecosystem.name
-        network_name = self.network_manager.active_provider.network.name
-        if network_name == "local":
+        ecosystem_name = self.provider.network.ecosystem.name
+        network_name = self.provider.network.name
+        if network_name == LOCAL_NETWORK_NAME:
             raise QueryEngineError("Cannot cache local network")
 
         if "-fork" in network_name:
             network_name = network_name.replace("-fork", "")
 
-        if not (self.config_manager.DATA_FOLDER / ecosystem_name).exists():
-            (self.config_manager.DATA_FOLDER / ecosystem_name).mkdir()
+        (self.config_manager.DATA_FOLDER / ecosystem_name).mkdir(exist_ok=True)
 
         return self.config_manager.DATA_FOLDER / ecosystem_name / f"{network_name}.db"
 
@@ -145,6 +146,12 @@ class CacheQueryProvider(QueryAPI):
             #       Where as the query method is an inclusive stop.
             range(query.start_block + len(cached_records), query.stop_block + 1, query.step),
         )
+
+        blocks_iter, blocks_iter_copy = itertools.tee(blocks_iter)
+        query_kwargs = query.dict()
+        query_kwargs["columns"] = query.all_fields()
+        uncached_unfiltered_records = pd.DataFrame(columns=query.all_fields(), data=blocks_iter_copy)
+        self.update_cache(BlockQuery(**query_kwargs), uncached_unfiltered_records)
         block_dicts_iter = map(partial(get_columns_from_item, query), blocks_iter)
         return pd.concat(
             [
@@ -161,6 +168,7 @@ class CacheQueryProvider(QueryAPI):
 
         try:
             with self.engine.connect() as conn:
+                breakpoint()
                 result.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
 
         except Exception as err:
