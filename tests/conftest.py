@@ -3,6 +3,7 @@ from pathlib import Path
 from tempfile import mkdtemp
 
 import pytest
+from click.testing import CliRunner
 
 import ape
 
@@ -89,3 +90,8 @@ def temp_accounts_path(config):
 
     if path.exists():
         shutil.rmtree(path)
+
+
+@pytest.fixture
+def runner(project):
+    yield CliRunner()
