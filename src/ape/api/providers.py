@@ -20,7 +20,7 @@ from pydantic import Field, validator
 from web3 import Web3
 
 from ape.api.config import PluginConfig
-from ape.api.networks import NetworkAPI
+from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import (
@@ -502,10 +502,15 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def chain_id(self) -> int:
-        if hasattr(self.web3, "eth"):
-            return self.web3.eth.chain_id
-        else:
+        if self.network.name != LOCAL_NETWORK_NAME and not self.network.name.endswith("-fork"):
+            # If using a live network, the chain ID is hardcoded.
             return self.network.chain_id
+
+        elif hasattr(self.web3, "eth"):
+            return self.web3.eth.chain_id
+
+        else:
+            raise ProviderNotConnectedError()
 
     @property
     def gas_price(self) -> int:
