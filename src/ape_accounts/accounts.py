@@ -108,7 +108,7 @@ class KeyfileAccount(AccountAPI):
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
-        if self.locked and not user_approves:
+        if not user_approves:
             return None
 
         signed_msg = EthAccount.sign_message(msg, self.__key)
@@ -120,7 +120,7 @@ class KeyfileAccount(AccountAPI):
 
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         user_approves = self.__autosign or click.confirm(f"{txn}\n\nSign: ")
-        if self.locked and not user_approves:
+        if not user_approves:
             return None
 
         signed_txn = EthAccount.sign_transaction(
