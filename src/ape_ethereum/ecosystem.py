@@ -52,9 +52,13 @@ class EthereumConfig(PluginConfig):
     mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
     mainnet_fork: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
+    ropsten_fork: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
+    kovan_fork: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
+    rinkeby_fork: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
+    goerli_fork: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     local: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     default_network: str = LOCAL_NETWORK_NAME
 
