@@ -61,9 +61,13 @@ def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "l
 
 
 def test_default_provider_not_found(config, networks):
-    eth_config = {"ethereum": {"mainnet": {"default_provider": "DOES_NOT_EXIST"}}}
+    provider_name = "DOES_NOT_EXIST"
+    network_name = "local"
+    eth_config = {"ethereum": {network_name: {"default_provider": provider_name}}}
 
     with temp_config(eth_config, config):
-        with pytest.raises(NetworkError, match="Provider 'DOES_NOT_EXIST' not found."):
+        with pytest.raises(
+            NetworkError, match=f"Provider '{provider_name}' not found in network '{network_name}'."
+        ):
             # Trigger re-loading the Ethereum config.
             _ = networks.ecosystems

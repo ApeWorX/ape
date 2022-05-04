@@ -669,7 +669,7 @@ class NetworkAPI(BaseInterfaceModel):
         if provider_name in self.providers:
             self._default_provider = provider_name
         else:
-            raise NetworkError(f"Provider '{provider_name}' not found.")
+            raise NetworkError(f"Provider '{provider_name}' not found in network '{self.name}'.")
 
     def use_default_provider(
         self, provider_settings: Optional[Dict] = None
