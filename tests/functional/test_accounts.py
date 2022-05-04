@@ -1,3 +1,4 @@
+import io
 import json
 
 import pytest
@@ -5,7 +6,7 @@ from eth_account.messages import encode_defunct
 
 import ape
 from ape import convert
-from ape.exceptions import AccountsError, ContractLogicError, TransactionError
+from ape.exceptions import AccountsError, ContractLogicError, SignatureError, TransactionError
 
 ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
 
@@ -16,7 +17,7 @@ def connected(eth_tester_provider):
 
 
 @pytest.fixture
-def temp_ape_account(keyparams, temp_accounts_path):
+def temp_ape_account(sender, keyparams, temp_accounts_path):
     test_keyfile_path = temp_accounts_path / f"{ALIAS}.json"
 
     if test_keyfile_path.exists():
@@ -25,7 +26,9 @@ def temp_ape_account(keyparams, temp_accounts_path):
 
     test_keyfile_path.write_text(json.dumps(keyparams))
 
-    yield ape.accounts.load(ALIAS)
+    acct = ape.accounts.load(ALIAS)
+    sender.transfer(acct, "1 ETH")  # Auto-fund this account
+    yield acct
 
     if test_keyfile_path.exists():
         test_keyfile_path.unlink()
@@ -38,11 +41,37 @@ def test_sign_message(test_accounts):
     assert signer.check_signature(message, signature)
 
 
+def test_sign_message_with_prompts(monkeypatch, temp_ape_account):
+    # "y\na\ny": yes sign, password, yes keep unlocked
+    monkeypatch.setattr("sys.stdin", io.StringIO("y\na\ny"))
+
+    message = encode_defunct(text="Hello Apes!")
+    signature = temp_ape_account.sign_message(message)
+    assert temp_ape_account.check_signature(message, signature)
+
+    # "n": don't sign
+    monkeypatch.setattr("sys.stdin", io.StringIO("n\n"))
+    signature = temp_ape_account.sign_message(message)
+    assert signature is None
+
+
 def test_transfer(sender, receiver):
     initial_balance = receiver.balance
     sender.transfer(receiver, "1 gwei")
     expected = initial_balance + convert("1 gwei", int)
     assert receiver.balance == expected
+
+
+def test_transfer_with_prompts(monkeypatch, receiver, temp_ape_account):
+    # "y\na\ny": yes sign, password, yes keep unlocked
+    monkeypatch.setattr("sys.stdin", io.StringIO("y\na\ny"))
+    receipt = temp_ape_account.transfer(receiver, "1 gwei")
+    assert receipt.receiver == receiver
+
+    # "n": don't sign
+    monkeypatch.setattr("sys.stdin", io.StringIO("n\n"))
+    with pytest.raises(SignatureError):
+        temp_ape_account.transfer(receiver, "1 gwei")
 
 
 def test_transfer_using_type_0(sender, receiver):
@@ -118,11 +147,16 @@ def test_accounts_contains(accounts, test_accounts):
     assert test_accounts[0].address in accounts
 
 
-def test_autosign(temp_ape_account):
+def test_autosign_messages(temp_ape_account):
     temp_ape_account.set_autosign(True, passphrase="a")
     message = encode_defunct(text="Hello Apes!")
     signature = temp_ape_account.sign_message(message)
     assert temp_ape_account.check_signature(message, signature)
+
+
+def test_autosign_transactions(temp_ape_account, receiver):
+    temp_ape_account.set_autosign(True, passphrase="a")
+    assert temp_ape_account.transfer(receiver, "1 gwei")
 
 
 def test_impersonate_not_implemented(accounts):
@@ -135,3 +169,45 @@ def test_impersonate_not_implemented(accounts):
         f"No account with address '{test_address}'."
     )
     assert expected_err_msg in str(err.value)
+
+
+def test_unlock_with_passphrase_and_sign_message(monkeypatch, temp_ape_account):
+    temp_ape_account.unlock(passphrase="a")
+    message = encode_defunct(text="Hello Apes!")
+    # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
+    monkeypatch.setattr("sys.stdin", io.StringIO("y\n"))
+    signature = temp_ape_account.sign_message(message)
+    assert temp_ape_account.check_signature(message, signature)
+
+
+def test_unlock_from_prompt_and_sign_message(monkeypatch, temp_ape_account):
+    # a = password
+    monkeypatch.setattr("sys.stdin", io.StringIO("a\n"))
+
+    temp_ape_account.unlock()
+    message = encode_defunct(text="Hello Apes!")
+
+    # yes, sign the message
+    monkeypatch.setattr("sys.stdin", io.StringIO("y\n"))
+
+    signature = temp_ape_account.sign_message(message)
+    assert temp_ape_account.check_signature(message, signature)
+
+
+def test_unlock_with_passphrase_and_sign_transaction(monkeypatch, temp_ape_account, receiver):
+    temp_ape_account.unlock(passphrase="a")
+    # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
+    monkeypatch.setattr("sys.stdin", io.StringIO("y\n"))
+    receipt = temp_ape_account.transfer(receiver, "1 gwei")
+    assert receipt.receiver == receiver
+
+
+def test_unlock_from_prompt_and_sign_transaction(monkeypatch, temp_ape_account, receiver):
+    # a = password
+    monkeypatch.setattr("sys.stdin", io.StringIO("a\n"))
+    temp_ape_account.unlock()
+
+    # yes, sign the transaction
+    monkeypatch.setattr("sys.stdin", io.StringIO("y\n"))
+    receipt = temp_ape_account.transfer(receiver, "1 gwei")
+    assert receipt.receiver == receiver
