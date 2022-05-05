@@ -102,6 +102,7 @@ class NetworkManager(BaseManager):
 
             if ecosystem_config:
                 for network_name, network in ecosystem.networks.items():
+                    network_name = network_name.replace("-", "_")
                     if network_name not in ecosystem_config:
                         continue
 
@@ -110,7 +111,8 @@ class NetworkManager(BaseManager):
                         continue
 
                     default_provider = network_config["default_provider"]
-                    network.set_default_provider(default_provider)
+                    if default_provider:
+                        network.set_default_provider(default_provider)
 
             ecosystem_dict[plugin_name] = ecosystem
 
