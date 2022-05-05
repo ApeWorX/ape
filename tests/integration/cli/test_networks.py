@@ -28,32 +28,40 @@ ecosystems:
     providers:
     - name: geth
       isDefault: true
+  - name: mainnet-fork
+    providers: []
   - name: ropsten
     providers:
     - name: geth
       isDefault: true
+  - name: ropsten-fork
+    providers: []
   - name: kovan
     providers:
     - name: geth
       isDefault: true
+  - name: kovan-fork
+    providers: []
   - name: rinkeby
     providers:
     - name: geth
       isDefault: true
+  - name: rinkeby-fork
+    providers: []
   - name: goerli
     providers:
     - name: geth
       isDefault: true
+  - name: goerli-fork
+    providers: []
   - name: local
     isDefault: true
     providers:
     - name: geth
     - name: test
       isDefault: true
-  - name: mainnet-fork
-    providers: []
 """
-_GETH_NETWORKS_YAML = """
+_GETH_NETWORKS_TREE = """
 ethereum  (default)
 ├── mainnet
 │   └── geth  (default)
@@ -113,7 +121,7 @@ def test_list_yaml(ape_cli, runner):
 @skip_projects_except(["geth"])
 def test_geth(ape_cli, runner, networks):
     result = runner.invoke(ape_cli, ["networks", "list"])
-    assert_rich_text(result.output, _GETH_NETWORKS_YAML)
+    assert_rich_text(result.output, _GETH_NETWORKS_TREE)
 
     # Assert that URI still exists for local network
     # (was bug where one network's URI disappeared when setting different network's URI)
