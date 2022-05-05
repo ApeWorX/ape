@@ -178,6 +178,8 @@ def test_contract_as_sender_non_fork_network(contract_instance):
         f"No account with address '{contract_instance}'."
     )
     assert expected_err_msg in str(err.value)
+
+
 def test_unlock_with_passphrase_and_sign_message(runner, temp_ape_account):
     temp_ape_account.unlock(passphrase="a")
     message = encode_defunct(text="Hello Apes!")
