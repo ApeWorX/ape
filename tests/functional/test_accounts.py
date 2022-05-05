@@ -135,3 +135,14 @@ def test_impersonate_not_implemented(accounts):
         f"No account with address '{test_address}'."
     )
     assert expected_err_msg in str(err.value)
+
+
+def test_contract_as_sender_non_fork_network(contract_instance):
+    with pytest.raises(IndexError) as err:
+        contract_instance.set_number(5, sender=contract_instance)
+
+    expected_err_msg = (
+        "Your provider does not support impersonating accounts:\n"
+        f"No account with address '{contract_instance}'."
+    )
+    assert expected_err_msg in str(err.value)
