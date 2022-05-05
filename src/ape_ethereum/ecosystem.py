@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, Dict, Iterator, List, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
@@ -44,17 +44,28 @@ NETWORKS = {
 
 class NetworkConfig(PluginConfig):
     required_confirmations: int = 0
-    default_provider: str = "geth"
+
+    default_provider: Optional[str] = "geth"
+    """
+    The default provider to use. If set to ``None``, ape will rely on
+    an external plugin supplying the provider implementation, such as
+    ``ape-hardhat`` supplying forked-network providers.
+    """
+
     block_time: int = 0
 
 
 class EthereumConfig(PluginConfig):
     mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
-    mainnet_fork: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
+    mainnet_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
+    ropsten_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
+    kovan_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
+    rinkeby_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
+    goerli_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     local: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     default_network: str = LOCAL_NETWORK_NAME
 
