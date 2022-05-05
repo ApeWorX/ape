@@ -48,7 +48,7 @@ class NetworkConfig(PluginConfig):
     default_provider: Optional[str] = "geth"
     """
     The default provider to use. If set to ``None``, ape will rely on
-    an external plugin supplying the provider implementaiton, such as
+    an external plugin supplying the provider implementation, such as
     ``ape-hardhat`` supplying forked-network providers.
     """
 
