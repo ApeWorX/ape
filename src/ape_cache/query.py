@@ -163,8 +163,6 @@ class CacheQueryProvider(QueryAPI):
         )
 
     def update_cache(self, query: QueryType, result: pd.DataFrame):
-        # TODO: Add handling of having primary key and potentially
-        #  updating table with certain columns
         if set(result.columns) != set(query.all_fields()):
             return  # We do not have all the data to update the database
 
