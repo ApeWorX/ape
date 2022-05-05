@@ -599,9 +599,7 @@ class NetworkAPI(BaseInterfaceModel):
             return self.providers[provider_name](provider_settings=provider_settings)
 
         else:
-            message = (
-                f"'{provider_name}' is not a valid provider for ecosystem '{self.ecosystem.name}'"
-            )
+            message = f"'{provider_name}' is not a valid provider for network '{self.name}'"
             raise NetworkError(message)
 
     def use_provider(
