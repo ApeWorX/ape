@@ -40,3 +40,12 @@ def test_get_provider_when_no_default(networks):
         network.get_provider()
 
     assert "No default provider for network 'rinkeby-fork'" in str(err.value)
+
+
+def test_get_provider_when_not_found(networks):
+    ethereum = networks.get_ecosystem("ethereum")
+    network = ethereum.get_network("rinkeby-fork")
+    with pytest.raises(NetworkError) as err:
+        network.get_provider("test")
+
+    assert "'test' is not a valid provider for network 'rinkeby-fork'" in str(err.value)
