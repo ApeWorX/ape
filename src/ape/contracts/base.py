@@ -159,6 +159,8 @@ class ContractTransaction(ManagerAccessMixin):
         return self.abi.signature
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
+        if "sender" in kwargs and isinstance(kwargs["sender"], ContractInstance):
+            kwargs["sender"] = self.account_manager.test_accounts[kwargs["sender"].address]
         kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
