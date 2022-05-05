@@ -219,6 +219,13 @@ your <code class="docutils literal notranslate"><span class="pre">ape-config.yam
     <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="s2">&quot;0xab5801a7d398351b8be11c439e05c5b3259aec9b&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
+<p>Using a fork-provider such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">Hardhat</a>, when using a contract instance as the sender in a transaction, it will be automatically impersonated:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">accounts</span><span class="p">):</span>
+    <span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">other_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">OtherContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">other_contract</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="project-fixture">
 <h3>project fixture<a class="headerlink" href="#project-fixture" title="Permalink to this headline"></a></h3>
