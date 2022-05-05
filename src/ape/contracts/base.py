@@ -89,7 +89,6 @@ class ContractCall(ManagerAccessMixin):
             raw_output,
         )
 
-        # TODO: Handle struct output
         if not isinstance(output, (list, tuple)):
             return output
 
