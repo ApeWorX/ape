@@ -126,7 +126,7 @@ Visit [ape-alchemy](https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#q
 
 Visit [ape-infura](https://github.com/ApeWorX/ape-infura#readme)
 
-# Ape Console
+## Ape Console
 
 Ape provides an IPython interactive console with useful pre-defined locals to interact with your project.
 To interact with a deployed contract in a local environment, start by opening the console:
