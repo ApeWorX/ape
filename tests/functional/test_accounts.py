@@ -171,7 +171,7 @@ def test_impersonate_not_implemented(accounts):
 
 def test_contract_as_sender_non_fork_network(contract_instance):
     with pytest.raises(IndexError) as err:
-        contract_instance.set_number(5, sender=contract_instance)
+        contract_instance.setNumber(5, sender=contract_instance)
 
     expected_err_msg = (
         "Your provider does not support impersonating accounts:\n"
