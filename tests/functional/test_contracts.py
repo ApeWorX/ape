@@ -205,16 +205,42 @@ def test_structs(contract_instance, sender, chain):
 
 
 def test_nested_structs(contract_instance, sender, chain):
-    actual = contract_instance.getNestedStruct()
-    actual_sender, actual_prev_block = actual.t
+    actual_1 = contract_instance.getNestedStruct1()
+    actual_2 = contract_instance.getNestedStruct2()
+    actual_sender_1, actual_prev_block_1 = actual_1.t
+    actual_sender_2, actual_prev_block_2 = actual_1.t
 
     # Expected: t.a == msg.sender
-    assert actual.t.a == actual.t["a"] == actual.t[0] == actual_sender == sender
-    assert is_checksum_address(actual.t.a)
+    assert actual_1.t.a == actual_1.t["a"] == actual_1.t[0] == actual_sender_1 == sender
+    assert is_checksum_address(actual_1.t.a)
+    assert is_checksum_address(actual_sender_1)
+    assert actual_1.foo == 1
+    assert actual_2.t.a == actual_2.t["a"] == actual_2.t[0] == actual_sender_2 == sender
+    assert is_checksum_address(actual_2.t.a)
+    assert is_checksum_address(actual_sender_2)
+    assert actual_2.foo == 2
 
     # Expected: t.b == block.prevhash.
-    assert actual.t.b == actual.t["b"] == actual.t[1] == actual_prev_block == chain.blocks[-2].hash
-    assert type(actual.t.b) == HexBytes
+    assert (
+        actual_1.t.b
+        == actual_1.t["b"]
+        == actual_1.t[1]
+        == actual_prev_block_1
+        == chain.blocks[-2].hash
+    )
+    assert type(actual_1.t.b) == HexBytes
+    assert (
+        actual_2.t.b
+        == actual_2.t["b"]
+        == actual_2.t[1]
+        == actual_prev_block_2
+        == chain.blocks[-2].hash
+    )
+    assert type(actual_2.t.b) == HexBytes
+
+
+# def test_nested_structs_in_tuples(contract_instance, sender, chain):
+#     actual = contract_instance.get
 
 
 def test_arrays(contract_instance, sender):

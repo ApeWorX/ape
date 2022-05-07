@@ -30,10 +30,11 @@ class StructParser:
         else:
             name = out_abi.name or self.default_name
 
+        components = self._parse_components(out_abi.components, out_value[0])
         result = create_struct(
             name,
             out_abi.components,
-            self._parse_components(out_abi.components, out_value[0]),
+            components,
         )
         return result
 
