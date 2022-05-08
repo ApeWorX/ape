@@ -727,6 +727,9 @@ class ContractNamespace:
         self.name = name
         self.contracts = contracts
 
+    def __repr__(self) -> str:
+        return f"<{self.name}>"
+
     def __getattr__(self, item: str) -> Union[ContractContainer, "ContractNamespace"]:
         """
         Access the next contract container or namespace.
@@ -739,16 +742,27 @@ class ContractNamespace:
             :class:`~ape.contracts.base.ContractNamespace`]
         """
 
+        def _get_name(cc: ContractContainer) -> str:
+            return cc.contract_type.name or ""
+
         for contract in self.contracts:
-            search_name = contract.contract_type.name.replace(f"{self.name}.", "")
-            if search_name == item:
+            search_contract_name = _get_name(contract)
+            search_name = (
+                search_contract_name.replace(f"{self.name}.", "") if search_contract_name else None
+            )
+            if not search_name:
+                continue
+
+            elif search_name == item:
                 return contract
 
-            if "." in search_name:
-                subname = f"{self.name}.{search_name.split('.')[0]}"
-                subcontracts = [
-                    c for c in self.contracts if c.contract_type.name.startswith(subname)
-                ]
+            elif "." in search_name:
+                next_node = search_name.split(".")[0]
+                if next_node != item:
+                    continue
+
+                subname = f"{self.name}.{next_node}"
+                subcontracts = [c for c in self.contracts if _get_name(c).startswith(subname)]
                 return ContractNamespace(subname, subcontracts)
 
         return self.__getattribute__(item)  # type: ignore

@@ -270,7 +270,7 @@ class ProjectManager(BaseManager):
                 for ct in [
                     self._get_contract(ct.name)
                     for n, ct in self.contracts.items()
-                    if n.split(".")[0] == attr_name
+                    if ct.name and n.split(".")[0] == attr_name
                 ]
                 if ct
             ]
