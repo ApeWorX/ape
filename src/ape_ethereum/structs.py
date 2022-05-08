@@ -39,9 +39,6 @@ class StructParser:
         return result
 
     def _parse_components(self, components: List[ABIType], values) -> List:
-        if is_named_tuple(components, values):
-            return create_struct(self.default_name, components, values)
-
         parsed_values = []
         for component, val in zip(components, values):
             new_val = self._create_struct(component, (val,)) if is_struct(component) else val
