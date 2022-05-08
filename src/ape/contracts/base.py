@@ -706,11 +706,39 @@ def _get_non_contract_error(address: str, network_name: str) -> ContractError:
 
 
 class ContractNamespace:
+    """
+    A class that bridges contract containers in a namespace.
+    For example, if you have an interface structure like this::
+
+        contracts:
+          accounts:
+            - interface.json
+          mocks:
+            - interface.json
+
+    You can interact with them like this::
+
+        account_interface = project.accounts.interface
+        mock_interface = project.mocks.interface
+
+    """
+
     def __init__(self, name: str, contracts: List[ContractContainer]):
         self.name = name
         self.contracts = contracts
 
     def __getattr__(self, item: str) -> Union[ContractContainer, "ContractNamespace"]:
+        """
+        Access the next contract container or namespace.
+
+        Args:
+            item (str): The name of the next node.
+
+        Returns:
+            Union[:class:`~ape.contracts.base.ContractContainer`,
+            :class:`~ape.contracts.base.ContractNamespace`]
+        """
+
         for contract in self.contracts:
             search_name = contract.contract_type.name.replace(f"{self.name}.", "")
             if search_name == item:
