@@ -26,18 +26,20 @@ class InterfaceCompiler(CompilerAPI):
         for path in filepaths:
             abi = json.loads(path.read_text())
 
-            source_id = (
-                str(get_relative_path(path, base_path))
-                if base_path and path.is_absolute()
-                else str(path)
-            )
+            if base_path:
+                source_id = str(get_relative_path(path.absolute(), base_path))
+                contract_name = source_id.replace(".json", "").replace("/", ".")
+            else:
+                source_id = str(path)
+                contract_name = path.stem
+
             if not isinstance(abi, list):
                 logger.warning(f"Not a valid ABI interface JSON file (sourceID={source_id}).")
 
             else:
                 contract = ContractType.parse_obj(
                     {
-                        "contractName": path.stem,
+                        "contractName": contract_name,
                         "abi": abi,
                         "sourceId": source_id,
                     }

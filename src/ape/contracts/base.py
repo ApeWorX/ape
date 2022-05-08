@@ -703,3 +703,24 @@ def _get_non_contract_error(address: str, network_name: str) -> ContractError:
         f"Unable to make contract call. "
         f"'{address}' is not a contract on network '{network_name}'."
     )
+
+
+class ContractNamespace:
+    def __init__(self, name: str, contracts: List[ContractContainer]):
+        self.name = name
+        self.contracts = contracts
+
+    def __getattr__(self, item: str) -> Union[ContractContainer, "ContractNamespace"]:
+        for contract in self.contracts:
+            search_name = contract.contract_type.name.replace(f"{self.name}.", "")
+            if search_name == item:
+                return contract
+
+            if "." in search_name:
+                subname = f"{self.name}.{search_name.split('.')[0]}"
+                subcontracts = [
+                    c for c in self.contracts if c.contract_type.name.startswith(subname)
+                ]
+                return ContractNamespace(subname, subcontracts)
+
+        return self.__getattribute__(item)  # type: ignore
