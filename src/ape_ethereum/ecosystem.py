@@ -103,7 +103,7 @@ def parse_output_type(output_type: str) -> Union[str, Tuple]:
         if output_type == ")":
             return tuple(found_types)
 
-        elif output_type[0] == "(":
+        elif output_type[0] == "(" and ")" in output_type:
             # A tuple within the tuple
             end_index = output_type.index(")") + 1
             found_type = parse_output_type(output_type[:end_index])

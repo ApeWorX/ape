@@ -1,9 +1,11 @@
 import pytest
 from eth_typing import HexAddress, HexStr
 from hexbytes import HexBytes
+from hypothesis import given, strategies
 
 from ape.exceptions import OutOfGasError
 from ape.types import AddressType
+from ape_ethereum.ecosystem import parse_output_type
 from ape_ethereum.transactions import (
     Receipt,
     StaticFeeTransaction,
@@ -70,3 +72,19 @@ def test_receipt_raise_for_status_out_of_gas_error(mocker):
     )
     with pytest.raises(OutOfGasError):
         receipt.raise_for_status()
+
+
+@pytest.mark.fuzzing
+@given(strategies.from_regex(r"\(*[\w|, []]*\)*"))
+def test_parse_output_type(s):
+    # Example matching strings from above regex:
+    #   * (int, int)
+    #   * ((int, int), int)
+    #   * int
+    #   * uint256
+    #   * int[]
+    #   * (asd ) [] asdf ff 33 asdf
+    #
+    # See tests in `tests_contracts` for specific ABI parsing tests.
+
+    assert parse_output_type(s)
