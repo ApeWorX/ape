@@ -24,7 +24,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
-from ape_ethereum.structs import StructParser, is_named_tuple, is_struct
+from ape.utils import StructParser, is_named_tuple, is_struct
 from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
