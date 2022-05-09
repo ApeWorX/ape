@@ -401,12 +401,16 @@ class ProjectManager(BaseManager):
 
     def _load_dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
         if self.path.name not in self._cached_dependencies:
-            deps = {d.name: {d.version_id: d} for d in self.config_manager.dependencies}
-            for versions in deps.values():
-                for api in versions.values():
-                    api.extract_manifest()  # Downloads if needed
+            dependencies: Dict[str, Dict[str, DependencyAPI]] = {}
+            for dependency_config in self.config_manager.dependencies:
+                manifest = dependency_config.extract_manifest()
+                version_id = dependency_config.version_id
+                if dependency_config.name in dependencies:
+                    dependencies[dependency_config.name][version_id] = manifest
+                else:
+                    dependencies[dependency_config.name] = {version_id: manifest}
 
-            self._cached_dependencies[self.path.name] = deps
+            self._cached_dependencies[self.path.name] = dependencies
 
         return self._cached_dependencies[self.path.name]
 
