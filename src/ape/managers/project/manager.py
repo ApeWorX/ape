@@ -36,7 +36,7 @@ class ProjectManager(BaseManager):
     """The project path."""
 
     _cached_projects: Dict[str, ProjectAPI] = {}
-    _cached_dependencies: Dict[str, Dict[str, DependencyAPI]] = {}
+    _cached_dependencies: Dict[str, Dict[str, Dict[str, DependencyAPI]]] = {}
 
     def __init__(
         self,
@@ -48,7 +48,7 @@ class ProjectManager(BaseManager):
         return f'Project("{self.path}")'
 
     @property
-    def dependencies(self) -> Dict[str, DependencyAPI]:
+    def dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
         """
         The package manifests of all dependencies mentioned
         in this project's ``ape-config.yaml`` file.
@@ -399,11 +399,12 @@ class ProjectManager(BaseManager):
         manifest = self._project.create_manifest(file_paths, use_cache=use_cache)
         return manifest.contract_types or {}
 
-    def _load_dependencies(self) -> Dict[str, DependencyAPI]:
+    def _load_dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
         if self.path.name not in self._cached_dependencies:
-            deps = {d.name: d for d in self.config_manager.dependencies}
-            for api in deps.values():
-                api.extract_manifest()  # Downloads if needed
+            deps = {d.name: {d.version_id: d} for d in self.config_manager.dependencies}
+            for versions in deps.values():
+                for api in versions.values():
+                    api.extract_manifest()  # Downloads if needed
 
             self._cached_dependencies[self.path.name] = deps
 
