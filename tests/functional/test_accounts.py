@@ -85,14 +85,14 @@ def test_deploy(owner, contract_container):
 
 
 def test_contract_calls(owner, contract_instance):
-    contract_instance.set_number(2, sender=owner)
-    assert contract_instance.my_number() == 2
+    contract_instance.setNumber(2, sender=owner)
+    assert contract_instance.myNumber() == 2
 
 
 def test_contract_revert(sender, contract_instance):
     # 'sender' is not the owner so it will revert (with a message)
     with pytest.raises(ContractLogicError) as err:
-        contract_instance.set_number(5, sender=sender)
+        contract_instance.setNumber(5, sender=sender)
 
     assert str(err.value) == "!authorized"
 
@@ -100,7 +100,7 @@ def test_contract_revert(sender, contract_instance):
 def test_contract_revert_no_message(owner, contract_instance):
     # The Contract raises empty revert when setting number to 5.
     with pytest.raises(ContractLogicError) as err:
-        contract_instance.set_number(5, sender=owner)
+        contract_instance.setNumber(5, sender=owner)
 
     assert str(err.value) == "Transaction failed."  # Default message
 
@@ -171,7 +171,7 @@ def test_impersonate_not_implemented(accounts):
 
 def test_contract_as_sender_non_fork_network(contract_instance):
     with pytest.raises(IndexError) as err:
-        contract_instance.set_number(5, sender=contract_instance)
+        contract_instance.setNumber(5, sender=contract_instance)
 
     expected_err_msg = (
         "Your provider does not support impersonating accounts:\n"
