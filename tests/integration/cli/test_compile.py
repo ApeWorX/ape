@@ -1,5 +1,4 @@
 import shutil
-from pathlib import Path
 
 import pytest
 
@@ -9,14 +8,7 @@ from .utils import skip_projects, skip_projects_except
 
 
 @skip_projects(
-    [
-        "unregistered-contracts",
-        "one-interface",
-        "geth",
-        "only-dependency",
-        "with-dependency",
-        "namespaces",
-    ]
+    ["unregistered-contracts", "one-interface", "geth", "only-dependency", "with-dependency"]
 )
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
@@ -60,37 +52,16 @@ def test_compile(ape_cli, runner, project, clean_cache):
     # Files with multiple extensions are currently not supported.
     all_files = [f for f in project.path.glob("contracts/**/*")]
     expected_files = [f for f in all_files if f.name.count(".") == 1]
-    unexpected_files = [f for f in all_files if f not in expected_files and f.is_file()]
+    unexpected_files = [f for f in all_files if f not in expected_files]
 
     assert all([f.stem in result.output for f in expected_files])
     assert not any([f.stem in result.output for f in unexpected_files])
-
-    # Ensure contracts are accessible
-    expected = [
-        get_expected_contract_type_name(p, project.contracts_folder) for p in expected_files
-    ]
-    for contract_name in expected:
-        assert project.get_contract(contract_name).contract_type.name == contract_name
-        assert getattr(project, contract_name).contract_type.name == contract_name
 
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     # First time it compiles, it caches
     for file in project.path.glob("contracts/**/*"):
         assert file.stem not in result.output
-
-
-@skip_projects_except(["namespaces"])
-def test_namespace_getattr(ape_cli, runner, project, clean_cache):
-    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
-    assert result.exit_code == 0, result.output
-    assert project.interface.contract_type.name == "interface"
-    assert project.namespace0.interface.contract_type.name == "namespace0.interface"
-    assert project.namespace1.interface.contract_type.name == "namespace1.interface"
-    assert (
-        project.namespace1.namespace2.interface.contract_type.name
-        == "namespace1.namespace2.interface"
-    )
 
 
 @skip_projects_except(["one-interface"])
@@ -174,16 +145,3 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache):
     result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'DependencyA.json'" in result.output
-
-
-def get_expected_contract_type_name(contract_path: Path, base_path: Path) -> str:
-    """
-    Converts paths like Path("path/to/base_dir/namespace/library.cairo") -> "namespace.library".
-    """
-    return (
-        str(contract_path)
-        .replace(str(base_path), "")
-        .replace(".json", "")
-        .strip("/")
-        .replace("/", ".")
-    )
