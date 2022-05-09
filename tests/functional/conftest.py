@@ -1,4 +1,10 @@
+import tempfile
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Dict
+
 import pytest
+import yaml
 from eth.exceptions import HeaderNotFound
 from ethpm_types import ContractType
 
@@ -14,6 +20,7 @@ from ape.api import (
 )
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
+from ape.managers.config import CONFIG_FILE_NAME
 from ape_ethereum.transactions import TransactionStatusEnum
 
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
@@ -192,3 +199,22 @@ def contract_container(contract_type) -> ContractContainer:
 @pytest.fixture
 def contract_instance(owner, contract_container) -> ContractInstance:
     return owner.deploy(contract_container)
+
+
+@pytest.fixture
+def temp_config():
+    @contextmanager
+    def func(data: Dict, config):
+        with tempfile.TemporaryDirectory() as temp_dir_str:
+            temp_dir = Path(temp_dir_str)
+            with config.using_project(temp_dir):
+                config._cached_configs = {}
+                config_file = temp_dir / CONFIG_FILE_NAME
+                config_file.touch()
+                config_file.write_text(yaml.dump(data))
+                config.load(force_reload=True)
+                yield
+                config_file.unlink()
+                config._cached_configs = {}
+
+    return func
