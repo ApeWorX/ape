@@ -403,12 +403,12 @@ class ProjectManager(BaseManager):
         if self.path.name not in self._cached_dependencies:
             dependencies: Dict[str, Dict[str, DependencyAPI]] = {}
             for dependency_config in self.config_manager.dependencies:
-                manifest = dependency_config.extract_manifest()
+                dependency_config.extract_manifest()
                 version_id = dependency_config.version_id
                 if dependency_config.name in dependencies:
-                    dependencies[dependency_config.name][version_id] = manifest
+                    dependencies[dependency_config.name][version_id] = dependency_config
                 else:
-                    dependencies[dependency_config.name] = {version_id: manifest}
+                    dependencies[dependency_config.name] = {version_id: dependency_config}
 
             self._cached_dependencies[self.path.name] = dependencies
 
