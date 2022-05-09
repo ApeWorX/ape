@@ -1,18 +1,21 @@
+from abc import abstractmethod
+
 from ape.utils.abi import StructParser, is_named_tuple, is_struct
-from ape.utils.github import GithubClient, github_client
-from ape.utils.misc import (
-    USER_AGENT,
+from ape.utils.basemodel import (
     BaseInterface,
     BaseInterfaceModel,
     ManagerAccessMixin,
-    abstractmethod,
+    injected_before_use,
+)
+from ape.utils.github import GithubClient, github_client
+from ape.utils.misc import (
+    USER_AGENT,
     add_padding_to_strings,
     cached_property,
     expand_environment_variables,
     extract_nested_value,
     gas_estimation_error_message,
     get_package_version,
-    injected_before_use,
     load_config,
     raises_not_implemented,
     singledispatchmethod,
