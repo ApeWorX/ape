@@ -14,8 +14,6 @@ from hexbytes import HexBytes
 
 from ape.api import (
     BlockAPI,
-    BlockConsensusAPI,
-    BlockGasAPI,
     EcosystemAPI,
     PluginConfig,
     ReceiptAPI,
@@ -88,18 +86,6 @@ class EthereumConfig(PluginConfig):
     goerli_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     local: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     default_network: str = LOCAL_NETWORK_NAME
-
-
-class BlockGasFee(BlockGasAPI):
-    @classmethod
-    def decode(cls, data: Dict) -> BlockGasAPI:
-        return BlockGasFee.parse_obj(data)
-
-
-class BlockConsensus(BlockConsensusAPI):
-    @classmethod
-    def decode(cls, data: Dict) -> BlockConsensusAPI:
-        return cls(**data)  # type: ignore
 
 
 class Block(BlockAPI):
@@ -287,21 +273,19 @@ class Ethereum(EcosystemAPI):
         )
 
     def decode_block(self, data: Dict) -> BlockAPI:
-        # TODO: when we flatten the Block structure, remove these hacks
-        if "gas_data" in data:
-            data.update(data.pop("gas_data"))
-        if "consensus_data" in data:
-            data.update(data.pop("consensus_data"))
-        return Block(  # type: ignore
-            gas_data=BlockGasFee.decode(data),
-            consensus_data=BlockConsensus.decode(data),
-            number=data.get("number"),
-            size=data.get("size"),
-            timestamp=data.get("timestamp"),
-            hash=data.get("hash"),
-            # TODO: when we flatten the Block structure, remove this hack.
-            parent_hash=data.get("parentHash") or data.get("parent_hash"),
-        )
+        if "gas_limit" in data:
+            data["gasLimit"] = data.pop("gas_limit")
+        if "gas_used" in data:
+            data["gasUsed"] = data.pop("gas_used")
+        if "parent_hash" in data:
+            data["parentHash"] = data.pop("parent_hash")
+        if "transaction_ids" in data:
+            data["transactions"] = data.pop("transaction_ids")
+        if "total_difficulty" in data:
+            data["totalDifficuly"] = data.pop("total_difficulty")
+        if "base_fee" in data:
+            data["baseFee"] = data.pop("base_fee")
+        return Block.parse_obj(data)
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
         if abi.inputs:

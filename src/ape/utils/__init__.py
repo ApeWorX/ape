@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from hexbytes import HexBytes
 
 from ape.utils.abi import (
     LogInputABICollection,
@@ -37,6 +38,9 @@ from ape.utils.testing import (
     generate_dev_accounts,
 )
 
+
+EMPTY_BYTES32 = HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
+
 __all__ = [
     "abstractmethod",
     "add_padding_to_strings",
@@ -55,6 +59,7 @@ __all__ = [
     "GeneratedDevAccount",
     "generate_dev_accounts",
     "get_all_files_in_directory",
+    "EMPTY_BYTES32",
     "injected_before_use",
     "is_array",
     "is_named_tuple",
