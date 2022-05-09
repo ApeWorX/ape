@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Dict
 
 import pytest
 from eth.exceptions import HeaderNotFound
@@ -19,11 +20,16 @@ from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
 from ape_ethereum.transactions import TransactionStatusEnum
 
-_HERE = Path(__file__).parent
 
+def _get_raw_contract(compiler: str) -> Dict:
+    here = Path(__file__).parent
+    contracts_dir = here / "data" / "contracts"
+    return json.loads((contracts_dir / f"{compiler}_contract.json").read_text())
+
+
+RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity")
+RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-RAW_SOLIDITY_CONTRACT_TYPE = json.loads((_HERE / "solidity_contract.json").read_text())
-RAW_VYPER_CONTRACT_TYPE = json.loads((_HERE / "vyper_contract.json").read_text())
 
 
 @pytest.fixture
