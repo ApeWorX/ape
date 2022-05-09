@@ -1,4 +1,5 @@
 import itertools
+import re
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
@@ -23,6 +24,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
+from ape.utils import StructParser, is_named_tuple, is_struct
 from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
@@ -40,6 +42,7 @@ NETWORKS = {
     "rinkeby": (4, 4),
     "goerli": (5, 5),
 }
+_ARRAY_PATTERN = re.compile(r"\w+\[(\d?)\]")
 
 
 class NetworkConfig(PluginConfig):
@@ -86,6 +89,34 @@ class Block(BlockAPI):
     """
     Class for representing a block on a chain.
     """
+
+
+def parse_output_type(output_type: str) -> Union[str, Tuple]:
+    if "(" not in output_type:
+        return output_type
+
+    # Strip off first opening parens
+    output_type = output_type[1:]
+    found_types: List[Union[str, Tuple]] = []
+
+    while output_type:
+        if output_type == ")":
+            return tuple(found_types)
+
+        elif output_type[0] == "(" and ")" in output_type:
+            # A tuple within the tuple
+            end_index = output_type.index(")") + 1
+            found_type = parse_output_type(output_type[:end_index])
+            output_type = output_type[end_index:]
+        else:
+            found_type = output_type.split(",")[0].rstrip(")")
+            end_index = len(found_type) + 1
+            output_type = output_type[end_index:]
+
+        if found_type:
+            found_types.append(found_type)
+
+    return tuple(found_types)
 
 
 class Ethereum(EcosystemAPI):
@@ -165,24 +196,54 @@ class Ethereum(EcosystemAPI):
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
         try:
             vm_return_values = abi_decode(output_types, raw_data)
-            if not vm_return_values:
-                return vm_return_values
-
-            if not isinstance(vm_return_values, (tuple, list)):
-                vm_return_values = (vm_return_values,)
-
-            output_values: List[Any] = []
-            for index in range(len(vm_return_values)):
-                value = vm_return_values[index]
-                if index < len(output_types) and output_types[index] == "address":
-                    value = self.decode_address(value)
-
-                output_values.append(value)
-
-            return tuple(output_values)
-
         except InsufficientDataBytes as err:
             raise DecodingError() from err
+
+        if not vm_return_values:
+            return vm_return_values
+
+        if not isinstance(vm_return_values, (tuple, list)):
+            vm_return_values = (vm_return_values,)
+
+        output_values: List[Any] = []
+        for index in range(len(vm_return_values)):
+            if index >= len(output_types):
+                break
+
+            value = vm_return_values[index]
+            output_type = parse_output_type(output_types[index])
+            output_values.append(self._decode_primitive_value(value, output_type))
+
+        if is_struct(abi.outputs) or is_named_tuple(abi.outputs, output_values):
+            parser = StructParser(abi)
+            return parser.parse(abi.outputs, output_values)
+
+        elif len(abi.outputs) == 1 and _ARRAY_PATTERN.match(str(abi.outputs[0].type)):
+            return ([o for o in output_values[0]],)
+
+        else:
+            return tuple(output_values)
+
+    def _decode_primitive_value(
+        self, value: Any, output_type: Union[str, Tuple]
+    ) -> Union[str, HexBytes, Tuple]:
+        if output_type == "address":
+            try:
+                return self.decode_address(value)
+            except InsufficientDataBytes as err:
+                raise DecodingError() from err
+
+        elif isinstance(value, bytes):
+            return HexBytes(value)
+
+        elif isinstance(output_type, str) and _ARRAY_PATTERN.match(output_type):
+            sub_type = output_type.split("[")[0]
+            return tuple([self._decode_primitive_value(v, sub_type) for v in value])
+
+        elif isinstance(output_type, tuple):
+            return tuple([self._decode_primitive_value(v, t) for v, t in zip(value, output_type)])
+
+        return value
 
     def encode_deployment(
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
