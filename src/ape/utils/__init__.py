@@ -1,3 +1,4 @@
+from ape.utils.abi import StructParser, is_named_tuple, is_struct
 from ape.utils.github import GithubClient, github_client
 from ape.utils.misc import (
     USER_AGENT,
@@ -18,7 +19,6 @@ from ape.utils.misc import (
     stream_response,
 )
 from ape.utils.os import get_all_files_in_directory, get_relative_path, use_temp_sys_path
-from ape.utils.structs import StructParser, is_named_tuple, is_struct
 from ape.utils.testing import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_MNEMONIC,
