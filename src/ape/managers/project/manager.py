@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Type, Union
 from ethpm_types import Compiler, ContractType
 
 from ape.api import DependencyAPI, ProjectAPI
-from ape.contracts import ContractContainer
+from ape.contracts import ContractContainer, ContractNamespace
 from ape.exceptions import ProjectError
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
@@ -237,7 +237,7 @@ class ProjectManager(BaseManager):
 
         return self.load_contracts()
 
-    def __getattr__(self, attr_name: str) -> ContractContainer:
+    def __getattr__(self, attr_name: str) -> Union[ContractContainer, ContractNamespace]:
         """
         Get a contract container from an existing contract type in
         the local project using ``.`` access.
@@ -262,7 +262,21 @@ class ProjectManager(BaseManager):
         """
 
         contract = self._get_contract(attr_name)
+
         if not contract:
+            # Check if using namespacing.
+            namespaced_contracts = [
+                ct
+                for ct in [
+                    self._get_contract(ct.name)
+                    for n, ct in self.contracts.items()
+                    if ct.name and n.split(".")[0] == attr_name
+                ]
+                if ct
+            ]
+            if namespaced_contracts:
+                return ContractNamespace(attr_name, namespaced_contracts)
+
             # Fixes anomaly when accessing non-ContractType attributes.
             # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
             return self.__getattribute__(attr_name)  # type: ignore
