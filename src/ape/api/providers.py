@@ -16,7 +16,7 @@ from eth_utils import add_0x_prefix, keccak
 from ethpm_types.abi import EventABI
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
-from pydantic import Field, validator, root_validator, BaseModel
+from pydantic import BaseModel, Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
@@ -79,7 +79,9 @@ class BlockAPI(BaseInterfaceModel):
     num_transactions: int = 0
     hash: Optional[Any] = None  # NOTE: pending block does not have a hash
     number: Optional[int] = None
-    parent_hash: Any = Field(EMPTY_BYTES32, alias="parentHash")  # NOTE: genesis block has no parent hash
+    parent_hash: Any = Field(
+        EMPTY_BYTES32, alias="parentHash"
+    )  # NOTE: genesis block has no parent hash
     size: int
     timestamp: int
     gas_limit: int = Field(alias="gasLimit")

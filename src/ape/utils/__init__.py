@@ -1,4 +1,5 @@
 from abc import abstractmethod
+
 from hexbytes import HexBytes
 
 from ape.utils.abi import (
@@ -38,8 +39,7 @@ from ape.utils.testing import (
     generate_dev_accounts,
 )
 
-
-EMPTY_BYTES32 = HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
+EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
 
 __all__ = [
     "abstractmethod",
