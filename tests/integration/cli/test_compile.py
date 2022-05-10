@@ -52,10 +52,10 @@ def test_compile(ape_cli, runner, project, clean_cache):
     # Files with multiple extensions are currently not supported.
     all_files = [f for f in project.path.glob("contracts/**/*")]
     expected_files = [f for f in all_files if f.name.count(".") == 1]
-    un_expected_files = [f for f in all_files if f not in expected_files]
+    unexpected_files = [f for f in all_files if f not in expected_files]
 
     assert all([f.stem in result.output for f in expected_files])
-    assert not any([f.stem in result.output for f in un_expected_files])
+    assert not any([f.stem in result.output for f in unexpected_files])
 
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output

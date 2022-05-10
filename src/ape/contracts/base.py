@@ -702,3 +702,66 @@ def _get_non_contract_error(address: str, network_name: str) -> ContractError:
         f"Unable to make contract call. "
         f"'{address}' is not a contract on network '{network_name}'."
     )
+
+
+class ContractNamespace:
+    """
+    A class that bridges contract containers in a namespace.
+    For example, if you have an interface structure like this::
+
+        contracts:
+          accounts:
+            - interface.json
+          mocks:
+            - interface.json
+
+    You can interact with them like this::
+
+        account_interface = project.accounts.interface
+        mock_interface = project.mocks.interface
+
+    """
+
+    def __init__(self, name: str, contracts: List[ContractContainer]):
+        self.name = name
+        self.contracts = contracts
+
+    def __repr__(self) -> str:
+        return f"<{self.name}>"
+
+    def __getattr__(self, item: str) -> Union[ContractContainer, "ContractNamespace"]:
+        """
+        Access the next contract container or namespace.
+
+        Args:
+            item (str): The name of the next node.
+
+        Returns:
+            Union[:class:`~ape.contracts.base.ContractContainer`,
+            :class:`~ape.contracts.base.ContractNamespace`]
+        """
+
+        def _get_name(cc: ContractContainer) -> str:
+            return cc.contract_type.name or ""
+
+        for contract in self.contracts:
+            search_contract_name = _get_name(contract)
+            search_name = (
+                search_contract_name.replace(f"{self.name}.", "") if search_contract_name else None
+            )
+            if not search_name:
+                continue
+
+            elif search_name == item:
+                return contract
+
+            elif "." in search_name:
+                next_node = search_name.split(".")[0]
+                if next_node != item:
+                    continue
+
+                subname = f"{self.name}.{next_node}"
+                subcontracts = [c for c in self.contracts if _get_name(c).startswith(subname)]
+                return ContractNamespace(subname, subcontracts)
+
+        return self.__getattribute__(item)  # type: ignore
