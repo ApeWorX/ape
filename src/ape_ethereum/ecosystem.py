@@ -238,7 +238,7 @@ class Ethereum(EcosystemAPI):
         return None
 
     def serialize_transaction(self, transaction: TransactionAPI) -> bytes:
-        return transaction.serialize_transaction()
+        return self.serialize_transaction(transaction)
 
     def decode_receipt(self, data: dict) -> ReceiptAPI:
         status = data.get("status")
