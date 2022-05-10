@@ -115,11 +115,14 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
 
     dep_name_a = "__test_dependency_a__"
     dep_name_b = "__test_dependency_b__"
+    dep_name_c = "__test_dependency_c__"
     assert result.exit_code == 0, result.output
     assert dep_name_a in project.dependencies
     assert dep_name_b in project.dependencies
-    assert type(project.dependencies[dep_name_a].DependencyA) == ContractContainer
-    assert type(project.dependencies[dep_name_b].DependencyB) == ContractContainer
+    assert dep_name_c in project.dependencies
+    assert type(project.dependencies[dep_name_a]["local"].DependencyA) == ContractContainer
+    assert type(project.dependencies[dep_name_b]["local"].DependencyB) == ContractContainer
+    assert type(project.dependencies[dep_name_c]["local"].DependencyC) == ContractContainer
 
 
 @skip_projects_except(["with-dependency"])
