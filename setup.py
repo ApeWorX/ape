@@ -95,7 +95,7 @@ setup(
         "rich>=10.14,<11",
         "tqdm>=4.62.3,<5.0",
         "typing-extensions ; python_version<'3.8'",
-        "web3[tester]>=5.28.0,<6.0",
+        "web3[tester]>=5.29.0,<6.0",
         "eth_abi==2.1.1",
         "eth-utils==1.10.0",
         "eth-rlp==0.2.1",
