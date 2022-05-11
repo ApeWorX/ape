@@ -239,8 +239,20 @@ def test_nested_structs(contract_instance, sender, chain):
     assert type(actual_2.t.b) == HexBytes
 
 
-# def test_nested_structs_in_tuples(contract_instance, sender, chain):
-#     actual = contract_instance.get
+def test_nested_structs_in_tuples(contract_instance, sender, chain):
+    result_1 = contract_instance.getNestedStructWithTuple1()
+    struct_1 = result_1[0]
+    assert result_1[1] == 1
+    assert struct_1.foo == 1
+    assert struct_1.t.a == sender
+    assert is_checksum_address(struct_1.t.a)
+
+    result_2 = contract_instance.getNestedStructWithTuple2()
+    struct_2 = result_2[1]
+    assert result_2[0] == 2
+    assert struct_2.foo == 2
+    assert struct_2.t.a == sender
+    assert is_checksum_address(struct_2.t.a)
 
 
 def test_arrays(contract_instance, sender):

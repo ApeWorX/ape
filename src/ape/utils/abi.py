@@ -1,7 +1,22 @@
+import re
 from dataclasses import make_dataclass
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from ethpm_types.abi import ABIType, MethodABI
+
+ARRAY_PATTERN = re.compile(r"\w+\[(\d?)]")
+
+
+def is_array(abi_type: ABIType) -> bool:
+    return ARRAY_PATTERN.match(str(abi_type)) is not None
+
+
+def returns_array(abi: MethodABI) -> bool:
+    return _is_array_return(abi.outputs)
+
+
+def _is_array_return(outputs: List[ABIType]):
+    return len(outputs) == 1 and is_array(outputs[0].type)
 
 
 class StructParser:
@@ -12,13 +27,27 @@ class StructParser:
     def default_name(self) -> str:
         return f"{self.method_abi.name}_return"
 
-    def parse(self, output_types: List[ABIType], values: List) -> Any:
+    def parse(self, output_types: List[ABIType], values: Union[List, Tuple]) -> Any:
         if is_struct(output_types):
             return self._create_struct(output_types[0], values)
 
         elif is_named_tuple(output_types, values):
             # Handle tuples. NOTE: unnamed output structs appear as tuples with named members
             return create_struct(self.default_name, output_types, values)
+
+        elif _is_array_return(output_types):
+            return values
+
+        # Check for structs within arrays or tuples
+        return_values = []
+        for output_type, value in zip(output_types, values):
+            if isinstance(value, (tuple, list)):
+                struct_item = self.parse([output_type], [value])
+                return_values.append(struct_item)
+            else:
+                return_values.append(value)
+
+        return return_values
 
     def _create_struct(self, out_abi: ABIType, out_value) -> Optional[Any]:
         if not out_abi.components:
@@ -58,11 +87,19 @@ def is_struct(outputs: Union[ABIType, List[ABIType]]) -> bool:
     )
 
 
-def is_named_tuple(outputs: List[ABIType], output_values: List) -> bool:
+def is_named_tuple(outputs: List[ABIType], output_values: Union[List, Tuple]) -> bool:
     return all(o.name for o in outputs) and len(output_values) > 1
 
 
-def create_struct(name: str, types: List[ABIType], output_values: List[Any]) -> Any:
+class Struct:
+    """
+    A class for smart-contract return values using the struct data-structure.
+    """
+
+
+def create_struct(
+    name: str, types: List[ABIType], output_values: Union[List[Any], Tuple[Any, ...]]
+) -> Any:
     def get_item(struct, index) -> Any:
         # NOTE: Allow struct to function as a tuple and dict as well
         struct_values = tuple(getattr(struct, field) for field in struct.__dataclass_fields__)
@@ -86,6 +123,7 @@ def create_struct(name: str, types: List[ABIType], output_values: List[Any]) -> 
         # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
         [m.name or f"_{i}" for i, m in enumerate(types)],
         namespace={"__getitem__": get_item, "__eq__": is_equal, "__len__": length},
+        bases=(Struct,),
     )
 
     return struct_def(*output_values)

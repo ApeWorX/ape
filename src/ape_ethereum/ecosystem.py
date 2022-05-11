@@ -1,5 +1,4 @@
 import itertools
-import re
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
@@ -24,7 +23,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
-from ape.utils import StructParser, is_named_tuple, is_struct
+from ape.utils import Struct, StructParser, is_array
 from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
@@ -42,7 +41,6 @@ NETWORKS = {
     "rinkeby": (4, 4),
     "goerli": (5, 5),
 }
-_ARRAY_PATTERN = re.compile(r"\w+\[(\d?)\]")
 
 
 class NetworkConfig(PluginConfig):
@@ -214,11 +212,12 @@ class Ethereum(EcosystemAPI):
             output_type = parse_output_type(output_types[index])
             output_values.append(self._decode_primitive_value(value, output_type))
 
-        if is_struct(abi.outputs) or is_named_tuple(abi.outputs, output_values):
-            parser = StructParser(abi)
-            return parser.parse(abi.outputs, output_values)
+        parser = StructParser(abi)
+        output_values = parser.parse(abi.outputs, output_values)
+        if issubclass(type(output_values), Struct):
+            return (output_values,)
 
-        elif len(abi.outputs) == 1 and _ARRAY_PATTERN.match(str(abi.outputs[0].type)):
+        elif len(abi.outputs) == 1 and is_array(abi.outputs[0].type):
             return ([o for o in output_values[0]],)
 
         else:
@@ -236,7 +235,7 @@ class Ethereum(EcosystemAPI):
         elif isinstance(value, bytes):
             return HexBytes(value)
 
-        elif isinstance(output_type, str) and _ARRAY_PATTERN.match(output_type):
+        elif isinstance(output_type, str) and is_array(output_type):
             sub_type = output_type.split("[")[0]
             return tuple([self._decode_primitive_value(v, sub_type) for v in value])
 

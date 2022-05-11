@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from ape.utils.abi import StructParser, is_named_tuple, is_struct
+from ape.utils.abi import Struct, StructParser, is_array, is_named_tuple, is_struct, returns_array
 from ape.utils.basemodel import (
     BaseInterface,
     BaseInterfaceModel,
@@ -48,13 +48,16 @@ __all__ = [
     "generate_dev_accounts",
     "get_all_files_in_directory",
     "injected_before_use",
+    "is_array",
     "is_named_tuple",
     "is_struct",
     "load_config",
     "ManagerAccessMixin",
     "raises_not_implemented",
+    "returns_array",
     "singledispatchmethod",
     "stream_response",
+    "Struct",
     "StructParser",
     "use_temp_sys_path",
     "USER_AGENT",
