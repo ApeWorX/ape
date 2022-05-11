@@ -7,7 +7,7 @@ from ethpm_types.abi import ABIType, MethodABI
 ARRAY_PATTERN = re.compile(r"\w+\[(\d?)]")
 
 
-def is_array(abi_type: ABIType) -> bool:
+def is_array(abi_type: Union[str, ABIType]) -> bool:
     return ARRAY_PATTERN.match(str(abi_type)) is not None
 
 
