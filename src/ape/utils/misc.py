@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Mapping, Optional
 
 import requests
 import yaml
+from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
 from tqdm.auto import tqdm  # type: ignore
@@ -22,6 +23,9 @@ try:
     from functools import singledispatchmethod  # type: ignore
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
+
+
+EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
 
 
 _python_version = (
