@@ -23,7 +23,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
-from ape.utils import Struct, StructParser, is_array
+from ape.utils import Struct, StructParser, is_array, returns_array
 from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
@@ -217,7 +217,7 @@ class Ethereum(EcosystemAPI):
         if issubclass(type(output_values), Struct):
             return (output_values,)
 
-        elif len(abi.outputs) == 1 and is_array(abi.outputs[0].type):
+        elif returns_array(abi):
             return ([o for o in output_values[0]],)
 
         else:
