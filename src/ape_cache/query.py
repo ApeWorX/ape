@@ -13,7 +13,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
 from ape.managers.query import get_columns_from_item
-from ape.utils import logger, singledispatchmethod
+from ape.utils import logger, singledispatchmethod  # type: ignore
 
 from . import models
 

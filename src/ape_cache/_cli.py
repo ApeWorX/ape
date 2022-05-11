@@ -2,7 +2,7 @@ import click
 import pandas as pd
 
 from ape.cli import NetworkBoundCommand, network_option
-from ape.utils import ManagerAccessMixin, logger
+from ape.utils import ManagerAccessMixin, logger  # type: ignore
 
 
 def get_engine():
