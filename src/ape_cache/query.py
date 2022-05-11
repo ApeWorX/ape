@@ -2,17 +2,17 @@ import itertools
 import math
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import pandas as pd
-from pydantic import BaseModel
 from sqlalchemy import create_engine  # type: ignore
 from sqlalchemy.sql import text  # type: ignore
 
 from ape.api import QueryAPI, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery, _BaseQuery
+from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
+from ape.managers.query import get_columns_from_item
 from ape.utils import logger, singledispatchmethod
 
 from . import models
@@ -22,10 +22,6 @@ TABLE_NAME = {
     AccountQuery: "transactions",
     ContractEventQuery: "contract_events",
 }
-
-
-def get_columns_from_item(query: _BaseQuery, item: BaseModel) -> Dict[str, Any]:
-    return {k: v for k, v in item.dict().items() if k in query.columns}
 
 
 class CacheQueryProvider(QueryAPI):
