@@ -99,10 +99,10 @@ class EcosystemAPI(BaseInterfaceModel):
 
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (
-            self.signature.v,
-            to_int(self.signature.r),
-            to_int(self.signature.s),
-        )  # type: ignore
+            self.signature.v,  # type: ignore
+            to_int(self.signature.r),  # type: ignore
+            to_int(self.signature.s),  # type: ignore
+        )
 
         signed_txn = encode_transaction(unsigned_txn, signature)
 
