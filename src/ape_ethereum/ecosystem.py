@@ -90,7 +90,7 @@ class Block(BlockAPI):
 
 
 def parse_output_type(output_type: str) -> Union[str, Tuple, List]:
-    if "(" not in output_type:
+    if not output_type.startswith("("):
         return output_type
 
     # Strip off first opening parens
