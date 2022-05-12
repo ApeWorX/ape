@@ -138,7 +138,7 @@ def create_struct(
         # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
         [m.name or f"_{i}" for i, m in enumerate(types)],
         namespace={"__getitem__": get_item, "__eq__": is_equal, "__len__": length},
-        bases=(Struct,),
+        bases=(Struct,),  # We set a base class for subclass checking elsewhere.
     )
 
     return struct_def(*output_values)
