@@ -8,10 +8,30 @@ ARRAY_PATTERN = re.compile(r"[\(*\w,? ?\w?\)?]*\[\d?\]")
 
 
 def is_array(abi_type: Union[str, ABIType]) -> bool:
+    """
+    Returns ``True`` if the given type is a probably an array.
+
+    Args:
+        abi_type (Union[str, ABIType]): The type to check.
+
+    Returns:
+        bool
+    """
+
     return ARRAY_PATTERN.match(str(abi_type)) is not None
 
 
 def returns_array(abi: MethodABI) -> bool:
+    """
+    Returns ``True`` if the given method ABI likely returns an array.
+
+    Args:
+        abi (MethodABI): An ABI method.
+
+    Returns:
+        bool
+    """
+
     return _is_array_return(abi.outputs)
 
 
