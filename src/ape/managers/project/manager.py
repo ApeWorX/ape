@@ -106,7 +106,6 @@ class ProjectManager(BaseManager):
 
         return self.path / "interfaces"
 
-    @property
     def extract_manifest(self) -> PackageManifest:
         return self._project.create_manifest()
 
