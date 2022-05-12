@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 CONFIG_FILE_NAME = "ape-config.yaml"
+DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT = 120
 
 
 class DeploymentConfig(PluginConfig):
@@ -100,6 +101,12 @@ class ConfigManager(BaseInterfaceModel):
     default_ecosystem: str = "ethereum"
     """The default ecosystem to use. Defaults to ``"ethereum"``."""
 
+    transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+    """
+    The amount of time to wait for a transaction to be accepted on the network.
+    Does not include waiting for block-confirmations.
+    """
+
     _cached_configs: Dict[str, Dict[str, Any]] = {}
 
     @root_validator(pre=True)
@@ -127,6 +134,9 @@ class ConfigManager(BaseInterfaceModel):
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
+            self.transaction_acceptance_timeout = cache.get(
+                "transaction_acceptance_timeout", DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+            )
             return cache
 
         # First, load top-level configs. Then, load all the plugin configs.
@@ -139,6 +149,9 @@ class ConfigManager(BaseInterfaceModel):
         self.version = configs["version"] = user_config.pop("version", "")
         self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
             "default_ecosystem", "ethereum"
+        )
+        self.transaction_acceptance_timeout = user_config.pop(
+            "transaction_acceptance_timeout", DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
         )
 
         try:

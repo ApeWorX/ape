@@ -556,7 +556,10 @@ class Web3Provider(ProviderAPI, ABC):
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
 
-        receipt_data = self.web3.eth.wait_for_transaction_receipt(HexBytes(txn_hash))
+        timeout = self.config_manager.transaction_acceptance_timeout
+        receipt_data = self.web3.eth.wait_for_transaction_receipt(
+            HexBytes(txn_hash), timeout=timeout
+        )
         txn = self.web3.eth.get_transaction(txn_hash)  # type: ignore
         receipt = self.network.ecosystem.decode_receipt(
             {
