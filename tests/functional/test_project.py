@@ -40,5 +40,5 @@ def test_two_dependencies_with_same_name(already_downloaded_dependencies, projec
 
 
 def test_extract_manifest_type(project):
-    manifest = project.project_manager.extract_manifest
+    manifest = project.project_manager.extract_manifest()
     assert type(manifest) == PackageManifest
