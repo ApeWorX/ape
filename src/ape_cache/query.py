@@ -85,18 +85,17 @@ class CacheQueryProvider(QueryAPI):
                     stop_block=query.stop_block,
                     step=query.step,
                 )
-                number_of_rows = q.rowcount
+                if q.rowcount < query.stop_block - query.start_block:
+                    return None
 
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
             #       query from provider.
             logger.debug(err)
-            number_of_rows = 0
+            return None
 
         # NOTE: Assume 200 msec to get data from database
-        time_to_get_cached_records = 200 if number_of_rows > 0 else None
-        # NOTE: Very loose estimate of 0.75ms per block
-        return time_to_get_cached_records
+        return 200
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> pd.DataFrame:  # type: ignore
