@@ -72,6 +72,7 @@ class QueryManager(ManagerAccessMixin):
     A singleton that manages query engines and performs queries.
     Args:
         query (``QueryType``): query to execute
+
     Usage example::
 
          biggest_block_size = chain.blocks.query("size").max()
@@ -101,11 +102,14 @@ class QueryManager(ManagerAccessMixin):
             query (``QueryType``): The type of query to execute
             engine_to_use (Optional[str]): Short-circuit selection logic using
               a specific engine. Defaults to None.
+
         Raises: :class:`~ape.exceptions.QueryEngineError`: When given an
             invalid or inaccessible ``engine_to_use`` value.
+
         Returns:
             Iterator[QueryAPI]
         """
+
         if engine_to_use:
             if engine_to_use not in self.engines:
                 raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")
