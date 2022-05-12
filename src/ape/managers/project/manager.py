@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Type, Union
 
-from ethpm_types import Compiler, ContractType
+from ethpm_types import Compiler, ContractType, PackageManifest
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractNamespace
@@ -105,6 +105,15 @@ class ProjectManager(BaseManager):
         """
 
         return self.path / "interfaces"
+
+    def extract_manifest(self) -> PackageManifest:
+        """
+        Extracts a package manifest from the project
+
+        Returns:
+            ethpm_types.manifest.PackageManifest
+        """
+        return self._project.create_manifest()
 
     @property
     def scripts_folder(self) -> Path:
