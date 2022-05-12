@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Dict
 
 import pytest
-
 from ethpm_types.manifest import PackageManifest
+
 
 @pytest.fixture
 def dependencies_config():
