@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Dict
 
 import pytest
+from ethpm_types.manifest import PackageManifest
 
 
 @pytest.fixture
@@ -36,3 +37,8 @@ def test_two_dependencies_with_same_name(already_downloaded_dependencies, projec
     assert oz_310.name == name
     assert oz_442.version == "4.4.2"
     assert oz_442.name == name
+
+
+def test_extract_manifest_type(project):
+    manifest = project.project_manager.extract_manifest()
+    assert type(manifest) == PackageManifest
