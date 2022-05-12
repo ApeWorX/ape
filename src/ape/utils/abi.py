@@ -4,7 +4,7 @@ from typing import Any, List, Optional, Tuple, Union
 
 from ethpm_types.abi import ABIType, MethodABI
 
-ARRAY_PATTERN = re.compile(r"\w+\[(\d?)]")
+ARRAY_PATTERN = re.compile(r"[\(*\w,? ?\w?\)?]*\[\d?\]")
 
 
 def is_array(abi_type: Union[str, ABIType]) -> bool:

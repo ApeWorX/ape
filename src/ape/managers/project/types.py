@@ -111,8 +111,7 @@ class BaseProject(ProjectAPI):
                     return True  # New file added
 
                 cached = cached_sources[path]
-                cached.compute_checksum(algorithm="md5")
-                assert cached.checksum  # For mypy
+                checksum = cached.calculate_checksum()
 
                 source_file = self.contracts_folder / source
                 checksum = compute_checksum(

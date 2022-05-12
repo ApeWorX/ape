@@ -268,6 +268,27 @@ def test_address_arrays(contract_instance, sender):
     assert is_checksum_address(actual[1])
 
 
+def test_vyper_struct_arrays(vyper_contract_instance, sender):
+    # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
+    actual_dynamic = vyper_contract_instance.getDynamicStructList()
+    assert len(actual_dynamic) == 2
+    assert actual_dynamic[0][0][0] == sender
+    assert is_checksum_address(actual_dynamic[0][0][0])
+    assert actual_dynamic[0][1] == 1
+    assert actual_dynamic[1][0][0] == sender
+    assert is_checksum_address(actual_dynamic[1][0][0])
+    assert actual_dynamic[1][1] == 2
+
+    actual_static = vyper_contract_instance.getStaticStructList()
+    assert len(actual_static) == 2
+    assert actual_static[0][0] == 1
+    assert actual_static[0][1][0] == sender
+    assert is_checksum_address(actual_static[0][1][0])
+    assert actual_static[1][0] == 2
+    assert actual_static[1][1][0] == sender
+    assert is_checksum_address(actual_static[1][1][0])
+
+
 def test_solidity_named_tuple(solidity_contract_instance):
     actual = solidity_contract_instance.getNamedSingleItem()
     assert actual == 123
