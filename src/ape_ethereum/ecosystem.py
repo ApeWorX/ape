@@ -103,6 +103,8 @@ def parse_output_type(output_type: str) -> Union[str, Tuple, List]:
             if "[" in output_type:
                 return [result]
 
+            return result
+
         elif output_type[0] == "(" and ")" in output_type:
             # A tuple within the tuple
             end_index = output_type.index(")") + 1
@@ -198,7 +200,6 @@ class Ethereum(EcosystemAPI):
             return HexBytes(b"")
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
-        output_types = []
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
         try:
             vm_return_values = abi_decode(output_types, raw_data)

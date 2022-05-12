@@ -29,23 +29,37 @@ class StructParser:
 
     def parse(self, output_types: List[ABIType], values: Union[List, Tuple]) -> Any:
         if is_struct(output_types):
-            return self._create_struct(output_types[0], values)
+            return_value = self._create_struct(output_types[0], values)
+            return return_value
 
         elif is_named_tuple(output_types, values):
             # Handle tuples. NOTE: unnamed output structs appear as tuples with named members
             return create_struct(self.default_name, output_types, values)
 
-        elif _is_array_return(output_types):
+        return_values = []
+        has_array_return = _is_array_return(output_types)
+        has_tuple_array_return = (
+            has_array_return and len(output_types) == 1 and "tuple" in output_types[0].type
+        )
+        if has_array_return and not has_tuple_array_return:
+            # Normal array
             return values
 
-        # Check for structs within arrays or tuples
-        return_values = []
-        for output_type, value in zip(output_types, values):
-            if isinstance(value, (tuple, list)):
+        elif has_tuple_array_return:
+            output_type = output_types[0]
+            output_type.type = output_type.type.split("[")[0]
+            for value in values[0]:
                 struct_item = self.parse([output_type], [value])
                 return_values.append(struct_item)
-            else:
-                return_values.append(value)
+
+        else:
+            for output_type, value in zip(output_types, values):
+                if isinstance(value, (tuple, list)):
+                    output_type.type = output_type.type.split("[")[0]
+                    struct_item = self.parse([output_type], [value])
+                    return_values.append(struct_item)
+                else:
+                    return_values.append(value)
 
         return return_values
 
@@ -82,6 +96,7 @@ def is_struct(outputs: Union[ABIType, List[ABIType]]) -> bool:
 
     return (
         len(outputs) == 1
+        and "[" not in outputs[0].type
         and outputs[0].components not in (None, [])
         and all(c.name != "" for c in outputs[0].components or [])
     )
