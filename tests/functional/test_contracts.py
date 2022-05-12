@@ -21,9 +21,14 @@ def test_init_at_unknown_address():
     assert contract.address == SOLIDITY_CONTRACT_ADDRESS
 
 
-def test_deploy(sender, contract_container, networks_connected_to_tester):
+def test_deploy(sender, contract_container, networks_connected_to_tester, project):
     contract = contract_container.deploy(sender=sender, something_else="IGNORED")
     assert contract.address in (SOLIDITY_CONTRACT_ADDRESS, VYPER_CONTRACT_ADDRESS)
+
+    # Verify can reload same contract from cache
+    contract_from_cache = Contract(contract.address)
+    assert contract_from_cache.contract_type == contract.contract_type
+    assert contract_from_cache.address == contract.address
 
 
 def test_repr(contract_instance):

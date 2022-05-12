@@ -7,7 +7,7 @@ from hexbytes import HexBytes
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
-from ape.exceptions import ArgumentsLengthError, ContractError, ProviderNotConnectedError
+from ape.exceptions import ArgumentsLengthError, ContractError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -435,10 +435,10 @@ class ContractInstance(BaseAddress):
     def __init__(self, address: AddressType, contract_type: ContractType) -> None:
         super().__init__()
         self._address = address
-        self._contract_type = contract_type
+        self.contract_type = contract_type
 
     def __repr__(self) -> str:
-        contract_name = self._contract_type.name or "Unnamed contract"
+        contract_name = self.contract_type.name or "Unnamed contract"
         return f"<{contract_name} {self.address}>"
 
     @property
@@ -455,7 +455,7 @@ class ContractInstance(BaseAddress):
     def _view_methods_(self) -> Dict[str, ContractCallHandler]:
         view_methods: Dict[str, List[MethodABI]] = dict()
 
-        for abi in self._contract_type.view_methods:
+        for abi in self.contract_type.view_methods:
             if abi.name in view_methods:
                 view_methods[abi.name].append(abi)
             else:
@@ -474,7 +474,7 @@ class ContractInstance(BaseAddress):
     def _mutable_methods_(self) -> Dict[str, ContractTransactionHandler]:
         mutable_methods: Dict[str, List[MethodABI]] = dict()
 
-        for abi in self._contract_type.mutable_methods:
+        for abi in self.contract_type.mutable_methods:
             if abi.name in mutable_methods:
                 mutable_methods[abi.name].append(abi)
             else:
@@ -493,10 +493,10 @@ class ContractInstance(BaseAddress):
     def _events_(self) -> Dict[str, ContractEvent]:
         events: Dict[str, EventABI] = {}
 
-        for abi in self._contract_type.events:
+        for abi in self.contract_type.events:
             if abi.name in events:
                 raise ContractError(
-                    f"Multiple events with the same ABI defined in '{self._contract_type.name}'."
+                    f"Multiple events with the same ABI defined in '{self.contract_type.name}'."
                 )
 
             events[abi.name] = abi
@@ -543,7 +543,7 @@ class ContractInstance(BaseAddress):
         if attr_name not in {*self._view_methods_, *self._mutable_methods_, *self._events_}:
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
-            name = self._contract_type.name or self.__class__.__name__
+            name = self.contract_type.name or self.__class__.__name__
             raise AttributeError(f"'{name}' has no attribute '{attr_name}'.")
 
         elif (
@@ -646,10 +646,14 @@ class ContractContainer(ManagerAccessMixin):
         contract_name = self.contract_type.name or "<Unnamed Contract>"
         logger.success(f"Contract '{contract_name}' deployed to: {address}")
 
-        return ContractInstance(
+        contract_instance = ContractInstance(
             address=receipt.contract_address,  # type: ignore
             contract_type=self.contract_type,
         )
+        self.provider.network.contract_cache[
+            contract_instance.address
+        ] = contract_instance.contract_type
+        return contract_instance
 
 
 def _Contract(
@@ -663,23 +667,11 @@ def _Contract(
     the given address/network combo, or explicitly provided. If none are found,
     returns a simple ``Address`` instance instead of throwing (provides a warning)
     """
-    provider = networks.active_provider
-    if not provider:
-        raise ProviderNotConnectedError()
 
     converted_address: AddressType = conversion_manager.convert(address, AddressType)
-
-    # Check contract cache (e.g. previously deployed/downloaded contracts)
-    # TODO: Add ``contract_cache`` dict-like object to ``NetworkAPI``
-    # network = provider.network
-    # if not contract_type and address in network.contract_cache:
-    #    contract_type = network.contract_cache[address]
-
-    # Check explorer API/cache (e.g. publicly published contracts)
-    # TODO: Store in ``NetworkAPI.contract_cache`` to reduce API calls
-    explorer = provider.network.explorer
-    if not contract_type and explorer:
-        contract_type = explorer.get_contract_type(converted_address)
+    contract_type = (
+        networks.create_contract_type(converted_address) if contract_type is None else contract_type
+    )
 
     # We have a contract type either:
     #   1) explicitly provided,
