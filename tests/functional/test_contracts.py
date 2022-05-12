@@ -255,6 +255,23 @@ def test_nested_structs_in_tuples(contract_instance, sender, chain):
     assert is_checksum_address(struct_2.t.a)
 
 
+def test_vyper_structs_with_array(vyper_contract_instance, sender):
+    # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
+    actual = vyper_contract_instance.getStructWithArray()
+    assert actual.foo == 1
+    assert actual.bar == 2
+    assert len(actual.arr) == 2
+
+
+def test_solidity_structs_with_array(solidity_contract_instance, sender):
+    actual = solidity_contract_instance.getStructWithArray()
+    assert actual.foo == 1
+    assert actual.bar == 2
+    assert len(actual.arr) == 2, "Unexpected array length"
+    assert actual.arr[0].a == sender
+    assert is_checksum_address(actual.arr[0].a)
+
+
 def test_arrays(contract_instance, sender):
     assert contract_instance.getEmptyList() == []
     assert contract_instance.getSingleItemList() == [1]

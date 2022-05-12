@@ -110,6 +110,12 @@ def parse_output_type(output_type: str) -> Union[str, Tuple, List]:
             end_index = output_type.index(")") + 1
             found_type = parse_output_type(output_type[:end_index])
             output_type = output_type[end_index:]
+
+            if output_type.startswith("[") and "]" in output_type:
+                end_array_index = output_type.index("]") + 1
+                found_type = [found_type]
+                output_type = output_type[end_array_index:].lstrip(",")
+
         else:
             found_type = output_type.split(",")[0].rstrip(")")
             end_index = len(found_type) + 1

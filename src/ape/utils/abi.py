@@ -125,9 +125,15 @@ class StructParser:
 
     def _parse_components(self, components: List[ABIType], values) -> List:
         parsed_values = []
-        for component, val in zip(components, values):
-            new_val = self._create_struct(component, (val,)) if is_struct(component) else val
-            parsed_values.append(new_val)
+        for component, value in zip(components, values):
+            if is_struct(component):
+                new_value = self._create_struct(component, (value,))
+                parsed_values.append(new_value)
+            elif is_array(component.type) and "tuple" in component.type and component.components:
+                new_value = [self.parse(component.components, v) for v in value]
+                parsed_values.append(new_value)
+            else:
+                parsed_values.append(value)
 
         return parsed_values
 
