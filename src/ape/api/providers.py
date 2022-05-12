@@ -106,6 +106,8 @@ class BlockAPI(BaseInterfaceModel):
 
     @validator("transaction_ids", each_item=True, pre=True)
     def validate_transactions(cls, value):
+        if isinstance(value, HexBytes):
+            return value
         return HexBytes(value)
 
     @cached_property
