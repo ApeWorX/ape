@@ -119,7 +119,7 @@ class BaseProject(ProjectAPI):
                     algorithm=cached_checksum.algorithm,
                 )
 
-                return checksum != cached_checksum  # Contents changed
+                return checksum != cached_checksum.hash  # Contents changed
 
             # NOTE: Filter by checksum to only update what's needed
             needs_compiling = list(filter(file_needs_compiling, sources))
