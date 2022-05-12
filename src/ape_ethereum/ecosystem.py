@@ -1,5 +1,4 @@
 import itertools
-import re
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
@@ -24,7 +23,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
-from ape.utils import StructParser, is_named_tuple, is_struct
+from ape.utils import Struct, StructParser, is_array, returns_array
 from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
@@ -42,7 +41,6 @@ NETWORKS = {
     "rinkeby": (4, 4),
     "goerli": (5, 5),
 }
-_ARRAY_PATTERN = re.compile(r"\w+\[(\d?)\]")
 
 
 class NetworkConfig(PluginConfig):
@@ -91,27 +89,42 @@ class Block(BlockAPI):
     """
 
 
-def parse_output_type(output_type: str) -> Union[str, Tuple]:
+def parse_output_type(output_type: str) -> Union[str, Tuple, List]:
     if "(" not in output_type:
         return output_type
 
     # Strip off first opening parens
     output_type = output_type[1:]
-    found_types: List[Union[str, Tuple]] = []
+    found_types: List[Union[str, Tuple, List]] = []
 
     while output_type:
-        if output_type == ")":
-            return tuple(found_types)
+        if output_type.startswith(")"):
+            result = tuple(found_types)
+            if "[" in output_type:
+                return [result]
+
+            return result
 
         elif output_type[0] == "(" and ")" in output_type:
             # A tuple within the tuple
             end_index = output_type.index(")") + 1
             found_type = parse_output_type(output_type[:end_index])
             output_type = output_type[end_index:]
+
+            if output_type.startswith("[") and "]" in output_type:
+                end_array_index = output_type.index("]") + 1
+                found_type = [found_type]
+                output_type = output_type[end_array_index:].lstrip(",")
+
         else:
             found_type = output_type.split(",")[0].rstrip(")")
             end_index = len(found_type) + 1
             output_type = output_type[end_index:]
+
+        if isinstance(found_type, str) and "[" in found_type and ")" in found_type:
+            parts = found_type.split(")")
+            found_type = parts[0]
+            output_type = f"){parts[1]}"
 
         if found_type:
             found_types.append(found_type)
@@ -214,18 +227,19 @@ class Ethereum(EcosystemAPI):
             output_type = parse_output_type(output_types[index])
             output_values.append(self._decode_primitive_value(value, output_type))
 
-        if is_struct(abi.outputs) or is_named_tuple(abi.outputs, output_values):
-            parser = StructParser(abi)
-            return parser.parse(abi.outputs, output_values)
+        parser = StructParser(abi)
+        output_values = parser.parse(abi.outputs, output_values)
+        if issubclass(type(output_values), Struct):
+            return (output_values,)
 
-        elif len(abi.outputs) == 1 and _ARRAY_PATTERN.match(str(abi.outputs[0].type)):
+        elif returns_array(abi):
             return ([o for o in output_values[0]],)
 
         else:
             return tuple(output_values)
 
     def _decode_primitive_value(
-        self, value: Any, output_type: Union[str, Tuple]
+        self, value: Any, output_type: Union[str, Tuple, List]
     ) -> Union[str, HexBytes, Tuple]:
         if output_type == "address":
             try:
@@ -236,12 +250,19 @@ class Ethereum(EcosystemAPI):
         elif isinstance(value, bytes):
             return HexBytes(value)
 
-        elif isinstance(output_type, str) and _ARRAY_PATTERN.match(output_type):
+        elif isinstance(output_type, str) and is_array(output_type):
             sub_type = output_type.split("[")[0]
             return tuple([self._decode_primitive_value(v, sub_type) for v in value])
 
         elif isinstance(output_type, tuple):
             return tuple([self._decode_primitive_value(v, t) for v, t in zip(value, output_type)])
+
+        elif (
+            isinstance(output_type, list)
+            and len(output_type) == 1
+            and isinstance(value, (list, tuple))
+        ):
+            return tuple([self._decode_primitive_value(v, output_type[0]) for v in value])
 
         return value
 

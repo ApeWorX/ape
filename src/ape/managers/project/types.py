@@ -111,16 +111,15 @@ class BaseProject(ProjectAPI):
                     return True  # New file added
 
                 cached = cached_sources[path]
-                cached.compute_checksum(algorithm="md5")
-                assert cached.checksum  # For mypy
+                cached_checksum = cached.calculate_checksum()
 
                 source_file = self.contracts_folder / source
                 checksum = compute_checksum(
                     source_file.read_bytes(),
-                    algorithm=cached.checksum.algorithm,
+                    algorithm=cached_checksum.algorithm,
                 )
 
-                return checksum != cached.checksum.hash  # Contents changed
+                return checksum != cached_checksum.hash  # Contents changed
 
             # NOTE: Filter by checksum to only update what's needed
             needs_compiling = list(filter(file_needs_compiling, sources))

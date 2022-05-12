@@ -20,7 +20,9 @@ def dependencies_config():
 @pytest.fixture
 def already_downloaded_dependencies(temp_config, config, dependencies_config):
     manifests_directory = Path(__file__).parent / "data" / "manifests"
-    shutil.copytree(manifests_directory / "OpenZeppelin", config.packages_folder / "OpenZeppelin")
+    oz_manifests = manifests_directory / "OpenZeppelin"
+    oz_manifests_dest = config.packages_folder / "OpenZeppelin"
+    shutil.copytree(oz_manifests, oz_manifests_dest)
     with temp_config(dependencies_config, config):
         yield
 

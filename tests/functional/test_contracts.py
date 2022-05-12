@@ -208,7 +208,7 @@ def test_nested_structs(contract_instance, sender, chain):
     actual_1 = contract_instance.getNestedStruct1()
     actual_2 = contract_instance.getNestedStruct2()
     actual_sender_1, actual_prev_block_1 = actual_1.t
-    actual_sender_2, actual_prev_block_2 = actual_1.t
+    actual_sender_2, actual_prev_block_2 = actual_2.t
 
     # Expected: t.a == msg.sender
     assert actual_1.t.a == actual_1.t["a"] == actual_1.t[0] == actual_sender_1 == sender
@@ -239,8 +239,37 @@ def test_nested_structs(contract_instance, sender, chain):
     assert type(actual_2.t.b) == HexBytes
 
 
-# def test_nested_structs_in_tuples(contract_instance, sender, chain):
-#     actual = contract_instance.get
+def test_nested_structs_in_tuples(contract_instance, sender, chain):
+    result_1 = contract_instance.getNestedStructWithTuple1()
+    struct_1 = result_1[0]
+    assert result_1[1] == 1
+    assert struct_1.foo == 1
+    assert struct_1.t.a == sender
+    assert is_checksum_address(struct_1.t.a)
+
+    result_2 = contract_instance.getNestedStructWithTuple2()
+    struct_2 = result_2[1]
+    assert result_2[0] == 2
+    assert struct_2.foo == 2
+    assert struct_2.t.a == sender
+    assert is_checksum_address(struct_2.t.a)
+
+
+def test_vyper_structs_with_array(vyper_contract_instance, sender):
+    # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
+    actual = vyper_contract_instance.getStructWithArray()
+    assert actual.foo == 1
+    assert actual.bar == 2
+    assert len(actual.arr) == 2
+
+
+def test_solidity_structs_with_array(solidity_contract_instance, sender):
+    actual = solidity_contract_instance.getStructWithArray()
+    assert actual.foo == 1
+    assert actual.bar == 2
+    assert len(actual.arr) == 2, "Unexpected array length"
+    assert actual.arr[0].a == sender
+    assert is_checksum_address(actual.arr[0].a)
 
 
 def test_arrays(contract_instance, sender):
@@ -254,6 +283,51 @@ def test_address_arrays(contract_instance, sender):
     assert actual == [sender, sender]
     assert is_checksum_address(actual[0])
     assert is_checksum_address(actual[1])
+
+
+def test_vyper_struct_arrays(vyper_contract_instance, sender):
+    # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
+    actual_dynamic = vyper_contract_instance.getDynamicStructList()
+    assert len(actual_dynamic) == 2
+    assert actual_dynamic[0][0][0] == sender
+    assert is_checksum_address(actual_dynamic[0][0][0])
+    assert actual_dynamic[0][1] == 1
+    assert actual_dynamic[1][0][0] == sender
+    assert is_checksum_address(actual_dynamic[1][0][0])
+    assert actual_dynamic[1][1] == 2
+
+    actual_static = vyper_contract_instance.getStaticStructList()
+    assert len(actual_static) == 2
+    assert actual_static[0][0] == 1
+    assert actual_static[0][1][0] == sender
+    assert is_checksum_address(actual_static[0][1][0])
+    assert actual_static[1][0] == 2
+    assert actual_static[1][1][0] == sender
+    assert is_checksum_address(actual_static[1][1][0])
+
+
+def test_solidity_dynamic_struct_arrays(solidity_contract_instance, sender):
+    actual_dynamic = solidity_contract_instance.getDynamicStructList()
+    assert len(actual_dynamic) == 2
+    assert actual_dynamic[0].foo == 1
+    assert actual_dynamic[0].t.a == sender
+    assert is_checksum_address(actual_dynamic[0].t.a)
+
+    assert actual_dynamic[1].foo == 2
+    assert actual_dynamic[1].t.a == sender
+    assert is_checksum_address(actual_dynamic[1].t.a)
+
+
+def test_solidity_static_struct_arrays(solidity_contract_instance, sender):
+    actual_dynamic = solidity_contract_instance.getStaticStructList()
+    assert len(actual_dynamic) == 2
+    assert actual_dynamic[0].foo == 1
+    assert actual_dynamic[0].t.a == sender
+    assert is_checksum_address(actual_dynamic[0].t.a)
+
+    assert actual_dynamic[1].foo == 2
+    assert actual_dynamic[1].t.a == sender
+    assert is_checksum_address(actual_dynamic[1].t.a)
 
 
 def test_solidity_named_tuple(solidity_contract_instance):
