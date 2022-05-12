@@ -107,6 +107,12 @@ class ProjectManager(BaseManager):
         return self.path / "interfaces"
 
     def extract_manifest(self) -> PackageManifest:
+        """
+        Extracts a package manifest from the project
+
+        Returns:
+            ethpm_types.manifest.PackageManifest
+        """
         return self._project.create_manifest()
 
     @property
