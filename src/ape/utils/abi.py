@@ -69,7 +69,7 @@ class StructParser:
 
         elif has_tuple_array_return:
             output_type = output_types[0]
-            output_type.type = output_type.type.split("[")[0]
+            output_type.type = str(output_type.type).split("[")[0]
             for value in values[0]:
                 struct_item = self.parse([output_type], [value])
                 return_values.append(struct_item)
@@ -77,7 +77,7 @@ class StructParser:
         else:
             for output_type, value in zip(output_types, values):
                 if isinstance(value, (tuple, list)):
-                    output_type.type = output_type.type.split("[")[0]
+                    output_type.type = str(output_type.type).split("[")[0]
                     struct_item = self.parse([output_type], [value])
                     return_values.append(struct_item)
                 else:
