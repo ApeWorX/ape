@@ -20,14 +20,36 @@ def _is_array_return(outputs: List[ABIType]):
 
 
 class StructParser:
+    """
+    A utility class responsible for parsing structs out of values.
+    """
+
     def __init__(self, method_abi: MethodABI):
         self.method_abi = method_abi
 
     @property
     def default_name(self) -> str:
+        """
+        The default struct return name for unnamed structs.
+        This value is also used for named tuples where the tuple does not have a name
+        (but each item in the tuple does have a name).
+        """
         return f"{self.method_abi.name}_return"
 
     def parse(self, output_types: List[ABIType], values: Union[List, Tuple]) -> Any:
+        """
+        Parse a list of output types and values into structs.
+        Values are only altered when they are a struct.
+        This method also handles structs within structs as well as arrays of structs.
+
+        Args:
+            output_types (List[ABIType]): The list of output ABI types.
+            values (Union[List, Tuple]): A list of of output values.
+
+        Returns:
+            Any: The same input values only decoded into structs when applicable.
+        """
+
         if is_struct(output_types):
             return_value = self._create_struct(output_types[0], values)
             return return_value
@@ -91,6 +113,10 @@ class StructParser:
 
 
 def is_struct(outputs: Union[ABIType, List[ABIType]]) -> bool:
+    """
+    Returns ``True``if the given output is a struct.
+    """
+
     if not isinstance(outputs, (tuple, list)):
         outputs = [outputs]
 
@@ -103,6 +129,10 @@ def is_struct(outputs: Union[ABIType, List[ABIType]]) -> bool:
 
 
 def is_named_tuple(outputs: List[ABIType], output_values: Union[List, Tuple]) -> bool:
+    """
+    Returns ``True`` if the given output is a tuple where every item is named.
+    """
+
     return all(o.name for o in outputs) and len(output_values) > 1
 
 
@@ -115,6 +145,23 @@ class Struct:
 def create_struct(
     name: str, types: List[ABIType], output_values: Union[List[Any], Tuple[Any, ...]]
 ) -> Any:
+    """
+    Create a dataclass representing an ABI struct that can be used as inputs or outputs.
+    The struct properties can be accessed via ``.`` notation, as keys in a dictionary, or
+    numeric tuple access.
+
+    **NOTE**: This method assumes you already know the values to give to the struct
+    properties.
+
+    Args:
+        name (str): The name of the struct.
+        types (List[ABIType]: The types of values in the struct.
+        output_values (List[Any]): The struct property values.
+
+    Returns:
+        Any: The struct dataclass.
+    """
+
     def get_item(struct, index) -> Any:
         # NOTE: Allow struct to function as a tuple and dict as well
         struct_values = tuple(getattr(struct, field) for field in struct.__dataclass_fields__)
