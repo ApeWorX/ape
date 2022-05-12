@@ -158,7 +158,7 @@ def is_named_tuple(outputs: List[ABIType], output_values: Union[List, Tuple]) ->
 
 class Struct:
     """
-    A class for smart-contract return values using the struct data-structure.
+    A class for contract return values using the struct data-structure.
     """
 
 
