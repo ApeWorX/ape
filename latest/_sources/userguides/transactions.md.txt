@@ -94,3 +94,13 @@ event_type = contract.MyEvent
 for log in receipt.decode_logs(event_type.abi):
     print(log.amount)  # Assuming 'amount' is a property on the event.
 ```
+
+## Transaction Acceptance Timeout
+
+**NOTE** For longer running scripts, you may need to increase the transaction acceptance timeout.
+The default value is 2 minutes.
+In your `ape-config.yaml` file, add the following:
+
+```yaml
+transaction_acceptance_timeout: 600  # 5 minutes
+```
