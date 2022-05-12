@@ -70,6 +70,7 @@ class DefaultQueryProvider(QueryAPI):
 class QueryManager(ManagerAccessMixin):
     """
     A singleton that manages query engines and performs queries.
+
     Args:
         query (``QueryType``): query to execute
 
