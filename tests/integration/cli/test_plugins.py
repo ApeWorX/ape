@@ -14,7 +14,9 @@ def plugins_xfail():
     """
 
     def wrapper(f):
-        f = pytest.mark.xfail(strict=False, reason="Github rate limiting issues")(f)
+        f = pytest.mark.xfail(
+            strict=False, reason="Github rate limiting issues or plugin install issues"
+        )(f)
         f = skip_projects_except(["test"])(f)
         return f
 
