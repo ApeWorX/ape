@@ -9,7 +9,8 @@ from ape.api import QueryAPI, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
-from ape.utils import logger, singledispatchmethod  # type: ignore
+from ape.utils import singledispatchmethod  # type: ignore
+from ape.logging import logger
 
 from . import models
 
