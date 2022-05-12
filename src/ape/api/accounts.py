@@ -209,7 +209,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
                     "Parameter 'signature' required when verifying a 'SignableMessage'."
                 )
         elif isinstance(data, TransactionAPI):
-            return self.address == Account.recover_transaction(data.serialize_transaction())
+            return self.address == Account.recover_transaction(
+                data.serialize_transaction()  # type: ignore
+            )
         else:
             raise ValueError(f"Unsupported Message type: {type(data)}.")
 
