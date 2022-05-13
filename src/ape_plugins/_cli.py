@@ -119,21 +119,23 @@ def _list(cli_ctx, display_all):
         sections["Installed Core Plugins"] = [installed_core_plugins]
 
     # Get all plugins that are available and not already installed.
-    available_plugins = list(github_client.available_plugins - installed_org_plugins.keys())
+    available_plugins = list(
+        github_client.available_plugins - {p.strip() for p in installed_org_plugins.keys()}
+    )
 
     formatted_org_plugins = [f"{k}{v}" for k, v in installed_org_plugins.items()]
-    formateted_installed_third_party_plugins = [
+    formatted_installed_third_party_plugins = [
         f"{k}{v}" for k, v in installed_third_party_plugins.items()
     ]
     # Get the list of plugin lists that are populated.
     installed_plugin_lists = [
-        ls for ls in [formatted_org_plugins, formateted_installed_third_party_plugins] if ls
+        ls for ls in [formatted_org_plugins, formatted_installed_third_party_plugins] if ls
     ]
     if installed_plugin_lists:
         sections["Installed Plugins"] = installed_plugin_lists
     elif not display_all and available_plugins:
         # User has no plugins installed | can't verify installed plugins
-        click.echo("No secondary plugins installed. Use '--all' to see available plugins.")
+        click.echo("No plugins installed. Use '--all' to see available plugins.")
 
     if display_all:
         available_second_output = _format_output(available_plugins)
