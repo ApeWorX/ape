@@ -95,8 +95,13 @@ class PytestApeRunner(ManagerAccessMixin):
             # isolation is disabled via cmdline option
             return
 
-        # list of scopes for each fixture of the test (including `autouse` fixtures)
-        scopes = [item._fixtureinfo.name2fixturedefs[f][0].scope for f in item.fixturenames]
+        fixture_map = item.session._fixturemanager._arg2fixturedefs
+        scopes = [
+            definition.scope
+            for name, definitions in fixture_map.items()
+            if name in item.fixturenames
+            for definition in definitions
+        ]
 
         for scope in ["session", "package", "module", "class"]:
             # iterate through scope levels and insert the isolation fixture
