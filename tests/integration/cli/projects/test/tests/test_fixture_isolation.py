@@ -27,7 +27,3 @@ def test_isolation_first(alice, bob, chain):
 def test_isolation_second(bob, chain):
     assert chain.provider.get_block("latest").number == 1
     assert bob.balance == 1_000_001 * 10**18
-
-
-def test_can_use_built_in_fixtures(chain, capsys):
-    assert True
