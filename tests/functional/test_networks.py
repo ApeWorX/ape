@@ -49,3 +49,12 @@ def test_get_provider_when_not_found(networks):
         network.get_provider("test")
 
     assert "'test' is not a valid provider for network 'rinkeby-fork'" in str(err.value)
+
+
+def test_repr(networks_connected_to_tester):
+    assert (
+        repr(networks_connected_to_tester) == "<NetworkManager active_provider=<test chain_id=61>>"
+    )
+
+    # Check individual network
+    assert repr(networks_connected_to_tester.provider.network) == "<local chain_id=61>"
