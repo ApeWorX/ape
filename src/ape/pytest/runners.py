@@ -96,12 +96,12 @@ class PytestApeRunner(ManagerAccessMixin):
             return
 
         fixture_map = item.session._fixturemanager._arg2fixturedefs
-        scopes = []
-        for name, fixture in fixture_map.items():
-            if name in item.fixturenames:
-                definitions = fixture_map[name]
-                for definition in definitions:
-                    scopes.append(definition.scope)
+        scopes = [
+            definition.scope
+            for name, definitions in fixture_map.items()
+            if name in item.fixturenames
+            for definition in definitions
+        ]
 
         for scope in ["session", "package", "module", "class"]:
             # iterate through scope levels and insert the isolation fixture
