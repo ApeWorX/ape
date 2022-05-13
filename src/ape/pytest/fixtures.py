@@ -10,6 +10,10 @@ from ape.utils import ManagerAccessMixin
 
 
 class PytestApeFixtures(ManagerAccessMixin):
+    # NOTE: Avoid including links, markdown, or rst in method-docs
+    # for fixtures, as they are used in output from the command
+    # `ape test -q --fixture` (`pytest -q --fixture`).
+
     def __init__(self):
         self._warned_for_unimplemented_snapshot = False
 
