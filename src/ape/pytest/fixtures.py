@@ -15,14 +15,27 @@ class PytestApeFixtures(ManagerAccessMixin):
 
     @pytest.fixture(scope="session")
     def accounts(self) -> List[TestAccountAPI]:
+        """
+        The ape account test manager containing pre-funded test accounts.
+        """
+
         return self.account_manager.test_accounts
 
     @pytest.fixture(scope="session")
     def chain(self) -> ChainManager:
+        """
+        The chain manager for manipulating the blockchain in your test
+        setups and tear-downs.
+        """
+
         return self.chain_manager
 
     @pytest.fixture(scope="session")
     def project(self) -> ProjectManager:
+        """
+        The project manager for accessing contract types and dependencies.
+        """
+
         return self.project_manager
 
     def _isolation(self) -> Iterator[None]:
