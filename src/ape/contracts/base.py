@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
 from ethpm_types import ContractType
@@ -11,10 +11,6 @@ from ape.exceptions import ArgumentsLengthError, ContractError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
-
-if TYPE_CHECKING:
-    from ape.managers.chain import ChainManager
-    from ape.managers.converters import ConversionManager
 
 
 def _convert_kwargs(kwargs, converter) -> Dict:
@@ -665,26 +661,6 @@ class ContractContainer(ManagerAccessMixin):
             contract_instance.address, contract_instance.contract_type
         )
         return contract_instance
-
-
-def _Contract(
-    address: Union[str, BaseAddress, AddressType],
-    chain: "ChainManager",
-    conversion_manager: "ConversionManager",
-    contract_type: Optional[ContractType] = None,
-) -> BaseAddress:
-    """
-    Function used to triage whether we have a contract type available for
-    the given address/network combo, or explicitly provided. If none are found,
-    returns a simple ``Address`` instance instead of throwing (provides a warning)
-    """
-
-    converted_address: AddressType = conversion_manager.convert(address, AddressType)
-    contract_type = contract_type or chain.contracts[converted_address]
-    return ContractInstance(  # type: ignore
-        address=converted_address,
-        contract_type=contract_type,
-    )
 
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:
