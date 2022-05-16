@@ -364,7 +364,7 @@ class AccountHistory(BaseManager):
         }
 
 
-class ContractCache(dict, BaseManager):
+class ContractCache(BaseManager):
     """
     A collection of cached contracts. Contracts can be cached in two ways:
 
@@ -438,16 +438,14 @@ class ContractCache(dict, BaseManager):
             return default
 
         contract_type = self._get_contract_type_from_disk(address)
-        if not contract_type:
-            contract_type = self._get_contract_type_from_explorer(address)
 
+        # Cache locally for faster in-session look-up.
         if contract_type:
-            # Cache contract so faster look-up next time.
-            self._cache_contract_to_disk(address, contract_type)
+            self._local_contracts[address] = contract_type
 
         return contract_type or default
 
-    def at(self, address: "AddressType") -> "ContractInstance":
+    def instance_at(self, address: "AddressType") -> "ContractInstance":
         return self.create_contract(address, self[address])
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
@@ -469,6 +467,10 @@ class ContractCache(dict, BaseManager):
         except Exception as err:
             logger.error(f"Unable to fetch contract type at '{address}' from explorer.\n{err}")
             return None
+
+        if contract_type:
+            # Cache contract so faster look-up next time.
+            self._cache_contract_to_disk(address, contract_type)
 
         return contract_type
 

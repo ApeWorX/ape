@@ -36,7 +36,7 @@ accounts = _ManagerAccessMixin.account_manager
 project = _ManagerAccessMixin.project_manager
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
-Contract = chain.contracts.at
+Contract = chain.contracts.instance_at
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 
 convert = _ManagerAccessMixin.conversion_manager.convert
