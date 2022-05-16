@@ -186,6 +186,13 @@ class ContractTransactionHandler(ManagerAccessMixin):
 
     @property
     def call(self) -> ContractCallHandler:
+        """
+        Get the :class:`~ape.contracts.base.ContractCallHandler` equivalent
+        of this transaction handler. The call-handler uses the ``eth_call``
+        RPC under-the-hood and thus it gets reverted before submitted.
+        This a useful way to simulate a transaction without invoking it.
+        """
+
         return ContractCallHandler(self.contract, self.abis)
 
     def _convert_tuple(self, v: tuple) -> tuple:
