@@ -50,7 +50,6 @@ extras_require = {
     #       They should be kept up to date with what works and what doesn't out of the box
     #       Usage example: `pipx install eth-ape[recommended-plugins]`
     "recommended-plugins": [
-        "ape-addressbook",  # Addressbook converter
         "ape-alchemy",  # Alchemy public network provider
         "ape-ens",  # ENS converter
         "ape-etherscan",  # Etherscan explorer plugin
@@ -58,7 +57,6 @@ extras_require = {
         "ape-hardhat",  # Hardhat local and fork network EVM provider
         "ape-infura",  # Infura public network provider
         "ape-ledger",  # Ledger Nano S/X hardware wallet
-        "ape-notebook",  # Jupyter notebook support
         "ape-solidity",  # Solidity compiler support
         "ape-template",  # Cookiecutter template support
         "ape-tokens",  # Tokenlists converter
