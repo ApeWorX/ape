@@ -1,4 +1,3 @@
-import json
 import time
 from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
@@ -381,7 +380,7 @@ class ContractCache(BaseManager):
         return self.provider.network
 
     @property
-    def _contract_types_path(self) -> Path:
+    def _contract_types_cache(self) -> Path:
         return self._network.ecosystem.data_folder / "contract_types"
 
     def cache_contract(self, address: AddressType, contract_type: ContractType):
@@ -440,15 +439,14 @@ class ContractCache(BaseManager):
         )
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
-        if not self._contract_types_path.is_dir():
+        if not self._contract_types_cache.is_dir():
             return None
 
-        address_file = self._contract_types_path / f"{address}.json"
+        address_file = self._contract_types_cache / f"{address}.json"
         if not address_file.is_file():
             return None
 
-        contract_type_data = json.loads(address_file.read_text())
-        return ContractType.parse_obj(contract_type_data)
+        return ContractType.parse_raw(address_file.read_text())
 
     def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
         if not self._network.explorer:
@@ -467,8 +465,8 @@ class ContractCache(BaseManager):
         return contract_type
 
     def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
-        self._contract_types_path.mkdir(exist_ok=True, parents=True)
-        address_file = self._contract_types_path / f"{address}.json"
+        self._contract_types_cache.mkdir(exist_ok=True, parents=True)
+        address_file = self._contract_types_cache / f"{address}.json"
         address_file.write_text(contract_type.json())
 
 

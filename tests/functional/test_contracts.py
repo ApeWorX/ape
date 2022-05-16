@@ -35,7 +35,9 @@ def test_init_at_unknown_address():
     assert contract.address == SOLIDITY_CONTRACT_ADDRESS
 
 
-def test_deploy(sender, contract_container, networks_connected_to_tester, project, chain):
+def test_deploy(
+    sender, contract_container, networks_connected_to_tester, project, chain, clean_contracts_cache
+):
     contract = contract_container.deploy(sender=sender, something_else="IGNORED")
     assert contract.address in (SOLIDITY_CONTRACT_ADDRESS, VYPER_CONTRACT_ADDRESS)
 
