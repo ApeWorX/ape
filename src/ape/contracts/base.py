@@ -657,9 +657,7 @@ class ContractContainer(ManagerAccessMixin):
             address=receipt.contract_address,  # type: ignore
             contract_type=self.contract_type,
         )
-        self.chain_manager.contracts.cache_contract(
-            contract_instance.address, contract_instance.contract_type
-        )
+        self.chain_manager.contracts[contract_instance.address] = contract_instance.contract_type
         return contract_instance
 
 

@@ -385,7 +385,7 @@ class ContractCache(BaseManager):
     def _contract_types_cache(self) -> Path:
         return self._network.ecosystem.data_folder / self._network.name / "contract_types"
 
-    def cache_contract(self, address: AddressType, contract_type: ContractType):
+    def __setitem__(self, address: AddressType, contract_type: ContractType):
         """
         Cache the given contract type. If using a local network, caches in memory.
         Otherwise, caches the contract type to disc at path
