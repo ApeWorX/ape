@@ -375,6 +375,17 @@ class Ethereum(EcosystemAPI):
                     f"Expected '{len(indexed_data)}' log topics.  Got '{len(abi_topics.types)}'."
                 )
 
+            def decode_items(abi_types, data):
+                def decode_value(t, v) -> Any:
+                    if t == "address":
+                        return self.decode_address(v)
+                    elif t == "bytes32":
+                        return HexBytes(v)
+
+                    return v
+
+                return [decode_value(t, v) for t, v in zip(abi_types, data)]
+
             decoded_topic_data = [
                 decode_single(topic_type, topic_data)  # type: ignore
                 for topic_type, topic_data in zip(abi_topics.types, indexed_data)
@@ -382,10 +393,11 @@ class Ethereum(EcosystemAPI):
             decoded_log_data = decode_abi(abi_data.types, log_data)  # type: ignore
             event_args = dict(
                 itertools.chain(
-                    zip(abi_topics.names, decoded_topic_data),
-                    zip(abi_data.names, decoded_log_data),
+                    zip(abi_topics.names, decode_items(abi_topics.types, decoded_topic_data)),
+                    zip(abi_data.names, decode_items(abi_data.types, decoded_log_data)),
                 )
             )
+
             yield ContractLog(  # type: ignore
                 name=abi.name,
                 index=log["logIndex"],

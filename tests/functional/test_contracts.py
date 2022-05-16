@@ -15,6 +15,20 @@ VYPER_CONTRACT_ADDRESS = "0x274b028b03A250cA03644E6c578D81f019eE1323"
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
 
+@pytest.fixture
+def assert_log_values(owner, chain):
+    def _assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):
+        assert log.person == owner
+        assert is_checksum_address(log.person)
+        assert isinstance(log.b, HexBytes)
+
+        expected_previous_number = number - 1 if previous_number is None else previous_number
+        assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
+        assert log.newNum == number, "Event param 'newNum' has unexpected value"
+
+    return _assert_log_values
+
+
 def test_init_at_unknown_address():
     contract = Contract(SOLIDITY_CONTRACT_ADDRESS)
     assert type(contract) == Address
@@ -34,11 +48,11 @@ def test_repr(contract_instance):
     assert repr(contract_instance.myNumber) == "myNumber() -> uint256"
     assert (
         repr(contract_instance.NumberChange)
-        == "NumberChange(uint256 prevNum, uint256 indexed newNum)"
+        == "NumberChange(address person, bytes32 b, uint256 prevNum, uint256 indexed newNum)"
     )
 
 
-def test_contract_logs_from_receipts(owner, contract_instance):
+def test_contract_logs_from_receipts(owner, contract_instance, assert_log_values):
     event_type = contract_instance.NumberChange
 
     # Invoke a transaction 3 times that generates 3 logs.
@@ -61,7 +75,7 @@ def test_contract_logs_from_receipts(owner, contract_instance):
     assert_receipt_logs(receipt_2, 3)
 
 
-def test_contract_logs_from_event_type(contract_instance, owner):
+def test_contract_logs_from_event_type(contract_instance, owner, assert_log_values):
     event_type = contract_instance.NumberChange
 
     contract_instance.setNumber(1, sender=owner)
@@ -75,7 +89,7 @@ def test_contract_logs_from_event_type(contract_instance, owner):
     assert_log_values(logs[2], 3)
 
 
-def test_contract_logs_index_access(contract_instance, owner):
+def test_contract_logs_index_access(contract_instance, owner, assert_log_values):
     event_type = contract_instance.NumberChange
 
     contract_instance.setNumber(1, sender=owner)
@@ -92,7 +106,7 @@ def test_contract_logs_index_access(contract_instance, owner):
     assert_log_values(event_type[-1], 3)
 
 
-def test_contract_logs_splicing(contract_instance, owner):
+def test_contract_logs_splicing(contract_instance, owner, assert_log_values):
     event_type = contract_instance.NumberChange
 
     contract_instance.setNumber(1, sender=owner)
@@ -112,7 +126,7 @@ def test_contract_logs_splicing(contract_instance, owner):
     assert_log_values(log, 2)
 
 
-def test_contract_logs_range(contract_instance, owner):
+def test_contract_logs_range(contract_instance, owner, assert_log_values):
     contract_instance.setNumber(1, sender=owner)
     logs = [
         log for log in contract_instance.NumberChange.range(100, event_parameters={"newNum": 1})
@@ -147,7 +161,7 @@ def test_contract_logs_range_only_stop(contract_instance, owner, chain):
     assert len(logs) == 3, "Unexpected number of logs"
 
 
-def test_contract_logs_range_with_paging(contract_instance, owner, chain):
+def test_contract_logs_range_with_paging(contract_instance, owner, chain, assert_log_values):
     # Create 1 log each in the first 3 blocks.
     for i in range(3):
         contract_instance.setNumber(i + 1, sender=owner)
@@ -183,12 +197,6 @@ def test_contract_logs_from_non_indexed_range(contract_instance, owner):
         _ = [
             log for log in contract_instance.NumberChange.range(0, event_parameters={"prevNum": 1})
         ]
-
-
-def assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):
-    expected_previous_number = number - 1 if previous_number is None else previous_number
-    assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
-    assert log.newNum == number, "Event param 'newNum' has unexpected value"
 
 
 def test_structs(contract_instance, sender, chain):
