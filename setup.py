@@ -59,9 +59,11 @@ extras_require = {
         "ape-infura",  # Infura public network provider
         "ape-ledger",  # Ledger Nano S/X hardware wallet
         "ape-notebook",  # Jupyter notebook support
+        "ape-solidity",  # Solidity compiler support
         "ape-template",  # Cookiecutter template support
         "ape-tokens",  # Tokenlists converter
         "ape-trezor",  # Trezor Model T/One hardware wallet
+        "ape-vyper",  # Vyper compiler support
     ],
 }
 
