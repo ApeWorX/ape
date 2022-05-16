@@ -60,6 +60,12 @@ pip install -U pip
 pip install eth-ape
 ```
 
+or install w/ ApeWorX-recommended plugins via
+
+```bash
+pip install eth-ape[recommended-plugins]
+```
+
 ### via `setuptools`
 
 You can clone the repository and use
