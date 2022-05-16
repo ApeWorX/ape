@@ -1,11 +1,10 @@
 from abc import ABC
-from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, ClassVar, Dict, List, cast
 
 from ethpm_types import ContractType
 from pydantic import BaseModel
 
 from ape.exceptions import ProviderNotConnectedError
-from ape.logging import logger
 from ape.types import AddressType
 from ape.utils.misc import cached_property, singledispatchmethod
 
@@ -75,35 +74,6 @@ class ManagerAccessMixin:
         if self.network_manager.active_provider is None:
             raise ProviderNotConnectedError()
         return self.network_manager.active_provider
-
-    def create_contract_type(self, address: AddressType) -> Optional[ContractType]:
-        """
-        Helper method for creating a ``ContractType`` from an address.
-
-        Args:
-            address (AddressType): The address of the deployed contract.
-
-        Returns:
-            ContractType
-        """
-        network = self.provider.network
-        address = self.conversion_manager.convert(address, AddressType)
-        contract_type = None
-
-        if address in network.contract_cache:
-            # Check contract cache (e.g. previously deployed/downloaded contracts)
-            contract_type = network.contract_cache[address]
-        elif network.explorer:
-            # Check explorer API/cache (e.g. publicly published contracts)
-            try:
-                contract_type = network.explorer.get_contract_type(address)
-            except Exception as err:
-                logger.error(f"Unable to fetch contract type at '{address}' from explorer.\n{err}")
-
-            if contract_type:
-                network.contract_cache[address] = contract_type
-
-        return contract_type
 
     def create_contract_container(self, contract_type: ContractType) -> "ContractContainer":
         """

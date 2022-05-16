@@ -1,7 +1,10 @@
+import json
 import time
+from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import pandas as pd
+from ethpm_types import ContractType
 
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
@@ -11,6 +14,7 @@ from ape.logging import logger
 from ape.types import AddressType, BlockID, SnapshotID
 from ape.utils import cached_property
 
+from ..api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from .base import BaseManager
 
 
@@ -359,6 +363,73 @@ class AccountHistory(BaseManager):
         }
 
 
+class ContractCache(BaseManager):
+    _local_contracts: Dict[AddressType, ContractType] = {}
+
+    @property
+    def network(self) -> NetworkAPI:
+        return self.provider.network
+
+    @property
+    def _contract_types_path(self) -> Path:
+        return self.network.ecosystem.data_folder / "contract_types"
+
+    def cache_contract(self, address: AddressType, contract_type: ContractType):
+        if self.get_contract_type(address):
+            # Already cached
+            return
+
+        is_local = self.network.name == LOCAL_NETWORK_NAME or self.network.name.endswith("-fork")
+        if is_local and address not in self._local_contracts:
+            self._local_contracts[address] = contract_type
+        else:
+            self._cache_contract_to_disk(address, contract_type)
+
+    def get_contract_type(self, address: AddressType) -> Optional[ContractType]:
+        contract_type = None
+        is_local = self.network.name == LOCAL_NETWORK_NAME
+        if is_local or self.network.name.endswith("-fork"):
+            # For fork networks, try the local cache first.
+            contract_type = self._local_contracts.get(address)
+
+        if contract_type or is_local:
+            return contract_type
+
+        return self._get_contract_type_from_disk(address) or self._get_contract_type_from_explorer(
+            address
+        )
+
+    def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
+        if not self._contract_types_path.is_dir():
+            return None
+
+        address_file = self._contract_types_path / f"{address}.json"
+        if not address_file.is_file():
+            return None
+
+        contract_type_data = json.loads(address_file.read_text())
+        return ContractType.parse_obj(contract_type_data)
+
+    def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
+        if not self.network.explorer:
+            return None
+
+        try:
+            contract_type = self.network.explorer.get_contract_type(address)
+        except Exception as err:
+            logger.error(f"Unable to fetch contract type at '{address}' from explorer.\n{err}")
+            return None
+
+        # Cache contract so faster look-up next time.
+        self._cache_contract_to_disk(address, contract_type)
+        return contract_type
+
+    def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
+        self._contract_types_path.mkdir(exist_ok=True, parents=True)
+        address_file = self._contract_types_path / f"{address}.json"
+        address_file.write_text(contract_type.json())
+
+
 class ChainManager(BaseManager):
     """
     A class for managing the state of the active blockchain.
@@ -374,6 +445,7 @@ class ChainManager(BaseManager):
     _chain_id_map: Dict[str, int] = {}
     _block_container_map: Dict[int, BlockContainer] = {}
     _account_history_map: Dict[int, AccountHistory] = {}
+    contracts: ContractCache = ContractCache()
 
     @property
     def blocks(self) -> BlockContainer:

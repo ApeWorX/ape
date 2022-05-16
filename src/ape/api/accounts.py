@@ -167,9 +167,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             address=receipt.contract_address,  # type: ignore
             contract_type=contract.contract_type,
         )
-        self.provider.network.contract_cache[
-            contract_instance.address
-        ] = contract_instance.contract_type
+        self.chain_manager.contracts.cache_contract(
+            contract_instance.address, contract_instance.contract_type
+        )
         return contract_instance
 
     def check_signature(

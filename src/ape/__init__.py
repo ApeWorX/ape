@@ -40,7 +40,7 @@ project = _ManagerAccessMixin.project_manager
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
 Contract = _partial(
-    _Contract, networks=networks, conversion_manager=_ManagerAccessMixin.conversion_manager
+    _Contract, chain=chain, conversion_manager=_ManagerAccessMixin.conversion_manager
 )
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 

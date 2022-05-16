@@ -2,7 +2,6 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
 
-from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
@@ -428,9 +427,6 @@ class NetworkAPI(BaseInterfaceModel):
 
     request_header: Dict
     """A shareable network HTTP header."""
-
-    contract_cache: Dict[AddressType, ContractType] = {}
-    """A cache of known deployed contracts on this network."""
 
     _default_provider: str = ""
 

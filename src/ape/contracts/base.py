@@ -13,8 +13,8 @@ from ape.types import AddressType, ContractLog
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 if TYPE_CHECKING:
+    from ape.managers.chain import ChainManager
     from ape.managers.converters import ConversionManager
-    from ape.managers.networks import NetworkManager
 
 
 def _convert_kwargs(kwargs, converter) -> Dict:
@@ -661,15 +661,15 @@ class ContractContainer(ManagerAccessMixin):
             address=receipt.contract_address,  # type: ignore
             contract_type=self.contract_type,
         )
-        self.provider.network.contract_cache[
-            contract_instance.address
-        ] = contract_instance.contract_type
+        self.chain_manager.contracts.cache_contract(
+            contract_instance.address, contract_instance.contract_type
+        )
         return contract_instance
 
 
 def _Contract(
     address: Union[str, BaseAddress, AddressType],
-    networks: "NetworkManager",
+    chain: "ChainManager",
     conversion_manager: "ConversionManager",
     contract_type: Optional[ContractType] = None,
 ) -> BaseAddress:
@@ -680,9 +680,7 @@ def _Contract(
     """
 
     converted_address: AddressType = conversion_manager.convert(address, AddressType)
-    contract_type = (
-        networks.create_contract_type(converted_address) if contract_type is None else contract_type
-    )
+    contract_type = contract_type or chain.contracts.get_contract_type(converted_address)
 
     # We have a contract type either:
     #   1) explicitly provided,
