@@ -364,7 +364,7 @@ class AccountHistory(BaseManager):
         }
 
 
-class ContractCache(BaseManager):
+class ContractCache(dict, BaseManager):
     """
     A collection of cached contracts. Contracts can be cached in two ways:
 
