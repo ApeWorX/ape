@@ -383,7 +383,7 @@ class ContractCache(BaseManager):
 
     @property
     def _contract_types_cache(self) -> Path:
-        return self._network.ecosystem.data_folder / "contract_types"
+        return self._network.ecosystem.data_folder / self._network.name / "contract_types"
 
     def cache_contract(self, address: AddressType, contract_type: ContractType):
         """
