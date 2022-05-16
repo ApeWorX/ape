@@ -18,12 +18,14 @@ from evm_trace import TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, validator
 from web3 import Web3
+from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import (
+    ContractLogicError,
     DecodingError,
     ProviderError,
     ProviderNotConnectedError,
@@ -31,6 +33,7 @@ from ape.exceptions import (
     SubprocessError,
     SubprocessTimeoutError,
     TransactionError,
+    VirtualMachineError,
 )
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID
@@ -422,6 +425,46 @@ class ProviderAPI(BaseInterfaceModel):
     def _try_track_receipt(self, receipt: ReceiptAPI):
         if self.chain_manager:
             self.chain_manager.account_history.append(receipt)
+
+    def get_virtual_machine_error(self, exception: Exception) -> VirtualMachineError:
+        """
+        Get a virtual machine error from an error returned from your RPC.
+        If from a contract revert / assert statement, you will be given a
+        special :class:`~ape.exceptions.ContractLogicError` that can be
+        checked in ``ape.reverts()`` tests.
+
+        **NOTE**: The default implementation is based on ``geth`` output.
+        ``ProviderAPI`` implementations override when needed.
+
+        Args:
+            exception (Exception): The error returned from your RPC client.
+
+        Returns:
+            :class:`~ape.exceptions.VirtualMachineError`: An error representing what
+               went wrong in the call.
+        """
+
+        if isinstance(exception, Web3ContractLogicError):
+            # This happens from `assert` or `require` statements.
+            message = str(exception).split(":")[-1].strip()
+            if message == "execution reverted":
+                # Reverted without an error message
+                raise ContractLogicError()
+
+            return ContractLogicError(revert_message=message)
+
+        if not len(exception.args):
+            return VirtualMachineError(base_err=exception)
+
+        err_data = exception.args[0]
+        if not isinstance(err_data, dict):
+            return VirtualMachineError(base_err=exception)
+
+        message = str(err_data.get("message"))
+        if not message:
+            return VirtualMachineError(base_err=exception)
+
+        return VirtualMachineError(message=message, code=err_data.get("code"))
 
 
 class TestProviderAPI(ProviderAPI):

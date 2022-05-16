@@ -41,7 +41,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             message = gas_estimation_error_message(err)
             raise TransactionError(base_err=err, message=message) from err
         except TransactionFailed as err:
-            raise _get_vm_err(err) from err
+            raise self.get_virtual_machine_error(err) from err
 
     @property
     def chain_id(self) -> int:
@@ -75,7 +75,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:
-            raise _get_vm_err(err) from err
+            raise self.get_virtual_machine_error(err) from err
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
@@ -83,7 +83,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:
-            raise _get_vm_err(err) from err
+            raise self.get_virtual_machine_error(err) from err
 
         receipt = self.get_transaction(
             txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
@@ -109,10 +109,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def mine(self, num_blocks: int = 1):
         self._tester.mine_blocks(num_blocks)
 
-
-def _get_vm_err(web3_err: TransactionFailed) -> ContractLogicError:
-    err_message = str(web3_err).split("execution reverted: ")[-1] or None
-    if err_message == "b''":
-        err_message = None
-
-    return ContractLogicError(revert_message=err_message)
+    def get_virtual_machine_error(self, web3_err: TransactionFailed) -> VirtualMachineError:
+        err_message = str(web3_err).split("execution reverted: ")[-1] or None
+        err_message = None if err_message == "b''" else err_message
+        return ContractLogicError(revert_message=err_message)
