@@ -66,18 +66,6 @@ or install w/ ApeWorX-recommended plugins via
 pip install eth-ape[recommended-plugins]
 ```
 
-### via `setuptools`
-
-You can clone the repository and use
-[setuptools](https://github.com/pypa/setuptools) for the most up-to-date
-version:
-
-```bash
-git clone https://github.com/ApeWorX/ape.git
-cd ape
-python3 setup.py install
-```
-
 ### via `docker`
 
 Please visit our
