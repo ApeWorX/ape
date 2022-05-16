@@ -364,31 +364,71 @@ class AccountHistory(BaseManager):
 
 
 class ContractCache(BaseManager):
+    """
+    A collection of cached contracts. Contracts can be cached in two ways:
+
+    1. An in-memory cache of locally deployed contracts
+    2. A cache of contracts per live network
+
+    When retrieving a contract, if the :class:`~ape.api.explorers.ExplorerAPI` is used,
+    it will be cached to disc for faster look-up next time.
+    """
+
     _local_contracts: Dict[AddressType, ContractType] = {}
 
     @property
-    def network(self) -> NetworkAPI:
+    def _network(self) -> NetworkAPI:
         return self.provider.network
 
     @property
     def _contract_types_path(self) -> Path:
-        return self.network.ecosystem.data_folder / "contract_types"
+        return self._network.ecosystem.data_folder / "contract_types"
 
     def cache_contract(self, address: AddressType, contract_type: ContractType):
-        if self.get_contract_type(address):
-            # Already cached
-            return
+        """
+        Cache the given contract type. If using a local network, caches in memory.
+        Otherwise, caches the contract type to disc at path
+        ``.ape/{ecosystem_name}/{network_name}/contract_types/{address}.json``.
 
-        is_local = self.network.name == LOCAL_NETWORK_NAME or self.network.name.endswith("-fork")
+        Args:
+            address (AddressType): The on-chain address of the contract.
+            contract_type (ContractType): The contract's type.
+        """
+
+        if self.get(address):
+            return  # Already cached
+
+        is_local = self._network.name == LOCAL_NETWORK_NAME or self._network.name.endswith("-fork")
         if is_local and address not in self._local_contracts:
             self._local_contracts[address] = contract_type
         else:
             self._cache_contract_to_disk(address, contract_type)
 
-    def get_contract_type(self, address: AddressType) -> Optional[ContractType]:
+    def __getitem__(self, address: AddressType) -> ContractType:
+        contract_type = self.get(address)
+        if not contract_type:
+            raise IndexError(f"No contract type found at address '{address}'.")
+
+        return contract_type
+
+    def get(self, address: AddressType) -> Optional[ContractType]:
+        """
+        Get a contract type by address.
+        If the contract is cached, it will return the contract from the cache.
+        Otherwise, if on a live network, it fetches it from the
+        :class:`~ape.api.explorers.ExplorerAPI`.
+
+        Args:
+            address (AddressType): The address of the contract.
+
+        Returns:
+            Optional[ContractType]: The contract type if it was able to get one,
+              otherwise ``None``.
+        """
+
         contract_type = None
-        is_local = self.network.name == LOCAL_NETWORK_NAME
-        if is_local or self.network.name.endswith("-fork"):
+        is_local = self._network.name == LOCAL_NETWORK_NAME
+        if is_local or self._network.name.endswith("-fork"):
             # For fork networks, try the local cache first.
             contract_type = self._local_contracts.get(address)
 
@@ -411,11 +451,11 @@ class ContractCache(BaseManager):
         return ContractType.parse_obj(contract_type_data)
 
     def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
-        if not self.network.explorer:
+        if not self._network.explorer:
             return None
 
         try:
-            contract_type = self.network.explorer.get_contract_type(address)
+            contract_type = self._network.explorer.get_contract_type(address)
         except Exception as err:
             logger.error(f"Unable to fetch contract type at '{address}' from explorer.\n{err}")
             return None

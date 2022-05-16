@@ -79,7 +79,7 @@ def test_transfer_using_type_0(sender, receiver):
     assert receiver.balance == expected
 
 
-def test_deploy(owner, contract_container):
+def test_deploy(owner, contract_container, chain):
     contract = owner.deploy(contract_container)
     assert contract.address
 
@@ -87,6 +87,9 @@ def test_deploy(owner, contract_container):
     contract_from_cache = ape.Contract(contract.address)
     assert contract_from_cache.contract_type == contract.contract_type
     assert contract_from_cache.address == contract.address
+
+    # Clean up for next test
+    del chain.contracts._local_contracts[contract_from_cache.address]
 
 
 def test_contract_calls(owner, contract_instance):

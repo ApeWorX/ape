@@ -5,7 +5,7 @@ from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
-from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
+from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ArgumentsLengthError, ContractError
 from ape.logging import logger
@@ -680,22 +680,11 @@ def _Contract(
     """
 
     converted_address: AddressType = conversion_manager.convert(address, AddressType)
-    contract_type = contract_type or chain.contracts.get_contract_type(converted_address)
-
-    # We have a contract type either:
-    #   1) explicitly provided,
-    #   2) from network cache, or
-    #   3) from explorer
-    if contract_type:
-        return ContractInstance(  # type: ignore
-            address=converted_address,
-            contract_type=contract_type,
-        )
-
-    else:
-        # We don't have a contract type from any source, provide raw address instead
-        logger.warning(f"No contract type found for {address}")
-        return Address(converted_address)
+    contract_type = contract_type or chain.contracts[converted_address]
+    return ContractInstance(  # type: ignore
+        address=converted_address,
+        contract_type=contract_type,
+    )
 
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:
