@@ -461,7 +461,9 @@ class ContractCache(BaseManager):
             return None
 
         # Cache contract so faster look-up next time.
-        self._cache_contract_to_disk(address, contract_type)
+        if contract_type:
+            self._cache_contract_to_disk(address, contract_type)
+
         return contract_type
 
     def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
