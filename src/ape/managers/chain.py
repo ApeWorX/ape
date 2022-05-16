@@ -412,7 +412,9 @@ class ContractCache(BaseManager):
 
         return contract_type
 
-    def get(self, address: AddressType) -> Optional[ContractType]:
+    def get(
+        self, address: AddressType, default: Optional[ContractType] = None
+    ) -> Optional[ContractType]:
         """
         Get a contract type by address.
         If the contract is cached, it will return the contract from the cache.
@@ -427,7 +429,7 @@ class ContractCache(BaseManager):
               otherwise ``None``.
         """
 
-        contract_type = None
+        contract_type = default
         is_local = self._network.name == LOCAL_NETWORK_NAME
         if is_local or self._network.name.endswith("-fork"):
             # For fork networks, try the local cache first.
@@ -440,7 +442,7 @@ class ContractCache(BaseManager):
         if contract_from_disc:
             return contract_from_disc
 
-        return self._get_contract_type_from_explorer(address)
+        return self._get_contract_type_from_explorer(address) or default
 
     def at(self, address: "AddressType") -> "ContractInstance":
         return self.create_contract(address, self[address])
