@@ -184,6 +184,10 @@ class ContractTransactionHandler(ManagerAccessMixin):
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
 
+    @property
+    def call(self) -> ContractCallHandler:
+        return ContractCallHandler(self.contract, self.abis)
+
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.conversion_manager.convert(v, tuple)
 
