@@ -429,20 +429,23 @@ class ContractCache(dict, BaseManager):
               otherwise ``None``.
         """
 
-        contract_type = default
-        is_local = self._network.name == LOCAL_NETWORK_NAME
-        if is_local or self._network.name.endswith("-fork"):
-            # For fork networks, try the local cache first.
-            contract_type = self._local_contracts.get(address)
-
-        if contract_type or is_local:
+        contract_type = self._local_contracts.get(address)
+        if contract_type:
             return contract_type
 
-        contract_from_disc = self._get_contract_type_from_disk(address)
-        if contract_from_disc:
-            return contract_from_disc
+        if self._network.name == LOCAL_NETWORK_NAME:
+            # Don't check disc-cache or explorer when using local
+            return default
 
-        return self._get_contract_type_from_explorer(address) or default
+        contract_type = self._get_contract_type_from_disk(address)
+        if not contract_type:
+            contract_type = self._get_contract_type_from_explorer(address)
+
+        if contract_type:
+            # Cache contract so faster look-up next time.
+            self._cache_contract_to_disk(address, contract_type)
+
+        return contract_type or default
 
     def at(self, address: "AddressType") -> "ContractInstance":
         return self.create_contract(address, self[address])
@@ -466,10 +469,6 @@ class ContractCache(dict, BaseManager):
         except Exception as err:
             logger.error(f"Unable to fetch contract type at '{address}' from explorer.\n{err}")
             return None
-
-        # Cache contract so faster look-up next time.
-        if contract_type:
-            self._cache_contract_to_disk(address, contract_type)
 
         return contract_type
 
