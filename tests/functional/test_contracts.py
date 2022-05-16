@@ -346,3 +346,12 @@ def test_solidity_named_tuple(solidity_contract_instance):
 def test_vyper_named_tuple(vyper_contract_instance):
     actual = vyper_contract_instance.getMultipleValues()
     assert actual == (123, 321)
+
+
+def test_call_transaction(contract_instance, owner, chain):
+    # Transaction never submitted because using `call`.
+    init_block = chain.blocks[-1]
+    contract_instance.setNumber.call(1, sender=owner)
+
+    # No mining happens because its a call
+    assert init_block == chain.blocks[-1]
