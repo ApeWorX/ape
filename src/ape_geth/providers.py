@@ -12,14 +12,13 @@ from geth.wrapper import construct_test_chain_kwargs  # type: ignore
 from pydantic import Extra
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
-from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.types import NodeInfo
 
 from ape.api import PluginConfig, ReceiptAPI, TransactionAPI, UpstreamProvider, Web3Provider
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import ContractLogicError, ProviderError, TransactionError, VirtualMachineError
+from ape.exceptions import ContractLogicError, ProviderError, TransactionError
 from ape.logging import logger
 from ape.utils import extract_nested_value, gas_estimation_error_message, generate_dev_accounts
 
@@ -230,7 +229,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
         try:
             return super().estimate_gas_cost(txn)
         except ValueError as err:
-            tx_error = _get_vm_error(err)
+            tx_error = self.get_virtual_machine_error(err)
 
             # If this is the cause of a would-be revert,
             # raise ContractLogicError so that we can confirm tx-reverts.
@@ -252,40 +251,13 @@ class GethProvider(Web3Provider, UpstreamProvider):
         try:
             return super().send_call(txn)
         except ValueError as err:
-            raise _get_vm_error(err) from err
+            raise self.get_virtual_machine_error(err) from err
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
             receipt = super().send_transaction(txn)
         except ValueError as err:
-            raise _get_vm_error(err) from err
+            raise self.get_virtual_machine_error(err) from err
 
         receipt.raise_for_status()
         return receipt
-
-
-def _get_vm_error(web3_value_error: ValueError) -> TransactionError:
-    """
-    Returns a custom error from ``ValueError`` from web3.py.
-    """
-    if isinstance(web3_value_error, Web3ContractLogicError):
-        # This happens from `assert` or `require` statements.
-        message = str(web3_value_error).split(":")[-1].strip()
-        if message == "execution reverted":
-            # Reverted without an error message
-            raise ContractLogicError()
-
-        return ContractLogicError(revert_message=message)
-
-    if not len(web3_value_error.args):
-        return VirtualMachineError(base_err=web3_value_error)
-
-    err_data = web3_value_error.args[0]
-    if not isinstance(err_data, dict):
-        return VirtualMachineError(base_err=web3_value_error)
-
-    message = str(err_data.get("message"))
-    if not message:
-        return VirtualMachineError(base_err=web3_value_error)
-
-    return VirtualMachineError(message=message, code=err_data.get("code"))

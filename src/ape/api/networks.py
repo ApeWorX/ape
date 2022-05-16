@@ -434,6 +434,9 @@ class NetworkAPI(BaseInterfaceModel):
 
     _default_provider: str = ""
 
+    def __repr__(self) -> str:
+        return f"<{self.name} chain_id={self.chain_id}>"
+
     @cached_property
     def config(self) -> PluginConfig:
         """
