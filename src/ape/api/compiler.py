@@ -52,7 +52,7 @@ class CompilerAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def fetch_imports(
+    def get_imports(
         self, contract_filepaths: List[Path], base_path: Optional[Path]
     ) -> Dict[str, List[str]]:
         """

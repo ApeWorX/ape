@@ -122,7 +122,7 @@ class ProjectAPI(BaseInterfaceModel):
     def _create_source_dict(
         cls, contract_filepaths: List[Path], base_path: Path
     ) -> Dict[str, Source]:
-        imports_dict: Dict[str, List[str]] = cls.compiler_manager.fetch_imports(
+        imports_dict: Dict[str, List[str]] = cls.compiler_manager.get_imports(
             contract_filepaths, base_path
         )
         references_dict: Dict[str, List[str]] = cls.compiler_manager.get_references(

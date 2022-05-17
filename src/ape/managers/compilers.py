@@ -116,7 +116,7 @@ class CompilerManager(BaseManager):
 
         return contract_types_dict  # type: ignore
 
-    def fetch_imports(
+    def get_imports(
         self, contract_filepaths: List[Path], base_path: Optional[Path]
     ) -> Dict[str, List[str]]:
         """
@@ -134,9 +134,9 @@ class CompilerManager(BaseManager):
         """
         imports_dict: Dict[str, List[str]] = {}
 
-        for _, compiler in self.compiler_manager.registered_compilers.items():
+        for _, compiler in self.registered_compilers.items():
             try:
-                imports = compiler.fetch_imports(
+                imports = compiler.get_imports(
                     contract_filepaths=contract_filepaths, base_path=base_path
                 )
             except NotImplementedError:
