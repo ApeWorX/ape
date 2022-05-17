@@ -380,13 +380,15 @@ class ContractCache(BaseManager):
 
     @property
     def _contract_types_cache(self) -> Path:
-        return self._network.ecosystem.data_folder / self._network.name / "contract_types"
+        network_name = self._network.name.replace("-fork", "")
+        return self._network.ecosystem.data_folder / network_name / "contract_types"
 
     def __setitem__(self, address: AddressType, contract_type: ContractType):
         """
-        Cache the given contract type. If using a local network, caches in memory.
-        Otherwise, caches the contract type to disc at path
-        ``.ape/{ecosystem_name}/{network_name}/contract_types/{address}.json``.
+        Cache the given contract type. Contracts are cached in memory per session.
+        In live networks, contracts also get cached to disc at
+        ``.ape/{ecosystem_name}/{network_name}/contract_types/{address}.json``
+        for faster look-up next time.
 
         Args:
             address (AddressType): The on-chain address of the contract.
@@ -396,10 +398,12 @@ class ContractCache(BaseManager):
         if self.get(address):
             return  # Already cached
 
-        is_local = self._network.name == LOCAL_NETWORK_NAME or self._network.name.endswith("-fork")
-        if is_local and address not in self._local_contracts:
-            self._local_contracts[address] = contract_type
-        else:
+        self._local_contracts[address] = contract_type
+
+        if self._network.name != LOCAL_NETWORK_NAME and not self._network.name.endswith("-fork"):
+            # NOTE: We don't cache forked network contracts in this method to avoid
+            # caching from deploy. However, if you retrieve a contract from the explorer,
+            # when using a forked network, it will still get cached to disc.
             self._cache_contract_to_disk(address, contract_type)
 
     def __getitem__(self, address: AddressType) -> ContractType:
