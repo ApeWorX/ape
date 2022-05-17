@@ -85,17 +85,18 @@ class CacheQueryProvider(QueryAPI):
                     stop_block=query.stop_block,
                     step=query.step,
                 )
-                if q.rowcount < query.stop_block - query.start_block:
-                    return None
+                if q.rowcount == query.stop_block - query.start_block:
+                    # NOTE: Assume 200 msec to get data from database
+                    return 200
+                # Can't handle this query
+                # TODO: Allow partial queries
+                return None
 
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
             #       query from provider.
             logger.debug(err)
             return None
-
-        # NOTE: Assume 200 msec to get data from database
-        return 200
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> pd.DataFrame:  # type: ignore
