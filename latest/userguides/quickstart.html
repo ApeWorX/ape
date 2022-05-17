@@ -63,8 +63,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick Start</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prerequisite">Prerequisite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#via-pipx">via <code class="docutils literal notranslate"><span class="pre">pipx</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#via-pip">via <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#via-setuptools">via <code class="docutils literal notranslate"><span class="pre">setuptools</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#via-docker">via <code class="docutils literal notranslate"><span class="pre">docker</span></code></a></li>
 </ul>
 </li>
@@ -157,6 +157,21 @@
 </section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h2>
+<p>There are 3 ways to install ape: <code class="docutils literal notranslate"><span class="pre">pipx</span></code>, <code class="docutils literal notranslate"><span class="pre">pip</span></code>, or <code class="docutils literal notranslate"><span class="pre">Docker</span></code>.</p>
+<section id="via-pipx">
+<h3>via <code class="docutils literal notranslate"><span class="pre">pipx</span></code><a class="headerlink" href="#via-pipx" title="Permalink to this headline"></a></h3>
+<p>Install <code class="docutils literal notranslate"><span class="pre">pipx</span></code> via their <a class="reference external" href="https://pypa.github.io/pipx/">installation instructions</a></p>
+<p>Then install <code class="docutils literal notranslate"><span class="pre">ape</span></code> via</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx install eth-ape
+</pre></div>
+</div>
+<p>or install w/ ApeWorX-recommended plugins via</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx install eth-ape<span class="o">[</span>recommended-plugins<span class="o">]</span>
+</pre></div>
+</div>
+</section>
+<section id="via-pip">
+<h3>via <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#via-pip" title="Permalink to this headline"></a></h3>
 <p><strong>Suggestion</strong>: Create a virtual environment using <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> or <code class="docutils literal notranslate"><span class="pre">venv.</span></code></p>
 <p>You may skip this creating a virtual environment if you know you don’t
 require one for your use case.</p>
@@ -175,25 +190,15 @@ To deactivate the virtual environment, do:</p>
 </pre></div>
 </div>
 <p>Now that your Python version is later than 3.7.X and you have created a
-virtual environment. Let’s install Ape! There are 3 ways to install
-ape: <code class="docutils literal notranslate"><span class="pre">pip</span></code>, <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>, or <code class="docutils literal notranslate"><span class="pre">Docker</span></code>.</p>
-<section id="via-pip">
-<h3>via <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#via-pip" title="Permalink to this headline"></a></h3>
+virtual environment let’s install Ape!</p>
 <p>You can install the latest release via
 <a class="reference external" href="https://pypi.org/project/pip/">pip</a>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -U pip
 pip install eth-ape
 </pre></div>
 </div>
-</section>
-<section id="via-setuptools">
-<h3>via <code class="docutils literal notranslate"><span class="pre">setuptools</span></code><a class="headerlink" href="#via-setuptools" title="Permalink to this headline"></a></h3>
-<p>You can clone the repository and use
-<a class="reference external" href="https://github.com/pypa/setuptools">setuptools</a> for the most up-to-date
-version:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/ApeWorX/ape.git
-<span class="nb">cd</span> ape
-python3 setup.py install
+<p>or install w/ ApeWorX-recommended plugins via</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install eth-ape<span class="o">[</span>recommended-plugins<span class="o">]</span>
 </pre></div>
 </div>
 </section>
