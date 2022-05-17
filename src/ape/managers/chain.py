@@ -1,11 +1,11 @@
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import pandas as pd
 from ethpm_types import ContractType
 
-from ape.api import BlockAPI, ReceiptAPI
+from ape.api import Address, BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockQuery
@@ -14,9 +14,6 @@ from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, SnapshotID
 from ape.utils import cached_property
-
-if TYPE_CHECKING:
-    from ape.contracts.base import ContractInstance
 
 
 class BlockContainer(BaseManager):
@@ -445,8 +442,12 @@ class ContractCache(BaseManager):
 
         return contract_type or default
 
-    def instance_at(self, address: "AddressType") -> "ContractInstance":
-        return self.create_contract(address, self[address])
+    def instance_at(self, address: "AddressType") -> BaseAddress:
+        contract_type = self.get(address)
+        if contract_type:
+            return self.create_contract(address, contract_type)
+
+        return Address(address)
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         if not self._contract_types_cache.is_dir():
