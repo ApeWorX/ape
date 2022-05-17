@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 from ethpm_types import ContractType
 
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod, get_relative_path, raises_not_implemented
 
 
 class CompilerAPI(BaseInterfaceModel):
@@ -50,6 +50,45 @@ class CompilerAPI(BaseInterfaceModel):
         Returns:
             List[:class:`~ape.type.contract.ContractType`]
         """
+
+    @raises_not_implemented
+    def fetch_imports(
+        self, contract_filepaths: List[Path], base_path: Optional[Path]
+    ) -> Dict[str, List[str]]:
+        """
+        Returns a list of imports for each contract in a given compiler.
+
+        Args:
+            contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
+            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
+              project ``contracts/`` directory. Defaults to ``None``. When using in a project
+              via ``ape compile``, gets set to the project's ``contracts/`` directory.
+
+        Returns:
+            Dict[str, List[str]]
+        """
+
+    def _get_filename_dict_from_paths(
+        self, paths: List[Path], base_path: Optional[Path]
+    ) -> Dict[str, List[str]]:
+        """
+        Structure for getting a list of paths related to a filename.
+        Used to create a broad/generous assumption of related paths for a filename.
+        """
+        filename_dict: Dict[str, List[str]] = {}
+
+        for p in paths:
+            filename = str(p).split("/")[-1]
+
+            if not filename_dict.get(filename):
+                filename_dict[filename] = []
+
+            if base_path:
+                p = get_relative_path(p, base_path)
+
+            filename_dict[filename].append(str(p))
+
+        return filename_dict
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.name}>"

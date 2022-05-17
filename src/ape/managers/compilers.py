@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 
 from ethpm_types import ContractType
 
@@ -115,6 +115,48 @@ class CompilerManager(BaseManager):
                 contract_types_dict[contract_type.name] = contract_type
 
         return contract_types_dict  # type: ignore
+
+    def fetch_imports(
+        self, contract_filepaths: List[Path], base_path: Optional[Path]
+    ) -> Dict[str, List[str]]:
+        """
+        Combines import dicts from all compilers, where the key is a contract path
+        and the value is a list of import paths.
+
+        Args:
+            contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
+            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
+              project ``contracts/`` directory. Defaults to ``None``. When using in a project
+              via ``ape compile``, gets set to the project's ``contracts/`` directory.
+
+        Returns:
+            Dict[str, List[str]]
+        """
+        imports_dict: Dict[str, List[str]] = {}
+
+        for _, compiler in self.compiler_manager.registered_compilers.items():
+            try:
+                imports = compiler.fetch_imports(
+                    contract_filepaths=contract_filepaths, base_path=base_path
+                )
+            except NotImplementedError:
+                imports = None
+
+            if imports:
+                imports_dict.update(imports)
+
+        return imports_dict
+
+    def get_references(self, imports_dict: Dict[str, List[str]]) -> Dict[str, List[str]]:
+        references_dict: Dict[str, List[str]] = {}
+        if imports_dict:
+            for key, imports_list in imports_dict.items():
+                for filepath in imports_list:
+                    if filepath not in references_dict:
+                        references_dict[filepath] = []
+                    references_dict[filepath].append(key)
+
+        return references_dict
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = set(path.suffix for path in contract_filepaths)

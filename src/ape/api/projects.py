@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Collection, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
@@ -99,7 +99,7 @@ class ProjectAPI(BaseInterfaceModel):
     @classmethod
     def _create_manifest(
         cls,
-        sources: Collection[Path],
+        source_paths: List[Path],
         contracts_path: Path,
         contract_types: Dict[str, ContractType],
         name: Optional[str] = None,
@@ -114,25 +114,36 @@ class ProjectAPI(BaseInterfaceModel):
         if version:
             manifest.version = version
 
-        manifest.sources = cls._create_source_dict(sources, contracts_path)
+        manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
         return PackageManifest(**manifest.dict())
 
     @classmethod
     def _create_source_dict(
-        cls, contract_paths: Collection[Path], base_path: Path
+        cls, contract_filepaths: List[Path], base_path: Path
     ) -> Dict[str, Source]:
-        return {
-            str(get_relative_path(source, base_path)): Source(  # type: ignore
+        imports_dict: Dict[str, List[str]] = cls.compiler_manager.fetch_imports(
+            contract_filepaths, base_path
+        )
+        references_dict: Dict[str, List[str]] = cls.compiler_manager.get_references(
+            imports_dict=imports_dict
+        )
+
+        source_dict: Dict[str, Source] = {}
+        for source_path in contract_filepaths:
+            key = str(get_relative_path(source_path, base_path))
+            source_dict[key] = Source(  # type: ignore
                 checksum=Checksum(  # type: ignore
                     algorithm="md5",
-                    hash=compute_checksum(source.read_bytes()),
+                    hash=compute_checksum(source_path.read_bytes()),
                 ),
                 urls=[],
-                content=source.read_text(),
+                content=source_path.read_text(),
+                imports=imports_dict.get(key, []),
+                references=references_dict.get(key, []),
             )
-            for source in contract_paths
-        }
+
+        return source_dict
 
 
 class DependencyAPI(BaseInterfaceModel):

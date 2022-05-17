@@ -33,7 +33,7 @@ class BaseProject(ProjectAPI):
         return True
 
     @property
-    def sources(self) -> List[Path]:
+    def source_paths(self) -> List[Path]:
         """
         All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
@@ -90,13 +90,18 @@ class BaseProject(ProjectAPI):
 
             cached_sources = manifest.sources or {}
             cached_contract_types = manifest.contract_types or {}
-            sources = (
-                {s for s in self.sources if s in file_paths} if file_paths else set(self.sources)
+            cached_source_references = {
+                k: getattr(v, "references", []) for k, v in cached_sources.items()
+            }
+            source_paths = (
+                {p for p in self.source_paths if p in file_paths}
+                if file_paths
+                else set(self.source_paths)
             )
 
-            # Filter out deleted sources
+            # Filter out deleted source_paths
             deleted_source_ids = cached_sources.keys() - set(
-                map(str, [get_relative_path(s, self.contracts_folder) for s in sources])
+                map(str, [get_relative_path(p, self.contracts_folder) for p in source_paths])
             )
             contract_types = {
                 name: contract_type
@@ -104,16 +109,16 @@ class BaseProject(ProjectAPI):
                 if contract_type.source_id not in deleted_source_ids
             }
 
-            def file_needs_compiling(source: Path) -> bool:
-                path = str(get_relative_path(source, self.contracts_folder))
+            def file_needs_compiling(source_path: Path) -> bool:
+                path = str(get_relative_path(source_path, self.contracts_folder))
 
                 if path not in cached_sources:
                     return True  # New file added
 
-                cached = cached_sources[path]
-                cached_checksum = cached.calculate_checksum()
+                cached_source = cached_sources[path]
+                cached_checksum = cached_source.calculate_checksum()
 
-                source_file = self.contracts_folder / source
+                source_file = self.contracts_folder / source_path
                 checksum = compute_checksum(
                     source_file.read_bytes(),
                     algorithm=cached_checksum.algorithm,
@@ -122,7 +127,21 @@ class BaseProject(ProjectAPI):
                 return checksum != cached_checksum.hash  # Contents changed
 
             # NOTE: Filter by checksum to only update what's needed
-            needs_compiling = list(filter(file_needs_compiling, sources))
+            needs_compiling = list(filter(file_needs_compiling, source_paths))
+
+            # NOTE: Add referenced imports for each source file
+            referenced_imports: List[str] = []
+
+            for source_path in needs_compiling:
+                path = str(get_relative_path(source_path, self.contracts_folder))
+                referenced_imports.extend(cached_source_references.get(path, []))
+
+            needs_compiling.extend(
+                [self.contracts_folder.joinpath(Path(p)) for p in referenced_imports]
+            )
+
+            # remove duplicates
+            needs_compiling = list(set(needs_compiling))
 
             # Set the context in case compiling a dependency (or anything outside the root project).
             with self.config_manager.using_project(
@@ -133,20 +152,20 @@ class BaseProject(ProjectAPI):
                 contract_types.update(compiled_contract_types)
 
                 # NOTE: Update contract types & re-calculate source code entries in manifest
-                sources = (
-                    {s for s in self.sources if s in file_paths}
+                source_paths = (
+                    {p for p in self.source_paths if p in file_paths}
                     if file_paths
-                    else set(self.sources)
+                    else set(self.source_paths)
                 )
 
                 dependencies = {
                     c for c in get_all_files_in_directory(self.contracts_folder / ".cache")
                 }
                 for contract in dependencies:
-                    sources.add(contract)
+                    source_paths.add(contract)
 
                 manifest = self._create_manifest(
-                    sources,
+                    list(source_paths),
                     self.contracts_folder,
                     contract_types,
                     initial_manifest=manifest,
