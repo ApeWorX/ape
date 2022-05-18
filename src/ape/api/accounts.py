@@ -144,11 +144,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             txn.value = self._convert(value, int)
 
         if not value:
-            if "send_everything" not in kwargs:
-                raise ValueError(
-                    "Transfer without value argument requires kwarg send_everything=True"
-                )
-            if not kwargs["send_everything"]:
+            if "send_everything" not in kwargs or not kwargs["send_everything"]:
                 raise ValueError(
                     "Transfer without value argument requires kwarg send_everything=True"
                 )
