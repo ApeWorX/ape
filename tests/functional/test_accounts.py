@@ -77,6 +77,9 @@ def test_transfer_without_value_send_everything_true(sender, receiver):
     sender.transfer(receiver, send_everything=True)
     assert receiver.balance > initial_balance, "Receiver has same balance after transfer"
     assert sender.balance < convert("1 finney", int), "Sender balance is not nominal"
+    with pytest.raises(ValueError) as err:
+        sender.transfer(receiver, send_everything=True)
+    assert "Sender does not have enough to cover transaction value and gas:" in str(err.value)
 
 
 def test_transfer_with_value_send_everything_true(sender, receiver):
