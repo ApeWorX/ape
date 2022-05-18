@@ -402,7 +402,7 @@ class ContractCache(BaseManager):
 
         if self._network.name != LOCAL_NETWORK_NAME and not self._network.name.endswith("-fork"):
             # NOTE: We don't cache forked network contracts in this method to avoid
-            # caching from deploy. However, if you retrieve a contract from the explorer,
+            # caching deployments from a fork. However, if you retrieve a contract from the explorer,
             # when using a forked network, it will still get cached to disc.
             self._cache_contract_to_disk(address, contract_type)
 
