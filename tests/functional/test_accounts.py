@@ -60,6 +60,34 @@ def test_transfer(sender, receiver):
     assert receiver.balance == expected
 
 
+def test_transfer_without_value(sender, receiver):
+    with pytest.raises(ValueError) as err:
+        sender.transfer(receiver)
+    assert str(err.value) == "Transfer without value argument requires kwarg send_everything=True"
+
+
+def test_transfer_without_value_send_everything_false(sender, receiver):
+    with pytest.raises(ValueError) as err:
+        sender.transfer(receiver, send_everything=False)
+    assert str(err.value) == "Transfer without value argument requires kwarg send_everything=True"
+
+
+def test_transfer_without_value_send_everything_true(sender, receiver):
+    initial_balance = receiver.balance
+    sender.transfer(receiver, send_everything=True)
+    assert receiver.balance > initial_balance, "Receiver has same balance after transfer"
+    assert sender.balance < convert("1 finney", int), "Sender balance is not nominal"
+    with pytest.raises(ValueError) as err:
+        sender.transfer(receiver, send_everything=True)
+    assert "Sender does not have enough to cover transaction value and gas:" in str(err.value)
+
+
+def test_transfer_with_value_send_everything_true(sender, receiver):
+    with pytest.raises(ValueError) as err:
+        sender.transfer(receiver, 1, send_everything=True)
+    assert str(err.value) == "Kwarg send_everything=True requires transfer without value argument"
+
+
 def test_transfer_with_prompts(runner, receiver, temp_ape_account):
     # "y\na\ny": yes sign, password, yes keep unlocked
     with runner.isolation("y\na\ny"):
