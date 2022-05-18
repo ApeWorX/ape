@@ -368,7 +368,7 @@ class ContractCache(BaseManager):
     1. An in-memory cache of locally deployed contracts
     2. A cache of contracts per network (only permanent networks are stored this way)
 
-    When retrieving a contract, if the :class:`~ape.api.explorers.ExplorerAPI` is used,
+    When retrieving a contract, if a :class:`~ape.api.explorers.ExplorerAPI` is used,
     it will be cached to disc for faster look-up next time.
     """
 
