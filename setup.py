@@ -46,6 +46,23 @@ extras_require = {
         "pytest-watch",  # `ptw` test watcher/runner
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
     ],
+    # NOTE: These are extras that someone can install to get up and running quickly w/ ape
+    #       They should be kept up to date with what works and what doesn't out of the box
+    #       Usage example: `pipx install eth-ape[recommended-plugins]`
+    "recommended-plugins": [
+        "ape-alchemy",  # Alchemy public network provider
+        "ape-ens",  # ENS converter
+        "ape-etherscan",  # Etherscan explorer plugin
+        "ape-foundry",  # Foundry local and fork network EVM provider
+        "ape-hardhat",  # Hardhat local and fork network EVM provider
+        "ape-infura",  # Infura public network provider
+        "ape-ledger",  # Ledger Nano S/X hardware wallet
+        "ape-solidity",  # Solidity compiler support
+        "ape-template",  # Cookiecutter template support
+        "ape-tokens",  # Tokenlists converter
+        "ape-trezor",  # Trezor Model T/One hardware wallet
+        "ape-vyper",  # Vyper compiler support
+    ],
 }
 
 # NOTE: `pip install -e .[dev]` to install package
@@ -55,6 +72,7 @@ extras_require["dev"] = (
     + extras_require["doc"]
     + extras_require["release"]
     + extras_require["dev"]
+    # NOTE: Do *not* install `recommended-plugins` w/ dev
 )
 
 with open("./README.md") as readme:

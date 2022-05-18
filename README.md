@@ -24,6 +24,26 @@ python3 --version
 
 ## Installation
 
+There are 3 ways to install ape: `pipx`, `pip`, or `Docker`.
+
+### via `pipx`
+
+Install `pipx` via their [installation instructions](https://pypa.github.io/pipx/)
+
+Then install `ape` via
+
+```bash
+pipx install eth-ape
+```
+
+or install w/ ApeWorX-recommended plugins via
+
+```bash
+pipx install eth-ape[recommended-plugins]
+```
+
+### via `pip`
+
 **Suggestion**: Create a virtual environment using `virtualenv` or `venv.`
 
 You may skip this creating a virtual environment if you know you don\'t
@@ -47,10 +67,7 @@ deactivate
 ```
 
 Now that your Python version is later than 3.7.X and you have created a
-virtual environment. Let\'s install Ape! There are 3 ways to install
-ape: `pip`, `setuptools`, or `Docker`.
-
-### via `pip`
+virtual environment let\'s install Ape!
 
 You can install the latest release via
 [pip](https://pypi.org/project/pip/):
@@ -60,16 +77,10 @@ pip install -U pip
 pip install eth-ape
 ```
 
-### via `setuptools`
-
-You can clone the repository and use
-[setuptools](https://github.com/pypa/setuptools) for the most up-to-date
-version:
+or install w/ ApeWorX-recommended plugins via
 
 ```bash
-git clone https://github.com/ApeWorX/ape.git
-cd ape
-python3 setup.py install
+pip install eth-ape[recommended-plugins]
 ```
 
 ### via `docker`
