@@ -102,7 +102,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
                 txn.value = self.balance - (txn.max_fee * txn.gas_limit)
             if txn.value <= 0:
                 error_message = error_message + f"{txn.max_fee * txn.gas_limit}"
-                raise ValueError(message=error_message)
+                raise ValueError(error_message)
 
         txn.signature = self.sign_transaction(txn)
         if not txn.signature:
