@@ -147,15 +147,15 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
                     "Kwarg send_everything=True requires transfer without value argument"
                 )
             txn.value = self._convert(value, int)
+            return self.call(txn, send_everything=value is None)
 
-        if not value:
-            if not kwargs.get("send_everything"):
-                raise ValueError(
-                    "Transfer without value argument requires kwarg send_everything=True"
-                )
-            return self.call(txn, kwargs["send_everything"])
+        elif not kwargs.get("send_everything"):
+            raise ValueError(
+                "Transfer without value argument requires kwarg send_everything=True"
+            )
+        else:
+            return self.call(txn, send_everything=True)
 
-        return self.call(txn, send_everything=value is None)
 
     def deploy(self, contract: "ContractContainer", *args, **kwargs) -> "ContractInstance":
         """
