@@ -75,7 +75,7 @@ def test_transfer_without_value_send_everything_false(sender, receiver):
 def test_transfer_without_value_send_everything_true(sender, receiver):
     initial_balance = receiver.balance
     sender.transfer(receiver, send_everything=True)
-    assert receiver.balance > initial_balance
+    assert receiver.balance > initial_balance, "Receiver has same balance after transfer"
 
 
 def test_transfer_with_prompts(runner, receiver, temp_ape_account):
