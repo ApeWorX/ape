@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from ape import chain
-from ape.api.query import AccountQuery, BlockQuery
+from ape.api.query import AccountTransactionQuery, BlockQuery
 
 
 def test_basic_query(eth_tester_provider):
@@ -40,8 +40,8 @@ def test_account_query(eth_tester_provider):
         account="0x0000000000000000000000000000000000000000", start_nonce=0, stop_nonce=2
     )
     with pytest.raises(ValidationError) as err:
-        AccountQuery(columns=["none"], **query_kwargs)
+        AccountTransactionQuery(columns=["none"], **query_kwargs)
     assert "Unrecognized field 'none'" in str(err.value)
     with pytest.raises(ValidationError) as err:
-        AccountQuery(columns=["nonce", "chain_id", "nonce"], **query_kwargs)
+        AccountTransactionQuery(columns=["nonce", "chain_id", "nonce"], **query_kwargs)
     assert "Duplicate fields in ['nonce', 'chain_id', 'nonce']" in str(err.value)
