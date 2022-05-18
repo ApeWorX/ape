@@ -60,6 +60,24 @@ def test_transfer(sender, receiver):
     assert receiver.balance == expected
 
 
+def test_transfer_without_value(sender, receiver):
+    with pytest.raises(AssertionError) as err:
+        sender.transfer(receiver)
+    assert str(err.value) == "Transfer without value argument requires kwarg send_everything=True"
+
+
+def test_transfer_without_value_send_everything_false(sender, receiver):
+    with pytest.raises(AssertionError) as err:
+        sender.transfer(receiver, send_everything=False)
+    assert str(err.value) == "Transfer without value argument requires kwarg send_everything=True"
+
+
+def test_transfer_without_value_send_everything_true(sender, receiver):
+    initial_balance = receiver.balance
+    sender.transfer(receiver, send_everything=True)
+    assert receiver.balance > initial_balance
+
+
 def test_transfer_with_prompts(runner, receiver, temp_ape_account):
     # "y\na\ny": yes sign, password, yes keep unlocked
     with runner.isolation("y\na\ny"):
