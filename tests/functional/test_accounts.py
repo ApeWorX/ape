@@ -79,6 +79,12 @@ def test_transfer_without_value_send_everything_true(sender, receiver):
     assert sender.balance < convert("1 finney", int), "Sender balance is not nominal"
 
 
+def test_transfer_with_value_send_everything_true(sender, receiver):
+    with pytest.raises(ValueError) as err:
+        sender.transfer(receiver, 1, send_everything=True)
+    assert str(err.value) == "Kwarg send_everything=True requires transfer without value argument"
+
+
 def test_transfer_with_prompts(runner, receiver, temp_ape_account):
     # "y\na\ny": yes sign, password, yes keep unlocked
     with runner.isolation("y\na\ny"):
