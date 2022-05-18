@@ -96,12 +96,13 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             error_message = "Sender does not have enough to cover transaction value and gas: "
             if txn.max_fee is None:
                 raise TransactionError(message="Max fee must not be None.")
-            if txn.gas_limit:
-                txn.value = self.balance - (txn.max_fee * txn.gas_limit)
-                error_message = error_message + f"{txn.max_fee * txn.gas_limit}"
-            else:
+            if not txn.gas_limit or txn.gas_limit is None:
                 raise TransactionError(message="The txn.gas_limit is not set.")
-            assert txn.value > 0, error_message
+            else:
+                txn.value = self.balance - (txn.max_fee * txn.gas_limit)
+            if txn.value <= 0:
+                error_message = error_message + f"{txn.max_fee * txn.gas_limit}"
+                raise ValueError(message=error_message)
 
         txn.signature = self.sign_transaction(txn)
         if not txn.signature:
