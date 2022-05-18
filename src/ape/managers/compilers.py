@@ -120,8 +120,8 @@ class CompilerManager(BaseManager):
         self, contract_filepaths: List[Path], base_path: Optional[Path]
     ) -> Dict[str, List[str]]:
         """
-        Combines import dicts from all compilers, where the key is a contract path
-        and the value is a list of import paths.
+        Combines import dicts from all compilers, where the key is a contract's source_id
+        and the value is a list of import source_ids.
 
         Args:
             contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
@@ -130,7 +130,7 @@ class CompilerManager(BaseManager):
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            Dict[str, List[str]]
+            Dict[str, List[str]] {source_id: [import_source_id, ...], ...}
         """
         imports_dict: Dict[str, List[str]] = {}
 
@@ -148,6 +148,19 @@ class CompilerManager(BaseManager):
         return imports_dict
 
     def get_references(self, imports_dict: Dict[str, List[str]]) -> Dict[str, List[str]]:
+        """
+        Reversed dictionary from contract imports dictionary. Each entry is a list of
+        source_ids that reference the source_id key of a given contract.
+
+        Args:
+            contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
+            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
+              project ``contracts/`` directory. Defaults to ``None``. When using in a project
+              via ``ape compile``, gets set to the project's ``contracts/`` directory.
+
+        Returns:
+            Dict[str, List[str]] {source_id: [referring_source_id, ...], ...}
+        """
         references_dict: Dict[str, List[str]] = {}
         if imports_dict:
             for key, imports_list in imports_dict.items():

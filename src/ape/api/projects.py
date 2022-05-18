@@ -116,18 +116,18 @@ class ProjectAPI(BaseInterfaceModel):
 
         manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
-        return PackageManifest(**manifest.dict())
+        return manifest
 
     @classmethod
     def _create_source_dict(
         cls, contract_filepaths: List[Path], base_path: Path
     ) -> Dict[str, Source]:
-        imports_dict: Dict[str, List[str]] = cls.compiler_manager.get_imports(
+        source_imports: Dict[str, List[str]] = cls.compiler_manager.get_imports(
             contract_filepaths, base_path
-        )
-        references_dict: Dict[str, List[str]] = cls.compiler_manager.get_references(
-            imports_dict=imports_dict
-        )
+        )  # {source_id: [import_source_ids, ...], ...}
+        source_references: Dict[str, List[str]] = cls.compiler_manager.get_references(
+            imports_dict=source_imports
+        )  # {source_id: [referring_source_ids, ...], ...}
 
         source_dict: Dict[str, Source] = {}
         for source_path in contract_filepaths:
@@ -139,11 +139,11 @@ class ProjectAPI(BaseInterfaceModel):
                 ),
                 urls=[],
                 content=source_path.read_text(),
-                imports=imports_dict.get(key, []),
-                references=references_dict.get(key, []),
+                imports=source_imports.get(key, []),
+                references=source_references.get(key, []),
             )
 
-        return source_dict
+        return source_dict  # {source_id: Source}
 
 
 class DependencyAPI(BaseInterfaceModel):

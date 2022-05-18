@@ -33,7 +33,7 @@ class BaseProject(ProjectAPI):
         return True
 
     @property
-    def source_paths(self) -> List[Path]:
+    def sources(self) -> List[Path]:
         """
         All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
@@ -91,12 +91,11 @@ class BaseProject(ProjectAPI):
             cached_sources = manifest.sources or {}
             cached_contract_types = manifest.contract_types or {}
             cached_source_references = {
-                k: getattr(v, "references", []) for k, v in cached_sources.items()
+                source_id: getattr(source, "references", [])
+                for source_id, source in cached_sources.items()
             }
             source_paths = (
-                {p for p in self.source_paths if p in file_paths}
-                if file_paths
-                else set(self.source_paths)
+                {p for p in self.sources if p in file_paths} if file_paths else set(self.sources)
             )
 
             # Filter out deleted source_paths
@@ -109,13 +108,13 @@ class BaseProject(ProjectAPI):
                 if contract_type.source_id not in deleted_source_ids
             }
 
-            def file_needs_compiling(source_path: Path) -> bool:
-                path = str(get_relative_path(source_path, self.contracts_folder))
+            def source_ids_need_compiling(source_path: Path) -> bool:
+                source_id = str(get_relative_path(source_path, self.contracts_folder))
 
-                if path not in cached_sources:
+                if source_id not in cached_sources:
                     return True  # New file added
 
-                cached_source = cached_sources[path]
+                cached_source = cached_sources[source_id]
                 cached_checksum = cached_source.calculate_checksum()
 
                 source_file = self.contracts_folder / source_path
@@ -127,35 +126,32 @@ class BaseProject(ProjectAPI):
                 return checksum != cached_checksum.hash  # Contents changed
 
             # NOTE: Filter by checksum to only update what's needed
-            needs_compiling = list(filter(file_needs_compiling, source_paths))
+            needs_compiling = set(filter(source_ids_need_compiling, source_paths))
 
-            # NOTE: Add referenced imports for each source file
-            referenced_imports: List[str] = []
+            # NOTE: Add referring source_id imports for each source path
+            referenced_source_ids: List[str] = []
 
-            for source_path in needs_compiling:
-                path = str(get_relative_path(source_path, self.contracts_folder))
-                referenced_imports.extend(cached_source_references.get(path, []))
+            for item in needs_compiling:
+                source_id = str(get_relative_path(item, self.contracts_folder))
+                referenced_source_ids.extend(cached_source_references.get(source_id, []))
 
-            needs_compiling.extend(
-                [self.contracts_folder.joinpath(Path(p)) for p in referenced_imports]
+            needs_compiling.update(
+                [self.contracts_folder.joinpath(Path(s)) for s in referenced_source_ids]
             )
-
-            # remove duplicates
-            needs_compiling = list(set(needs_compiling))
 
             # Set the context in case compiling a dependency (or anything outside the root project).
             with self.config_manager.using_project(
                 self.path, contracts_folder=self.contracts_folder
             ):
                 self.project_manager._load_dependencies()
-                compiled_contract_types = self.compiler_manager.compile(needs_compiling)
+                compiled_contract_types = self.compiler_manager.compile(list(needs_compiling))
                 contract_types.update(compiled_contract_types)
 
                 # NOTE: Update contract types & re-calculate source code entries in manifest
                 source_paths = (
-                    {p for p in self.source_paths if p in file_paths}
+                    {p for p in self.sources if p in file_paths}
                     if file_paths
-                    else set(self.source_paths)
+                    else set(self.sources)
                 )
 
                 dependencies = {
