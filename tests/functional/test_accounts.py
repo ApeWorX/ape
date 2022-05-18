@@ -61,13 +61,13 @@ def test_transfer(sender, receiver):
 
 
 def test_transfer_without_value(sender, receiver):
-    with pytest.raises(AssertionError) as err:
+    with pytest.raises(ValueError) as err:
         sender.transfer(receiver)
     assert str(err.value) == "Transfer without value argument requires kwarg send_everything=True"
 
 
 def test_transfer_without_value_send_everything_false(sender, receiver):
-    with pytest.raises(AssertionError) as err:
+    with pytest.raises(ValueError) as err:
         sender.transfer(receiver, send_everything=False)
     assert str(err.value) == "Transfer without value argument requires kwarg send_everything=True"
 
