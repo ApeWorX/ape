@@ -93,7 +93,6 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         txn = self.prepare_transaction(txn)
 
         if send_everything:
-            error_message = "Sender does not have enough to cover transaction value and gas: "
             if txn.max_fee is None:
                 raise TransactionError(message="Max fee must not be None.")
             if not txn.gas_limit or txn.gas_limit is None:
@@ -101,8 +100,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             else:
                 txn.value = self.balance - (txn.max_fee * txn.gas_limit)
             if txn.value <= 0:
-                error_message = error_message + f"{txn.max_fee * txn.gas_limit}"
-                raise ValueError(error_message)
+                raise ValueError(
+                    f"Sender does not have enough to cover transaction value and gas: \
+                    {txn.max_fee * txn.gas_limit}"
+                )
 
         txn.signature = self.sign_transaction(txn)
         if not txn.signature:
@@ -141,6 +142,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             txn.data = self._convert(data, bytes)
 
         if value:
+            if "send_everything" in kwargs and kwargs["send_everything"]:
+                raise ValueError(
+                    "Kwarg send_everything=True requires transfer without value argument"
+                )
             txn.value = self._convert(value, int)
 
         if not value:
