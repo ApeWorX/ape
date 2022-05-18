@@ -425,7 +425,7 @@ class NetworkAPI(BaseInterfaceModel):
     data_folder: Path  # For caching any data that might need caching
     """The path to the ``.ape`` directory."""
 
-    request_header: dict
+    request_header: Dict
     """A shareable network HTTP header."""
 
     _default_provider: str = ""

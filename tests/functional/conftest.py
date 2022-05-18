@@ -207,3 +207,11 @@ def temp_config():
                 config._cached_configs = {}
 
     return func
+
+
+@pytest.fixture
+def clean_contracts_cache(chain):
+    original_cached_contracts = chain.contracts._local_contracts
+    chain.contracts._local_contracts = {}
+    yield
+    chain.contracts._local_contracts = original_cached_contracts

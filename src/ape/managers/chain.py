@@ -1,17 +1,19 @@
 import time
+from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import pandas as pd
+from ethpm_types import ContractType
 
-from ape.api import BlockAPI, ReceiptAPI
+from ape.api import Address, BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
+from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockQuery
 from ape.exceptions import ChainError, UnknownSnapshotError
 from ape.logging import logger
+from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, SnapshotID
 from ape.utils import cached_property
-
-from .base import BaseManager
 
 
 class BlockContainer(BaseManager):
@@ -359,6 +361,130 @@ class AccountHistory(BaseManager):
         }
 
 
+class ContractCache(BaseManager):
+    """
+    A collection of cached contracts. Contracts can be cached in two ways:
+
+    1. An in-memory cache of locally deployed contracts
+    2. A cache of contracts per network (only permanent networks are stored this way)
+
+    When retrieving a contract, if a :class:`~ape.api.explorers.ExplorerAPI` is used,
+    it will be cached to disc for faster look-up next time.
+    """
+
+    _local_contracts: Dict[AddressType, ContractType] = {}
+
+    @property
+    def _network(self) -> NetworkAPI:
+        return self.provider.network
+
+    @property
+    def _contract_types_cache(self) -> Path:
+        network_name = self._network.name.replace("-fork", "")
+        return self._network.ecosystem.data_folder / network_name / "contract_types"
+
+    def __setitem__(self, address: AddressType, contract_type: ContractType):
+        """
+        Cache the given contract type. Contracts are cached in memory per session.
+        In live networks, contracts also get cached to disc at
+        ``.ape/{ecosystem_name}/{network_name}/contract_types/{address}.json``
+        for faster look-up next time.
+
+        Args:
+            address (AddressType): The on-chain address of the contract.
+            contract_type (ContractType): The contract's type.
+        """
+
+        if self.get(address):
+            return  # Already cached
+
+        self._local_contracts[address] = contract_type
+
+        if self._network.name != LOCAL_NETWORK_NAME and not self._network.name.endswith("-fork"):
+            # NOTE: We don't cache forked network contracts in this method to avoid caching
+            # deployments from a fork. However, if you retrieve a contract from an explorer
+            # when using a forked network, it will still get cached to disc.
+            self._cache_contract_to_disk(address, contract_type)
+
+    def __getitem__(self, address: AddressType) -> ContractType:
+        contract_type = self.get(address)
+        if not contract_type:
+            raise IndexError(f"No contract type found at address '{address}'.")
+
+        return contract_type
+
+    def get(
+        self, address: AddressType, default: Optional[ContractType] = None
+    ) -> Optional[ContractType]:
+        """
+        Get a contract type by address.
+        If the contract is cached, it will return the contract from the cache.
+        Otherwise, if on a live network, it fetches it from the
+        :class:`~ape.api.explorers.ExplorerAPI`.
+
+        Args:
+            address (AddressType): The address of the contract.
+
+        Returns:
+            Optional[ContractType]: The contract type if it was able to get one,
+              otherwise ``None``.
+        """
+
+        contract_type = self._local_contracts.get(address)
+        if contract_type:
+            return contract_type
+
+        if self._network.name == LOCAL_NETWORK_NAME:
+            # Don't check disc-cache or explorer when using local
+            return default
+
+        contract_type = self._get_contract_type_from_disk(address)
+
+        # Cache locally for faster in-session look-up.
+        if contract_type:
+            self._local_contracts[address] = contract_type
+
+        return contract_type or default
+
+    def instance_at(self, address: "AddressType") -> BaseAddress:
+        contract_type = self.get(address)
+        if contract_type:
+            return self.create_contract(address, contract_type)
+
+        return Address(address)
+
+    def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
+        if not self._contract_types_cache.is_dir():
+            return None
+
+        address_file = self._contract_types_cache / f"{address}.json"
+        if not address_file.is_file():
+            return None
+
+        return ContractType.parse_raw(address_file.read_text())
+
+    def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
+        if not self._network.explorer:
+            return None
+
+        try:
+            contract_type = self._network.explorer.get_contract_type(address)
+        except Exception as err:
+            logger.error(f"Unable to fetch contract type at '{address}' from explorer.\n{err}")
+            return None
+
+        if contract_type:
+            # Cache contract so faster look-up next time.
+            self._cache_contract_to_disk(address, contract_type)
+
+        return contract_type
+
+    def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
+        self._contract_types_cache.mkdir(exist_ok=True, parents=True)
+        address_file = self._contract_types_cache / f"{address}.json"
+        address_file.write_text(contract_type.json())
+
+
 class ChainManager(BaseManager):
     """
     A class for managing the state of the active blockchain.
@@ -374,6 +500,7 @@ class ChainManager(BaseManager):
     _chain_id_map: Dict[str, int] = {}
     _block_container_map: Dict[int, BlockContainer] = {}
     _account_history_map: Dict[int, AccountHistory] = {}
+    contracts: ContractCache = ContractCache()
 
     @property
     def blocks(self) -> BlockContainer:

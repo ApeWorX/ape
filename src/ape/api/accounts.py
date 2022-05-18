@@ -177,10 +177,12 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         contract_name = contract.contract_type.name or "<Unnamed Contract>"
         logger.success(f"Contract '{contract_name}' deployed to: {address}")
 
-        return self.create_contract(
+        contract_instance = self.create_contract(
             address=receipt.contract_address,  # type: ignore
             contract_type=contract.contract_type,
         )
+        self.chain_manager.contracts[contract_instance.address] = contract_instance.contract_type
+        return contract_instance
 
     def check_signature(
         self,

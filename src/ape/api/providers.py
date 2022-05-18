@@ -23,7 +23,6 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.transactions import ReceiptAPI, TransactionAPI
-from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import (
     ContractLogicError,
     DecodingError,
@@ -38,6 +37,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
+from ape.utils.abi import LogInputABICollection
 
 
 class BlockGasAPI(BaseInterfaceModel):

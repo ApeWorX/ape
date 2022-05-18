@@ -1,6 +1,14 @@
 from abc import abstractmethod
 
-from ape.utils.abi import Struct, StructParser, is_array, is_named_tuple, is_struct, returns_array
+from ape.utils.abi import (
+    LogInputABICollection,
+    Struct,
+    StructParser,
+    is_array,
+    is_named_tuple,
+    is_struct,
+    returns_array,
+)
 from ape.utils.basemodel import (
     BaseInterface,
     BaseInterfaceModel,
@@ -52,6 +60,7 @@ __all__ = [
     "is_named_tuple",
     "is_struct",
     "load_config",
+    "LogInputABICollection",
     "ManagerAccessMixin",
     "raises_not_implemented",
     "returns_array",

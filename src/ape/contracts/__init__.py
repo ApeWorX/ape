@@ -1,14 +1,6 @@
-from .base import (
-    ContractContainer,
-    ContractEvent,
-    ContractInstance,
-    ContractLog,
-    ContractNamespace,
-    _Contract,
-)
+from .base import ContractContainer, ContractEvent, ContractInstance, ContractLog, ContractNamespace
 
 __all__ = [
-    "_Contract",
     "ContractContainer",
     "ContractEvent",
     "ContractInstance",

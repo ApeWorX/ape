@@ -20,10 +20,9 @@ from ape.api import (
     TransactionAPI,
 )
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
-from ape.utils import Struct, StructParser, is_array, returns_array
+from ape.utils import LogInputABICollection, Struct, StructParser, is_array, returns_array
 from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,

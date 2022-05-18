@@ -3,12 +3,9 @@ import signal
 signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
 
 import sys as _sys
-from functools import partial as _partial
 
+from ape.managers.project import ProjectManager as Project
 from ape.utils import ManagerAccessMixin as _ManagerAccessMixin
-
-from .contracts import _Contract
-from .managers.project import ProjectManager as Project
 
 # Wiring together the application
 
@@ -39,9 +36,7 @@ accounts = _ManagerAccessMixin.account_manager
 project = _ManagerAccessMixin.project_manager
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
-Contract = _partial(
-    _Contract, networks=networks, conversion_manager=_ManagerAccessMixin.conversion_manager
-)
+Contract = chain.contracts.instance_at
 """User-facing class for instantiating contracts. See :class:`ape.contracts.base._Contract`."""
 
 convert = _ManagerAccessMixin.conversion_manager.convert
