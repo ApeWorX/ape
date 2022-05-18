@@ -100,8 +100,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
                 txn.value = self.balance - (txn.max_fee * txn.gas_limit)
                 error_message = error_message + f"{txn.max_fee * txn.gas_limit}"
             else:
-                txn.value = self.balance - txn.max_fee
-                error_message = error_message + f"{txn.max_fee}"
+                raise TransactionError(message="The txn.gas_limit is not set.")
             assert txn.value > 0, error_message
 
         txn.signature = self.sign_transaction(txn)
