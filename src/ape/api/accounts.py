@@ -146,7 +146,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
                     "Kwarg send_everything=True requires transfer without value argument"
                 )
             txn.value = self._convert(value, int)
-            return self.call(txn, send_everything=value is None)
+            return self.call(txn)
 
         elif not kwargs.get("send_everything"):
             raise ValueError("Transfer without value argument requires kwarg send_everything=True")
