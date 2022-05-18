@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterator, Optional
 from pydantic import BaseModel
 
 from ape.api import QueryAPI, QueryType
-from ape.api.query import BlockQuery, _BaseQuery
+from ape.api.query import BlockQuery, _BaseQuery, BlockTransactionQuery
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -41,6 +41,11 @@ class DefaultQueryProvider(QueryAPI):
             #       Where as the query method is an inclusive stop.
             range(query.start_block, query.stop_block + 1, query.step),
         )
+
+    @perform_query.register
+    def perform_transaction_query(self, query: BlockTransactionQuery) -> pd.DataFrame:
+        transactions_iter = self.provider.get_transaction(query.block_id)
+        return pd.DataFrame(columns=query.columns, data=transactions_iter)
 
 
 class QueryManager(ManagerAccessMixin):

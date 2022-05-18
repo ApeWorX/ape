@@ -23,6 +23,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.transactions import ReceiptAPI, TransactionAPI
+from ape.api.query import BlockTransactionQuery
 from ape.exceptions import (
     ContractLogicError,
     DecodingError,
@@ -74,6 +75,7 @@ class BlockAPI(BaseInterfaceModel):
 
     gas_data: BlockGasAPI
     consensus_data: BlockConsensusAPI
+    num_transactions: int = 0
     hash: Optional[Any] = None
     number: Optional[int] = None
     parent_hash: Optional[Any] = None
@@ -86,6 +88,12 @@ class BlockAPI(BaseInterfaceModel):
         if value and not isinstance(value, HexBytes):
             raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
         return value
+
+    @cached_property
+    def transactions(self) -> List[TransactionAPI]:
+        query = BlockTransactionQuery(block_id=self.hash)
+        df_txns = self.query_manager.query(query)
+        return df_txns.to_dict("records")
 
 
 class ProviderAPI(BaseInterfaceModel):
