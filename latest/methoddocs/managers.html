@@ -693,6 +693,59 @@ to go back to this point. This method is for local networks only.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.chain.</span></span><span class="sig-name descname"><span class="pre">ContractCache</span></span><a class="headerlink" href="#ape.managers.chain.ContractCache" title="Permalink to this definition"></a></dt>
+<dd><p>A collection of cached contracts. Contracts can be cached in two ways:</p>
+<ol class="arabic simple">
+<li><p>An in-memory cache of locally deployed contracts</p></li>
+<li><p>A cache of contracts per network (only permanent networks are stored this way)</p></li>
+</ol>
+<p>When retrieving a contract, if a <a class="reference internal" href="api.html#ape.api.explorers.ExplorerAPI" title="ape.api.explorers.ExplorerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplorerAPI</span></code></a> is used,
+it will be cached to disc for faster look-up next time.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.__setitem__">
+<span class="sig-name descname"><span class="pre">__setitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ethpm_types.contract_type.ContractType</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.__setitem__" title="Permalink to this definition"></a></dt>
+<dd><p>Cache the given contract type. Contracts are cached in memory per session.
+In live networks, contracts also get cached to disc at
+<code class="docutils literal notranslate"><span class="pre">.ape/{ecosystem_name}/{network_name}/contract_types/{address}.json</span></code>
+for faster look-up next time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<em>AddressType</em>) – The on-chain address of the contract.</p></li>
+<li><p><strong>contract_type</strong> (<em>ContractType</em>) – The contract’s type.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get a contract type by address.
+If the contract is cached, it will return the contract from the cache.
+Otherwise, if on a live network, it fetches it from the
+<a class="reference internal" href="api.html#ape.api.explorers.ExplorerAPI" title="ape.api.explorers.ExplorerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplorerAPI</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>address</strong> (<em>AddressType</em>) – The address of the contract.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The contract type if it was able to get one,</dt><dd><p>otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[ContractType]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-ape.managers.config">
 <span id="config"></span><h2>Config<a class="headerlink" href="#module-ape.managers.config" title="Permalink to this headline"></a></h2>
