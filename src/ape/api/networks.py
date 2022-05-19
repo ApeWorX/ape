@@ -179,8 +179,10 @@ class EcosystemAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.networks.NetworkAPI`
         """
-        network_name = network_name.replace("_", "-")
-        return self.get_network(network_name)
+        try:
+            return self.get_network(network_name.replace("_", "-"))
+        except NetworkNotFoundError:
+            return self.__getattribute__(network_name)
 
     def add_network(self, network_name: str, network: "NetworkAPI"):
         """
