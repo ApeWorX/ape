@@ -128,6 +128,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
         arbitrary_types_allowed = True
         underscore_attrs_are_private = True
         anystr_strip_whitespace = True
+        copy_on_model_validation = False
 
     def __dir__(self) -> List[str]:
         """
