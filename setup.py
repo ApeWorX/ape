@@ -100,7 +100,7 @@ setup(
         "packaging>=20.9,<21.0",
         "pandas>=1.3.0,<2.0",
         "pluggy>=0.13.1,<1.0",
-        "pydantic>=1.9.0,<2.0",
+        "pydantic==1.9.0",
         "PyGithub>=1.54,<2.0",
         "pygit2>=1.7.2,<2.0",
         "pyyaml>=0.2.5",
