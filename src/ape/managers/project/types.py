@@ -108,7 +108,7 @@ class BaseProject(ProjectAPI):
                 if contract_type.source_id not in deleted_source_ids
             }
 
-            def source_ids_need_compiling(source_path: Path) -> bool:
+            def need_compiling(source_path: Path) -> bool:
                 source_id = str(get_relative_path(source_path, self.contracts_folder))
 
                 if source_id not in cached_sources:
@@ -126,7 +126,7 @@ class BaseProject(ProjectAPI):
                 return checksum != cached_checksum.hash  # Contents changed
 
             # NOTE: Filter by checksum to only update what's needed
-            needs_compiling = set(filter(source_ids_need_compiling, source_paths))
+            needs_compiling = set(filter(need_compiling, source_paths))
 
             # NOTE: Add referring source_id imports for each source path
             referenced_source_ids: List[str] = []

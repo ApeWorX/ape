@@ -65,7 +65,7 @@ class CompilerAPI(BaseInterfaceModel):
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            Dict[str, List[str]] {source_id: [import_source_id, ...], ...}
+            Dict[str, List[str]] A dictionary like ``{source_id: [import_source_id, ...], ...}``
         """
 
     def __repr__(self) -> str:

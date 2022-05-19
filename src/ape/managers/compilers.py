@@ -130,7 +130,7 @@ class CompilerManager(BaseManager):
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            Dict[str, List[str]] {source_id: [import_source_id, ...], ...}
+            Dict[str, List[str]] A dictionary like ``{source_id: [import_source_id, ...], ...}``
         """
         imports_dict: Dict[str, List[str]] = {}
 
@@ -149,8 +149,9 @@ class CompilerManager(BaseManager):
 
     def get_references(self, imports_dict: Dict[str, List[str]]) -> Dict[str, List[str]]:
         """
-        Reversed dictionary from contract imports dictionary. Each entry is a list of
-        source_ids that reference the source_id key of a given contract.
+        Provides a mapping containing all referenced source_ids for a given project.
+        Each entry contains a source_id as a key and list of source_ids that reference a
+        given contract.
 
         Args:
             contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
@@ -159,15 +160,17 @@ class CompilerManager(BaseManager):
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            Dict[str, List[str]] {source_id: [referring_source_id, ...], ...}
+            Dict[str, List[str]] A dictionary like ``{source_id: [referring_source_id, ...], ...}``
         """
         references_dict: Dict[str, List[str]] = {}
-        if imports_dict:
-            for key, imports_list in imports_dict.items():
-                for filepath in imports_list:
-                    if filepath not in references_dict:
-                        references_dict[filepath] = []
-                    references_dict[filepath].append(key)
+        if not imports_dict:
+            return {}
+
+        for key, imports_list in imports_dict.items():
+            for filepath in imports_list:
+                if filepath not in references_dict:
+                    references_dict[filepath] = []
+                references_dict[filepath].append(key)
 
         return references_dict
 
