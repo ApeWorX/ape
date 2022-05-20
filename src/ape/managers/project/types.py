@@ -90,8 +90,11 @@ class BaseProject(ProjectAPI):
 
             cached_sources = manifest.sources or {}
             cached_contract_types = manifest.contract_types or {}
-            cached_source_references = {
-                source_id: getattr(source, "references", [])
+            cached_source_reference_paths = {
+                source_id: [
+                    self.contracts_folder.joinpath(Path(s))
+                    for s in getattr(source, "references", [])
+                ]
                 for source_id, source in cached_sources.items()
             }
             source_paths = (
@@ -128,16 +131,19 @@ class BaseProject(ProjectAPI):
             # NOTE: Filter by checksum to only update what's needed
             needs_compiling = set(filter(need_compiling, source_paths))
 
-            # NOTE: Add referring source_id imports for each source path
-            referenced_source_ids: List[str] = []
+            # NOTE: Add referring path imports for each source path
+            referenced_paths: List[Path] = []
 
-            for item in needs_compiling:
-                source_id = str(get_relative_path(item, self.contracts_folder))
-                referenced_source_ids.extend(cached_source_references.get(source_id, []))
+            paths_to_compile = needs_compiling.copy()
 
-            needs_compiling.update(
-                [self.contracts_folder.joinpath(Path(s)) for s in referenced_source_ids]
-            )
+            # NOTE: Recompile all dependent sources for a changed source
+            while paths_to_compile:
+                source_id = str(get_relative_path(paths_to_compile.pop(), self.contracts_folder))
+                ref_paths = cached_source_reference_paths.get(source_id, [])
+                referenced_paths.extend(ref_paths)
+                paths_to_compile.update(ref_paths)
+
+            needs_compiling.update(referenced_paths)
 
             # Set the context in case compiling a dependency (or anything outside the root project).
             with self.config_manager.using_project(

@@ -130,7 +130,7 @@ class CompilerManager(BaseManager):
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            Dict[str, List[str]] A dictionary like ``{source_id: [import_source_id, ...], ...}``
+            Dict[str, List[str]]: A dictionary like ``{source_id: [import_source_id, ...], ...}``
         """
         imports_dict: Dict[str, List[str]] = {}
 
@@ -160,7 +160,7 @@ class CompilerManager(BaseManager):
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            Dict[str, List[str]] A dictionary like ``{source_id: [referring_source_id, ...], ...}``
+            Dict[str, List[str]]: A dictionary like ``{source_id: [referring_source_id, ...], ...}``
         """
         references_dict: Dict[str, List[str]] = {}
         if not imports_dict:
