@@ -103,6 +103,15 @@ def vitalik(accounts):
     return accounts["0xab5801a7d398351b8be11c439e05c5b3259aec9b"]
 ```
 
+Using a fork-provider such as [Hardhat](https://github.com/ApeWorX/ape-hardhat), when using a contract instance as the sender in a transaction, it will be automatically impersonated:
+
+```python
+def test_my_method(project, accounts):
+    contract = project.MyContract.deploy(sender=accounts[0])
+    other_contract = project.OtherContract.deploy(sender=accounts[0])
+    contract.my_method(sender=other_contract)
+```
+
 ### project fixture
 
 You also have access to the `project` you are testing. You will need this to deploy your contracts in your tests.

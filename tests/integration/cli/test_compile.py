@@ -52,10 +52,14 @@ def test_compile(ape_cli, runner, project, clean_cache):
     # Files with multiple extensions are currently not supported.
     all_files = [f for f in project.path.glob("contracts/**/*")]
     expected_files = [f for f in all_files if f.name.count(".") == 1]
-    un_expected_files = [f for f in all_files if f not in expected_files]
+    unexpected_files = [f for f in all_files if f not in expected_files]
+
+    manifest = project.extract_manifest()
+    for file in expected_files:
+        assert file.name in manifest.sources
 
     assert all([f.stem in result.output for f in expected_files])
-    assert not any([f.stem in result.output for f in un_expected_files])
+    assert not any([f.stem in result.output for f in unexpected_files])
 
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
@@ -115,11 +119,14 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
 
     dep_name_a = "__test_dependency_a__"
     dep_name_b = "__test_dependency_b__"
+    dep_name_c = "__test_dependency_c__"
     assert result.exit_code == 0, result.output
     assert dep_name_a in project.dependencies
     assert dep_name_b in project.dependencies
-    assert type(project.dependencies[dep_name_a].DependencyA) == ContractContainer
-    assert type(project.dependencies[dep_name_b].DependencyB) == ContractContainer
+    assert dep_name_c in project.dependencies
+    assert type(project.dependencies[dep_name_a]["local"].DependencyA) == ContractContainer
+    assert type(project.dependencies[dep_name_b]["local"].DependencyB) == ContractContainer
+    assert type(project.dependencies[dep_name_c]["local"].DependencyC) == ContractContainer
 
 
 @skip_projects_except(["with-dependency"])

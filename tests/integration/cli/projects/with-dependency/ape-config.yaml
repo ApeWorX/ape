@@ -5,3 +5,6 @@ dependencies:
 
   - name: __test_dependency_b__
     local: ./dependency_b
+
+  - name: __test_dependency_c__
+    local: ./dependency_c

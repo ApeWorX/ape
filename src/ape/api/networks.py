@@ -179,8 +179,10 @@ class EcosystemAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.networks.NetworkAPI`
         """
-        network_name = network_name.replace("_", "-")
-        return self.get_network(network_name)
+        try:
+            return self.get_network(network_name.replace("_", "-"))
+        except NetworkNotFoundError:
+            return self.__getattribute__(network_name)
 
     def add_network(self, network_name: str, network: "NetworkAPI"):
         """
@@ -425,10 +427,13 @@ class NetworkAPI(BaseInterfaceModel):
     data_folder: Path  # For caching any data that might need caching
     """The path to the ``.ape`` directory."""
 
-    request_header: dict
+    request_header: Dict
     """A shareable network HTTP header."""
 
     _default_provider: str = ""
+
+    def __repr__(self) -> str:
+        return f"<{self.name} chain_id={self.chain_id}>"
 
     @cached_property
     def config(self) -> PluginConfig:
@@ -578,7 +583,16 @@ class NetworkAPI(BaseInterfaceModel):
             :class:`~ape.api.providers.ProviderAPI`
         """
 
-        provider_name = provider_name or self.default_provider or ""
+        provider_name = provider_name or self.default_provider
+        if not provider_name:
+            raise NetworkError(
+                f"No default provider for network '{self.name}'. "
+                f"Set one in your ape-config.yaml:\n"
+                f"\n{self.ecosystem.name}:"
+                f"\n  {self.name}:"
+                f"\n    default_provider: <DEFAULT_PROVIDER>"
+            )
+
         provider_settings = provider_settings or {}
 
         if ":" in provider_name:
@@ -590,9 +604,7 @@ class NetworkAPI(BaseInterfaceModel):
             return self.providers[provider_name](provider_settings=provider_settings)
 
         else:
-            message = (
-                f"'{provider_name}' is not a valid provider for ecosystem '{self.ecosystem.name}'"
-            )
+            message = f"'{provider_name}' is not a valid provider for network '{self.name}'"
             raise NetworkError(message)
 
     def use_provider(
@@ -660,7 +672,7 @@ class NetworkAPI(BaseInterfaceModel):
         if provider_name in self.providers:
             self._default_provider = provider_name
         else:
-            raise NetworkError(f"Provider '{provider_name}' not found.")
+            raise NetworkError(f"Provider '{provider_name}' not found in network '{self.name}'.")
 
     def use_default_provider(
         self, provider_settings: Optional[Dict] = None

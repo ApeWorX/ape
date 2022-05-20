@@ -1,20 +1,16 @@
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
-from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
+from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
-from ape.exceptions import ArgumentsLengthError, ContractError, ProviderNotConnectedError
+from ape.exceptions import ArgumentsLengthError, ContractError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
-
-if TYPE_CHECKING:
-    from ape.managers.converters import ConversionManager
-    from ape.managers.networks import NetworkManager
 
 
 def _convert_kwargs(kwargs, converter) -> Dict:
@@ -89,7 +85,6 @@ class ContractCall(ManagerAccessMixin):
             raw_output,
         )
 
-        # TODO: Handle struct output
         if not isinstance(output, (list, tuple)):
             return output
 
@@ -159,6 +154,8 @@ class ContractTransaction(ManagerAccessMixin):
         return self.abi.signature
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
+        if "sender" in kwargs and isinstance(kwargs["sender"], ContractInstance):
+            kwargs["sender"] = self.account_manager.test_accounts[kwargs["sender"].address]
         kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
@@ -182,6 +179,17 @@ class ContractTransactionHandler(ManagerAccessMixin):
     def __repr__(self) -> str:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
+
+    @property
+    def call(self) -> ContractCallHandler:
+        """
+        Get the :class:`~ape.contracts.base.ContractCallHandler` equivalent
+        of this transaction handler. The call-handler uses the ``eth_call``
+        RPC under-the-hood and thus it gets reverted before submitted.
+        This a useful way to simulate a transaction without invoking it.
+        """
+
+        return ContractCallHandler(self.contract, self.abis)
 
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.conversion_manager.convert(v, tuple)
@@ -434,10 +442,10 @@ class ContractInstance(BaseAddress):
     def __init__(self, address: AddressType, contract_type: ContractType) -> None:
         super().__init__()
         self._address = address
-        self._contract_type = contract_type
+        self.contract_type = contract_type
 
     def __repr__(self) -> str:
-        contract_name = self._contract_type.name or "Unnamed contract"
+        contract_name = self.contract_type.name or "Unnamed contract"
         return f"<{contract_name} {self.address}>"
 
     @property
@@ -454,7 +462,7 @@ class ContractInstance(BaseAddress):
     def _view_methods_(self) -> Dict[str, ContractCallHandler]:
         view_methods: Dict[str, List[MethodABI]] = dict()
 
-        for abi in self._contract_type.view_methods:
+        for abi in self.contract_type.view_methods:
             if abi.name in view_methods:
                 view_methods[abi.name].append(abi)
             else:
@@ -473,7 +481,7 @@ class ContractInstance(BaseAddress):
     def _mutable_methods_(self) -> Dict[str, ContractTransactionHandler]:
         mutable_methods: Dict[str, List[MethodABI]] = dict()
 
-        for abi in self._contract_type.mutable_methods:
+        for abi in self.contract_type.mutable_methods:
             if abi.name in mutable_methods:
                 mutable_methods[abi.name].append(abi)
             else:
@@ -492,10 +500,10 @@ class ContractInstance(BaseAddress):
     def _events_(self) -> Dict[str, ContractEvent]:
         events: Dict[str, EventABI] = {}
 
-        for abi in self._contract_type.events:
+        for abi in self.contract_type.events:
             if abi.name in events:
                 raise ContractError(
-                    f"Multiple events with the same ABI defined in '{self._contract_type.name}'."
+                    f"Multiple events with the same ABI defined in '{self.contract_type.name}'."
                 )
 
             events[abi.name] = abi
@@ -542,7 +550,7 @@ class ContractInstance(BaseAddress):
         if attr_name not in {*self._view_methods_, *self._mutable_methods_, *self._events_}:
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
-            name = self._contract_type.name or self.__class__.__name__
+            name = self.contract_type.name or self.__class__.__name__
             raise AttributeError(f"'{name}' has no attribute '{attr_name}'.")
 
         elif (
@@ -645,55 +653,12 @@ class ContractContainer(ManagerAccessMixin):
         contract_name = self.contract_type.name or "<Unnamed Contract>"
         logger.success(f"Contract '{contract_name}' deployed to: {address}")
 
-        return ContractInstance(
+        contract_instance = ContractInstance(
             address=receipt.contract_address,  # type: ignore
             contract_type=self.contract_type,
         )
-
-
-def _Contract(
-    address: Union[str, BaseAddress, AddressType],
-    networks: "NetworkManager",
-    conversion_manager: "ConversionManager",
-    contract_type: Optional[ContractType] = None,
-) -> BaseAddress:
-    """
-    Function used to triage whether we have a contract type available for
-    the given address/network combo, or explicitly provided. If none are found,
-    returns a simple ``Address`` instance instead of throwing (provides a warning)
-    """
-    provider = networks.active_provider
-    if not provider:
-        raise ProviderNotConnectedError()
-
-    converted_address: AddressType = conversion_manager.convert(address, AddressType)
-
-    # Check contract cache (e.g. previously deployed/downloaded contracts)
-    # TODO: Add ``contract_cache`` dict-like object to ``NetworkAPI``
-    # network = provider.network
-    # if not contract_type and address in network.contract_cache:
-    #    contract_type = network.contract_cache[address]
-
-    # Check explorer API/cache (e.g. publicly published contracts)
-    # TODO: Store in ``NetworkAPI.contract_cache`` to reduce API calls
-    explorer = provider.network.explorer
-    if not contract_type and explorer:
-        contract_type = explorer.get_contract_type(converted_address)
-
-    # We have a contract type either:
-    #   1) explicitly provided,
-    #   2) from network cache, or
-    #   3) from explorer
-    if contract_type:
-        return ContractInstance(  # type: ignore
-            address=converted_address,
-            contract_type=contract_type,
-        )
-
-    else:
-        # We don't have a contract type from any source, provide raw address instead
-        logger.warning(f"No contract type found for {address}")
-        return Address(converted_address)
+        self.chain_manager.contracts[contract_instance.address] = contract_instance.contract_type
+        return contract_instance
 
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:
@@ -701,3 +666,66 @@ def _get_non_contract_error(address: str, network_name: str) -> ContractError:
         f"Unable to make contract call. "
         f"'{address}' is not a contract on network '{network_name}'."
     )
+
+
+class ContractNamespace:
+    """
+    A class that bridges contract containers in a namespace.
+    For example, if you have an interface structure like this::
+
+        contracts:
+          accounts:
+            - interface.json
+          mocks:
+            - interface.json
+
+    You can interact with them like this::
+
+        account_interface = project.accounts.interface
+        mock_interface = project.mocks.interface
+
+    """
+
+    def __init__(self, name: str, contracts: List[ContractContainer]):
+        self.name = name
+        self.contracts = contracts
+
+    def __repr__(self) -> str:
+        return f"<{self.name}>"
+
+    def __getattr__(self, item: str) -> Union[ContractContainer, "ContractNamespace"]:
+        """
+        Access the next contract container or namespace.
+
+        Args:
+            item (str): The name of the next node.
+
+        Returns:
+            Union[:class:`~ape.contracts.base.ContractContainer`,
+            :class:`~ape.contracts.base.ContractNamespace`]
+        """
+
+        def _get_name(cc: ContractContainer) -> str:
+            return cc.contract_type.name or ""
+
+        for contract in self.contracts:
+            search_contract_name = _get_name(contract)
+            search_name = (
+                search_contract_name.replace(f"{self.name}.", "") if search_contract_name else None
+            )
+            if not search_name:
+                continue
+
+            elif search_name == item:
+                return contract
+
+            elif "." in search_name:
+                next_node = search_name.split(".")[0]
+                if next_node != item:
+                    continue
+
+                subname = f"{self.name}.{next_node}"
+                subcontracts = [c for c in self.contracts if _get_name(c).startswith(subname)]
+                return ContractNamespace(subname, subcontracts)
+
+        return self.__getattribute__(item)  # type: ignore

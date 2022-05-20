@@ -39,7 +39,7 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
         ecosystems = cli_ctx.network_manager.network_data["ecosystems"]
 
         def make_sub_tree(data: Dict, create_tree: Callable) -> Tree:
-            name = f"[bold green]{data['name']:}"
+            name = f"[bold green]{data['name']}"
             if "isDefault" in data and data["isDefault"]:
                 name += default_suffix
 

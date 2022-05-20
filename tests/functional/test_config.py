@@ -1,28 +1,10 @@
 import logging
-import tempfile
-from contextlib import contextmanager
-from pathlib import Path
 from typing import Dict
 
 import pytest
-import yaml
 
 from ape.exceptions import NetworkError
-from ape.managers.config import CONFIG_FILE_NAME, DeploymentConfigCollection
-
-
-@contextmanager
-def temp_config(data: Dict, config):
-    with tempfile.TemporaryDirectory() as temp_dir_str:
-        temp_dir = Path(temp_dir_str)
-        with config.using_project(temp_dir):
-            config._cached_configs = {}
-            config_file = temp_dir / CONFIG_FILE_NAME
-            config_file.touch()
-            config_file.write_text(yaml.dump(data))
-            yield
-            config_file.unlink()
-            config._cached_configs = {}
+from ape.managers.config import DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT, DeploymentConfigCollection
 
 
 def test_integer_deployment_addresses(networks):
@@ -60,10 +42,22 @@ def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "l
     }
 
 
-def test_default_provider_not_found(config, networks):
-    eth_config = {"ethereum": {"mainnet": {"default_provider": "DOES_NOT_EXIST"}}}
+def test_default_provider_not_found(temp_config, config, networks):
+    provider_name = "DOES_NOT_EXIST"
+    network_name = "local"
+    eth_config = {"ethereum": {network_name: {"default_provider": provider_name}}}
 
     with temp_config(eth_config, config):
-        with pytest.raises(NetworkError, match="Provider 'DOES_NOT_EXIST' not found."):
+        with pytest.raises(
+            NetworkError, match=f"Provider '{provider_name}' not found in network '{network_name}'."
+        ):
             # Trigger re-loading the Ethereum config.
             _ = networks.ecosystems
+
+
+def test_transaction_acceptance_timeout(temp_config, config, networks):
+    assert config.transaction_acceptance_timeout == DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+    new_value = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT + 10
+    timeout_config = {"transaction_acceptance_timeout": new_value}
+    with temp_config(timeout_config, config):
+        assert config.transaction_acceptance_timeout == new_value

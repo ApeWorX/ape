@@ -46,6 +46,23 @@ extras_require = {
         "pytest-watch",  # `ptw` test watcher/runner
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
     ],
+    # NOTE: These are extras that someone can install to get up and running quickly w/ ape
+    #       They should be kept up to date with what works and what doesn't out of the box
+    #       Usage example: `pipx install eth-ape[recommended-plugins]`
+    "recommended-plugins": [
+        "ape-alchemy",  # Alchemy public network provider
+        "ape-ens",  # ENS converter
+        "ape-etherscan",  # Etherscan explorer plugin
+        "ape-foundry",  # Foundry local and fork network EVM provider
+        "ape-hardhat",  # Hardhat local and fork network EVM provider
+        "ape-infura",  # Infura public network provider
+        "ape-ledger",  # Ledger Nano S/X hardware wallet
+        "ape-solidity",  # Solidity compiler support
+        "ape-template",  # Cookiecutter template support
+        "ape-tokens",  # Tokenlists converter
+        "ape-trezor",  # Trezor Model T/One hardware wallet
+        "ape-vyper",  # Vyper compiler support
+    ],
 }
 
 # NOTE: `pip install -e .[dev]` to install package
@@ -55,6 +72,7 @@ extras_require["dev"] = (
     + extras_require["doc"]
     + extras_require["release"]
     + extras_require["dev"]
+    # NOTE: Do *not* install `recommended-plugins` w/ dev
 )
 
 with open("./README.md") as readme:
@@ -76,7 +94,7 @@ setup(
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.1.0",
         "eth-account==0.5.7",
-        "ethpm-types>=0.2.0,<0.3.0",
+        "ethpm-types>=0.3.1,<0.4.0",
         "evm-trace>=0.1.0.a2",
         "hexbytes>=0.2.2,<1.0.0",
         "packaging>=20.9,<21.0",
@@ -95,7 +113,7 @@ setup(
         "rich>=10.14,<11",
         "tqdm>=4.62.3,<5.0",
         "typing-extensions ; python_version<'3.8'",
-        "web3[tester]>=5.28.0,<6.0",
+        "web3[tester]>=5.29.0,<6.0",
         "eth_abi==2.1.1",
         "eth-utils==1.10.0",
         "eth-rlp==0.2.1",

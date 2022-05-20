@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, Dict, Iterator, List, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
@@ -20,9 +20,9 @@ from ape.api import (
     TransactionAPI,
 )
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.contracts._utils import LogInputABICollection
 from ape.exceptions import DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
+from ape.utils import LogInputABICollection, Struct, StructParser, is_array, returns_array
 from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
@@ -44,17 +44,28 @@ NETWORKS = {
 
 class NetworkConfig(PluginConfig):
     required_confirmations: int = 0
-    default_provider: str = "geth"
+
+    default_provider: Optional[str] = "geth"
+    """
+    The default provider to use. If set to ``None``, ape will rely on
+    an external plugin supplying the provider implementation, such as
+    ``ape-hardhat`` supplying forked-network providers.
+    """
+
     block_time: int = 0
 
 
 class EthereumConfig(PluginConfig):
     mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
-    mainnet_fork: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
+    mainnet_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
+    ropsten_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
+    kovan_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
+    rinkeby_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
+    goerli_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
     local: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
     default_network: str = LOCAL_NETWORK_NAME
 
@@ -75,6 +86,49 @@ class Block(BlockAPI):
     """
     Class for representing a block on a chain.
     """
+
+
+def parse_output_type(output_type: str) -> Union[str, Tuple, List]:
+    if not output_type.startswith("("):
+        return output_type
+
+    # Strip off first opening parens
+    output_type = output_type[1:]
+    found_types: List[Union[str, Tuple, List]] = []
+
+    while output_type:
+        if output_type.startswith(")"):
+            result = tuple(found_types)
+            if "[" in output_type:
+                return [result]
+
+            return result
+
+        elif output_type[0] == "(" and ")" in output_type:
+            # A tuple within the tuple
+            end_index = output_type.index(")") + 1
+            found_type = parse_output_type(output_type[:end_index])
+            output_type = output_type[end_index:]
+
+            if output_type.startswith("[") and "]" in output_type:
+                end_array_index = output_type.index("]") + 1
+                found_type = [found_type]
+                output_type = output_type[end_array_index:].lstrip(",")
+
+        else:
+            found_type = output_type.split(",")[0].rstrip(")")
+            end_index = len(found_type) + 1
+            output_type = output_type[end_index:]
+
+        if isinstance(found_type, str) and "[" in found_type and ")" in found_type:
+            parts = found_type.split(")")
+            found_type = parts[0]
+            output_type = f"){parts[1]}"
+
+        if found_type:
+            found_types.append(found_type)
+
+    return tuple(found_types)
 
 
 class Ethereum(EcosystemAPI):
@@ -154,24 +208,62 @@ class Ethereum(EcosystemAPI):
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
         try:
             vm_return_values = abi_decode(output_types, raw_data)
-            if not vm_return_values:
-                return vm_return_values
-
-            if not isinstance(vm_return_values, (tuple, list)):
-                vm_return_values = (vm_return_values,)
-
-            output_values: List[Any] = []
-            for index in range(len(vm_return_values)):
-                value = vm_return_values[index]
-                if index < len(output_types) and output_types[index] == "address":
-                    value = self.decode_address(value)
-
-                output_values.append(value)
-
-            return tuple(output_values)
-
         except InsufficientDataBytes as err:
             raise DecodingError() from err
+
+        if not vm_return_values:
+            return vm_return_values
+
+        if not isinstance(vm_return_values, (tuple, list)):
+            vm_return_values = (vm_return_values,)
+
+        output_values: List[Any] = []
+        for index in range(len(vm_return_values)):
+            if index >= len(output_types):
+                break
+
+            value = vm_return_values[index]
+            output_type = parse_output_type(output_types[index])
+            output_values.append(self._decode_primitive_value(value, output_type))
+
+        parser = StructParser(abi)
+        output_values = parser.parse(abi.outputs, output_values)
+        if issubclass(type(output_values), Struct):
+            return (output_values,)
+
+        elif returns_array(abi):
+            return ([o for o in output_values[0]],)
+
+        else:
+            return tuple(output_values)
+
+    def _decode_primitive_value(
+        self, value: Any, output_type: Union[str, Tuple, List]
+    ) -> Union[str, HexBytes, Tuple]:
+        if output_type == "address":
+            try:
+                return self.decode_address(value)
+            except InsufficientDataBytes as err:
+                raise DecodingError() from err
+
+        elif isinstance(value, bytes):
+            return HexBytes(value)
+
+        elif isinstance(output_type, str) and is_array(output_type):
+            sub_type = output_type.split("[")[0]
+            return tuple([self._decode_primitive_value(v, sub_type) for v in value])
+
+        elif isinstance(output_type, tuple):
+            return tuple([self._decode_primitive_value(v, t) for v, t in zip(value, output_type)])
+
+        elif (
+            isinstance(output_type, list)
+            and len(output_type) == 1
+            and isinstance(value, (list, tuple))
+        ):
+            return tuple([self._decode_primitive_value(v, output_type[0]) for v in value])
+
+        return value
 
     def encode_deployment(
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
@@ -282,6 +374,17 @@ class Ethereum(EcosystemAPI):
                     f"Expected '{len(indexed_data)}' log topics.  Got '{len(abi_topics.types)}'."
                 )
 
+            def decode_items(abi_types, data):
+                def decode_value(t, v) -> Any:
+                    if t == "address":
+                        return self.decode_address(v)
+                    elif t == "bytes32":
+                        return HexBytes(v)
+
+                    return v
+
+                return [decode_value(t, v) for t, v in zip(abi_types, data)]
+
             decoded_topic_data = [
                 decode_single(topic_type, topic_data)  # type: ignore
                 for topic_type, topic_data in zip(abi_topics.types, indexed_data)
@@ -289,10 +392,11 @@ class Ethereum(EcosystemAPI):
             decoded_log_data = decode_abi(abi_data.types, log_data)  # type: ignore
             event_args = dict(
                 itertools.chain(
-                    zip(abi_topics.names, decoded_topic_data),
-                    zip(abi_data.names, decoded_log_data),
+                    zip(abi_topics.names, decode_items(abi_topics.types, decoded_topic_data)),
+                    zip(abi_data.names, decode_items(abi_data.types, decoded_log_data)),
                 )
             )
+
             yield ContractLog(  # type: ignore
                 name=abi.name,
                 index=log["logIndex"],
