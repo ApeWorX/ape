@@ -42,6 +42,7 @@ def test_init_specify_contract_type(
     # This test purposely uses the other just to show we are able to specify it externally.
     contract = Contract(solidity_contract_instance.address, contract_type=vyper_contract_type)
     assert contract.address == solidity_contract_instance.address
+    assert contract.contract_type == vyper_contract_type
     assert contract.setNumber(2, sender=owner)
     assert contract.myNumber() == 2
 
