@@ -120,7 +120,7 @@ class CompilerManager(BaseManager):
         self, contract_filepaths: List[Path], base_path: Optional[Path]
     ) -> Dict[str, List[str]]:
         """
-        Combines import dicts from all compilers, where the key is a contract's source_id
+        Combine import dicts from all compilers, where the key is a contract's source_id
         and the value is a list of import source_ids.
 
         Args:
@@ -149,7 +149,7 @@ class CompilerManager(BaseManager):
 
     def get_references(self, imports_dict: Dict[str, List[str]]) -> Dict[str, List[str]]:
         """
-        Provides a mapping containing all referenced source_ids for a given project.
+        Provide a mapping containing all referenced source_ids for a given project.
         Each entry contains a source_id as a key and list of source_ids that reference a
         given contract.
 
