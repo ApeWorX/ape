@@ -446,8 +446,10 @@ class ContractCache(BaseManager):
 
         return contract_type or default
 
-    def instance_at(self, address: "AddressType") -> BaseAddress:
-        contract_type = self.get(address)
+    def instance_at(
+        self, address: "AddressType", contract_type: Optional[ContractType] = None
+    ) -> BaseAddress:
+        contract_type = contract_type or self.get(address)
         if contract_type:
             return self.create_contract(address, contract_type)
 

@@ -35,6 +35,18 @@ def test_init_at_unknown_address():
     assert contract.address == SOLIDITY_CONTRACT_ADDRESS
 
 
+def test_init_specify_contract_type(
+    solidity_contract_instance, vyper_contract_type, owner, networks_connected_to_tester
+):
+    # Vyper contract type is very close to solidity's.
+    # This test purposely uses the other just to show we are able to specify it externally.
+    contract = Contract(solidity_contract_instance.address, contract_type=vyper_contract_type)
+    assert contract.address == solidity_contract_instance.address
+    assert contract.contract_type == vyper_contract_type
+    assert contract.setNumber(2, sender=owner)
+    assert contract.myNumber() == 2
+
+
 def test_deploy(
     sender, contract_container, networks_connected_to_tester, project, chain, clean_contracts_cache
 ):
