@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 
 from ethpm_types import ContractType
 
@@ -115,6 +115,64 @@ class CompilerManager(BaseManager):
                 contract_types_dict[contract_type.name] = contract_type
 
         return contract_types_dict  # type: ignore
+
+    def get_imports(
+        self, contract_filepaths: List[Path], base_path: Optional[Path]
+    ) -> Dict[str, List[str]]:
+        """
+        Combine import dicts from all compilers, where the key is a contract's source_id
+        and the value is a list of import source_ids.
+
+        Args:
+            contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
+            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
+              project ``contracts/`` directory. Defaults to ``None``. When using in a project
+              via ``ape compile``, gets set to the project's ``contracts/`` directory.
+
+        Returns:
+            Dict[str, List[str]]: A dictionary like ``{source_id: [import_source_id, ...], ...}``
+        """
+        imports_dict: Dict[str, List[str]] = {}
+
+        for _, compiler in self.registered_compilers.items():
+            try:
+                imports = compiler.get_imports(
+                    contract_filepaths=contract_filepaths, base_path=base_path
+                )
+            except NotImplementedError:
+                imports = None
+
+            if imports:
+                imports_dict.update(imports)
+
+        return imports_dict
+
+    def get_references(self, imports_dict: Dict[str, List[str]]) -> Dict[str, List[str]]:
+        """
+        Provide a mapping containing all referenced source_ids for a given project.
+        Each entry contains a source_id as a key and list of source_ids that reference a
+        given contract.
+
+        Args:
+            contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
+            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
+              project ``contracts/`` directory. Defaults to ``None``. When using in a project
+              via ``ape compile``, gets set to the project's ``contracts/`` directory.
+
+        Returns:
+            Dict[str, List[str]]: A dictionary like ``{source_id: [referring_source_id, ...], ...}``
+        """
+        references_dict: Dict[str, List[str]] = {}
+        if not imports_dict:
+            return {}
+
+        for key, imports_list in imports_dict.items():
+            for filepath in imports_list:
+                if filepath not in references_dict:
+                    references_dict[filepath] = []
+                references_dict[filepath].append(key)
+
+        return references_dict
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = set(path.suffix for path in contract_filepaths)

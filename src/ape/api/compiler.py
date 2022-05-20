@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 from ethpm_types import ContractType
 
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 
 class CompilerAPI(BaseInterfaceModel):
@@ -49,6 +49,23 @@ class CompilerAPI(BaseInterfaceModel):
 
         Returns:
             List[:class:`~ape.type.contract.ContractType`]
+        """
+
+    @raises_not_implemented
+    def get_imports(
+        self, contract_filepaths: List[Path], base_path: Optional[Path]
+    ) -> Dict[str, List[str]]:
+        """
+        Returns a list of imports as source_ids for each contract's source_id in a given compiler.
+
+        Args:
+            contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
+            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
+              project ``contracts/`` directory. Defaults to ``None``. When using in a project
+              via ``ape compile``, gets set to the project's ``contracts/`` directory.
+
+        Returns:
+            Dict[str, List[str]]: A dictionary like ``{source_id: [import_source_id, ...], ...}``
         """
 
     def __repr__(self) -> str:
