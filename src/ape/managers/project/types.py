@@ -93,7 +93,7 @@ class BaseProject(ProjectAPI):
             cached_source_reference_paths = {
                 source_id: [
                     self.contracts_folder.joinpath(Path(s))
-                    for s in getattr(source, "references", [])
+                    for s in getattr(source, "references", []) or []
                 ]
                 for source_id, source in cached_sources.items()
             }
