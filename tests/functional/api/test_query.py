@@ -15,6 +15,7 @@ def test_basic_query(eth_tester_provider):
     assert columns == [
         "gas_data",
         "consensus_data",
+        "num_transactions",
         "hash",
         "number",
         "parent_hash",
