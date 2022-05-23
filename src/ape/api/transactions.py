@@ -268,7 +268,7 @@ class ReceiptAPI(BaseInterfaceModel):
 
         Display format::
 
-            Contract.functionName [instruction]
+            Contract.functionName(arguments) -> (return_value)
         """
         tree_factory = CallTraceTreeFactory(self)
 
@@ -360,6 +360,9 @@ class CallTraceTreeFactory:
         return arguments
 
     def _decode_returndata(self, method: MethodABI, raw_data: bytes) -> Any:
+        if method.name == "bandPractice":
+            breakpoint()
+
         values = [
             self._decode_value(v) for v in self._ecosystem.decode_returndata(method, raw_data)
         ]
