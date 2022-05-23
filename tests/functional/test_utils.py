@@ -2,6 +2,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
+from hypothesis import given, strategies
 
 from ape.utils import (
     GithubClient,
@@ -9,6 +10,7 @@ from ape.utils import (
     extract_nested_value,
     get_all_files_in_directory,
     get_relative_path,
+    parse_type,
 )
 
 _TEST_DIRECTORY_PATH = Path("/This/is/a/test/")
@@ -98,3 +100,19 @@ def test_get_all_files_in_directory():
         assert len(txt_files) == 3
         assert len(t_txt_files) == 1
         assert len(inner_txt_files) == 1
+
+
+@pytest.mark.fuzzing
+@given(strategies.from_regex(r"\(*[\w|, []]*\)*"))
+def test_parse_output_type(s):
+    # Example matching strings from above regex:
+    #   * (int, int)
+    #   * ((int, int), int)
+    #   * int
+    #   * uint256
+    #   * int[]
+    #   * (asd ) [] asdf ff 33 asdf
+    #
+    # See tests in `tests_contracts` for specific ABI parsing tests.
+
+    assert parse_type(s)

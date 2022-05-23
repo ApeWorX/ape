@@ -1,13 +1,13 @@
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
 from ape.types import AddressType, ContractLog, RawAddress
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
 
 from .config import PluginConfig
 
@@ -275,6 +275,24 @@ class EcosystemAPI(BaseInterfaceModel):
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
+        """
+
+    @raises_not_implemented
+    def decode_primitive_value(
+        self, value: Any, output_type: Union[str, Tuple, List]
+    ) -> Union[str, HexBytes, Tuple]:
+        """
+        Decode a primitive value type given its ABI type as a ``str``
+        and the value itself. This method is a hook for converting
+        addresses, hexbytes, or any other primitive data-type into
+        a more Python friendly equivalent.
+
+        Args:
+            value (Any): The value to decode.
+            output_type (Union[str, Tuple, List]): The value type.
+
+        Returns:
+            Union[str, HexBytes, Tuple]
         """
 
     @abstractmethod

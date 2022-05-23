@@ -7,6 +7,7 @@ from ape.utils.abi import (
     is_array,
     is_named_tuple,
     is_struct,
+    parse_type,
     returns_array,
 )
 from ape.utils.basemodel import (
@@ -62,6 +63,7 @@ __all__ = [
     "load_config",
     "LogInputABICollection",
     "ManagerAccessMixin",
+    "parse_type",
     "raises_not_implemented",
     "returns_array",
     "singledispatchmethod",

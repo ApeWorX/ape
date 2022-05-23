@@ -22,7 +22,14 @@ from ape.api import (
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
-from ape.utils import LogInputABICollection, Struct, StructParser, is_array, returns_array
+from ape.utils import (
+    LogInputABICollection,
+    Struct,
+    StructParser,
+    is_array,
+    parse_type,
+    returns_array,
+)
 from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
@@ -88,49 +95,6 @@ class Block(BlockAPI):
     """
 
 
-def parse_output_type(output_type: str) -> Union[str, Tuple, List]:
-    if not output_type.startswith("("):
-        return output_type
-
-    # Strip off first opening parens
-    output_type = output_type[1:]
-    found_types: List[Union[str, Tuple, List]] = []
-
-    while output_type:
-        if output_type.startswith(")"):
-            result = tuple(found_types)
-            if "[" in output_type:
-                return [result]
-
-            return result
-
-        elif output_type[0] == "(" and ")" in output_type:
-            # A tuple within the tuple
-            end_index = output_type.index(")") + 1
-            found_type = parse_output_type(output_type[:end_index])
-            output_type = output_type[end_index:]
-
-            if output_type.startswith("[") and "]" in output_type:
-                end_array_index = output_type.index("]") + 1
-                found_type = [found_type]
-                output_type = output_type[end_array_index:].lstrip(",")
-
-        else:
-            found_type = output_type.split(",")[0].rstrip(")")
-            end_index = len(found_type) + 1
-            output_type = output_type[end_index:]
-
-        if isinstance(found_type, str) and "[" in found_type and ")" in found_type:
-            parts = found_type.split(")")
-            found_type = parts[0]
-            output_type = f"){parts[1]}"
-
-        if found_type:
-            found_types.append(found_type)
-
-    return tuple(found_types)
-
-
 class Ethereum(EcosystemAPI):
     @property
     def config(self) -> EthereumConfig:
@@ -169,6 +133,7 @@ class Ethereum(EcosystemAPI):
             txn_hash=txn_hash,
             status=status,
             block_number=data["blockNumber"],
+            input_data=data.get("input", ""),
             gas_used=data["gasUsed"],
             gas_price=data["gasPrice"],
             gas_limit=data.get("gas") or data.get("gasLimit"),
@@ -206,6 +171,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
+
         try:
             vm_return_values = abi_decode(output_types, raw_data)
         except InsufficientDataBytes as err:
@@ -214,30 +180,25 @@ class Ethereum(EcosystemAPI):
         if not vm_return_values:
             return vm_return_values
 
-        if not isinstance(vm_return_values, (tuple, list)):
+        elif not isinstance(vm_return_values, (tuple, list)):
             vm_return_values = (vm_return_values,)
 
-        output_values: List[Any] = []
-        for index in range(len(vm_return_values)):
-            if index >= len(output_types):
-                break
-
-            value = vm_return_values[index]
-            output_type = parse_output_type(output_types[index])
-            output_values.append(self._decode_primitive_value(value, output_type))
-
+        output_values = [
+            self.decode_primitive_value(v, parse_type(t))
+            for v, t in zip(vm_return_values, output_types)
+        ]
         parser = StructParser(abi)
         output_values = parser.parse(abi.outputs, output_values)
+
         if issubclass(type(output_values), Struct):
             return (output_values,)
 
         elif returns_array(abi):
             return ([o for o in output_values[0]],)
 
-        else:
-            return tuple(output_values)
+        return tuple(output_values)
 
-    def _decode_primitive_value(
+    def decode_primitive_value(
         self, value: Any, output_type: Union[str, Tuple, List]
     ) -> Union[str, HexBytes, Tuple]:
         if output_type == "address":
@@ -251,17 +212,17 @@ class Ethereum(EcosystemAPI):
 
         elif isinstance(output_type, str) and is_array(output_type):
             sub_type = output_type.split("[")[0]
-            return tuple([self._decode_primitive_value(v, sub_type) for v in value])
+            return tuple([self.decode_primitive_value(v, sub_type) for v in value])
 
         elif isinstance(output_type, tuple):
-            return tuple([self._decode_primitive_value(v, t) for v, t in zip(value, output_type)])
+            return tuple([self.decode_primitive_value(v, t) for v, t in zip(value, output_type)])
 
         elif (
             isinstance(output_type, list)
             and len(output_type) == 1
             and isinstance(value, (list, tuple))
         ):
-            return tuple([self._decode_primitive_value(v, output_type[0]) for v in value])
+            return tuple([self.decode_primitive_value(v, output_type[0]) for v in value])
 
         return value
 
