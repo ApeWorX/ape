@@ -298,6 +298,7 @@ class ReceiptAPI(BaseInterfaceModel):
 class CallTraceTreeFactory:
     METHOD_NAME_COLOR = "bright_green"
     ARGUMENT_VALUE_COLOR = "bright_magenta"
+    RETURN_VALUE_COLOR = "blue"
     FAILURE_COLOR = "bright_red"
 
     def __init__(self, receipt: ReceiptAPI):
@@ -344,7 +345,10 @@ class CallTraceTreeFactory:
         try:
             raw_input_values = decode_abi(input_types, raw_data)
             input_values = [
-                self._decode_value(self._ecosystem.decode_primitive_value(v, parse_type(t)))
+                self._decode_value(
+                    self._ecosystem.decode_primitive_value(v, parse_type(t)),
+                    self.ARGUMENT_VALUE_COLOR,
+                )
                 for v, t in zip(raw_input_values, input_types)
             ]
         except InsufficientDataBytes:
@@ -360,35 +364,40 @@ class CallTraceTreeFactory:
         return arguments
 
     def _decode_returndata(self, method: MethodABI, raw_data: bytes) -> Any:
-        if method.name == "bandPractice":
-            breakpoint()
-
         values = [
-            self._decode_value(v) for v in self._ecosystem.decode_returndata(method, raw_data)
+            self._decode_value(v, self.RETURN_VALUE_COLOR)
+            for v in self._ecosystem.decode_returndata(method, raw_data)
         ]
+
         if len(values) == 1:
             return values[0]
 
         return values
 
-    def _decode_value(self, value):
+    def _decode_value(self, value, color: str):
+        return_value = value
         if isinstance(value, HexBytes):
             try:
                 string_value = value.strip(b"\x00").decode("utf8")
-                return f"'{string_value}'"
+                return_value = f"'{string_value}'"
             except UnicodeDecodeError:
-                return humanize_hash(value)
+                return_value = humanize_hash(value)
+
+        elif isinstance(value, str) and value.startswith("0x"):
+            return_value = value
 
         elif isinstance(value, str):
-            return f"'{value}'"
+            # Surround non-address strings with quotes.
+            return_value = f'"{value}"'
 
         elif isinstance(value, (list, tuple)):
-            return [self._decode_value(v) for v in value]
+            return_value = [self._decode_value(v, color) for v in value]
 
         elif isinstance(value, Struct):
-            return ", ".join([f"{k}={v}" for k, v in value.items()])
+            # NOTE: Don't falldown to coloring lines.
+            return ", ".join([f"{k}=[{color}]{v}[/]" for k, v in value.items()])  # type: ignore
 
-        return value
+        return f"[{color}]{return_value}[/]"
 
     def _build_signature(
         self,
@@ -397,10 +406,14 @@ class CallTraceTreeFactory:
         return_value: Optional[str] = None,
     ) -> str:
         signature = self._build_arguments(f"[{self.METHOD_NAME_COLOR}]{method_name}[/]", arguments)
-        if return_value:
-            signature += f" -> ({return_value})"
+        if return_value in [None, [], (), {}]:
+            return signature
 
-        return signature
+        if isinstance(return_value, str) and "=" in return_value:
+            # Wrap structs / tuples in parenthesis.
+            return_value = f"({return_value})"
+
+        return signature + f" -> {return_value}"
 
     def _build_arguments(self, signature: str, arguments: Optional[Dict[str, str]] = None) -> str:
         if not arguments:
@@ -410,7 +423,6 @@ class CallTraceTreeFactory:
         end_index = len(arguments) - 1
         signature = f"{signature}("
         for argument, value in arguments.items():
-            value = f"[{self.ARGUMENT_VALUE_COLOR}]{value}[/]"
             signature += f"{argument}={value}" if argument and not argument.isnumeric() else value
             if index < end_index:
                 signature += ", "
