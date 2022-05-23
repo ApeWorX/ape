@@ -6,7 +6,7 @@ from eth_abi.exceptions import InsufficientDataBytes
 from eth_utils import humanize_hash, keccak
 from ethpm_types import ContractType
 from ethpm_types.abi import EventABI, MethodABI
-from evm_trace import CallTreeNode, CallType, get_calltree_from_trace
+from evm_trace import CallTreeNode, CallType, TraceFrame, get_calltree_from_trace
 from evm_trace.display import DisplayableCallTreeNode
 from hexbytes import HexBytes
 from pydantic.fields import Field
@@ -182,7 +182,13 @@ class ReceiptAPI(BaseInterfaceModel):
         """
 
     @cached_property
-    def trace(self):
+    def trace(self) -> Iterator[TraceFrame]:
+        """
+        The trace of the transaction, if available from your provider.
+        NOTE: The first time this property is called, it fetches the
+        trace before caching it.
+        """
+
         return self.provider.get_transaction_trace(txn_hash=self.txn_hash)
 
     @property
@@ -298,7 +304,7 @@ class ReceiptAPI(BaseInterfaceModel):
 class CallTraceTreeFactory:
     METHOD_NAME_COLOR = "bright_green"
     ARGUMENT_VALUE_COLOR = "bright_magenta"
-    RETURN_VALUE_COLOR = "blue"
+    RETURN_VALUE_COLOR = "bright_blue"
     FAILURE_COLOR = "bright_red"
 
     def __init__(self, receipt: ReceiptAPI):
