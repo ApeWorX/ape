@@ -424,6 +424,7 @@ class ContractCache(BaseManager):
 
         Args:
             address (AddressType): The address of the contract.
+            default
 
         Returns:
             Optional[ContractType]: The contract type if it was able to get one,
@@ -439,6 +440,8 @@ class ContractCache(BaseManager):
             return default
 
         contract_type = self._get_contract_type_from_disk(address)
+        if not contract_type:
+            contract_type = self._get_contract_type_from_explorer(address)
 
         # Cache locally for faster in-session look-up.
         if contract_type:

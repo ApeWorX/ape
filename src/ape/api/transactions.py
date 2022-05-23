@@ -7,7 +7,6 @@ from eth_utils import humanize_hash, keccak
 from ethpm_types import ContractType
 from ethpm_types.abi import EventABI, MethodABI
 from evm_trace import CallTreeNode, CallType, TraceFrame, get_calltree_from_trace
-from evm_trace.display import DisplayableCallTreeNode
 from hexbytes import HexBytes
 from pydantic.fields import Field
 from rich.console import Console as RichConsole
@@ -278,12 +277,6 @@ class ReceiptAPI(BaseInterfaceModel):
         """
         tree_factory = CallTraceTreeFactory(self)
 
-        class ApeCallTreeNode(DisplayableCallTreeNode):
-            receipt: "ReceiptAPI" = self
-
-            def title(self) -> str:
-                return tree_factory.create_tree(self.call).label
-
         root_node_kwargs = {
             "gas_cost": self.gas_used,
             "gas_limit": self.gas_limit,
@@ -291,7 +284,6 @@ class ReceiptAPI(BaseInterfaceModel):
             "calldata": self.input_data,
             "value": self.value,
             "call_type": CallType.MUTABLE,
-            "display_cls": ApeCallTreeNode,
         }
         call_tree = get_calltree_from_trace(self.trace, **root_node_kwargs)
         root = tree_factory.create_tree(call_tree)
