@@ -70,6 +70,11 @@ class BlockQuery(_BaseBlockQuery):
 
 
 class BlockTransactionQuery(_BaseQuery):
+    """
+    A ``QueryType`` that collects properties of ``TransactionAPI`` over a range of
+    transactions collected inside the ``BlockAPI` object represented by ``block_id``.
+    """
+
     block_id: Any
 
     @classmethod
@@ -83,9 +88,9 @@ class AccountTransactionQuery(_BaseQuery):
     of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
     """
 
+    account: AddressType
     start_nonce: NonNegativeInt = 0
     stop_nonce: NonNegativeInt
-    account: AddressType
 
     @root_validator(pre=True)
     def check_start_nonce_before_stop_nonce(cls, values: Dict) -> Dict:
