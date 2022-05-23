@@ -440,6 +440,10 @@ class ContractCache(BaseManager):
 
         contract_type = self._get_contract_type_from_disk(address)
 
+        if not contract_type:
+            # Also gets cached to disc for faster lookup next time.
+            contract_type = self._get_contract_type_from_explorer(address)
+
         # Cache locally for faster in-session look-up.
         if contract_type:
             self._local_contracts[address] = contract_type
