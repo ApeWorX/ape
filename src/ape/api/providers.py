@@ -273,6 +273,18 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
+    def get_transactions_by_block(self, block_id: HexBytes) -> Iterator[TransactionAPI]:
+        """
+        Get the information about a set of transactions from a block.
+
+        Args:
+            block_id (HexBytes): The hash of a block.
+
+        Returns:
+            Iterator[:class: `~ape.api.transactions.TransactionAPI`]
+        """
+
+    @abstractmethod
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         """
         Send a transaction to the network.
@@ -621,6 +633,11 @@ class Web3Provider(ProviderAPI, ABC):
             }
         )
         return receipt.await_confirmations()
+
+    def get_transactions_by_block(self, block_id: HexBytes) -> Iterator[TransactionAPI]:
+        block = self.provider.get_block(block_id)
+        for transaction in block.transactions:
+            yield transaction
 
     def get_contract_logs(
         self,
