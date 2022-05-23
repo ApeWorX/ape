@@ -143,7 +143,7 @@ Ape provides an IPython interactive console with useful pre-defined locals to in
 To interact with a deployed contract in a local environment, start by opening the console:
 
 ```bash
-ape console --network :mainnet-fork:hardhat
+ape console --network :mainnet_fork:hardhat
 ```
 
 Visit [Ape Console](https://docs.apeworx.io/ape/stable/commands/console.html) to learn how to use Ape Console.

@@ -127,7 +127,7 @@ Set default network and network providers:
 
 ```yaml
 ethereum:
-  default_network: mainnet-fork
+  default_network: mainnet_fork
   mainnet_fork:
     default_provider: hardhat
 ```

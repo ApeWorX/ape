@@ -28,7 +28,7 @@ ecosystems:
     providers:
     - name: geth
       isDefault: true
-  - name: mainnet-fork
+  - name: mainnet_fork
     providers: []
   - name: ropsten
     providers:

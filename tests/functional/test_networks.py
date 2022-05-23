@@ -22,7 +22,7 @@ def test_get_network_choices_filter_ecosystem(networks):
 
 
 def test_get_network_choices_filter_network(networks):
-    actual = {c for c in networks.get_network_choices(network_filter="mainnet-fork")}
+    actual = {c for c in networks.get_network_choices(network_filter="mainnet_fork")}
     assert actual == set()
 
 
