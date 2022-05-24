@@ -428,7 +428,7 @@ class _MethodTraceSignature:
         elif isinstance(self.return_value, (list, tuple)):
             return f"[{_RETURN_VALUE_TRACE_COLOR}]{_list_to_str(self.return_value)}[/]"
 
-        return self.return_value
+        return f"[{_RETURN_VALUE_TRACE_COLOR}]{self.return_value}"
 
 
 def _dict_to_str(dictionary: Dict, color: str) -> str:
