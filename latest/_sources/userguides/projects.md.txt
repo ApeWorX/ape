@@ -80,7 +80,7 @@ print(deployed_contract.address)
 ## Networks
 
 The default provider for the development network is the
-[Ethereum Tester provider](https://github.com/ethereum/eth-testers). However, you can change the default provider per
+[Ethereum Tester provider](https://github.com/ethereum/eth-tester). However, you can change the default provider per
 network using the `ape-config.yaml` file.
 
 ```yaml
@@ -122,7 +122,7 @@ installed, giving you more flexibility in how you define your scripts.
 
 
 Use tests to verify your project. Testing is a complex topic, learn more about testing using Ape framework
-[here](docs/userguides/testing.md)
+[here](./testing.html)
 
 You can test your project using the `ape test` command. The `ape test` command comes with the core-plugin `ape-test`.
 The `ape-test` plugin extends the popular python testing framework
