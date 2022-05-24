@@ -6,10 +6,15 @@ from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator, val
 from ape.types import AddressType
 from ape.utils import BaseInterfaceModel, abstractmethod
 
-from .providers import BlockAPI
 from .transactions import TransactionAPI
 
-QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractMethodQuery"]
+QueryType = Union[
+    "BlockQuery",
+    "BlockTransactionQuery",
+    "AccountTransactionQuery",
+    "ContractEventQuery",
+    "ContractMethodQuery",
+]
 
 
 class _BaseQuery(BaseModel):
@@ -64,6 +69,8 @@ class BlockQuery(_BaseBlockQuery):
 
     @classmethod
     def all_fields(cls) -> List[str]:
+        from .providers import BlockAPI
+
         return list(BlockAPI.__fields__)
 
 
