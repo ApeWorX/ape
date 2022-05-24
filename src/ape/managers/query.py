@@ -47,7 +47,7 @@ class DefaultQueryProvider(QueryAPI):
         return pd.DataFrame(columns=query.columns, data=block_dicts_iter)
 
     @perform_query.register
-    def perform_transaction_query(self, query: BlockTransactionQuery) -> pd.DataFrame:
+    def perform_block_transaction_query(self, query: BlockTransactionQuery) -> pd.DataFrame:
         transactions_iter = self.provider.get_transactions_by_block(query.block_id)
         return pd.DataFrame(columns=query.columns, data=transactions_iter)
 
