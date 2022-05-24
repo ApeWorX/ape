@@ -5,7 +5,7 @@ import pandas as pd
 from pydantic import BaseModel
 
 from ape.api import QueryAPI, QueryType
-from ape.api.query import BlockQuery, _BaseQuery, BlockTransactionQuery
+from ape.api.query import BlockQuery, BlockTransactionQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
