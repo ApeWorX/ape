@@ -22,8 +22,8 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
-from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.api.query import BlockTransactionQuery
+from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     ContractLogicError,
     DecodingError,
