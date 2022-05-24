@@ -1,5 +1,6 @@
 import time
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi
 from eth_abi.exceptions import InsufficientDataBytes
@@ -22,6 +23,14 @@ from ape.utils import BaseInterfaceModel, Struct, abstractmethod, cached_propert
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
+
+
+_METHOD_NAME_TRACE_COLOR = "bright_green"
+_ARGUMENT_VALUE_TRACE_COLOR = "bright_magenta"
+_RETURN_VALUE_TRACE_COLOR = "bright_blue"
+_FAILURE_TRACE_COLOR = "bright_red"
+_WRAP_THRESHOLD = 50
+_SPACING = "    "
 
 
 class TransactionAPI(BaseInterfaceModel):
@@ -289,16 +298,12 @@ class ReceiptAPI(BaseInterfaceModel):
         root = tree_factory.create_tree(call_tree)
 
         console = RichConsole()
-        console.print(f"Call trace for [bold blue]'{self.txn_hash}'[/]")
+        emoji = "🚫 " if call_tree.failed else ""
+        console.print(f"{emoji}Call trace for [bold blue]'{self.txn_hash}'[/]")
         console.print(root)
 
 
 class CallTraceTreeFactory:
-    METHOD_NAME_COLOR = "bright_green"
-    ARGUMENT_VALUE_COLOR = "bright_magenta"
-    RETURN_VALUE_COLOR = "bright_blue"
-    FAILURE_COLOR = "bright_red"
-
     def __init__(self, receipt: ReceiptAPI):
         self._receipt = receipt
 
@@ -309,33 +314,27 @@ class CallTraceTreeFactory:
     def create_tree(self, call: CallTreeNode) -> Tree:
         address = self._receipt.provider.network.ecosystem.decode_address(call.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
+        call_signature = None
         if contract_type:
-            title = self._get_known_contract_title(call, contract_type)
-        else:
-            title = next(call.display_nodes).title  # type: ignore
+            selector = call.calldata[:4].hex()
+            method = _get_method_called(selector, contract_type)
+            if method:
+                arguments = self._decode_calldata(method, call.calldata[4:])
+                return_value = self._decode_returndata(method, call.returndata)
+                call_signature = str(
+                    _MethodTraceSignature(contract_type.name, method.name, arguments, return_value)
+                )
+
+        call_signature = call_signature or next(call.display_nodes).title  # type: ignore
 
         if call.failed:
-            title = f"[{self.FAILURE_COLOR}]{title}"
+            call_signature = f"[{_FAILURE_TRACE_COLOR}]{call_signature}"
 
-        parent = Tree(title, guide_style="dim")
+        parent = Tree(call_signature, guide_style="dim")
         for sub_call in call.calls:
             parent.add(self.create_tree(sub_call))
 
         return parent
-
-    def _get_known_contract_title(self, call: CallTreeNode, contract_type: ContractType) -> str:
-        selector = call.calldata[:4].hex()
-        prefix = contract_type.name
-        method = _get_method_called(selector, contract_type)
-        if not method:
-            return f"{prefix}.<{selector}>()"
-
-        arguments = self._decode_calldata(method, call.calldata[4:])
-        return_value = self._decode_returndata(method, call.returndata)
-        signature = self._build_signature(
-            method.name, arguments=arguments, return_value=return_value
-        )
-        return f"{prefix}.{signature}"
 
     def _decode_calldata(self, method: MethodABI, raw_data: bytes) -> Dict:
         input_types = [i.canonical_type for i in method.inputs]  # type: ignore
@@ -345,7 +344,6 @@ class CallTraceTreeFactory:
             input_values = [
                 self._decode_value(
                     self._ecosystem.decode_primitive_value(v, parse_type(t)),
-                    self.ARGUMENT_VALUE_COLOR,
                 )
                 for v, t in zip(raw_input_values, input_types)
             ]
@@ -363,8 +361,7 @@ class CallTraceTreeFactory:
 
     def _decode_returndata(self, method: MethodABI, raw_data: bytes) -> Any:
         values = [
-            self._decode_value(v, self.RETURN_VALUE_COLOR)
-            for v in self._ecosystem.decode_returndata(method, raw_data)
+            self._decode_value(v) for v in self._ecosystem.decode_returndata(method, raw_data)
         ]
 
         if len(values) == 1:
@@ -372,62 +369,117 @@ class CallTraceTreeFactory:
 
         return values
 
-    def _decode_value(self, value, color: str):
-        return_value = value
+    def _decode_value(self, value):
+        decoded_value = value
         if isinstance(value, HexBytes):
             try:
                 string_value = value.strip(b"\x00").decode("utf8")
-                return_value = f"'{string_value}'"
+                decoded_value = f"'{string_value}'"
             except UnicodeDecodeError:
-                return_value = humanize_hash(value)
+                decoded_value = humanize_hash(value)
 
         elif isinstance(value, str) and value.startswith("0x"):
-            return_value = value
+            decoded_value = value
 
         elif isinstance(value, str):
             # Surround non-address strings with quotes.
-            return_value = f'"{value}"'
+            decoded_value = f'"{value}"'
 
         elif isinstance(value, (list, tuple)):
-            return_value = [self._decode_value(v, color) for v in value]
+            return [self._decode_value(v) for v in value]
 
         elif isinstance(value, Struct):
-            # NOTE: Don't falldown to coloring lines.
-            return ", ".join([f"{k}=[{color}]{v}[/]" for k, v in value.items()])  # type: ignore
+            return {k: v for k, v in value.items()}
 
-        return f"[{color}]{return_value}[/]"
+        return decoded_value
 
-    def _build_signature(
-        self,
-        method_name: str,
-        arguments: Optional[Dict[str, str]] = None,
-        return_value: Optional[str] = None,
-    ) -> str:
-        signature = self._build_arguments(f"[{self.METHOD_NAME_COLOR}]{method_name}[/]", arguments)
-        if return_value in [None, [], (), {}]:
-            return signature
 
-        if isinstance(return_value, str) and "=" in return_value:
-            # Wrap structs / tuples in parenthesis.
-            return_value = f"({return_value})"
+@dataclass()
+class _MethodTraceSignature:
+    contract_name: str
+    method_name: str
+    arguments: Dict
+    return_value: Any
 
-        return signature + f" -> {return_value}"
+    def __str__(self) -> str:
+        call_path = f"{self.contract_name}.[{_METHOD_NAME_TRACE_COLOR}]{self.method_name}[/]"
+        arguments_str = self._build_arguments_str()
+        signature = f"{call_path}{arguments_str}"
 
-    def _build_arguments(self, signature: str, arguments: Optional[Dict[str, str]] = None) -> str:
-        if not arguments:
-            return f"{signature}()"
+        return_str = self._build_return_str()
+        if return_str:
+            signature = f"{signature} -> {return_str}"
 
-        index = 0
-        end_index = len(arguments) - 1
-        signature = f"{signature}("
-        for argument, value in arguments.items():
-            signature += f"{argument}={value}" if argument and not argument.isnumeric() else value
-            if index < end_index:
-                signature += ", "
+        return signature
 
-            index += 1
+    def _build_arguments_str(self) -> str:
+        if not self.arguments:
+            return "()"
 
-        return f"{signature})"
+        return _dict_to_str(self.arguments, _ARGUMENT_VALUE_TRACE_COLOR)
+
+    def _build_return_str(self) -> Optional[str]:
+        if self.return_value in [None, [], (), {}]:
+            return None
+
+        elif isinstance(self.return_value, dict):
+            return _dict_to_str(self.return_value, _RETURN_VALUE_TRACE_COLOR)
+
+        elif isinstance(self.return_value, (list, tuple)):
+            return f"[{_RETURN_VALUE_TRACE_COLOR}]{_list_to_str(self.return_value)}[/]"
+
+        return self.return_value
+
+
+def _dict_to_str(dictionary: Dict, color: str) -> str:
+    length = sum([len(str(v)) for v in [*dictionary.keys(), *dictionary.values()]])
+    do_wrap = length > _WRAP_THRESHOLD
+
+    index = 0
+    end_index = len(dictionary) - 1
+    arguments_str = "(\n" if do_wrap else "("
+
+    for argument, value in dictionary.items():
+        if do_wrap:
+            arguments_str += _SPACING
+
+        if isinstance(value, (list, tuple)):
+            value = _list_to_str(value, 1 if do_wrap else 0)
+
+        arguments_str += (
+            f"{argument}=[{color}]{value}[/]"
+            if argument and not argument.isnumeric()
+            else f"[{color}]{value}[/]"
+        )
+        if index < end_index:
+            arguments_str += ", "
+
+        if do_wrap:
+            arguments_str += "\n"
+
+        index += 1
+
+    return f"{arguments_str})"
+
+
+def _list_to_str(ls: Union[List, Tuple], depth: int = 0) -> str:
+    if not isinstance(ls, (list, tuple)) or len(str(ls)) < _WRAP_THRESHOLD:
+        return str(ls)
+
+    else:
+        value = "[\n"
+        num_values = len(ls)
+        for index in range(num_values):
+            ls_spacing = _SPACING * (depth + 1)
+            value += f"{ls_spacing}{ls[index]}"
+            if index < num_values - 1:
+                value += ","
+
+            value += "\n"
+
+        value += _SPACING * depth
+        value += "]"
+        return value
 
 
 def _get_method_called(selector: str, contract_type: ContractType) -> Optional[MethodABI]:

@@ -169,6 +169,10 @@ class Struct:
     A class for contract return values using the struct data-structure.
     """
 
+    def items(self) -> Dict:
+        """Override"""
+        return {}
+
 
 def create_struct(
     name: str, types: List[ABIType], output_values: Union[List[Any], Tuple[Any, ...]]
