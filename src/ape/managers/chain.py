@@ -1,3 +1,4 @@
+import re
 import time
 from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
@@ -441,6 +442,10 @@ class ContractCache(BaseManager):
         contract_type = self._get_contract_type_from_disk(address)
 
         if not contract_type:
+            # Contract could be a minimal proxy
+            if target := self.resolve_proxy(address):
+                return self.get(target)
+
             # Also gets cached to disc for faster lookup next time.
             contract_type = self._get_contract_type_from_explorer(address)
 
@@ -449,6 +454,19 @@ class ContractCache(BaseManager):
             self._local_contracts[address] = contract_type
 
         return contract_type or default
+
+    def resolve_proxy(self, address: AddressType) -> Optional[AddressType]:
+        code = self.provider.get_code(address).hex()[2:]
+        patterns = [
+            r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",  # eip-1167 minimal proxy contract
+            r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # vyper <0.2.9 create_forwarder_to
+            r"36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",  # 0xsplits clones
+        ]
+        for pattern in patterns:
+            if match := re.match(pattern, code):
+                return self.conversion_manager.convert(match.group(1), AddressType)
+
+        return None
 
     def instance_at(
         self, address: "AddressType", contract_type: Optional[ContractType] = None
