@@ -458,18 +458,25 @@ class ContractCache(BaseManager):
     def resolve_proxy(self, address: AddressType) -> Optional[AddressType]:
         code = self.provider.get_code(address).hex()[2:]
         patterns = [
-            r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",  # eip-1167 minimal proxy contract
-            r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # vyper <0.2.9 create_forwarder_to
-            r"36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",  # 0xsplits clones
+            # eip-1167 minimal proxy contract
+            r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
+            # vyper <0.2.9 create_forwarder_to
+            r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",
+            # 0xsplits clones
+            r"36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9"
+            + r"b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",
         ]
         for pattern in patterns:
             if match := re.match(pattern, code):
                 return self.conversion_manager.convert(match.group(1), AddressType)
 
         slots = [
-            int(self.provider.web3.keccak(text="eip1967.proxy.implementation").hex(), 16) - 1,  # eip-1967 standard proxy storage slots
-            self.provider.web3.keccak(text='org.zeppelinos.proxy.implementation'),  # openzeppelin upgradeability proxy
-            self.provider.web3.keccak(text="PROXIABLE"),  # eip-1822 universal upgradeable proxy standard (uups)
+            # eip-1967 standard proxy storage slots
+            int(self.provider.web3.keccak(text="eip1967.proxy.implementation").hex(), 16) - 1,
+            # openzeppelin upgradeability proxy
+            self.provider.web3.keccak(text="org.zeppelinos.proxy.implementation"),
+            # eip-1822 universal upgradeable proxy standard (uups)
+            self.provider.web3.keccak(text="PROXIABLE"),
         ]
         for slot in slots:
             storage = self.provider.web3.eth.get_storage_at(address, slot)
