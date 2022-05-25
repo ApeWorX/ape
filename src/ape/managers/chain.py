@@ -508,11 +508,11 @@ class ContractCache(BaseManager):
             outputs=[ABIType(type="address")],
         )
         try:
-            master_call = ContractCall(abi, address)()
+            master_copy = ContractCall(abi, address)()
             storage = self.provider.web3.eth.get_storage_at(address, 0)
-            master_slot = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
-            if master_call == master_slot:
-                return master_call
+            slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+            if master_copy == slot_0:
+                return master_copy
         except (DecodingError, ContractLogicError):
             pass
 
