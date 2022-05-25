@@ -93,7 +93,7 @@ class BlockAPI(BaseInterfaceModel):
     def transactions(self) -> List[TransactionAPI]:
         query = BlockTransactionQuery(block_id=self.hash)
         df_txns = self.query_manager.query(query)
-        return list(map(lambda x: TransactionAPI(x), df_txns.values.tolist()))
+        return list(map(TransactionAPI, df_txns.values.tolist()))
 
 
 class ProviderAPI(BaseInterfaceModel):
