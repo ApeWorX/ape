@@ -466,6 +466,16 @@ class ContractCache(BaseManager):
             if match := re.match(pattern, code):
                 return self.conversion_manager.convert(match.group(1), AddressType)
 
+        slots = [
+            int(self.provider.web3.keccak(text="eip1967.proxy.implementation").hex(), 16) - 1,  # eip-1967 standard proxy storage slots
+            self.provider.web3.keccak(text='org.zeppelinos.proxy.implementation'),  # openzeppelin upgradeability proxy
+            self.provider.web3.keccak(text="PROXIABLE"),  # eip-1822 universal upgradeable proxy standard (uups)
+        ]
+        for slot in slots:
+            storage = self.provider.web3.eth.get_storage_at(address, slot)
+            if sum(storage) != 0:
+                return self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+
         return None
 
     def instance_at(
