@@ -12,7 +12,7 @@ from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockQuery
 from ape.contracts.base import ContractCall
-from ape.exceptions import ChainError, DecodingError, UnknownSnapshotError
+from ape.exceptions import ChainError, ContractLogicError, DecodingError, UnknownSnapshotError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, SnapshotID
@@ -485,12 +485,25 @@ class ContractCache(BaseManager):
             if sum(storage) != 0:
                 return self.conversion_manager.convert(storage[-20:].hex(), AddressType)
 
+        # eip-1967 beacon proxy
+        slot = int(self.provider.web3.keccak(text="eip1967.proxy.beacon").hex(), 16) - 1
+        storage = self.provider.web3.eth.get_storage_at(address, slot)
+        if sum(storage) != 0:
+            abi = MethodABI(
+                type="function",
+                name="implementation",
+                stateMutability="view",
+                outputs=[ABIType(type="address")],
+            )
+            beacon = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+            return ContractCall(abi, beacon)()
+
         # gnosis safe proxy
         abi = MethodABI(
             type="function",
             name="masterCopy",
             stateMutability="view",
-            outputs=[ABIType(name="master", type="address")],
+            outputs=[ABIType(type="address")],
         )
         try:
             master_call = ContractCall(abi, address)()
@@ -498,7 +511,7 @@ class ContractCache(BaseManager):
             master_slot = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
             if master_call == master_slot:
                 return master_call
-        except DecodingError:
+        except (DecodingError, ContractLogicError):
             pass
 
         return None
