@@ -445,7 +445,8 @@ class ContractCache(BaseManager):
 
         if not contract_type:
             # Contract could be a minimal proxy
-            if target := self.resolve_proxy(address):
+            target = self.resolve_proxy(address)
+            if target:
                 return self.get(target)
 
             # Also gets cached to disc for faster lookup next time.
@@ -469,7 +470,8 @@ class ContractCache(BaseManager):
             + r"b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",
         ]
         for pattern in patterns:
-            if match := re.match(pattern, code):
+            match = re.match(pattern, code)
+            if match:
                 return self.conversion_manager.convert(match.group(1), AddressType)
 
         slots = [
