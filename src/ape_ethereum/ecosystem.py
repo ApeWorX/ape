@@ -1,4 +1,5 @@
 import itertools
+import re
 from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
@@ -8,7 +9,7 @@ from eth_abi.abi import decode_abi, decode_single
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address
-from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
+from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 from pydantic.dataclasses import dataclass
 
@@ -22,7 +23,8 @@ from ape.api import (
     TransactionAPI,
 )
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import DecodingError
+from ape.contracts.base import ContractCall
+from ape.exceptions import ContractLogicError, DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import LogInputABICollection, Struct, StructParser, is_array, returns_array
 from ape_ethereum.transactions import (
@@ -45,14 +47,14 @@ NETWORKS = {
 
 
 class ProxyType(IntEnum):
-    Minimal = 0
-    Standard = 1
-    Beacon = 2
-    UUPS = 3
-    Vyper = 4
-    Clones = 5
+    Minimal = 0  # eip-1167 minimal proxy contract
+    Standard = 1  # eip-1967 standard proxy storage slots
+    Beacon = 2  # eip-1967 beacon proxy
+    UUPS = 3  # # eip-1822 universal upgradeable proxy standard
+    Vyper = 4  # vyper <0.2.9 create_forwarder_to
+    Clones = 5  # 0xsplits clones
     GnosisSafe = 6
-    OpenZeppelin = 7
+    OpenZeppelin = 7  # openzeppelin upgradeability proxy
 
 
 @dataclass
@@ -165,6 +167,66 @@ class Ethereum(EcosystemAPI):
     @classmethod
     def encode_address(cls, address: AddressType) -> RawAddress:
         return str(address)
+
+    def is_proxy(self, address: AddressType) -> bool:
+        return self.proxy_info(address) is not None
+
+    def proxy_info(self, address: AddressType) -> ProxyInfo:
+        code = self.provider.get_code(address).hex()[2:]
+        patterns = {
+            ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
+            ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
+            ProxyType.Clones: r"36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",  # noqa: E501
+        }
+        for type, pattern in patterns.items():
+            match = re.match(pattern, code)
+            if match:
+                target = self.conversion_manager.convert(match.group(1), AddressType)
+                return ProxyInfo(type, target)
+
+        keccak = self.provider.web3.keccak
+        slots = {
+            ProxyType.Standard: int(keccak(text="eip1967.proxy.implementation").hex(), 16) - 1,
+            ProxyType.Beacon: int(keccak(text="eip1967.proxy.beacon").hex(), 16) - 1,
+            ProxyType.OpenZeppelin: keccak(text="org.zeppelinos.proxy.implementation"),
+            ProxyType.UUPS: keccak(text="PROXIABLE"),
+        }
+        for type, slot in slots.items():
+            storage = self.provider.web3.eth.get_storage_at(address, slot)
+            if sum(storage) == 0:
+                continue
+
+            target = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+
+            # read `target.implementation()`
+            if type == ProxyType.Beacon:
+                abi = MethodABI(
+                    type="function",
+                    name="implementation",
+                    stateMutability="view",
+                    outputs=[ABIType(type="address")],
+                )
+                target = ContractCall(abi, target)()
+
+            return ProxyInfo(type, target)
+
+        # gnosis safe stores implementation in slot 0, read `masterCopy()` to be sure
+        abi = MethodABI(
+            type="function",
+            name="masterCopy",
+            stateMutability="view",
+            outputs=[ABIType(type="address")],
+        )
+        try:
+            master_copy = ContractCall(abi, address)()
+            storage = self.provider.web3.eth.get_storage_at(address, 0)
+            slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+            if master_copy == slot_0:
+                return ProxyInfo(ProxyType.GnosisSafe, master_copy)
+        except (DecodingError, ContractLogicError):
+            pass
+
+        return None
 
     def serialize_transaction(self, transaction: TransactionAPI) -> bytes:
         return transaction.serialize_transaction()

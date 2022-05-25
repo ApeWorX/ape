@@ -1,18 +1,15 @@
-import re
 import time
 from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import pandas as pd
 from ethpm_types import ContractType
-from ethpm_types.abi import ABIType, MethodABI
 
 from ape.api import Address, BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockQuery
-from ape.contracts.base import ContractCall
-from ape.exceptions import ChainError, ContractLogicError, DecodingError, UnknownSnapshotError
+from ape.exceptions import ChainError, UnknownSnapshotError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, SnapshotID
@@ -445,9 +442,10 @@ class ContractCache(BaseManager):
 
         if not contract_type:
             # Contract could be a minimal proxy
-            target = self.resolve_proxy(address)
-            if target:
-                return self.get(target)
+            if hasattr(self.provider.network.ecosystem, "proxy_info"):
+                proxy = self.provider.network.ecosystem.proxy_info(address)
+                if proxy:
+                    return self.get(proxy.target)
 
             # Also gets cached to disc for faster lookup next time.
             contract_type = self._get_contract_type_from_explorer(address)
@@ -457,66 +455,6 @@ class ContractCache(BaseManager):
             self._local_contracts[address] = contract_type
 
         return contract_type or default
-
-    def resolve_proxy(self, address: AddressType) -> Optional[AddressType]:
-        code = self.provider.get_code(address).hex()[2:]
-        patterns = [
-            # eip-1167 minimal proxy contract
-            r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
-            # vyper <0.2.9 create_forwarder_to
-            r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",
-            # 0xsplits clones
-            r"36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9"
-            + r"b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",
-        ]
-        for pattern in patterns:
-            match = re.match(pattern, code)
-            if match:
-                return self.conversion_manager.convert(match.group(1), AddressType)
-
-        slots = [
-            # eip-1967 standard proxy storage slots
-            int(self.provider.web3.keccak(text="eip1967.proxy.implementation").hex(), 16) - 1,
-            # openzeppelin upgradeability proxy
-            self.provider.web3.keccak(text="org.zeppelinos.proxy.implementation"),
-            # eip-1822 universal upgradeable proxy standard (uups)
-            self.provider.web3.keccak(text="PROXIABLE"),
-        ]
-        for slot in slots:
-            storage = self.provider.web3.eth.get_storage_at(address, slot)
-            if sum(storage) != 0:
-                return self.conversion_manager.convert(storage[-20:].hex(), AddressType)
-
-        # eip-1967 beacon proxy
-        slot = int(self.provider.web3.keccak(text="eip1967.proxy.beacon").hex(), 16) - 1
-        storage = self.provider.web3.eth.get_storage_at(address, slot)
-        if sum(storage) != 0:
-            abi = MethodABI(
-                type="function",
-                name="implementation",
-                stateMutability="view",
-                outputs=[ABIType(type="address")],
-            )
-            beacon = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
-            return ContractCall(abi, beacon)()
-
-        # gnosis safe proxy
-        abi = MethodABI(
-            type="function",
-            name="masterCopy",
-            stateMutability="view",
-            outputs=[ABIType(type="address")],
-        )
-        try:
-            master_copy = ContractCall(abi, address)()
-            storage = self.provider.web3.eth.get_storage_at(address, 0)
-            slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
-            if master_copy == slot_0:
-                return master_copy
-        except (DecodingError, ContractLogicError):
-            pass
-
-        return None
 
     def instance_at(
         self, address: "AddressType", contract_type: Optional[ContractType] = None
