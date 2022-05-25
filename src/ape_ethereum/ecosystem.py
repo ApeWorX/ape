@@ -1,4 +1,5 @@
 import itertools
+from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
@@ -9,6 +10,7 @@ from eth_typing import HexStr
 from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address
 from ethpm_types.abi import ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
+from pydantic.dataclasses import dataclass
 
 from ape.api import (
     BlockAPI,
@@ -40,6 +42,23 @@ NETWORKS = {
     "rinkeby": (4, 4),
     "goerli": (5, 5),
 }
+
+
+class ProxyType(IntEnum):
+    Minimal = 0
+    Standard = 1
+    Beacon = 2
+    UUPS = 3
+    Vyper = 4
+    Clones = 5
+    GnosisSafe = 6
+    OpenZeppelin = 7
+
+
+@dataclass
+class ProxyInfo:
+    type: ProxyType
+    target: AddressType
 
 
 class NetworkConfig(PluginConfig):
