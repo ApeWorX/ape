@@ -5,12 +5,14 @@ from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import pandas as pd
 from ethpm_types import ContractType
+from ethpm_types.abi import ABIType, MethodABI
 
 from ape.api import Address, BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockQuery
-from ape.exceptions import ChainError, UnknownSnapshotError
+from ape.contracts.base import ContractCall
+from ape.exceptions import ChainError, DecodingError, UnknownSnapshotError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, SnapshotID
@@ -482,6 +484,22 @@ class ContractCache(BaseManager):
             storage = self.provider.web3.eth.get_storage_at(address, slot)
             if sum(storage) != 0:
                 return self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+
+        # gnosis safe proxy
+        abi = MethodABI(
+            type="function",
+            name="masterCopy",
+            stateMutability="view",
+            outputs=[ABIType(name="master", type="address")],
+        )
+        try:
+            master_call = ContractCall(abi, address)()
+            storage = self.provider.web3.eth.get_storage_at(address, 0)
+            master_slot = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+            if master_call == master_slot:
+                return master_call
+        except DecodingError:
+            pass
 
         return None
 
