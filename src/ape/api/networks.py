@@ -282,10 +282,10 @@ class EcosystemAPI(BaseInterfaceModel):
         self, value: Any, output_type: Union[str, Tuple, List]
     ) -> Union[str, HexBytes, Tuple]:
         """
-        Decode a primitive value type given its ABI type as a ``str``
+        Decode a primitive value-type given its ABI type as a ``str``
         and the value itself. This method is a hook for converting
-        addresses, hexbytes, or any other primitive data-type into
-        a more Python friendly equivalent.
+        addresses, HexBytes, or other primitive data-types into
+        friendlier Python equivalents.
 
         Args:
             value (Any): The value to decode.
