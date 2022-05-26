@@ -184,7 +184,6 @@ class Ethereum(EcosystemAPI):
                 target = self.conversion_manager.convert(match.group(1), AddressType)
                 return ProxyInfo(type=type, target=target)
 
-        keccak = self.provider.web3.keccak
         slots = {
             ProxyType.Standard: int(keccak(text="eip1967.proxy.implementation").hex(), 16) - 1,
             ProxyType.Beacon: int(keccak(text="eip1967.proxy.beacon").hex(), 16) - 1,
