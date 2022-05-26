@@ -171,7 +171,7 @@ class Ethereum(EcosystemAPI):
     def is_proxy(self, address: AddressType) -> bool:
         return self.get_proxy_info(address) is not None
 
-    def get_proxy_info(self, address: AddressType) -> ProxyInfo:
+    def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
         code = self.provider.get_code(address).hex()[2:]
         patterns = {
             ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
