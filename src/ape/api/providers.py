@@ -161,7 +161,17 @@ class ProviderAPI(BaseInterfaceModel):
             bytes: The contract byte-code.
         """
 
+    @raises_not_implemented
     def get_storage_at(self, address: str, slot: int) -> bytes:
+        """
+        Gets the raw value of a storage slot of a contract.
+
+        Args:
+            address (str): The address of the contract.
+
+        Returns:
+            bytes: The value of the storage slot.
+        """
         raise NotImplementedError("get_storage_at is not implemented by this provider")
 
     @abstractmethod

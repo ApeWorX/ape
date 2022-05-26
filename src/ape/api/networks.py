@@ -358,6 +358,15 @@ class EcosystemAPI(BaseInterfaceModel):
         return data
 
     def get_proxy_info(self, address: AddressType) -> Any:
+        """
+        Information about a proxy contract such as proxy type and implementation address.
+
+        Args:
+            address (str): The address of the contract.
+
+        Returns:
+            Any: ProxyInfo or None if the contract does not use any known proxy pattern.
+        """
         return None
 
 
