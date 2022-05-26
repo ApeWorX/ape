@@ -11,7 +11,7 @@ from eth_typing import HexStr
 from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
-from pydantic.dataclasses import dataclass
+from pydantic import BaseModel
 
 from ape.api import (
     BlockAPI,
@@ -57,8 +57,7 @@ class ProxyType(IntEnum):
     OpenZeppelin = 7  # openzeppelin upgradeability proxy
 
 
-@dataclass
-class ProxyInfo:
+class ProxyInfo(BaseModel):
     type: ProxyType
     target: AddressType
 
@@ -182,7 +181,7 @@ class Ethereum(EcosystemAPI):
             match = re.match(pattern, code)
             if match:
                 target = self.conversion_manager.convert(match.group(1), AddressType)
-                return ProxyInfo(type, target)
+                return ProxyInfo(type=type, target=target)
 
         keccak = self.provider.web3.keccak
         slots = {
@@ -208,7 +207,7 @@ class Ethereum(EcosystemAPI):
                 )
                 target = ContractCall(abi, target)()
 
-            return ProxyInfo(type, target)
+            return ProxyInfo(type=type, target=target)
 
         # gnosis safe stores implementation in slot 0, read `masterCopy()` to be sure
         abi = MethodABI(
@@ -222,7 +221,7 @@ class Ethereum(EcosystemAPI):
             storage = self.provider.web3.eth.get_storage_at(address, 0)
             slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
             if master_copy == slot_0:
-                return ProxyInfo(ProxyType.GnosisSafe, master_copy)
+                return ProxyInfo(type=ProxyType.GnosisSafe, target=master_copy)
         except (DecodingError, ContractLogicError):
             pass
 
