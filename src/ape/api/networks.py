@@ -357,7 +357,7 @@ class EcosystemAPI(BaseInterfaceModel):
 
         return data
 
-    def proxy_info(self, address: AddressType) -> Any:
+    def get_proxy_info(self, address: AddressType) -> Any:
         return None
 
 

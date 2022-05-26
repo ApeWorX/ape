@@ -442,7 +442,7 @@ class ContractCache(BaseManager):
 
         if not contract_type:
             # Contract could be a minimal proxy
-            proxy = self.provider.network.ecosystem.proxy_info(address)
+            proxy = self.provider.network.ecosystem.get_proxy_info(address)
             if proxy:
                 return self.get(proxy.target)
 
