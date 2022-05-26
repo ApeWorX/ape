@@ -296,7 +296,6 @@ class ReceiptAPI(BaseInterfaceModel):
         }
         call_tree = get_calltree_from_trace(self.trace, **root_node_kwargs)
         root = tree_factory.create_tree(call_tree)
-
         console = RichConsole()
         emoji = "🚫 " if call_tree.failed else ""
         console.print(f"{emoji}Call trace for [bold blue]'{self.txn_hash}'[/]")
