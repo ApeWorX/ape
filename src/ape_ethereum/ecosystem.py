@@ -184,7 +184,7 @@ class Ethereum(EcosystemAPI):
                 target = self.conversion_manager.convert(match.group(1), AddressType)
                 return ProxyInfo(type=type, target=target)
 
-        str_to_slot = lambda text: int(keccak(text=text).hex(), 16)
+        str_to_slot = lambda text: int(keccak(text=text).hex(), 16)  # noqa: E731
         slots = {
             ProxyType.Standard: str_to_slot("eip1967.proxy.implementation") - 1,
             ProxyType.Beacon: str_to_slot("eip1967.proxy.beacon") - 1,
