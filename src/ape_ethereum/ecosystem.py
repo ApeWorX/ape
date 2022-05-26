@@ -11,7 +11,6 @@ from eth_typing import HexStr
 from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
-from pydantic import BaseModel
 
 from ape.api import (
     BlockAPI,
@@ -22,7 +21,7 @@ from ape.api import (
     ReceiptAPI,
     TransactionAPI,
 )
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
 from ape.exceptions import ContractLogicError, DecodingError
 from ape.types import AddressType, ContractLog, RawAddress
@@ -58,9 +57,8 @@ class ProxyType(IntEnum):
     Delegate = 8  # eip-897 delegate proxy
 
 
-class ProxyInfo(BaseModel):
+class ProxyInfo(ProxyInfoAPI):
     type: ProxyType
-    target: AddressType
 
 
 class NetworkConfig(PluginConfig):
