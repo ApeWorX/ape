@@ -55,6 +55,7 @@ class ProxyType(IntEnum):
     Clones = 5  # 0xsplits clones
     GnosisSafe = 6
     OpenZeppelin = 7  # openzeppelin upgradeability proxy
+    Delegate = 8  # eip-897 delegate proxy
 
 
 class ProxyInfo(BaseModel):
@@ -223,6 +224,29 @@ class Ethereum(EcosystemAPI):
             if master_copy == slot_0:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=master_copy)
         except (DecodingError, ContractLogicError):
+            pass
+
+        # delegate proxy, read `proxyType()` and `implementation()`
+        proxy_type_abi = MethodABI(
+            type="function",
+            name="proxyType",
+            stateMutability="view",
+            outputs=[ABIType(type="uint256")],
+        )
+        implementation_abi = MethodABI(
+            type="function",
+            name="implementation",
+            stateMutability="view",
+            outputs=[ABIType(type="address")],
+        )
+        try:
+            proxy_type = ContractCall(proxy_type_abi, address)()
+            assert proxy_type in [1, 2], "proxyType not permitted by eip-897"
+            target = ContractCall(implementation_abi, address)()
+            # avoid recursion
+            if target != "0x0000000000000000000000000000000000000000":
+                return ProxyInfo(type=ProxyType.Delegate, target=target)
+        except (DecodingError, ContractLogicError, AssertionError):
             pass
 
         return None
