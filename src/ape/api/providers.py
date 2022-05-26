@@ -161,6 +161,9 @@ class ProviderAPI(BaseInterfaceModel):
             bytes: The contract byte-code.
         """
 
+    def get_storage_at(self, address: str, slot: int) -> bytes:
+        raise NotImplementedError("get_storage_at is not implemented by this provider")
+
     @abstractmethod
     def get_nonce(self, address: str) -> int:
         """

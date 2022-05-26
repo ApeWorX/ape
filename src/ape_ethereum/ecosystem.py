@@ -184,14 +184,15 @@ class Ethereum(EcosystemAPI):
                 target = self.conversion_manager.convert(match.group(1), AddressType)
                 return ProxyInfo(type=type, target=target)
 
+        str_to_slot = lambda text: int(keccak(text=text).hex(), 16)
         slots = {
-            ProxyType.Standard: int(keccak(text="eip1967.proxy.implementation").hex(), 16) - 1,
-            ProxyType.Beacon: int(keccak(text="eip1967.proxy.beacon").hex(), 16) - 1,
-            ProxyType.OpenZeppelin: keccak(text="org.zeppelinos.proxy.implementation"),
-            ProxyType.UUPS: keccak(text="PROXIABLE"),
+            ProxyType.Standard: str_to_slot("eip1967.proxy.implementation") - 1,
+            ProxyType.Beacon: str_to_slot("eip1967.proxy.beacon") - 1,
+            ProxyType.OpenZeppelin: str_to_slot("org.zeppelinos.proxy.implementation"),
+            ProxyType.UUPS: str_to_slot("PROXIABLE"),
         }
         for type, slot in slots.items():
-            storage = self.provider.web3.eth.get_storage_at(address, slot)
+            storage = self.provider.get_storage_at(address, slot)
             if sum(storage) == 0:
                 continue
 
@@ -218,7 +219,7 @@ class Ethereum(EcosystemAPI):
         )
         try:
             master_copy = ContractCall(abi, address)()
-            storage = self.provider.web3.eth.get_storage_at(address, 0)
+            storage = self.provider.get_storage_at(address, 0)
             slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
             if master_copy == slot_0:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=master_copy)
