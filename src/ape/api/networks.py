@@ -357,6 +357,9 @@ class EcosystemAPI(BaseInterfaceModel):
 
         return data
 
+    def proxy_info(self, address: AddressType) -> Any:
+        return None
+
 
 class ProviderContextManager:
     """
