@@ -239,9 +239,6 @@ class GethProvider(Web3Provider, UpstreamProvider):
             message = gas_estimation_error_message(tx_error)
             raise TransactionError(base_err=tx_error, message=message) from err
 
-    def get_storage_at(self, address: str, slot: int) -> bytes:
-        return self._web3.eth.get_storage_at(address, slot)  # type: ignore
-
     @property
     def _node_info(self) -> Optional[NodeInfo]:
         try:

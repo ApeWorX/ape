@@ -172,7 +172,6 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             bytes: The value of the storage slot.
         """
-        raise NotImplementedError("get_storage_at is not implemented by this provider")
 
     @abstractmethod
     def get_nonce(self, address: str) -> int:
@@ -604,6 +603,9 @@ class Web3Provider(ProviderAPI, ABC):
 
     def get_code(self, address: str) -> bytes:
         return self.web3.eth.get_code(address)  # type: ignore
+
+    def get_storage_at(self, address: str, slot: int) -> bytes:
+        return self.web3.eth.get_storage_at(address, slot)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
         return self.web3.eth.call(txn.dict())
