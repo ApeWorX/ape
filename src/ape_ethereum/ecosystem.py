@@ -166,9 +166,6 @@ class Ethereum(EcosystemAPI):
     def encode_address(cls, address: AddressType) -> RawAddress:
         return str(address)
 
-    def is_proxy(self, address: AddressType) -> bool:
-        return self.get_proxy_info(address) is not None
-
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
         code = self.provider.get_code(address).hex()[2:]
         patterns = {
