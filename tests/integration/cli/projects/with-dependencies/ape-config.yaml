@@ -1,0 +1,10 @@
+dependencies:
+  - name: default
+    local: ./default
+
+  - name: renamed_contracts_folder
+    local: ./renamed_contracts_folder
+    contracts_folder: sources
+
+  - name: containing_sub_dependencies
+    local: ./containing_sub_dependencies
