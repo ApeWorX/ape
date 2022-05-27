@@ -344,12 +344,7 @@ Each entry contains a source_id as a key and list of source_ids that reference a
 given contract.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>contract_filepaths</strong> (<em>List</em><em>[</em><em>pathlib.Path</em><em>]</em>) – A list of source file paths to compile.</p></li>
-<li><p><strong>base_path</strong> (<em>Optional</em><em>[</em><em>pathlib.Path</em><em>]</em>) – Optionally provide the base path, such as the
-project <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>. When using in a project
-via <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>, gets set to the project’s <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>imports_dict</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – A dictionary of source_ids from all compilers.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A dictionary like <code class="docutils literal notranslate"><span class="pre">{source_id:</span> <span class="pre">[referring_source_id,</span> <span class="pre">...],</span> <span class="pre">...}</span></code></p>
