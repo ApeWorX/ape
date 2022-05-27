@@ -154,10 +154,7 @@ class CompilerManager(BaseManager):
         given contract.
 
         Args:
-            contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
-            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
-              project ``contracts/`` directory. Defaults to ``None``. When using in a project
-              via ``ape compile``, gets set to the project's ``contracts/`` directory.
+            imports_dict (Dict[str, List[str]]): A dictionary of source_ids from all compilers.
 
         Returns:
             Dict[str, List[str]]: A dictionary like ``{source_id: [referring_source_id, ...], ...}``

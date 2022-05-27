@@ -206,6 +206,7 @@ class ProjectManager(BaseManager):
         Returns:
             :class:`~ape.api.projects.ProjectAPI`
         """
+        contracts_folder = contracts_folder or path / "contracts"
 
         def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
             with self.config_manager.using_project(path, contracts_folder=contracts_folder):
