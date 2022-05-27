@@ -370,7 +370,8 @@ class EcosystemAPI(BaseInterfaceModel):
             address (str): The address of the contract.
 
         Returns:
-            ProxyInfoAPI or None if the contract does not use any known proxy pattern.
+            Optional[:class:`~ape.api.networks.ProxyInfoAPI`]: Returns ``None`` if the contract 
+            does not use any known proxy pattern.
         """
         return None
 
