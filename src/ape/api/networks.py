@@ -23,7 +23,12 @@ LOCAL_NETWORK_NAME = "local"
 
 
 class ProxyInfoAPI(BaseModel):
+    """
+    Information about a proxy contract.
+    """
+
     target: AddressType
+    """The address of the implementation contract."""
 
 
 class EcosystemAPI(BaseInterfaceModel):

@@ -168,6 +168,7 @@ class ProviderAPI(BaseInterfaceModel):
 
         Args:
             address (str): The address of the contract.
+            slot (int): Storage slot to read the value of.
 
         Returns:
             bytes: The value of the storage slot.
