@@ -79,6 +79,7 @@ class GithubClient:
 
         release = _try_get_release(version)
         if not release:
+            original_version = str(version)
             # Try an alternative tag style
             if version.startswith("v"):
                 version = version.lstrip("v")
@@ -87,9 +88,7 @@ class GithubClient:
 
             release = _try_get_release(version)
             if not release:
-                raise ProjectError(
-                    f"Unknown version '{version.lstrip('v')}' for repo '{repo.name}'."
-                )
+                raise ProjectError(f"Unknown version '{original_version}' for repo '{repo.name}'.")
 
         return release
 
