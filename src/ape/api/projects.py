@@ -227,7 +227,7 @@ class DependencyAPI(BaseInterfaceModel):
     def __getattr__(self, contract_name: str) -> "ContractContainer":
         container = self.get(contract_name)
         if not container:
-            raise ProjectError(
+            raise AttributeError(
                 f"Dependency project '{self.name}' has no contract '{contract_name}'."
             )
 
