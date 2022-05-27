@@ -189,7 +189,9 @@ def install(cli_ctx, plugins, skip_confirmation, upgrade):
 
             version_before = plugin.current_version
             result = subprocess.call(args)
-            failures_occurred = result_handler.handle_upgrade_result(result, version_before)
+
+            # Returns ``True`` when upgraded successfully
+            failures_occurred = not result_handler.handle_upgrade_result(result, version_before)
 
         elif plugin.can_install and (
             plugin.is_available
