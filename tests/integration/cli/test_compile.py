@@ -116,22 +116,15 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         cmd.append(contract_path)
 
     result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
-
-    dep_name_a = "default"
-    dep_name_b = "renamed_contracts_folder"
-    dep_name_c = "containing_sub_dependencies"
-    assert result.exit_code == 0, result.output
-    assert dep_name_a in project.dependencies
-    assert dep_name_b in project.dependencies
-    assert dep_name_c in project.dependencies
-    assert type(project.dependencies[dep_name_a]["local"].Default) == ContractContainer
-    assert (
-        type(project.dependencies[dep_name_b]["local"].RenamedContractsFolder) == ContractContainer
-    )
-    assert (
-        type(project.dependencies[dep_name_c]["local"].ContainingSubDependencies)
-        == ContractContainer
-    )
+    assert result.exit_code == 0
+    for name in (
+        "default",
+        "renamed_contracts_folder",
+        "containing_sub_dependencies",
+        "renamed_complex_contracts_folder",
+    ):
+        assert name in project.dependencies
+        assert type(project.dependencies[name]["local"]["name"]) == ContractContainer
 
 
 @skip_projects_except(["with-dependencies"])

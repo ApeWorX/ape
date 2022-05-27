@@ -6,5 +6,9 @@ dependencies:
     local: ./renamed_contracts_folder
     contracts_folder: sources
 
+  - name: renamed_complex_contracts_folder
+    local: ./renamed_complex_contracts_folder
+    contracts_folder: contracts/src/v0.1
+
   - name: containing_sub_dependencies
     local: ./containing_sub_dependencies
