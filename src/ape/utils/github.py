@@ -71,13 +71,26 @@ class GithubClient:
         if version == "latest":
             return repo.get_latest_release()
 
-        if not version.startswith("v"):
-            version = f"v{version}"
+        def _try_get_release(vers):
+            try:
+                return repo.get_release(vers)
+            except UnknownObjectException:
+                return None
 
-        try:
-            return repo.get_release(version)
-        except UnknownObjectException:
-            raise ProjectError(f"Unknown version '{version.lstrip('v')}' for repo '{repo.name}'.")
+        release = _try_get_release(version)
+        if not release:
+            original_version = str(version)
+            # Try an alternative tag style
+            if version.startswith("v"):
+                version = version.lstrip("v")
+            else:
+                version = f"v{version}"
+
+            release = _try_get_release(version)
+            if not release:
+                raise ProjectError(f"Unknown version '{original_version}' for repo '{repo.name}'.")
+
+        return release
 
     def get_repo(self, repo_path: str) -> GithubRepository:
         """
