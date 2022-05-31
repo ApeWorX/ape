@@ -3,13 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from ape.utils import (
-    GithubClient,
-    add_padding_to_strings,
-    extract_nested_value,
-    get_all_files_in_directory,
-    get_relative_path,
-)
+from ape.utils.os import get_all_files_in_directory, get_relative_path
 
 _TEST_DIRECTORY_PATH = Path("/This/is/a/test/")
 _TEST_FILE_PATH = _TEST_DIRECTORY_PATH / "scripts" / "script.py"
@@ -45,29 +39,6 @@ def test_get_relative_path_roots():
     root = Path("/")
     actual = get_relative_path(root, root)
     assert actual == Path()
-
-
-def test_extract_nested_value():
-    structure = {"foo": {"bar": {"test": "expected_value"}}}
-    assert extract_nested_value(structure, "foo", "bar", "test") == "expected_value"
-
-
-def test_extract_nested_value_non_dict_in_middle_returns_none():
-    structure = {"foo": {"non_dict": 3, "bar": {"test": "expected_value"}}}
-    assert not extract_nested_value(structure, "foo", "non_dict", "test")
-
-
-def test_add_spacing_to_strings():
-    string_list = ["foo", "address", "ethereum"]
-    expected = ["foo         ", "address     ", "ethereum    "]
-    actual = add_padding_to_strings(string_list, extra_spaces=4)
-    assert actual == expected
-
-
-def test_clone_repo():
-    client = GithubClient()
-    with tempfile.TemporaryDirectory() as temp_dir:
-        client.clone_repo("dapphub/ds-test", temp_dir, branch="master")
 
 
 def test_get_all_files_in_directory():

@@ -161,6 +161,19 @@ class ProviderAPI(BaseInterfaceModel):
             bytes: The contract byte-code.
         """
 
+    @raises_not_implemented
+    def get_storage_at(self, address: str, slot: int) -> bytes:
+        """
+        Gets the raw value of a storage slot of a contract.
+
+        Args:
+            address (str): The address of the contract.
+            slot (int): Storage slot to read the value of.
+
+        Returns:
+            bytes: The value of the storage slot.
+        """
+
     @abstractmethod
     def get_nonce(self, address: str) -> int:
         """
@@ -591,6 +604,9 @@ class Web3Provider(ProviderAPI, ABC):
 
     def get_code(self, address: str) -> bytes:
         return self.web3.eth.get_code(address)  # type: ignore
+
+    def get_storage_at(self, address: str, slot: int) -> bytes:
+        return self.web3.eth.get_storage_at(address, slot)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
         return self.web3.eth.call(txn.dict())
