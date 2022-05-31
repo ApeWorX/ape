@@ -160,12 +160,6 @@ class BaseProject(ProjectAPI):
                     else set(self.sources)
                 )
 
-                dependencies = {
-                    c for c in get_all_files_in_directory(self.contracts_folder / ".cache")
-                }
-                for contract in dependencies:
-                    source_paths.add(contract)
-
                 manifest = self._create_manifest(
                     list(source_paths),
                     self.contracts_folder,
