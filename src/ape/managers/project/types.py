@@ -165,6 +165,8 @@ class BaseProject(ProjectAPI):
                     self.contracts_folder,
                     contract_types,
                     initial_manifest=manifest,
+                    name=self.name,
+                    version=self.version,
                 )
 
                 # Cache the updated manifest so `self.cached_manifest` reads it next time
