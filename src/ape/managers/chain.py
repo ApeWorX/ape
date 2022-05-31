@@ -441,6 +441,11 @@ class ContractCache(BaseManager):
         contract_type = self._get_contract_type_from_disk(address)
 
         if not contract_type:
+            # Contract could be a minimal proxy
+            proxy = self.provider.network.ecosystem.get_proxy_info(address)
+            if proxy:
+                return self.get(proxy.target)
+
             # Also gets cached to disc for faster lookup next time.
             contract_type = self._get_contract_type_from_explorer(address)
 
