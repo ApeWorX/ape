@@ -424,19 +424,20 @@ class ProjectManager(BaseManager):
         return manifest.contract_types or {}
 
     def _load_dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
-        if self.path.name not in self._cached_dependencies:
-            dependencies: Dict[str, Dict[str, DependencyAPI]] = {}
-            for dependency_config in self.config_manager.dependencies:
-                dependency_config.extract_manifest()
-                version_id = dependency_config.version_id
-                if dependency_config.name in dependencies:
-                    dependencies[dependency_config.name][version_id] = dependency_config
-                else:
-                    dependencies[dependency_config.name] = {version_id: dependency_config}
+        if self.path.name in self._cached_dependencies:
+            return self._cached_dependencies[self.path.name]
 
-            self._cached_dependencies[self.path.name] = dependencies
+        dependencies: Dict[str, Dict[str, DependencyAPI]] = {}
+        for dependency_config in self.config_manager.dependencies:
+            dependency_config.extract_manifest()
+            version_id = dependency_config.version_id
+            if dependency_config.name in dependencies:
+                dependencies[dependency_config.name][version_id] = dependency_config
+            else:
+                dependencies[dependency_config.name] = {version_id: dependency_config}
 
-        return self._cached_dependencies[self.path.name]
+        self._cached_dependencies[self.path.name] = dependencies
+        return dependencies
 
     def _get_contract(self, name: str) -> Optional[ContractContainer]:
         if name in self.contracts:

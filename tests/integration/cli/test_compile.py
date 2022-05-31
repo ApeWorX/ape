@@ -8,7 +8,7 @@ from .utils import skip_projects, skip_projects_except
 
 
 @skip_projects(
-    ["unregistered-contracts", "one-interface", "geth", "only-dependency", "with-dependency"]
+    ["unregistered-contracts", "one-interface", "geth", "only-dependencies", "with-dependencies"]
 )
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
@@ -38,7 +38,7 @@ def test_no_compiler_for_extension(ape_cli, runner, project):
         "empty-config",
         "no-config",
         "script",
-        "only-dependency",
+        "only-dependencies",
         "unregistered-contracts",
         "test",
         "geth",
@@ -104,7 +104,7 @@ def test_compile_contracts(ape_cli, runner, project):
         assert file.stem in result.output
 
 
-@skip_projects_except(["with-dependency"])
+@skip_projects_except(["with-dependencies"])
 @pytest.mark.parametrize(
     "contract_path",
     (None, "contracts/", "Project", "contracts/Project.json"),
@@ -116,39 +116,37 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         cmd.append(contract_path)
 
     result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
-
-    dep_name_a = "__test_dependency_a__"
-    dep_name_b = "__test_dependency_b__"
-    dep_name_c = "__test_dependency_c__"
-    assert result.exit_code == 0, result.output
-    assert dep_name_a in project.dependencies
-    assert dep_name_b in project.dependencies
-    assert dep_name_c in project.dependencies
-    assert type(project.dependencies[dep_name_a]["local"].DependencyA) == ContractContainer
-    assert type(project.dependencies[dep_name_b]["local"].DependencyB) == ContractContainer
-    assert type(project.dependencies[dep_name_c]["local"].DependencyC) == ContractContainer
+    assert result.exit_code == 0
+    for name in (
+        "default",
+        "renamed_contracts_folder",
+        "containing_sub_dependencies",
+        "renamed_complex_contracts_folder",
+    ):
+        assert name in project.dependencies
+        assert type(project.dependencies[name]["local"]["name"]) == ContractContainer
 
 
-@skip_projects_except(["with-dependency"])
+@skip_projects_except(["with-dependencies"])
 def test_compile_individual_contract_excludes_other_contract(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile", "Project", "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Other" not in result.output
 
 
-@skip_projects_except(["with-dependency"])
+@skip_projects_except(["with-dependencies"])
 def test_compile_non_ape_project_deletes_ape_config_file(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile", "Project", "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
-    assert "ape-config.yaml" not in [f.name for f in (project.path / "dependency_c").iterdir()]
+    assert "ape-config.yaml" not in [f.name for f in (project.path / "default").iterdir()]
 
 
-@skip_projects_except(["only-dependency"])
+@skip_projects_except(["only-dependencies"])
 def test_compile_only_dependency(ape_cli, runner, project, clean_cache):
-    dependency_cache = project.path / "dependency_a" / ".build"
+    dependency_cache = project.path / "renamed_contracts_folder" / ".build"
     if dependency_cache.is_dir():
         shutil.rmtree(str(dependency_cache))
 
     result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
-    assert "Compiling 'DependencyA.json'" in result.output
+    assert "Compiling 'DependencyInProjectOnly.json'" in result.output
