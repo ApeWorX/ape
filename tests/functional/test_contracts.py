@@ -338,6 +338,7 @@ def test_vyper_struct_arrays(vyper_contract_instance, sender):
 
 def test_solidity_dynamic_struct_arrays(solidity_contract_instance, sender):
     actual_dynamic = solidity_contract_instance.getDynamicStructList()
+    actual_dynamic = solidity_contract_instance.getDynamicStructList()
     assert len(actual_dynamic) == 2
     assert actual_dynamic[0].foo == 1
     assert actual_dynamic[0].t.a == sender

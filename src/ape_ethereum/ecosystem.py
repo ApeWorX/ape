@@ -226,12 +226,18 @@ class Ethereum(EcosystemAPI):
             output_type = parse_output_type(output_types[index])
             output_values.append(self._decode_primitive_value(value, output_type))
 
-        parser = StructParser(abi)
-        output_values = parser.parse(abi.outputs, output_values)
+        abi_copy = MethodABI.parse_obj(abi.dict())
+        parser = StructParser(abi_copy)
+        output_values = parser.parse(abi_copy.outputs, output_values)
+
         if issubclass(type(output_values), Struct):
             return (output_values,)
 
-        elif returns_array(abi):
+        elif (
+            returns_array(abi)
+            and isinstance(output_values, (list, tuple))
+            and len(output_values) == 1
+        ):
             return ([o for o in output_values[0]],)
 
         else:
