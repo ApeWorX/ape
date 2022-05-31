@@ -142,7 +142,7 @@ class StructParser:
 
 def is_struct(outputs: Union[ABIType, List[ABIType]]) -> bool:
     """
-    Returns ``True``if the given output is a struct.
+    Returns ``True`` if the given output is a struct.
     """
 
     if not isinstance(outputs, (tuple, list)):
