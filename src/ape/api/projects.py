@@ -217,12 +217,28 @@ class DependencyAPI(BaseInterfaceModel):
         """
         return _load_manifest_from_file(self._target_manifest_cache_file)
 
-    def __getattr__(self, item: str) -> "ContractContainer":
-        manifest = self.extract_manifest()
-        if hasattr(manifest, item):
-            return self.create_contract_container(contract_type=getattr(manifest, item))
+    def __getitem__(self, contract_name: str) -> "ContractContainer":
+        container = self.get(contract_name)
+        if not container:
+            raise IndexError(f"Contract '{contract_name}' not found.")
 
-        raise ProjectError(f"Dependency project '{self.name}' has no contract '{item}'.")
+        return container
+
+    def __getattr__(self, contract_name: str) -> "ContractContainer":
+        container = self.get(contract_name)
+        if not container:
+            raise AttributeError(
+                f"Dependency project '{self.name}' has no contract '{contract_name}'."
+            )
+
+        return container
+
+    def get(self, contract_name: str) -> Optional["ContractContainer"]:
+        manifest = self.extract_manifest()
+        if hasattr(manifest, contract_name):
+            return self.create_contract_container(contract_type=getattr(manifest, contract_name))
+
+        return None
 
     def _extract_local_manifest(self, project_path: Path):
         project_path = project_path.resolve()
