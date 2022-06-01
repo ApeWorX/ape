@@ -337,27 +337,33 @@ def test_vyper_struct_arrays(vyper_contract_instance, sender):
 
 
 def test_solidity_dynamic_struct_arrays(solidity_contract_instance, sender):
-    actual_dynamic = solidity_contract_instance.getDynamicStructList()
-    assert len(actual_dynamic) == 2
-    assert actual_dynamic[0].foo == 1
-    assert actual_dynamic[0].t.a == sender
-    assert is_checksum_address(actual_dynamic[0].t.a)
+    # Run test twice to make sure we can call method more than 1 time and have
+    # the same result.
+    for _ in range(2):
+        actual_dynamic = solidity_contract_instance.getDynamicStructList()
+        assert len(actual_dynamic) == 2
+        assert actual_dynamic[0].foo == 1
+        assert actual_dynamic[0].t.a == sender
+        assert is_checksum_address(actual_dynamic[0].t.a)
 
-    assert actual_dynamic[1].foo == 2
-    assert actual_dynamic[1].t.a == sender
-    assert is_checksum_address(actual_dynamic[1].t.a)
+        assert actual_dynamic[1].foo == 2
+        assert actual_dynamic[1].t.a == sender
+        assert is_checksum_address(actual_dynamic[1].t.a)
 
 
 def test_solidity_static_struct_arrays(solidity_contract_instance, sender):
-    actual_dynamic = solidity_contract_instance.getStaticStructList()
-    assert len(actual_dynamic) == 2
-    assert actual_dynamic[0].foo == 1
-    assert actual_dynamic[0].t.a == sender
-    assert is_checksum_address(actual_dynamic[0].t.a)
+    # Run test twice to make sure we can call method more than 1 time and have
+    # the same result.
+    for _ in range(2):
+        actual_dynamic = solidity_contract_instance.getStaticStructList()
+        assert len(actual_dynamic) == 2
+        assert actual_dynamic[0].foo == 1
+        assert actual_dynamic[0].t.a == sender
+        assert is_checksum_address(actual_dynamic[0].t.a)
 
-    assert actual_dynamic[1].foo == 2
-    assert actual_dynamic[1].t.a == sender
-    assert is_checksum_address(actual_dynamic[1].t.a)
+        assert actual_dynamic[1].foo == 2
+        assert actual_dynamic[1].t.a == sender
+        assert is_checksum_address(actual_dynamic[1].t.a)
 
 
 def test_solidity_named_tuple(solidity_contract_instance):
