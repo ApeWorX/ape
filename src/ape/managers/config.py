@@ -263,7 +263,7 @@ class ConfigManager(BaseInterfaceModel):
         Returns:
             Generator
         """
-
+        print(project_folder)
         contracts_folder = contracts_folder or project_folder / "contracts"
 
         initial_project_folder = self.PROJECT_FOLDER
@@ -281,5 +281,4 @@ class ConfigManager(BaseInterfaceModel):
         self.contracts_folder = initial_contracts_folder
         self.project_manager.path = initial_project_folder
 
-        if Path(initial_project_folder).is_dir():
-            os.chdir(initial_project_folder)
+        os.chdir(initial_project_folder)

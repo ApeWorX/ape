@@ -193,7 +193,7 @@ def contract_instance(request, solidity_contract_instance, vyper_contract_instan
     return solidity_contract_instance if request.param == "solidity" else vyper_contract_instance
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def temp_config(config):
     @contextmanager
     def func(data: Dict):
@@ -203,8 +203,8 @@ def temp_config(config):
             config_file = temp_dir / CONFIG_FILE_NAME
             config_file.touch()
             config_file.write_text(yaml.dump(data))
-
             config.load(force_reload=True)
+
             with config.using_project(temp_dir):
                 yield
 

@@ -3,7 +3,7 @@ from typing import Dict
 
 import pytest
 
-from ape.exceptions import ConfigError, NetworkError
+from ape.exceptions import NetworkError
 from ape.managers.config import DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT, DeploymentConfigCollection
 from tests.functional.conftest import DEPENDENCY_PROJECT_PATH
 
@@ -62,13 +62,6 @@ def test_transaction_acceptance_timeout(temp_config, config, networks):
     timeout_config = {"transaction_acceptance_timeout": new_value}
     with temp_config(timeout_config):
         assert config.transaction_acceptance_timeout == new_value
-
-
-def test_dependencies_bad_type(temp_config):
-    dependencies_config = {"dependencies": {"name": "baddep"}}
-    with pytest.raises(ConfigError):
-        with temp_config(dependencies_config):
-            assert True  # Shouldn't get here
 
 
 def test_dependencies(dependency_config, config):
