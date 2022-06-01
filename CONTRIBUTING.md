@@ -4,8 +4,8 @@ To get started with working on the codebase, use the following steps prepare you
 
 ```bash
 # clone the github repo and navigate into the folder
-git clone https://github.com/ApeWorX/ape-accounts.git
-cd ape-accounts
+git clone https://github.com/ApeWorX/ape.git
+cd ape
 
 # create and load a virtual environment
 python3 -m venv venv

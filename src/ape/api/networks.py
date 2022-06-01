@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Type
 
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
+from pydantic import BaseModel
 
 from ape.exceptions import NetworkError, NetworkNotFoundError
 from ape.types import AddressType, ContractLog, RawAddress
@@ -19,6 +20,15 @@ if TYPE_CHECKING:
 
 
 LOCAL_NETWORK_NAME = "local"
+
+
+class ProxyInfoAPI(BaseModel):
+    """
+    Information about a proxy contract.
+    """
+
+    target: AddressType
+    """The address of the implementation contract."""
 
 
 class EcosystemAPI(BaseInterfaceModel):
@@ -356,6 +366,19 @@ class EcosystemAPI(BaseInterfaceModel):
             data["providers"].append(provider_data)
 
         return data
+
+    def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfoAPI]:
+        """
+        Information about a proxy contract such as proxy type and implementation address.
+
+        Args:
+            address (str): The address of the contract.
+
+        Returns:
+            Optional[:class:`~ape.api.networks.ProxyInfoAPI`]: Returns ``None`` if the contract
+            does not use any known proxy pattern.
+        """
+        return None
 
 
 class ProviderContextManager:

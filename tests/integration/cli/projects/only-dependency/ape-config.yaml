@@ -1,4 +1,0 @@
-dependencies:
-  - name: __test_dependency_a__
-    local: ./dependency_a
-    contracts_folder: sources
