@@ -46,7 +46,8 @@ def test_two_dependencies_with_same_name(already_downloaded_dependencies, projec
     assert oz_442.name == name
 
 
-def test_extract_manifest_type(project_manager):
+def test_extract_manifest(dependency_config, project_manager):
+    # NOTE: Only setting dependency_config to ensure existence of project.
     manifest = project_manager.extract_manifest()
     assert type(manifest) == PackageManifest
 
