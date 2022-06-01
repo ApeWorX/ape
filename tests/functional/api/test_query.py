@@ -29,18 +29,18 @@ def test_block_transaction_query(sender, receiver, chain, eth_tester_provider):
     eth_tester_provider.get_transactions_by_block("0")
     query = BlockTransactionQuery(columns=["*"], block_id=0)
     assert query.columns == [
-        'chain_id',
-        'receiver',
-        'sender',
-        'gas_limit',
-        'nonce',
-        'value',
-        'data',
-        'type',
-        'max_fee',
-        'max_priority_fee',
-        'required_confirmations',
-        'signature'
+        "chain_id",
+        "receiver",
+        "sender",
+        "gas_limit",
+        "nonce",
+        "value",
+        "data",
+        "type",
+        "max_fee",
+        "max_priority_fee",
+        "required_confirmations",
+        "signature",
     ]
 
 
