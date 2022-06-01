@@ -90,8 +90,8 @@ class StructParser:
             return values
 
         elif has_tuple_array_return:
-            output_type = output_types[0]
-            output_type.type = str(output_type.type).split("[")[0]
+            data = {**output_types[0].dict(), "type": str(output_types[0].type).split("[")[0]}
+            output_type = ABIType.parse_obj(data)
             for value in values[0]:
                 struct_item = self.parse([output_type], [value])
                 return_values.append(struct_item)
@@ -99,7 +99,8 @@ class StructParser:
         else:
             for output_type, value in zip(output_types, values):
                 if isinstance(value, (tuple, list)):
-                    output_type.type = str(output_type.type).split("[")[0]
+                    data = {**output_type.dict(), "type": str(output_type.type).split("[")[0]}
+                    output_type = ABIType.parse_obj(data)
                     struct_item = self.parse([output_type], [value])
                     return_values.append(struct_item)
                 else:
@@ -142,7 +143,7 @@ class StructParser:
 
 def is_struct(outputs: Union[ABIType, List[ABIType]]) -> bool:
     """
-    Returns ``True``if the given output is a struct.
+    Returns ``True`` if the given output is a struct.
     """
 
     if not isinstance(outputs, (tuple, list)):
