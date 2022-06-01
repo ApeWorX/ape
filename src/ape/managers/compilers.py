@@ -6,8 +6,8 @@ from ethpm_types import ContractType
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
+from ape.utils import get_relative_path
 
-from ..utils import get_relative_path
 from .base import BaseManager
 
 
