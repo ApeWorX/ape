@@ -25,8 +25,7 @@ def test_basic_query(eth_tester_provider):
     ]
 
 
-def test_block_transaction_query(sender, receiver, chain, eth_tester_provider):
-    eth_tester_provider.get_transactions_by_block("0")
+def test_block_transaction_query():
     query = BlockTransactionQuery(columns=["*"], block_id=0)
     assert query.columns == [
         "chain_id",
