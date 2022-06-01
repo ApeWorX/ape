@@ -280,4 +280,6 @@ class ConfigManager(BaseInterfaceModel):
         self.PROJECT_FOLDER = initial_project_folder
         self.contracts_folder = initial_contracts_folder
         self.project_manager.path = initial_project_folder
-        os.chdir(initial_project_folder)
+
+        if Path(initial_project_folder).is_dir():
+            os.chdir(initial_project_folder)
