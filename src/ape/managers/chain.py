@@ -96,7 +96,7 @@ class BlockContainer(BaseManager):
         engine_to_use: Optional[str] = None,
     ) -> Iterator:
         """
-        A method for querying blocks and returning a pandas DataFrame. If you
+        A method for querying blocks and returning an Iterator. If you
         do not provide a starting block, the 0 block is assumed. If you do not
         provide a stopping block, the last block is assumed. You can pass
         ``engine_to_use`` to short-circuit engine selection.
@@ -117,7 +117,7 @@ class BlockContainer(BaseManager):
               engine selection algorithm.
 
         Returns:
-            pandas.DataFrame
+            Iterator
         """
 
         if stop_block is None:

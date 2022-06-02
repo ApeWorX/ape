@@ -23,8 +23,7 @@ class _BaseQuery(BaseModel):
         Validates fields that are called during a block query.
 
         Returns:
-            List[str]: list of columns to be returned in pandas
-            dataframes during block query.
+            List[str]: list of keys to be returned during block query.
         """
 
     @validator("columns")
@@ -156,7 +155,7 @@ class QueryAPI(BaseInterfaceModel):
             query (``QueryType``): query to execute
 
         Returns:
-            pandas.DataFrame
+            Iterator
         """
 
     def update_cache(self, query: QueryType, result: Iterator):
@@ -166,5 +165,5 @@ class QueryAPI(BaseInterfaceModel):
 
         Args:
             query (``QueryType``): query that was executed
-            result (``pandas.DataFrame``): the result of the query
+            result (``Iterator``): the result of the query
         """

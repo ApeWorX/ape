@@ -84,7 +84,7 @@ class QueryManager(ManagerAccessMixin):
             invalid or inaccessible ``engine_to_use`` value.
 
         Returns:
-            pandas.DataFrame
+            Iterator[QueryAPI]
         """
         if engine_to_use:
             if engine_to_use not in self.engines:
