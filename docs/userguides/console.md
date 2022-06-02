@@ -9,6 +9,34 @@ In [1]: chain.blocks.head.timestamp
 Out[1]: 1647323479
 ```
 
+## Ape Namespace
+
+Your console comes with pre-initialized root ape objects in your namespace.
+
+| Name       | Class                                                                                                      |
+|:----------:|:----------------------------------------------------------------------------------------------------------:|
+| `accounts` | [AccountManager](../methoddocs/managers.html?highlight=accounts#module-ape.managers.accounts)              | 
+| `networks` | [NetworkManager](../methoddocs/managers.html?highlight=networks#module-ape.managers.networks)              | 
+| `chain`    | [ChainManager](../methoddocs/managers.html?highlight=chain#module-ape.managers.chain)                      | 
+| `project`  | [ProjectManager](../methoddocs/managers.html?highlight=project#module-ape.managers.project.manager)        | 
+| `query`    | [QueryManager](../methoddocs/managers.html?highlight=query#module-ape.managers.query)                      |
+| `convert`  | [convert](../methoddocs/managers.html?highlight=query#ape.managers.converters.AddressAPIConverter.convert) |
+
+You can access them as if they are already initialized:
+
+First, launch the console:
+
+```bash
+ape console
+```
+
+Then, type the name of the item and you will see its Python representation:
+
+```python
+In [1]: networks
+Out[1]: <NetworkManager active_provider=<test chain_id=61>>
+```
+
 ## Namespace Extras
 
 You can also create scripts to be included in the console namespace by adding a file (`ape_console_extras.py`) to your root project directory.  All non-internal symbols from this file will be included in the console namespace.  Internal symbols are prefixed by an underscore (`_`).
