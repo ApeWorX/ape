@@ -29,6 +29,11 @@ class DefaultQueryProvider(QueryAPI):
         # NOTE: Very loose estimate of 100ms per block
         return (query.stop_block - query.start_block) * 100
 
+    @estimate_query.register
+    def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> int:
+
+        return 100
+
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
@@ -43,9 +48,8 @@ class DefaultQueryProvider(QueryAPI):
         )
 
     @perform_query.register
-    def perform_block_transaction_query(self, query: BlockTransactionQuery) -> pd.DataFrame:
-        transactions_iter = self.provider.get_transactions_by_block(query.block_id)
-        return pd.DataFrame(columns=query.columns, data=transactions_iter)
+    def perform_block_transaction_query(self, query: BlockTransactionQuery) -> Iterator:
+        return self.provider.get_transactions_by_block(query.block_id)
 
 
 class QueryManager(ManagerAccessMixin):
