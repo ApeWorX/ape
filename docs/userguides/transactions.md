@@ -37,7 +37,7 @@ In [2]: token = dev.deploy(project.Token)
 In [3]: token.contract_method_defined_in_contract()
 ```
 
-For an in depth tutorial on how to deploy, please visit [ApeAcademy](https://apeworx-academy.webflow.io/).
+For an in depth tutorial on how to deploy, please visit [ApeAcademy](https://apeworx-academy.io/).
 
 ## Dynamic-Fee Transactions
 
