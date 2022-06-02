@@ -609,7 +609,10 @@ class Web3Provider(ProviderAPI, ABC):
         return self.web3.eth.get_storage_at(address, slot)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
-        return self.web3.eth.call(txn.dict())
+        try:
+            return self.web3.eth.call(txn.dict())
+        except ValueError as err:
+            raise self.get_virtual_machine_error(err) from err
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
         if required_confirmations < 0:
