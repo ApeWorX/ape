@@ -1,6 +1,5 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Union
 
-import pandas as pd
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator, validator
 
@@ -149,7 +148,7 @@ class QueryAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def perform_query(self, query: QueryType) -> pd.DataFrame:
+    def perform_query(self, query: QueryType) -> Iterator:
         """
         Executes the query using best performing ``estimate_query`` query engine.
 
@@ -160,7 +159,7 @@ class QueryAPI(BaseInterfaceModel):
             pandas.DataFrame
         """
 
-    def update_cache(self, query: QueryType, result: pd.DataFrame):
+    def update_cache(self, query: QueryType, result: Iterator):
         """
         Allows a query plugin the chance to update any cache using the results obtained
         from other query plugins. Defaults to doing nothing, override to store cache data.
