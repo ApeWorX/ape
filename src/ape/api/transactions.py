@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Un
 
 from eth_abi import decode_abi
 from eth_abi.exceptions import InsufficientDataBytes
-from eth_utils import humanize_hash, keccak
+from eth_utils import humanize_hash, is_hex_address, keccak
 from ethpm_types import ContractType
 from ethpm_types.abi import EventABI, MethodABI
 from evm_trace import CallTreeNode, CallType, TraceFrame, get_calltree_from_trace
@@ -384,20 +384,25 @@ class CallTraceTreeFactory:
         return values
 
     def _decode_value(self, value):
-        decoded_value = value
         if isinstance(value, HexBytes):
             try:
                 string_value = value.strip(b"\x00").decode("utf8")
-                decoded_value = f"'{string_value}'"
+                return f"'{string_value}'"
             except UnicodeDecodeError:
-                decoded_value = humanize_hash(value)
+                return humanize_hash(value)
 
         elif isinstance(value, str) and value.startswith("0x"):
-            decoded_value = value
+            if is_hex_address(value):
+                # Use name of known contract if possible.
+                contract_type = self._receipt.chain_manager.contracts.get(value)
+                if contract_type:
+                    return contract_type.name
+
+            return value
 
         elif isinstance(value, str):
             # Surround non-address strings with quotes.
-            decoded_value = f'"{value}"'
+            return f'"{value}"'
 
         elif isinstance(value, (list, tuple)):
             return [self._decode_value(v) for v in value]
@@ -405,7 +410,7 @@ class CallTraceTreeFactory:
         elif isinstance(value, Struct):
             return {k: v for k, v in value.items()}
 
-        return decoded_value
+        return value
 
 
 @dataclass()
