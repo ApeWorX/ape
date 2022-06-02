@@ -20,6 +20,20 @@ def deploy():
     account = accounts.load("MyAccount")
     return account.deploy(project.MyContract)
 ```
+
+### Deployment from ape console to a test network
+
+Deploying from `ape console` allows you to interact with a contract in real time. 
+
+```bash
+ape console --network :goreli:alchmey
+dev = accounts.load("dev")
+dev.deploy(project.Token) 
+token.contract_method_defined_in_contract()
+```
+
+For an in depth tutorial on how to deploy please visit [ApeAcademy](https://apeworx-academy.webflow.io/)
+
 <!-- TODO include information about how to feed arguments into transactions / deployment constructor transaction -->
 
 ## Dynamic-Fee Transactions
