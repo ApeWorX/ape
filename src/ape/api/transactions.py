@@ -341,6 +341,7 @@ class CallTraceTreeFactory:
                 call_signature = str(
                     _MethodTraceSignature(contract_type.name, method.name, arguments, return_value)
                 )
+                call_signature += f"[{call.gas_cost} gas]"
 
         call_signature = call_signature or next(call.display_nodes).title  # type: ignore
         parent = Tree(call_signature, guide_style="dim")
