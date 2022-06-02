@@ -1,3 +1,4 @@
+import json
 import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
@@ -274,7 +275,7 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return self
 
-    def show_trace(self):
+    def show_trace(self, verbose: bool = False):
         """
         Display the complete sequence of contracts and methods called during
         the transaction.
@@ -283,7 +284,7 @@ class ReceiptAPI(BaseInterfaceModel):
 
             Contract.functionName(arguments) -> (return_value)
         """
-        tree_factory = CallTraceTreeFactory(self)
+        tree_factory = CallTraceTreeFactory(self, verbose=verbose)
         root_node_kwargs = {
             "gas_cost": self.gas_used,
             "gas_limit": self.gas_limit,
@@ -317,8 +318,9 @@ class ReceiptAPI(BaseInterfaceModel):
 
 
 class CallTraceTreeFactory:
-    def __init__(self, receipt: ReceiptAPI):
+    def __init__(self, receipt: ReceiptAPI, verbose: bool = False):
         self._receipt = receipt
+        self._verbose = verbose
 
     @property
     def _ecosystem(self) -> EcosystemAPI:
@@ -343,6 +345,14 @@ class CallTraceTreeFactory:
                     _MethodTraceSignature(contract_type.name, method.name, arguments, return_value)
                 )
                 call_signature += f" [{call.gas_cost} gas]"
+
+                if self._verbose:
+                    extra_info = {
+                        "address": address,
+                        "value": call.value,
+                        "gas_limit": call.gas_limit,
+                    }
+                    call_signature += f" {json.dumps(extra_info, indent=_SPACING)}"
 
         call_signature = call_signature or next(call.display_nodes).title  # type: ignore
         parent = Tree(call_signature, guide_style="dim")
@@ -448,7 +458,7 @@ class _MethodTraceSignature:
         elif isinstance(self.return_value, (list, tuple)):
             return f"[{_RETURN_VALUE_TRACE_COLOR}]{_list_to_str(self.return_value)}[/]"
 
-        return f"[{_RETURN_VALUE_TRACE_COLOR}]{self.return_value}"
+        return f"[{_RETURN_VALUE_TRACE_COLOR}]{self.return_value}[/]"
 
 
 def _dict_to_str(dictionary: Dict, color: str) -> str:
