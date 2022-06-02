@@ -6,15 +6,9 @@ from ethpm_types import ContractType
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError
 from ape.logging import logger
+from ape.utils import get_relative_path
 
 from .base import BaseManager
-
-
-def _get_contract_path(path: Path, base_path: Path):
-    if base_path not in path.parents:
-        return path
-
-    return path.relative_to(base_path)
 
 
 class CompilerManager(BaseManager):
@@ -98,8 +92,8 @@ class CompilerManager(BaseManager):
             ]
 
             for path in paths_to_compile:
-                contract_path = _get_contract_path(path, self.config_manager.contracts_folder)
-                logger.info(f"Compiling '{contract_path}'.")
+                source_id = get_relative_path(path, self.config_manager.contracts_folder)
+                logger.info(f"Compiling '{source_id}'.")
 
             compiled_contracts = self.registered_compilers[extension].compile(
                 paths_to_compile, base_path=self.config_manager.contracts_folder

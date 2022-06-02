@@ -34,6 +34,9 @@ def _get_raw_contract(compiler: str) -> Dict:
 RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity")
 RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+DEPENDENCY_PROJECT_PATH = (
+    Path(__file__).parent / "data" / "projects" / "long_contracts_folder"
+).absolute()
 
 
 @pytest.fixture
@@ -190,21 +193,23 @@ def contract_instance(request, solidity_contract_instance, vyper_contract_instan
     return solidity_contract_instance if request.param == "solidity" else vyper_contract_instance
 
 
-@pytest.fixture
-def temp_config():
+@pytest.fixture(scope="session")
+def temp_config(config):
     @contextmanager
-    def func(data: Dict, config):
+    def func(data: Dict):
         with tempfile.TemporaryDirectory() as temp_dir_str:
             temp_dir = Path(temp_dir_str)
+            config._cached_configs = {}
+            config_file = temp_dir / CONFIG_FILE_NAME
+            config_file.touch()
+            config_file.write_text(yaml.dump(data))
+            config.load(force_reload=True)
+
             with config.using_project(temp_dir):
-                config._cached_configs = {}
-                config_file = temp_dir / CONFIG_FILE_NAME
-                config_file.touch()
-                config_file.write_text(yaml.dump(data))
-                config.load(force_reload=True)
                 yield
-                config_file.unlink()
-                config._cached_configs = {}
+
+            config_file.unlink()
+            config._cached_configs = {}
 
     return func
 
@@ -215,3 +220,18 @@ def clean_contracts_cache(chain):
     chain.contracts._local_contracts = {}
     yield
     chain.contracts._local_contracts = original_cached_contracts
+
+
+@pytest.fixture
+def dependency_config(temp_config):
+    dependencies_config = {
+        "dependencies": [
+            {
+                "local": str(DEPENDENCY_PROJECT_PATH),
+                "name": "testdependency",
+                "contracts_folder": "source/v0.1",
+            }
+        ]
+    }
+    with temp_config(dependencies_config):
+        yield

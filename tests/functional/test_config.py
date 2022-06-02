@@ -5,6 +5,7 @@ import pytest
 
 from ape.exceptions import NetworkError
 from ape.managers.config import DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT, DeploymentConfigCollection
+from tests.functional.conftest import DEPENDENCY_PROJECT_PATH
 
 
 def test_integer_deployment_addresses(networks):
@@ -42,12 +43,12 @@ def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "l
     }
 
 
-def test_default_provider_not_found(temp_config, config, networks):
+def test_default_provider_not_found(temp_config, networks):
     provider_name = "DOES_NOT_EXIST"
     network_name = "local"
     eth_config = {"ethereum": {network_name: {"default_provider": provider_name}}}
 
-    with temp_config(eth_config, config):
+    with temp_config(eth_config):
         with pytest.raises(
             NetworkError, match=f"Provider '{provider_name}' not found in network '{network_name}'."
         ):
@@ -59,5 +60,12 @@ def test_transaction_acceptance_timeout(temp_config, config, networks):
     assert config.transaction_acceptance_timeout == DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
     new_value = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT + 10
     timeout_config = {"transaction_acceptance_timeout": new_value}
-    with temp_config(timeout_config, config):
+    with temp_config(timeout_config):
         assert config.transaction_acceptance_timeout == new_value
+
+
+def test_dependencies(dependency_config, config):
+    assert len(config.dependencies) == 1
+    assert config.dependencies[0].name == "testdependency"
+    assert config.dependencies[0].contracts_folder == "source/v0.1"
+    assert config.dependencies[0].local == str(DEPENDENCY_PROJECT_PATH)

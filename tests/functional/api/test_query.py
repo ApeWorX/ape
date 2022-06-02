@@ -7,12 +7,11 @@ from ape.api.query import AccountQuery, BlockQuery
 
 def test_basic_query(eth_tester_provider):
     chain.mine(3)
-    assert chain.blocks.query("number").to_dict() == {"number": {0: 0, 1: 1, 2: 2, 3: 3}}
-    df = chain.blocks.query("number", "timestamp")
-    assert len(df) == 4
-    assert df["timestamp"][3] > df["timestamp"][2] >= df["timestamp"][1] >= df["timestamp"][0]
-    df_all = chain.blocks.query("*")
-    columns = list(df_all.columns)
+    assert [i.number for i in chain.blocks.query("*")] == [0, 1, 2, 3]
+    x = [i for i in chain.blocks.query("number", "timestamp")]
+    assert len(x) == 4
+    assert x[3].timestamp > x[2].timestamp >= x[1].timestamp >= x[0].timestamp
+    columns = list(x[0].dict().keys())
     assert columns == [
         "gas_data",
         "consensus_data",
