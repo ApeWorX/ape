@@ -36,8 +36,14 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
-from ape.utils.abi import LogInputABICollection
+from ape.utils import (
+    BaseInterfaceModel,
+    LogInputABICollection,
+    abstractmethod,
+    cached_property,
+    gas_estimation_error_message,
+    raises_not_implemented,
+)
 
 
 class BlockGasAPI(BaseInterfaceModel):
@@ -554,7 +560,18 @@ class Web3Provider(ProviderAPI, ABC):
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         txn_dict = txn.dict()
-        return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
+        try:
+            return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
+        except ValueError as err:
+            tx_error = self.get_virtual_machine_error(err)
+
+            # If this is the cause of a would-be revert,
+            # raise ContractLogicError so that we can confirm tx-reverts.
+            if isinstance(tx_error, ContractLogicError):
+                raise tx_error from err
+
+            message = gas_estimation_error_message(tx_error)
+            raise TransactionError(base_err=tx_error, message=message) from err
 
     @property
     def chain_id(self) -> int:
@@ -609,7 +626,10 @@ class Web3Provider(ProviderAPI, ABC):
         return self.web3.eth.get_storage_at(address, slot)  # type: ignore
 
     def send_call(self, txn: TransactionAPI) -> bytes:
-        return self.web3.eth.call(txn.dict())
+        try:
+            return self.web3.eth.call(txn.dict())
+        except ValueError as err:
+            raise self.get_virtual_machine_error(err) from err
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
         if required_confirmations < 0:
@@ -758,14 +778,21 @@ class Web3Provider(ProviderAPI, ABC):
             yield from self.network.ecosystem.decode_logs(abi, log_result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
-        req_confs = (
+        try:
+            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+        except ValueError as err:
+            raise self.get_virtual_machine_error(err) from err
+
+        required_confirmations = (
             txn.required_confirmations
             if txn.required_confirmations is not None
             else self.network.required_confirmations
         )
 
-        receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
+        receipt = self.get_transaction(
+            txn_hash.hex(), required_confirmations=required_confirmations
+        )
+        receipt.raise_for_status()
         logger.info(f"Confirmed {receipt.txn_hash} (gas_used={receipt.gas_used})")
         self._try_track_receipt(receipt)
         return receipt
