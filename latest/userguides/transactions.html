@@ -65,7 +65,10 @@
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Making Transactions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#deployment">Deployment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deployment">Deployment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#deployment-from-ape-console">Deployment from Ape Console</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#dynamic-fee-transactions">Dynamic-Fee Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#static-fee-transactions">Static-Fee Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#transaction-logs">Transaction Logs</a></li>
@@ -143,7 +146,20 @@ as we care about the contract instance. That is why the return value from
     <span class="k">return</span> <span class="n">account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
 </pre></div>
 </div>
-<!-- TODO include information about how to feed arguments into transactions / deployment constructor transaction -->
+<section id="deployment-from-ape-console">
+<h3>Deployment from Ape Console<a class="headerlink" href="#deployment-from-ape-console" title="Permalink to this headline"></a></h3>
+<p>Deploying from <a class="reference external" href="./console.html">ape console</a> allows you to interact with a contract in real time. You can also use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag to connect a live network.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape console --network ethereum:goerli:alchemy
+</pre></div>
+</div>
+<p>This will launch an IPython shell:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">token</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">Token</span><span class="p">)</span> 
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">token</span><span class="o">.</span><span class="n">contract_method_defined_in_contract</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>For an in depth tutorial on how to deploy, please visit <a class="reference external" href="https://academy.apeworx.io/">ApeAcademy</a>.</p>
+</section>
 </section>
 <section id="dynamic-fee-transactions">
 <h2>Dynamic-Fee Transactions<a class="headerlink" href="#dynamic-fee-transactions" title="Permalink to this headline"></a></h2>
