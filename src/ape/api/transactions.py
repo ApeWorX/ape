@@ -312,6 +312,7 @@ class ReceiptAPI(BaseInterfaceModel):
 
             console.print(f"🚫 [bold red]{suffix}[/]")
 
+        console.print(f"Sender={self.sender}")
         console.print(root)
 
 
