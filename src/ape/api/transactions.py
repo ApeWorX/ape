@@ -28,7 +28,6 @@ if TYPE_CHECKING:
 _METHOD_NAME_TRACE_COLOR = "bright_green"
 _ARGUMENT_VALUE_TRACE_COLOR = "bright_magenta"
 _RETURN_VALUE_TRACE_COLOR = "bright_blue"
-_FAILURE_TRACE_COLOR = "bright_red"
 _WRAP_THRESHOLD = 50
 _SPACING = "    "
 
@@ -285,7 +284,6 @@ class ReceiptAPI(BaseInterfaceModel):
             Contract.functionName(arguments) -> (return_value)
         """
         tree_factory = CallTraceTreeFactory(self)
-
         root_node_kwargs = {
             "gas_cost": self.gas_used,
             "gas_limit": self.gas_limit,
@@ -297,8 +295,23 @@ class ReceiptAPI(BaseInterfaceModel):
         call_tree = get_calltree_from_trace(self.trace, **root_node_kwargs)
         root = tree_factory.create_tree(call_tree)
         console = RichConsole()
-        emoji = "🚫 " if call_tree.failed else ""
-        console.print(f"{emoji}Call trace for [bold blue]'{self.txn_hash}'[/]")
+        console.print(f"Call trace for [bold blue]'{self.txn_hash}'[/]")
+
+        if call_tree.failed:
+            default_message = "reverted without message"
+            if not call_tree.returndata.hex().startswith(
+                "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
+            ):
+                suffix = default_message
+            else:
+                decoded_result = decode_abi(("string",), call_tree.returndata[4:])
+                if len(decoded_result) == 1:
+                    suffix = f'reverted with message: "{decoded_result[0]}"'
+                else:
+                    suffix = default_message
+
+            console.print(f"🚫 [bold red]{suffix}[/]")
+
         console.print(root)
 
 
@@ -319,16 +332,18 @@ class CallTraceTreeFactory:
             method = _get_method_called(selector, contract_type)
             if method:
                 arguments = self._decode_calldata(method, call.calldata[4:])
-                return_value = self._decode_returndata(method, call.returndata)
+
+                # If the call failed, the revert message will appear at the top of the printed
+                # trace.
+                return_value = (
+                    self._decode_returndata(method, call.returndata) if not call.failed else None
+                )
+
                 call_signature = str(
                     _MethodTraceSignature(contract_type.name, method.name, arguments, return_value)
                 )
 
         call_signature = call_signature or next(call.display_nodes).title  # type: ignore
-
-        if call.failed:
-            call_signature = f"[{_FAILURE_TRACE_COLOR}]{call_signature}"
-
         parent = Tree(call_signature, guide_style="dim")
         for sub_call in call.calls:
             parent.add(self.create_tree(sub_call))
