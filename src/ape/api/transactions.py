@@ -29,7 +29,7 @@ _METHOD_NAME_TRACE_COLOR = "bright_green"
 _ARGUMENT_VALUE_TRACE_COLOR = "bright_magenta"
 _RETURN_VALUE_TRACE_COLOR = "bright_blue"
 _WRAP_THRESHOLD = 50
-_SPACING = "    "
+_SPACING = "  "
 
 
 class TransactionAPI(BaseInterfaceModel):
