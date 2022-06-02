@@ -333,8 +333,7 @@ class CallTraceTreeFactory:
             if method:
                 arguments = self._decode_calldata(method, call.calldata[4:])
 
-                # If the call failed, the revert message will appear at the top of the printed
-                # trace.
+                # The revert-message appears at the top of the trace output.
                 return_value = (
                     self._decode_returndata(method, call.returndata) if not call.failed else None
                 )
