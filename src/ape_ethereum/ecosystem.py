@@ -241,7 +241,16 @@ class Ethereum(EcosystemAPI):
             # avoid recursion
             if target != "0x0000000000000000000000000000000000000000":
                 return ProxyInfo(type=ProxyType.Delegate, target=target)
-        except (DecodingError, ContractLogicError, AssertionError):
+
+        except ValueError as err:
+            vm_error = self.provider.get_virtual_machine_error(err)
+            if isinstance(vm_error, ContractLogicError):
+                pass
+
+            # Raise the un-expected error.
+            raise
+
+        except (DecodingError, AssertionError):
             pass
 
         return None
