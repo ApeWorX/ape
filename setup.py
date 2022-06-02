@@ -38,7 +38,7 @@ extras_require = {
     "release": [  # `release` GitHub Action job uses this
         "setuptools",  # Installation tool
         "wheel",  # Packaging tool
-        "twine",  # Package upload tool
+        "twine==3.8.0",  # Package upload tool
     ],
     "dev": [
         "commitizen>=2.19,<2.20",  # Manage commits and publishing releases

@@ -1,7 +1,5 @@
-from functools import partial
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterator, Optional
 
-import pandas as pd
 from pydantic import BaseModel
 
 from ape.api import QueryAPI, QueryType
@@ -32,19 +30,17 @@ class DefaultQueryProvider(QueryAPI):
         return (query.stop_block - query.start_block) * 100
 
     @singledispatchmethod
-    def perform_query(self, query: QueryType) -> pd.DataFrame:  # type: ignore
+    def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
     @perform_query.register
-    def perform_block_query(self, query: BlockQuery) -> pd.DataFrame:
-        blocks_iter = map(
+    def perform_block_query(self, query: BlockQuery) -> Iterator:
+        return map(
             self.provider.get_block,
             # NOTE: the range stop block is a non-inclusive stop.
             #       Where as the query method is an inclusive stop.
             range(query.start_block, query.stop_block + 1, query.step),
         )
-        block_dicts_iter = map(partial(get_columns_from_item, query), blocks_iter)
-        return pd.DataFrame(columns=query.columns, data=block_dicts_iter)
 
 
 class QueryManager(ManagerAccessMixin):
@@ -77,7 +73,7 @@ class QueryManager(ManagerAccessMixin):
 
         return engines
 
-    def query(self, query: QueryType, engine_to_use: Optional[str] = None) -> pd.DataFrame:
+    def query(self, query: QueryType, engine_to_use: Optional[str] = None) -> Iterator[QueryAPI]:
         """
         Args:
             query (``QueryType``): The type of query to execute
@@ -88,7 +84,7 @@ class QueryManager(ManagerAccessMixin):
             invalid or inaccessible ``engine_to_use`` value.
 
         Returns:
-            pandas.DataFrame
+            Iterator[QueryAPI]
         """
         if engine_to_use:
             if engine_to_use not in self.engines:

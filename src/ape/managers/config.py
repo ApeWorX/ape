@@ -263,9 +263,7 @@ class ConfigManager(BaseInterfaceModel):
         Returns:
             Generator
         """
-
         contracts_folder = contracts_folder or project_folder / "contracts"
-
         initial_project_folder = self.PROJECT_FOLDER
         initial_contracts_folder = self.contracts_folder
 

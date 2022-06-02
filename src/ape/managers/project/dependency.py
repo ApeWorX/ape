@@ -109,6 +109,7 @@ class LocalDependency(DependencyAPI):
     """
 
     local: str
+    version = "local"
 
     @property
     def path(self) -> Path:
@@ -120,7 +121,7 @@ class LocalDependency(DependencyAPI):
 
     @property
     def version_id(self) -> str:
-        return "local"
+        return self.version
 
     def extract_manifest(self) -> PackageManifest:
         return self._extract_local_manifest(self.path)

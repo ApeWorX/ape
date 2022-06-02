@@ -64,7 +64,10 @@ class BaseProject(ProjectAPI):
         if self.version:
             config_data["version"] = self.version
 
-        config_data["contracts_folder"] = self.contracts_folder.name
+        contracts_folder_config_item = (
+            str(self.contracts_folder).replace(str(self.path), "").strip("/")
+        )
+        config_data["contracts_folder"] = contracts_folder_config_item
         with open(self.config_file, "w") as f:
             yaml.safe_dump(config_data, f)
 
@@ -160,17 +163,13 @@ class BaseProject(ProjectAPI):
                     else set(self.sources)
                 )
 
-                dependencies = {
-                    c for c in get_all_files_in_directory(self.contracts_folder / ".cache")
-                }
-                for contract in dependencies:
-                    source_paths.add(contract)
-
                 manifest = self._create_manifest(
                     list(source_paths),
                     self.contracts_folder,
                     contract_types,
                     initial_manifest=manifest,
+                    name=self.name,
+                    version=self.version,
                 )
 
                 # Cache the updated manifest so `self.cached_manifest` reads it next time

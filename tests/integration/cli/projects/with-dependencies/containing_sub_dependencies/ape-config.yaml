@@ -1,0 +1,3 @@
+dependencies:
+  - name: sub_dependency
+    local: ./sub_dependency
