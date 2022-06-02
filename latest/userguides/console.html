@@ -66,6 +66,7 @@
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Ape Console</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ape-namespace">Ape Namespace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#namespace-extras">Namespace Extras</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#init-function">Init Function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#global-extras">Global Extras</a></li>
@@ -133,6 +134,47 @@ In <span class="o">[</span><span class="m">1</span><span class="o">]</span>: cha
 Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>: <span class="m">1647323479</span>
 </pre></div>
 </div>
+<section id="ape-namespace">
+<h2>Ape Namespace<a class="headerlink" href="#ape-namespace" title="Permalink to this headline"></a></h2>
+<p>Your console comes with pre-initialized root ape objects in your namespace.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>Name</p></th>
+<th class="text-center head"><p>Class</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p><code class="docutils literal notranslate"><span class="pre">accounts</span></code></p></td>
+<td class="text-center"><p><a class="reference external" href="../methoddocs/managers.html?highlight=accounts#module-ape.managers.accounts">AccountManager</a></p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p><code class="docutils literal notranslate"><span class="pre">networks</span></code></p></td>
+<td class="text-center"><p><a class="reference external" href="../methoddocs/managers.html?highlight=networks#module-ape.managers.networks">NetworkManager</a></p></td>
+</tr>
+<tr class="row-even"><td class="text-center"><p><code class="docutils literal notranslate"><span class="pre">chain</span></code></p></td>
+<td class="text-center"><p><a class="reference external" href="../methoddocs/managers.html?highlight=chain#module-ape.managers.chain">ChainManager</a></p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p><code class="docutils literal notranslate"><span class="pre">project</span></code></p></td>
+<td class="text-center"><p><a class="reference external" href="../methoddocs/managers.html?highlight=project#module-ape.managers.project.manager">ProjectManager</a></p></td>
+</tr>
+<tr class="row-even"><td class="text-center"><p><code class="docutils literal notranslate"><span class="pre">query</span></code></p></td>
+<td class="text-center"><p><a class="reference external" href="../methoddocs/managers.html?highlight=query#module-ape.managers.query">QueryManager</a></p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p><code class="docutils literal notranslate"><span class="pre">convert</span></code></p></td>
+<td class="text-center"><p><a class="reference external" href="../methoddocs/managers.html?highlight=query#ape.managers.converters.AddressAPIConverter.convert">convert</a></p></td>
+</tr>
+</tbody>
+</table>
+<p>You can access them as if they are already initialized:</p>
+<p>First, launch the console:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape console
+</pre></div>
+</div>
+<p>Then, type the name of the item and you will see its Python representation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">networks</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">NetworkManager</span> <span class="n">active_provider</span><span class="o">=&lt;</span><span class="n">test</span> <span class="n">chain_id</span><span class="o">=</span><span class="mi">61</span><span class="o">&gt;&gt;</span>
+</pre></div>
+</div>
+</section>
 <section id="namespace-extras">
 <h2>Namespace Extras<a class="headerlink" href="#namespace-extras" title="Permalink to this headline"></a></h2>
 <p>You can also create scripts to be included in the console namespace by adding a file (<code class="docutils literal notranslate"><span class="pre">ape_console_extras.py</span></code>) to your root project directory.  All non-internal symbols from this file will be included in the console namespace.  Internal symbols are prefixed by an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>).</p>
