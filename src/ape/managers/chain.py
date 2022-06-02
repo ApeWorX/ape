@@ -2,7 +2,6 @@ import time
 from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
-import pandas as pd
 from ethpm_types import ContractType
 
 from ape.api import Address, BlockAPI, ReceiptAPI
@@ -95,9 +94,9 @@ class BlockContainer(BaseManager):
         stop_block: Optional[int] = None,
         step: int = 1,
         engine_to_use: Optional[str] = None,
-    ) -> pd.DataFrame:
+    ) -> Iterator:
         """
-        A method for querying blocks and returning a pandas DataFrame. If you
+        A method for querying blocks and returning an Iterator. If you
         do not provide a starting block, the 0 block is assumed. If you do not
         provide a stopping block, the last block is assumed. You can pass
         ``engine_to_use`` to short-circuit engine selection.
@@ -118,7 +117,7 @@ class BlockContainer(BaseManager):
               engine selection algorithm.
 
         Returns:
-            pandas.DataFrame
+            Iterator
         """
 
         if stop_block is None:
@@ -191,9 +190,8 @@ class BlockContainer(BaseManager):
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
         results = self.query("*", start_block=start, stop_block=stop - 1, step=step)  # type: ignore
-
-        for _, row in results.iterrows():
-            yield self.provider.network.ecosystem.decode_block(dict(row.to_dict()))  # type: ignore
+        for _ in results:
+            yield _
 
     def poll_blocks(
         self,
