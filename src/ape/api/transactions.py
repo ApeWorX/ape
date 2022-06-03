@@ -19,7 +19,7 @@ from ape.api.networks import EcosystemAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
-from ape.utils import BaseInterfaceModel, Struct, abstractmethod, cached_property, parse_type
+from ape.utils import BaseInterfaceModel, Struct, abstractmethod, parse_type
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
@@ -188,12 +188,10 @@ class ReceiptAPI(BaseInterfaceModel):
             same amount of gas as the given ``gas_limit``.
         """
 
-    @cached_property
+    @property
     def trace(self) -> Iterator[TraceFrame]:
         """
         The trace of the transaction, if available from your provider.
-        NOTE: The first time this property is called, it fetches the
-        trace before caching it.
         """
 
         return self.provider.get_transaction_trace(txn_hash=self.txn_hash)
@@ -328,7 +326,7 @@ class CallTraceTreeFactory:
     def create_tree(self, call: CallTreeNode) -> Tree:
         address = self._receipt.provider.network.ecosystem.decode_address(call.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
-        call_signature = None
+
         if contract_type and call.calldata[:4] in contract_type.mutable_methods:
             method = contract_type.mutable_methods[call.calldata[:4]]
             arguments = self._decode_calldata(method, call.calldata[4:])
@@ -350,8 +348,9 @@ class CallTraceTreeFactory:
                     "gas_limit": call.gas_limit,
                 }
                 call_signature += f" {json.dumps(extra_info, indent=_SPACING)}"
+        else:
+            call_signature = next(call.display_nodes).title  # type: ignore
 
-        call_signature = call_signature or next(call.display_nodes).title  # type: ignore
         parent = Tree(call_signature, guide_style="dim")
         for sub_call in call.calls:
             parent.add(self.create_tree(sub_call))
@@ -464,29 +463,27 @@ def _dict_to_str(dictionary: Dict, color: str) -> str:
 
     index = 0
     end_index = len(dictionary) - 1
-    arguments_str = "(\n" if do_wrap else "("
+    kv_str = "(\n" if do_wrap else "("
 
-    for argument, value in dictionary.items():
+    for key, value in dictionary.items():
         if do_wrap:
-            arguments_str += _SPACING
+            kv_str += _SPACING
 
         if isinstance(value, (list, tuple)):
             value = _list_to_str(value, 1 if do_wrap else 0)
 
-        arguments_str += (
-            f"{argument}=[{color}]{value}[/]"
-            if argument and not argument.isnumeric()
-            else f"[{color}]{value}[/]"
+        kv_str += (
+            f"{key}=[{color}]{value}[/]" if key and not key.isnumeric() else f"[{color}]{value}[/]"
         )
         if index < end_index:
-            arguments_str += ", "
+            kv_str += ", "
 
         if do_wrap:
-            arguments_str += "\n"
+            kv_str += "\n"
 
         index += 1
 
-    return f"{arguments_str})"
+    return f"{kv_str})"
 
 
 def _list_to_str(ls: Union[List, Tuple], depth: int = 0) -> str:
