@@ -327,31 +327,38 @@ class CallTraceTreeFactory:
         address = self._receipt.provider.network.ecosystem.decode_address(call.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
 
-        if contract_type and call.calldata[:4] in contract_type.mutable_methods:
-            method = contract_type.mutable_methods[call.calldata[:4]]
-            raw_calldata = call.calldata[4:]
-            arguments = self._decode_calldata(method, raw_calldata)
+        if contract_type:
+            method = None
+            selector = call.calldata[:4]
+            if selector in contract_type.mutable_methods:
+                method = contract_type.mutable_methods[selector]
+            elif selector in contract_type.view_methods:
+                method = contract_type.view_methods[selector]
 
-            # The revert-message appears at the top of the trace output.
-            return_value = (
-                self._decode_returndata(method, call.returndata) if not call.failed else None
-            )
+            if method:
+                raw_calldata = call.calldata[4:]
+                arguments = self._decode_calldata(method, raw_calldata)
 
-            call_signature = str(
-                _MethodTraceSignature(contract_type.name, method.name, arguments, return_value)
-            )
-            call_signature += f" [{call.gas_cost} gas]"
+                # The revert-message appears at the top of the trace output.
+                return_value = (
+                    self._decode_returndata(method, call.returndata) if not call.failed else None
+                )
 
-            if self._verbose:
-                extra_info = {
-                    "address": address,
-                    "value": call.value,
-                    "gas_limit": call.gas_limit,
-                }
-                call_signature += f" {json.dumps(extra_info, indent=_SPACING)}"
-        elif contract_type:
-            call_signature = next(call.display_nodes).title  # type: ignore
-            call_signature = call_signature.replace(address, contract_type.name)
+                call_signature = str(
+                    _MethodTraceSignature(contract_type.name, method.name, arguments, return_value)
+                )
+                call_signature += f" [{call.gas_cost} gas]"
+
+                if self._verbose:
+                    extra_info = {
+                        "address": address,
+                        "value": call.value,
+                        "gas_limit": call.gas_limit,
+                    }
+                    call_signature += f" {json.dumps(extra_info, indent=_SPACING)}"
+            else:
+                call_signature = next(call.display_nodes).title  # type: ignore
+                call_signature = call_signature.replace(address, contract_type.name)
         else:
             call_signature = next(call.display_nodes).title  # type: ignore
 
