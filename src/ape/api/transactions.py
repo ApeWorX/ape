@@ -421,6 +421,9 @@ class CallTraceTreeFactory:
                 if contract_type:
                     return contract_type.name
 
+                elif value == self._receipt.sender:
+                    value = "Sender"
+
             return value
 
         elif isinstance(value, str):
