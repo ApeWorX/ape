@@ -329,7 +329,8 @@ class CallTraceTreeFactory:
 
         if contract_type and call.calldata[:4] in contract_type.mutable_methods:
             method = contract_type.mutable_methods[call.calldata[:4]]
-            arguments = self._decode_calldata(method, call.calldata[4:])
+            raw_calldata = call.calldata[4:]
+            arguments = self._decode_calldata(method, raw_calldata)
 
             # The revert-message appears at the top of the trace output.
             return_value = (
@@ -348,6 +349,9 @@ class CallTraceTreeFactory:
                     "gas_limit": call.gas_limit,
                 }
                 call_signature += f" {json.dumps(extra_info, indent=_SPACING)}"
+        elif contract_type:
+            call_signature = next(call.display_nodes).title  # type: ignore
+            call_signature = call_signature.replace(address, contract_type.name)
         else:
             call_signature = next(call.display_nodes).title  # type: ignore
 
