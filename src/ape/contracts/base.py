@@ -504,7 +504,7 @@ class ContractInstance(BaseAddress):
             if abi.name in events:
                 raise ContractError(
                     f"Multiple events named '{abi.name}' in '{self.contract_type.name}'.\n"
-                    f"Could one be coming from a base class?"
+                    f"Could one be coming from an imported file?"
                 )
 
             events[abi.name] = abi
