@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Un
 
 from eth_abi import decode_abi
 from eth_abi.exceptions import InsufficientDataBytes
-from eth_utils import humanize_hash, is_hex_address, keccak
-from ethpm_types import ContractType
+from eth_utils import humanize_hash, is_hex_address
 from ethpm_types.abi import EventABI, MethodABI
 from evm_trace import CallTreeNode, CallType, TraceFrame, get_calltree_from_trace
 from hexbytes import HexBytes
@@ -330,29 +329,27 @@ class CallTraceTreeFactory:
         address = self._receipt.provider.network.ecosystem.decode_address(call.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
         call_signature = None
-        if contract_type:
-            selector = call.calldata[:4].hex()
-            method = _get_method_called(selector, contract_type)
-            if method:
-                arguments = self._decode_calldata(method, call.calldata[4:])
+        if contract_type and call.calldata[:4] in contract_type.mutable_methods:
+            method = contract_type.mutable_methods[call.calldata[:4]]
+            arguments = self._decode_calldata(method, call.calldata[4:])
 
-                # The revert-message appears at the top of the trace output.
-                return_value = (
-                    self._decode_returndata(method, call.returndata) if not call.failed else None
-                )
+            # The revert-message appears at the top of the trace output.
+            return_value = (
+                self._decode_returndata(method, call.returndata) if not call.failed else None
+            )
 
-                call_signature = str(
-                    _MethodTraceSignature(contract_type.name, method.name, arguments, return_value)
-                )
-                call_signature += f" [{call.gas_cost} gas]"
+            call_signature = str(
+                _MethodTraceSignature(contract_type.name, method.name, arguments, return_value)
+            )
+            call_signature += f" [{call.gas_cost} gas]"
 
-                if self._verbose:
-                    extra_info = {
-                        "address": address,
-                        "value": call.value,
-                        "gas_limit": call.gas_limit,
-                    }
-                    call_signature += f" {json.dumps(extra_info, indent=_SPACING)}"
+            if self._verbose:
+                extra_info = {
+                    "address": address,
+                    "value": call.value,
+                    "gas_limit": call.gas_limit,
+                }
+                call_signature += f" {json.dumps(extra_info, indent=_SPACING)}"
 
         call_signature = call_signature or next(call.display_nodes).title  # type: ignore
         parent = Tree(call_signature, guide_style="dim")
@@ -510,13 +507,3 @@ def _list_to_str(ls: Union[List, Tuple], depth: int = 0) -> str:
         value += _SPACING * depth
         value += "]"
         return value
-
-
-def _get_method_called(selector: str, contract_type: ContractType) -> Optional[MethodABI]:
-    methods = [*contract_type.mutable_methods, *contract_type.view_methods]
-    for method_abi in methods:
-        method_selector = "0x" + keccak(method_abi.selector.encode()).hex()[:8]
-        if method_selector == selector:
-            return method_abi
-
-    return None
