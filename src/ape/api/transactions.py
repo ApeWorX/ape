@@ -16,7 +16,7 @@ from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
 from ape.api.networks import EcosystemAPI
-from ape.exceptions import TransactionError
+from ape.exceptions import DecodingError, TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
 from ape.utils import BaseInterfaceModel, Struct, abstractmethod, parse_type
@@ -340,9 +340,14 @@ class CallTraceTreeFactory:
                 arguments = self._decode_calldata(method, raw_calldata)
 
                 # The revert-message appears at the top of the trace output.
-                return_value = (
-                    self._decode_returndata(method, call.returndata) if not call.failed else None
-                )
+                try:
+                    return_value = (
+                        self._decode_returndata(method, call.returndata)
+                        if not call.failed
+                        else None
+                    )
+                except DecodingError:
+                    return_value = "<?>"
 
                 call_signature = str(
                     _MethodTraceSignature(contract_type.name, method.name, arguments, return_value)
