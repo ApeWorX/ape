@@ -281,7 +281,7 @@ class ReceiptAPI(BaseInterfaceModel):
 
             Contract.functionName(arguments) -> (return_value)
         """
-        tree_factory = CallTraceTreeFactory(self, verbose=verbose)
+        tree_factory = CallTraceParser(self, verbose=verbose)
         root_node_kwargs = {
             "gas_cost": self.gas_used,
             "gas_limit": self.gas_limit,
@@ -291,7 +291,7 @@ class ReceiptAPI(BaseInterfaceModel):
             "call_type": CallType.MUTABLE,
         }
         call_tree = get_calltree_from_trace(self.trace, **root_node_kwargs)
-        root = tree_factory.create_tree(call_tree)
+        root = tree_factory.parse_as_tree(call_tree)
         console = RichConsole()
         console.print(f"Call trace for [bold blue]'{self.txn_hash}'[/]")
 
@@ -314,7 +314,7 @@ class ReceiptAPI(BaseInterfaceModel):
         console.print(root)
 
 
-class CallTraceTreeFactory:
+class CallTraceParser:
     def __init__(self, receipt: ReceiptAPI, verbose: bool = False):
         self._receipt = receipt
         self._verbose = verbose
@@ -323,7 +323,7 @@ class CallTraceTreeFactory:
     def _ecosystem(self) -> EcosystemAPI:
         return self._receipt.provider.network.ecosystem
 
-    def create_tree(self, call: CallTreeNode) -> Tree:
+    def parse_as_tree(self, call: CallTreeNode) -> Tree:
         address = self._receipt.provider.network.ecosystem.decode_address(call.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
 
@@ -337,16 +337,14 @@ class CallTraceTreeFactory:
 
             if method:
                 raw_calldata = call.calldata[4:]
-                arguments = self._decode_calldata(method, raw_calldata)
+                arguments = self.decode_calldata(method, raw_calldata)
 
                 # The revert-message appears at the top of the trace output.
                 try:
                     return_value = (
-                        self._decode_returndata(method, call.returndata)
-                        if not call.failed
-                        else None
+                        self.decode_returndata(method, call.returndata) if not call.failed else None
                     )
-                except DecodingError:
+                except (DecodingError, InsufficientDataBytes):
                     return_value = "<?>"
 
                 call_signature = str(
@@ -359,6 +357,7 @@ class CallTraceTreeFactory:
                         "address": address,
                         "value": call.value,
                         "gas_limit": call.gas_limit,
+                        "call_type": call.call_type,
                     }
                     call_signature += f" {json.dumps(extra_info, indent=_SPACING)}"
             else:
@@ -369,22 +368,22 @@ class CallTraceTreeFactory:
 
         parent = Tree(call_signature, guide_style="dim")
         for sub_call in call.calls:
-            parent.add(self.create_tree(sub_call))
+            parent.add(self.parse_as_tree(sub_call))
 
         return parent
 
-    def _decode_calldata(self, method: MethodABI, raw_data: bytes) -> Dict:
+    def decode_calldata(self, method: MethodABI, raw_data: bytes) -> Dict:
         input_types = [i.canonical_type for i in method.inputs]  # type: ignore
 
         try:
             raw_input_values = decode_abi(input_types, raw_data)
             input_values = [
-                self._decode_value(
+                self.decode_value(
                     self._ecosystem.decode_primitive_value(v, parse_type(t)),
                 )
                 for v, t in zip(raw_input_values, input_types)
             ]
-        except InsufficientDataBytes:
+        except (DecodingError, InsufficientDataBytes):
             input_values = ["<?>" for _ in input_types]
 
         arguments = {}
@@ -396,17 +395,15 @@ class CallTraceTreeFactory:
 
         return arguments
 
-    def _decode_returndata(self, method: MethodABI, raw_data: bytes) -> Any:
-        values = [
-            self._decode_value(v) for v in self._ecosystem.decode_returndata(method, raw_data)
-        ]
+    def decode_returndata(self, method: MethodABI, raw_data: bytes) -> Any:
+        values = [self.decode_value(v) for v in self._ecosystem.decode_returndata(method, raw_data)]
 
         if len(values) == 1:
             return values[0]
 
         return values
 
-    def _decode_value(self, value):
+    def decode_value(self, value):
         if isinstance(value, HexBytes):
             try:
                 string_value = value.strip(b"\x00").decode("utf8")
@@ -431,7 +428,7 @@ class CallTraceTreeFactory:
             return f'"{value}"'
 
         elif isinstance(value, (list, tuple)):
-            return [self._decode_value(v) for v in value]
+            return [self.decode_value(v) for v in value]
 
         elif isinstance(value, Struct):
             return {k: v for k, v in value.items()}
