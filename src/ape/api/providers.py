@@ -22,6 +22,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
+from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     ContractLogicError,
@@ -74,6 +75,7 @@ class BlockAPI(BaseInterfaceModel):
 
     gas_data: BlockGasAPI
     consensus_data: BlockConsensusAPI
+    num_transactions: int = 0
     hash: Optional[Any] = None
     number: Optional[int] = None
     parent_hash: Optional[Any] = None
@@ -86,6 +88,11 @@ class BlockAPI(BaseInterfaceModel):
         if value and not isinstance(value, HexBytes):
             raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
         return value
+
+    @cached_property
+    def transactions(self) -> List[TransactionAPI]:
+        query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
+        return list(self.query_manager.query(query))  # type: ignore
 
 
 class ProviderAPI(BaseInterfaceModel):
@@ -281,6 +288,18 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             :class:`~api.providers.ReceiptAPI`:
             The receipt of the transaction with the given hash.
+        """
+
+    @abstractmethod
+    def get_transactions_by_block(self, block_id: HexBytes) -> Iterator[TransactionAPI]:
+        """
+        Get the information about a set of transactions from a block.
+
+        Args:
+            block_id (HexBytes): The hash of a block.
+
+        Returns:
+            Iterator[:class: `~ape.api.transactions.TransactionAPI`]
         """
 
     @abstractmethod
@@ -649,6 +668,17 @@ class Web3Provider(ProviderAPI, ABC):
             }
         )
         return receipt.await_confirmations()
+
+    def get_transactions_by_block(self, block_id: BlockID) -> Iterator:
+        if isinstance(block_id, str):
+            block_id = HexStr(block_id)
+
+            if block_id.isnumeric():
+                block_id = add_0x_prefix(block_id)
+
+        block = self.web3.eth.get_block(block_id, full_transactions=True)
+        for transaction in block.get("transactions"):  # type: ignore
+            yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
 
     def get_contract_logs(
         self,
