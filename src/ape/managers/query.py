@@ -49,7 +49,7 @@ class DefaultQueryProvider(QueryAPI):
 
     @perform_query.register
     def perform_block_transaction_query(self, query: BlockTransactionQuery) -> Iterator:
-        return self.provider.get_transactions_by_block(query.block_id)
+        return self.provider.get_transactions_by_block(query.block_hash)
 
 
 class QueryManager(ManagerAccessMixin):

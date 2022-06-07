@@ -80,7 +80,7 @@ class BlockTransactionQuery(_BaseQuery):
     transactions collected inside the ``BlockAPI` object represented by ``block_id``.
     """
 
-    block_id: Any
+    block_hash: Any
 
     @classmethod
     def all_fields(cls) -> List[str]:
