@@ -24,7 +24,7 @@ def test_basic_query(eth_tester_provider):
     ]
 
 
-def test_block_transaction_query():
+def test_block_transaction_query_api():
     query = BlockTransactionQuery(columns=["*"], block_id=0)
     assert query.columns == [
         "chain_id",
@@ -40,6 +40,14 @@ def test_block_transaction_query():
         "required_confirmations",
         "signature",
     ]
+
+
+def test_block_transaction_query(eth_tester_provider, sender, receiver):
+    sender.transfer(receiver, 100)
+    query = chain.blocks[-1].transactions
+    assert len(query) == 1
+    assert query[0].value == 100
+    assert query[0].chain_id == 61
 
 
 def test_block_query(eth_tester_provider):
