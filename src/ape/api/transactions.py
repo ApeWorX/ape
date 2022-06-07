@@ -207,10 +207,18 @@ class ReceiptAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
+
+        try:
+            self.raise_for_status()
+        except TransactionError:
+            # Skip waiting for confirmations when the transaction has failed.
+            return self
+
         # Wait for nonce from provider to increment.
         sender_nonce = self.provider.get_nonce(self.sender)
         iterations_timeout = 20
         iteration = 0
+
         while sender_nonce == self.nonce:  # type: ignore
             time.sleep(1)
             sender_nonce = self.provider.get_nonce(self.sender)
