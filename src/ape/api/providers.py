@@ -677,8 +677,8 @@ class Web3Provider(ProviderAPI, ABC):
                 block_id = add_0x_prefix(block_id)
 
         block = self.web3.eth.get_block(block_id, full_transactions=True)
-        for transaction in block.get("transactions"):
-            yield self.network.ecosystem.create_transaction(**transaction)
+        for transaction in block.get("transactions"):  # type: ignore
+            yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
 
     def get_contract_logs(
         self,
