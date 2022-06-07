@@ -23,7 +23,7 @@ from ape.api import (
 )
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
-from ape.exceptions import ContractLogicError, DecodingError
+from ape.exceptions import DecodingError, TransactionError
 from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import LogInputABICollection, Struct, StructParser, is_array, returns_array
 from ape_ethereum.transactions import (
@@ -220,7 +220,7 @@ class Ethereum(EcosystemAPI):
             slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
             if master_copy == slot_0:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=master_copy)
-        except (DecodingError, ContractLogicError):
+        except (DecodingError, TransactionError):
             pass
 
         # delegate proxy, read `proxyType()` and `implementation()`
@@ -246,7 +246,7 @@ class Ethereum(EcosystemAPI):
             if target != "0x0000000000000000000000000000000000000000":
                 return ProxyInfo(type=ProxyType.Delegate, target=target)
 
-        except (DecodingError, ContractLogicError, ValueError):
+        except (DecodingError, TransactionError, ValueError):
             pass
 
         return None
