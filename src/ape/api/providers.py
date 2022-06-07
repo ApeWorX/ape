@@ -92,7 +92,7 @@ class BlockAPI(BaseInterfaceModel):
     @cached_property
     def transactions(self) -> List[TransactionAPI]:
         query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-        return list(self.query_manager.query(query))
+        return list(self.query_manager.query(query))  # type: ignore
 
 
 class ProviderAPI(BaseInterfaceModel):
@@ -669,7 +669,7 @@ class Web3Provider(ProviderAPI, ABC):
         )
         return receipt.await_confirmations()
 
-    def get_transactions_by_block(self, block_id: BlockID) -> Iterator[ReceiptAPI]:
+    def get_transactions_by_block(self, block_id: BlockID) -> Iterator:
         if isinstance(block_id, str):
             block_id = HexStr(block_id)
 
