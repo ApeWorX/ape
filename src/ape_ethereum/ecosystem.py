@@ -12,13 +12,7 @@ from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksu
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 
-from ape.api import (
-    BlockAPI,
-    EcosystemAPI,
-    PluginConfig,
-    ReceiptAPI,
-    TransactionAPI,
-)
+from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
 from ape.exceptions import DecodingError, TransactionError

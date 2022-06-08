@@ -16,7 +16,7 @@ from eth_utils import add_0x_prefix, keccak
 from ethpm_types.abi import EventABI
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
@@ -38,13 +38,13 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID
 from ape.utils import (
+    EMPTY_BYTES32,
     BaseInterfaceModel,
+    LogInputABICollection,
     abstractmethod,
     cached_property,
-    raises_not_implemented,
-    LogInputABICollection,
     gas_estimation_error_message,
-    EMPTY_BYTES32
+    raises_not_implemented,
 )
 
 
