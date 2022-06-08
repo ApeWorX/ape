@@ -105,7 +105,7 @@ def test_compile_when_source_contains_return_characters(ape_cli, runner, project
     # and that triggered endless re-compiles because it technically contains extra
     # bytes than the ones that show up in the text.
 
-    # Change the contents of a file to contains the '\r' character.
+    # Change the contents of a file to contain the '\r' character.
     source_path = project.contracts_folder / "Interface.json"
     modified_source_text = f"{source_path.read_text()}\r"
     source_path.unlink()
