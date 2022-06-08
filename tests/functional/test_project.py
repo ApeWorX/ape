@@ -5,13 +5,6 @@ from typing import Dict
 import pytest
 from ethpm_types.manifest import PackageManifest
 
-import ape
-
-
-@pytest.fixture
-def project_manager():
-    return ape.project
-
 
 @pytest.fixture
 def oz_dependencies_config():
