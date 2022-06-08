@@ -13,18 +13,17 @@ def test_basic_query(eth_tester_provider):
     assert x[3].timestamp > x[2].timestamp >= x[1].timestamp >= x[0].timestamp
     columns = list(x[0].dict().keys())
     assert columns == [
-        "num_transactions",
-        "hash",
-        "number",
-        "parent_hash",
-        "size",
-        "timestamp",
-        "transaction_ids",
-        "gas_limit",
-        "gas_used",
-        "base_fee",
-        "difficulty",
-        "total_difficulty",
+        'num_transactions',
+        'hash',
+        'number',
+        'parentHash',
+        'size',
+        'timestamp',
+        'gasLimit',
+        'gasUsed',
+        'baseFeePerGas',
+        'difficulty',
+        'totalDifficulty'
     ]
 
 

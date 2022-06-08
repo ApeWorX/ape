@@ -104,12 +104,6 @@ class BlockAPI(BaseInterfaceModel):
             raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
         return value
 
-    @validator("transaction_ids", each_item=True, pre=True)
-    def validate_transactions(cls, value):
-        if isinstance(value, HexBytes):
-            return value
-        return HexBytes(value)
-
     @cached_property
     def transactions(self) -> List[TransactionAPI]:
         query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
@@ -650,11 +644,11 @@ class Web3Provider(ProviderAPI, ABC):
     def base_fee(self) -> int:
         block = self.get_block("latest")
 
-        if block.gas_data.base_fee is None:
+        if block.base_fee is None:
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
             raise NotImplementedError("base_fee is not implemented by this provider.")
 
-        return block.gas_data.base_fee
+        return block.base_fee
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
         if isinstance(block_id, str):

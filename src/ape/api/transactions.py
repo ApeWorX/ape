@@ -54,6 +54,12 @@ class TransactionAPI(BaseInterfaceModel):
 
         return self.value + self.max_fee
 
+    @abstractmethod
+    def serialize_transaction(self) -> bytes:
+        """
+        Serialize the transaction
+        """
+
     def __repr__(self) -> str:
         data = self.dict()
         params = ", ".join(f"{k}={v}" for k, v in data.items())
