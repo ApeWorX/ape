@@ -290,13 +290,14 @@ class ProviderAPI(BaseInterfaceModel):
             The receipt of the transaction with the given hash.
         """
 
-    @abstractmethod
-    def get_transactions_by_block(self, block_id: HexBytes) -> Iterator[TransactionAPI]:
+    # TODO: After 0.2.8 release, make this @abstractmethod
+    @raises_not_implemented
+    def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
         """
         Get the information about a set of transactions from a block.
 
         Args:
-            block_id (HexBytes): The hash of a block.
+            block_id (:class:`~ape.types.BlockID`): The ID of the block.
 
         Returns:
             Iterator[:class: `~ape.api.transactions.TransactionAPI`]
