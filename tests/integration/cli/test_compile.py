@@ -100,6 +100,29 @@ def test_compile_when_sources_change(ape_cli, runner, project, clean_cache):
 
 
 @skip_projects_except(["multiple-interfaces"])
+def test_compile_when_source_contains_return_characters(ape_cli, runner, project, clean_cache):
+    # NOTE: This tests a bugfix where a source file contained return-characters
+    # and that triggered endless re-compiles because it technically contains extra
+    # bytes than the ones that show up in the text.
+
+    # Change the contents of a file to contains the '\r' character.
+    source_path = project.contracts_folder / "Interface.json"
+    modified_source_text = f"{source_path.read_text()}\r"
+    source_path.unlink()
+    source_path.touch()
+    source_path.write_text(modified_source_text)
+
+    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "Compiling 'Interface.json'" in result.output
+
+    # Verify that the next time, it does not need to recompile (no changes)
+    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "Compiling 'Interface.json'" not in result.output
+
+
+@skip_projects_except(["multiple-interfaces"])
 def test_can_access_contracts(project, clean_cache):
     # This test does not use the CLI but still requires a project or run off of.
     assert project.Interface, "Unable to access contract when needing to compile"
