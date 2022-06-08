@@ -57,7 +57,6 @@ __all__ = [
     "GeneratedDevAccount",
     "generate_dev_accounts",
     "get_all_files_in_directory",
-    "EMPTY_BYTES32",
     "injected_before_use",
     "is_array",
     "is_named_tuple",

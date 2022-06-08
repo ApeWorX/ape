@@ -231,9 +231,6 @@ class Ethereum(EcosystemAPI):
 
         return None
 
-    def serialize_transaction(self, transaction: TransactionAPI) -> bytes:
-        return self.serialize_transaction(transaction)
-
     def decode_receipt(self, data: dict) -> ReceiptAPI:
         status = data.get("status")
         if status:
@@ -276,7 +273,7 @@ class Ethereum(EcosystemAPI):
         if "transaction_ids" in data:
             data["transactions"] = data.pop("transaction_ids")
         if "total_difficulty" in data:
-            data["totalDifficuly"] = data.pop("total_difficulty")
+            data["totalDifficulty"] = data.pop("total_difficulty")
         if "base_fee" in data:
             data["baseFee"] = data.pop("base_fee")
         return Block.parse_obj(data)

@@ -79,9 +79,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
-            txn_hash = self.web3.eth.send_raw_transaction(
-                txn.serialize_transaction()  # type: ignore
-            )
+            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:

@@ -71,9 +71,7 @@ class BlockConsensusAPI(BaseInterfaceModel):
 
 class BlockAPI(BaseInterfaceModel):
     """
-    An abstract class representing block consensus-data,
-    such as PoW-related information regarding the block.
-    `EIP-3675 <https://eips.ethereum.org/EIPS/eip-3675>`__.
+    An abstract class representing a block and its attributes.
     """
 
     num_transactions: int = 0
