@@ -23,7 +23,7 @@ from ape.api import (
 )
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
-from ape.exceptions import ContractLogicError, DecodingError
+from ape.exceptions import DecodingError, TransactionError
 from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import (
     LogInputABICollection,
@@ -62,6 +62,7 @@ class ProxyType(IntEnum):
     GnosisSafe = 6
     OpenZeppelin = 7  # openzeppelin upgradeability proxy
     Delegate = 8  # eip-897 delegate proxy
+    ZeroAge = 9  # a more-minimal proxy
 
 
 class ProxyInfo(ProxyInfoAPI):
@@ -136,6 +137,7 @@ class Ethereum(EcosystemAPI):
             ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
             ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
             ProxyType.Clones: r"36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",  # noqa: E501
+            ProxyType.ZeroAge: r"3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e602a57fd5bf3",
         }
         for type, pattern in patterns.items():
             match = re.match(pattern, code)
@@ -182,7 +184,7 @@ class Ethereum(EcosystemAPI):
             slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
             if master_copy == slot_0:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=master_copy)
-        except (DecodingError, ContractLogicError):
+        except (DecodingError, TransactionError):
             pass
 
         # delegate proxy, read `proxyType()` and `implementation()`
@@ -208,7 +210,7 @@ class Ethereum(EcosystemAPI):
             if target != "0x0000000000000000000000000000000000000000":
                 return ProxyInfo(type=ProxyType.Delegate, target=target)
 
-        except (DecodingError, ContractLogicError, ValueError):
+        except (DecodingError, TransactionError, ValueError):
             pass
 
         return None
@@ -234,10 +236,10 @@ class Ethereum(EcosystemAPI):
             required_confirmations=data.get("required_confirmations", 0),
             txn_hash=txn_hash,
             status=status,
-            block_number=data["blockNumber"],
+            block_number=data.get("block_number") or data.get("blockNumber"),
             input_data=data.get("input", ""),
             gas_used=data["gasUsed"],
-            gas_price=data["gasPrice"],
+            gas_price=data.get("gas_price") or data.get("gasPrice"),
             gas_limit=data.get("gas") or data.get("gasLimit"),
             logs=data.get("logs", []),
             contract_address=data.get("contractAddress"),

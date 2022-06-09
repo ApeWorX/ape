@@ -6,10 +6,15 @@ from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator, val
 from ape.types import AddressType
 from ape.utils import BaseInterfaceModel, abstractmethod
 
-from .providers import BlockAPI
 from .transactions import TransactionAPI
 
-QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractMethodQuery"]
+QueryType = Union[
+    "BlockQuery",
+    "BlockTransactionQuery",
+    "AccountTransactionQuery",
+    "ContractEventQuery",
+    "ContractMethodQuery",
+]
 
 
 class _BaseQuery(BaseModel):
@@ -64,10 +69,31 @@ class BlockQuery(_BaseBlockQuery):
 
     @classmethod
     def all_fields(cls) -> List[str]:
+        from .providers import BlockAPI
+
         return list(BlockAPI.__fields__)
 
 
-class _BaseAccountQuery(_BaseQuery):
+class BlockTransactionQuery(_BaseQuery):
+    """
+    A ``QueryType`` that collects properties of ``TransactionAPI`` over a range of
+    transactions collected inside the ``BlockAPI` object represented by ``block_id``.
+    """
+
+    block_id: Any
+
+    @classmethod
+    def all_fields(cls) -> List[str]:
+        return list(TransactionAPI.__fields__)
+
+
+class AccountTransactionQuery(_BaseQuery):
+    """
+    A ``QueryType`` that collects properties of ``TransactionAPI`` over a range
+    of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
+    """
+
+    account: AddressType
     start_nonce: NonNegativeInt = 0
     stop_nonce: NonNegativeInt
 
@@ -80,15 +106,6 @@ class _BaseAccountQuery(_BaseQuery):
             )
 
         return values
-
-
-class AccountQuery(_BaseAccountQuery):
-    """
-    A ``QueryType`` that collects properties of ``TransactionAPI`` over a range
-    of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
-    """
-
-    account: AddressType
 
     @classmethod
     def all_fields(cls) -> List[str]:

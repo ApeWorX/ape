@@ -5,7 +5,7 @@ import pytest
 
 from ape.exceptions import NetworkError
 from ape.managers.config import DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT, DeploymentConfigCollection
-from tests.functional.conftest import DEPENDENCY_PROJECT_PATH
+from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 
 def test_integer_deployment_addresses(networks):
@@ -68,4 +68,4 @@ def test_dependencies(dependency_config, config):
     assert len(config.dependencies) == 1
     assert config.dependencies[0].name == "testdependency"
     assert config.dependencies[0].contracts_folder == "source/v0.1"
-    assert config.dependencies[0].local == str(DEPENDENCY_PROJECT_PATH)
+    assert config.dependencies[0].local == str(PROJECT_WITH_LONG_CONTRACTS_FOLDER)
