@@ -237,7 +237,9 @@ class cached_iterator(property):
     The intent is to prevent repeated fetches of data.
     """
 
-    cache: Optional[Tuple[Iterator[Any], ...]] = None
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        self.cache: Optional[Tuple[Iterator[Any], ...]] = None
+        super().__init__(fget=fget, fset=fset, fdel=fdel, doc=doc)
 
     def __get__(self, obj, objtype=None):
         iterator = self.cache[1] if self.cache else self.fget(obj)
