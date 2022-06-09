@@ -1,7 +1,8 @@
 import json
+import sys
 import time
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import IO, TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi
 from eth_abi.exceptions import InsufficientDataBytes
@@ -272,14 +273,14 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return self
 
-    def show_trace(self, verbose: bool = False):
+    def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         """
         Display the complete sequence of contracts and methods called during
         the transaction.
 
-        Display format::
-
-            Contract.functionName(arguments) -> (return_value)
+        Args:
+            verbose (bool): Set to ``True`` to include more information.
+            file (IO[str]): The file to send output to. Defaults to stdout.
         """
         tree_factory = CallTraceParser(self, verbose=verbose)
         root_node_kwargs = {
@@ -292,7 +293,7 @@ class ReceiptAPI(BaseInterfaceModel):
         }
         call_tree = get_calltree_from_trace(self.trace, **root_node_kwargs)
         root = tree_factory.parse_as_tree(call_tree)
-        console = RichConsole()
+        console = RichConsole(file=file)
         console.print(f"Call trace for [bold blue]'{self.txn_hash}'[/]")
 
         if call_tree.failed:

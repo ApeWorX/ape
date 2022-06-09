@@ -121,3 +121,49 @@ In your `ape-config.yaml` file, add the following:
 ```yaml
 transaction_acceptance_timeout: 600  # 5 minutes
 ```
+
+## Traces
+
+If you are using a provider that is able to fetch transaction traces, you can call the [`ReceiptAPI.show_trace()`](../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_trace) method.
+The [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) plugin is able to achieve this.
+
+An example trace output looks like:
+
+```bash
+Call trace for '0xd15e59e4cca4aaf3ac57be8b71d35bb53549ec3ec1833da183d3fa5f4f609b83'
+Sender=0x1e59ce931B4CFea3fe4B875411e280e173cB7A9C
+ContractA.methodWithoutArguments() -> 0x00..7a9c [411973 gas]
+├── ContractB.methodB1(foo="bar", bar=42) [401601 gas]
+│   ├── ContractC.getSomeList() -> [
+│   │     3425311345134513461345134534531452345,
+│   │     111344445534535353,
+│   │     993453434534534534534977788884443333
+│   │   ] [369688 gas]
+│   └── ContractC.methodC1(foo="bar", baz=36, ban=ContractA) [363455 gas]
+├── ContractB.callMe(foo=Sender) -> Sender [233011 gas]
+├── ContractB.methodB2(foo=Sender) [231443 gas]
+│   ├── ContractC.paperwork(ContractA) -> (
+│   │     foo="simpler",
+│   │     bar=42,
+│   │     baz=0xF2Df0b975c0C9eFa2f8CA0491C2d1685104d2488
+│   │   ) [226904 gas]
+│   ├── ContractC.methodC1(foo="bar", bar=0, baz=ContractC) [221807 gas]
+│   ├── ContractC.methodC2() [146780 gas]
+│   └── ContractC.methodC2() [121561 gas]
+├── ContractC.addressToValue(Sender) -> 0 [99841 gas]
+├── ContractB.bandPractice(Sender) -> 0 [93806 gas]
+├── ContractB.methodB1(foo="bar", bar=0) [91836 gas]
+│   ├── ContractC.getSomeList() -> [
+│   │     3425311345134513461345134534531452345,
+│   │     111344445534535353,
+│   │     993453434534534534534977788884443333
+│   │   ] [86068 gas]
+│   └── ContractC.methodC1(foo="bar", bar=0, baz=ContractA) [82296 gas]
+└── ContractB.methodB1(foo="bar", bar=111) [54812 gas]
+    ├── ContractC.getSomeList() -> [
+    │     3425311345134513461345134534531452345,
+    │     111344445534535353,
+    │     993453434534534534534977788884443333
+    │   ] [51690 gas]
+    └── ContractC.methodC1(foo="bar", bar=111, baz=ContractA) [47917 gas]
+```
