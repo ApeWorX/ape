@@ -438,8 +438,6 @@ class ContractCache(BaseManager):
             return default
 
         contract_type = self._get_contract_type_from_disk(address)
-        if not contract_type:
-            contract_type = self._get_contract_type_from_explorer(address)
 
         if not contract_type:
             # Also gets cached to disc for faster lookup next time.
