@@ -240,15 +240,9 @@ class cached_iterator(property):
     cache: Optional[Tuple[Iterator[Any], ...]] = None
 
     def __get__(self, obj, objtype=None):
-        if self.cache:
-            new_cache = tee(self.cache[0], 1)
-            iterator = self.cache[0]
-        else:
-            iterator = self.fget(obj)
-            new_cache = tee(iterator, 1)
-
-        self.cache = new_cache
-        return iterator
+        iterator = self.cache[1] if self.cache else self.fget(obj)
+        self.cache = tee(iterator)
+        return self.cache[0]
 
 
 __all__ = [
