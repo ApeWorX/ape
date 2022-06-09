@@ -124,10 +124,18 @@ transaction_acceptance_timeout: 600  # 5 minutes
 
 ## Traces
 
-If you are using a provider that is able to fetch transaction traces, you can call the [`ReceiptAPI.show_trace()`](../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_trace) method.
-The [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) plugin is able to achieve this.
+If you are using a provider that is able to fetch transaction traces, such as the [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) provider, you can call the [`ReceiptAPI.show_trace()`](../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_trace) method.
 
-An example trace output looks like:
+```python
+from ape import accounts, project
+
+owner = accounts.load("acct")
+contract = project.Contract.deploy(sender=owner)
+receipt = contract.methodWithoutArguments()
+receipt.show_trace()
+```
+
+The trace might look something like:
 
 ```bash
 Call trace for '0xd15e59e4cca4aaf3ac57be8b71d35bb53549ec3ec1833da183d3fa5f4f609b83'
@@ -162,4 +170,14 @@ ContractA.methodWithoutArguments() -> 0x00..7a9c [411973 gas]
     │     993453434534534534534977788884443333
     │   ] [51690 gas]
     └── ContractC.methodC1(foo="bar", bar=111, baz=ContractA) [47917 gas]
+```
+
+Additionally, you can view the traces of other transactions on your network.
+
+```python
+from ape import networks
+
+txn_hash = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
+receipt = networks.provider.get_transaction(txn_hash)
+receipt.show_trace()
 ```
