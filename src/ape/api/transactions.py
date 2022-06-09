@@ -27,9 +27,6 @@ if TYPE_CHECKING:
     from ape.contracts import ContractEvent
 
 
-_METHOD_NAME_TRACE_COLOR = "bright_green"
-_ARGUMENT_VALUE_TRACE_COLOR = "bright_magenta"
-_RETURN_VALUE_TRACE_COLOR = "bright_blue"
 _WRAP_THRESHOLD = 50
 _SPACING = "  "
 
@@ -351,11 +348,13 @@ class CallTraceParser:
     def parse_as_tree(self, call: CallTreeNode) -> Tree:
         address = self._receipt.provider.network.ecosystem.decode_address(call.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
-        call_signature = address
+        selector = call.calldata[:4]
+
+        # NOTE: Only initiailized for mypy's sake.
+        call_signature = f"{address}.<{selector.hex()}>()"
 
         if contract_type:
             method = None
-            selector = call.calldata[:4]
             if selector in contract_type.mutable_methods:
                 method = contract_type.mutable_methods[selector]
             elif selector in contract_type.view_methods:
@@ -381,7 +380,7 @@ class CallTraceParser:
                         return_value,
                     )
                 )
-                call_signature += f" [{call.gas_cost} gas]"
+                call_signature += f" [dim][{call.gas_cost} gas][/]"
 
                 if self._verbose:
                     extra_info = {
@@ -471,6 +470,13 @@ class CallTraceParser:
         return value
 
 
+class _TraceColor:
+    CONTRACTS = "brown"
+    METHODS = "bright_green"
+    INPUTS = "bright_magenta"
+    OUTPUTS = "bright_blue"
+
+
 @dataclass()
 class _MethodTraceSignature:
     contract_name: str
@@ -479,7 +485,9 @@ class _MethodTraceSignature:
     return_value: Any
 
     def __str__(self) -> str:
-        call_path = f"{self.contract_name}.[{_METHOD_NAME_TRACE_COLOR}]{self.method_name}[/]"
+        contract = f"[{_TraceColor.CONTRACTS}]{self.contract_name}[/]"
+        method = f"[{_TraceColor.METHODS}]{self.method_name}[/]"
+        call_path = f"{contract}.{method}"
         arguments_str = self._build_arguments_str()
         signature = f"{call_path}{arguments_str}"
 
@@ -493,19 +501,19 @@ class _MethodTraceSignature:
         if not self.arguments:
             return "()"
 
-        return _dict_to_str(self.arguments, _ARGUMENT_VALUE_TRACE_COLOR)
+        return _dict_to_str(self.arguments, _TraceColor.INPUTS)
 
     def _build_return_str(self) -> Optional[str]:
         if self.return_value in [None, [], (), {}]:
             return None
 
         elif isinstance(self.return_value, dict):
-            return _dict_to_str(self.return_value, _RETURN_VALUE_TRACE_COLOR)
+            return _dict_to_str(self.return_value, _TraceColor.OUTPUTS)
 
         elif isinstance(self.return_value, (list, tuple)):
-            return f"[{_RETURN_VALUE_TRACE_COLOR}]{_list_to_str(self.return_value)}[/]"
+            return f"[{_TraceColor.OUTPUTS}]{_list_to_str(self.return_value)}[/]"
 
-        return f"[{_RETURN_VALUE_TRACE_COLOR}]{self.return_value}[/]"
+        return f"[{_TraceColor.OUTPUTS}]{self.return_value}[/]"
 
 
 def _dict_to_str(dictionary: Dict, color: str) -> str:
