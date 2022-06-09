@@ -2,6 +2,7 @@ import json
 import sys
 import time
 from dataclasses import dataclass
+from itertools import tee
 from typing import IO, TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi
@@ -168,6 +169,7 @@ class ReceiptAPI(BaseInterfaceModel):
     status: int
     txn_hash: str
     value: int = 0
+    _trace_cache: Optional[Tuple[Iterator[TraceFrame], ...]] = None
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
@@ -195,7 +197,16 @@ class ReceiptAPI(BaseInterfaceModel):
         The trace of the transaction, if available from your provider.
         """
 
-        return self.provider.get_transaction_trace(txn_hash=self.txn_hash)
+        # Always keept a cached iterator on hand to avoid making RPC again.
+        if self._trace_cache:
+            new_cache = tee(self._trace_cache[0], 1)
+            trace_iterator = self._trace_cache[0]
+        else:
+            trace_iterator = self.provider.get_transaction_trace(txn_hash=self.txn_hash)
+            new_cache = tee(trace_iterator, 1)
+
+        self._trace_cache = new_cache
+        return trace_iterator
 
     @property
     def _explorer(self) -> Optional[ExplorerAPI]:
@@ -324,7 +335,7 @@ class ReceiptAPI(BaseInterfaceModel):
 
             console.print(f"🚫 [bold red]{suffix}[/]")
 
-        console.print(f"Sender={self.sender}")
+        console.print(f"txn.origin={self.sender}")
         console.print(root)
 
 
@@ -340,6 +351,7 @@ class CallTraceParser:
     def parse_as_tree(self, call: CallTreeNode) -> Tree:
         address = self._receipt.provider.network.ecosystem.decode_address(call.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
+        call_signature = address
 
         if contract_type:
             method = None
@@ -442,7 +454,7 @@ class CallTraceParser:
                     return contract_type.name
 
                 elif value == self._receipt.sender:
-                    value = "Sender"
+                    value = "tx.origin"
 
             return value
 
