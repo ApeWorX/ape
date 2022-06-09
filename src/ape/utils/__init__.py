@@ -20,6 +20,7 @@ from ape.utils.github import GithubClient, github_client
 from ape.utils.misc import (
     USER_AGENT,
     add_padding_to_strings,
+    cached_iterator,
     cached_property,
     expand_environment_variables,
     extract_nested_value,
@@ -43,6 +44,7 @@ __all__ = [
     "add_padding_to_strings",
     "BaseInterface",
     "BaseInterfaceModel",
+    "cached_iterator",
     "cached_property",
     "DEFAULT_NUMBER_OF_TEST_ACCOUNTS",
     "DEFAULT_TEST_MNEMONIC",

@@ -2,7 +2,6 @@ import json
 import sys
 import time
 from dataclasses import dataclass
-from itertools import tee
 from typing import IO, TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi
@@ -21,7 +20,7 @@ from ape.api.networks import EcosystemAPI
 from ape.exceptions import DecodingError, TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
-from ape.utils import BaseInterfaceModel, Struct, abstractmethod, parse_type
+from ape.utils import BaseInterfaceModel, Struct, abstractmethod, cached_iterator, parse_type
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
@@ -166,7 +165,6 @@ class ReceiptAPI(BaseInterfaceModel):
     status: int
     txn_hash: str
     value: int = 0
-    _trace_cache: Optional[Tuple[Iterator[TraceFrame], ...]] = None
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
@@ -188,22 +186,12 @@ class ReceiptAPI(BaseInterfaceModel):
             same amount of gas as the given ``gas_limit``.
         """
 
-    @property
+    @cached_iterator
     def trace(self) -> Iterator[TraceFrame]:
         """
         The trace of the transaction, if available from your provider.
         """
-
-        # Always keept a cached iterator on hand to avoid making RPC again.
-        if self._trace_cache:
-            new_cache = tee(self._trace_cache[0], 1)
-            trace_iterator = self._trace_cache[0]
-        else:
-            trace_iterator = self.provider.get_transaction_trace(txn_hash=self.txn_hash)
-            new_cache = tee(trace_iterator, 1)
-
-        self._trace_cache = new_cache
-        return trace_iterator
+        return self.provider.get_transaction_trace(txn_hash=self.txn_hash)
 
     @property
     def _explorer(self) -> Optional[ExplorerAPI]:

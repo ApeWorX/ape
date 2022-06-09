@@ -1,6 +1,13 @@
 from ape.utils.misc import add_padding_to_strings, extract_nested_value
 
 
+def cached_iterator(f):
+    def inner():
+        return
+
+    return inner
+
+
 def test_extract_nested_value():
     structure = {"foo": {"bar": {"test": "expected_value"}}}
     assert extract_nested_value(structure, "foo", "bar", "test") == "expected_value"

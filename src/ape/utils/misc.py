@@ -1,8 +1,9 @@
 import json
 import sys
 from functools import lru_cache
+from itertools import tee
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple
 
 import requests
 import yaml
@@ -228,6 +229,26 @@ def raises_not_implemented(fn):
         )
 
     return inner
+
+
+class cached_iterator(property):
+    """
+    A cached iterator decorator. Use it as you would ``@cached_property``.
+    The intent is to prevent repeated fetches of data.
+    """
+
+    cache: Optional[Tuple[Iterator[Any], ...]] = None
+
+    def __get__(self, obj, objtype=None):
+        if self.cache:
+            new_cache = tee(self.cache[0], 1)
+            iterator = self.cache[0]
+        else:
+            iterator = self.fget(obj)
+            new_cache = tee(iterator, 1)
+
+        self.cache = new_cache
+        return iterator
 
 
 __all__ = [
