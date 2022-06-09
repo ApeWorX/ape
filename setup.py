@@ -114,9 +114,9 @@ setup(
         "typing-extensions ; python_version<'3.8'",
         "python-dateutil>=2.8.2,<3.0",
         "web3[tester]>=5.29.0,<6.0",
-        "eth-abi==2.1.1",
-        "eth-utils==1.10.0",
-        "eth-rlp==0.2.1",
+        "eth-abi>=2.1.1,<3.0",
+        "eth-utils>=1.10.0,<2.0",
+        "eth-rlp>=0.2.1,<0.3",
         "eth-account==0.5.7",
     ],
     entry_points={
