@@ -17,7 +17,6 @@ from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
 from ape.api.networks import EcosystemAPI
-from ape.contracts import ContractInstance
 from ape.exceptions import DecodingError, TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
@@ -346,11 +345,8 @@ class CallTraceParser:
             method = None
             contract_name = contract_type.name
             if "symbol" in contract_type.view_methods:
-                contract = self._receipt.chain_manager.contracts.instance_at(
-                    address, contract_type=contract_type
-                )
-                if isinstance(contract, ContractInstance):
-                    contract_name = contract.symbol() or contract_name
+                contract = self._receipt.create_contract(address, contract_type)
+                contract_name = contract.symbol() or contract_name
 
             if selector in contract_type.mutable_methods:
                 method = contract_type.mutable_methods[selector]
