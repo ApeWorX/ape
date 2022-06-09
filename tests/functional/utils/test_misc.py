@@ -1,4 +1,7 @@
-from ape.utils.misc import add_padding_to_strings, extract_nested_value
+import pytest
+
+from ape.exceptions import APINotImplementedError
+from ape.utils.misc import add_padding_to_strings, extract_nested_value, raises_not_implemented
 
 
 def test_extract_nested_value():
@@ -16,3 +19,18 @@ def test_add_spacing_to_strings():
     expected = ["foo         ", "address     ", "ethereum    "]
     actual = add_padding_to_strings(string_list, extra_spaces=4)
     assert actual == expected
+
+
+def test_raises_not_implemented():
+    @raises_not_implemented
+    def unimplemented_api_method():
+        pass
+
+    with pytest.raises(APINotImplementedError) as err:
+        unimplemented_api_method()
+
+    assert str(err.value) == (
+        "Attempted to call method 'test_raises_not_implemented.<locals>.unimplemented_api_method', "
+        "method not supported."
+    )
+    assert isinstance(err.value, NotImplementedError)
