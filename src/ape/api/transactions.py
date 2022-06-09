@@ -371,6 +371,7 @@ class CallTraceParser:
                         method.name or f"<{selector}>",
                         arguments,
                         return_value,
+                        call.call_type,
                     )
                 )
                 call_signature += f" [dim][{call.gas_cost} gas][/]"
@@ -464,10 +465,11 @@ class CallTraceParser:
 
 
 class _TraceColor:
-    CONTRACTS = "brown"
+    CONTRACTS = "#af5f00"
     METHODS = "bright_green"
     INPUTS = "bright_magenta"
     OUTPUTS = "bright_blue"
+    DELEGATE = "#d75f00"
 
 
 @dataclass()
@@ -476,11 +478,16 @@ class _MethodTraceSignature:
     method_name: str
     arguments: Dict
     return_value: Any
+    call_type: CallType
 
     def __str__(self) -> str:
         contract = f"[{_TraceColor.CONTRACTS}]{self.contract_name}[/]"
         method = f"[{_TraceColor.METHODS}]{self.method_name}[/]"
         call_path = f"{contract}.{method}"
+
+        if self.call_type == CallType.DELEGATE:
+            call_path = f"[orange](delegate)[/] {call_path}"
+
         arguments_str = self._build_arguments_str()
         signature = f"{call_path}{arguments_str}"
 
