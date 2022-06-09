@@ -432,7 +432,7 @@ class CallTraceParser:
             return [self.decode_value(v) for v in value]
 
         elif isinstance(value, Struct):
-            return {k: v for k, v in value.items()}
+            return {k: self.decode_value(v) for k, v in value.items()}
 
         return value
 

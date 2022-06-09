@@ -142,11 +142,7 @@ ContractA.methodWithoutArguments() -> 0x00..7a9c [411973 gas]
 │   └── ContractC.methodC1(foo="bar", baz=36, ban=ContractA) [363455 gas]
 ├── ContractB.callMe(foo=Sender) -> Sender [233011 gas]
 ├── ContractB.methodB2(foo=Sender) [231443 gas]
-│   ├── ContractC.paperwork(ContractA) -> (
-│   │     foo="simpler",
-│   │     bar=42,
-│   │     baz=0xF2Df0b975c0C9eFa2f8CA0491C2d1685104d2488
-│   │   ) [226904 gas]
+│   ├── ContractC.paperwork(ContractA) -> (os="simpler", country=36, wings=ContractA) [226904 gas]
 │   ├── ContractC.methodC1(foo="bar", bar=0, baz=ContractC) [221807 gas]
 │   ├── ContractC.methodC2() [146780 gas]
 │   └── ContractC.methodC2() [121561 gas]
