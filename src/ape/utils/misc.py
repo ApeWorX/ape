@@ -11,6 +11,7 @@ from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
 from tqdm.auto import tqdm  # type: ignore
 
+from ape.exceptions import APINotImplementedError
 from ape.logging import logger
 from ape.utils.os import expand_environment_variables
 
@@ -224,7 +225,7 @@ def raises_not_implemented(fn):
     """
 
     def inner(*args, **kwargs):
-        raise NotImplementedError(
+        raise APINotImplementedError(
             f"Attempted to call method '{fn.__qualname__}', method not supported."
         )
 

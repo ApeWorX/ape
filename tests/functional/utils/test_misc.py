@@ -1,6 +1,14 @@
 from typing import Iterator
 
-from ape.utils.misc import add_padding_to_strings, cached_iterator, extract_nested_value
+import pytest
+
+from ape.exceptions import APINotImplementedError
+from ape.utils.misc import (
+    add_padding_to_strings,
+    cached_iterator,
+    extract_nested_value,
+    raises_not_implemented,
+)
 
 
 def test_extract_nested_value():
@@ -40,3 +48,18 @@ def test_cached_iterator():
 
     # Since it is cached, it should only actually get called once.
     assert demo_class.call_count == 1
+
+
+def test_raises_not_implemented():
+    @raises_not_implemented
+    def unimplemented_api_method():
+        pass
+
+    with pytest.raises(APINotImplementedError) as err:
+        unimplemented_api_method()
+
+    assert str(err.value) == (
+        "Attempted to call method 'test_raises_not_implemented.<locals>.unimplemented_api_method', "
+        "method not supported."
+    )
+    assert isinstance(err.value, NotImplementedError)
