@@ -362,7 +362,12 @@ class CallTraceParser:
                     return_value = "<?>"
 
                 call_signature = str(
-                    _MethodTraceSignature(contract_type.name, method.name, arguments, return_value)
+                    _MethodTraceSignature(
+                        contract_type.name or address,
+                        method.name or f"<{selector}>",
+                        arguments,
+                        return_value,
+                    )
                 )
                 call_signature += f" [{call.gas_cost} gas]"
 
@@ -374,7 +379,7 @@ class CallTraceParser:
                         "call_type": call.call_type,
                     }
                     call_signature += f" {json.dumps(extra_info, indent=_SPACING)}"
-            else:
+            elif contract_type.name is not None:
                 call_signature = next(call.display_nodes).title  # type: ignore
                 call_signature = call_signature.replace(address, contract_type.name)
         else:
