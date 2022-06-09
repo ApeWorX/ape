@@ -135,6 +135,8 @@ receipt = contract.methodWithoutArguments()
 receipt.show_trace()
 ```
 
+**NOTE**: If your provider does not support traces, you will see a `NotImplementedError` saying that the method is not supported.
+
 The trace might look something like:
 
 ```bash

@@ -428,7 +428,11 @@ class CallTraceParser:
                 string_value = value.strip(b"\x00").decode("utf8")
                 return f"'{string_value}'"
             except UnicodeDecodeError:
-                return humanize_hash(value)
+                # Truncate bytes if very long
+                if len(value) > 24:
+                    return humanize_hash(value)
+
+                return value
 
         elif isinstance(value, str) and value.startswith("0x"):
             if is_hex_address(value):
