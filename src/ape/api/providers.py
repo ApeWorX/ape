@@ -421,7 +421,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_call_tree(self, txn_hash: str) -> Iterator[CallTreeNode]:
+    def get_call_tree(self, txn_hash: str) -> CallTreeNode:
         """
         Create a tree structure of calls for a transaction.
 
@@ -429,7 +429,7 @@ class ProviderAPI(BaseInterfaceModel):
             txn_hash (str): The hash of a transaction to trace.
 
         Returns:
-            Iterator(TraceFrame): Transaction execution call-tree objects.
+            CallTreeNode: Transaction execution call-tree objects.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:

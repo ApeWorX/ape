@@ -149,6 +149,7 @@ class ReceiptAPI(BaseInterfaceModel):
     sender: str
     status: int
     txn_hash: str
+    value: int = 0
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
