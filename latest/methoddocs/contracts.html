@@ -176,6 +176,25 @@ you get back a contract instance.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractInstance.get_event_by_signature">
+<span class="sig-name descname"><span class="pre">get_event_by_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><span class="pre">ape.contracts.base.ContractEvent</span></a></span></span><a class="headerlink" href="#ape.contracts.base.ContractInstance.get_event_by_signature" title="Permalink to this definition"></a></dt>
+<dd><p>Get an event by its signature. Most often, you can use the
+<a class="reference internal" href="#ape.contracts.base.ContractInstance.__getattr__" title="ape.contracts.base.ContractInstance.__getattr__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__getattr__()</span></code></a>
+method on this class to access events. However, in the case
+when you have more than one event with the same name, such
+as the case where one event is coming from a base contract,
+you can use this method to access the respective events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>signature</strong> (<em>str</em>) – The signature of the event.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractEvent</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">

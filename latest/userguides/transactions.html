@@ -218,6 +218,12 @@ argument <code class="docutils literal notranslate"><span class="pre">type</span
     <span class="nb">print</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>  <span class="c1"># Assuming &#39;amount&#39; is a property on the event.</span>
 </pre></div>
 </div>
+<p><strong>NOTE</strong>: If you have more than event with the same name in your contract type’s ABI, you can access the events by using the <a class="reference external" href="../methoddocs/contracts.html?highlight=contractinstance#ape.contracts.base.ContractInstance.get_event_by_signature">get_event_by_signature()</a> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event_type</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">get_event_by_signature</span><span class="p">(</span><span class="s2">&quot;FooEvent(uint256 bar, uint256 baz)&quot;</span><span class="p">)</span>
+<span class="n">receipt</span><span class="o">.</span><span class="n">decode_logs</span><span class="p">(</span><span class="n">event_type</span><span class="o">.</span><span class="n">abi</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Otherwise, you will get an <code class="docutils literal notranslate"><span class="pre">AttributeError</span></code>.</p>
 </section>
 <section id="transaction-acceptance-timeout">
 <h2>Transaction Acceptance Timeout<a class="headerlink" href="#transaction-acceptance-timeout" title="Permalink to this headline"></a></h2>
