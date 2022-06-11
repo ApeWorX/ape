@@ -36,6 +36,7 @@ class TransactionType(Enum):
     """
 
     STATIC = "0x00"
+    ACCESS_LIST = "0x01"  # EIP-2930
     DYNAMIC = "0x02"  # EIP-1559
 
 
