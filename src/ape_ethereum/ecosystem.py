@@ -34,6 +34,7 @@ from ape.exceptions import DecodingError, TransactionError
 from ape.types import AddressType, ContractLog, RawAddress, TransactionSignature
 from ape.utils import LogInputABICollection, Struct, StructParser, is_array, returns_array
 from ape_ethereum.transactions import (
+    AccessListTransaction,
     BaseTransaction,
     DynamicFeeTransaction,
     Receipt,
@@ -419,6 +420,7 @@ class Ethereum(EcosystemAPI):
         transaction_types = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
+            TransactionType.ACCESS_LIST: AccessListTransaction,
         }
 
         if "type" in kwargs:
@@ -452,6 +454,9 @@ class Ethereum(EcosystemAPI):
                 required_confirmations = active_provider.network.required_confirmations
 
             kwargs["required_confirmations"] = required_confirmations
+
+        if isinstance(kwargs.get("chainId"), str):
+            kwargs["chainId"] = int(kwargs["chainId"], 16)
 
         if "input" in kwargs:
             kwargs["data"] = decode_hex(kwargs.pop("input"))
