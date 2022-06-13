@@ -462,6 +462,5 @@ class ProjectManager(BaseManager):
         if not manifest["version"]:
             raise ProjectError("Need version to release manifest")
 
-    #     TODO: Clean up manifest and minify it
     #     TODO: Publish sources to IPFS and replace with CIDs
     #     TODO: Publish to IPFS
