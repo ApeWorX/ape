@@ -13,6 +13,7 @@ from ape.utils import BaseInterfaceModel, load_config
 if TYPE_CHECKING:
     from .project import ProjectManager
 
+from ethpm_types import PackageMeta
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT = 120
@@ -85,6 +86,9 @@ class ConfigManager(BaseInterfaceModel):
 
     version: str = ""
     """The project's version."""
+
+    meta: PackageMeta = PackageMeta
+    """The project's meta package"""
 
     contracts_folder: Path = None  # type: ignore
     """
