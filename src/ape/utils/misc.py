@@ -239,13 +239,12 @@ class cached_iterator(property):
     """
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
-        self.cache: Optional[Tuple[Iterator[Any], ...]] = None
+        self.cache: Optional[Iterator] = None
         super().__init__(fget=fget, fset=fset, fdel=fdel, doc=doc)
 
     def __get__(self, obj, objtype=None):
-        iterator = self.cache[1] if self.cache else self.fget(obj)
-        self.cache = tee(iterator)
-        return self.cache[0]
+        iterator, self.cache = tee(self.cache if self.cache else self.fget(obj))
+        return iterator
 
 
 __all__ = [
