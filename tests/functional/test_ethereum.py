@@ -74,6 +74,18 @@ def test_receipt_raise_for_status_out_of_gas_error(mocker):
         receipt.raise_for_status()
 
 
+def test_txn_hash(owner, eth_tester_provider):
+    txn = StaticFeeTransaction()
+    txn = owner.prepare_transaction(txn)
+    txn.signature = owner.sign_transaction(txn)
+
+    actual = txn.txn_hash.hex()
+    receipt = eth_tester_provider.send_transaction(txn)
+    expected = receipt.txn_hash
+
+    assert actual == expected
+
+
 @pytest.mark.fuzzing
 @given(strategies.from_regex(r"\(*[\w|, []]*\)*"))
 def test_parse_output_type(s):
