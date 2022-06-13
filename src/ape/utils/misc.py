@@ -239,7 +239,7 @@ class cached_iterator(property):
     """
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
-        self.cache: Optional[Tuple[Iterator[Any], ...]] = None
+        self.cache: Optional[Iterator] = None
         super().__init__(fget=fget, fset=fset, fdel=fdel, doc=doc)
 
     def __get__(self, obj, objtype=None):
