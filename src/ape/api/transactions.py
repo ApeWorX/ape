@@ -1,6 +1,7 @@
 import time
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
+from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
@@ -77,7 +78,7 @@ class TransactionAPI(BaseInterfaceModel):
         return f"{self.__class__.__name__}:\n  {params}"
 
     @abstractmethod
-    def txn_hash(self):
+    def txn_hash(self) -> HexBytes:
         """
         The hash of the transaction.
         """
