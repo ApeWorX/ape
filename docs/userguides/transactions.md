@@ -112,6 +112,15 @@ for log in receipt.decode_logs(event_type.abi):
     print(log.amount)  # Assuming 'amount' is a property on the event.
 ```
 
+**NOTE**: If you have more than event with the same name in your contract type's ABI, you can access the events by using the [get_event_by_signature()](../methoddocs/contracts.html?highlight=contractinstance#ape.contracts.base.ContractInstance.get_event_by_signature) method:
+
+```python
+event_type = contract.get_event_by_signature("FooEvent(uint256 bar, uint256 baz)")
+receipt.decode_logs(event_type.abi)
+```
+
+Otherwise, you will get an `AttributeError`.
+
 ## Transaction Acceptance Timeout
 
 **NOTE** For longer running scripts, you may need to increase the transaction acceptance timeout.

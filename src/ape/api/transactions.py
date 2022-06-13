@@ -9,7 +9,7 @@ from eth_abi import decode_abi
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_utils import humanize_hash, is_hex_address
 from ethpm_types.abi import EventABI, MethodABI
-from evm_trace import CallTreeNode, CallType, TraceFrame, get_calltree_from_trace
+from evm_trace import CallTreeNode, CallType, TraceFrame
 from hexbytes import HexBytes
 from pydantic.fields import Field
 from rich.console import Console as RichConsole
@@ -155,10 +155,9 @@ class ReceiptAPI(BaseInterfaceModel):
     contract_address: Optional[str] = None
     block_number: int
     data: bytes = b""
-    gas_used: int
     gas_limit: int
     gas_price: int
-    input_data: str = ""
+    gas_used: int
     logs: List[dict] = []
     nonce: Optional[int] = None
     receiver: str
@@ -294,15 +293,7 @@ class ReceiptAPI(BaseInterfaceModel):
             file (IO[str]): The file to send output to. Defaults to stdout.
         """
         tree_factory = CallTraceParser(self, verbose=verbose)
-        root_node_kwargs = {
-            "gas_cost": self.gas_used,
-            "gas_limit": self.gas_limit,
-            "address": self.receiver,
-            "calldata": self.input_data,
-            "value": self.value,
-            "call_type": CallType.MUTABLE,
-        }
-        call_tree = get_calltree_from_trace(self.trace, **root_node_kwargs)
+        call_tree = self.provider.get_call_tree(self.txn_hash)
         root = tree_factory.parse_as_tree(call_tree)
         console = RichConsole(file=file)
         console.print(f"Call trace for [bold blue]'{self.txn_hash}'[/]")
@@ -514,7 +505,7 @@ class _MethodTraceSignature:
         method = f"[{_TraceColor.METHODS}]{self.method_name}[/]"
         call_path = f"{contract}.{method}"
 
-        if self.call_type == CallType.DELEGATE:
+        if self.call_type == CallType.DELEGATECALL:
             call_path = f"[orange](delegate)[/] {call_path}"
 
         arguments_str = self._build_arguments_str()
