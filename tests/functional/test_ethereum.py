@@ -20,6 +20,12 @@ def test_create_static_fee_transaction(ethereum, type_kwarg):
     assert txn.type == TransactionType.STATIC.value
 
 
+@pytest.mark.parametrize("type_kwarg", (1, "0x01", b"\x01", "1", "01", HexBytes("0x01")))
+def test_create_access_list_transaction(ethereum, type_kwarg):
+    txn = ethereum.create_transaction(type=type_kwarg)
+    assert txn.type == TransactionType.ACCESS_LIST.value
+
+
 @pytest.mark.parametrize("type_kwarg", (None, 2, "0x02", b"\x02", "2", "02", HexBytes("0x02")))
 def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
     txn = ethereum.create_transaction(type=type_kwarg)
