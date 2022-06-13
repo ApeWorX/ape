@@ -345,6 +345,14 @@ class CallTraceParser:
         contract_type = self._receipt.chain_manager.contracts.get(address)
         selector = call.calldata[:4]
 
+        def _dim_default_gas(call_sig: str) -> str:
+            # Add style to default gas block so it matches nodes with contract types
+            gas_part = re.findall(_DEFAULT_TRACE_GAS_PATTERN, call_sig)
+            if gas_part:
+                return f"{call_sig.split(gas_part[0])[0]} [dim]{gas_part[0]}[/]"
+
+            return call_sig
+
         if contract_type:
             method = None
             contract_name = contract_type.name
@@ -391,6 +399,7 @@ class CallTraceParser:
             elif contract_name is not None:
                 call_signature = next(call.display_nodes).title  # type: ignore
                 call_signature = call_signature.replace(address, contract_name)
+                call_signature = _dim_default_gas(call_signature)
         else:
             next_node = None
             try:
@@ -399,12 +408,7 @@ class CallTraceParser:
                 pass
 
             if next_node:
-                call_signature = next_node.title
-
-                # Add style to default gas block so it matches nodes with contract types
-                gas_part = re.findall(_DEFAULT_TRACE_GAS_PATTERN, call_signature)
-                if gas_part:
-                    call_signature = f"{call_signature.split(gas_part[0])[0]} [dim]{gas_part[0]}[/]"
+                call_signature = _dim_default_gas(next_node.title)
 
             else:
                 # Only for mypy's sake. May never get here.
