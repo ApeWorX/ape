@@ -6,8 +6,8 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import to_int
-from hexbytes import HexBytes
+from eth_utils import keccak, to_int
+from ethpm_types import HexBytes
 from pydantic import BaseModel, Field, root_validator, validator
 
 from ape.api import ReceiptAPI, TransactionAPI
@@ -62,6 +62,10 @@ class BaseTransaction(TransactionAPI):
             raise SignatureError("Recovered signer doesn't match sender!")
 
         return signed_txn
+
+    @property
+    def txn_hash(self):
+        return HexBytes(keccak(self.serialize_transaction()))
 
 
 class StaticFeeTransaction(BaseTransaction):
