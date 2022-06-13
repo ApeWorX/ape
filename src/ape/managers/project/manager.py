@@ -449,7 +449,11 @@ class ProjectManager(BaseManager):
 
     @property
     def meta(self) -> PackageMeta:
-        return PackageMeta(**self.config_manager.get_config("ethpm").serialize())
+        meta = self.config_manager.get_config("meta")
+        try:
+            return PackageMeta(**meta.serialize())
+        except Exception as e:
+            raise ConfigError(f"Incorrect configuration of package metadata:\n{meta}") from e
 
     def publish_manifest(self):
         manifest = self.manifest.dict()
