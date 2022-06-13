@@ -414,6 +414,9 @@ class CallTraceParser:
                 # Only for mypy's sake. May never get here.
                 call_signature = f"{address}.<{selector.hex()}> [dim][{call.gas_cost} gas][/]"
 
+        if call.value > 0:
+            call_signature += f" [{_TraceColor.VALUE}][{call.value} value][/]"
+
         parent = Tree(call_signature, guide_style="dim")
         for sub_call in call.calls:
             parent.add(self.parse_as_tree(sub_call))
@@ -494,6 +497,7 @@ class _TraceColor:
     INPUTS = "bright_magenta"
     OUTPUTS = "bright_blue"
     DELEGATE = "#d75f00"
+    VALUE = "#00afd7"
 
 
 @dataclass()
