@@ -461,7 +461,6 @@ class ProjectManager(BaseManager):
             raise ProjectError("Need name to release manifest")
         if not manifest["version"]:
             raise ProjectError("Need version to release manifest")
-        breakpoint()
 
     #     TODO: Clean up manifest and minify it
     #     TODO: Publish sources to IPFS and replace with CIDs
