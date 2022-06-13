@@ -6,7 +6,7 @@ from ethpm_types import Compiler, ContractType, PackageManifest, PackageMeta
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractNamespace
-from ape.exceptions import ProjectError, ConfigError
+from ape.exceptions import ConfigError, ProjectError
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
 
