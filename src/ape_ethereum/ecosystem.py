@@ -231,10 +231,14 @@ class Ethereum(EcosystemAPI):
         if txn_hash:
             txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
 
-        return Receipt(  # type: ignore
+        input_data = data.get("data") or data.get("input", b"")
+        if isinstance(input_data, str):
+            input_data = HexBytes(input_data)
+
+        receipt = Receipt(  # type: ignore
             block_number=data.get("block_number") or data.get("blockNumber"),
             contract_address=data.get("contractAddress"),
-            data=data.get("data") or data.get("input", b""),
+            data=input_data,
             gas_limit=data.get("gas") or data.get("gasLimit"),
             gas_price=data.get("gas_price") or data.get("gasPrice"),
             gas_used=data["gasUsed"],
@@ -248,6 +252,7 @@ class Ethereum(EcosystemAPI):
             txn_hash=txn_hash,
             value=data.get("value", 0),
         )
+        return receipt
 
     def decode_block(self, data: Dict) -> BlockAPI:
         # TODO: when we flatten the Block structure, remove these hacks
