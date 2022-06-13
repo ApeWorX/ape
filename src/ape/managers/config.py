@@ -87,7 +87,7 @@ class ConfigManager(BaseInterfaceModel):
     version: str = ""
     """The project's version."""
 
-    meta: PackageMeta = PackageMeta
+    meta: PackageMeta = PackageMeta()
     """Metadata about the project."""
 
     contracts_folder: Path = None  # type: ignore
