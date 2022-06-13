@@ -106,3 +106,10 @@ def test_parse_output_type(s):
     # See tests in `tests_contracts` for specific ABI parsing tests.
 
     assert parse_output_type(s)
+
+
+def test_whitespace_in_transaction_data():
+    data = b"Should not clip whitespace\t\n"
+    txn_dict = {"data": data}
+    txn = StaticFeeTransaction.parse_obj(txn_dict)
+    assert txn.data == data, "Whitespace should not be removed from data"
