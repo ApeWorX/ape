@@ -448,7 +448,7 @@ class ProjectManager(BaseManager):
         return None
 
     @property
-    def meta(self) -> PackageMeta: #type: ignore
+    def meta(self) -> PackageMeta:  # type: ignore
         """
         Populate package manifest with metadata as per EIP
         https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
