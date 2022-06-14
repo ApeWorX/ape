@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Dict
 
 import pytest
-from ethpm_types import PackageMeta
 from ethpm_types.manifest import PackageManifest
 
 
@@ -47,9 +46,21 @@ def test_extract_manifest(dependency_config, project_manager):
 
 
 def test_meta(temp_config, project_manager):
-    meta_config = {"meta": {"authors": ["Test Testerson"]}}
+    meta_config = {
+        "meta": {
+            "authors": ["Test Testerson"],
+            "license": "MIT",
+            "description": "test",
+            "keywords": ["testing"],
+            "links": {"apeworx.io": "https://apeworx.io"},
+        }
+    }
     with temp_config(meta_config):
         assert project_manager.meta.authors == ["Test Testerson"]
+        assert project_manager.meta.license == "MIT"
+        assert project_manager.meta.description == "test"
+        assert project_manager.meta.keywords == ["testing"]
+        assert "https://apeworx.io" in project_manager.meta.links["apeworx.io"]
 
 
 def test_dependency_with_longer_contracts_folder(
