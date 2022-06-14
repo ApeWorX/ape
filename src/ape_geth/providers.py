@@ -164,9 +164,9 @@ class GethProvider(Web3Provider, UpstreamProvider):
         return self.uri
 
     @property
-    def client_version(self) -> Optional[str]:
+    def client_version(self) -> str:
         if not self._web3:
-            return None
+            return ""
 
         # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
         if self._client_version is None:
@@ -258,15 +258,18 @@ class GethProvider(Web3Provider, UpstreamProvider):
             yield TraceFrame(**frame)
 
     def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
-        try:
+        def _get_call_tree_from_parity():
             data = self._make_request("trace_transaction", [txn_hash])
             traces = ParityTraceList.parse_obj(data)
             return get_calltree_from_parity_trace(traces)
+
+        if "erigon" in self.client_version.lower():
+            return _get_call_tree_from_parity()
+
+        try:
+            # Try the Parity traces first just in case
+            return _get_call_tree_from_parity()
         except ValueError:
-            logger.info(
-                "API 'trace_transaction' not supported, "
-                "falling back to 'debug_traceTransaction' API."
-            )
             frames = self.get_transaction_trace(txn_hash)
             return get_calltree_from_geth_trace(frames, **root_node_kwargs)
 
