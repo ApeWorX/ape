@@ -429,8 +429,9 @@ class CallTraceParser:
                 if call.gas_cost:
                     call_signature = f"{call_signature} [dim][{call.gas_cost} gas][/]"
 
-        if call.value > 0:
-            call_signature += f" [{_TraceColor.VALUE}][{call.value} value][/]"
+        if call.value:
+            eth_value = f"{round(call.value / 10 ** 18, 8)}"
+            call_signature += f" [{_TraceColor.VALUE}][{eth_value} value][/]"
 
         parent = Tree(call_signature, guide_style="dim")
         for sub_call in call.calls:
@@ -478,6 +479,8 @@ class CallTraceParser:
                 # Truncate bytes if very long
                 if len(value) > 24:
                     return humanize_hash(value)
+                elif value == "0x0000000000000000000000000000000000000000":
+                    return "ZERO_ADDRESS"
 
                 return value
 
