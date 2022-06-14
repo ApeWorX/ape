@@ -46,10 +46,10 @@ def test_extract_manifest(dependency_config, project_manager):
     assert type(manifest) == PackageManifest
 
 
-def test_meta(dependency_config, project_manager):
-    # NOTE: Only setting dependency_config to ensure existence of project.
-    meta = project_manager.meta
-    assert type(meta) == PackageMeta
+def test_meta(temp_config, project_manager):
+    meta_config = {"meta": {"authors": ["Test Testerson"]}}
+    with temp_config(meta_config):
+        assert project_manager.meta.authors == ["Test Testerson"]
 
 
 def test_dependency_with_longer_contracts_folder(
