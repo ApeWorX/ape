@@ -4,6 +4,12 @@ from typing import Dict, Mapping, Optional, Union
 from urllib.parse import urlparse
 
 from eth_utils import to_wei
+from evm_trace import (
+    CallTreeNode,
+    ParityTraceList,
+    get_calltree_from_geth_trace,
+    get_calltree_from_parity_trace,
+)
 from geth import LoggingMixin  # type: ignore
 from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
@@ -261,3 +267,13 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
         receipt.raise_for_status()
         return receipt
+
+    def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
+        try:
+            data = self.web3.manager.request_blocking("trace_transaction", [txn_hash])
+            traces = ParityTraceList.parse_obj(data)
+            return get_calltree_from_parity_trace(traces)
+        except ValueError:
+            logger.info("trace api not supported, falling back to debug trace api")
+            frames = self.get_transaction_trace(txn_hash)
+            return get_calltree_from_geth_trace(frames, **root_node_kwargs)
