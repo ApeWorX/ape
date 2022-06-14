@@ -135,18 +135,21 @@ class ReceiptAPI(BaseInterfaceModel):
     a :class:`ape.contracts.base.ContractInstance`.
     """
 
-    txn_hash: str
-    status: int
-    block_number: int
-    gas_used: int
-    gas_price: int
-    gas_limit: int
-    logs: List[dict] = []
     contract_address: Optional[str] = None
+    block_number: int
+    data: bytes = b""
+    gas_limit: int
+    gas_price: int
+    gas_used: int
+    input_data: str = ""
+    logs: List[dict] = []
+    nonce: Optional[int] = None
+    receiver: str
     required_confirmations: int = 0
     sender: str
-    receiver: str
-    nonce: Optional[int] = None
+    status: int
+    txn_hash: str
+    value: int = 0
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
