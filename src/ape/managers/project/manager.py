@@ -448,13 +448,14 @@ class ProjectManager(BaseManager):
         return None
 
     @property
-    def meta(self) -> PackageMeta:  # type: ignore
+    def meta(self) -> PackageMeta:
         """
-        Populate package manifest with metadata as per EIP
+        Metadata about the active project as per EIP 
         https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
+        Use when publishing your package manifest.
         """
         try:
-            return self.config_manager.meta
+            return self.config_manager.meta  # type: ignore
         except Exception as e:
             raise ConfigError(f"Incorrect configuration of package metadata:\n{meta}") from e
 
