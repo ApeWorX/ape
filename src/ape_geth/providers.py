@@ -1,12 +1,13 @@
 import shutil
 from pathlib import Path
-from typing import Dict, Mapping, Optional, Union
+from typing import Any, Dict, Iterator, Optional, Union
 from urllib.parse import urlparse
 
 from eth_utils import to_wei
 from evm_trace import (
     CallTreeNode,
     ParityTraceList,
+    TraceFrame,
     get_calltree_from_geth_trace,
     get_calltree_from_parity_trace,
 )
@@ -18,15 +19,17 @@ from geth.wrapper import construct_test_chain_kwargs  # type: ignore
 from pydantic import Extra
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
+from web3.exceptions import ExtraDataLengthError
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
-from web3.types import NodeInfo
+from web3.middleware.validation import MAX_EXTRADATA_LENGTH
+from web3.types import RPCEndpoint
 
 from ape.api import PluginConfig, UpstreamProvider, Web3Provider
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import ProviderError
 from ape.logging import logger
-from ape.utils import extract_nested_value, generate_dev_accounts
+from ape.utils import generate_dev_accounts
 
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
 
@@ -145,6 +148,7 @@ class GethNotInstalledError(ConnectionError):
 
 class GethProvider(Web3Provider, UpstreamProvider):
     _geth: Optional[EphemeralGeth] = None
+    _client_version: Optional[str] = None
 
     @property
     def uri(self) -> str:
@@ -160,14 +164,18 @@ class GethProvider(Web3Provider, UpstreamProvider):
         return self.uri
 
     @property
-    def _node_info(self) -> Optional[NodeInfo]:
-        try:
-            return self.web3.geth.admin.node_info()
-        except ValueError:
-            # Unsupported API in user's geth.
+    def client_version(self) -> Optional[str]:
+        if not self._web3:
             return None
 
+        # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
+        if self._client_version is None:
+            self._client_version = self._web3.clientVersion
+
+        return self._client_version
+
     def connect(self):
+        self._client_version = None  # Clear cached version when connecting to another URI.
         self._web3 = Web3(HTTPProvider(self.uri))
 
         if not self._web3.isConnected():
@@ -206,23 +214,27 @@ class GethProvider(Web3Provider, UpstreamProvider):
                 self._geth.disconnect()
                 raise ConnectionError("Unable to connect to locally running geth.")
         else:
-            client_version = self._web3.clientVersion
-
-            if "geth" in client_version.lower():
+            if "geth" in self.client_version.lower():
                 logger.info(f"Connecting to existing Geth node at '{self.uri}'.")
             else:
-                network_name = client_version.split("/")[0]
+                network_name = self.client_version.split("/")[0]
                 logger.warning(f"Connecting Geth plugin to non-Geth network '{network_name}'.")
 
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
-        def is_poa() -> bool:
-            node_info: Mapping = self._node_info or {}
-            chain_config = extract_nested_value(node_info, "protocols", "eth", "config")
-            return chain_config is not None and "clique" in chain_config
+        def is_likely_poa() -> bool:
+            try:
+                block = self.web3.eth.get_block("latest")
+            except ExtraDataLengthError:
+                return True
+
+            return (
+                "proofOfAuthorityData" in block
+                or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
+            )
 
         # If network is rinkeby, goerli, or kovan (PoA test-nets)
-        if self._web3.eth.chain_id in (4, 5, 42) or is_poa():
+        if self._web3.eth.chain_id in (4, 5, 42) or is_likely_poa():
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         if self.network.name != LOCAL_NETWORK_NAME and self.network.chain_id != self.chain_id:
@@ -238,13 +250,26 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
         # Must happen after geth.disconnect()
         self._web3 = None  # type: ignore
+        self._client_version = None
+
+    def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
+        frames = self._make_request("debug_traceTransaction", [txn_hash]).structLogs
+        for frame in frames:
+            yield TraceFrame(**frame)
 
     def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
         try:
-            data = self.web3.manager.request_blocking("trace_transaction", [txn_hash])
+            data = self._make_request("trace_transaction", [txn_hash])
             traces = ParityTraceList.parse_obj(data)
             return get_calltree_from_parity_trace(traces)
         except ValueError:
-            logger.info("trace api not supported, falling back to debug trace api")
+            logger.info(
+                "API 'trace_transaction' not supported, "
+                "falling back to 'debug_traceTransaction' API."
+            )
             frames = self.get_transaction_trace(txn_hash)
             return get_calltree_from_geth_trace(frames, **root_node_kwargs)
+
+    def _make_request(self, rpc: str, args: list) -> Any:
+        endpoint = RPCEndpoint(rpc)
+        return self.web3.manager.request_blocking(endpoint, args)  # type: ignore
