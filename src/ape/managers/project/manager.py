@@ -450,7 +450,7 @@ class ProjectManager(BaseManager):
     @property
     def meta(self) -> PackageMeta:
         """
-        Metadata about the active project as per EIP 
+        Metadata about the active project as per EIP
         https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
         Use when publishing your package manifest.
         """
