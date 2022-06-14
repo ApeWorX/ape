@@ -449,6 +449,10 @@ class ProjectManager(BaseManager):
 
     @property
     def meta(self) -> PackageMeta:
+        """
+        Populate package manifest with metadata as per EIP
+        https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
+        """
         meta = self.config_manager.get_config("meta")
         try:
             return PackageMeta(**meta.serialize())
