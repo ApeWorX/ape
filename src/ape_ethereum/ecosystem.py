@@ -233,7 +233,7 @@ class Ethereum(EcosystemAPI):
 
         input_data = data.get("data") or data.get("input", b"")
         if isinstance(input_data, str):
-            input_data = HexBytes(input_data)
+            input_data = bytes(HexBytes(input_data))
 
         receipt = Receipt(  # type: ignore
             block_number=data.get("block_number") or data.get("blockNumber"),
