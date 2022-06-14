@@ -170,11 +170,15 @@ class ReceiptAPI(BaseInterfaceModel):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
-    def raise_for_status(self):
+    @property
+    def failed(self) -> bool:
         """
-        Handle provider-specific errors regarding a non-successful
-        :class:`~api.providers.TransactionStatusEnum`.
+        Whether the receipt representing a failing transaction.
+        Ecosystem plugins override this property when their receipts
+        are able to be failing.
         """
+
+        return False
 
     @property
     @abstractmethod
@@ -210,6 +214,12 @@ class ReceiptAPI(BaseInterfaceModel):
             return 0
 
         return latest_block.number - self.block_number
+
+    def raise_for_status(self):
+        """
+        Handle provider-specific errors regarding a non-successful
+        :class:`~api.providers.TransactionStatusEnum`.
+        """
 
     def decode_logs(self, abi: Union[EventABI, "ContractEvent"]) -> Iterator[ContractLog]:
         """
