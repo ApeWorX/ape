@@ -189,6 +189,8 @@ class ContractTransactionHandler(ManagerAccessMixin):
 
         Args:
             *args: The contract method invocation arguments.
+            **kwargs: Transaction kwargs, such as value or
+              sender.
 
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
