@@ -3,7 +3,7 @@ import sys
 from functools import lru_cache
 from itertools import tee
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 import requests
 import yaml

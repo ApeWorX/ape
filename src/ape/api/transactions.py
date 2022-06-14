@@ -10,6 +10,7 @@ from eth_abi.exceptions import InsufficientDataBytes
 from eth_utils import humanize_hash, is_hex_address
 from ethpm_types.abi import EventABI, MethodABI
 from evm_trace import CallTreeNode, CallType, TraceFrame
+from evm_trace.display import DisplayableCallTreeNode
 from hexbytes import HexBytes
 from pydantic.fields import Field
 from rich.console import Console as RichConsole
@@ -354,6 +355,7 @@ class CallTraceParser:
 
         contract_type = self._receipt.chain_manager.contracts.get(address)
         selector = call.calldata[:4]
+        call_signature = ""
 
         def _dim_default_gas(call_sig: str) -> str:
             # Add style to default gas block so it matches nodes with contract types
@@ -396,7 +398,8 @@ class CallTraceParser:
                         call.call_type,
                     )
                 )
-                call_signature += f" [dim][{call.gas_cost} gas][/]"
+                if call.gas_cost:
+                    call_signature += f" [dim][{call.gas_cost} gas][/]"
 
                 if self._verbose:
                     extra_info = {
@@ -411,7 +414,7 @@ class CallTraceParser:
                 call_signature = call_signature.replace(address, contract_name)
                 call_signature = _dim_default_gas(call_signature)
         else:
-            next_node = None
+            next_node: Optional[DisplayableCallTreeNode] = None
             try:
                 next_node = next(call.display_nodes)
             except StopIteration:
@@ -422,7 +425,9 @@ class CallTraceParser:
 
             else:
                 # Only for mypy's sake. May never get here.
-                call_signature = f"{address}.<{selector.hex()}> [dim][{call.gas_cost} gas][/]"
+                call_signature = f"{address}.<{selector.hex()}>"
+                if call.gas_cost:
+                    call_signature = f"{call_signature} [dim][{call.gas_cost} gas][/]"
 
         if call.value > 0:
             call_signature += f" [{_TraceColor.VALUE}][{call.value} value][/]"
