@@ -22,11 +22,11 @@ from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.types import NodeInfo
 
-from ape.api import PluginConfig, ReceiptAPI, TransactionAPI, UpstreamProvider, Web3Provider
+from ape.api import PluginConfig, UpstreamProvider, Web3Provider
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import ContractLogicError, ProviderError, TransactionError
+from ape.exceptions import ProviderError
 from ape.logging import logger
-from ape.utils import extract_nested_value, gas_estimation_error_message, generate_dev_accounts
+from ape.utils import extract_nested_value, generate_dev_accounts
 
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
 
@@ -159,6 +159,14 @@ class GethProvider(Web3Provider, UpstreamProvider):
     def connection_str(self) -> str:
         return self.uri
 
+    @property
+    def _node_info(self) -> Optional[NodeInfo]:
+        try:
+            return self.web3.geth.admin.node_info()
+        except ValueError:
+            # Unsupported API in user's geth.
+            return None
+
     def connect(self):
         self._web3 = Web3(HTTPProvider(self.uri))
 
@@ -230,43 +238,6 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
         # Must happen after geth.disconnect()
         self._web3 = None  # type: ignore
-
-    def estimate_gas_cost(self, txn: TransactionAPI) -> int:
-        try:
-            return super().estimate_gas_cost(txn)
-        except ValueError as err:
-            tx_error = self.get_virtual_machine_error(err)
-
-            # If this is the cause of a would-be revert,
-            # raise ContractLogicError so that we can confirm tx-reverts.
-            if isinstance(tx_error, ContractLogicError):
-                raise tx_error from err
-
-            message = gas_estimation_error_message(tx_error)
-            raise TransactionError(base_err=tx_error, message=message) from err
-
-    @property
-    def _node_info(self) -> Optional[NodeInfo]:
-        try:
-            return self.web3.geth.admin.node_info()
-        except ValueError:
-            # Unsupported API in user's geth.
-            return None
-
-    def send_call(self, txn: TransactionAPI) -> bytes:
-        try:
-            return super().send_call(txn)
-        except ValueError as err:
-            raise self.get_virtual_machine_error(err) from err
-
-    def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        try:
-            receipt = super().send_transaction(txn)
-        except ValueError as err:
-            raise self.get_virtual_machine_error(err) from err
-
-        receipt.raise_for_status()
-        return receipt
 
     def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
         try:
