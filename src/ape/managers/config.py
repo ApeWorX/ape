@@ -135,7 +135,7 @@ class ConfigManager(BaseInterfaceModel):
             self.name = cache.get("name", "")
             self.version = cache.get("version", "")
             self.default_ecosystem = cache.get("default_ecosystem", "ethereum")
-            self.meta = cache.get("meta", "")
+            self.meta = PackageMeta.parse_obj(cache.get("meta", {}))
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
@@ -152,7 +152,10 @@ class ConfigManager(BaseInterfaceModel):
         user_config = load_config(config_file) if config_file.exists() else {}
         self.name = configs["name"] = user_config.pop("name", "")
         self.version = configs["version"] = user_config.pop("version", "")
-        self.meta = configs["meta"] = user_config.pop("meta", "")
+        meta_dict = user_config.pop("meta", {})
+        meta_obj = PackageMeta.parse_obj(meta_dict)
+        configs["meta"] = meta_dict
+        self.meta = meta_obj
         self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
             "default_ecosystem", "ethereum"
         )
