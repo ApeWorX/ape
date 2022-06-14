@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Dict
 
 import pytest
+from ethpm_types import PackageMeta
 from ethpm_types.manifest import PackageManifest
 
 
@@ -43,6 +44,12 @@ def test_extract_manifest(dependency_config, project_manager):
     # NOTE: Only setting dependency_config to ensure existence of project.
     manifest = project_manager.extract_manifest()
     assert type(manifest) == PackageManifest
+
+
+def test_meta(dependency_config, project_manager):
+    # NOTE: Only setting dependency_config to ensure existence of project.
+    meta = project_manager.meta
+    assert type(meta) == PackageMeta
 
 
 def test_dependency_with_longer_contracts_folder(
