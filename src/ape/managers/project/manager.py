@@ -6,7 +6,7 @@ from ethpm_types import Compiler, ContractType, PackageManifest, PackageMeta
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractNamespace
-from ape.exceptions import ConfigError, ProjectError
+from ape.exceptions import ProjectError
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
 
@@ -454,10 +454,7 @@ class ProjectManager(BaseManager):
         https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
         Use when publishing your package manifest.
         """
-        try:
-            return self.config_manager.meta  # type: ignore
-        except Exception as e:
-            raise ConfigError(f"Incorrect configuration of package metadata:\n{meta}") from e
+        return self.config_manager.meta  # type: ignore
 
     # def publish_manifest(self):
     #     manifest = self.manifest.dict()
