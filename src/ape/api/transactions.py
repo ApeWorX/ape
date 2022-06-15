@@ -314,7 +314,7 @@ class ReceiptAPI(BaseInterfaceModel):
                 else:
                     suffix = default_message
 
-            console.print(f"🚫 [bold red]{suffix}[/]")
+            console.print(f"[bold red]{suffix}[/]")
 
         console.print(f"txn.origin=[{TraceColor.CONTRACTS}]{self.sender}[/]")
         console.print(root)
