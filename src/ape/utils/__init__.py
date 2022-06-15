@@ -19,6 +19,7 @@ from ape.utils.basemodel import (
 from ape.utils.github import GithubClient, github_client
 from ape.utils.misc import (
     USER_AGENT,
+    ZERO_ADDRESS,
     add_padding_to_strings,
     cached_iterator,
     cached_property,
@@ -38,6 +39,7 @@ from ape.utils.testing import (
     GeneratedDevAccount,
     generate_dev_accounts,
 )
+from ape.utils.trace import CallTraceParser, TraceColor
 
 __all__ = [
     "abstractmethod",
@@ -46,6 +48,7 @@ __all__ = [
     "BaseInterfaceModel",
     "cached_iterator",
     "cached_property",
+    "CallTraceParser",
     "DEFAULT_NUMBER_OF_TEST_ACCOUNTS",
     "DEFAULT_TEST_MNEMONIC",
     "expand_environment_variables",
@@ -72,6 +75,8 @@ __all__ = [
     "stream_response",
     "Struct",
     "StructParser",
+    "TraceColor",
     "use_temp_sys_path",
     "USER_AGENT",
+    "ZERO_ADDRESS",
 ]
