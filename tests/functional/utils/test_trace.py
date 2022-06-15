@@ -1,4 +1,4 @@
-import shutil
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
@@ -8,9 +8,17 @@ from rich import print as rich_print
 
 from ape.contracts import ContractContainer
 from ape.utils.trace import CallTraceParser
-from ape_ethereum.transactions import Receipt, TransactionStatusEnum
-from tests.functional.data.python import CALL_TREE_DICT
+from ape_ethereum.transactions import Receipt
+from tests.functional.data.python import (
+    LOCAL_CALL_TREE_DICT,
+    MAINNET_CALL_TREE_DICT,
+    MAINNET_RECEIPT_DICT,
+)
+from tests.functional.utils.expected_traces import LOCAL_TRACE, MAINNET_TRACE
 
+FAILED_TXN_HASH = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
+INTERNAL_TRANSFERS_TXN_HASH_0 = "0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7"
+INTERNAL_TRANSFERS_TXN_HASH_1 = "0x0537316f37627655b7fe5e50e23f71cd835b377d1cde4226443c94723d036e32"
 BASE_CONTRACTS_PATH = Path(__file__).parent.parent / "data" / "contracts" / "ethereum"
 
 
@@ -30,40 +38,83 @@ def local_contracts(owner, networks_connected_to_tester):
 
 
 @pytest.fixture(autouse=True, scope="module")
-def full_contracts_cache(config):
-    destination = config.DATA_FOLDER / "ethereum"
-    shutil.copytree(BASE_CONTRACTS_PATH, destination)
+def full_contracts_cache(chain):
+    # Copy mainnet contract types into local cache to make them accessible for look-up
+    mainnet_contracts_dir = BASE_CONTRACTS_PATH / "mainnet"
+    for contract_type_file in mainnet_contracts_dir.iterdir():
+        address = contract_type_file.stem
+        contract_type = ContractType.parse_raw(contract_type_file.read_text())
+        chain.contracts._local_contracts[address] = contract_type
 
 
 @pytest.fixture(scope="module")
-def eth_receipt():
-    raw_receipt = {
-        "block_number": 14968261,
-        "data": b"7-\xca\x07",
-        "gas_limit": 492533,
-        "gas_price": 0,
-        "gas_used": 469604,
-        "logs": [],
-        "nonce": 3,
-        "receiver": "0xF2Df0b975c0C9eFa2f8CA0491C2d1685104d2488",
-        "required_confirmations": 0,
-        "sender": "0x1e59ce931B4CFea3fe4B875411e280e173cB7A9C",
-        "status": TransactionStatusEnum.NO_ERROR,
-        "txn_hash": "0x43abb1fdadfdae68f84ce8cd2582af6ab02412f686ee2544aa998db662a5ef50",
-        "value": 123,
-    }
-    return Receipt.parse_obj(raw_receipt)
+def local_receipt(local_contracts, owner):
+    return local_contracts[0].methodWithoutArguments(sender=owner, value=123)
 
 
 @pytest.fixture(scope="module")
-def call_tree():
-    return CallTreeNode.parse_obj(CALL_TREE_DICT)
+def mainnet_receipt():
+    return Receipt.parse_obj(MAINNET_RECEIPT_DICT)
 
 
-def test_get_call_trace_using_locally_deployed_contracts(
-    eth_receipt, call_tree, caplog, local_contracts
-):
-    parser = CallTraceParser(eth_receipt)
-    actual = parser.parse_as_tree(call_tree)
+@pytest.fixture(scope="module")
+def local_call_tree(local_contracts):
+    def set_address(d):
+        if d["address"] == "b":
+            d["address"] = local_contracts[1].address
+        elif d["address"] == "c":
+            d["address"] = local_contracts[2].address
+
+    new_dict = dict(LOCAL_CALL_TREE_DICT)
+    new_dict["address"] = local_contracts[0].address
+
+    def set_all_addresses(d):
+        set_address(d)
+        for call in d["calls"]:
+            set_all_addresses(call)
+
+    set_all_addresses(new_dict)
+    return CallTreeNode.parse_obj(new_dict)
+
+
+@pytest.fixture(scope="module")
+def mainnet_call_tree():
+    return CallTreeNode.parse_obj(MAINNET_CALL_TREE_DICT)
+
+
+@pytest.fixture(params=("local", "mainnet"))
+def case(request, local_receipt, mainnet_receipt, local_call_tree, mainnet_call_tree):
+    @dataclass
+    class TraceTestCase:
+        receipt: Receipt
+        expected: str
+        call_tree: CallTreeNode
+        name: str = request.param
+
+    # Add more test trace cases here
+    if request.param == "local":
+        return TraceTestCase(local_receipt, LOCAL_TRACE, local_call_tree)
+    elif request.param == "mainnet":
+        return TraceTestCase(mainnet_receipt, MAINNET_TRACE, mainnet_call_tree)
+
+
+@pytest.fixture
+def assert_trace(capsys):
+    def assert_trace(actual: str):
+        output, _ = capsys.readouterr()
+        trace = [s.strip() for s in output.split("\n")]
+
+        for line in trace:
+            parts = line.split(" ")
+            for part in [p.strip() for p in parts if p.strip()]:
+                part = part.strip()
+                assert part in actual, f"Could not find '{part}' in expected"
+
+    return assert_trace
+
+
+def test_trace(case, assert_trace):
+    parser = CallTraceParser(case.receipt)
+    actual = parser.parse_as_tree(case.call_tree)
     rich_print(actual)
-    breakpoint()
+    assert_trace(case.expected)

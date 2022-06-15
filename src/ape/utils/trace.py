@@ -13,7 +13,7 @@ from hexbytes import HexBytes
 from rich.tree import Tree
 
 from ape.api.networks import EcosystemAPI
-from ape.exceptions import DecodingError
+from ape.exceptions import ContractError, DecodingError
 from ape.utils.abi import Struct, parse_type
 from ape.utils.misc import ZERO_ADDRESS
 
@@ -114,7 +114,6 @@ class CallTraceParser:
             return intermediary_node
 
         contract_type = self._receipt.chain_manager.contracts.get(address)
-        breakpoint()
         selector = call.calldata[:4]
         call_signature = ""
 
@@ -131,7 +130,11 @@ class CallTraceParser:
             contract_name = contract_type.name
             if "symbol" in contract_type.view_methods:
                 contract = self._receipt.create_contract(address, contract_type)
-                contract_name = contract.symbol() or contract_name
+
+                try:
+                    contract_name = contract.symbol() or contract_name
+                except ContractError:
+                    contract_name = contract_type.name
 
             if selector in contract_type.mutable_methods:
                 method = contract_type.mutable_methods[selector]
@@ -276,11 +279,12 @@ class CallTraceParser:
             return "tx.origin"
 
         # Use name of known contract if possible.
-        con_type = self._receipt.chain_manager.contracts.get(address)
-        if con_type:
+        checksum_address = self._receipt.provider.network.ecosystem.decode_address(address)
+        con_type = self._receipt.chain_manager.contracts.get(checksum_address)
+        if con_type and con_type.name:
             return con_type.name
 
-        return self._receipt.provider.network.ecosystem.decode_address(address)
+        return checksum_address
 
 
 @dataclass()
