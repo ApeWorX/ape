@@ -403,8 +403,8 @@ class ContractCache(BaseManager):
             contract_type (ContractType): The contract's type.
         """
 
-        if self.get(address):
-            return  # Already cached
+        if self.get(address) and self._is_live_network:
+            return
 
         self._local_contracts[address] = contract_type
 

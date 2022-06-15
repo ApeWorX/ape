@@ -22,7 +22,7 @@ INTERNAL_TRANSFERS_TXN_HASH_1 = "0x0537316f37627655b7fe5e50e23f71cd835b377d1cde4
 BASE_CONTRACTS_PATH = Path(__file__).parent.parent / "data" / "contracts" / "ethereum"
 
 
-@pytest.fixture(autouse=True, scope="module")
+@pytest.fixture(scope="module")
 def local_contracts(owner, networks_connected_to_tester):
     containers = {}
     for char in ("a", "b", "c"):
