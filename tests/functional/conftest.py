@@ -18,7 +18,7 @@ from ape.managers.config import CONFIG_FILE_NAME
 
 def _get_raw_contract(compiler: str) -> Dict:
     here = Path(__file__).parent
-    contracts_dir = here / "data" / "contracts"
+    contracts_dir = here / "data" / "contracts" / "ethereum" / "local"
     return json.loads((contracts_dir / f"{compiler}_contract.json").read_text())
 
 
@@ -98,54 +98,54 @@ def eth_tester_provider(networks_connected_to_tester):
     yield networks_connected_to_tester.active_provider
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_accounts(accounts):
     return accounts.test_accounts
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def sender(test_accounts):
     return test_accounts[0]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def receiver(test_accounts):
     return test_accounts[1]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def owner(test_accounts):
     return test_accounts[2]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def solidity_contract_type() -> ContractType:
     return ContractType.parse_obj(RAW_SOLIDITY_CONTRACT_TYPE)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def solidity_contract_container(solidity_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=solidity_contract_type)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def solidity_contract_instance(
     owner, solidity_contract_container, networks_connected_to_tester
 ) -> ContractInstance:
     return owner.deploy(solidity_contract_container)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def vyper_contract_type() -> ContractType:
     return ContractType.parse_obj(RAW_VYPER_CONTRACT_TYPE)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def vyper_contract_container(vyper_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=vyper_contract_type)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def vyper_contract_instance(
     owner, vyper_contract_container, networks_connected_to_tester
 ) -> ContractInstance:

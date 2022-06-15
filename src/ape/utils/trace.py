@@ -114,6 +114,7 @@ class CallTraceParser:
             return intermediary_node
 
         contract_type = self._receipt.chain_manager.contracts.get(address)
+        breakpoint()
         selector = call.calldata[:4]
         call_signature = ""
 
