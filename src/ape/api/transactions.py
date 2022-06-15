@@ -430,8 +430,9 @@ class CallTraceParser:
                     call_signature = f"{call_signature} [dim][{call.gas_cost} gas][/]"
 
         if call.value:
-            eth_value = f"{round(call.value / 10 ** 18, 8)}"
-            call_signature += f" [{_TraceColor.VALUE}][{eth_value} value][/]"
+            eth_value = round(call.value / 10**18, 8)
+            if eth_value:
+                call_signature += f" [{_TraceColor.VALUE}][{eth_value} value][/]"
 
         parent = Tree(call_signature, guide_style="dim")
         for sub_call in call.calls:
