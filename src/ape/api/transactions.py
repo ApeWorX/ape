@@ -166,7 +166,7 @@ class ReceiptAPI(BaseInterfaceModel):
     @property
     def failed(self) -> bool:
         """
-        Whether the receipt representing a failing transaction.
+        Whether the receipt represents a failing transaction.
         Ecosystem plugins override this property when their receipts
         are able to be failing.
         """
