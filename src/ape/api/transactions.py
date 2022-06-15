@@ -324,7 +324,7 @@ class ReceiptAPI(BaseInterfaceModel):
 
             console.print(f"🚫 [bold red]{suffix}[/]")
 
-        console.print(f"txn.origin={self.sender}")
+        console.print(f"txn.origin=[{_TraceColor.CONTRACTS}]{self.sender}[/]")
         console.print(root)
 
 
@@ -511,7 +511,7 @@ class CallTraceParser:
 
 
 class _TraceColor:
-    CONTRACTS = "#af5f00"
+    CONTRACTS = "#ff8c00"
     METHODS = "bright_green"
     INPUTS = "bright_magenta"
     OUTPUTS = "bright_blue"
