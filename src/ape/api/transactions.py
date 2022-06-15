@@ -478,41 +478,46 @@ class CallTraceParser:
                 string_value = value.strip(b"\x00").decode("utf8")
                 return f"'{string_value}'"
             except UnicodeDecodeError:
-                # Truncate bytes if very long
+                # Truncate bytes if very long.
                 if len(value) > 24:
                     return humanize_hash(value)
 
-                elif HexBytes(value).hex() == ZERO_ADDRESS:
-                    return "ZERO_ADDRESS"
+                hex_str = HexBytes(value).hex()
+                if is_hex_address(hex_str):
+                    return self.decode_value(hex_str)
 
-                return value
+                return hex_str
 
-        elif isinstance(value, str) and value.startswith("0x"):
-            if value == ZERO_ADDRESS:
-                return "ZERO_ADDRESS"
-
-            elif is_hex_address(value):
-                # Use name of known contract if possible.
-                contract_type = self._receipt.chain_manager.contracts.get(value)
-                if contract_type:
-                    return contract_type.name
-
-                elif value == self._receipt.sender:
-                    value = "tx.origin"
-
-            return value
+        elif isinstance(value, str) and is_hex_address(value):
+            return self.decode_address(value)
 
         elif value and isinstance(value, str):
             # Surround non-address strings with quotes.
             return f'"{value}"'
 
         elif isinstance(value, (list, tuple)):
-            return [self.decode_value(v) for v in value]
+            decoded_values = [self.decode_value(v) for v in value]
+            return decoded_values
 
         elif isinstance(value, Struct):
-            return {k: self.decode_value(v) for k, v in value.items()}
+            decoded_values = {k: self.decode_value(v) for k, v in value.items()}
+            return decoded_values
 
         return value
+
+    def decode_address(self, address: str) -> str:
+        if address == ZERO_ADDRESS:
+            return "ZERO_ADDRESS"
+
+        elif address == self._receipt.sender:
+            return "tx.origin"
+
+        # Use name of known contract if possible.
+        con_type = self._receipt.chain_manager.contracts.get(address)
+        if con_type:
+            return con_type.name
+
+        return self._receipt.provider.network.ecosystem.decode_address(address)
 
 
 class _TraceColor:
@@ -600,6 +605,16 @@ def _dict_to_str(dictionary: Dict, color: str) -> str:
 def _list_to_str(ls: Union[List, Tuple], depth: int = 0) -> str:
     if not isinstance(ls, (list, tuple)) or len(str(ls)) < _WRAP_THRESHOLD:
         return str(ls)
+
+    elif ls and isinstance(ls[0], (list, tuple)):
+        # List of lists
+        sub_lists = [_list_to_str(i) for i in ls]
+        extra_chars_len = (len(sub_lists) - 1) * 2
+        if len(str(sub_lists)) + extra_chars_len > _WRAP_THRESHOLD:
+            # Use multi-line lists of lists
+            return ",\n".join(sub_lists)
+
+        return ", ".join(sub_lists)
 
     else:
         value = "[\n"
