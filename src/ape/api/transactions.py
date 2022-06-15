@@ -31,6 +31,7 @@ if TYPE_CHECKING:
 _WRAP_THRESHOLD = 50
 _SPACING = "  "
 _DEFAULT_TRACE_GAS_PATTERN = re.compile(r"\[\d* gas\]")
+ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 
 class TransactionAPI(BaseInterfaceModel):
@@ -480,13 +481,17 @@ class CallTraceParser:
                 # Truncate bytes if very long
                 if len(value) > 24:
                     return humanize_hash(value)
-                elif value == "0x0000000000000000000000000000000000000000":
+
+                elif HexBytes(value).hex() == ZERO_ADDRESS:
                     return "ZERO_ADDRESS"
 
                 return value
 
         elif isinstance(value, str) and value.startswith("0x"):
-            if is_hex_address(value):
+            if value == ZERO_ADDRESS:
+                return "ZERO_ADDRESS"
+
+            elif is_hex_address(value):
                 # Use name of known contract if possible.
                 contract_type = self._receipt.chain_manager.contracts.get(value)
                 if contract_type:
@@ -497,7 +502,7 @@ class CallTraceParser:
 
             return value
 
-        elif isinstance(value, str):
+        elif value and isinstance(value, str):
             # Surround non-address strings with quotes.
             return f'"{value}"'
 
