@@ -406,7 +406,7 @@ class CallTraceParser:
                         "address": address,
                         "value": call.value,
                         "gas_limit": call.gas_limit,
-                        "call_type": call.call_type,
+                        "call_type": call.call_type.value,
                     }
                     call_signature += f" {json.dumps(extra_info, indent=_SPACING)}"
             elif contract_name is not None:
