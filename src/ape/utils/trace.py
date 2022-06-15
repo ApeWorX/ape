@@ -365,25 +365,53 @@ class _MethodTraceSignature:
         elif ls and isinstance(ls[0], (list, tuple)):
             # List of lists
             sub_lists = [self._list_to_str(i) for i in ls]
+
+            # Use multi-line if exceeds threshold OR any of the sub-lists use multi-line
             extra_chars_len = (len(sub_lists) - 1) * 2
-            if len(str(sub_lists)) + extra_chars_len > self._wrap_threshold:
-                # Use multi-line lists of lists
-                return ",\n".join(sub_lists)
+            use_multiline = len(str(sub_lists)) + extra_chars_len > self._wrap_threshold or any(
+                ["\n" in ls for ls in sub_lists]
+            )
 
-            return ", ".join(sub_lists)
+            if not use_multiline:
+                # Happens for lists like '[[0], [1]]' that are short.
+                return f"[{', '.join(sub_lists)}]"
 
-        else:
-            spacing = self._indent * " "
             value = "[\n"
-            num_values = len(ls)
-            for index in range(num_values):
-                ls_spacing = spacing * (depth + 1)
-                value += f"{ls_spacing}{ls[index]}"
-                if index < num_values - 1:
-                    value += ","
+            num_sub_lists = len(sub_lists)
+            index = 0
+            spacing = self._indent * " " * 2
+            for formatted_list in sub_lists:
+                if "\n" in formatted_list:
+                    # Multi-line sub list. Append 1 more spacing to each line.
+                    indented_item = f"\n{spacing}".join(formatted_list.split("\n"))
+                    value = f"{value}{spacing}{indented_item}"
+                else:
+                    # Single line sub-list
+                    value = f"{value}{spacing}{formatted_list}"
 
-                value += "\n"
+                if index < num_sub_lists - 1:
+                    value = f"{value},"
 
-            value += spacing * depth
-            value += "]"
+                value = f"{value}\n"
+                index += 1
+
+            value = f"{value}{self._indent * ' '}]"
             return value
+
+        return self._list_to_multiline_str(ls, depth=depth)
+
+    def _list_to_multiline_str(self, value: Union[List, Tuple], depth: int = 0) -> str:
+        spacing = self._indent * " "
+        new_val = "[\n"
+        num_values = len(value)
+        for idx in range(num_values):
+            ls_spacing = spacing * (depth + 1)
+            new_val += f"{ls_spacing}{value[idx]}"
+            if idx < num_values - 1:
+                new_val += ","
+
+            new_val += "\n"
+
+        new_val += spacing * depth
+        new_val += "]"
+        return new_val
