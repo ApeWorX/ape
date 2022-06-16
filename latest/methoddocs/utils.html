@@ -146,6 +146,42 @@
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.CallTraceParser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">CallTraceParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receipt:</span> <span class="pre">ReceiptAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrap_threshold:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_set:</span> <span class="pre">typing.Union[ape.utils.trace.TraceStyles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typing.Type[ape.utils.trace.TraceStyles]]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'ape.utils.trace.TraceStyles'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.CallTraceParser" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for parsing a call trace, used in the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">show_trace()</span></code> method,
+which uses the response from
+<a href="#id1"><span class="problematic" id="id2">:method:`~ape.api.providers.ProviderAPI.get_call_trace`</span></a> and the
+<code class="docutils literal notranslate"><span class="pre">evm-trace</span></code> Python package.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tree_factory</span> <span class="o">=</span> <span class="n">CallTraceParser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+<span class="n">call_tree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_call_tree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txn_hash</span><span class="p">)</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">tree_factory</span><span class="o">.</span><span class="n">parse_as_tree</span><span class="p">(</span><span class="n">call_tree</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.CallTraceParser.parse_as_tree">
+<span class="sig-name descname"><span class="pre">parse_as_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">evm_trace.base.CallTreeNode</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">rich.tree.Tree</span></span></span><a class="headerlink" href="#ape.utils.CallTraceParser.parse_as_tree" title="Permalink to this definition"></a></dt>
+<dd><p>Create <code class="docutils literal notranslate"><span class="pre">rich.Tree</span></code> containing the nodes in a call trace
+for display purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>call</strong> (<code class="docutils literal notranslate"><span class="pre">CallTreeNode</span></code>) – A node object from the <code class="docutils literal notranslate"><span class="pre">evm-trace</span></code>
+library.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A rich tree from the <code class="docutils literal notranslate"><span class="pre">rich</span></code> library.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">rich.Tree</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ape.utils.GeneratedDevAccount">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">GeneratedDevAccount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.GeneratedDevAccount" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
@@ -279,6 +315,12 @@ to get the latest release.</p></li>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">Struct</span></span><a class="headerlink" href="#ape.utils.Struct" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A class for contract return values using the struct data-structure.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.Struct.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#ape.utils.Struct.items" title="Permalink to this definition"></a></dt>
+<dd><p>Override</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -318,6 +360,57 @@ This method also handles structs within structs as well as arrays of structs.</p
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.TraceStyles">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">TraceStyles</span></span><a class="headerlink" href="#ape.utils.TraceStyles" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Colors to use when displaying a call trace.
+Each item in the class points to the part of
+the trace it colors.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.TraceStyles.CONTRACTS">
+<span class="sig-name descname"><span class="pre">CONTRACTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'#ff8c00'</span></em><a class="headerlink" href="#ape.utils.TraceStyles.CONTRACTS" title="Permalink to this definition"></a></dt>
+<dd><p>Contract type names.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.TraceStyles.DELEGATE">
+<span class="sig-name descname"><span class="pre">DELEGATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'#d75f00'</span></em><a class="headerlink" href="#ape.utils.TraceStyles.DELEGATE" title="Permalink to this definition"></a></dt>
+<dd><p>The part ‘(delegate)’ that appears before delegate calls.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.TraceStyles.GAS_COST">
+<span class="sig-name descname"><span class="pre">GAS_COST</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'dim'</span></em><a class="headerlink" href="#ape.utils.TraceStyles.GAS_COST" title="Permalink to this definition"></a></dt>
+<dd><p>The gas used of the call.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.TraceStyles.INPUTS">
+<span class="sig-name descname"><span class="pre">INPUTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bright_magenta'</span></em><a class="headerlink" href="#ape.utils.TraceStyles.INPUTS" title="Permalink to this definition"></a></dt>
+<dd><p>Method arguments.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.TraceStyles.METHODS">
+<span class="sig-name descname"><span class="pre">METHODS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bright_green'</span></em><a class="headerlink" href="#ape.utils.TraceStyles.METHODS" title="Permalink to this definition"></a></dt>
+<dd><p>Method names; not including arguments or return values.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.TraceStyles.OUTPUTS">
+<span class="sig-name descname"><span class="pre">OUTPUTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bright_blue'</span></em><a class="headerlink" href="#ape.utils.TraceStyles.OUTPUTS" title="Permalink to this definition"></a></dt>
+<dd><p>Method return values.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.TraceStyles.VALUE">
+<span class="sig-name descname"><span class="pre">VALUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'#00afd7'</span></em><a class="headerlink" href="#ape.utils.TraceStyles.VALUE" title="Permalink to this definition"></a></dt>
+<dd><p>The transaction value, when it’s &gt; 0.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.utils.add_padding_to_strings">
 <span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">add_padding_to_strings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_spaces</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">space_character</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.utils.add_padding_to_strings" title="Permalink to this definition"></a></dt>
@@ -338,6 +431,14 @@ they all have the same length.</p>
 <dd class="field-odd"><p>List[str]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.cached_iterator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">cached_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.cached_iterator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">property</span></code></p>
+<p>A cached iterator decorator. Use it as you would <code class="docutils literal notranslate"><span class="pre">&#64;cached_property</span></code>.
+The intent is to prevent repeated fetches of data.</p>
 </dd></dl>
 
 <dl class="py function">

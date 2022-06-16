@@ -382,7 +382,7 @@ to compiler API classes.</p>
 <dd><p>A container mapping account addresses to the transaction from the active session.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.__getitem__">
-<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">ape.api.address.BaseAddress</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.api.transactions.ReceiptAPI</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.__getitem__" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">ape.api.address.BaseAddress</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.__getitem__" title="Permalink to this definition"></a></dt>
 <dd><p>Get the list of transactions from the active session for the given address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -393,7 +393,7 @@ to compiler API classes.</p>
 are no recorded transactions, returns an empty list.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>List[<code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code>]</p>
+<dd class="field-odd"><p>List[<a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -411,7 +411,7 @@ are no recorded transactions, returns an empty list.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.append">
-<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ape.api.transactions.ReceiptAPI</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory.append" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory.append" title="Permalink to this definition"></a></dt>
 <dd><p>Add a transaction to the stored list for the given account address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
@@ -419,7 +419,7 @@ are no recorded transactions, returns an empty list.</p>
     receipt that is already in the list.</p>
 </dd>
 <dt class="field-even">Parameters</dt>
-<dd class="field-even"><p><strong>txn_receipt</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code>) – The transaction receipt.
+<dd class="field-even"><p><strong>txn_receipt</strong> (<a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>) – The transaction receipt.
 <strong>NOTE</strong>: The receipt is accessible in the list returned from
 <a class="reference internal" href="#ape.managers.chain.AccountHistory.__getitem__" title="ape.managers.chain.AccountHistory.__getitem__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__getitem__()</span></code></a>.</p>
 </dd>
@@ -428,11 +428,11 @@ are no recorded transactions, returns an empty list.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.items">
-<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.api.transactions.ReceiptAPI</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.items" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.items" title="Permalink to this definition"></a></dt>
 <dd><p>Iterate through the list of address-types to list of transaction receipts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Iterator[Tuple[<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code>]]</p>
+<dd class="field-odd"><p>Iterator[Tuple[<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>, <a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -771,11 +771,15 @@ Otherwise, if on a live network, it fetches it from the
 <a class="reference internal" href="api.html#ape.api.explorers.ExplorerAPI" title="ape.api.explorers.ExplorerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplorerAPI</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<em>AddressType</em>) – The address of the contract.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<em>AddressType</em>) – The address of the contract.</p></li>
+<li><p><strong>default</strong> (<em>Optional</em><em>[</em><em>ContractType</em><em>]</em>) – A default contract when none is found.
+Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><dl class="simple">
-<dt>The contract type if it was able to get one,</dt><dd><p>otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dt>The contract type if it was able to get one,</dt><dd><p>otherwise the default parameter.</p>
 </dd>
 </dl>
 </p>

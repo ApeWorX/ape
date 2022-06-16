@@ -78,6 +78,22 @@
     :show-inheritance:
 ```
 
+## Transactions
+
+```{eval-rst}
+.. autoclass:: ape.api.transactions.ReceiptAPI
+    :members:
+    :show-inheritance:
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
+```
+
+```{eval-rst}
+.. autoclass:: ape.api.transactions.TransactionAPI
+    :members:
+    :show-inheritance:
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
+```
+
 ## Query
 
 ```{eval-rst}
