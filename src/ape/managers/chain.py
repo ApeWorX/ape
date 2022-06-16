@@ -182,9 +182,9 @@ class BlockContainer(BaseManager):
             )
         elif stop < start:
             raise ValueError(f"stop '{stop}' cannot be less than start '{start}'.")
-        elif stop < 0:
+        elif start < 0:
             raise ValueError(f"start '{start}' cannot be negative.")
-        elif start_or_stop < 0:
+        elif stop < 0:
             raise ValueError(f"stop '{stop}' cannot be negative.")
 
         # Note: the range `stop_block` is a non-inclusive stop, while the
