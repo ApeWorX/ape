@@ -1,14 +1,14 @@
 from enum import Enum, IntEnum
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import to_int
-from hexbytes import HexBytes
-from pydantic import Field, root_validator, validator
+from eth_utils import keccak, to_int
+from ethpm_types import HexBytes
+from pydantic import BaseModel, Field, root_validator, validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
@@ -36,7 +36,13 @@ class TransactionType(Enum):
     """
 
     STATIC = "0x00"
+    ACCESS_LIST = "0x01"  # EIP-2930
     DYNAMIC = "0x02"  # EIP-1559
+
+
+class AccessList(BaseModel):
+    address: str
+    storage_keys: List[Union[str, bytes, int]] = Field(default_factory=list, alias="storageKeys")
 
 
 class BaseTransaction(TransactionAPI):
@@ -56,6 +62,10 @@ class BaseTransaction(TransactionAPI):
             raise SignatureError("Recovered signer doesn't match sender!")
 
         return signed_txn
+
+    @property
+    def txn_hash(self):
+        return HexBytes(keccak(self.serialize_transaction()))
 
 
 class StaticFeeTransaction(BaseTransaction):
@@ -84,6 +94,25 @@ class DynamicFeeTransaction(BaseTransaction):
     max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")
     max_fee: Optional[int] = Field(None, alias="maxFeePerGas")
     type: Union[int, str, bytes] = Field(TransactionType.DYNAMIC.value)
+    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+
+    @validator("type")
+    def check_type(cls, value):
+
+        if isinstance(value, TransactionType):
+            return value.value
+
+        return value
+
+
+class AccessListTransaction(BaseTransaction):
+    """
+    EIP-2930 transactions are similar to legacy transaction with an added access list functionality.
+    """
+
+    gas_price: Optional[int] = Field(None, alias="gasPrice")
+    type: Union[int, str, bytes] = Field(TransactionType.ACCESS_LIST.value)
+    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
     @validator("type")
     def check_type(cls, value):
