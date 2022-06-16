@@ -13,6 +13,7 @@ from ape.utils import BaseInterfaceModel, load_config
 if TYPE_CHECKING:
     from .project import ProjectManager
 
+from ethpm_types import PackageMeta
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT = 120
@@ -86,6 +87,9 @@ class ConfigManager(BaseInterfaceModel):
     version: str = ""
     """The project's version."""
 
+    meta: PackageMeta = PackageMeta()
+    """Metadata about the project."""
+
     contracts_folder: Path = None  # type: ignore
     """
     The path to the project's ``contracts/`` directory
@@ -131,6 +135,7 @@ class ConfigManager(BaseInterfaceModel):
             self.name = cache.get("name", "")
             self.version = cache.get("version", "")
             self.default_ecosystem = cache.get("default_ecosystem", "ethereum")
+            self.meta = PackageMeta.parse_obj(cache.get("meta", {}))
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
@@ -147,6 +152,10 @@ class ConfigManager(BaseInterfaceModel):
         user_config = load_config(config_file) if config_file.exists() else {}
         self.name = configs["name"] = user_config.pop("name", "")
         self.version = configs["version"] = user_config.pop("version", "")
+        meta_dict = user_config.pop("meta", {})
+        meta_obj = PackageMeta.parse_obj(meta_dict)
+        configs["meta"] = meta_dict
+        self.meta = meta_obj
         self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
             "default_ecosystem", "ethereum"
         )

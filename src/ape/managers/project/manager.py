@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Type, Union
 
-from ethpm_types import Compiler, ContractType, PackageManifest
+from ethpm_types import Compiler, ContractType, PackageManifest, PackageMeta
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractNamespace
@@ -447,9 +447,14 @@ class ProjectManager(BaseManager):
 
         return None
 
-    # @property
-    # def meta(self) -> PackageMeta:
-    #     return PackageMeta(**self.config_manager.get_config("ethpm").serialize())
+    @property
+    def meta(self) -> PackageMeta:
+        """
+        Metadata about the active project as per EIP
+        https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
+        Use when publishing your package manifest.
+        """
+        return self.config_manager.meta  # type: ignore
 
     # def publish_manifest(self):
     #     manifest = self.manifest.dict()
@@ -457,6 +462,6 @@ class ProjectManager(BaseManager):
     #         raise ProjectError("Need name to release manifest")
     #     if not manifest["version"]:
     #         raise ProjectError("Need version to release manifest")
-    #     TODO: Clean up manifest and minify it
+
     #     TODO: Publish sources to IPFS and replace with CIDs
     #     TODO: Publish to IPFS
