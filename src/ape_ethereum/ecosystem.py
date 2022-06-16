@@ -8,7 +8,14 @@ from eth_abi import encode_abi as abi_encode
 from eth_abi.abi import decode_abi, decode_single
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address
+from eth_utils import (
+    add_0x_prefix,
+    decode_hex,
+    hexstr_if_str,
+    keccak,
+    to_bytes,
+    to_checksum_address,
+)
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
 
@@ -24,9 +31,10 @@ from ape.api import (
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
 from ape.exceptions import DecodingError, TransactionError
-from ape.types import AddressType, ContractLog, RawAddress
+from ape.types import AddressType, ContractLog, RawAddress, TransactionSignature
 from ape.utils import LogInputABICollection, Struct, StructParser, is_array, returns_array
 from ape_ethereum.transactions import (
+    AccessListTransaction,
     BaseTransaction,
     DynamicFeeTransaction,
     Receipt,
@@ -415,6 +423,7 @@ class Ethereum(EcosystemAPI):
         transaction_types = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
+            TransactionType.ACCESS_LIST: AccessListTransaction,
         }
 
         if "type" in kwargs:
@@ -448,6 +457,19 @@ class Ethereum(EcosystemAPI):
                 required_confirmations = active_provider.network.required_confirmations
 
             kwargs["required_confirmations"] = required_confirmations
+
+        if isinstance(kwargs.get("chainId"), str):
+            kwargs["chainId"] = int(kwargs["chainId"], 16)
+
+        if "input" in kwargs:
+            kwargs["data"] = decode_hex(kwargs.pop("input"))
+
+        if all(field in kwargs for field in ("v", "r", "s")):
+            kwargs["signature"] = TransactionSignature(  # type: ignore
+                v=kwargs["v"],
+                r=bytes(kwargs["r"]),
+                s=bytes(kwargs["s"]),
+            )
 
         return txn_class(**kwargs)  # type: ignore
 

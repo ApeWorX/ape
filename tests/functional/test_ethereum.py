@@ -20,6 +20,12 @@ def test_create_static_fee_transaction(ethereum, type_kwarg):
     assert txn.type == TransactionType.STATIC.value
 
 
+@pytest.mark.parametrize("type_kwarg", (1, "0x01", b"\x01", "1", "01", HexBytes("0x01")))
+def test_create_access_list_transaction(ethereum, type_kwarg):
+    txn = ethereum.create_transaction(type=type_kwarg)
+    assert txn.type == TransactionType.ACCESS_LIST.value
+
+
 @pytest.mark.parametrize("type_kwarg", (None, 2, "0x02", b"\x02", "2", "02", HexBytes("0x02")))
 def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
     txn = ethereum.create_transaction(type=type_kwarg)
@@ -74,6 +80,18 @@ def test_receipt_raise_for_status_out_of_gas_error(mocker):
         receipt.raise_for_status()
 
 
+def test_txn_hash(owner, eth_tester_provider):
+    txn = StaticFeeTransaction()
+    txn = owner.prepare_transaction(txn)
+    txn.signature = owner.sign_transaction(txn)
+
+    actual = txn.txn_hash.hex()
+    receipt = eth_tester_provider.send_transaction(txn)
+    expected = receipt.txn_hash
+
+    assert actual == expected
+
+
 @pytest.mark.fuzzing
 @given(strategies.from_regex(r"\(*[\w|, []]*\)*"))
 def test_parse_output_type(s):
@@ -88,3 +106,10 @@ def test_parse_output_type(s):
     # See tests in `tests_contracts` for specific ABI parsing tests.
 
     assert parse_output_type(s)
+
+
+def test_whitespace_in_transaction_data():
+    data = b"Should not clip whitespace\t\n"
+    txn_dict = {"data": data}
+    txn = StaticFeeTransaction.parse_obj(txn_dict)
+    assert txn.data == data, "Whitespace should not be removed from data"

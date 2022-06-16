@@ -4,17 +4,17 @@
 
 In the latest release, Ape requires:
 
--   Linux or macOS
--   Python 3.7.X or later
+- Linux or macOS
+- Python 3.7.2 or later
 
 **Windows**:
 
 1.  Install Windows Subsystem Linux
     [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install)
 2.  Choose Ubuntu 20.04 OR Any other Linux Distribution with Python
-    3.7.X or later
+    3.7.2 or later
 
-Please make sure you are using Python 3.7.X or later.
+Please make sure you are using Python 3.7.2 or later.
 
 Check your python command by entering
 
@@ -49,8 +49,8 @@ pipx install eth-ape[recommended-plugins]
 You may skip this creating a virtual environment if you know you don\'t
 require one for your use case.
 
-* [virtualenv](https://pypi.org/project/virtualenv/)
-* [venv](https://docs.python.org/3/library/venv.html)
+- [virtualenv](https://pypi.org/project/virtualenv/)
+- [venv](https://docs.python.org/3/library/venv.html)
 
 Create your virtual environment folder
 
@@ -66,7 +66,7 @@ To deactivate the virtual environment, do:
 deactivate
 ```
 
-Now that your Python version is later than 3.7.X and you have created a
+Now that your Python version is later than 3.7.2 and you have created a
 virtual environment let\'s install Ape!
 
 You can install the latest release via
@@ -109,10 +109,10 @@ sudo rm -rf **\~/.vvm**
 
 ## Overview
 
-For more in-depth information about the project please look at the [projects](~/userguides/project.md)
+For more in-depth information about the project please look at the [projects](https://docs.apeworx.io/ape/stable/userguides/projects.html)
 It explains the purpose of each folder and how to use them effectively.
 
-Use `ape init` to initialize your ape project folders. Visit [userguide project](~/userguide/project.md) for more information.  
+Use `ape init` to initialize your ape project folders. Visit [userguide project](https://docs.apeworx.io/ape/stable/userguides/projects.html) for more information.
 
 ```bash
 ape init
@@ -161,7 +161,7 @@ You can import or generate accounts.
 ```bash
 ape accounts import acc0   # Will prompt for a private key
 ape accounts generate acc1
-````
+```
 
 List all your accounts with the `list` command.
 
