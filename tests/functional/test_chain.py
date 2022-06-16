@@ -6,6 +6,11 @@ from hexbytes import HexBytes
 from ape.exceptions import ChainError
 
 
+@pytest.fixture(scope="module", autouse=True)
+def connection(networks_connected_to_tester):
+    yield
+
+
 @pytest.fixture
 def chain_at_block_5(chain, sender, receiver):
     snapshot_id = chain.snapshot()
