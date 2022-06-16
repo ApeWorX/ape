@@ -397,7 +397,7 @@ def test_call_transaction(contract_instance, owner, chain):
 
 def test_contract_two_events_with_same_name(owner, networks_connected_to_tester):
     provider = networks_connected_to_tester
-    base_path = Path(__file__).parent / "data" / "contracts"
+    base_path = Path(__file__).parent / "data" / "contracts" / "ethereum" / "local"
     interface_path = base_path / "Interface.json"
     impl_path = base_path / "InterfaceImplementation.json"
     interface_contract_type = ContractType.parse_raw(interface_path.read_text())

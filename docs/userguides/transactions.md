@@ -131,6 +131,90 @@ In your `ape-config.yaml` file, add the following:
 transaction_acceptance_timeout: 600  # 5 minutes
 ```
 
+## Traces
+
+If you are using a provider that is able to fetch transaction traces, such as the [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) provider, you can call the [`ReceiptAPI.show_trace()`](../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_trace) method.
+
+```python
+from ape import accounts, project
+
+owner = accounts.load("acct")
+contract = project.Contract.deploy(sender=owner)
+receipt = contract.methodWithoutArguments()
+receipt.show_trace()
+```
+
+**NOTE**: If your provider does not support traces, you will see a `NotImplementedError` saying that the method is not supported.
+
+The trace might look something like:
+
+```bash
+Call trace for '0x43abb1fdadfdae68f84ce8cd2582af6ab02412f686ee2544aa998db662a5ef50'
+txn.origin=0x1e59ce931B4CFea3fe4B875411e280e173cB7A9C
+ContractA.methodWithoutArguments() -> 0x00..7a9c [469604 gas]                                                                                                                                     
+├── SYMBOL.supercluster(x=234444) -> [                                                                                                                                                            
+│       [23523523235235, 11111111111, 234444],                                                                                                                                                    
+│       [                                                                                                                                                                                         
+│         345345347789999991,                                                                                                                                                                     
+│         99999998888882,                                                                                                                                                                         
+│         345457847457457458457457457                                                                                                                                                             
+│       ],                                                                                                                                                                                        
+│       [234444, 92222229999998888882, 3454],                                                                                                                                                     
+│       [                                                                                                                                                                                         
+│         111145345347789999991,                                                                                                                                                                  
+│         333399998888882,                                                                                                                                                                        
+│         234545457847457457458457457457                                                                                                                                                          
+│       ]                                                                                                                                                                                         
+│     ] [461506 gas]                                                                                                                                                                              
+├── SYMBOL.methodB1(lolol="ice-cream", dynamo=345457847457457458457457457) [402067 gas]                                                                                                           
+│   ├── ContractC.getSomeList() -> [                                                                                                                                                              
+│   │     3425311345134513461345134534531452345,                                                                                                                                                  
+│   │     111344445534535353,                                                                                                                                                                     
+│   │     993453434534534534534977788884443333                                                                                                                                                    
+│   │   ] [370103 gas]                                                                                                                                                                            
+│   └── ContractC.methodC1(                                                                                                                                                                       
+│         windows95="simpler",                                                                                                                                                                    
+│         jamaica=345457847457457458457457457,                                                                                                                                                    
+│         cardinal=ContractA                                                                                                                                                                      
+│       ) [363869 gas]                                                                                                                                                                            
+├── SYMBOL.callMe(blue=tx.origin) -> tx.origin [233432 gas]                                                                                                                                       
+├── SYMBOL.methodB2(trombone=tx.origin) [231951 gas]                                                                                                                                              
+│   ├── ContractC.paperwork(ContractA) -> (                                                                                                                                                       
+│   │     os="simpler",                                                                                                                                                                           
+│   │     country=345457847457457458457457457,                                                                                                                                                    
+│   │     wings=ContractA                                                                                                                                                                         
+│   │   ) [227360 gas]                                                                                                                                                                            
+│   ├── ContractC.methodC1(windows95="simpler", jamaica=0, cardinal=ContractC) [222263 gas]                                                                                                       
+│   ├── ContractC.methodC2() [147236 gas]                                                                                                                                                         
+│   └── ContractC.methodC2() [122016 gas]                                                                                                                                                         
+├── ContractC.addressToValue(tx.origin) -> 0 [100305 gas]                                                                                                                                         
+├── SYMBOL.bandPractice(tx.origin) -> 0 [94270 gas]                                                                                                                                               
+├── SYMBOL.methodB1(lolol="lemondrop", dynamo=0) [92321 gas]                                                                                                                                      
+│   ├── ContractC.getSomeList() -> [                                                                                                                                                              
+│   │     3425311345134513461345134534531452345,                                                                                                                                                  
+│   │     111344445534535353,                                                                                                                                                                     
+│   │     993453434534534534534977788884443333                                                                                                                                                    
+│   │   ] [86501 gas]                                                                                                                                                                             
+│   └── ContractC.methodC1(windows95="simpler", jamaica=0, cardinal=ContractA) [82729 gas]                                                                                                        
+└── SYMBOL.methodB1(lolol="snitches_get_stiches", dynamo=111) [55252 gas]                                                                                                                         
+    ├── ContractC.getSomeList() -> [                                                                                                                                                              
+    │     3425311345134513461345134534531452345,                                                                                                                                                  
+    │     111344445534535353,                                                                                                                                                                     
+    │     993453434534534534534977788884443333                                                                                                                                                    
+    │   ] [52079 gas]                                                                                                                                                                             
+    └── ContractC.methodC1(windows95="simpler", jamaica=111, cardinal=ContractA) [48306 gas]                                                                                                      
+```
+
+Additionally, you can view the traces of other transactions on your network.
+
+```python
+from ape import networks
+
+txn_hash = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
+receipt = networks.provider.get_transaction(txn_hash)
+receipt.show_trace()
+```
+
 ## Estimate Fees
 
 To estimate the fees on a transaction without sending it, use the `as_transaction()` method to get a reference to a transaction API object.

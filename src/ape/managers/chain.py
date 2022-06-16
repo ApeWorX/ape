@@ -403,8 +403,8 @@ class ContractCache(BaseManager):
             contract_type (ContractType): The contract's type.
         """
 
-        if self.get(address):
-            return  # Already cached
+        if self.get(address) and self._is_live_network:
+            return
 
         self._local_contracts[address] = contract_type
 
@@ -432,10 +432,12 @@ class ContractCache(BaseManager):
 
         Args:
             address (AddressType): The address of the contract.
+            default (Optional[ContractType]): A default contract when none is found.
+              Defaults to ``None``.
 
         Returns:
             Optional[ContractType]: The contract type if it was able to get one,
-              otherwise ``None``.
+              otherwise the default parameter.
         """
 
         contract_type = self._local_contracts.get(address)
