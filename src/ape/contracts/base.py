@@ -180,6 +180,27 @@ class ContractTransactionHandler(ManagerAccessMixin):
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
 
+    def as_transaction(self, *args, **kwargs) -> TransactionAPI:
+        """
+        Get a :class:`~ape.api.transactions.TransactionAPI`
+        for this contract method invocation. This is useful
+        for simulations or estimating fees without sending
+        the transaction.
+
+        Args:
+            *args: The contract method invocation arguments.
+            **kwargs: Transaction kwargs, such as value or
+              sender.
+
+        Returns:
+            :class:`~ape.api.transactions.TransactionAPI`
+        """
+
+        contract_transaction = self._as_transaction(*args)
+        transaction = contract_transaction.serialize_transaction(*args, **kwargs)
+        self.provider.prepare_transaction(transaction)
+        return transaction
+
     @property
     def call(self) -> ContractCallHandler:
         """
@@ -195,6 +216,10 @@ class ContractTransactionHandler(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        contract_transaction = self._as_transaction(*args)
+        return contract_transaction(*args, **kwargs)
+
+    def _as_transaction(self, *args) -> ContractTransaction:
         if not self.contract.is_contract:
             network = self.provider.network.name
             raise _get_non_contract_error(self.contract.address, network)
@@ -205,7 +230,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
         return ContractTransaction(  # type: ignore
             abi=selected_abi,
             address=self.contract.address,
-        )(*args, **kwargs)
+        )
 
 
 class ContractEvent(ManagerAccessMixin):
