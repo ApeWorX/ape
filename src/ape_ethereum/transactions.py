@@ -128,15 +128,26 @@ class AccessListTransaction(BaseTransaction):
 
 
 class Receipt(ReceiptAPI):
-    @property
-    def failed(self) -> bool:
-        return self.status != TransactionStatusEnum.NO_ERROR
+    gas_limit: int
+    gas_price: int
+    gas_used: int
 
     @property
     def ran_out_of_gas(self) -> bool:
         return (
             self.status == TransactionStatusEnum.FAILING.value and self.gas_used == self.gas_limit
         )
+
+    @property
+    def total_fees_paid(self) -> int:
+        """
+        The total amount of fees paid for the transaction.
+        """
+        return self.gas_used * self.gas_price
+
+    @property
+    def failed(self) -> bool:
+        return self.status != TransactionStatusEnum.NO_ERROR
 
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:

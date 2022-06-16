@@ -14,8 +14,6 @@ from .networks import EcosystemAPI, NetworkAPI, ProviderContextManager, create_n
 from .projects import DependencyAPI, ProjectAPI
 from .providers import (
     BlockAPI,
-    BlockConsensusAPI,
-    BlockGasAPI,
     ProviderAPI,
     SubprocessProvider,
     TestProviderAPI,
@@ -30,8 +28,6 @@ __all__ = [
     "AccountContainerAPI",
     "Address",
     "BlockAPI",
-    "BlockConsensusAPI",
-    "BlockGasAPI",
     "CompilerAPI",
     "ConfigDict",
     "ConfigEnum",

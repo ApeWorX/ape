@@ -174,6 +174,13 @@ class ReceiptAPI(BaseInterfaceModel):
 
     @property
     @abstractmethod
+    def total_fees_paid(self) -> int:
+        """
+        The total amount of fees paid for the transaction.
+        """
+
+    @property
+    @abstractmethod
     def ran_out_of_gas(self) -> bool:
         """
         Check if a transaction has ran out of gas and failed.
