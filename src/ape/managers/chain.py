@@ -182,9 +182,9 @@ class BlockContainer(BaseManager):
             )
         elif stop < start:
             raise ValueError(f"stop '{stop}' cannot be less than start '{start}'.")
-        elif stop < 0:
+        elif start < 0:
             raise ValueError(f"start '{start}' cannot be negative.")
-        elif start_or_stop < 0:
+        elif stop < 0:
             raise ValueError(f"stop '{stop}' cannot be negative.")
 
         # Note: the range `stop_block` is a non-inclusive stop, while the
@@ -195,8 +195,8 @@ class BlockContainer(BaseManager):
 
     def poll_blocks(
         self,
-        start: Optional[int] = None,
-        stop: Optional[int] = None,
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
     ) -> Iterator[BlockAPI]:
         """
@@ -212,9 +212,9 @@ class BlockContainer(BaseManager):
                 print(f"New block found: number={new_block.number}")
 
         Args:
-            start (Optional[int]): The block number to start with. Defaults to the pending
+            start_block (Optional[int]): The block number to start with. Defaults to the pending
               block number.
-            stop (Optional[int]): Optionally set a future block number to stop at.
+            stop_block (Optional[int]): Optionally set a future block number to stop at.
               Defaults to never-ending.
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
@@ -226,16 +226,16 @@ class BlockContainer(BaseManager):
         if required_confirmations is None:
             required_confirmations = self.network_confirmations
 
-        if stop is not None and stop <= self.chain_manager.blocks.height:
+        if stop_block is not None and stop_block <= self.chain_manager.blocks.height:
             raise ValueError("'stop' argument must be in the future.")
 
         # Get number of last block with the necessary amount of confirmations.
         latest_confirmed_block_number = self.height - required_confirmations
         has_yielded = False
 
-        if start is not None:
+        if start_block is not None:
             # Front-load historically confirmed blocks.
-            yield from self.range(start, latest_confirmed_block_number + 1)
+            yield from self.range(start_block, latest_confirmed_block_number + 1)
             has_yielded = True
 
         time.sleep(self.provider.network.block_time)
@@ -256,7 +256,7 @@ class BlockContainer(BaseManager):
 
                     yield block
 
-                    if stop and block.number == stop:
+                    if stop_block and block.number == stop_block:
                         return
 
                 has_yielded = True
@@ -603,7 +603,6 @@ class ChainManager(BaseManager):
         Usage example::
 
             from ape import chain
-
             chain.pending_timestamp += 3600
         """
 

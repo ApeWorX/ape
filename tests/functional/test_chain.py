@@ -1,9 +1,14 @@
-import datetime
+from datetime import datetime, timedelta
 
 import pytest
 from hexbytes import HexBytes
 
 from ape.exceptions import ChainError
+
+
+@pytest.fixture(scope="module", autouse=True)
+def connection(networks_connected_to_tester):
+    yield
 
 
 @pytest.fixture
@@ -118,6 +123,20 @@ def test_block_range_with_step(chain_at_block_5):
     assert blocks[1].number == 2
 
 
+def test_block_range_negative_start(chain_at_block_5):
+    with pytest.raises(ValueError) as err:
+        _ = [b for b in chain_at_block_5.blocks.range(-1, 3, step=2)]
+
+    assert str(err.value) == "start '-1' cannot be negative."
+
+
+def test_block_range_out_of_order(chain_at_block_5):
+    with pytest.raises(ValueError) as err:
+        _ = [b for b in chain_at_block_5.blocks.range(3, 1, step=2)]
+
+    assert str(err.value) == "stop '1' cannot be less than start '3'."
+
+
 def test_set_pending_timestamp(chain):
     start_timestamp = chain.pending_timestamp
     chain.pending_timestamp += 3600
@@ -135,9 +154,7 @@ def test_set_pending_timestamp_with_deltatime(chain):
 def test_set_pending_timestamp_failure(chain):
     with pytest.raises(ValueError) as err:
         chain.mine(
-            timestamp=int(
-                datetime.datetime.now().timestamp() + datetime.timedelta(seconds=10).seconds
-            ),
+            timestamp=int(datetime.now().timestamp() + timedelta(seconds=10).seconds),
             deltatime=10,
         )
     assert str(err.value) == "Cannot give both `timestamp` and `deltatime` arguments together."

@@ -69,7 +69,7 @@ class ProjectManager(BaseManager):
         return self.config_manager.contracts_folder
 
     @property
-    def sources(self) -> List[Path]:
+    def source_paths(self) -> List[Path]:
         """
         All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
@@ -151,7 +151,7 @@ class ProjectManager(BaseManager):
 
         for extension, compiler in self.compiler_manager.registered_compilers.items():
             for version in compiler.get_versions(
-                [p for p in self.sources if p.suffix == extension]
+                [p for p in self.source_paths if p.suffix == extension]
             ):
                 compilers.append(Compiler(compiler.name, version))  # type: ignore
 

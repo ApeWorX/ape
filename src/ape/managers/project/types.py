@@ -33,7 +33,7 @@ class BaseProject(ProjectAPI):
         return True
 
     @property
-    def sources(self) -> List[Path]:
+    def source_paths(self) -> List[Path]:
         """
         All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
@@ -101,7 +101,9 @@ class BaseProject(ProjectAPI):
                 for source_id, source in cached_sources.items()
             }
             source_paths = (
-                {p for p in self.sources if p in file_paths} if file_paths else set(self.sources)
+                {p for p in self.source_paths if p in file_paths}
+                if file_paths
+                else set(self.source_paths)
             )
 
             # Filter out deleted source_paths
@@ -158,9 +160,9 @@ class BaseProject(ProjectAPI):
 
                 # NOTE: Update contract types & re-calculate source code entries in manifest
                 source_paths = (
-                    {p for p in self.sources if p in file_paths}
+                    {p for p in self.source_paths if p in file_paths}
                     if file_paths
-                    else set(self.sources)
+                    else set(self.source_paths)
                 )
 
                 manifest = self._create_manifest(

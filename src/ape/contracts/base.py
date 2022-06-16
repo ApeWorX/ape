@@ -441,7 +441,9 @@ class ContractEvent(ManagerAccessMixin):
         ) - required_confirmations
 
         for new_block in self.chain_manager.blocks.poll_blocks(
-            start=start_block, stop=stop_block, required_confirmations=required_confirmations
+            start_block=start_block,
+            stop_block=stop_block,
+            required_confirmations=required_confirmations,
         ):
             if new_block.number is None:
                 continue
