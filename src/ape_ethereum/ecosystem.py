@@ -268,19 +268,22 @@ class Ethereum(EcosystemAPI):
             txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
 
         return Receipt(  # type: ignore
-            provider=data.get("provider"),
-            required_confirmations=data.get("required_confirmations", 0),
-            txn_hash=txn_hash,
-            status=status,
             block_number=data.get("block_number") or data.get("blockNumber"),
-            gas_used=data["gasUsed"],
-            gas_price=data.get("gas_price") or data.get("gasPrice"),
-            gas_limit=data.get("gas") or data.get("gasLimit"),
-            logs=data.get("logs", []),
             contract_address=data.get("contractAddress"),
-            sender=data["from"],
-            receiver=data["to"] or "",
+            data=data.get("data", b""),
+            gas_limit=data.get("gas") or data.get("gasLimit"),
+            gas_price=data.get("gas_price") or data.get("gasPrice"),
+            gas_used=data["gasUsed"],
+            input_data=data.get("input", ""),
+            logs=data.get("logs", []),
             nonce=data["nonce"] if "nonce" in data and data["nonce"] != "" else None,
+            provider=data.get("provider"),
+            receiver=data["to"] or "",
+            required_confirmations=data.get("required_confirmations", 0),
+            sender=data["from"],
+            status=status,
+            txn_hash=txn_hash,
+            value=data.get("value", 0),
         )
 
     def decode_block(self, data: Dict) -> BlockAPI:

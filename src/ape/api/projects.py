@@ -137,7 +137,7 @@ class ProjectAPI(BaseInterfaceModel):
                     hash=compute_checksum(source_path.read_bytes()),
                 ),
                 urls=[],
-                content=source_path.read_text(),
+                content=source_path.read_text("utf8"),
                 imports=source_imports.get(key, []),
                 references=source_references.get(key, []),
             )

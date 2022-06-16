@@ -58,6 +58,11 @@ def project(config):
 
 
 @pytest.fixture
+def project_manager():
+    return ape.project
+
+
+@pytest.fixture
 def keyparams():
     # NOTE: password is 'a'
     return {

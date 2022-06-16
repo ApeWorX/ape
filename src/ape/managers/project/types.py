@@ -125,7 +125,7 @@ class BaseProject(ProjectAPI):
 
                 source_file = self.contracts_folder / source_path
                 checksum = compute_checksum(
-                    source_file.read_bytes(),
+                    source_file.read_text("utf8").encode("utf8"),
                     algorithm=cached_checksum.algorithm,
                 )
 
