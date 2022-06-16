@@ -39,7 +39,7 @@ from ape.utils.testing import (
     GeneratedDevAccount,
     generate_dev_accounts,
 )
-from ape.utils.trace import CallTraceParser, TraceColor
+from ape.utils.trace import CallTraceParser, TraceStyles
 
 __all__ = [
     "abstractmethod",
@@ -75,7 +75,7 @@ __all__ = [
     "stream_response",
     "Struct",
     "StructParser",
-    "TraceColor",
+    "TraceStyles",
     "use_temp_sys_path",
     "USER_AGENT",
     "ZERO_ADDRESS",

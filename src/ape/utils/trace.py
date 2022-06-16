@@ -26,7 +26,7 @@ _DEFAULT_WRAP_THRESHOLD = 50
 _DEFAULT_INDENT = 2
 
 
-class TraceColor:
+class TraceStyles:
     """
     Colors to use when displaying a call trace.
     Each item in the class points to the part of
@@ -51,6 +51,9 @@ class TraceColor:
     VALUE = "#00afd7"
     """The transaction value, when it's > 0."""
 
+    GAS_COST = "dim"
+    """The gas used of the call."""
+
 
 class CallTraceParser:
     """
@@ -73,7 +76,7 @@ class CallTraceParser:
         verbose: bool = False,
         wrap_threshold: int = _DEFAULT_WRAP_THRESHOLD,
         indent: int = _DEFAULT_INDENT,
-        color_set: Union[TraceColor, Type[TraceColor]] = TraceColor,
+        color_set: Union[TraceStyles, Type[TraceStyles]] = TraceStyles,
     ):
         self._receipt = receipt
         self._verbose = verbose
@@ -121,7 +124,7 @@ class CallTraceParser:
             # Add style to default gas block so it matches nodes with contract types
             gas_part = re.findall(_DEFAULT_TRACE_GAS_PATTERN, call_sig)
             if gas_part:
-                return f"{call_sig.split(gas_part[0])[0]} [dim]{gas_part[0]}[/]"
+                return f"{call_sig.split(gas_part[0])[0]} [{TraceStyles.GAS_COST}]{gas_part[0]}[/]"
 
             return call_sig
 
@@ -166,7 +169,7 @@ class CallTraceParser:
                     )
                 )
                 if call.gas_cost:
-                    call_signature += f" [dim][{call.gas_cost} gas][/]"
+                    call_signature += f" [{TraceStyles.GAS_COST}][{call.gas_cost} gas][/]"
 
                 if self._verbose:
                     extra_info = {
@@ -194,7 +197,9 @@ class CallTraceParser:
                 # Only for mypy's sake. May never get here.
                 call_signature = f"{address}.<{selector.hex()}>"
                 if call.gas_cost:
-                    call_signature = f"{call_signature} [dim][{call.gas_cost} gas][/]"
+                    call_signature = (
+                        f"{call_signature} [{TraceStyles.GAS_COST}][{call.gas_cost} gas][/]"
+                    )
 
         if call.value:
             eth_value = round(call.value / 10**18, 8)
@@ -294,13 +299,13 @@ class _MethodTraceSignature:
     arguments: Dict
     return_value: Any
     call_type: CallType
-    colors: Union[TraceColor, Type[TraceColor]] = TraceColor
+    colors: Union[TraceStyles, Type[TraceStyles]] = TraceStyles
     _wrap_threshold: int = _DEFAULT_WRAP_THRESHOLD
     _indent: int = _DEFAULT_INDENT
 
     def __str__(self) -> str:
         contract = f"[{self.colors.CONTRACTS}]{self.contract_name}[/]"
-        method = f"[{TraceColor.METHODS}]{self.method_name}[/]"
+        method = f"[{TraceStyles.METHODS}]{self.method_name}[/]"
         call_path = f"{contract}.{method}"
 
         if self.call_type == CallType.DELEGATECALL:
@@ -319,19 +324,19 @@ class _MethodTraceSignature:
         if not self.arguments:
             return "()"
 
-        return self._dict_to_str(self.arguments, TraceColor.INPUTS)
+        return self._dict_to_str(self.arguments, TraceStyles.INPUTS)
 
     def _build_return_str(self) -> Optional[str]:
         if self.return_value in [None, [], (), {}]:
             return None
 
         elif isinstance(self.return_value, dict):
-            return self._dict_to_str(self.return_value, TraceColor.OUTPUTS)
+            return self._dict_to_str(self.return_value, TraceStyles.OUTPUTS)
 
         elif isinstance(self.return_value, (list, tuple)):
-            return f"[{TraceColor.OUTPUTS}]{self._list_to_str(self.return_value)}[/]"
+            return f"[{TraceStyles.OUTPUTS}]{self._list_to_str(self.return_value)}[/]"
 
-        return f"[{TraceColor.OUTPUTS}]{self.return_value}[/]"
+        return f"[{TraceStyles.OUTPUTS}]{self.return_value}[/]"
 
     def _dict_to_str(self, dictionary: Dict, color: str) -> str:
         length = sum([len(str(v)) for v in [*dictionary.keys(), *dictionary.values()]])

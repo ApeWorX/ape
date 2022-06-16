@@ -2,25 +2,17 @@ import sys
 import time
 from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
 
-from eth_abi import decode_abi
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
 from pydantic.fields import Field
-from rich.console import Console as RichConsole
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
-from ape.utils import (
-    BaseInterfaceModel,
-    CallTraceParser,
-    TraceColor,
-    abstractmethod,
-    cached_iterator,
-)
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_iterator
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
@@ -293,6 +285,7 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return self
 
+    @abstractmethod
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         """
         Display the complete sequence of contracts and methods called during
@@ -302,26 +295,3 @@ class ReceiptAPI(BaseInterfaceModel):
             verbose (bool): Set to ``True`` to include more information.
             file (IO[str]): The file to send output to. Defaults to stdout.
         """
-        tree_factory = CallTraceParser(self, verbose=verbose)
-        call_tree = self.provider.get_call_tree(self.txn_hash)
-        root = tree_factory.parse_as_tree(call_tree)
-        console = RichConsole(file=file)
-        console.print(f"Call trace for [bold blue]'{self.txn_hash}'[/]")
-
-        if call_tree.failed:
-            default_message = "reverted without message"
-            if not call_tree.returndata.hex().startswith(
-                "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
-            ):
-                suffix = default_message
-            else:
-                decoded_result = decode_abi(("string",), call_tree.returndata[4:])
-                if len(decoded_result) == 1:
-                    suffix = f'reverted with message: "{decoded_result[0]}"'
-                else:
-                    suffix = default_message
-
-            console.print(f"[bold red]{suffix}[/]")
-
-        console.print(f"txn.origin=[{TraceColor.CONTRACTS}]{self.sender}[/]")
-        console.print(root)
