@@ -20,7 +20,24 @@ def deploy():
     account = accounts.load("MyAccount")
     return account.deploy(project.MyContract)
 ```
-<!-- TODO include information about how to feed arguments into transactions / deployment constructor transaction -->
+
+### Deployment from Ape Console
+
+Deploying from [ape console](./console.html) allows you to interact with a contract in real time. You can also use the `--network` flag to connect a live network. 
+
+```bash
+ape console --network ethereum:goerli:alchemy
+```
+
+This will launch an IPython shell:
+
+```python
+In [1]: dev = accounts.load("dev")
+In [2]: token = dev.deploy(project.Token) 
+In [3]: token.contract_method_defined_in_contract()
+```
+
+For an in depth tutorial on how to deploy, please visit [ApeAcademy](https://academy.apeworx.io/).
 
 ## Dynamic-Fee Transactions
 
@@ -94,6 +111,15 @@ event_type = contract.MyEvent
 for log in receipt.decode_logs(event_type.abi):
     print(log.amount)  # Assuming 'amount' is a property on the event.
 ```
+
+**NOTE**: If you have more than event with the same name in your contract type's ABI, you can access the events by using the [get_event_by_signature()](../methoddocs/contracts.html?highlight=contractinstance#ape.contracts.base.ContractInstance.get_event_by_signature) method:
+
+```python
+event_type = contract.get_event_by_signature("FooEvent(uint256 bar, uint256 baz)")
+receipt.decode_logs(event_type.abi)
+```
+
+Otherwise, you will get an `AttributeError`.
 
 ## Transaction Acceptance Timeout
 

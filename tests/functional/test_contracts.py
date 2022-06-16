@@ -1,8 +1,10 @@
 import re
+from pathlib import Path
 from typing import Optional
 
 import pytest
 from eth_utils import is_checksum_address
+from ethpm_types import ContractType
 from hexbytes import HexBytes
 
 from ape import Contract
@@ -33,6 +35,18 @@ def test_init_at_unknown_address():
     contract = Contract(SOLIDITY_CONTRACT_ADDRESS)
     assert type(contract) == Address
     assert contract.address == SOLIDITY_CONTRACT_ADDRESS
+
+
+def test_init_specify_contract_type(
+    solidity_contract_instance, vyper_contract_type, owner, networks_connected_to_tester
+):
+    # Vyper contract type is very close to solidity's.
+    # This test purposely uses the other just to show we are able to specify it externally.
+    contract = Contract(solidity_contract_instance.address, contract_type=vyper_contract_type)
+    assert contract.address == solidity_contract_instance.address
+    assert contract.contract_type == vyper_contract_type
+    assert contract.setNumber(2, sender=owner)
+    assert contract.myNumber() == 2
 
 
 def test_deploy(
@@ -325,27 +339,33 @@ def test_vyper_struct_arrays(vyper_contract_instance, sender):
 
 
 def test_solidity_dynamic_struct_arrays(solidity_contract_instance, sender):
-    actual_dynamic = solidity_contract_instance.getDynamicStructList()
-    assert len(actual_dynamic) == 2
-    assert actual_dynamic[0].foo == 1
-    assert actual_dynamic[0].t.a == sender
-    assert is_checksum_address(actual_dynamic[0].t.a)
+    # Run test twice to make sure we can call method more than 1 time and have
+    # the same result.
+    for _ in range(2):
+        actual_dynamic = solidity_contract_instance.getDynamicStructList()
+        assert len(actual_dynamic) == 2
+        assert actual_dynamic[0].foo == 1
+        assert actual_dynamic[0].t.a == sender
+        assert is_checksum_address(actual_dynamic[0].t.a)
 
-    assert actual_dynamic[1].foo == 2
-    assert actual_dynamic[1].t.a == sender
-    assert is_checksum_address(actual_dynamic[1].t.a)
+        assert actual_dynamic[1].foo == 2
+        assert actual_dynamic[1].t.a == sender
+        assert is_checksum_address(actual_dynamic[1].t.a)
 
 
 def test_solidity_static_struct_arrays(solidity_contract_instance, sender):
-    actual_dynamic = solidity_contract_instance.getStaticStructList()
-    assert len(actual_dynamic) == 2
-    assert actual_dynamic[0].foo == 1
-    assert actual_dynamic[0].t.a == sender
-    assert is_checksum_address(actual_dynamic[0].t.a)
+    # Run test twice to make sure we can call method more than 1 time and have
+    # the same result.
+    for _ in range(2):
+        actual_dynamic = solidity_contract_instance.getStaticStructList()
+        assert len(actual_dynamic) == 2
+        assert actual_dynamic[0].foo == 1
+        assert actual_dynamic[0].t.a == sender
+        assert is_checksum_address(actual_dynamic[0].t.a)
 
-    assert actual_dynamic[1].foo == 2
-    assert actual_dynamic[1].t.a == sender
-    assert is_checksum_address(actual_dynamic[1].t.a)
+        assert actual_dynamic[1].foo == 2
+        assert actual_dynamic[1].t.a == sender
+        assert is_checksum_address(actual_dynamic[1].t.a)
 
 
 def test_solidity_named_tuple(solidity_contract_instance):
@@ -373,3 +393,33 @@ def test_call_transaction(contract_instance, owner, chain):
 
     # No mining happens because its a call
     assert init_block == chain.blocks[-1]
+
+
+def test_contract_two_events_with_same_name(owner, networks_connected_to_tester):
+    provider = networks_connected_to_tester
+    base_path = Path(__file__).parent / "data" / "contracts"
+    interface_path = base_path / "Interface.json"
+    impl_path = base_path / "InterfaceImplementation.json"
+    interface_contract_type = ContractType.parse_raw(interface_path.read_text())
+    impl_contract_type = ContractType.parse_raw(impl_path.read_text())
+    event_name = "FooEvent"
+
+    # Ensure test is setup correctly in case scenario-data changed on accident
+    assert len([e for e in impl_contract_type.events if e.name == event_name]) == 2
+    assert len([e for e in interface_contract_type.events if e.name == event_name]) == 1
+
+    impl_container = provider.create_contract_container(impl_contract_type)
+    impl_instance = owner.deploy(impl_container)
+
+    with pytest.raises(AttributeError) as err:
+        _ = impl_instance.FooEvent
+
+    expected_err_prefix = f"Multiple events named '{event_name}'"
+    assert expected_err_prefix in str(err.value)
+
+    expected_sig_from_impl = "FooEvent(uint256 bar, uint256 baz)"
+    expected_sig_from_interface = "FooEvent(uint256 bar)"
+    event_from_impl_contract = impl_instance.get_event_by_signature(expected_sig_from_impl)
+    assert event_from_impl_contract.abi.signature == expected_sig_from_impl
+    event_from_interface = impl_instance.get_event_by_signature(expected_sig_from_interface)
+    assert event_from_interface.abi.signature == expected_sig_from_interface

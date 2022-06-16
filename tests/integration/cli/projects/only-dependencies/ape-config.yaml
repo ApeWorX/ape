@@ -1,0 +1,4 @@
+dependencies:
+  - name: dependency_in_project_only
+    local: ./dependency_in_project_only
+    contracts_folder: sources

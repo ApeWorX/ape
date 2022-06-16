@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -138,7 +137,7 @@ class ProjectAPI(BaseInterfaceModel):
                     hash=compute_checksum(source_path.read_bytes()),
                 ),
                 urls=[],
-                content=source_path.read_text(),
+                content=source_path.read_text("utf8"),
                 imports=source_imports.get(key, []),
                 references=source_references.get(key, []),
             )
@@ -217,12 +216,28 @@ class DependencyAPI(BaseInterfaceModel):
         """
         return _load_manifest_from_file(self._target_manifest_cache_file)
 
-    def __getattr__(self, item: str) -> "ContractContainer":
-        manifest = self.extract_manifest()
-        if hasattr(manifest, item):
-            return self.create_contract_container(contract_type=getattr(manifest, item))
+    def __getitem__(self, contract_name: str) -> "ContractContainer":
+        container = self.get(contract_name)
+        if not container:
+            raise IndexError(f"Contract '{contract_name}' not found.")
 
-        raise ProjectError(f"Dependency project '{self.name}' has no contract '{item}'.")
+        return container
+
+    def __getattr__(self, contract_name: str) -> "ContractContainer":
+        container = self.get(contract_name)
+        if not container:
+            raise AttributeError(
+                f"Dependency project '{self.name}' has no contract '{contract_name}'."
+            )
+
+        return container
+
+    def get(self, contract_name: str) -> Optional["ContractContainer"]:
+        manifest = self.extract_manifest()
+        if hasattr(manifest, contract_name):
+            return self.create_contract_container(contract_type=getattr(manifest, contract_name))
+
+        return None
 
     def _extract_local_manifest(self, project_path: Path):
         project_path = project_path.resolve()
@@ -251,22 +266,17 @@ class DependencyAPI(BaseInterfaceModel):
 
         # Cache the manifest for future use outside of this tempdir.
         self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
-        self._target_manifest_cache_file.write_text(json.dumps(project_manifest.dict()))
+        self._target_manifest_cache_file.write_text(project_manifest.json())
 
         return project_manifest
 
 
 def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
-    if not file_path.exists():
+    if not file_path.is_file():
         return None
 
     try:
-        manifest_dict = json.loads(file_path.read_text())
-        if not isinstance(manifest_dict, dict) or "manifest" not in manifest_dict:
-            raise AssertionError()  # To reach except block
-
-        return PackageManifest(**manifest_dict)
-
-    except (AssertionError, json.JSONDecodeError, ValidationError):
+        return PackageManifest.parse_raw(file_path.read_text())
+    except ValidationError:
         logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
         return None

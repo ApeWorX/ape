@@ -1,16 +1,20 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Union
 
-import pandas as pd
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator, validator
 
 from ape.types import AddressType
 from ape.utils import BaseInterfaceModel, abstractmethod
 
-from .providers import BlockAPI
 from .transactions import TransactionAPI
 
-QueryType = Union["BlockQuery", "AccountQuery", "ContractEventQuery", "ContractMethodQuery"]
+QueryType = Union[
+    "BlockQuery",
+    "BlockTransactionQuery",
+    "AccountTransactionQuery",
+    "ContractEventQuery",
+    "ContractMethodQuery",
+]
 
 
 class _BaseQuery(BaseModel):
@@ -24,8 +28,7 @@ class _BaseQuery(BaseModel):
         Validates fields that are called during a block query.
 
         Returns:
-            List[str]: list of columns to be returned in pandas
-            dataframes during block query.
+            List[str]: list of keys to be returned during block query.
         """
 
     @validator("columns")
@@ -66,10 +69,31 @@ class BlockQuery(_BaseBlockQuery):
 
     @classmethod
     def all_fields(cls) -> List[str]:
+        from .providers import BlockAPI
+
         return list(BlockAPI.__fields__)
 
 
-class _BaseAccountQuery(_BaseQuery):
+class BlockTransactionQuery(_BaseQuery):
+    """
+    A ``QueryType`` that collects properties of ``TransactionAPI`` over a range of
+    transactions collected inside the ``BlockAPI` object represented by ``block_id``.
+    """
+
+    block_id: Any
+
+    @classmethod
+    def all_fields(cls) -> List[str]:
+        return list(TransactionAPI.__fields__)
+
+
+class AccountTransactionQuery(_BaseQuery):
+    """
+    A ``QueryType`` that collects properties of ``TransactionAPI`` over a range
+    of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
+    """
+
+    account: AddressType
     start_nonce: NonNegativeInt = 0
     stop_nonce: NonNegativeInt
 
@@ -82,15 +106,6 @@ class _BaseAccountQuery(_BaseQuery):
             )
 
         return values
-
-
-class AccountQuery(_BaseAccountQuery):
-    """
-    A ``QueryType`` that collects properties of ``TransactionAPI`` over a range
-    of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
-    """
-
-    account: AddressType
 
     @classmethod
     def all_fields(cls) -> List[str]:
@@ -149,7 +164,7 @@ class QueryAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def perform_query(self, query: QueryType) -> pd.DataFrame:
+    def perform_query(self, query: QueryType) -> Iterator:
         """
         Executes the query using best performing ``estimate_query`` query engine.
 
@@ -157,15 +172,15 @@ class QueryAPI(BaseInterfaceModel):
             query (``QueryType``): query to execute
 
         Returns:
-            pandas.DataFrame
+            Iterator
         """
 
-    def update_cache(self, query: QueryType, result: pd.DataFrame):
+    def update_cache(self, query: QueryType, result: Iterator):
         """
         Allows a query plugin the chance to update any cache using the results obtained
         from other query plugins. Defaults to doing nothing, override to store cache data.
 
         Args:
             query (``QueryType``): query that was executed
-            result (``pandas.DataFrame``): the result of the query
+            result (``Iterator``): the result of the query
         """

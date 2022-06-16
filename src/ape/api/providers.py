@@ -14,7 +14,7 @@ from eth_abi.abi import encode_single
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak
 from ethpm_types.abi import EventABI
-from evm_trace import TraceFrame
+from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, validator
 from web3 import Web3
@@ -22,6 +22,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
+from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     ContractLogicError,
@@ -36,8 +37,14 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
-from ape.utils.abi import LogInputABICollection
+from ape.utils import (
+    BaseInterfaceModel,
+    LogInputABICollection,
+    abstractmethod,
+    cached_property,
+    gas_estimation_error_message,
+    raises_not_implemented,
+)
 
 
 class BlockGasAPI(BaseInterfaceModel):
@@ -68,6 +75,7 @@ class BlockAPI(BaseInterfaceModel):
 
     gas_data: BlockGasAPI
     consensus_data: BlockConsensusAPI
+    num_transactions: int = 0
     hash: Optional[Any] = None
     number: Optional[int] = None
     parent_hash: Optional[Any] = None
@@ -80,6 +88,11 @@ class BlockAPI(BaseInterfaceModel):
         if value and not isinstance(value, HexBytes):
             raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
         return value
+
+    @cached_property
+    def transactions(self) -> List[TransactionAPI]:
+        query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
+        return list(self.query_manager.query(query))  # type: ignore
 
 
 class ProviderAPI(BaseInterfaceModel):
@@ -159,6 +172,19 @@ class ProviderAPI(BaseInterfaceModel):
 
         Returns:
             bytes: The contract byte-code.
+        """
+
+    @raises_not_implemented
+    def get_storage_at(self, address: str, slot: int) -> bytes:
+        """
+        Gets the raw value of a storage slot of a contract.
+
+        Args:
+            address (str): The address of the contract.
+            slot (int): Storage slot to read the value of.
+
+        Returns:
+            bytes: The value of the storage slot.
         """
 
     @abstractmethod
@@ -262,6 +288,19 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             :class:`~api.providers.ReceiptAPI`:
             The receipt of the transaction with the given hash.
+        """
+
+    # TODO: After 0.2.8 release, make this @abstractmethod
+    @raises_not_implemented
+    def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
+        """
+        Get the information about a set of transactions from a block.
+
+        Args:
+            block_id (:class:`~ape.types.BlockID`): The ID of the block.
+
+        Returns:
+            Iterator[:class: `~ape.api.transactions.TransactionAPI`]
         """
 
     @abstractmethod
@@ -379,6 +418,18 @@ class ProviderAPI(BaseInterfaceModel):
 
         Returns:
             Iterator(TraceFrame): Transaction execution trace object.
+        """
+
+    @raises_not_implemented
+    def get_call_tree(self, txn_hash: str) -> CallTreeNode:
+        """
+        Create a tree structure of calls for a transaction.
+
+        Args:
+            txn_hash (str): The hash of a transaction to trace.
+
+        Returns:
+            CallTreeNode: Transaction execution call-tree objects.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
@@ -541,7 +592,18 @@ class Web3Provider(ProviderAPI, ABC):
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         txn_dict = txn.dict()
-        return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
+        try:
+            return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
+        except ValueError as err:
+            tx_error = self.get_virtual_machine_error(err)
+
+            # If this is the cause of a would-be revert,
+            # raise ContractLogicError so that we can confirm tx-reverts.
+            if isinstance(tx_error, ContractLogicError):
+                raise tx_error from err
+
+            message = gas_estimation_error_message(tx_error)
+            raise TransactionError(base_err=tx_error, message=message) from err
 
     @property
     def chain_id(self) -> int:
@@ -592,8 +654,14 @@ class Web3Provider(ProviderAPI, ABC):
     def get_code(self, address: str) -> bytes:
         return self.web3.eth.get_code(address)  # type: ignore
 
+    def get_storage_at(self, address: str, slot: int) -> bytes:
+        return self.web3.eth.get_storage_at(address, slot)  # type: ignore
+
     def send_call(self, txn: TransactionAPI) -> bytes:
-        return self.web3.eth.call(txn.dict())
+        try:
+            return self.web3.eth.call(txn.dict())
+        except ValueError as err:
+            raise self.get_virtual_machine_error(err) from err
 
     def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
         if required_confirmations < 0:
@@ -613,6 +681,17 @@ class Web3Provider(ProviderAPI, ABC):
             }
         )
         return receipt.await_confirmations()
+
+    def get_transactions_by_block(self, block_id: BlockID) -> Iterator:
+        if isinstance(block_id, str):
+            block_id = HexStr(block_id)
+
+            if block_id.isnumeric():
+                block_id = add_0x_prefix(block_id)
+
+        block = self.web3.eth.get_block(block_id, full_transactions=True)
+        for transaction in block.get("transactions"):  # type: ignore
+            yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
 
     def get_contract_logs(
         self,
@@ -742,14 +821,21 @@ class Web3Provider(ProviderAPI, ABC):
             yield from self.network.ecosystem.decode_logs(abi, log_result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
-        req_confs = (
+        try:
+            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+        except ValueError as err:
+            raise self.get_virtual_machine_error(err) from err
+
+        required_confirmations = (
             txn.required_confirmations
             if txn.required_confirmations is not None
             else self.network.required_confirmations
         )
 
-        receipt = self.get_transaction(txn_hash.hex(), required_confirmations=req_confs)
+        receipt = self.get_transaction(
+            txn_hash.hex(), required_confirmations=required_confirmations
+        )
+        receipt.raise_for_status()
         logger.info(f"Confirmed {receipt.txn_hash} (gas_used={receipt.gas_used})")
         self._try_track_receipt(receipt)
         return receipt
