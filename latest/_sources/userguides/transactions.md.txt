@@ -130,3 +130,15 @@ In your `ape-config.yaml` file, add the following:
 ```yaml
 transaction_acceptance_timeout: 600  # 5 minutes
 ```
+
+## Estimate Fees
+
+To estimate the fees on a transaction without sending it, use the `as_transaction()` method to get a reference to a transaction API object.
+Then, use the `ProviderAPI.estimate_gas_cost()` method with the transaction as the argument.
+
+(Assume I have a contract instance named `contract_a` that has a method named `methodToCall`)
+
+```bash
+txn = contract_a.methodToCall.as_transaction(1, sender=accounts.load("me"))
+estimated_fees = provider.estimate_gas_cost(txn)
+```

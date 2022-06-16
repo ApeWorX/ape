@@ -73,6 +73,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#static-fee-transactions">Static-Fee Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#transaction-logs">Transaction Logs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#transaction-acceptance-timeout">Transaction Acceptance Timeout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#estimate-fees">Estimate Fees</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
@@ -231,6 +232,16 @@ argument <code class="docutils literal notranslate"><span class="pre">type</span
 The default value is 2 minutes.
 In your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file, add the following:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">transaction_acceptance_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span><span class="w">  </span><span class="c1"># 5 minutes</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="estimate-fees">
+<h2>Estimate Fees<a class="headerlink" href="#estimate-fees" title="Permalink to this headline"></a></h2>
+<p>To estimate the fees on a transaction without sending it, use the <code class="docutils literal notranslate"><span class="pre">as_transaction()</span></code> method to get a reference to a transaction API object.
+Then, use the <code class="docutils literal notranslate"><span class="pre">ProviderAPI.estimate_gas_cost()</span></code> method with the transaction as the argument.</p>
+<p>(Assume I have a contract instance named <code class="docutils literal notranslate"><span class="pre">contract_a</span></code> that has a method named <code class="docutils literal notranslate"><span class="pre">methodToCall</span></code>)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">txn</span> <span class="o">=</span> contract_a.methodToCall.as_transaction<span class="o">(</span><span class="m">1</span>, <span class="nv">sender</span><span class="o">=</span>accounts.load<span class="o">(</span><span class="s2">&quot;me&quot;</span><span class="o">))</span>
+<span class="nv">estimated_fees</span> <span class="o">=</span> provider.estimate_gas_cost<span class="o">(</span>txn<span class="o">)</span>
 </pre></div>
 </div>
 </section>
