@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 
 import pytest
 from hexbytes import HexBytes
@@ -131,7 +131,6 @@ def test_block_range_negative_start(chain_at_block_5):
 
 
 def test_block_range_out_of_order(chain_at_block_5):
-    range
     with pytest.raises(ValueError) as err:
         _ = [b for b in chain_at_block_5.blocks.range(3, 1, step=2)]
 
@@ -140,24 +139,22 @@ def test_block_range_out_of_order(chain_at_block_5):
 
 def test_set_pending_timestamp(chain):
     start_timestamp = chain.pending_timestamp
-    chain.pending_timestamp += 3600
+    chain.pending_timestamp += timedelta(seconds=3600)
     new_timestamp = chain.pending_timestamp
-    assert new_timestamp - start_timestamp == 3600
+    assert new_timestamp - start_timestamp == timedelta(seconds=3600)
 
 
 def test_set_pending_timestamp_with_deltatime(chain):
     start_timestamp = chain.pending_timestamp
     chain.mine(deltatime=5)
     new_timestamp = chain.pending_timestamp
-    assert new_timestamp - start_timestamp - 5 <= 1
+    assert new_timestamp - start_timestamp - timedelta(seconds=5) <= timedelta(seconds=1)
 
 
 def test_set_pending_timestamp_failure(chain):
     with pytest.raises(ValueError) as err:
         chain.mine(
-            timestamp=int(
-                datetime.datetime.now().timestamp() + datetime.timedelta(seconds=10).seconds
-            ),
+            timestamp=int(datetime.now().timestamp() + timedelta(seconds=10).seconds),
             deltatime=10,
         )
     assert str(err.value) == "Cannot give both `timestamp` and `deltatime` arguments together."

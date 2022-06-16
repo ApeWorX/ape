@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
@@ -595,7 +596,7 @@ class ChainManager(BaseManager):
         return self.provider.base_fee
 
     @property
-    def pending_timestamp(self) -> int:
+    def pending_timestamp(self) -> datetime:
         """
         The current epoch time of the chain, as an ``int``.
         You can also set the timestamp for development purposes.
@@ -607,11 +608,13 @@ class ChainManager(BaseManager):
             chain.pending_timestamp += 3600
         """
 
-        return self.provider.get_block("pending").timestamp
+        timestamp = self.provider.get_block("pending").timestamp
+        return datetime.utcfromtimestamp(timestamp)
 
     @pending_timestamp.setter
-    def pending_timestamp(self, new_value: str):
-        self.provider.set_timestamp(self.conversion_manager.convert(value=new_value, type=int))
+    def pending_timestamp(self, new_value: datetime):
+        timestamp = self.conversion_manager.convert(value=new_value, type=int)
+        self.provider.set_timestamp(timestamp)
 
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self.network_manager.active_provider else "disconnected"
@@ -687,7 +690,7 @@ class ChainManager(BaseManager):
         if timestamp and deltatime:
             raise ValueError("Cannot give both `timestamp` and `deltatime` arguments together.")
         if timestamp:
-            self.pending_timestamp = timestamp
+            self.pending_timestamp = datetime.utcfromtimestamp(timestamp)
         elif deltatime:
-            self.pending_timestamp += deltatime
+            self.pending_timestamp += timedelta(seconds=deltatime)
         self.provider.mine(num_blocks)
