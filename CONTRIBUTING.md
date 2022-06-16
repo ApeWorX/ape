@@ -15,7 +15,7 @@ source venv/bin/activate
 python setup.py install
 
 # install the developer dependencies (-e is interactive mode)
-pip install -e .[dev]
+pip install -e .'[dev]'
 ```
 
 ## Pre-Commit Hooks
