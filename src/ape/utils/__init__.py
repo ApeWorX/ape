@@ -18,6 +18,7 @@ from ape.utils.basemodel import (
 )
 from ape.utils.github import GithubClient, github_client
 from ape.utils.misc import (
+    EMPTY_BYTES32,
     USER_AGENT,
     ZERO_ADDRESS,
     add_padding_to_strings,
@@ -51,6 +52,7 @@ __all__ = [
     "CallTraceParser",
     "DEFAULT_NUMBER_OF_TEST_ACCOUNTS",
     "DEFAULT_TEST_MNEMONIC",
+    "EMPTY_BYTES32",
     "expand_environment_variables",
     "extract_nested_value",
     "get_relative_path",

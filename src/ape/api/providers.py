@@ -16,7 +16,7 @@ from eth_utils import add_0x_prefix, keccak
 from ethpm_types.abi import EventABI
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
-from pydantic import Field, validator
+from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
@@ -25,6 +25,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
+    APINotImplementedError,
     ContractLogicError,
     DecodingError,
     ProviderError,
@@ -38,6 +39,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID
 from ape.utils import (
+    EMPTY_BYTES32,
     BaseInterfaceModel,
     LogInputABICollection,
     abstractmethod,
@@ -47,40 +49,25 @@ from ape.utils import (
 )
 
 
-class BlockGasAPI(BaseInterfaceModel):
-    """
-    An abstract class for representing gas data for a block.
-    """
-
-    gas_limit: int = Field(alias="gasLimit")
-    gas_used: int = Field(alias="gasUsed")
-    base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
-
-
-class BlockConsensusAPI(BaseInterfaceModel):
-    """
-    An abstract class representing block consensus-data,
-    such as PoW-related information regarding the block.
-    `EIP-3675 <https://eips.ethereum.org/EIPS/eip-3675>`__.
-    """
-
-    difficulty: Optional[int] = None
-    total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
-
-
 class BlockAPI(BaseInterfaceModel):
     """
     An abstract class representing a block and its attributes.
     """
 
-    gas_data: BlockGasAPI
-    consensus_data: BlockConsensusAPI
     num_transactions: int = 0
-    hash: Optional[Any] = None
+    hash: Optional[Any] = None  # NOTE: pending block does not have a hash
     number: Optional[int] = None
-    parent_hash: Optional[Any] = None
+    parent_hash: Any = Field(
+        EMPTY_BYTES32, alias="parentHash"
+    )  # NOTE: genesis block has no parent hash
     size: int
     timestamp: int
+
+    @root_validator(pre=True)
+    def convert_parent_hash(cls, data):
+        if not data["parentHash"]:
+            data["parentHash"] = EMPTY_BYTES32
+        return data
 
     @validator("hash", "parent_hash", pre=True)
     def validate_hexbytes(cls, value):
@@ -584,6 +571,20 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self._web3
 
+    @property
+    def base_fee(self) -> int:
+        block = self.get_block("latest")
+        if not hasattr(block, "base_fee"):
+            raise APINotImplementedError("No base fee found in block.")
+        else:
+            base_fee = block.base_fee  # type: ignore
+
+        if base_fee is None:
+            # Non-EIP-1559 chains or we time-travelled pre-London fork.
+            raise APINotImplementedError("base_fee is not implemented by this provider.")
+
+        return base_fee
+
     def update_settings(self, new_settings: dict):
         self.disconnect()
         self.provider_settings.update(new_settings)
@@ -623,16 +624,6 @@ class Web3Provider(ProviderAPI, ABC):
     @property
     def priority_fee(self) -> int:
         return self.web3.eth.max_priority_fee
-
-    @property
-    def base_fee(self) -> int:
-        block = self.get_block("latest")
-
-        if block.gas_data.base_fee is None:
-            # Non-EIP-1559 chains or we time-travelled pre-London fork.
-            raise NotImplementedError("base_fee is not implemented by this provider.")
-
-        return block.gas_data.base_fee
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
         if isinstance(block_id, str):
@@ -835,7 +826,7 @@ class Web3Provider(ProviderAPI, ABC):
             txn_hash.hex(), required_confirmations=required_confirmations
         )
         receipt.raise_for_status()
-        logger.info(f"Confirmed {receipt.txn_hash} (gas_used={receipt.gas_used})")
+        logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self._try_track_receipt(receipt)
         return receipt
 

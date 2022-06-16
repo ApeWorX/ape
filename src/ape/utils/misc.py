@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 import requests
 import yaml
+from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
 from tqdm.auto import tqdm  # type: ignore
@@ -25,11 +26,13 @@ except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
 
+EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
+ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
     f".{sys.version_info.micro} {sys.version_info.releaselevel}"
 )
-ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 
 @lru_cache(maxsize=None)
