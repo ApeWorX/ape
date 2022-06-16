@@ -397,7 +397,7 @@ def test_call_transaction(contract_instance, owner, chain):
 
 def test_contract_two_events_with_same_name(owner, networks_connected_to_tester):
     provider = networks_connected_to_tester
-    base_path = Path(__file__).parent / "data" / "contracts"
+    base_path = Path(__file__).parent / "data" / "contracts" / "ethereum" / "local"
     interface_path = base_path / "Interface.json"
     impl_path = base_path / "InterfaceImplementation.json"
     interface_contract_type = ContractType.parse_raw(interface_path.read_text())
@@ -423,3 +423,9 @@ def test_contract_two_events_with_same_name(owner, networks_connected_to_tester)
     assert event_from_impl_contract.abi.signature == expected_sig_from_impl
     event_from_interface = impl_instance.get_event_by_signature(expected_sig_from_interface)
     assert event_from_interface.abi.signature == expected_sig_from_interface
+
+
+def test_estimating_fees(solidity_contract_instance, eth_tester_provider, owner):
+    transaction = solidity_contract_instance.setNumber.as_transaction(10, sender=owner)
+    estimated_fees = eth_tester_provider.estimate_gas_cost(transaction)
+    assert estimated_fees > 0

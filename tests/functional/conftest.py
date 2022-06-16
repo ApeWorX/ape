@@ -18,7 +18,7 @@ from ape.managers.config import CONFIG_FILE_NAME
 
 def _get_raw_contract(compiler: str) -> Dict:
     here = Path(__file__).parent
-    contracts_dir = here / "data" / "contracts"
+    contracts_dir = here / "data" / "contracts" / "ethereum" / "local"
     return json.loads((contracts_dir / f"{compiler}_contract.json").read_text())
 
 
@@ -98,7 +98,7 @@ def eth_tester_provider(networks_connected_to_tester):
     yield networks_connected_to_tester.active_provider
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_accounts(accounts):
     return accounts.test_accounts
 
@@ -113,7 +113,7 @@ def receiver(test_accounts):
     return test_accounts[1]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def owner(test_accounts):
     return test_accounts[2]
 
