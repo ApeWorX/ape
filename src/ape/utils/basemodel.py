@@ -127,7 +127,6 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
         keep_untouched = (cached_property, singledispatchmethod)
         arbitrary_types_allowed = True
         underscore_attrs_are_private = True
-        anystr_strip_whitespace = True
         copy_on_model_validation = False
 
     def __dir__(self) -> List[str]:
