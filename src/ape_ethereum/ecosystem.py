@@ -18,6 +18,7 @@ from eth_utils import (
 )
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
+from pydantic import Field
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
@@ -94,6 +95,12 @@ class Block(BlockAPI):
     """
     Class for representing a block on a chain.
     """
+
+    gas_limit: int = Field(alias="gasLimit")
+    gas_used: int = Field(alias="gasUsed")
+    base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
+    difficulty: Optional[int] = None
+    total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
 
 
 def parse_output_type(output_type: str) -> Union[str, Tuple, List]:
@@ -255,11 +262,10 @@ class Ethereum(EcosystemAPI):
         return Receipt(  # type: ignore
             block_number=data.get("block_number") or data.get("blockNumber"),
             contract_address=data.get("contractAddress"),
-            data=data.get("data", b""),
+            data=data.get("data") or data.get("input", b""),
             gas_limit=data.get("gas") or data.get("gasLimit"),
             gas_price=data.get("gas_price") or data.get("gasPrice"),
             gas_used=data["gasUsed"],
-            input_data=data.get("input", ""),
             logs=data.get("logs", []),
             nonce=data["nonce"] if "nonce" in data and data["nonce"] != "" else None,
             provider=data.get("provider"),

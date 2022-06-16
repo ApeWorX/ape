@@ -145,10 +145,6 @@ class ReceiptAPI(BaseInterfaceModel):
     contract_address: Optional[str] = None
     block_number: int
     data: bytes = b""
-    gas_limit: int
-    gas_price: int
-    gas_used: int
-    input_data: str = ""
     logs: List[dict] = []
     nonce: Optional[int] = None
     receiver: str

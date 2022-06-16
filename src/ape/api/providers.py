@@ -48,27 +48,6 @@ from ape.utils import (
 )
 
 
-class BlockGasAPI(BaseInterfaceModel):
-    """
-    An abstract class for representing gas data for a block.
-    """
-
-    gas_limit: int = Field(alias="gasLimit")
-    gas_used: int = Field(alias="gasUsed")
-    base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
-
-
-class BlockConsensusAPI(BaseInterfaceModel):
-    """
-    An abstract class representing block consensus-data,
-    such as PoW-related information regarding the block.
-    `EIP-3675 <https://eips.ethereum.org/EIPS/eip-3675>`__.
-    """
-
-    difficulty: Optional[int] = None
-    total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
-
-
 class BlockAPI(BaseInterfaceModel):
     """
     An abstract class representing a block and its attributes.
@@ -82,12 +61,6 @@ class BlockAPI(BaseInterfaceModel):
     )  # NOTE: genesis block has no parent hash
     size: int
     timestamp: int
-    gas_limit: int = Field(alias="gasLimit")
-    gas_used: int = Field(alias="gasUsed")
-    base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
-    # TODO: Validate whether these fields should be optional or not
-    difficulty: Optional[int] = None
-    total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
 
     @root_validator(pre=True)
     def convert_parent_hash(cls, data):

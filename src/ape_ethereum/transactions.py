@@ -124,6 +124,10 @@ class AccessListTransaction(BaseTransaction):
 
 
 class Receipt(ReceiptAPI):
+    gas_limit: int
+    gas_price: int
+    gas_used: int
+
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
             raise OutOfGasError()
