@@ -1,6 +1,7 @@
 import time
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
+from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
@@ -75,6 +76,12 @@ class TransactionAPI(BaseInterfaceModel):
             data["data"] = "0x" + bytes(data["data"]).hex()
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         return f"{self.__class__.__name__}:\n  {params}"
+
+    @abstractmethod
+    def txn_hash(self) -> HexBytes:
+        """
+        The hash of the transaction.
+        """
 
 
 class ConfirmationsProgressBar:
