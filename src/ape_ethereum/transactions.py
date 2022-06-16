@@ -15,7 +15,7 @@ from rich.console import Console as RichConsole
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
-from ape.utils import CallTraceParser, TraceStyles, abstractmethod
+from ape.utils import CallTraceParser, TraceStyles
 
 
 class TransactionStatusEnum(IntEnum):
@@ -139,7 +139,6 @@ class Receipt(ReceiptAPI):
         )
 
     @property
-    @abstractmethod
     def total_fees_paid(self) -> int:
         """
         The total amount of fees paid for the transaction.
