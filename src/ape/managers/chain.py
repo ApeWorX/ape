@@ -599,7 +599,9 @@ class ChainManager(BaseManager):
         """
         The current epoch time of the chain, as an ``int``.
         You can also set the timestamp for development purposes.
+
         Usage example::
+
             from ape import chain
             chain.pending_timestamp += 3600
         """
