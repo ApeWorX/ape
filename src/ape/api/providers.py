@@ -14,7 +14,7 @@ from eth_abi.abi import encode_single
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak
 from ethpm_types.abi import EventABI
-from evm_trace import TraceFrame
+from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, validator
 from web3 import Web3
@@ -290,8 +290,7 @@ class ProviderAPI(BaseInterfaceModel):
             The receipt of the transaction with the given hash.
         """
 
-    # TODO: After 0.2.8 release, make this @abstractmethod
-    @raises_not_implemented
+    @abstractmethod
     def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
         """
         Get the information about a set of transactions from a block.
@@ -418,6 +417,18 @@ class ProviderAPI(BaseInterfaceModel):
 
         Returns:
             Iterator(TraceFrame): Transaction execution trace object.
+        """
+
+    @raises_not_implemented
+    def get_call_tree(self, txn_hash: str) -> CallTreeNode:
+        """
+        Create a tree structure of calls for a transaction.
+
+        Args:
+            txn_hash (str): The hash of a transaction to trace.
+
+        Returns:
+            CallTreeNode: Transaction execution call-tree objects.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
