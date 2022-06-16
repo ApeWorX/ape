@@ -12,7 +12,7 @@ from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_iterator
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_iterator, raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
@@ -285,7 +285,7 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return self
 
-    @abstractmethod
+    @raises_not_implemented
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         """
         Display the complete sequence of contracts and methods called during
