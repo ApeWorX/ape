@@ -27,13 +27,12 @@ except ImportError:
 
 
 EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
-
+ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
     f".{sys.version_info.micro} {sys.version_info.releaselevel}"
 )
-ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 
 @lru_cache(maxsize=None)

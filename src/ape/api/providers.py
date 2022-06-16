@@ -581,7 +581,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         if base_fee is None:
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
-            raise NotImplementedError("base_fee is not implemented by this provider.")
+            raise APINotImplementedError("base_fee is not implemented by this provider.")
 
         return base_fee
 
