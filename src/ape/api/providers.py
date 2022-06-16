@@ -25,6 +25,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
+    APINotImplementedError,
     ContractLogicError,
     DecodingError,
     ProviderError,
@@ -570,6 +571,20 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self._web3
 
+    @property
+    def base_fee(self) -> int:
+        block = self.get_block("latest")
+        if not hasattr(block, "base_fee"):
+            raise APINotImplementedError("No base fee found in block.")
+        else:
+            base_fee = block.base_fee  # type: ignore
+
+        if base_fee is None:
+            # Non-EIP-1559 chains or we time-travelled pre-London fork.
+            raise NotImplementedError("base_fee is not implemented by this provider.")
+
+        return base_fee
+
     def update_settings(self, new_settings: dict):
         self.disconnect()
         self.provider_settings.update(new_settings)
@@ -609,16 +624,6 @@ class Web3Provider(ProviderAPI, ABC):
     @property
     def priority_fee(self) -> int:
         return self.web3.eth.max_priority_fee
-
-    @property
-    def base_fee(self) -> int:
-        block = self.get_block("latest")
-
-        if block.base_fee is None:
-            # Non-EIP-1559 chains or we time-travelled pre-London fork.
-            raise NotImplementedError("base_fee is not implemented by this provider.")
-
-        return block.base_fee
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
         if isinstance(block_id, str):
@@ -821,7 +826,7 @@ class Web3Provider(ProviderAPI, ABC):
             txn_hash.hex(), required_confirmations=required_confirmations
         )
         receipt.raise_for_status()
-        logger.info(f"Confirmed {receipt.txn_hash} (gas_used={receipt.gas_used})")
+        logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self._try_track_receipt(receipt)
         return receipt
 

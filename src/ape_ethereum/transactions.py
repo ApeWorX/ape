@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, root_validator, validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
+from ape.utils import abstractmethod
 
 
 class TransactionStatusEnum(IntEnum):
@@ -128,15 +129,23 @@ class Receipt(ReceiptAPI):
     gas_price: int
     gas_used: int
 
+    @property
+    def ran_out_of_gas(self) -> bool:
+        return (
+            self.status == TransactionStatusEnum.FAILING.value and self.gas_used == self.gas_limit
+        )
+
+    @property
+    @abstractmethod
+    def total_fees_paid(self) -> int:
+        """
+        The total amount of fees paid for the transaction.
+        """
+        return self.gas_used * self.gas_price
+
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
             raise OutOfGasError()
         elif self.status != TransactionStatusEnum.NO_ERROR:
             txn_hash = HexBytes(self.txn_hash).hex()
             raise TransactionError(message=f"Transaction '{txn_hash}' failed.")
-
-    @property
-    def ran_out_of_gas(self) -> bool:
-        return (
-            self.status == TransactionStatusEnum.FAILING.value and self.gas_used == self.gas_limit
-        )
