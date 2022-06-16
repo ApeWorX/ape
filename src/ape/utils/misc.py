@@ -1,8 +1,9 @@
 import json
 import sys
 from functools import lru_cache
+from itertools import tee
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 import requests
 import yaml
@@ -28,6 +29,7 @@ _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
     f".{sys.version_info.micro} {sys.version_info.releaselevel}"
 )
+ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 
 @lru_cache(maxsize=None)
@@ -229,6 +231,21 @@ def raises_not_implemented(fn):
         )
 
     return inner
+
+
+class cached_iterator(property):
+    """
+    A cached iterator decorator. Use it as you would ``@cached_property``.
+    The intent is to prevent repeated fetches of data.
+    """
+
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        self.cache: Optional[Iterator] = None
+        super().__init__(fget=fget, fset=fset, fdel=fdel, doc=doc)
+
+    def __get__(self, obj, objtype=None):
+        iterator, self.cache = tee(self.cache if self.cache else self.fget(obj))
+        return iterator
 
 
 __all__ = [

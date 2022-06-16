@@ -170,6 +170,10 @@ class Struct:
     A class for contract return values using the struct data-structure.
     """
 
+    def items(self) -> Dict:
+        """Override"""
+        return {}
+
 
 def create_struct(
     name: str, types: List[ABIType], output_values: Union[List[Any], Tuple[Any, ...]]
@@ -209,11 +213,14 @@ def create_struct(
     def length(struct) -> int:
         return len(struct.__dataclass_fields__)
 
+    def items(struct) -> List[Tuple]:
+        return [(k, struct[k]) for k, v in struct.__dataclass_fields__.items()]
+
     struct_def = make_dataclass(
         name,
         # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
         [m.name or f"_{i}" for i, m in enumerate(types)],
-        namespace={"__getitem__": get_item, "__eq__": is_equal, "__len__": length},
+        namespace={"__getitem__": get_item, "__eq__": is_equal, "__len__": length, "items": items},
         bases=(Struct,),  # We set a base class for subclass checking elsewhere.
     )
 
@@ -245,3 +252,46 @@ def _get_event_abi_types(abi_inputs: List[Dict]) -> Iterator[Union[str, Dict]]:
             yield "bytes32"
         else:
             yield collapse_if_tuple(abi_input)
+
+
+def parse_type(output_type: str) -> Union[str, Tuple, List]:
+    if not output_type.startswith("("):
+        return output_type
+
+    # Strip off first opening parens
+    output_type = output_type[1:]
+    found_types: List[Union[str, Tuple, List]] = []
+
+    while output_type:
+        if output_type.startswith(")"):
+            result = tuple(found_types)
+            if "[" in output_type:
+                return [result]
+
+            return result
+
+        elif output_type[0] == "(" and ")" in output_type:
+            # A tuple within the tuple
+            end_index = output_type.index(")") + 1
+            found_type = parse_type(output_type[:end_index])
+            output_type = output_type[end_index:]
+
+            if output_type.startswith("[") and "]" in output_type:
+                end_array_index = output_type.index("]") + 1
+                found_type = [found_type]
+                output_type = output_type[end_array_index:].lstrip(",")
+
+        else:
+            found_type = output_type.split(",")[0].rstrip(")")
+            end_index = len(found_type) + 1
+            output_type = output_type[end_index:]
+
+        if isinstance(found_type, str) and "[" in found_type and ")" in found_type:
+            parts = found_type.split(")")
+            found_type = parts[0]
+            output_type = f"){parts[1]}"
+
+        if found_type:
+            found_types.append(found_type)
+
+    return tuple(found_types)

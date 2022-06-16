@@ -19,7 +19,7 @@ extras_require = {
     ],
     "lint": [
         "black>=22.3.0,<23.0",  # auto-formatter and linter
-        "mypy>=0.950,<1.0",  # Static type analyzer
+        "mypy>=0.961,<1.0",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
         "flake8>=4.0.1,<5.0",  # Style linter
@@ -93,9 +93,8 @@ setup(
     install_requires=[
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.1.0",
-        "eth-account==0.5.7",
-        "ethpm-types>=0.3.1,<0.4.0",
-        "evm-trace>=0.1.0.a2",
+        "ethpm-types>=0.3.2,<0.4.0",
+        "evm-trace>=0.1.0.a6",
         "hexbytes>=0.2.2,<1.0.0",
         "packaging>=20.9,<21.0",
         "pandas>=1.3.0,<2.0",
@@ -113,11 +112,12 @@ setup(
         "rich>=10.14,<11",
         "tqdm>=4.62.3,<5.0",
         "typing-extensions ; python_version<'3.8'",
-        "web3[tester]>=5.29.0,<6.0",
-        "eth_abi==2.1.1",
-        "eth-utils==1.10.0",
-        "eth-rlp==0.2.1",
         "python-dateutil>=2.8.2,<3.0",
+        "web3[tester]>=5.29.0,<6.0",
+        "eth-abi>=2.1.1,<3.0",
+        "eth-utils>=1.10.0,<2.0",
+        "eth-rlp>=0.2.1,<0.3",
+        "eth-account==0.5.7",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

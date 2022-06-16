@@ -7,6 +7,7 @@ from ape.utils.abi import (
     is_array,
     is_named_tuple,
     is_struct,
+    parse_type,
     returns_array,
 )
 from ape.utils.basemodel import (
@@ -18,7 +19,9 @@ from ape.utils.basemodel import (
 from ape.utils.github import GithubClient, github_client
 from ape.utils.misc import (
     USER_AGENT,
+    ZERO_ADDRESS,
     add_padding_to_strings,
+    cached_iterator,
     cached_property,
     expand_environment_variables,
     extract_nested_value,
@@ -36,13 +39,16 @@ from ape.utils.testing import (
     GeneratedDevAccount,
     generate_dev_accounts,
 )
+from ape.utils.trace import CallTraceParser, TraceStyles
 
 __all__ = [
     "abstractmethod",
     "add_padding_to_strings",
     "BaseInterface",
     "BaseInterfaceModel",
+    "cached_iterator",
     "cached_property",
+    "CallTraceParser",
     "DEFAULT_NUMBER_OF_TEST_ACCOUNTS",
     "DEFAULT_TEST_MNEMONIC",
     "expand_environment_variables",
@@ -62,12 +68,15 @@ __all__ = [
     "load_config",
     "LogInputABICollection",
     "ManagerAccessMixin",
+    "parse_type",
     "raises_not_implemented",
     "returns_array",
     "singledispatchmethod",
     "stream_response",
     "Struct",
     "StructParser",
+    "TraceStyles",
     "use_temp_sys_path",
     "USER_AGENT",
+    "ZERO_ADDRESS",
 ]

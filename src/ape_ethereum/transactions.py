@@ -1,6 +1,8 @@
+import sys
 from enum import Enum, IntEnum
-from typing import Dict, List, Optional, Union
+from typing import IO, Dict, List, Optional, Union
 
+from eth_abi import decode_abi
 from eth_account import Account as EthAccount  # type: ignore
 from eth_account._utils.legacy_transactions import (
     encode_transaction,
@@ -9,9 +11,11 @@ from eth_account._utils.legacy_transactions import (
 from eth_utils import keccak, to_int
 from ethpm_types import HexBytes
 from pydantic import BaseModel, Field, root_validator, validator
+from rich.console import Console as RichConsole
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
+from ape.utils import CallTraceParser, TraceStyles
 
 
 class TransactionStatusEnum(IntEnum):
@@ -124,6 +128,16 @@ class AccessListTransaction(BaseTransaction):
 
 
 class Receipt(ReceiptAPI):
+    @property
+    def failed(self) -> bool:
+        return self.status != TransactionStatusEnum.NO_ERROR
+
+    @property
+    def ran_out_of_gas(self) -> bool:
+        return (
+            self.status == TransactionStatusEnum.FAILING.value and self.gas_used == self.gas_limit
+        )
+
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
             raise OutOfGasError()
@@ -131,8 +145,27 @@ class Receipt(ReceiptAPI):
             txn_hash = HexBytes(self.txn_hash).hex()
             raise TransactionError(message=f"Transaction '{txn_hash}' failed.")
 
-    @property
-    def ran_out_of_gas(self) -> bool:
-        return (
-            self.status == TransactionStatusEnum.FAILING.value and self.gas_used == self.gas_limit
-        )
+    def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
+        tree_factory = CallTraceParser(self, verbose=verbose)
+        call_tree = self.provider.get_call_tree(self.txn_hash)
+        root = tree_factory.parse_as_tree(call_tree)
+        console = RichConsole(file=file)
+        console.print(f"Call trace for [bold blue]'{self.txn_hash}'[/]")
+
+        if call_tree.failed:
+            default_message = "reverted without message"
+            if not call_tree.returndata.hex().startswith(
+                "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
+            ):
+                suffix = default_message
+            else:
+                decoded_result = decode_abi(("string",), call_tree.returndata[4:])
+                if len(decoded_result) == 1:
+                    suffix = f'reverted with message: "{decoded_result[0]}"'
+                else:
+                    suffix = default_message
+
+            console.print(f"[bold red]{suffix}[/]")
+
+        console.print(f"txn.origin=[{TraceStyles.CONTRACTS}]{self.sender}[/]")
+        console.print(root)

@@ -1,8 +1,10 @@
+import sys
 import time
-from typing import TYPE_CHECKING, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
+from evm_trace import TraceFrame
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
@@ -10,7 +12,7 @@ from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_iterator, raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
@@ -148,7 +150,6 @@ class ReceiptAPI(BaseInterfaceModel):
     gas_limit: int
     gas_price: int
     gas_used: int
-    input_data: str = ""
     logs: List[dict] = []
     nonce: Optional[int] = None
     receiver: str
@@ -161,11 +162,15 @@ class ReceiptAPI(BaseInterfaceModel):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
-    def raise_for_status(self):
+    @property
+    def failed(self) -> bool:
         """
-        Handle provider-specific errors regarding a non-successful
-        :class:`~api.providers.TransactionStatusEnum`.
+        Whether the receipt represents a failing transaction.
+        Ecosystem plugins override this property when their receipts
+        are able to be failing.
         """
+
+        return False
 
     @property
     @abstractmethod
@@ -177,6 +182,13 @@ class ReceiptAPI(BaseInterfaceModel):
             bool:  ``True`` when the transaction failed and used the
             same amount of gas as the given ``gas_limit``.
         """
+
+    @cached_iterator
+    def trace(self) -> Iterator[TraceFrame]:
+        """
+        The trace of the transaction, if available from your provider.
+        """
+        return self.provider.get_transaction_trace(txn_hash=self.txn_hash)
 
     @property
     def _explorer(self) -> Optional[ExplorerAPI]:
@@ -194,6 +206,12 @@ class ReceiptAPI(BaseInterfaceModel):
             return 0
 
         return latest_block.number - self.block_number
+
+    def raise_for_status(self):
+        """
+        Handle provider-specific errors regarding a non-successful
+        :class:`~api.providers.TransactionStatusEnum`.
+        """
 
     def decode_logs(self, abi: Union[EventABI, "ContractEvent"]) -> Iterator[ContractLog]:
         """
@@ -266,3 +284,14 @@ class ReceiptAPI(BaseInterfaceModel):
                 time.sleep(time_to_sleep)
 
         return self
+
+    @raises_not_implemented
+    def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
+        """
+        Display the complete sequence of contracts and methods called during
+        the transaction.
+
+        Args:
+            verbose (bool): Set to ``True`` to include more information.
+            file (IO[str]): The file to send output to. Defaults to stdout.
+        """
