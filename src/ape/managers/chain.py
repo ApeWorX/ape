@@ -6,7 +6,7 @@ from ethpm_types import ContractType
 
 from ape.api import Address, BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
-from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
+from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
 from ape.api.query import BlockQuery
 from ape.exceptions import ChainError, UnknownSnapshotError
 from ape.logging import logger
@@ -367,24 +367,34 @@ class ContractCache(BaseManager):
     2. A cache of contracts per network (only permanent networks are stored this way)
 
     When retrieving a contract, if a :class:`~ape.api.explorers.ExplorerAPI` is used,
-    it will be cached to disc for faster look-up next time.
+    it will be cached to disk for faster look-up next time.
     """
 
     _local_contracts: Dict[AddressType, ContractType] = {}
+    _local_proxies: Dict[AddressType, ProxyInfoAPI] = {}
 
     @property
     def _network(self) -> NetworkAPI:
         return self.provider.network
 
     @property
+    def _is_live_network(self) -> bool:
+        return self._network.name != LOCAL_NETWORK_NAME and not self._network.name.endswith("-fork")
+
+    @property
     def _contract_types_cache(self) -> Path:
         network_name = self._network.name.replace("-fork", "")
         return self._network.ecosystem.data_folder / network_name / "contract_types"
 
+    @property
+    def _proxy_info_cache(self) -> Path:
+        network_name = self._network.name.replace("-fork", "")
+        return self._network.ecosystem.data_folder / network_name / "proxy_info"
+
     def __setitem__(self, address: AddressType, contract_type: ContractType):
         """
         Cache the given contract type. Contracts are cached in memory per session.
-        In live networks, contracts also get cached to disc at
+        In live networks, contracts also get cached to disk at
         ``.ape/{ecosystem_name}/{network_name}/contract_types/{address}.json``
         for faster look-up next time.
 
@@ -398,10 +408,10 @@ class ContractCache(BaseManager):
 
         self._local_contracts[address] = contract_type
 
-        if self._network.name != LOCAL_NETWORK_NAME and not self._network.name.endswith("-fork"):
+        if self._is_live_network:
             # NOTE: We don't cache forked network contracts in this method to avoid caching
             # deployments from a fork. However, if you retrieve a contract from an explorer
-            # when using a forked network, it will still get cached to disc.
+            # when using a forked network, it will still get cached to disk.
             self._cache_contract_to_disk(address, contract_type)
 
     def __getitem__(self, address: AddressType) -> ContractType:
@@ -433,18 +443,23 @@ class ContractCache(BaseManager):
             return contract_type
 
         if self._network.name == LOCAL_NETWORK_NAME:
-            # Don't check disc-cache or explorer when using local
+            # Don't check disk-cache or explorer when using local
             return default
 
         contract_type = self._get_contract_type_from_disk(address)
 
         if not contract_type:
             # Contract could be a minimal proxy
-            proxy = self.provider.network.ecosystem.get_proxy_info(address)
-            if proxy:
-                return self.get(proxy.target)
+            proxy_info = self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
+            if not proxy_info:
+                proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
+                if proxy_info and self._is_live_network:
+                    self._cache_proxy_info_to_disk(address, proxy_info)
+            if proxy_info:
+                self._local_proxies[address] = proxy_info
+                return self.get(proxy_info.target)
 
-            # Also gets cached to disc for faster lookup next time.
+            # Also gets cached to disk for faster lookup next time.
             contract_type = self._get_contract_type_from_explorer(address)
 
         # Cache locally for faster in-session look-up.
@@ -463,14 +478,18 @@ class ContractCache(BaseManager):
         return Address(address)
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
-        if not self._contract_types_cache.is_dir():
-            return None
-
         address_file = self._contract_types_cache / f"{address}.json"
         if not address_file.is_file():
             return None
 
         return ContractType.parse_raw(address_file.read_text())
+
+    def _get_proxy_info_from_disk(self, address: AddressType) -> Optional[ProxyInfoAPI]:
+        address_file = self._proxy_info_cache / f"{address}.json"
+        if not address_file.is_file():
+            return None
+
+        return ProxyInfoAPI.parse_raw(address_file.read_text())
 
     def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
         if not self._network.explorer:
@@ -492,6 +511,11 @@ class ContractCache(BaseManager):
         self._contract_types_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._contract_types_cache / f"{address}.json"
         address_file.write_text(contract_type.json())
+
+    def _cache_proxy_info_to_disk(self, address: AddressType, proxy_info: ProxyInfoAPI):
+        self._proxy_info_cache.mkdir(exist_ok=True, parents=True)
+        address_file = self._proxy_info_cache / f"{address}.json"
+        address_file.write_text(proxy_info.json())
 
 
 class ChainManager(BaseManager):
