@@ -190,6 +190,7 @@ class ReceiptAPI(BaseInterfaceModel):
             same amount of gas as the given ``gas_limit``.
         """
 
+    @property
     def trace(self) -> Iterator[TraceFrame]:
         """
         The trace of the transaction, if available from your provider.
