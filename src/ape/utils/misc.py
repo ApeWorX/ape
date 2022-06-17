@@ -3,7 +3,7 @@ import sys
 from functools import lru_cache
 from itertools import tee
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 import requests
 import yaml
@@ -243,7 +243,7 @@ class cached_iterator(property):
     """
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
-        self.cache: Dict = {}
+        self.cache: Dict[str, Iterator] = {}
         super().__init__(fget=fget, fset=fset, fdel=fdel, doc=doc)
 
     def __get__(self, obj, objtype=None):
