@@ -247,7 +247,7 @@ class cached_iterator(property):
         super().__init__(fget=fget, fset=fset, fdel=fdel, doc=doc)
 
     def __get__(self, obj, objtype=None):
-        getter_id = f"{hash(obj)}{hash(self.fget)}"
+        getter_id = f"{id(obj)}{id(self.fget)}"
         iterator, iter_to_cache = tee(
             self.cache[getter_id] if getter_id in self.cache else self.fget(obj)
         )
