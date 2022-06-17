@@ -31,7 +31,9 @@ def test_add_spacing_to_strings():
 def test_cached_iterator():
     class _Class:
         call_count = 0
-        raw_list = [1, 2, 3]
+
+        def __init__(self, raw_list):
+            self.raw_list = raw_list
 
         @cached_iterator
         def iterator(self) -> Iterator:
@@ -41,13 +43,20 @@ def test_cached_iterator():
             self.call_count += 1
             yield from self.raw_list
 
-    demo_class = _Class()
-    assert [i for i in demo_class.iterator] == demo_class.raw_list
-    assert [i for i in demo_class.iterator] == demo_class.raw_list
-    assert [i for i in demo_class.iterator] == demo_class.raw_list
+    demo_class_0 = _Class([1, 2, 3])
+    demo_class_1 = _Class([3, 2, 1])
+
+    assert [i for i in demo_class_0.iterator] == [1, 2, 3]
+    assert [i for i in demo_class_0.iterator] == [1, 2, 3]
+    assert [i for i in demo_class_0.iterator] == [1, 2, 3]
 
     # Since it is cached, it should only actually get called once.
-    assert demo_class.call_count == 1
+    assert demo_class_0.call_count == 1
+
+    # This class should not have been affected by that class
+    assert demo_class_1.call_count == 0
+    assert [i for i in demo_class_1.iterator] == [3, 2, 1]
+    assert [i for i in demo_class_1.iterator] == [3, 2, 1]
 
 
 def test_raises_not_implemented():

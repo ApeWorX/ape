@@ -3,7 +3,7 @@ import sys
 from functools import lru_cache
 from itertools import tee
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import requests
 import yaml
@@ -243,11 +243,15 @@ class cached_iterator(property):
     """
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
-        self.cache: Optional[Iterator] = None
+        self.cache: Dict = {}
         super().__init__(fget=fget, fset=fset, fdel=fdel, doc=doc)
 
     def __get__(self, obj, objtype=None):
-        iterator, self.cache = tee(self.cache if self.cache else self.fget(obj))
+        getter_id = f"{hash(obj)}{hash(self.fget)}"
+        iterator, iter_to_cache = tee(
+            self.cache[getter_id] if getter_id in self.cache else self.fget(obj)
+        )
+        self.cache[getter_id] = iter_to_cache
         return iterator
 
 
