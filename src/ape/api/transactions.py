@@ -12,7 +12,7 @@ from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_iterator, raises_not_implemented
+from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
@@ -190,7 +190,7 @@ class ReceiptAPI(BaseInterfaceModel):
             same amount of gas as the given ``gas_limit``.
         """
 
-    @cached_iterator
+    @property
     def trace(self) -> Iterator[TraceFrame]:
         """
         The trace of the transaction, if available from your provider.
