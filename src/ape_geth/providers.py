@@ -239,7 +239,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
         except ValueError as err:
             raise ProviderError(
                 err.args[0].get("message")
-                if (hasattr(err, "args") and err.args)
+                if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
                 else "Error getting chain id."
             )
 
