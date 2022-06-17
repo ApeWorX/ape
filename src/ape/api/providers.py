@@ -493,7 +493,7 @@ class ProviderAPI(BaseInterfaceModel):
         if not len(exception.args):
             return VirtualMachineError(base_err=exception)
 
-        err_data = exception.args[0]
+        err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
         if not isinstance(err_data, dict):
             return VirtualMachineError(base_err=exception)
 
