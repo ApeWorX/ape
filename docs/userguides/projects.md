@@ -14,7 +14,7 @@ project                             # The root project directory
 ```
 
 
- [Configuration guide](config.md) for a more detailed explanation of settings you can
+ [Configuration guide](../userguides/config.md) for a more detailed explanation of settings you can
 use in your `ape-config.yaml` files.
 
 ## Compiling Contracts
