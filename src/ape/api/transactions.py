@@ -57,6 +57,13 @@ class TransactionAPI(BaseInterfaceModel):
 
         return self.value + self.max_fee
 
+    @property
+    @abstractmethod
+    def txn_hash(self) -> HexBytes:
+        """
+        The calculated hash of the transaction.
+        """
+
     @abstractmethod
     def serialize_transaction(self) -> bytes:
         """
@@ -78,12 +85,6 @@ class TransactionAPI(BaseInterfaceModel):
             data["data"] = "0x" + bytes(data["data"]).hex()
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         return f"{self.__class__.__name__}:\n  {params}"
-
-    @abstractmethod
-    def txn_hash(self) -> HexBytes:
-        """
-        The hash of the transaction.
-        """
 
 
 class ConfirmationsProgressBar:
