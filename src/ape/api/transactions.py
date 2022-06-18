@@ -12,7 +12,7 @@ from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_iterator, raises_not_implemented
+from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
@@ -57,6 +57,13 @@ class TransactionAPI(BaseInterfaceModel):
 
         return self.value + self.max_fee
 
+    @property
+    @abstractmethod
+    def txn_hash(self) -> HexBytes:
+        """
+        The calculated hash of the transaction.
+        """
+
     @abstractmethod
     def serialize_transaction(self) -> bytes:
         """
@@ -78,12 +85,6 @@ class TransactionAPI(BaseInterfaceModel):
             data["data"] = "0x" + bytes(data["data"]).hex()
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         return f"{self.__class__.__name__}:\n  {params}"
-
-    @abstractmethod
-    def txn_hash(self) -> HexBytes:
-        """
-        The hash of the transaction.
-        """
 
 
 class ConfirmationsProgressBar:
@@ -190,7 +191,7 @@ class ReceiptAPI(BaseInterfaceModel):
             same amount of gas as the given ``gas_limit``.
         """
 
-    @cached_iterator
+    @property
     def trace(self) -> Iterator[TraceFrame]:
         """
         The trace of the transaction, if available from your provider.
