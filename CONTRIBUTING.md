@@ -16,6 +16,9 @@ python setup.py install
 
 # install the developer dependencies (-e is interactive mode)
 pip install -e .[dev]
+
+# MacOS install the developer dependencies (-e is interactive mode)
+pip install -e .'[dev]'  
 ```
 
 ## Pre-Commit Hooks
