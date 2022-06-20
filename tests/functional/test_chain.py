@@ -12,7 +12,7 @@ def connection(networks_connected_to_tester):
 
 
 @pytest.fixture
-def chain_at_block_5(chain, sender, receiver):
+def chain_at_block_5(chain):
     snapshot_id = chain.snapshot()
     chain.mine(5)
     yield chain
@@ -31,6 +31,9 @@ def test_snapshot_and_restore(chain, sender, receiver):
 
     assert chain.blocks[-1].number == end_range
 
+    # Increase receiver's balance
+    sender.transfer(receiver, "123 wei")
+
     # Show that we can also provide the snapshot ID as an argument.
     chain.restore(snapshot_ids[2])
     assert chain.blocks[-1].number == 2
@@ -43,7 +46,7 @@ def test_snapshot_and_restore(chain, sender, receiver):
     assert receiver.balance == initial_balance
 
 
-def test_snapshot_and_restore_unknown_snapshot_id(chain, sender, receiver):
+def test_snapshot_and_restore_unknown_snapshot_id(chain):
     _ = chain.snapshot()
     chain.mine()
     snapshot_id_2 = chain.snapshot()
@@ -60,7 +63,7 @@ def test_snapshot_and_restore_unknown_snapshot_id(chain, sender, receiver):
     assert "Unknown snapshot ID" in str(err.value)
 
 
-def test_snapshot_and_restore_no_snapshots(chain, sender, receiver):
+def test_snapshot_and_restore_no_snapshots(chain):
     chain._snapshots = []  # Ensure empty (gets set in test setup)
     with pytest.raises(ChainError) as err:
         chain.restore("{}")
