@@ -155,7 +155,9 @@ class ContractTransaction(ManagerAccessMixin):
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         if "sender" in kwargs and isinstance(kwargs["sender"], ContractInstance):
+            # Automatically impersonate contracts (if API available) when sender
             kwargs["sender"] = self.account_manager.test_accounts[kwargs["sender"].address]
+
         kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
@@ -216,8 +218,9 @@ class ContractTransactionHandler(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
-        contract_transaction = self._as_transaction(*args)
-        return contract_transaction(*args, **kwargs)
+        function_arguments = self._convert_tuple(args)
+        contract_transaction = self._as_transaction(*function_arguments)
+        return contract_transaction(*function_arguments, **kwargs)
 
     def _as_transaction(self, *args) -> ContractTransaction:
         if not self.contract.is_contract:
