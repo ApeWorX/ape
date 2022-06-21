@@ -473,7 +473,14 @@ class ContractCache(BaseManager):
     def instance_at(
         self, address: "AddressType", contract_type: Optional[ContractType] = None
     ) -> BaseAddress:
-        contract_type = contract_type or self.get(address)
+        if contract_type:
+            # Cache given contract types
+            self._local_contracts[address] = contract_type
+            self._cache_contract_to_disk(address, contract_type)
+
+        else:
+            contract_type = self.get(address)
+
         if contract_type:
             return self.create_contract(address, contract_type)
 
@@ -512,12 +519,14 @@ class ContractCache(BaseManager):
     def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
         self._contract_types_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._contract_types_cache / f"{address}.json"
-        address_file.write_text(contract_type.json())
+        if not address.is_file():
+            address_file.write_text(contract_type.json())
 
     def _cache_proxy_info_to_disk(self, address: AddressType, proxy_info: ProxyInfoAPI):
         self._proxy_info_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._proxy_info_cache / f"{address}.json"
-        address_file.write_text(proxy_info.json())
+        if not address_file.is_file():
+            address_file.write_text(proxy_info.json())
 
 
 class ChainManager(BaseManager):
