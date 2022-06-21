@@ -8,25 +8,33 @@ from eth_abi import encode_abi as abi_encode
 from eth_abi.abi import decode_abi, decode_single
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, hexstr_if_str, keccak, to_bytes, to_checksum_address
+from eth_utils import (
+    add_0x_prefix,
+    decode_hex,
+    hexstr_if_str,
+    keccak,
+    to_bytes,
+    to_checksum_address,
+)
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 from hexbytes import HexBytes
+from pydantic import Field
 
-from ape.api import (
-    BlockAPI,
-    BlockConsensusAPI,
-    BlockGasAPI,
-    EcosystemAPI,
-    PluginConfig,
-    ReceiptAPI,
-    TransactionAPI,
-)
+from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
-from ape.exceptions import ContractLogicError, DecodingError
-from ape.types import AddressType, ContractLog, RawAddress
-from ape.utils import LogInputABICollection, Struct, StructParser, is_array, returns_array
+from ape.exceptions import DecodingError, TransactionError
+from ape.types import AddressType, ContractLog, RawAddress, TransactionSignature
+from ape.utils import (
+    LogInputABICollection,
+    Struct,
+    StructParser,
+    is_array,
+    parse_type,
+    returns_array,
+)
 from ape_ethereum.transactions import (
+    AccessListTransaction,
     BaseTransaction,
     DynamicFeeTransaction,
     Receipt,
@@ -55,6 +63,7 @@ class ProxyType(IntEnum):
     GnosisSafe = 6
     OpenZeppelin = 7  # openzeppelin upgradeability proxy
     Delegate = 8  # eip-897 delegate proxy
+    ZeroAge = 9  # a more-minimal proxy
 
 
 class ProxyInfo(ProxyInfoAPI):
@@ -89,65 +98,16 @@ class EthereumConfig(PluginConfig):
     default_network: str = LOCAL_NETWORK_NAME
 
 
-class BlockGasFee(BlockGasAPI):
-    @classmethod
-    def decode(cls, data: Dict) -> BlockGasAPI:
-        return BlockGasFee.parse_obj(data)
-
-
-class BlockConsensus(BlockConsensusAPI):
-    @classmethod
-    def decode(cls, data: Dict) -> BlockConsensusAPI:
-        return cls(**data)  # type: ignore
-
-
 class Block(BlockAPI):
     """
     Class for representing a block on a chain.
     """
 
-
-def parse_output_type(output_type: str) -> Union[str, Tuple, List]:
-    if not output_type.startswith("("):
-        return output_type
-
-    # Strip off first opening parens
-    output_type = output_type[1:]
-    found_types: List[Union[str, Tuple, List]] = []
-
-    while output_type:
-        if output_type.startswith(")"):
-            result = tuple(found_types)
-            if "[" in output_type:
-                return [result]
-
-            return result
-
-        elif output_type[0] == "(" and ")" in output_type:
-            # A tuple within the tuple
-            end_index = output_type.index(")") + 1
-            found_type = parse_output_type(output_type[:end_index])
-            output_type = output_type[end_index:]
-
-            if output_type.startswith("[") and "]" in output_type:
-                end_array_index = output_type.index("]") + 1
-                found_type = [found_type]
-                output_type = output_type[end_array_index:].lstrip(",")
-
-        else:
-            found_type = output_type.split(",")[0].rstrip(")")
-            end_index = len(found_type) + 1
-            output_type = output_type[end_index:]
-
-        if isinstance(found_type, str) and "[" in found_type and ")" in found_type:
-            parts = found_type.split(")")
-            found_type = parts[0]
-            output_type = f"){parts[1]}"
-
-        if found_type:
-            found_types.append(found_type)
-
-    return tuple(found_types)
+    gas_limit: int = Field(alias="gasLimit")
+    gas_used: int = Field(alias="gasUsed")
+    base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
+    difficulty: Optional[int] = None
+    total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
 
 
 class Ethereum(EcosystemAPI):
@@ -172,6 +132,7 @@ class Ethereum(EcosystemAPI):
             ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
             ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
             ProxyType.Clones: r"36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",  # noqa: E501
+            ProxyType.ZeroAge: r"3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e602a57fd5bf3",
         }
         for type, pattern in patterns.items():
             match = re.match(pattern, code)
@@ -218,7 +179,7 @@ class Ethereum(EcosystemAPI):
             slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
             if master_copy == slot_0:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=master_copy)
-        except (DecodingError, ContractLogicError):
+        except (DecodingError, TransactionError):
             pass
 
         # delegate proxy, read `proxyType()` and `implementation()`
@@ -244,13 +205,10 @@ class Ethereum(EcosystemAPI):
             if target != "0x0000000000000000000000000000000000000000":
                 return ProxyInfo(type=ProxyType.Delegate, target=target)
 
-        except (DecodingError, ContractLogicError, ValueError):
+        except (DecodingError, TransactionError, ValueError):
             pass
 
         return None
-
-    def serialize_transaction(self, transaction: TransactionAPI) -> bytes:
-        return transaction.serialize_transaction()
 
     def decode_receipt(self, data: dict) -> ReceiptAPI:
         status = data.get("status")
@@ -265,38 +223,43 @@ class Ethereum(EcosystemAPI):
         if txn_hash:
             txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
 
-        return Receipt(  # type: ignore
-            provider=data.get("provider"),
-            required_confirmations=data.get("required_confirmations", 0),
-            txn_hash=txn_hash,
-            status=status,
-            block_number=data["blockNumber"],
-            gas_used=data["gasUsed"],
-            gas_price=data["gasPrice"],
-            gas_limit=data.get("gas") or data.get("gasLimit"),
-            logs=data.get("logs", []),
+        input_data = data.get("data") or data.get("input", b"")
+        if isinstance(input_data, str):
+            input_data = bytes(HexBytes(input_data))
+
+        receipt = Receipt(  # type: ignore
+            block_number=data.get("block_number") or data.get("blockNumber"),
             contract_address=data.get("contractAddress"),
-            sender=data["from"],
-            receiver=data["to"] or "",
+            data=data.get("data") or data.get("input", b""),
+            gas_limit=data.get("gas") or data.get("gasLimit"),
+            gas_price=data.get("gas_price") or data.get("gasPrice"),
+            gas_used=data.get("gas_used") or data.get("gasUsed"),
+            logs=data.get("logs", []),
             nonce=data["nonce"] if "nonce" in data and data["nonce"] != "" else None,
+            provider=data.get("provider"),
+            receiver=data.get("to") or data.get("receiver") or "",
+            required_confirmations=data.get("required_confirmations", 0),
+            sender=data.get("sender") or data.get("from"),
+            status=status,
+            txn_hash=txn_hash,
+            value=data.get("value", 0),
         )
+        return receipt
 
     def decode_block(self, data: Dict) -> BlockAPI:
-        # TODO: when we flatten the Block structure, remove these hacks
-        if "gas_data" in data:
-            data.update(data.pop("gas_data"))
-        if "consensus_data" in data:
-            data.update(data.pop("consensus_data"))
-        return Block(  # type: ignore
-            gas_data=BlockGasFee.decode(data),
-            consensus_data=BlockConsensus.decode(data),
-            number=data.get("number"),
-            size=data.get("size"),
-            timestamp=data.get("timestamp"),
-            hash=data.get("hash"),
-            # TODO: when we flatten the Block structure, remove this hack.
-            parent_hash=data.get("parentHash") or data.get("parent_hash"),
-        )
+        if "gas_limit" in data:
+            data["gasLimit"] = data.pop("gas_limit")
+        if "gas_used" in data:
+            data["gasUsed"] = data.pop("gas_used")
+        if "parent_hash" in data:
+            data["parentHash"] = data.pop("parent_hash")
+        if "transaction_ids" in data:
+            data["transactions"] = data.pop("transaction_ids")
+        if "total_difficulty" in data:
+            data["totalDifficulty"] = data.pop("total_difficulty")
+        if "base_fee" in data:
+            data["baseFee"] = data.pop("base_fee")
+        return Block.parse_obj(data)
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
         if abi.inputs:
@@ -308,6 +271,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
+
         try:
             vm_return_values = abi_decode(output_types, raw_data)
         except InsufficientDataBytes as err:
@@ -316,18 +280,13 @@ class Ethereum(EcosystemAPI):
         if not vm_return_values:
             return vm_return_values
 
-        if not isinstance(vm_return_values, (tuple, list)):
+        elif not isinstance(vm_return_values, (tuple, list)):
             vm_return_values = (vm_return_values,)
 
-        output_values: List[Any] = []
-        for index in range(len(vm_return_values)):
-            if index >= len(output_types):
-                break
-
-            value = vm_return_values[index]
-            output_type = parse_output_type(output_types[index])
-            output_values.append(self._decode_primitive_value(value, output_type))
-
+        output_values = [
+            self.decode_primitive_value(v, parse_type(t))
+            for v, t in zip(vm_return_values, output_types)
+        ]
         parser = StructParser(abi)
         output_values = parser.parse(abi.outputs, output_values)
 
@@ -341,10 +300,9 @@ class Ethereum(EcosystemAPI):
         ):
             return ([o for o in output_values[0]],)
 
-        else:
-            return tuple(output_values)
+        return tuple(output_values)
 
-    def _decode_primitive_value(
+    def decode_primitive_value(
         self, value: Any, output_type: Union[str, Tuple, List]
     ) -> Union[str, HexBytes, Tuple]:
         if output_type == "address":
@@ -358,17 +316,17 @@ class Ethereum(EcosystemAPI):
 
         elif isinstance(output_type, str) and is_array(output_type):
             sub_type = output_type.split("[")[0]
-            return tuple([self._decode_primitive_value(v, sub_type) for v in value])
+            return tuple([self.decode_primitive_value(v, sub_type) for v in value])
 
         elif isinstance(output_type, tuple):
-            return tuple([self._decode_primitive_value(v, t) for v, t in zip(value, output_type)])
+            return tuple([self.decode_primitive_value(v, t) for v, t in zip(value, output_type)])
 
         elif (
             isinstance(output_type, list)
             and len(output_type) == 1
             and isinstance(value, (list, tuple))
         ):
-            return tuple([self._decode_primitive_value(v, output_type[0]) for v in value])
+            return tuple([self.decode_primitive_value(v, output_type[0]) for v in value])
 
         return value
 
@@ -410,6 +368,7 @@ class Ethereum(EcosystemAPI):
         transaction_types = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
+            TransactionType.ACCESS_LIST: AccessListTransaction,
         }
 
         if "type" in kwargs:
@@ -443,6 +402,19 @@ class Ethereum(EcosystemAPI):
                 required_confirmations = active_provider.network.required_confirmations
 
             kwargs["required_confirmations"] = required_confirmations
+
+        if isinstance(kwargs.get("chainId"), str):
+            kwargs["chainId"] = int(kwargs["chainId"], 16)
+
+        if "input" in kwargs:
+            kwargs["data"] = decode_hex(kwargs.pop("input"))
+
+        if all(field in kwargs for field in ("v", "r", "s")):
+            kwargs["signature"] = TransactionSignature(  # type: ignore
+                v=kwargs["v"],
+                r=bytes(kwargs["r"]),
+                s=bytes(kwargs["s"]),
+            )
 
         return txn_class(**kwargs)  # type: ignore
 

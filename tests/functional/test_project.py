@@ -5,13 +5,6 @@ from typing import Dict
 import pytest
 from ethpm_types.manifest import PackageManifest
 
-import ape
-
-
-@pytest.fixture
-def project_manager():
-    return ape.project
-
 
 @pytest.fixture
 def oz_dependencies_config():
@@ -50,6 +43,24 @@ def test_extract_manifest(dependency_config, project_manager):
     # NOTE: Only setting dependency_config to ensure existence of project.
     manifest = project_manager.extract_manifest()
     assert type(manifest) == PackageManifest
+
+
+def test_meta(temp_config, project_manager):
+    meta_config = {
+        "meta": {
+            "authors": ["Test Testerson"],
+            "license": "MIT",
+            "description": "test",
+            "keywords": ["testing"],
+            "links": {"apeworx.io": "https://apeworx.io"},
+        }
+    }
+    with temp_config(meta_config):
+        assert project_manager.meta.authors == ["Test Testerson"]
+        assert project_manager.meta.license == "MIT"
+        assert project_manager.meta.description == "test"
+        assert project_manager.meta.keywords == ["testing"]
+        assert "https://apeworx.io" in project_manager.meta.links["apeworx.io"]
 
 
 def test_dependency_with_longer_contracts_folder(

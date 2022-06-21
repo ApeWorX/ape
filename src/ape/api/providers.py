@@ -14,16 +14,18 @@ from eth_abi.abi import encode_single
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, keccak
 from ethpm_types.abi import EventABI
-from evm_trace import TraceFrame
+from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
-from pydantic import Field, validator
+from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
+from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
+    APINotImplementedError,
     ContractLogicError,
     DecodingError,
     ProviderError,
@@ -37,6 +39,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, SnapshotID
 from ape.utils import (
+    EMPTY_BYTES32,
     BaseInterfaceModel,
     LogInputABICollection,
     abstractmethod,
@@ -46,39 +49,31 @@ from ape.utils import (
 )
 
 
-class BlockGasAPI(BaseInterfaceModel):
-    """
-    An abstract class for representing gas data for a block.
-    """
-
-    gas_limit: int = Field(alias="gasLimit")
-    gas_used: int = Field(alias="gasUsed")
-    base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
-
-
-class BlockConsensusAPI(BaseInterfaceModel):
-    """
-    An abstract class representing block consensus-data,
-    such as PoW-related information regarding the block.
-    `EIP-3675 <https://eips.ethereum.org/EIPS/eip-3675>`__.
-    """
-
-    difficulty: Optional[int] = None
-    total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
-
-
 class BlockAPI(BaseInterfaceModel):
     """
     An abstract class representing a block and its attributes.
     """
 
-    gas_data: BlockGasAPI
-    consensus_data: BlockConsensusAPI
-    hash: Optional[Any] = None
+    num_transactions: int = 0
+    hash: Optional[Any] = None  # NOTE: pending block does not have a hash
     number: Optional[int] = None
-    parent_hash: Optional[Any] = None
+    parent_hash: Any = Field(
+        EMPTY_BYTES32, alias="parentHash"
+    )  # NOTE: genesis block has no parent hash
     size: int
     timestamp: int
+
+    @root_validator(pre=True)
+    def convert_parent_hash(cls, data):
+        if "parent_hash" in data:
+            parent_hash = data["parent_hash"]
+        elif "parentHash" in data:
+            parent_hash = data["parentHash"]
+        else:
+            parent_hash = EMPTY_BYTES32
+
+        data["parentHash"] = parent_hash or EMPTY_BYTES32
+        return data
 
     @validator("hash", "parent_hash", pre=True)
     def validate_hexbytes(cls, value):
@@ -86,6 +81,11 @@ class BlockAPI(BaseInterfaceModel):
         if value and not isinstance(value, HexBytes):
             raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
         return value
+
+    @cached_property
+    def transactions(self) -> List[TransactionAPI]:
+        query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
+        return list(self.query_manager.query(query))  # type: ignore
 
 
 class ProviderAPI(BaseInterfaceModel):
@@ -284,6 +284,18 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
+    def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
+        """
+        Get the information about a set of transactions from a block.
+
+        Args:
+            block_id (:class:`~ape.types.BlockID`): The ID of the block.
+
+        Returns:
+            Iterator[:class: `~ape.api.transactions.TransactionAPI`]
+        """
+
+    @abstractmethod
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         """
         Send a transaction to the network.
@@ -400,6 +412,18 @@ class ProviderAPI(BaseInterfaceModel):
             Iterator(TraceFrame): Transaction execution trace object.
         """
 
+    @raises_not_implemented
+    def get_call_tree(self, txn_hash: str) -> CallTreeNode:
+        """
+        Create a tree structure of calls for a transaction.
+
+        Args:
+            txn_hash (str): The hash of a transaction to trace.
+
+        Returns:
+            CallTreeNode: Transaction execution call-tree objects.
+        """
+
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
         """
         Set default values on the transaction.
@@ -475,7 +499,7 @@ class ProviderAPI(BaseInterfaceModel):
         if not len(exception.args):
             return VirtualMachineError(base_err=exception)
 
-        err_data = exception.args[0]
+        err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
         if not isinstance(err_data, dict):
             return VirtualMachineError(base_err=exception)
 
@@ -553,6 +577,20 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self._web3
 
+    @property
+    def base_fee(self) -> int:
+        block = self.get_block("latest")
+        if not hasattr(block, "base_fee"):
+            raise APINotImplementedError("No base fee found in block.")
+        else:
+            base_fee = block.base_fee  # type: ignore
+
+        if base_fee is None:
+            # Non-EIP-1559 chains or we time-travelled pre-London fork.
+            raise APINotImplementedError("base_fee is not implemented by this provider.")
+
+        return base_fee
+
     def update_settings(self, new_settings: dict):
         self.disconnect()
         self.provider_settings.update(new_settings)
@@ -592,16 +630,6 @@ class Web3Provider(ProviderAPI, ABC):
     @property
     def priority_fee(self) -> int:
         return self.web3.eth.max_priority_fee
-
-    @property
-    def base_fee(self) -> int:
-        block = self.get_block("latest")
-
-        if block.gas_data.base_fee is None:
-            # Non-EIP-1559 chains or we time-travelled pre-London fork.
-            raise NotImplementedError("base_fee is not implemented by this provider.")
-
-        return block.gas_data.base_fee
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
         if isinstance(block_id, str):
@@ -649,6 +677,17 @@ class Web3Provider(ProviderAPI, ABC):
             }
         )
         return receipt.await_confirmations()
+
+    def get_transactions_by_block(self, block_id: BlockID) -> Iterator:
+        if isinstance(block_id, str):
+            block_id = HexStr(block_id)
+
+            if block_id.isnumeric():
+                block_id = add_0x_prefix(block_id)
+
+        block = self.web3.eth.get_block(block_id, full_transactions=True)
+        for transaction in block.get("transactions"):  # type: ignore
+            yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
 
     def get_contract_logs(
         self,
@@ -793,7 +832,7 @@ class Web3Provider(ProviderAPI, ABC):
             txn_hash.hex(), required_confirmations=required_confirmations
         )
         receipt.raise_for_status()
-        logger.info(f"Confirmed {receipt.txn_hash} (gas_used={receipt.gas_used})")
+        logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self._try_track_receipt(receipt)
         return receipt
 

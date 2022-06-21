@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterator, Optional
 from pydantic import BaseModel
 
 from ape.api import QueryAPI, QueryType
-from ape.api.query import BlockQuery, _BaseQuery
+from ape.api.query import BlockQuery, BlockTransactionQuery, _BaseQuery
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -29,6 +29,11 @@ class DefaultQueryProvider(QueryAPI):
         # NOTE: Very loose estimate of 100ms per block
         return (query.stop_block - query.start_block) * 100
 
+    @estimate_query.register
+    def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> int:
+
+        return 100
+
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
@@ -41,6 +46,10 @@ class DefaultQueryProvider(QueryAPI):
             #       Where as the query method is an inclusive stop.
             range(query.start_block, query.stop_block + 1, query.step),
         )
+
+    @perform_query.register
+    def perform_block_transaction_query(self, query: BlockTransactionQuery) -> Iterator:
+        return self.provider.get_transactions_by_block(query.block_id)
 
 
 class QueryManager(ManagerAccessMixin):

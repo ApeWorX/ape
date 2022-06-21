@@ -155,7 +155,9 @@ class ContractTransaction(ManagerAccessMixin):
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         if "sender" in kwargs and isinstance(kwargs["sender"], ContractInstance):
+            # Automatically impersonate contracts (if API available) when sender
             kwargs["sender"] = self.account_manager.test_accounts[kwargs["sender"].address]
+
         kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **kwargs
@@ -180,6 +182,27 @@ class ContractTransactionHandler(ManagerAccessMixin):
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
 
+    def as_transaction(self, *args, **kwargs) -> TransactionAPI:
+        """
+        Get a :class:`~ape.api.transactions.TransactionAPI`
+        for this contract method invocation. This is useful
+        for simulations or estimating fees without sending
+        the transaction.
+
+        Args:
+            *args: The contract method invocation arguments.
+            **kwargs: Transaction kwargs, such as value or
+              sender.
+
+        Returns:
+            :class:`~ape.api.transactions.TransactionAPI`
+        """
+
+        contract_transaction = self._as_transaction(*args)
+        transaction = contract_transaction.serialize_transaction(*args, **kwargs)
+        self.provider.prepare_transaction(transaction)
+        return transaction
+
     @property
     def call(self) -> ContractCallHandler:
         """
@@ -195,6 +218,11 @@ class ContractTransactionHandler(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        function_arguments = self._convert_tuple(args)
+        contract_transaction = self._as_transaction(*function_arguments)
+        return contract_transaction(*function_arguments, **kwargs)
+
+    def _as_transaction(self, *args) -> ContractTransaction:
         if not self.contract.is_contract:
             network = self.provider.network.name
             raise _get_non_contract_error(self.contract.address, network)
@@ -205,7 +233,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
         return ContractTransaction(  # type: ignore
             abi=selected_abi,
             address=self.contract.address,
-        )(*args, **kwargs)
+        )
 
 
 class ContractEvent(ManagerAccessMixin):
@@ -416,7 +444,9 @@ class ContractEvent(ManagerAccessMixin):
         ) - required_confirmations
 
         for new_block in self.chain_manager.blocks.poll_blocks(
-            start=start_block, stop=stop_block, required_confirmations=required_confirmations
+            start_block=start_block,
+            stop_block=stop_block,
+            required_confirmations=required_confirmations,
         ):
             if new_block.number is None:
                 continue
@@ -496,21 +526,48 @@ class ContractInstance(BaseAddress):
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
             raise AttributeError(str(err)) from err
 
+    def get_event_by_signature(self, signature: str) -> ContractEvent:
+        """
+        Get an event by its signature. Most often, you can use the
+        :meth:`~ape.contracts.base.ContractInstance.__getattr__`
+        method on this class to access events. However, in the case
+        when you have more than one event with the same name, such
+        as the case where one event is coming from a base contract,
+        you can use this method to access the respective events.
+
+        Args:
+            signature (str): The signature of the event.
+
+        Returns:
+            :class:`~ape.contracts.base.ContractEvent`
+        """
+
+        name_from_sig = signature.split("(")[0].strip()
+        options = self._events_.get(name_from_sig, [])
+        err = ContractError(f"No event found with signature '{signature}'.")
+        if not options:
+            raise err
+
+        for evt in options:
+            if evt.abi.signature == signature:
+                return evt
+
+        raise err
+
     @cached_property
-    def _events_(self) -> Dict[str, ContractEvent]:
-        events: Dict[str, EventABI] = {}
+    def _events_(self) -> Dict[str, List[ContractEvent]]:
+        events: Dict[str, List[EventABI]] = {}
 
         for abi in self.contract_type.events:
             if abi.name in events:
-                raise ContractError(
-                    f"Multiple events with the same ABI defined in '{self.contract_type.name}'."
-                )
-
-            events[abi.name] = abi
+                events[abi.name].append(abi)
+            else:
+                events[abi.name] = [abi]
 
         try:
             return {
-                abi_name: ContractEvent(contract=self, abi=abi) for abi_name, abi in events.items()
+                abi_name: [ContractEvent(contract=self, abi=abi) for abi in abi_list]
+                for abi_name, abi_list in events.items()
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
@@ -544,6 +601,7 @@ class ContractInstance(BaseAddress):
             Any: The return value from the contract call, or a transaction receipt.
         """
 
+        handler: Union[ContractEvent, ContractCallHandler, ContractTransactionHandler]
         if attr_name in set(super(BaseAddress, self).__dir__()):
             return super(BaseAddress, self).__getattribute__(attr_name)
 
@@ -567,10 +625,16 @@ class ContractInstance(BaseAddress):
             handler = self._view_methods_[attr_name]
 
         elif attr_name in self._mutable_methods_:
-            handler = self._mutable_methods_[attr_name]  # type: ignore
+            handler = self._mutable_methods_[attr_name]
 
         else:
-            handler = self._events_[attr_name]  # type: ignore
+            handler_options = self._events_[attr_name]
+            if len(handler_options) > 1:
+                raise AttributeError(
+                    f"Multiple events named '{attr_name}' in '{self.contract_type.name}'.\n"
+                    f"Use 'events_by_signature' look-up."
+                )
+            handler = handler_options[0]
 
         return handler
 
