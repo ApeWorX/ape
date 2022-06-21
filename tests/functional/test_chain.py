@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 import pytest
 from hexbytes import HexBytes
 
+import ape
+from ape.contracts import ContractInstance
 from ape.exceptions import ChainError
 
 
@@ -161,3 +163,25 @@ def test_set_pending_timestamp_failure(chain):
             deltatime=10,
         )
     assert str(err.value) == "Cannot give both `timestamp` and `deltatime` arguments together."
+
+
+def test_contract_caches_default_contract_type_when_used(solidity_contract_instance, chain, config):
+    address = solidity_contract_instance.address
+    contract_type = solidity_contract_instance.contract_type
+
+    # Delete contract from local cache if it's there
+    if address in chain.contracts._local_contracts:
+        del chain.contracts._local_contracts[address]
+
+    # Delete cache file if it exists
+    cache_file = chain.contracts._contract_types_cache / f"{address}.json"
+    if cache_file.is_file():
+        cache_file.unlink()
+
+    # Create a contract using the contract type when nothing is cached.
+    contract = ape.Contract(address, contract_type=contract_type)
+    assert isinstance(contract, ContractInstance)
+
+    # Ensure we don't need the contract type when creating it the second time.
+    contract = ape.Contract(address)
+    assert isinstance(contract, ContractInstance)

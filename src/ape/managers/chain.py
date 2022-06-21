@@ -442,10 +442,18 @@ class ContractCache(BaseManager):
 
         contract_type = self._local_contracts.get(address)
         if contract_type:
+            if default and default != contract_type:
+                # Replacing contract type
+                self._local_contracts[address] = default
+                return default
+
             return contract_type
 
         if self._network.name == LOCAL_NETWORK_NAME:
             # Don't check disk-cache or explorer when using local
+            if default:
+                self._local_contracts[address] = default
+
             return default
 
         contract_type = self._get_contract_type_from_disk(address)
@@ -468,12 +476,26 @@ class ContractCache(BaseManager):
         if contract_type:
             self._local_contracts[address] = contract_type
 
-        return contract_type or default
+        if not contract_type:
+            if default:
+                self._local_contracts[address] = default
+                self._cache_contract_to_disk(address, default)
+
+            return default
+
+        if default and default != contract_type:
+            # Replacing contract type
+            self._local_contracts[address] = default
+            self._cache_contract_to_disk(address, default)
+            return default
+
+        return contract_type
 
     def instance_at(
         self, address: "AddressType", contract_type: Optional[ContractType] = None
     ) -> BaseAddress:
-        contract_type = contract_type or self.get(address)
+        contract_type = self.get(address, default=contract_type)
+
         if contract_type:
             return self.create_contract(address, contract_type)
 
