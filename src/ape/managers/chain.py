@@ -446,6 +446,7 @@ class ContractCache(BaseManager):
 
         if self._network.name == LOCAL_NETWORK_NAME:
             # Don't check disk-cache or explorer when using local
+            self._local_contracts[address] = default
             return default
 
         contract_type = self._get_contract_type_from_disk(address)
@@ -468,18 +469,17 @@ class ContractCache(BaseManager):
         if contract_type:
             self._local_contracts[address] = contract_type
 
-        return contract_type or default
+        if not contract_type:
+            self._local_contracts[address] = default
+            self._cache_contract_to_disk(address, contract_type)
+            return default
+
+        return contract_type
 
     def instance_at(
         self, address: "AddressType", contract_type: Optional[ContractType] = None
     ) -> BaseAddress:
-        if contract_type:
-            # Cache given contract types
-            self._local_contracts[address] = contract_type
-            self._cache_contract_to_disk(address, contract_type)
-
-        else:
-            contract_type = self.get(address)
+        contract_type = self.get(address, default=contract_type)
 
         if contract_type:
             return self.create_contract(address, contract_type)
@@ -519,7 +519,7 @@ class ContractCache(BaseManager):
     def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
         self._contract_types_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._contract_types_cache / f"{address}.json"
-        if not address.is_file():
+        if not address_file.is_file():
             address_file.write_text(contract_type.json())
 
     def _cache_proxy_info_to_disk(self, address: AddressType, proxy_info: ProxyInfoAPI):
