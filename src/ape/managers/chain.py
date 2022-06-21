@@ -519,14 +519,12 @@ class ContractCache(BaseManager):
     def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
         self._contract_types_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._contract_types_cache / f"{address}.json"
-        if not address_file.is_file():
-            address_file.write_text(contract_type.json())
+        address_file.write_text(contract_type.json())
 
     def _cache_proxy_info_to_disk(self, address: AddressType, proxy_info: ProxyInfoAPI):
         self._proxy_info_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._proxy_info_cache / f"{address}.json"
-        if not address_file.is_file():
-            address_file.write_text(proxy_info.json())
+        address_file.write_text(proxy_info.json())
 
 
 class ChainManager(BaseManager):
