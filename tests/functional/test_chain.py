@@ -165,7 +165,7 @@ def test_set_pending_timestamp_failure(chain):
     assert str(err.value) == "Cannot give both `timestamp` and `deltatime` arguments together."
 
 
-def test_contract_caches_given_contract_type(solidity_contract_instance, chain, config):
+def test_contract_caches_default_contract_type_when_used(solidity_contract_instance, chain, config):
     address = solidity_contract_instance.address
     contract_type = solidity_contract_instance.contract_type
 
