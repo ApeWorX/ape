@@ -317,6 +317,16 @@ def test_address_arrays(contract_instance, sender):
     assert is_checksum_address(actual[1])
 
 
+def test_contract_instance_as_address_input(contract_instance, sender):
+    contract_instance.setAddress(contract_instance, sender=sender)
+    assert contract_instance.theAddress() == contract_instance
+
+
+def test_account_as_address_input(contract_instance, sender):
+    contract_instance.setAddress(sender, sender=sender)
+    assert contract_instance.theAddress() == sender
+
+
 def test_vyper_struct_arrays(vyper_contract_instance, sender):
     # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
     actual_dynamic = vyper_contract_instance.getDynamicStructList()
