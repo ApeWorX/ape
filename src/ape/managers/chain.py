@@ -446,7 +446,9 @@ class ContractCache(BaseManager):
 
         if self._network.name == LOCAL_NETWORK_NAME:
             # Don't check disk-cache or explorer when using local
-            self._local_contracts[address] = default
+            if default:
+                self._local_contracts[address] = default
+
             return default
 
         contract_type = self._get_contract_type_from_disk(address)
@@ -470,8 +472,10 @@ class ContractCache(BaseManager):
             self._local_contracts[address] = contract_type
 
         if not contract_type:
-            self._local_contracts[address] = default
-            self._cache_contract_to_disk(address, contract_type)
+            if default:
+                self._local_contracts[address] = default
+                self._cache_contract_to_disk(address, default)
+
             return default
 
         return contract_type
