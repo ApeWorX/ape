@@ -515,6 +515,10 @@ class TestProviderAPI(ProviderAPI):
     An API for providers that have development functionality, such as snapshotting.
     """
 
+    @cached_property
+    def test_config(self) -> PluginConfig:
+        return self.config_manager.get_config("test")
+
     @abstractmethod
     def snapshot(self) -> SnapshotID:
         """
@@ -557,9 +561,15 @@ class TestProviderAPI(ProviderAPI):
             num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
         """
 
-    @cached_property
-    def test_config(self) -> PluginConfig:
-        return self.config_manager.get_config("test")
+    @raises_not_implemented
+    def set_balance(self, address: AddressType, amount: int):
+        """
+        Change the balance of an account.
+
+        Args:
+            address (AddressType): An address on the network.
+            amount (int): The balance to set in the address.
+        """
 
 
 class Web3Provider(ProviderAPI, ABC):
