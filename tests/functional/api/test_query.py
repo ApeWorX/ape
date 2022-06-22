@@ -7,23 +7,28 @@ from ape.api.query import AccountTransactionQuery, BlockQuery, BlockTransactionQ
 
 def test_basic_query(eth_tester_provider):
     chain.mine(3)
-    assert [i.number for i in chain.blocks.query("*")] == [0, 1, 2, 3]
-    x = [i for i in chain.blocks.query("number", "timestamp")]
-    assert len(x) == 4
-    assert x[3].timestamp > x[2].timestamp >= x[1].timestamp >= x[0].timestamp
-    columns = list(x[0].dict().keys())
-    assert columns == [
+    df1 = chain.blocks.query("*")
+    assert list(df1["number"].values) == [0, 1, 2, 3]
+    df2 = chain.blocks.query("number", "timestamp")
+    assert len(df2) == 4
+    assert (
+        df2.iloc[3]["timestamp"]
+        >= df2.iloc[2]["timestamp"]
+        >= df2.iloc[1]["timestamp"]
+        >= df2.iloc[0]["timestamp"]
+    )
+    assert list(df1.columns) == [
         "num_transactions",
         "hash",
         "number",
-        "parentHash",
+        "parent_hash",
         "size",
         "timestamp",
-        "gasLimit",
-        "gasUsed",
-        "baseFeePerGas",
+        "gas_limit",
+        "gas_used",
+        "base_fee",
         "difficulty",
-        "totalDifficulty",
+        "total_difficulty",
     ]
 
 

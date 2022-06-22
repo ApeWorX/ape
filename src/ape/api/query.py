@@ -69,9 +69,9 @@ class BlockQuery(_BaseBlockQuery):
 
     @classmethod
     def all_fields(cls) -> List[str]:
-        from .providers import BlockAPI
+        from ape_ethereum.ecosystem import Block
 
-        return list(BlockAPI.__fields__)
+        return list(Block.__fields__)
 
 
 class BlockTransactionQuery(_BaseQuery):
