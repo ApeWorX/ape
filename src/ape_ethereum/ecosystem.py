@@ -357,6 +357,9 @@ class Ethereum(EcosystemAPI):
 
         return txn  # type: ignore
 
+    def default_transaction_type() -> TransactionType:
+        return TransactionType.DYNAMIC
+
     def create_transaction(self, **kwargs) -> TransactionAPI:
         """
         Returns a transaction using the given constructor kwargs.
@@ -389,7 +392,7 @@ class Ethereum(EcosystemAPI):
         elif "gas_price" in kwargs:
             version = TransactionType.STATIC
         else:
-            version = TransactionType.DYNAMIC
+            version = self.default_transaction_type()
 
         txn_class = transaction_types[version]
         kwargs["type"] = version.value
