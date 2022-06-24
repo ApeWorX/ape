@@ -1,16 +1,10 @@
-from typing import Any, Dict, Iterator, Optional
-
-from pydantic import BaseModel
+from typing import Dict, Iterator, Optional
 
 from ape.api import QueryAPI, QueryType
-from ape.api.query import BlockQuery, BlockTransactionQuery, _BaseQuery
+from ape.api.query import BlockQuery, BlockTransactionQuery
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
-
-
-def get_columns_from_item(query: _BaseQuery, item: BaseModel) -> Dict[str, Any]:
-    return {k: v for k, v in item.dict().items() if k in query.columns}
 
 
 class DefaultQueryProvider(QueryAPI):
