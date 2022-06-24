@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import pandas as pd
 from ethpm_types import ContractType
@@ -124,12 +124,7 @@ class BlockContainer(BaseManager):
         if stop_block is None:
             stop_block = self.height
 
-        elif stop_block > self.height:
-            raise ChainError(
-                f"'stop_block={stop_block}' cannot be greater than the chain length ({len(self)}). "
-                f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
-            )
-
+        # TODO: Convert column validation to utility function
         query = BlockQuery(
             columns=columns,
             start_block=start_block,
@@ -137,10 +132,11 @@ class BlockContainer(BaseManager):
             step=step,
             engine_to_use=engine_to_use,
         )
-        vals = self.query_manager.query(query)
-        vals = map(lambda val: val.dict(by_alias=False), vals)
-        df = pd.DataFrame(columns=query.columns, data=vals)
-        return df
+        # NOTE: the `.range` `stop` args are a non-inclusive stop, while the
+        #       this method uses an inclusive stop, so we must adjust upwards.
+        blocks = self.range(start_or_stop=start_block, stop=stop_block + 1, step=step)
+        data = map(lambda val: val.dict(by_alias=False), blocks)
+        return pd.DataFrame(columns=query.columns, data=data)
 
     def range(
         self, start_or_stop: int, stop: Optional[int] = None, step: int = 1
@@ -192,9 +188,13 @@ class BlockContainer(BaseManager):
 
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
-        results = self.query("*", start_block=start, stop_block=stop - 1, step=step)  # type: ignore
-        for idx, row in results.iterrows():
-            yield row
+        query = BlockQuery(
+            columns=["*"],
+            start_block=start,
+            stop_block=stop - 1,
+            step=step,
+        )
+        yield from cast(Iterator[BlockAPI], self.query_manager.query(query))
 
     def poll_blocks(
         self,
