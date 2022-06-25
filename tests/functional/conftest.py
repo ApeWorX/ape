@@ -25,9 +25,8 @@ def _get_raw_contract(compiler: str) -> Dict:
 RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity")
 RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-PROJECT_WITH_LONG_CONTRACTS_FOLDER = (
-    Path(__file__).parent / "data" / "projects" / "long_contracts_folder"
-).absolute()
+BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
+PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
 
 
 class _ContractLogicError(ContractLogicError):
@@ -206,3 +205,8 @@ def dependency_config(temp_config):
     }
     with temp_config(dependencies_config):
         yield
+
+
+@pytest.fixture
+def base_projects_directory():
+    return BASE_PROJECTS_DIRECTORY
