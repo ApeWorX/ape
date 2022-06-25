@@ -195,10 +195,12 @@ class BlockContainer(BaseManager):
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
         query = BlockQuery(
+            columns=list(self.head.__fields__),  # TODO: fetch the block fields from EcosystemAPI
             start_block=start,
             stop_block=stop - 1,
             step=step,
         )
+
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
         yield from cast(Iterator[BlockAPI], blocks)
 
