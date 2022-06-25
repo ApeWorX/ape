@@ -31,7 +31,9 @@ def validate_and_expand_columns(columns: List[str], all_columns: List[str]) -> L
 
 
 class _BaseQuery(BaseModel):
-    pass
+    columns: List[str]
+
+    # TODO: Support "*" from getting the EcosystemAPI fields
 
 
 class _BaseBlockQuery(_BaseQuery):

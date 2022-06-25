@@ -124,17 +124,23 @@ class BlockContainer(BaseManager):
         if stop_block is None:
             stop_block = self.height
 
-        # NOTE: the `.range` `stop` args are a non-inclusive stop, while the
-        #       this method uses an inclusive stop, so we must adjust upwards.
-        blocks = self.range(
-            start_or_stop=start_block,
-            stop=stop_block + 1,
+        elif stop_block > len(self):
+            raise ChainError(
+                f"'stop={stop_block}' cannot be greater than the chain length ({self.height})."
+            )
+
+        query = BlockQuery(
+            columns=list(self.head.__fields__),
+            start_block=start_block,
+            stop_block=stop_block,
             step=step,
-            engine_to_use=engine_to_use,
         )
+
+        blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
         data = map(lambda val: val.dict(by_alias=False), blocks)
 
         # NOTE: Allow any columns from ecosystem's BlockAPI class
+        # TODO: fetch the block fields from EcosystemAPI
         columns = validate_and_expand_columns(columns, list(self.head.__fields__))  # type: ignore
         return pd.DataFrame(columns=columns, data=data)
 
@@ -185,20 +191,16 @@ class BlockContainer(BaseManager):
                 f"'stop={stop}' cannot be greater than the chain length ({len(self)}). "
                 f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
             )
-        elif stop < start:
-            raise ValueError(f"stop '{stop}' cannot be less than start '{start}'.")
-        elif start < 0:
-            raise ValueError(f"start '{start}' cannot be negative.")
-        elif stop < 0:
-            raise ValueError(f"stop '{stop}' cannot be negative.")
 
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
         query = BlockQuery(
+            columns=list(self.head.__fields__),  # TODO: fetch the block fields from EcosystemAPI
             start_block=start,
             stop_block=stop - 1,
             step=step,
         )
+
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
         yield from cast(Iterator[BlockAPI], blocks)
 

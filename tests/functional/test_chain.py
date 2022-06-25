@@ -132,14 +132,14 @@ def test_block_range_negative_start(chain_at_block_5):
     with pytest.raises(ValueError) as err:
         _ = [b for b in chain_at_block_5.blocks.range(-1, 3, step=2)]
 
-    assert str(err.value) == "start '-1' cannot be negative."
+    assert "ensure this value is greater than or equal to 0" in str(err.value)
 
 
 def test_block_range_out_of_order(chain_at_block_5):
     with pytest.raises(ValueError) as err:
         _ = [b for b in chain_at_block_5.blocks.range(3, 1, step=2)]
 
-    assert str(err.value) == "stop '1' cannot be less than start '3'."
+    assert "stop_block: '0' cannot be less than start_block: '3'." in str(err.value)
 
 
 def test_set_pending_timestamp(chain):
