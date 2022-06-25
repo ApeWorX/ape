@@ -31,6 +31,14 @@ def test_basic_query(eth_tester_provider):
     ]
 
 
+def test_relative_block_query(eth_tester_provider):
+    chain.mine(10)
+    df = chain.blocks.query("*", start_block=-8, stop_block=-2)
+    assert len(df) == 7
+    assert df.number.min() == chain.blocks[-8].number == 3
+    assert df.number.max() == chain.blocks[-2].number == 9
+
+
 def test_block_transaction_query(eth_tester_provider, sender, receiver):
     sender.transfer(receiver, 100)
     query = chain.blocks[-1].transactions

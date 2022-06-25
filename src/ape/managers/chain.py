@@ -121,8 +121,14 @@ class BlockContainer(BaseManager):
             pd.DataFrame
         """
 
+        if start_block < 0:
+            start_block = len(self) + start_block
+
         if stop_block is None:
             stop_block = self.height
+
+        elif stop_block < 0:
+            stop_block = len(self) + stop_block
 
         elif stop_block > len(self):
             raise ChainError(
