@@ -3,7 +3,10 @@ from pathlib import Path
 from typing import Dict
 
 import pytest
+import yaml
 from ethpm_types.manifest import PackageManifest
+
+from ape.managers.project import BrownieProject
 
 
 @pytest.fixture
@@ -71,3 +74,29 @@ def test_dependency_with_longer_contracts_folder(
     assert spy.safe_dump.call_args, "Config file never created"
     call_config = spy.safe_dump.call_args[0][0]
     assert call_config["contracts_folder"] == "source/v0.1"
+
+
+def test_brownie_project_configure(config, base_projects_directory):
+    project_path = base_projects_directory / "BrownieProject"
+    expected_config_file = project_path / "ape-config.yaml"
+    if expected_config_file.is_file():
+        # Left from previous run
+        expected_config_file.unlink()
+
+    project = BrownieProject(path=project_path, contracts_folder="contracts")
+    project.configure()
+    assert expected_config_file.is_file()
+
+    with open(expected_config_file) as ape_config_file:
+        mapped_config_data = yaml.safe_load(ape_config_file)
+
+    # Ensure Solidity and dependencies configuration mapped correctly
+    assert mapped_config_data["solidity"]["version"] == "0.6.12"
+    assert mapped_config_data["solidity"]["import_remapping"] == [
+        "@openzeppelin/contracts=OpenZeppelin/3.1.0"
+    ]
+    assert mapped_config_data["dependencies"][0]["name"] == "OpenZeppelin"
+    assert mapped_config_data["dependencies"][0]["github"] == "OpenZeppelin/openzeppelin-contracts"
+    assert mapped_config_data["dependencies"][0]["version"] == "3.1.0"
+
+    expected_config_file.unlink()

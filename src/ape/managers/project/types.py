@@ -233,11 +233,14 @@ class BrownieProject(BaseProject):
 
         # Migrate solidity remapping
         import_remapping = []
+        solidity_version = None
         if "compiler" in brownie_config_data:
             compiler_config = brownie_config_data["compiler"]
             if "solc" in compiler_config:
-                available_dependencies = [d["name"] for d in dependencies]
                 solidity_config = compiler_config["solc"]
+                solidity_version = solidity_config.get("version")
+
+                available_dependencies = [d["name"] for d in dependencies]
                 brownie_import_remapping = solidity_config.get("remappings", [])
 
                 for remapping in brownie_import_remapping:
@@ -260,7 +263,15 @@ class BrownieProject(BaseProject):
                                 f"{parts[0]}/{self.contracts_folder.stem}={dependency_name}"
                             )
 
-        if import_remapping:
-            migrated_config_data["solidity"] = {"import_remapping": import_remapping}
+        if import_remapping or solidity_version:
+            migrated_solidity_config = {}
+
+            if import_remapping:
+                migrated_solidity_config["import_remapping"] = import_remapping
+
+            if solidity_version:
+                migrated_solidity_config["version"] = solidity_version
+
+            migrated_config_data["solidity"] = migrated_solidity_config
 
         super().configure(**migrated_config_data)

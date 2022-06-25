@@ -233,8 +233,18 @@ class GethProvider(Web3Provider, UpstreamProvider):
                 or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
             )
 
+        # Check for chain errors, including syncing
+        try:
+            chain_id = self._web3.eth.chain_id
+        except ValueError as err:
+            raise ProviderError(
+                err.args[0].get("message")
+                if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
+                else "Error getting chain id."
+            )
+
         # If network is rinkeby, goerli, or kovan (PoA test-nets)
-        if self._web3.eth.chain_id in (4, 5, 42) or is_likely_poa():
+        if chain_id in (4, 5, 42) or is_likely_poa():
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         if self.network.name != LOCAL_NETWORK_NAME and self.network.chain_id != self.chain_id:

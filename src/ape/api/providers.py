@@ -65,8 +65,14 @@ class BlockAPI(BaseInterfaceModel):
 
     @root_validator(pre=True)
     def convert_parent_hash(cls, data):
-        if not data["parentHash"]:
-            data["parentHash"] = EMPTY_BYTES32
+        if "parent_hash" in data:
+            parent_hash = data["parent_hash"]
+        elif "parentHash" in data:
+            parent_hash = data["parentHash"]
+        else:
+            parent_hash = EMPTY_BYTES32
+
+        data["parentHash"] = parent_hash or EMPTY_BYTES32
         return data
 
     @validator("hash", "parent_hash", pre=True)
@@ -493,7 +499,7 @@ class ProviderAPI(BaseInterfaceModel):
         if not len(exception.args):
             return VirtualMachineError(base_err=exception)
 
-        err_data = exception.args[0]
+        err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
         if not isinstance(err_data, dict):
             return VirtualMachineError(base_err=exception)
 
@@ -632,8 +638,8 @@ class Web3Provider(ProviderAPI, ABC):
             if block_id.isnumeric():
                 block_id = add_0x_prefix(block_id)
 
-        block_data = self.web3.eth.get_block(block_id)
-        return self.network.ecosystem.decode_block(block_data)  # type: ignore
+        block_data = dict(self.web3.eth.get_block(block_id))
+        return self.network.ecosystem.decode_block(block_data)
 
     def get_nonce(self, address: str) -> int:
         return self.web3.eth.get_transaction_count(address)  # type: ignore

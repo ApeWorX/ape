@@ -4,6 +4,7 @@ from hexbytes import HexBytes
 
 from ape.exceptions import OutOfGasError
 from ape.types import AddressType
+from ape_ethereum.ecosystem import Block
 from ape_ethereum.transactions import (
     Receipt,
     StaticFeeTransaction,
@@ -95,3 +96,16 @@ def test_whitespace_in_transaction_data():
     txn_dict = {"data": data}
     txn = StaticFeeTransaction.parse_obj(txn_dict)
     assert txn.data == data, "Whitespace should not be removed from data"
+
+
+def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, receiver):
+    # Transaction to change parent hash of next block
+    sender.transfer(receiver, "1 gwei")
+
+    # Replace 'parentHash' key with 'parent_hash'
+    latest_block = eth_tester_provider.get_block("latest")
+    latest_block_dict = eth_tester_provider.get_block("latest").dict()
+    latest_block_dict["parent_hash"] = latest_block_dict.pop("parentHash")
+
+    redefined_block = Block.parse_obj(latest_block_dict)
+    assert redefined_block.parent_hash == latest_block.parent_hash

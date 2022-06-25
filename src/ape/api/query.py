@@ -1,12 +1,10 @@
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator, validator
+from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
 
 from ape.types import AddressType
 from ape.utils import BaseInterfaceModel, abstractmethod
-
-from .transactions import TransactionAPI
 
 QueryType = Union[
     "BlockQuery",
@@ -17,32 +15,23 @@ QueryType = Union[
 ]
 
 
+def validate_and_expand_columns(columns: List[str], all_columns: List[str]) -> List[str]:
+    if len(columns) == 1 and columns[0] == "*":
+        return all_columns
+
+    else:
+        if len(set(columns)) != len(columns):
+            raise ValueError(f"Duplicate fields in {columns}")
+
+        for d in columns:
+            if d not in all_columns:
+                raise ValueError(f"Unrecognized field '{d}', must be one of {all_columns}")
+
+    return columns
+
+
 class _BaseQuery(BaseModel):
-
-    columns: List[str]
-
-    @classmethod
-    @abstractmethod
-    def all_fields(cls) -> List[str]:
-        """
-        Validates fields that are called during a block query.
-
-        Returns:
-            List[str]: list of keys to be returned during block query.
-        """
-
-    @validator("columns")
-    def check_columns(cls, data: List[str]) -> List[str]:
-        all_fields = cls.all_fields()
-        if len(data) == 1 and data[0] == "*":
-            return all_fields
-        else:
-            if len(set(data)) != len(data):
-                raise ValueError(f"Duplicate fields in {data}")
-            for d in data:
-                if d not in all_fields:
-                    raise ValueError(f"Unrecognized field '{d}', must be one of {all_fields}")
-        return data
+    pass
 
 
 class _BaseBlockQuery(_BaseQuery):
@@ -67,12 +56,6 @@ class BlockQuery(_BaseBlockQuery):
     blocks between ``start_block`` and ``stop_block``.
     """
 
-    @classmethod
-    def all_fields(cls) -> List[str]:
-        from .providers import BlockAPI
-
-        return list(BlockAPI.__fields__)
-
 
 class BlockTransactionQuery(_BaseQuery):
     """
@@ -81,10 +64,6 @@ class BlockTransactionQuery(_BaseQuery):
     """
 
     block_id: Any
-
-    @classmethod
-    def all_fields(cls) -> List[str]:
-        return list(TransactionAPI.__fields__)
 
 
 class AccountTransactionQuery(_BaseQuery):
@@ -107,10 +86,6 @@ class AccountTransactionQuery(_BaseQuery):
 
         return values
 
-    @classmethod
-    def all_fields(cls) -> List[str]:
-        return list(TransactionAPI.__fields__)
-
 
 class ContractEventQuery(_BaseBlockQuery):
     """
@@ -120,14 +95,6 @@ class ContractEventQuery(_BaseBlockQuery):
 
     contract: AddressType
     event: EventABI
-
-    @classmethod
-    def all_fields(cls) -> List[str]:
-        # TODO: Figure out how to get the event ABI as a class property
-        #   for the validator
-        return [
-            i.name for i in cls.event.inputs if i.name is not None
-        ]  # if i.name is not None just for mypy
 
 
 class ContractMethodQuery(_BaseBlockQuery):
@@ -139,12 +106,6 @@ class ContractMethodQuery(_BaseBlockQuery):
     contract: AddressType
     method: MethodABI
     method_args: Dict[str, Any]
-
-    @classmethod
-    def all_fields(cls) -> List[str]:
-        # TODO: Figure out how to get the method ABI as a class property
-        #   for the validator
-        return [o.name for o in cls.method.outputs if o.name is not None]  # just for mypy
 
 
 class QueryAPI(BaseInterfaceModel):

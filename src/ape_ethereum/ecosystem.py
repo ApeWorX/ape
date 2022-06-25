@@ -111,6 +111,11 @@ class Block(BlockAPI):
 
 
 class Ethereum(EcosystemAPI):
+    default_transaction_type = TransactionType.DYNAMIC
+    """
+    Default transaction type should be overidden id chain doesn't support EIP-1559
+    """
+
     @property
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
@@ -259,6 +264,7 @@ class Ethereum(EcosystemAPI):
             data["totalDifficulty"] = data.pop("total_difficulty")
         if "base_fee" in data:
             data["baseFee"] = data.pop("base_fee")
+        data["num_transactions"] = len(data["transactions"])
         return Block.parse_obj(data)
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
@@ -389,7 +395,7 @@ class Ethereum(EcosystemAPI):
         elif "gas_price" in kwargs:
             version = TransactionType.STATIC
         else:
-            version = TransactionType.DYNAMIC
+            version = self.default_transaction_type
 
         txn_class = transaction_types[version]
         kwargs["type"] = version.value
