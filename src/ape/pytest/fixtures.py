@@ -5,6 +5,7 @@ import pytest
 from ape.api import TestAccountAPI
 from ape.logging import logger
 from ape.managers.chain import ChainManager
+from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 from ape.utils import ManagerAccessMixin
 
@@ -33,6 +34,14 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
 
         return self.chain_manager
+
+    @pytest.fixture(scope="session")
+    def networks(self) -> NetworkManager:
+        """
+        The network manager for permitting changing networks mid-test.
+        """
+
+        return self.network_manager
 
     @pytest.fixture(scope="session")
     def project(self) -> ProjectManager:
