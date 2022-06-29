@@ -509,8 +509,29 @@ class ContractCache(BaseManager):
         return contract_type
 
     def instance_at(
-        self, address: "AddressType", contract_type: Optional[ContractType] = None
+        self, address: Union[str, "AddressType"], contract_type: Optional[ContractType] = None
     ) -> BaseAddress:
+        """
+        Get a contract at the given address. If the contract type of the contract is known,
+        either from a local deploy or a :class:`~ape.api.explorers.ExplorerAPI`, it will use that
+        contract type. You can also provide the contract type from which it will cache and use
+        next time. If the contract type is not known, returns a
+        :class:`~ape.api.address.BaseAddress` object; otherwise returns a
+        :class:`~ape.contracts.ContractInstance` (subclass).
+
+        Args:
+            address (Union[str, AddressType]): The address of the plugin. If you are using the ENS
+              plugin, you can also provide an ENS domain name.
+            contract_type (Optional[``ContractType``]): Optionally provide the contract type
+              in case it is not already known.
+
+        Returns:
+            :class:`~ape.api.address.BaseAddress`: Will be a
+              :class:`~ape.contracts.ContractInstance` if the contract type is discovered,
+              which is a subclass of the ``BaseAddress`` class.
+        """
+
+        address = self.conversion_manager.convert(address, AddressType)
         contract_type = self.get(address, default=contract_type)
 
         if contract_type:
