@@ -21,16 +21,19 @@ Tests are generally divisible into three parts:
 3. Assertion
 
 In the example above, we created a fixture that deploys our smart-contract. This is an example of a 'setup' phase.
-Next, we need to call a method on our contract. Let's assume there is a method called `is_owner()` that returns `True`
-when it is the owner of the contract making the transaction.
+Next, we need to call a method on our contract. Let's assume there is an `authorized_method()` that requires the
+owner of the contract to make the transaction. If the sender of the transaction is not the owner, the transaction
+will fail to complete and will revert.
 
 This is an example of how that test may look:
 
 ```python
-def test_is_owner(my_contract, owner, receiver):
+def test_authorization(my_contract, owner, not_owner):
     my_contract.set_owner(sender=owner)
     assert owner == my_contract.owner()
-    assert not my_contract.is_owner(sender=receiver)
+
+    with ape.reverts("!authorized"):
+        my_contract.authorized_method(sender=not_owner)
 ```
 
 ```{note}
