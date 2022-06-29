@@ -1,13 +1,14 @@
 import time
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union, cast
 
+import pandas as pd
 from ethpm_types import ContractType
 
 from ape.api import Address, BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
-from ape.api.query import BlockQuery
+from ape.api.query import BlockQuery, validate_and_expand_columns
 from ape.exceptions import ChainError, UnknownSnapshotError
 from ape.logging import logger
 from ape.managers.base import BaseManager
@@ -94,7 +95,7 @@ class BlockContainer(BaseManager):
         stop_block: Optional[int] = None,
         step: int = 1,
         engine_to_use: Optional[str] = None,
-    ) -> Iterator:
+    ) -> pd.DataFrame:
         """
         A method for querying blocks and returning an Iterator. If you
         do not provide a starting block, the 0 block is assumed. If you do not
@@ -117,30 +118,44 @@ class BlockContainer(BaseManager):
               engine selection algorithm.
 
         Returns:
-            Iterator
+            pd.DataFrame
         """
+
+        if start_block < 0:
+            start_block = len(self) + start_block
 
         if stop_block is None:
             stop_block = self.height
 
-        elif stop_block > self.height:
+        elif stop_block < 0:
+            stop_block = len(self) + stop_block
+
+        elif stop_block > len(self):
             raise ChainError(
-                f"'stop_block={stop_block}' cannot be greater than the chain length ({len(self)}). "
-                f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
+                f"'stop={stop_block}' cannot be greater than the chain length ({self.height})."
             )
 
         query = BlockQuery(
-            columns=columns,
+            columns=list(self.head.__fields__),
             start_block=start_block,
             stop_block=stop_block,
             step=step,
-            engine_to_use=engine_to_use,
         )
 
-        return self.query_manager.query(query)
+        blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
+        data = map(lambda val: val.dict(by_alias=False), blocks)
+
+        # NOTE: Allow any columns from ecosystem's BlockAPI class
+        # TODO: fetch the block fields from EcosystemAPI
+        columns = validate_and_expand_columns(columns, list(self.head.__fields__))  # type: ignore
+        return pd.DataFrame(columns=columns, data=data)
 
     def range(
-        self, start_or_stop: int, stop: Optional[int] = None, step: int = 1
+        self,
+        start_or_stop: int,
+        stop: Optional[int] = None,
+        step: int = 1,
+        engine_to_use: Optional[str] = None,
     ) -> Iterator[BlockAPI]:
         """
         Iterate over blocks. Works similarly to python ``range()``.
@@ -164,6 +179,8 @@ class BlockContainer(BaseManager):
               the first argument.
             step (Optional[int]): The value to increment by. Defaults to ``1``.
              number of blocks to get. Defaults to the latest block.
+            engine_to_use (Optional[str]): query engine to use, bypasses query
+              engine selection algorithm.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
@@ -180,18 +197,18 @@ class BlockContainer(BaseManager):
                 f"'stop={stop}' cannot be greater than the chain length ({len(self)}). "
                 f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
             )
-        elif stop < start:
-            raise ValueError(f"stop '{stop}' cannot be less than start '{start}'.")
-        elif start < 0:
-            raise ValueError(f"start '{start}' cannot be negative.")
-        elif stop < 0:
-            raise ValueError(f"stop '{stop}' cannot be negative.")
 
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
-        results = self.query("*", start_block=start, stop_block=stop - 1, step=step)  # type: ignore
-        for _ in results:
-            yield _
+        query = BlockQuery(
+            columns=list(self.head.__fields__),  # TODO: fetch the block fields from EcosystemAPI
+            start_block=start,
+            stop_block=stop - 1,
+            step=step,
+        )
+
+        blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
+        yield from cast(Iterator[BlockAPI], blocks)
 
     def poll_blocks(
         self,

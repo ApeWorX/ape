@@ -409,7 +409,6 @@ class ProjectManager(BaseManager):
             Dict[str, ``ContractType``]: A dictionary of contract names to their
             types for each compiled contract.
         """
-
         self._load_dependencies()
 
         if not self.contracts_folder.exists():

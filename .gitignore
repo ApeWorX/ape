@@ -119,3 +119,9 @@ version.py
 
 # Ape stuff
 .build/
+
+# From testing
+tests/integration/cli/projects/with-dependencies/renamed_contracts_folder/ape-config.yaml
+tests/integration/cli/projects/with-dependencies/containing_sub_dependencies/sub_dependency/ape-config.yaml
+tests/integration/cli/projects/only-dependencies/dependency_in_project_only/ape-config.yaml
+tests/functional/data/projects/BrownieProject/ape-config.yaml
