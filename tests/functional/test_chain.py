@@ -5,7 +5,7 @@ from hexbytes import HexBytes
 
 import ape
 from ape.contracts import ContractInstance
-from ape.exceptions import ChainError
+from ape.exceptions import APINotImplementedError, ChainError
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -185,3 +185,8 @@ def test_contract_caches_default_contract_type_when_used(solidity_contract_insta
     # Ensure we don't need the contract type when creating it the second time.
     contract = ape.Contract(address)
     assert isinstance(contract, ContractInstance)
+
+
+def test_set_balance(chain, accounts):
+    with pytest.raises(APINotImplementedError):
+        chain.set_balance(accounts[0], "1000 ETH")

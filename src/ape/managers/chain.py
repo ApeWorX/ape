@@ -712,3 +712,16 @@ class ChainManager(BaseManager):
         elif deltatime:
             self.pending_timestamp += deltatime
         self.provider.mine(num_blocks)
+
+    def set_balance(self, account: Union[Address, AddressType], amount: Union[int, str]):
+        if hasattr(account, "address"):
+            account = account.address
+
+        if isinstance(amount, str) and len(str(amount).split(" ")) > 1:
+            # Support values like "1000 ETH".
+            amount = self.conversion_manager.convert(amount, int)
+        elif isinstance(amount, str):
+            # Support hex strings
+            amount = int(amount, 16)
+
+        return self.provider.set_balance(account, amount)

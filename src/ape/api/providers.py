@@ -379,6 +379,16 @@ class ProviderAPI(BaseInterfaceModel):
             NotImplementedError: Unless overridden.
         """
 
+    @raises_not_implemented
+    def set_balance(self, address: AddressType, amount: int):
+        """
+        Change the balance of an account.
+
+        Args:
+            address (AddressType): An address on the network.
+            amount (int): The balance to set in the address.
+        """
+
     def __repr__(self) -> str:
         return f"<{self.name} chain_id={self.chain_id}>"
 
@@ -559,16 +569,6 @@ class TestProviderAPI(ProviderAPI):
 
         Args:
             num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
-        """
-
-    @raises_not_implemented
-    def set_balance(self, address: AddressType, amount: int):
-        """
-        Change the balance of an account.
-
-        Args:
-            address (AddressType): An address on the network.
-            amount (int): The balance to set in the address.
         """
 
 
