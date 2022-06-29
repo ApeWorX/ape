@@ -26,7 +26,7 @@ extras_require = {
         "flake8-breakpoint>=1.1.0,<2.0.0",  # detect breakpoints left in code
         "flake8-print>=4.0.0,<5.0.0",  # detect print statements left in code
         "isort>=5.10.1,<6.0",  # Import sorting linter
-        "pandas-stubs>=1.2.0,<2.0",  # NOTE: Needed due to mypy types
+        "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy types
     ],
     "doc": [
         "myst-parser>=0.17.0,<0.18",  # Tools for parsing markdown files in the docs

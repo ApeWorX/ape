@@ -451,11 +451,6 @@ class ProviderContextManager:
         self.network_manager = network_manager
 
     def __enter__(self, *args, **kwargs):
-        # If we are already connected to a provider, disconnect and add
-        # it to our stack of providers that were connected
-        if self._connected_providers:
-            self._connected_providers[-1].disconnect()
-
         # Connect to our provider
         self.provider.connect()
         self.network_manager.active_provider = self.provider
@@ -474,7 +469,6 @@ class ProviderContextManager:
         provider.disconnect()
 
         if self._connected_providers:
-            self._connected_providers[-1].connect()
             self.network_manager.active_provider = self._connected_providers[-1]
 
 
