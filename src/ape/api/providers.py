@@ -5,6 +5,7 @@ import shutil
 import sys
 import time
 from abc import ABC
+from logging import FileHandler, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen, call
@@ -888,6 +889,37 @@ class SubprocessProvider(ProviderAPI):
             List[str]: The command to pass to ``subprocess.Popen``.
         """
 
+    @property
+    def _process_output_base_path(self) -> Path:
+        return self.config_manager.DATA_FOLDER / f"{self.name}" / "process"
+
+    @property
+    def _process_stdout_path(self) -> Path:
+        return self._process_output_base_path / "stdout.log"
+
+    @property
+    def _process_stderr_path(self) -> Path:
+        return self._process_output_base_path / "stderr.log"
+
+    @cached_property
+    def _stdout_logger(self) -> Logger:
+        return self._make_logger("stdout", self._process_stdout_path)
+
+    @cached_property
+    def _stderr_logger(self) -> Logger:
+        return self._make_logger("stderr", self._process_stderr_path)
+
+    def _make_logger(self, name: str, path: Path):
+        logger = getLogger(f"{self.name}_{name}_subprocessProviderLogger")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if path.is_file():
+            path.unlink()
+
+        path.touch()
+        handler = FileHandler(str(path))
+        logger.addHandler(handler)
+        return logger
+
     def connect(self):
         """
         Start the process and connect to it.
@@ -954,13 +986,16 @@ class SubprocessProvider(ProviderAPI):
 
     def consume_stdout_queue(self):
         for line in self._stdout_queue:
-            logger.debug(line.strip())
+            output = line.decode("utf8").strip()
+            logger.debug(output)
+            self._stdout_logger.info(output)
             self._stdout_queue.task_done()
             time.sleep(0)
 
     def consume_stderr_queue(self):
         for line in self._stderr_queue:
-            logger.debug(line.strip())
+            logger.debug(line.decode("utf8").strip())
+            self._stdout_logger.info(line)
             self._stderr_queue.task_done()
             time.sleep(0)
 
