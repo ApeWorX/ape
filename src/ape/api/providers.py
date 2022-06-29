@@ -785,7 +785,7 @@ class Web3Provider(ProviderAPI, ABC):
                 search_topics = []
                 abi_types = []
                 topics = LogInputABICollection(
-                    abi, [abi_input for abi_input in abi.inputs if abi_input.indexed]
+                    abi, [abi_input for abi_input in abi.inputs if abi_input.indexed], True
                 )
 
                 for name, arg in event_parameters.items():

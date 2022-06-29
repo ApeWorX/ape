@@ -439,8 +439,8 @@ class Ethereum(EcosystemAPI):
             else:
                 data_list.append(abi_input)
 
-        abi_topics = LogInputABICollection(abi, topics_list)
-        abi_data = LogInputABICollection(abi, data_list)
+        abi_topics = LogInputABICollection(abi, topics_list, True)
+        abi_data = LogInputABICollection(abi, data_list, False)
 
         duplicate_names = set(abi_topics.names).intersection(abi_data.names)
         if duplicate_names:
