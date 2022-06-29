@@ -15,6 +15,8 @@ source venv/bin/activate
 python setup.py install
 
 # install the developer dependencies (-e is interactive mode)
+
+```bash
 pip install -e .'[dev]'
 ```
 
