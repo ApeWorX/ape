@@ -6,10 +6,12 @@ from typing import Any, Dict, List, Mapping, Optional
 
 import requests
 import yaml
+from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
 from tqdm.auto import tqdm  # type: ignore
 
+from ape.exceptions import APINotImplementedError
 from ape.logging import logger
 from ape.utils.os import expand_environment_variables
 
@@ -22,6 +24,9 @@ try:
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 
+
+EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
+ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -223,7 +228,7 @@ def raises_not_implemented(fn):
     """
 
     def inner(*args, **kwargs):
-        raise NotImplementedError(
+        raise APINotImplementedError(
             f"Attempted to call method '{fn.__qualname__}', method not supported."
         )
 

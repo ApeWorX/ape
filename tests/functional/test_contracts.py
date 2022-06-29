@@ -1,8 +1,10 @@
 import re
+from pathlib import Path
 from typing import Optional
 
 import pytest
 from eth_utils import is_checksum_address
+from ethpm_types import ContractType
 from hexbytes import HexBytes
 
 from ape import Contract
@@ -315,6 +317,16 @@ def test_address_arrays(contract_instance, sender):
     assert is_checksum_address(actual[1])
 
 
+def test_contract_instance_as_address_input(contract_instance, sender):
+    contract_instance.setAddress(contract_instance, sender=sender)
+    assert contract_instance.theAddress() == contract_instance
+
+
+def test_account_as_address_input(contract_instance, sender):
+    contract_instance.setAddress(sender, sender=sender)
+    assert contract_instance.theAddress() == sender
+
+
 def test_vyper_struct_arrays(vyper_contract_instance, sender):
     # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
     actual_dynamic = vyper_contract_instance.getDynamicStructList()
@@ -391,3 +403,39 @@ def test_call_transaction(contract_instance, owner, chain):
 
     # No mining happens because its a call
     assert init_block == chain.blocks[-1]
+
+
+def test_contract_two_events_with_same_name(owner, networks_connected_to_tester):
+    provider = networks_connected_to_tester
+    base_path = Path(__file__).parent / "data" / "contracts" / "ethereum" / "local"
+    interface_path = base_path / "Interface.json"
+    impl_path = base_path / "InterfaceImplementation.json"
+    interface_contract_type = ContractType.parse_raw(interface_path.read_text())
+    impl_contract_type = ContractType.parse_raw(impl_path.read_text())
+    event_name = "FooEvent"
+
+    # Ensure test is setup correctly in case scenario-data changed on accident
+    assert len([e for e in impl_contract_type.events if e.name == event_name]) == 2
+    assert len([e for e in interface_contract_type.events if e.name == event_name]) == 1
+
+    impl_container = provider.create_contract_container(impl_contract_type)
+    impl_instance = owner.deploy(impl_container)
+
+    with pytest.raises(AttributeError) as err:
+        _ = impl_instance.FooEvent
+
+    expected_err_prefix = f"Multiple events named '{event_name}'"
+    assert expected_err_prefix in str(err.value)
+
+    expected_sig_from_impl = "FooEvent(uint256 bar, uint256 baz)"
+    expected_sig_from_interface = "FooEvent(uint256 bar)"
+    event_from_impl_contract = impl_instance.get_event_by_signature(expected_sig_from_impl)
+    assert event_from_impl_contract.abi.signature == expected_sig_from_impl
+    event_from_interface = impl_instance.get_event_by_signature(expected_sig_from_interface)
+    assert event_from_interface.abi.signature == expected_sig_from_interface
+
+
+def test_estimating_fees(solidity_contract_instance, eth_tester_provider, owner):
+    transaction = solidity_contract_instance.setNumber.as_transaction(10, sender=owner)
+    estimated_fees = eth_tester_provider.estimate_gas_cost(transaction)
+    assert estimated_fees > 0

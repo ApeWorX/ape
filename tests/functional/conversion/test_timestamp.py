@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from ape import convert
+from ape.exceptions import ConversionError
 
 
 @pytest.mark.parametrize(
@@ -18,6 +19,22 @@ from ape import convert
 )
 def test_convert_string_timestamp(args):
     assert convert(args, int) == 1634300112
+
+
+@pytest.mark.parametrize(
+    "args",
+    (
+        [
+            "0000",
+            "2003",
+            "9999999999",
+            "2001-01-01 12:15:12 123",
+        ]
+    ),
+)
+def test_convert_string_bad_timestamp(args):
+    with pytest.raises(ConversionError):
+        convert(args, int)
 
 
 def test_convert_timedelta_timestamp():

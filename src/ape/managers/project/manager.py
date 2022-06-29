@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Type, Union
 
-from ethpm_types import Compiler, ContractType, PackageManifest
+from ethpm_types import Compiler, ContractType, PackageManifest, PackageMeta
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractNamespace
@@ -69,7 +69,7 @@ class ProjectManager(BaseManager):
         return self.config_manager.contracts_folder
 
     @property
-    def sources(self) -> List[Path]:
+    def source_paths(self) -> List[Path]:
         """
         All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
@@ -151,7 +151,7 @@ class ProjectManager(BaseManager):
 
         for extension, compiler in self.compiler_manager.registered_compilers.items():
             for version in compiler.get_versions(
-                [p for p in self.sources if p.suffix == extension]
+                [p for p in self.source_paths if p.suffix == extension]
             ):
                 compilers.append(Compiler(compiler.name, version))  # type: ignore
 
@@ -409,7 +409,6 @@ class ProjectManager(BaseManager):
             Dict[str, ``ContractType``]: A dictionary of contract names to their
             types for each compiled contract.
         """
-
         self._load_dependencies()
 
         if not self.contracts_folder.exists():
@@ -447,9 +446,14 @@ class ProjectManager(BaseManager):
 
         return None
 
-    # @property
-    # def meta(self) -> PackageMeta:
-    #     return PackageMeta(**self.config_manager.get_config("ethpm").serialize())
+    @property
+    def meta(self) -> PackageMeta:
+        """
+        Metadata about the active project as per EIP
+        https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
+        Use when publishing your package manifest.
+        """
+        return self.config_manager.meta  # type: ignore
 
     # def publish_manifest(self):
     #     manifest = self.manifest.dict()
@@ -457,6 +461,6 @@ class ProjectManager(BaseManager):
     #         raise ProjectError("Need name to release manifest")
     #     if not manifest["version"]:
     #         raise ProjectError("Need version to release manifest")
-    #     TODO: Clean up manifest and minify it
+
     #     TODO: Publish sources to IPFS and replace with CIDs
     #     TODO: Publish to IPFS

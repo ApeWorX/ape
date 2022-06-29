@@ -1,0 +1,1 @@
+{"abi":[{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"bar","type":"uint256"}],"name":"FooEvent","type":"event"}],"contractName":"Interface","deploymentBytecode":{},"devdoc":{"kind":"dev","methods":{},"version":1},"runtimeBytecode":{},"sourceId":"Interface.sol","userdoc":{"kind":"user","methods":{},"version":1}}

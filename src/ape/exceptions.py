@@ -14,6 +14,12 @@ class ApeException(Exception):
     """
 
 
+class APINotImplementedError(ApeException, NotImplementedError):
+    """
+    An error raised when an API class does not implement an abstract method.
+    """
+
+
 class AccountsError(ApeException):
     """
     Raised when a problem occurs when using accounts.

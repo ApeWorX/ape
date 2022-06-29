@@ -139,7 +139,7 @@ class TimestampConverter(ConverterAPI):
         if not isinstance(value, (str, datetime, timedelta)):
             return False
         if isinstance(value, str):
-            if " " not in value and len(value.split(" ")) > 2:
+            if " " not in value or len(value.split(" ")) > 2:
                 return False
             else:
                 try:

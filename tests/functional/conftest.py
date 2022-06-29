@@ -10,81 +10,27 @@ from eth.exceptions import HeaderNotFound
 from ethpm_types import ContractType
 
 import ape
-from ape.api import (
-    AccountContainerAPI,
-    EcosystemAPI,
-    NetworkAPI,
-    PluginConfig,
-    ProviderAPI,
-    ReceiptAPI,
-    TransactionAPI,
-)
+from ape.api import EcosystemAPI, NetworkAPI, PluginConfig, TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
 from ape.managers.config import CONFIG_FILE_NAME
-from ape_ethereum.transactions import TransactionStatusEnum
 
 
 def _get_raw_contract(compiler: str) -> Dict:
     here = Path(__file__).parent
-    contracts_dir = here / "data" / "contracts"
+    contracts_dir = here / "data" / "contracts" / "ethereum" / "local"
     return json.loads((contracts_dir / f"{compiler}_contract.json").read_text())
 
 
 RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity")
 RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-DEPENDENCY_PROJECT_PATH = (
-    Path(__file__).parent / "data" / "projects" / "long_contracts_folder"
-).absolute()
-
-
-@pytest.fixture
-def mock_account_container_api(mocker):
-    return mocker.MagicMock(spec=AccountContainerAPI)
-
-
-@pytest.fixture
-def mock_provider_api(mocker, mock_network_api):
-    mock = mocker.MagicMock(spec=ProviderAPI)
-    mock.network = mock_network_api
-    return mock
+BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
+PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
 
 
 class _ContractLogicError(ContractLogicError):
     pass
-
-
-@pytest.fixture
-def mock_network_api(mocker):
-    mock = mocker.MagicMock(spec=NetworkAPI)
-    mock_ecosystem = mocker.MagicMock(spec=EcosystemAPI)
-    mock_ecosystem.virtual_machine_error_class = _ContractLogicError
-    mock.ecosystem = mock_ecosystem
-    return mock
-
-
-@pytest.fixture
-def mock_failing_transaction_receipt(mocker):
-    mock = mocker.MagicMock(spec=ReceiptAPI)
-    mock.status = TransactionStatusEnum.FAILING
-    mock.gas_used = 0
-    return mock
-
-
-@pytest.fixture
-def mock_web3(mocker):
-    return mocker.MagicMock()
-
-
-@pytest.fixture
-def mock_config_item(mocker):
-    return mocker.MagicMock(spec=PluginConfig)
-
-
-@pytest.fixture
-def mock_transaction(mocker):
-    return mocker.MagicMock(spec=TransactionAPI)
 
 
 @pytest.hookimpl(trylast=True, hookwrapper=True)
@@ -111,6 +57,30 @@ def pytest_runtest_protocol(item, nextitem):
         yield
 
 
+@pytest.fixture
+def mock_network_api(mocker):
+    mock = mocker.MagicMock(spec=NetworkAPI)
+    mock_ecosystem = mocker.MagicMock(spec=EcosystemAPI)
+    mock_ecosystem.virtual_machine_error_class = _ContractLogicError
+    mock.ecosystem = mock_ecosystem
+    return mock
+
+
+@pytest.fixture
+def mock_web3(mocker):
+    return mocker.MagicMock()
+
+
+@pytest.fixture
+def mock_config_item(mocker):
+    return mocker.MagicMock(spec=PluginConfig)
+
+
+@pytest.fixture
+def mock_transaction(mocker):
+    return mocker.MagicMock(spec=TransactionAPI)
+
+
 @pytest.fixture(scope="session")
 def networks_connected_to_tester():
     with ape.networks.parse_network_choice("::test"):
@@ -127,7 +97,7 @@ def eth_tester_provider(networks_connected_to_tester):
     yield networks_connected_to_tester.active_provider
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_accounts(accounts):
     return accounts.test_accounts
 
@@ -142,7 +112,7 @@ def receiver(test_accounts):
     return test_accounts[1]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def owner(test_accounts):
     return test_accounts[2]
 
@@ -227,7 +197,7 @@ def dependency_config(temp_config):
     dependencies_config = {
         "dependencies": [
             {
-                "local": str(DEPENDENCY_PROJECT_PATH),
+                "local": str(PROJECT_WITH_LONG_CONTRACTS_FOLDER),
                 "name": "testdependency",
                 "contracts_folder": "source/v0.1",
             }
@@ -235,3 +205,8 @@ def dependency_config(temp_config):
     }
     with temp_config(dependencies_config):
         yield
+
+
+@pytest.fixture
+def base_projects_directory():
+    return BASE_PROJECTS_DIRECTORY

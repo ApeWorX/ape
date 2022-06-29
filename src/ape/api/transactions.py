@@ -1,7 +1,10 @@
+import sys
 import time
-from typing import TYPE_CHECKING, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
 
+from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
+from evm_trace import TraceFrame
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
@@ -9,7 +12,7 @@ from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
@@ -53,6 +56,13 @@ class TransactionAPI(BaseInterfaceModel):
             raise TransactionError(message="Max fee must not be null.")
 
         return self.value + self.max_fee
+
+    @property
+    @abstractmethod
+    def txn_hash(self) -> HexBytes:
+        """
+        The calculated hash of the transaction.
+        """
 
     @abstractmethod
     def serialize_transaction(self) -> bytes:
@@ -135,26 +145,39 @@ class ReceiptAPI(BaseInterfaceModel):
     a :class:`ape.contracts.base.ContractInstance`.
     """
 
-    txn_hash: str
-    status: int
-    block_number: int
-    gas_used: int
-    gas_price: int
-    gas_limit: int
-    logs: List[dict] = []
     contract_address: Optional[str] = None
+    block_number: int
+    data: bytes = b""
+    gas_limit: int
+    gas_price: int
+    gas_used: int
+    logs: List[dict] = []
+    nonce: Optional[int] = None
+    receiver: str
     required_confirmations: int = 0
     sender: str
-    receiver: str
-    nonce: Optional[int] = None
+    status: int
+    txn_hash: str
+    value: int = 0
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
-    def raise_for_status(self):
+    @property
+    def failed(self) -> bool:
         """
-        Handle provider-specific errors regarding a non-successful
-        :class:`~api.providers.TransactionStatusEnum`.
+        Whether the receipt represents a failing transaction.
+        Ecosystem plugins override this property when their receipts
+        are able to be failing.
+        """
+
+        return False
+
+    @property
+    @abstractmethod
+    def total_fees_paid(self) -> int:
+        """
+        The total amount of fees paid for the transaction.
         """
 
     @property
@@ -167,6 +190,13 @@ class ReceiptAPI(BaseInterfaceModel):
             bool:  ``True`` when the transaction failed and used the
             same amount of gas as the given ``gas_limit``.
         """
+
+    @property
+    def trace(self) -> Iterator[TraceFrame]:
+        """
+        The trace of the transaction, if available from your provider.
+        """
+        return self.provider.get_transaction_trace(txn_hash=self.txn_hash)
 
     @property
     def _explorer(self) -> Optional[ExplorerAPI]:
@@ -184,6 +214,12 @@ class ReceiptAPI(BaseInterfaceModel):
             return 0
 
         return latest_block.number - self.block_number
+
+    def raise_for_status(self):
+        """
+        Handle provider-specific errors regarding a non-successful
+        :class:`~api.providers.TransactionStatusEnum`.
+        """
 
     def decode_logs(self, abi: Union[EventABI, "ContractEvent"]) -> Iterator[ContractLog]:
         """
@@ -207,11 +243,24 @@ class ReceiptAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
+
+        try:
+            self.raise_for_status()
+        except TransactionError:
+            # Skip waiting for confirmations when the transaction has failed.
+            return self
+
         # Wait for nonce from provider to increment.
         sender_nonce = self.provider.get_nonce(self.sender)
+        iterations_timeout = 20
+        iteration = 0
+
         while sender_nonce == self.nonce:  # type: ignore
             time.sleep(1)
             sender_nonce = self.provider.get_nonce(self.sender)
+            iteration += 1
+            if iteration == iterations_timeout:
+                raise TransactionError(message="Timeout waiting for sender's nonce to increase.")
 
         if self.required_confirmations == 0:
             # The transaction might not yet be confirmed but
@@ -243,3 +292,14 @@ class ReceiptAPI(BaseInterfaceModel):
                 time.sleep(time_to_sleep)
 
         return self
+
+    @raises_not_implemented
+    def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
+        """
+        Display the complete sequence of contracts and methods called during
+        the transaction.
+
+        Args:
+            verbose (bool): Set to ``True`` to include more information.
+            file (IO[str]): The file to send output to. Defaults to stdout.
+        """

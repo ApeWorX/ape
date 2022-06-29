@@ -152,7 +152,7 @@ class ScriptCommand(click.MultiCommand):
     short_help="Run scripts from the `scripts/` folder",
 )
 @click.option(
-    "-i",
+    "-I",
     "--interactive",
     is_flag=True,
     default=False,
