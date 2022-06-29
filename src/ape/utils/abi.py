@@ -6,7 +6,7 @@ from eth_abi import grammar
 from eth_utils.abi import collapse_if_tuple
 from ethpm_types.abi import ABIType, EventABI, EventABIType, MethodABI
 
-ARRAY_PATTERN = re.compile(r"[\(*\w,? ?\w?\)?]*\[\d?\]")
+ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d?]")
 
 
 def is_array(abi_type: Union[str, ABIType]) -> bool:
@@ -228,9 +228,10 @@ def create_struct(
 
 
 class LogInputABICollection:
-    def __init__(self, abi: EventABI, values: List[EventABIType]):
+    def __init__(self, abi: EventABI, values: List[EventABIType], indexed: bool = False):
         self.abi = abi
         self.values = values
+        self.indexed = indexed
 
     @property
     def names(self) -> List[str]:
@@ -242,7 +243,19 @@ class LogInputABICollection:
 
     @property
     def types(self) -> List[Union[str, Dict]]:
-        return [t for t in _get_event_abi_types(self.normalized_values)]
+        if not self.indexed:
+            return [collapse_if_tuple(t) for t in self.normalized_values]
+
+        # Indexed inputs
+        handled_values: List[Union[str, Dict]] = []
+        for abi_input in self.normalized_values:
+            abi_type = grammar.parse(abi_input["type"])
+            if abi_type.is_dynamic:
+                handled_values.append("bytes32")
+            else:
+                handled_values.append(collapse_if_tuple(abi_input))
+
+        return handled_values
 
 
 def _get_event_abi_types(abi_inputs: List[Dict]) -> Iterator[Union[str, Dict]]:
