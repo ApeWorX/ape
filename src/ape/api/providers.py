@@ -41,11 +41,13 @@ from ape.types import AddressType, BlockID, ContractLog, SnapshotID
 from ape.utils import (
     EMPTY_BYTES32,
     BaseInterfaceModel,
+    JoinableQueue,
     LogInputABICollection,
     abstractmethod,
     cached_property,
     gas_estimation_error_message,
     raises_not_implemented,
+    spawn,
 )
 
 
@@ -860,6 +862,9 @@ class SubprocessProvider(ProviderAPI):
     process: Optional[Popen] = None
     is_stopping: bool = False
 
+    _stdout_queue: Optional[JoinableQueue] = None
+    _stderr_queue: Optional[JoinableQueue] = None
+
     @property
     @abstractmethod
     def process_name(self) -> str:
@@ -921,7 +926,13 @@ class SubprocessProvider(ProviderAPI):
         else:
             logger.info(f"Starting '{self.process_name}' process.")
             pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
+            self._stderr_queue = JoinableQueue()
+            self._stdout_queue = JoinableQueue()
             self.process = _popen(*self.build_command(), preexec_fn=pre_exec_fn)
+            spawn(self.produce_stdout_queue)
+            spawn(self.produce_stderr_queue)
+            spawn(self.consume_stdout_queue)
+            spawn(self.consume_stderr_queue)
 
             with RPCTimeoutError(self, seconds=timeout) as _timeout:
                 while True:
@@ -930,6 +941,28 @@ class SubprocessProvider(ProviderAPI):
 
                     time.sleep(0.1)
                     _timeout.check()
+
+    def produce_stdout_queue(self):
+        for line in iter(self.process.stdout.readline, b""):
+            self._stdout_queue.put(line)
+            time.sleep(0)
+
+    def produce_stderr_queue(self):
+        for line in iter(self.process.stderr.readline, b""):
+            self._stderr_queue.put(line)
+            time.sleep(0)
+
+    def consume_stdout_queue(self):
+        for line in self._stdout_queue:
+            logger.debug(line.strip())
+            self._stdout_queue.task_done()
+            time.sleep(0)
+
+    def consume_stderr_queue(self):
+        for line in self._stderr_queue:
+            logger.debug(line.strip())
+            self._stderr_queue.task_done()
+            time.sleep(0)
 
     def stop(self):
         """Kill the process."""
@@ -942,6 +975,8 @@ class SubprocessProvider(ProviderAPI):
         self._kill_process()
         self.is_stopping = False
         self.process = None
+        self._stdout_queue = None
+        self._stderr_queue = None
 
     def _wait_for_popen(self, timeout: int = 30):
         if not self.process:
