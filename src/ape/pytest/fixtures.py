@@ -21,7 +21,7 @@ class PytestApeFixtures(ManagerAccessMixin):
     @pytest.fixture(scope="session")
     def accounts(self) -> List[TestAccountAPI]:
         """
-        The ape account test manager containing pre-funded test accounts.
+        A collection of pre-funded accounts.
         """
 
         return self.account_manager.test_accounts
@@ -29,8 +29,7 @@ class PytestApeFixtures(ManagerAccessMixin):
     @pytest.fixture(scope="session")
     def chain(self) -> ChainManager:
         """
-        The chain manager for manipulating the blockchain in your test
-        setups and tear-downs.
+        Manipulate the blockchain, such as mine or change the pending timestamp.
         """
 
         return self.chain_manager
@@ -38,7 +37,7 @@ class PytestApeFixtures(ManagerAccessMixin):
     @pytest.fixture(scope="session")
     def networks(self) -> NetworkManager:
         """
-        The network manager for permitting changing networks mid-test.
+        Connect to other networks in your tests.
         """
 
         return self.network_manager
@@ -46,7 +45,7 @@ class PytestApeFixtures(ManagerAccessMixin):
     @pytest.fixture(scope="session")
     def project(self) -> ProjectManager:
         """
-        The project manager for accessing contract types and dependencies.
+        Access contract types and dependencies.
         """
 
         return self.project_manager
