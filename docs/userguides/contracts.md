@@ -26,7 +26,7 @@ from ape import Contract
 contract = Contract("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
 ```
 
-It will fetch the `contract-type` using the explorer plugin for active network, such as [ape-etherscan](https://github.com/ApeWorX/ape-etherscan).
+It will fetch the `contract-type` using the explorer plugin from the active network, such as [ape-etherscan](https://github.com/ApeWorX/ape-etherscan).
 
 If you have the [ENS plugin](https://github.com/ApeWorX/ape-ens) installed, you can use `.eth` domain names as the argument:
 
@@ -50,10 +50,8 @@ def get_static_list() -> DynArray[uint256, 3]:
 @external
 def set_number(num: uint256):
     assert msg.sender == self.owner, "!authorized"
-    assert num != 5
     self.prevNumber = self.myNumber
     self.myNumber = num
-    log NumberChange(msg.sender, block.prevhash, self.prevNumber, "Dynamic", num, "Dynamic")
 ```
 
 You can call those functions by doing:
