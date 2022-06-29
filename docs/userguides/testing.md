@@ -27,12 +27,10 @@ when it is the owner of the contract making the transaction.
 This is an example of how that test may look:
 
 ```python
-def test_is_owner(my_contract, owner, other):
+def test_is_owner(my_contract, owner, receiver):
     my_contract.set_owner(sender=owner)
     assert owner == my_contract.owner()
-
-    other_is_owner = my_contract.foo(sender=other)
-    assert not other_is_owner
+    assert not my_contract.is_owner(sender=receiver)
 ```
 
 ```{note}
@@ -63,7 +61,7 @@ index from the `accounts` fixture:
 ```python
 def test_my_method(accounts):
     owner = accounts[0]
-    other = accounts[1]
+    receiver = accounts[1]
 ```
 
 For code readability and sustainability, create your own fixtures using the `accounts` fixture:
@@ -78,11 +76,11 @@ def owner(accounts):
 
 
 @pytest.fixture
-def other(accounts):
+def receiver(accounts):
     return accounts[1]
 
 
-def test_my_method(owner, other):
+def test_my_method(owner, receiver):
     ...
 ```
 
@@ -127,7 +125,7 @@ def owner(accounts):
 
 @pytest.fixture
 def my_contract(project, owner):
-    # ^ use the 'project' fixture from the 'ape-test' plugin
+              # ^ use the 'project' fixture from the 'ape-test' plugin
     return owner.deploy(project.MyContract)
 ```
 
@@ -179,14 +177,13 @@ project                     # The root project directory
     └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use 'ape test test_accounts.py' command
     └── test_mint.py        # A test file
 ```
-Here is a sample of test function from a sample [NFT](https://github.com/ApeAcademy/generative-nft)
+Here is an example of a test function from a sample [NFT project](https://github.com/ApeAcademy/ERC721)
 
 ```python
-def test_account_balance(owner, receiver, buyers, nft)):
-    # ^ use the 'project' fixture from the 'ape-test' plugin
+def test_account_balance(project, owner, receiver, nft):
     quantity = 1
-    nft.mint(quantity, ["0"], value=nft.PRICE() * quantity, sender=receiver)
-    actual = project.balanceOf(owner)
+    nft.mint(receiver, quantity, ["0"], value=nft.PRICE() * quantity, sender=owner)
+    actual = project.balanceOf(receiver)
     expect = quantity
     assert actual == expect
 ```
