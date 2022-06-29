@@ -56,7 +56,7 @@ def set_number(num: uint256):
     log NumberChange(msg.sender, block.prevhash, self.prevNumber, "Dynamic", num, "Dynamic")
 ```
 
-You can call those functions like by doing:
+You can call those functions by doing:
 
 ```python
 assert contract.get_static_list() == [1, 2, 3]
