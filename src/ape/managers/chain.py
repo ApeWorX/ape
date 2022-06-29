@@ -531,13 +531,13 @@ class ContractCache(BaseManager):
               which is a subclass of the ``BaseAddress`` class.
         """
 
-        address = self.conversion_manager.convert(address, AddressType)
-        contract_type = self.get(address, default=contract_type)
+        converted_address = self.conversion_manager.convert(address, AddressType)
+        contract_type = self.get(converted_address, default=contract_type)
 
         if contract_type:
-            return self.create_contract(address, contract_type)
+            return self.create_contract(converted_address, contract_type)
 
-        return Address(address)
+        return Address(converted_address)
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         address_file = self._contract_types_cache / f"{address}.json"
