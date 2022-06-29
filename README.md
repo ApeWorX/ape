@@ -52,14 +52,11 @@ require one for your use case.
 - [virtualenv](https://pypi.org/project/virtualenv/)
 - [venv](https://docs.python.org/3/library/venv.html)
 
-NOTE: MacOS sometimes has issues with installing since it comes with python2.7 by default.
+**NOTE**: For MacOS users, we advise installing in a virtual environment to avoid interfering with OS-level site packages.
 
-### via `homebrew`
+### virtualenv via `homebrew`
 
-[brew](https://brew.sh/)
-If you are installing ape on a MacOS. Most users find it easier to install it on brew. It is the same process as pip.
-
-* (MacOS Alternative Option) Install via homebrew [brew](https://formulae.brew.sh/formula/virtualenv)
+* (MacOS Option) Install via homebrew [brew](https://formulae.brew.sh/formula/virtualenv)
 
 Create your virtual environment folder
 
