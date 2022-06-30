@@ -760,9 +760,9 @@ class ChainManager(BaseManager):
             self.pending_timestamp += deltatime
         self.provider.mine(num_blocks)
 
-    def set_balance(self, account: Union[Address, AddressType], amount: Union[int, str]):
-        if hasattr(account, "address"):
-            account = account.address
+    def set_balance(self, account: Union[BaseAddress, AddressType], amount: Union[int, str]):
+        if isinstance(account, BaseAddress):
+            account = account.address  # type: ignore
 
         if isinstance(amount, str) and len(str(amount).split(" ")) > 1:
             # Support values like "1000 ETH".

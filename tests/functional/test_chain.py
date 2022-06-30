@@ -187,6 +187,6 @@ def test_contract_caches_default_contract_type_when_used(solidity_contract_insta
     assert isinstance(contract, ContractInstance)
 
 
-def test_set_balance(chain, accounts):
+def test_set_balance(chain, test_accounts):
     with pytest.raises(APINotImplementedError):
-        chain.set_balance(accounts[0], "1000 ETH")
+        chain.set_balance(test_accounts[0], "1000 ETH")
