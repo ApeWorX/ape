@@ -27,6 +27,10 @@ def assert_log_values(owner, chain):
         expected_previous_number = number - 1 if previous_number is None else previous_number
         assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
         assert log.newNum == number, "Event param 'newNum' has unexpected value"
+        assert log.dynData == "Dynamic"
+        assert log.dynIndexed == HexBytes(
+            "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d"
+        )
 
     return _assert_log_values
 
@@ -72,7 +76,8 @@ def test_repr(contract_instance):
     assert repr(contract_instance.myNumber) == "myNumber() -> uint256"
     assert (
         repr(contract_instance.NumberChange)
-        == "NumberChange(address person, bytes32 b, uint256 prevNum, uint256 indexed newNum)"
+        == "NumberChange(address person, bytes32 b, uint256 prevNum, "
+        "string dynData, uint256 indexed newNum, string indexed dynIndexed)"
     )
 
 

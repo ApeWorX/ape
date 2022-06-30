@@ -11,6 +11,7 @@
    userguides/config
    userguides/transactions
    userguides/console
+   userguides/contracts
    userguides/testing
    
 ```
