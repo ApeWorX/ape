@@ -509,14 +509,44 @@ class ContractCache(BaseManager):
         return contract_type
 
     def instance_at(
-        self, address: "AddressType", contract_type: Optional[ContractType] = None
+        self, address: Union[str, "AddressType"], contract_type: Optional[ContractType] = None
     ) -> BaseAddress:
-        contract_type = self.get(address, default=contract_type)
+        """
+        Get a contract at the given address. If the contract type of the contract is known,
+        either from a local deploy or a :class:`~ape.api.explorers.ExplorerAPI`, it will use that
+        contract type. You can also provide the contract type from which it will cache and use
+        next time. If the contract type is not known, returns a
+        :class:`~ape.api.address.BaseAddress` object; otherwise returns a
+        :class:`~ape.contracts.ContractInstance` (subclass).
+
+        Raises:
+            TypeError: When passing an invalid type for the `contract_type` arguments
+              (expects `ContractType`).
+
+        Args:
+            address (Union[str, AddressType]): The address of the plugin. If you are using the ENS
+              plugin, you can also provide an ENS domain name.
+            contract_type (Optional[``ContractType``]): Optionally provide the contract type
+              in case it is not already known.
+
+        Returns:
+            :class:`~ape.api.address.BaseAddress`: Will be a
+              :class:`~ape.contracts.ContractInstance` if the contract type is discovered,
+              which is a subclass of the ``BaseAddress`` class.
+        """
+
+        converted_address = self.conversion_manager.convert(address, AddressType)
+        contract_type = self.get(converted_address, default=contract_type)
 
         if contract_type:
-            return self.create_contract(address, contract_type)
+            if not isinstance(contract_type, ContractType):
+                raise TypeError(
+                    f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
+                )
 
-        return Address(address)
+            return self.create_contract(converted_address, contract_type)
+
+        return Address(converted_address)
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         address_file = self._contract_types_cache / f"{address}.json"
