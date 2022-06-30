@@ -3,14 +3,13 @@ from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import pandas as pd
-from eth_utils import is_hex
 from ethpm_types import ContractType
 
 from ape.api import Address, BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
 from ape.api.query import BlockQuery, validate_and_expand_columns
-from ape.exceptions import ChainError, UnknownSnapshotError
+from ape.exceptions import ChainError, ConversionError, UnknownSnapshotError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, SnapshotID
@@ -536,8 +535,10 @@ class ContractCache(BaseManager):
               which is a subclass of the ``BaseAddress`` class.
         """
 
-        if not is_hex(str(address)):
+        try:
             address = self.conversion_manager.convert(address, AddressType)
+        except ConversionError:
+            address = address
 
         address = self.provider.network.ecosystem.decode_address(address)
         contract_type = self.get(address, default=contract_type)

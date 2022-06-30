@@ -193,11 +193,11 @@ def test_instance_at(chain, contract_instance):
 
 
 def test_instance_at_unknown_hex_str(chain, contract_instance):
-    # Fails when conversion is attempted. Tests to make sure don't try to convert.
-    address = chain.contracts.instance_at(
-        "0x1402b10CA274cD76C441e16C844223F79D3566De12bb12b0aebFE41aDFAe302"
-    )
-    assert not isinstance(address, ContractInstance)
+    # Fails when decoding Ethereum address and NOT conversion error.
+    with pytest.raises(ValueError):
+        chain.contracts.instance_at(
+            "0x1402b10CA274cD76C441e16C844223F79D3566De12bb12b0aebFE41aDFAe302"
+        )
 
 
 def test_instance_at_when_given_contract_type(chain, contract_instance):
