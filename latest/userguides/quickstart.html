@@ -65,6 +65,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#via-pipx">via <code class="docutils literal notranslate"><span class="pre">pipx</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#via-pip">via <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#virtualenv-via-homebrew">virtualenv via <code class="docutils literal notranslate"><span class="pre">homebrew</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#via-docker">via <code class="docutils literal notranslate"><span class="pre">docker</span></code></a></li>
 </ul>
 </li>
@@ -180,11 +181,19 @@ require one for your use case.</p>
 <li><p><a class="reference external" href="https://pypi.org/project/virtualenv/">virtualenv</a></p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/venv.html">venv</a></p></li>
 </ul>
+<p><strong>NOTE</strong>: For MacOS users, we advise installing in a virtual environment to avoid interfering with OS-level site packages.</p>
+</section>
+<section id="virtualenv-via-homebrew">
+<h3>virtualenv via <code class="docutils literal notranslate"><span class="pre">homebrew</span></code><a class="headerlink" href="#virtualenv-via-homebrew" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>(MacOS Option) Install via homebrew <a class="reference external" href="https://formulae.brew.sh/formula/virtualenv">brew</a></p></li>
+</ul>
 <p>Create your virtual environment folder</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 -m venv /path/to/new/environment
 <span class="nb">source</span> &lt;venv_folder&gt;/bin/activate
 </pre></div>
 </div>
+<p>NOTE: the path to venv is not a real path.</p>
 <p>You should see <code class="docutils literal notranslate"><span class="pre">(name_of_venv)</span> <span class="pre">DESKTOP_NAME:~/path:$</span></code>.
 To deactivate the virtual environment, do:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>deactivate
