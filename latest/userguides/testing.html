@@ -152,15 +152,16 @@ is an example test:</p>
 <li><p>Assertion</p></li>
 </ol>
 <p>In the example above, we created a fixture that deploys our smart-contract. This is an example of a ‘setup’ phase.
-Next, we need to call a method on our contract. Let’s assume there is a method called <code class="docutils literal notranslate"><span class="pre">is_owner()</span></code> that returns <code class="docutils literal notranslate"><span class="pre">True</span></code>
-when it is the owner of the contract making the transaction.</p>
+Next, we need to call a method on our contract. Let’s assume there is an <code class="docutils literal notranslate"><span class="pre">authorized_method()</span></code> that requires the
+owner of the contract to make the transaction. If the sender of the transaction is not the owner, the transaction
+will fail to complete and will revert.</p>
 <p>This is an example of how that test may look:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_is_owner</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
     <span class="n">my_contract</span><span class="o">.</span><span class="n">set_owner</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">owner</span> <span class="o">==</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span>
 
-    <span class="n">other_is_owner</span> <span class="o">=</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">foo</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="ow">not</span> <span class="n">other_is_owner</span>
+    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="s2">&quot;!authorized&quot;</span><span class="p">):</span>
+        <span class="n">my_contract</span><span class="o">.</span><span class="n">authorized_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -185,7 +186,7 @@ tests. Access each <a class="reference external" href="../methoddocs/api.html?hi
 index from the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
     <span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">other</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">receiver</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>For code readability and sustainability, create your own fixtures using the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
@@ -198,11 +199,11 @@ index from the <code class="docutils literal notranslate"><span class="pre">acco
 
 
 <span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-<span class="k">def</span> <span class="nf">other</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">receiver</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
 
-<span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">receiver</span><span class="p">):</span>
     <span class="o">...</span>
 </pre></div>
 </div>
@@ -240,7 +241,7 @@ your <code class="docutils literal notranslate"><span class="pre">ape-config.yam
 
 <span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
-    <span class="c1"># ^ use the &#39;project&#39; fixture from the &#39;ape-test&#39; plugin</span>
+    <span class="c1">#           ^ use the &#39;project&#39; fixture from the &#39;ape-test&#39; plugin</span>
     <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -285,12 +286,11 @@ manually installing it using the command:</p>
     └── test_mint.py        # A test file
 </pre></div>
 </div>
-<p>Here is a sample of test function from a sample <a class="reference external" href="https://github.com/ApeAcademy/generative-nft">NFT</a></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_account_balance</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">receiver</span><span class="p">,</span> <span class="n">buyers</span><span class="p">,</span> <span class="n">nft</span><span class="p">)):</span>
-    <span class="c1"># ^ use the &#39;project&#39; fixture from the &#39;ape-test&#39; plugin</span>
+<p>Here is an example of a test function from a sample <a class="reference external" href="https://github.com/ApeAcademy/ERC721">NFT project</a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_account_balance</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">receiver</span><span class="p">,</span> <span class="n">nft</span><span class="p">):</span>
     <span class="n">quantity</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">nft</span><span class="o">.</span><span class="n">mint</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="n">nft</span><span class="o">.</span><span class="n">PRICE</span><span class="p">()</span> <span class="o">*</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">receiver</span><span class="p">)</span>
-    <span class="n">actual</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">balanceOf</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
+    <span class="n">nft</span><span class="o">.</span><span class="n">mint</span><span class="p">(</span><span class="n">receiver</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="n">nft</span><span class="o">.</span><span class="n">PRICE</span><span class="p">()</span> <span class="o">*</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+    <span class="n">actual</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">balanceOf</span><span class="p">(</span><span class="n">receiver</span><span class="p">)</span>
     <span class="n">expect</span> <span class="o">=</span> <span class="n">quantity</span>
     <span class="k">assert</span> <span class="n">actual</span> <span class="o">==</span> <span class="n">expect</span>
 </pre></div>
