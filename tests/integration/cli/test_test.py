@@ -1,6 +1,15 @@
+import pytest
+
 from .utils import skip_projects_except
 
 projects_with_tests = skip_projects_except(["test"])
+
+
+@pytest.fixture(scope="module", autouse=True)
+def connection(networks):
+    # Ensure we are connected in case becomes disconnected in previous test
+    with networks.ethereum.local.use_provider("test"):
+        yield
 
 
 @projects_with_tests
