@@ -21,18 +21,19 @@ Tests are generally divisible into three parts:
 3. Assertion
 
 In the example above, we created a fixture that deploys our smart-contract. This is an example of a 'setup' phase.
-Next, we need to call a method on our contract. Let's assume there is a method called `is_owner()` that returns `True`
-when it is the owner of the contract making the transaction.
+Next, we need to call a method on our contract. Let's assume there is an `authorized_method()` that requires the
+owner of the contract to make the transaction. If the sender of the transaction is not the owner, the transaction
+will fail to complete and will revert.
 
 This is an example of how that test may look:
 
 ```python
-def test_is_owner(my_contract, owner, other):
+def test_authorization(my_contract, owner, not_owner):
     my_contract.set_owner(sender=owner)
     assert owner == my_contract.owner()
 
-    other_is_owner = my_contract.foo(sender=other)
-    assert not other_is_owner
+    with ape.reverts("!authorized"):
+        my_contract.authorized_method(sender=not_owner)
 ```
 
 ```{note}
@@ -63,7 +64,7 @@ index from the `accounts` fixture:
 ```python
 def test_my_method(accounts):
     owner = accounts[0]
-    other = accounts[1]
+    receiver = accounts[1]
 ```
 
 For code readability and sustainability, create your own fixtures using the `accounts` fixture:
@@ -78,11 +79,11 @@ def owner(accounts):
 
 
 @pytest.fixture
-def other(accounts):
+def receiver(accounts):
     return accounts[1]
 
 
-def test_my_method(owner, other):
+def test_my_method(owner, receiver):
     ...
 ```
 
@@ -127,7 +128,7 @@ def owner(accounts):
 
 @pytest.fixture
 def my_contract(project, owner):
-    # ^ use the 'project' fixture from the 'ape-test' plugin
+    #           ^ use the 'project' fixture from the 'ape-test' plugin
     return owner.deploy(project.MyContract)
 ```
 
@@ -179,14 +180,13 @@ project                     # The root project directory
     └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use 'ape test test_accounts.py' command
     └── test_mint.py        # A test file
 ```
-Here is a sample of test function from a sample [NFT](https://github.com/ApeAcademy/generative-nft)
+Here is an example of a test function from a sample [NFT project](https://github.com/ApeAcademy/ERC721)
 
 ```python
-def test_account_balance(owner, receiver, buyers, nft)):
-    # ^ use the 'project' fixture from the 'ape-test' plugin
+def test_account_balance(project, owner, receiver, nft):
     quantity = 1
-    nft.mint(quantity, ["0"], value=nft.PRICE() * quantity, sender=receiver)
-    actual = project.balanceOf(owner)
+    nft.mint(receiver, quantity, ["0"], value=nft.PRICE() * quantity, sender=owner)
+    actual = project.balanceOf(receiver)
     expect = quantity
     assert actual == expect
 ```
