@@ -519,6 +519,10 @@ class ContractCache(BaseManager):
         :class:`~ape.api.address.BaseAddress` object; otherwise returns a
         :class:`~ape.contracts.ContractInstance` (subclass).
 
+        Raises:
+            TypeError: When passing an invalid type for the `contract_type` arguments
+              (expects `ContractType`).
+
         Args:
             address (Union[str, AddressType]): The address of the plugin. If you are using the ENS
               plugin, you can also provide an ENS domain name.
@@ -535,6 +539,11 @@ class ContractCache(BaseManager):
         contract_type = self.get(converted_address, default=contract_type)
 
         if contract_type:
+            if not isinstance(contract_type, ContractType):
+                raise TypeError(
+                    f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
+                )
+
             return self.create_contract(converted_address, contract_type)
 
         return Address(converted_address)
