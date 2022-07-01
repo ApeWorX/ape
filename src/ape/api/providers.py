@@ -817,7 +817,6 @@ class Web3Provider(ProviderAPI, ABC):
             else:
                 log_filter["topics"] = event_parameters.pop("topics")
 
-            breakpoint()
             log_result = [dict(log) for log in self.web3.eth.get_logs(log_filter)]  # type: ignore
             yield from self.network.ecosystem.decode_logs(abi, log_result)
 

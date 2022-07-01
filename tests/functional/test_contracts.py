@@ -20,10 +20,7 @@ MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 @pytest.fixture
 def assert_log_values(owner, chain):
     def _assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):
-        assert log.person == owner
-        assert is_checksum_address(log.person)
         assert isinstance(log.b, HexBytes)
-
         expected_previous_number = number - 1 if previous_number is None else previous_number
         assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
         assert log.newNum == number, "Event param 'newNum' has unexpected value"
@@ -75,8 +72,7 @@ def test_repr(contract_instance):
     assert repr(contract_instance.setNumber) == "setNumber(uint256 num)"
     assert repr(contract_instance.myNumber) == "myNumber() -> uint256"
     assert (
-        repr(contract_instance.NumberChange)
-        == "NumberChange(address person, bytes32 b, uint256 prevNum, "
+        repr(contract_instance.NumberChange) == "NumberChange(bytes32 b, uint256 prevNum, "
         "string dynData, uint256 indexed newNum, string indexed dynIndexed)"
     )
 
@@ -164,15 +160,16 @@ def test_contract_logs_range(contract_instance, owner, assert_log_values):
     assert_log_values(logs[0], 1)
 
 
-def test_contract_logs_range_by_address(contract_instance, owner, assert_log_values):
-    contract_instance.setNumber(88, sender=owner)
+def test_contract_logs_range_by_address(test_accounts, contract_instance, owner, assert_log_values):
+    contract_instance.setAddress(test_accounts[1], sender=owner)
     logs = [
         log
-        for log in contract_instance.NumberChange.range(
-            100, event_parameters={"person": "0x318b469BBa396AEc2C60342F9441be36A1945174".lower()}
+        for log in contract_instance.AddressChange.range(
+            100, event_parameters={"newAddress": test_accounts[1]}
         )
     ]
-    assert logs
+    assert len(logs) == 1
+    assert logs[0].newAddress == test_accounts[1]
 
 
 def test_contracts_log_multiple_addresses(
