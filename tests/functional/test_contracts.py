@@ -171,6 +171,10 @@ def test_contract_logs_range_by_address(
             100, event_parameters={"newAddress": test_accounts[1]}
         )
     ]
+
+    # NOTE: This spy assertion tests against a bug where address queries were not
+    # 0x-prefixed. However, this was still valid in EthTester and thus was not causing
+    # test failures.
     spy.assert_called_once_with(
         {
             "address": [contract_instance.address],
