@@ -1,7 +1,9 @@
 import pytest
 
 from ape import __all__
-from tests.integration.cli.utils import skip_projects
+from tests.integration.cli.utils import skip_projects, skip_projects_except
+
+data_and_project_folders = pytest.mark.parametrize("folder", ["PROJECT_FOLDER", "DATA_FOLDER"])
 
 # Simple single namespace example
 EXTRAS_SCRIPT_1 = """
@@ -33,9 +35,20 @@ def ape_init_extras():
     return {"A": 1, "B": 2}
 """
 
+# Tests that we can import a local package
+EXTRAS_SCRIPT_5 = """
+from dependency_in_project_only.importme import import_me
+
+import_me()
+"""
+
 
 def no_console_error(result):
-    return "NameError" not in result.output and "AssertionError" not in result.output
+    return (
+        "NameError" not in result.output
+        and "AssertionError" not in result.output
+        and "ModuleNotFoundError" not in result.output
+    )
 
 
 def write_ape_console_extras(project, folder, contents):
@@ -72,7 +85,7 @@ def test_console(ape_cli, runner, item):
 
 
 @skip_projects(["geth"])
-@pytest.mark.parametrize("folder", ["PROJECT_FOLDER", "DATA_FOLDER"])
+@data_and_project_folders
 def test_console_extras(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_1)
 
@@ -90,7 +103,7 @@ def test_console_extras(project, folder, ape_cli, runner):
 
 
 @skip_projects(["geth"])
-@pytest.mark.parametrize("folder", ["PROJECT_FOLDER", "DATA_FOLDER"])
+@data_and_project_folders
 def test_console_init_extras(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_2)
 
@@ -102,7 +115,7 @@ def test_console_init_extras(project, folder, ape_cli, runner):
 
 
 @skip_projects(["geth"])
-@pytest.mark.parametrize("folder", ["PROJECT_FOLDER", "DATA_FOLDER"])
+@data_and_project_folders
 def test_console_init_extras_kwargs(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_3)
 
@@ -112,7 +125,7 @@ def test_console_init_extras_kwargs(project, folder, ape_cli, runner):
 
 
 @skip_projects(["geth"])
-@pytest.mark.parametrize("folder", ["PROJECT_FOLDER", "DATA_FOLDER"])
+@data_and_project_folders
 def test_console_init_extras_return(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_4)
 
@@ -128,6 +141,31 @@ def test_console_init_extras_return(project, folder, ape_cli, runner):
                 "exit",
             ]
         ),
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 0, result.output
+    assert no_console_error(result), result.output
+
+
+@skip_projects_except(["only-dependencies"])
+def test_console_import_local_path(project, ape_cli, runner):
+    result = runner.invoke(
+        ape_cli,
+        ["console"],
+        input="\n".join(["from dependency_in_project_only.importme import import_me", "exit"]),
+    )
+    assert result.exit_code == 0, result.output
+    assert no_console_error(result), result.output
+
+
+@skip_projects_except(["only-dependencies"])
+def test_console_import_local_path_in_extras_file(project, ape_cli, runner):
+    write_ape_console_extras(project, "PROJECT_FOLDER", EXTRAS_SCRIPT_5)
+
+    result = runner.invoke(
+        ape_cli,
+        ["console"],
+        input="exit\n",
         catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
