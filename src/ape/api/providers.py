@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Union
 
 from eth_abi.abi import encode_single
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, keccak
+from eth_utils import add_0x_prefix, encode_hex, keccak
 from ethpm_types.abi import EventABI
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
@@ -806,7 +806,7 @@ class Web3Provider(ProviderAPI, ABC):
                     abi_types.append(abi_type)
 
                 encoded_topic_data = [
-                    encode_single(topic_type, topic_data).hex()  # type: ignore
+                    encode_hex(encode_single(topic_type, topic_data))  # type: ignore
                     for topic_type, topic_data in zip(topics.types, search_topics)
                 ]
                 log_filter["topics"].extend(encoded_topic_data)
