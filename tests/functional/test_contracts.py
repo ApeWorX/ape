@@ -160,7 +160,10 @@ def test_contract_logs_range(contract_instance, owner, assert_log_values):
     assert_log_values(logs[0], 1)
 
 
-def test_contract_logs_range_by_address(test_accounts, contract_instance, owner, assert_log_values):
+def test_contract_logs_range_by_address(
+    mocker, eth_tester_provider, test_accounts, contract_instance, owner, assert_log_values
+):
+    spy = mocker.spy(eth_tester_provider.web3.eth, "get_logs")
     contract_instance.setAddress(test_accounts[1], sender=owner)
     logs = [
         log
@@ -168,6 +171,17 @@ def test_contract_logs_range_by_address(test_accounts, contract_instance, owner,
             100, event_parameters={"newAddress": test_accounts[1]}
         )
     ]
+    spy.assert_called_once_with(
+        {
+            "address": [contract_instance.address],
+            "fromBlock": 0,
+            "toBlock": 3,
+            "topics": [
+                "0x7ff7bacc6cd661809ed1ddce28d4ad2c5b37779b61b9e3235f8262be529101a9",
+                "0x000000000000000000000000c89d42189f0450c2b2c3c61f58ec5d628176a1e7",
+            ],
+        }
+    )
     assert len(logs) == 1
     assert logs[0].newAddress == test_accounts[1]
 
