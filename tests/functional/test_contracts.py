@@ -164,6 +164,32 @@ def test_contract_logs_range(contract_instance, owner, assert_log_values):
     assert_log_values(logs[0], 1)
 
 
+def test_contract_logs_range_by_address(contract_instance, owner, assert_log_values):
+    contract_instance.setNumber(88, sender=owner)
+    logs = [
+        log for log in contract_instance.NumberChange.range(100, event_parameters={"person": owner})
+    ]
+    assert logs
+
+
+def test_contracts_log_multiple_addresses(
+    contract_instance, contract_container, owner, assert_log_values
+):
+    another_instance = contract_container.deploy(sender=owner)
+    contract_instance.setNumber(1, sender=owner)
+    another_instance.setNumber(1, sender=owner)
+
+    logs = [
+        log
+        for log in contract_instance.NumberChange.range(
+            100, event_parameters={"newNum": 1}, extra_addresses=[another_instance.address]
+        )
+    ]
+    assert len(logs) == 2, "Unexpected number of logs"
+    assert_log_values(logs[0], 1)
+    assert_log_values(logs[1], 1)
+
+
 def test_contract_logs_range_start_and_stop(contract_instance, owner, chain):
     # Create 1 event
     contract_instance.setNumber(1, sender=owner)
