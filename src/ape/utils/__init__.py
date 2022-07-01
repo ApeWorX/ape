@@ -34,6 +34,7 @@ from ape.utils.misc import (
     stream_response,
 )
 from ape.utils.os import get_all_files_in_directory, get_relative_path, use_temp_sys_path
+from ape.utils.process import JoinableQueue, spawn
 from ape.utils.testing import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_MNEMONIC,
@@ -67,6 +68,7 @@ __all__ = [
     "is_dynamic_sized_type",
     "is_named_tuple",
     "is_struct",
+    "JoinableQueue",
     "load_config",
     "LogInputABICollection",
     "ManagerAccessMixin",
@@ -74,6 +76,7 @@ __all__ = [
     "raises_not_implemented",
     "returns_array",
     "singledispatchmethod",
+    "spawn",
     "stream_response",
     "Struct",
     "StructParser",
