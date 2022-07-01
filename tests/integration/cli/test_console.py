@@ -1,7 +1,7 @@
 import pytest
 
 from ape import __all__
-from tests.integration.cli.utils import skip_projects
+from tests.integration.cli.utils import skip_projects, skip_projects_except
 
 # Simple single namespace example
 EXTRAS_SCRIPT_1 = """
@@ -35,7 +35,11 @@ def ape_init_extras():
 
 
 def no_console_error(result):
-    return "NameError" not in result.output and "AssertionError" not in result.output
+    return (
+        "NameError" not in result.output
+        and "AssertionError" not in result.output
+        and "ModuleNotFoundError" not in result.output
+    )
 
 
 def write_ape_console_extras(project, folder, contents):
@@ -129,6 +133,17 @@ def test_console_init_extras_return(project, folder, ape_cli, runner):
             ]
         ),
         catch_exceptions=False,
+    )
+    assert result.exit_code == 0, result.output
+    assert no_console_error(result), result.output
+
+
+@skip_projects_except(["only-dependencies"])
+def test_console_import_local_path(project, ape_cli, runner):
+    result = runner.invoke(
+        ape_cli,
+        ["console"],
+        input="\n".join(["from dependency_in_project_only.importme import import_me", "exit"]),
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output

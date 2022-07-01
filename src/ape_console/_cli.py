@@ -2,8 +2,10 @@ import faulthandler
 import inspect
 import io
 import logging
+import sys
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
+from os import getcwd
 from types import ModuleType
 from typing import Any, Dict
 
@@ -124,4 +126,5 @@ def console(project=None, verbose=None, extra_locals=None):
     if console_extras:
         namespace.update(console_extras)
 
+    sys.path.insert(0, getcwd())
     IPython.embed(colors="Neutral", banner1=banner, user_ns=namespace)
