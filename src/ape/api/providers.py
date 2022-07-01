@@ -808,7 +808,7 @@ class Web3Provider(ProviderAPI, ABC):
                     abi_types.append(abi_type)
 
                 encoded_topic_data = [
-                    to_hex(keccak(encode_single_packed(abi_type, value)))
+                    to_hex(keccak(encode_single_packed(str(abi_type), value)))
                     if is_dynamic_sized_type(abi_type)
                     else to_hex(encode_single(abi_type, value))  # type: ignore
                     for abi_type, value in zip(abi_types, search_topic_values)

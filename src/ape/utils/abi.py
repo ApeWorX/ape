@@ -227,8 +227,8 @@ def create_struct(
     return struct_def(*output_values)
 
 
-def is_dynamic_sized_type(abi_type: str) -> bool:
-    parsed = grammar.parse(abi_type)
+def is_dynamic_sized_type(abi_type: Union[ABIType, str]) -> bool:
+    parsed = grammar.parse(str(abi_type))
     return parsed.is_dynamic
 
 
