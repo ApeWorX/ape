@@ -807,7 +807,7 @@ class Web3Provider(ProviderAPI, ABC):
 
                 encoded_topic_data = [
                     encode_hex(encode_single(topic_type, topic_data))  # type: ignore
-                    for topic_type, topic_data in zip(topics.types, search_topics)
+                    for topic_type, topic_data in zip(abi_types, search_topics)
                 ]
                 log_filter["topics"].extend(encoded_topic_data)
             else:
