@@ -864,8 +864,8 @@ class SubprocessProvider(ProviderAPI):
     process: Optional[Popen] = None
     is_stopping: bool = False
 
-    _stdout_queue: Optional[JoinableQueue] = None
-    _stderr_queue: Optional[JoinableQueue] = None
+    stdout_queue: Optional[JoinableQueue] = None
+    stderr_queue: Optional[JoinableQueue] = None
 
     @property
     @abstractmethod
@@ -961,8 +961,8 @@ class SubprocessProvider(ProviderAPI):
         else:
             logger.info(f"Starting '{self.process_name}' process.")
             pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
-            self._stderr_queue = JoinableQueue()
-            self._stdout_queue = JoinableQueue()
+            self.stderr_queue = JoinableQueue()
+            self.stdout_queue = JoinableQueue()
             self.process = Popen(
                 self.build_command(), preexec_fn=pre_exec_fn, stdout=PIPE, stderr=PIPE
             )
@@ -981,27 +981,27 @@ class SubprocessProvider(ProviderAPI):
 
     def produce_stdout_queue(self):
         for line in iter(self.process.stdout.readline, b""):
-            self._stdout_queue.put(line)
+            self.stdout_queue.put(line)
             time.sleep(0)
 
     def produce_stderr_queue(self):
         for line in iter(self.process.stderr.readline, b""):
-            self._stderr_queue.put(line)
+            self.stderr_queue.put(line)
             time.sleep(0)
 
     def consume_stdout_queue(self):
-        for line in self._stdout_queue:
+        for line in self.stdout_queue:
             output = line.decode("utf8").strip()
             logger.debug(output)
             self._stdout_logger.info(output)
-            self._stdout_queue.task_done()
+            self.stdout_queue.task_done()
             time.sleep(0)
 
     def consume_stderr_queue(self):
-        for line in self._stderr_queue:
+        for line in self.stderr_queue:
             logger.debug(line.decode("utf8").strip())
             self._stdout_logger.info(line)
-            self._stderr_queue.task_done()
+            self.stderr_queue.task_done()
             time.sleep(0)
 
     def stop(self):
@@ -1015,8 +1015,8 @@ class SubprocessProvider(ProviderAPI):
         self._kill_process()
         self.is_stopping = False
         self.process = None
-        self._stdout_queue = None
-        self._stderr_queue = None
+        self.stdout_queue = None
+        self.stderr_queue = None
 
     def _wait_for_popen(self, timeout: int = 30):
         if not self.process:
