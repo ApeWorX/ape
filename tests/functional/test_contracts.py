@@ -20,10 +20,7 @@ MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 @pytest.fixture
 def assert_log_values(owner, chain):
     def _assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):
-        assert log.person == owner
-        assert is_checksum_address(log.person)
         assert isinstance(log.b, HexBytes)
-
         expected_previous_number = number - 1 if previous_number is None else previous_number
         assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
         assert log.newNum == number, "Event param 'newNum' has unexpected value"
@@ -75,8 +72,7 @@ def test_repr(contract_instance):
     assert repr(contract_instance.setNumber) == "setNumber(uint256 num)"
     assert repr(contract_instance.myNumber) == "myNumber() -> uint256"
     assert (
-        repr(contract_instance.NumberChange)
-        == "NumberChange(address person, bytes32 b, uint256 prevNum, "
+        repr(contract_instance.NumberChange) == "NumberChange(bytes32 b, uint256 prevNum, "
         "string dynData, uint256 indexed newNum, string indexed dynIndexed)"
     )
 
@@ -162,6 +158,54 @@ def test_contract_logs_range(contract_instance, owner, assert_log_values):
     ]
     assert len(logs) == 1, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
+
+
+def test_contract_logs_range_by_address(
+    mocker, eth_tester_provider, test_accounts, contract_instance, owner, assert_log_values
+):
+    spy = mocker.spy(eth_tester_provider.web3.eth, "get_logs")
+    contract_instance.setAddress(test_accounts[1], sender=owner)
+    logs = [
+        log
+        for log in contract_instance.AddressChange.range(
+            100, event_parameters={"newAddress": test_accounts[1]}
+        )
+    ]
+
+    # NOTE: This spy assertion tests against a bug where address queries were not
+    # 0x-prefixed. However, this was still valid in EthTester and thus was not causing
+    # test failures.
+    spy.assert_called_once_with(
+        {
+            "address": [contract_instance.address],
+            "fromBlock": 0,
+            "toBlock": 3,
+            "topics": [
+                "0x7ff7bacc6cd661809ed1ddce28d4ad2c5b37779b61b9e3235f8262be529101a9",
+                "0x000000000000000000000000c89d42189f0450c2b2c3c61f58ec5d628176a1e7",
+            ],
+        }
+    )
+    assert len(logs) == 1
+    assert logs[0].newAddress == test_accounts[1]
+
+
+def test_contracts_log_multiple_addresses(
+    contract_instance, contract_container, owner, assert_log_values
+):
+    another_instance = contract_container.deploy(sender=owner)
+    contract_instance.setNumber(1, sender=owner)
+    another_instance.setNumber(1, sender=owner)
+
+    logs = [
+        log
+        for log in contract_instance.NumberChange.range(
+            100, event_parameters={"newNum": 1}, extra_addresses=[another_instance.address]
+        )
+    ]
+    assert len(logs) == 2, "Unexpected number of logs"
+    assert_log_values(logs[0], 1)
+    assert_log_values(logs[1], 1)
 
 
 def test_contract_logs_range_start_and_stop(contract_instance, owner, chain):

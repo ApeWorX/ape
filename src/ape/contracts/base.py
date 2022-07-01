@@ -344,6 +344,7 @@ class ContractEvent(ManagerAccessMixin):
         stop: Optional[int] = None,
         block_page_size: Optional[int] = None,
         event_parameters: Optional[Dict] = None,
+        extra_addresses: Optional[List] = None,
     ) -> Iterator[ContractLog]:
         """
         Search through the logs for this event using the given filter parameters.
@@ -358,6 +359,9 @@ class ContractEvent(ManagerAccessMixin):
               on each page.
             event_parameters (Optional[Dict]): Arguments on the event that you can
               search for.
+            extra_addresses (Optional[List[``AddressType``]]): Additional contract
+              addresses containing the same event type. Defaults to only looking at
+              the contract instance where this event is defined.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
@@ -374,8 +378,13 @@ class ContractEvent(ManagerAccessMixin):
             stop_block = stop - 1
 
         stop_block = min(stop_block, self.chain_manager.blocks.height)
+        addresses = (
+            [self.contract.address, *extra_addresses]
+            if extra_addresses
+            else [self.contract.address]
+        )
         yield from self.provider.get_contract_logs(
-            self.contract.address,
+            addresses,
             self.abi,
             start_block=start_block,
             stop_block=stop_block,
