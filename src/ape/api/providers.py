@@ -7,8 +7,8 @@ import time
 from abc import ABC
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
-from subprocess import PIPE, Popen, call
-from typing import Any, Callable, Dict, Iterator, List, Optional, Union
+from subprocess import DEVNULL, Popen
+from typing import Any, Dict, Iterator, List, Optional, Union
 
 from eth_abi.abi import encode_single
 from eth_typing import HexStr
@@ -921,7 +921,12 @@ class SubprocessProvider(ProviderAPI):
         else:
             logger.info(f"Starting '{self.process_name}' process.")
             pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
-            self.process = _popen(*self.build_command(), preexec_fn=pre_exec_fn)
+
+            # NOTE: Using `DEVNULL` instead of `PIPE` to send process output drastically improves
+            # performance and lessens the chance of IO related crashes.
+            self.process = Popen(
+                self.build_command(), preexec_fn=pre_exec_fn, stdout=DEVNULL, stderr=DEVNULL
+            )
 
             with RPCTimeoutError(self, seconds=timeout) as _timeout:
                 while True:
@@ -1008,21 +1013,6 @@ class SubprocessProvider(ProviderAPI):
             ]
         )
         proc.wait(timeout=self.PROCESS_WAIT_TIMEOUT)
-
-
-pipe_kwargs = {"stdin": PIPE, "stdout": PIPE, "stderr": PIPE}
-
-
-def _popen(*cmd, preexec_fn: Optional[Callable] = None) -> Popen:
-    kwargs: Dict[str, Any] = {**pipe_kwargs}
-    if preexec_fn:
-        kwargs["preexec_fn"] = preexec_fn
-
-    return Popen([str(c) for c in [*cmd]], **kwargs)
-
-
-def _call(*args):
-    return call([*args], **pipe_kwargs)
 
 
 def _linux_set_death_signal():
