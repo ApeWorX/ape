@@ -312,6 +312,24 @@ to get the latest release.</p></li>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.JoinableQueue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">JoinableQueue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.JoinableQueue" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">queue.Queue</span></code></p>
+<p>A queue that can be joined, useful for multi-processing.
+Borrowed from the <code class="docutils literal notranslate"><span class="pre">py-geth</span></code> library.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.JoinableQueue.join">
+<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.JoinableQueue.join" title="Permalink to this definition"></a></dt>
+<dd><p>Blocks until all items in the Queue have been gotten and processed.</p>
+<p>The count of unfinished tasks goes up whenever an item is added to the
+queue. The count goes down whenever a consumer thread calls task_done()
+to indicate the item was retrieved and all work on it is complete.</p>
+<p>When the count of unfinished tasks drops to zero, join() unblocks.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ape.utils.Struct">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">Struct</span></span><a class="headerlink" href="#ape.utils.Struct" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -680,6 +698,12 @@ callables as instance methods.</p>
 <dd><p>Registers a new implementation for the given <em>cls</em> on a <em>generic_method</em>.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.spawn">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">spawn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.spawn" title="Permalink to this definition"></a></dt>
+<dd><p>Spawn a new daemon thread. Borrowed from the <code class="docutils literal notranslate"><span class="pre">py-geth</span></code> library.</p>
 </dd></dl>
 
 <dl class="py function">
