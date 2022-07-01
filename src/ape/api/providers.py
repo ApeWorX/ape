@@ -943,8 +943,8 @@ class SubprocessProvider(ProviderAPI):
                 self.stderr_logs_path.unlink()
             self.stdout_logs_path.touch()
             self.stderr_logs_path.touch()
-            self.process_stdout = open(str(self.stdout_logs_path))
-            self.process_stderr = open(str(self.stderr_logs_path))
+            self.process_stdout = self.stdout_logs_path.open()
+            self.process_stderr = self.stderr_logs_path.open()
             self.process = Popen(
                 self.build_command(),
                 preexec_fn=pre_exec_fn,
