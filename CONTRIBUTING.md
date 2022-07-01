@@ -11,9 +11,6 @@ cd ape
 python3 -m venv venv
 source venv/bin/activate
 
-# install ape into the virtual environment
-python setup.py install
-
 # install the developer dependencies (-e is interactive mode)
 pip install -e .'[dev]'
 ```

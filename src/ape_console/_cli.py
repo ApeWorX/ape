@@ -2,8 +2,10 @@ import faulthandler
 import inspect
 import io
 import logging
+import sys
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
+from os import getcwd
 from types import ModuleType
 from typing import Any, Dict
 
@@ -119,6 +121,7 @@ def console(project=None, verbose=None, extra_locals=None):
     if extra_locals:
         namespace.update(extra_locals)
 
+    sys.path.insert(0, getcwd())
     console_extras = load_console_extras(namespace)
 
     if console_extras:

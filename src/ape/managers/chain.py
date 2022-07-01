@@ -9,7 +9,7 @@ from ape.api import Address, BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
 from ape.api.query import BlockQuery, validate_and_expand_columns
-from ape.exceptions import ChainError, UnknownSnapshotError
+from ape.exceptions import ChainError, ConversionError, UnknownSnapshotError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, SnapshotID
@@ -535,8 +535,13 @@ class ContractCache(BaseManager):
               which is a subclass of the ``BaseAddress`` class.
         """
 
-        converted_address = self.conversion_manager.convert(address, AddressType)
-        contract_type = self.get(converted_address, default=contract_type)
+        try:
+            address = self.conversion_manager.convert(address, AddressType)
+        except ConversionError:
+            address = address
+
+        address = self.provider.network.ecosystem.decode_address(address)
+        contract_type = self.get(address, default=contract_type)
 
         if contract_type:
             if not isinstance(contract_type, ContractType):
@@ -544,9 +549,9 @@ class ContractCache(BaseManager):
                     f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
                 )
 
-            return self.create_contract(converted_address, contract_type)
+            return self.create_contract(address, contract_type)
 
-        return Address(converted_address)
+        return Address(address)
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         address_file = self._contract_types_cache / f"{address}.json"
@@ -759,3 +764,16 @@ class ChainManager(BaseManager):
         elif deltatime:
             self.pending_timestamp += deltatime
         self.provider.mine(num_blocks)
+
+    def set_balance(self, account: Union[BaseAddress, AddressType], amount: Union[int, str]):
+        if isinstance(account, BaseAddress):
+            account = account.address  # type: ignore
+
+        if isinstance(amount, str) and len(str(amount).split(" ")) > 1:
+            # Support values like "1000 ETH".
+            amount = self.conversion_manager.convert(amount, int)
+        elif isinstance(amount, str):
+            # Support hex strings
+            amount = int(amount, 16)
+
+        return self.provider.set_balance(account, amount)
