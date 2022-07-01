@@ -167,7 +167,10 @@ def test_contract_logs_range(contract_instance, owner, assert_log_values):
 def test_contract_logs_range_by_address(contract_instance, owner, assert_log_values):
     contract_instance.setNumber(88, sender=owner)
     logs = [
-        log for log in contract_instance.NumberChange.range(100, event_parameters={"person": owner})
+        log
+        for log in contract_instance.NumberChange.range(
+            100, event_parameters={"person": "0x318b469BBa396AEc2C60342F9441be36A1945174".lower()}
+        )
     ]
     assert logs
 

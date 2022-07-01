@@ -360,8 +360,8 @@ class ContractEvent(ManagerAccessMixin):
             event_parameters (Optional[Dict]): Arguments on the event that you can
               search for.
             extra_addresses (Optional[List[``AddressType``]]): Additional contract
-              addresses containing the same event type to query for logs. Defaults to
-              only looking at the contract instance where this event is defined.
+              addresses containing the same event type. Defaults to only looking at
+              the contract instance where this event is defined.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
