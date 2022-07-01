@@ -121,10 +121,10 @@ def console(project=None, verbose=None, extra_locals=None):
     if extra_locals:
         namespace.update(extra_locals)
 
+    sys.path.insert(0, getcwd())
     console_extras = load_console_extras(namespace)
 
     if console_extras:
         namespace.update(console_extras)
 
-    sys.path.insert(0, getcwd())
     IPython.embed(colors="Neutral", banner1=banner, user_ns=namespace)
