@@ -10,7 +10,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import IO, Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Union
 
 from eth_abi.abi import encode_single
 from eth_typing import HexStr
@@ -863,8 +863,6 @@ class SubprocessProvider(ProviderAPI):
     PROCESS_WAIT_TIMEOUT = 15
     process: Optional[Popen] = None
     is_stopping: bool = False
-    process_stdout: Optional[IO] = None
-    process_stderr: Optional[IO] = None
 
     _stdout_queue: Optional[JoinableQueue] = None
     _stderr_queue: Optional[JoinableQueue] = None
@@ -1060,17 +1058,6 @@ class SubprocessProvider(ProviderAPI):
             self.process.kill()
 
         self.process = None
-
-        # Close output streams
-        if self.process_stdout:
-            if not self.process_stdout.closed:
-                self.process_stdout.close()
-            self.process_stdout = None
-
-        if self.process_stderr:
-            if not self.process_stderr.closed:
-                self.process_stderr.close()
-            self.process_stderr = None
 
     def _windows_taskkill(self) -> None:
         """
