@@ -1,6 +1,6 @@
 import re
 from dataclasses import make_dataclass
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from eth_abi import grammar
 from eth_utils.abi import collapse_if_tuple
@@ -227,6 +227,11 @@ def create_struct(
     return struct_def(*output_values)
 
 
+def is_dynamic_sized_type(abi_type: Union[ABIType, str]) -> bool:
+    parsed = grammar.parse(str(abi_type))
+    return parsed.is_dynamic
+
+
 class LogInputABICollection:
     def __init__(self, abi: EventABI, values: List[EventABIType], indexed: bool = False):
         self.abi = abi
@@ -249,22 +254,12 @@ class LogInputABICollection:
         # Indexed inputs
         handled_values: List[Union[str, Dict]] = []
         for abi_input in self.normalized_values:
-            abi_type = grammar.parse(abi_input["type"])
-            if abi_type.is_dynamic:
+            if is_dynamic_sized_type(abi_input["type"]):
                 handled_values.append("bytes32")
             else:
                 handled_values.append(collapse_if_tuple(abi_input))
 
         return handled_values
-
-
-def _get_event_abi_types(abi_inputs: List[Dict]) -> Iterator[Union[str, Dict]]:
-    for abi_input in abi_inputs:
-        abi_type = grammar.parse(abi_input["type"])
-        if abi_type.is_dynamic:
-            yield "bytes32"
-        else:
-            yield collapse_if_tuple(abi_input)
 
 
 def parse_type(output_type: str) -> Union[str, Tuple, List]:

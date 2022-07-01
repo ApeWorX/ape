@@ -13,8 +13,9 @@ from subprocess import PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from eth_abi.abi import encode_single
+from eth_abi.packed import encode_single_packed
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, keccak
+from eth_utils import add_0x_prefix, keccak, to_hex
 from ethpm_types.abi import EventABI
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
@@ -48,6 +49,7 @@ from ape.utils import (
     abstractmethod,
     cached_property,
     gas_estimation_error_message,
+    is_dynamic_sized_type,
     raises_not_implemented,
     spawn,
 )
@@ -796,7 +798,7 @@ class Web3Provider(ProviderAPI, ABC):
             if "topics" not in event_parameters:
                 event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
                 log_filter["topics"] = [event_signature_hash]
-                search_topics = []
+                search_topic_values = []
                 abi_types = []
                 topics = LogInputABICollection(
                     abi, [abi_input for abi_input in abi.inputs if abi_input.indexed], True
@@ -816,12 +818,14 @@ class Web3Provider(ProviderAPI, ABC):
                             f"'{name}' is not an indexed topic for event '{abi.name}'."
                         )
 
-                    search_topics.append(arg)
+                    search_topic_values.append(arg)
                     abi_types.append(abi_type)
 
                 encoded_topic_data = [
-                    encode_single(topic_type, topic_data).hex()  # type: ignore
-                    for topic_type, topic_data in zip(topics.types, search_topics)
+                    to_hex(keccak(encode_single_packed(str(abi_type), value)))
+                    if is_dynamic_sized_type(abi_type)
+                    else to_hex(encode_single(abi_type, value))  # type: ignore
+                    for abi_type, value in zip(abi_types, search_topic_values)
                 ]
                 log_filter["topics"].extend(encoded_topic_data)
             else:
