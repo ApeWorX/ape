@@ -7,8 +7,8 @@ import time
 from abc import ABC
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
-from subprocess import DEVNULL, Popen
-from typing import Any, Dict, Iterator, List, Optional, Union
+from subprocess import Popen
+from typing import IO, Any, Dict, Iterator, List, Optional, Union
 
 from eth_abi.abi import encode_single
 from eth_typing import HexStr
@@ -859,6 +859,8 @@ class SubprocessProvider(ProviderAPI):
     PROCESS_WAIT_TIMEOUT = 15
     process: Optional[Popen] = None
     is_stopping: bool = False
+    process_stdout: Optional[IO] = None
+    process_stderr: Optional[IO] = None
 
     @property
     @abstractmethod
@@ -882,6 +884,18 @@ class SubprocessProvider(ProviderAPI):
         Returns:
             List[str]: The command to pass to ``subprocess.Popen``.
         """
+
+    @property
+    def base_logs_path(self) -> Path:
+        return self.config_manager.DATA_FOLDER / self.name / "subprocess_output"
+
+    @property
+    def stdout_logs_path(self) -> Path:
+        return self.base_logs_path / "stdout.log"
+
+    @property
+    def stderr_logs_path(self) -> Path:
+        return self.base_logs_path / "stderr.log"
 
     def connect(self):
         """
@@ -922,10 +936,20 @@ class SubprocessProvider(ProviderAPI):
             logger.info(f"Starting '{self.process_name}' process.")
             pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
 
-            # NOTE: Using `DEVNULL` instead of `PIPE` to send process output drastically improves
-            # performance and lessens the chance of IO related crashes.
+            self.base_logs_path.mkdir(parents=True, exist_ok=True)
+            if self.stdout_logs_path.is_file():
+                self.stdout_logs_path.unlink()
+            if self.stderr_logs_path.is_file():
+                self.stderr_logs_path.unlink()
+            self.stdout_logs_path.touch()
+            self.stderr_logs_path.touch()
+            self.process_stdout = open(str(self.stdout_logs_path))
+            self.process_stderr = open(str(self.stderr_logs_path))
             self.process = Popen(
-                self.build_command(), preexec_fn=pre_exec_fn, stdout=DEVNULL, stderr=DEVNULL
+                self.build_command(),
+                preexec_fn=pre_exec_fn,
+                stdout=self.process_stdout,
+                stderr=self.process_stderr,
             )
 
             with RPCTimeoutError(self, seconds=timeout) as _timeout:
@@ -988,6 +1012,17 @@ class SubprocessProvider(ProviderAPI):
             self.process.kill()
 
         self.process = None
+
+        # Close output streams
+        if self.process_stdout:
+            if not self.process_stdout.closed:
+                self.process_stdout.close()
+            self.process_stdout = None
+
+        if self.process_stderr:
+            if not self.process_stderr.closed:
+                self.process_stderr.close()
+            self.process_stderr = None
 
     def _windows_taskkill(self) -> None:
         """
