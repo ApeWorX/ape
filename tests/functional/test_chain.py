@@ -190,3 +190,32 @@ def test_contract_caches_default_contract_type_when_used(solidity_contract_insta
 def test_set_balance(chain, test_accounts):
     with pytest.raises(APINotImplementedError):
         chain.set_balance(test_accounts[0], "1000 ETH")
+
+
+def test_instance_at(chain, contract_instance):
+    contract = chain.contracts.instance_at(str(contract_instance.address))
+    assert contract.contract_type == contract_instance.contract_type
+
+
+def test_instance_at_unknown_hex_str(chain, contract_instance):
+    # Fails when decoding Ethereum address and NOT conversion error.
+    with pytest.raises(ValueError):
+        chain.contracts.instance_at(
+            "0x1402b10CA274cD76C441e16C844223F79D3566De12bb12b0aebFE41aDFAe302"
+        )
+
+
+def test_instance_at_when_given_contract_type(chain, contract_instance):
+    contract = chain.contracts.instance_at(
+        str(contract_instance.address), contract_type=contract_instance.contract_type
+    )
+    assert contract.contract_type == contract_instance.contract_type
+
+
+def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
+    with pytest.raises(TypeError) as err:
+        chain.contracts.instance_at(
+            str(contract_instance.address), contract_type=contract_instance.contract_type.name
+        )
+
+    assert str(err.value) == "Expected type 'ContractType' for argument 'contract_type'."

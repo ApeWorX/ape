@@ -52,12 +52,20 @@ require one for your use case.
 - [virtualenv](https://pypi.org/project/virtualenv/)
 - [venv](https://docs.python.org/3/library/venv.html)
 
+**NOTE**: For MacOS users, we advise installing in a virtual environment to avoid interfering with OS-level site packages.
+
+### virtualenv via `homebrew`
+
+* (MacOS Option) Install via homebrew [brew](https://formulae.brew.sh/formula/virtualenv)
+
 Create your virtual environment folder
 
 ```bash
 python3 -m venv /path/to/new/environment
 source <venv_folder>/bin/activate
 ```
+
+NOTE: the path to venv is not a real path.
 
 You should see `(name_of_venv) DESKTOP_NAME:~/path:$`.
 To deactivate the virtual environment, do:
