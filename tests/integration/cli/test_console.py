@@ -106,7 +106,6 @@ def test_console_extras(project, folder, ape_cli, runner):
 @data_and_project_folders
 def test_console_init_extras(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_2)
-
     result = runner.invoke(
         ape_cli, ["console"], input="print('a:', A)\nassert A == 2\nexit\n", catch_exceptions=False
     )
