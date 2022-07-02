@@ -2,18 +2,20 @@ import json
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 import pytest
 import yaml
 from eth.exceptions import HeaderNotFound
 from ethpm_types import ContractType
+from hexbytes import HexBytes
 
 import ape
 from ape.api import EcosystemAPI, NetworkAPI, PluginConfig, TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
 from ape.managers.config import CONFIG_FILE_NAME
+from ape.types import AddressType, ContractLog
 
 
 def _get_raw_contract(compiler: str) -> Dict:
@@ -210,3 +212,24 @@ def dependency_config(temp_config):
 @pytest.fixture
 def base_projects_directory():
     return BASE_PROJECTS_DIRECTORY
+
+
+@pytest.fixture
+def assert_log_values(owner, chain, contract_instance):
+    def _assert_log_values(
+        log: ContractLog,
+        number: int,
+        previous_number: Optional[int] = None,
+        address: Optional[AddressType] = None,
+    ):
+        assert log.contract_address == address or contract_instance.address
+        assert isinstance(log.b, HexBytes)
+        expected_previous_number = number - 1 if previous_number is None else previous_number
+        assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
+        assert log.newNum == number, "Event param 'newNum' has unexpected value"
+        assert log.dynData == "Dynamic"
+        assert log.dynIndexed == HexBytes(
+            "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d"
+        )
+
+    return _assert_log_values

@@ -482,12 +482,14 @@ class Ethereum(EcosystemAPI):
                 )
             )
 
-            yield ContractLog(  # type: ignore
-                name=abi.name,
-                contract_address=log["address"],
-                index=log["logIndex"],
-                event_arguments=event_args,
-                transaction_hash=log["transactionHash"],
-                block_hash=log["blockHash"],
-                block_number=log["blockNumber"],
-            )  # type: ignore
+            yield ContractLog.parse_obj(
+                dict(
+                    name=abi.name,
+                    contract_address=log["address"],
+                    index=log["logIndex"],
+                    event_arguments=event_args,
+                    transaction_hash=log["transactionHash"],
+                    block_hash=log["blockHash"],
+                    block_number=log["blockNumber"],
+                )
+            )
