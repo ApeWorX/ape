@@ -12,7 +12,7 @@ from ethpm_types import (
     Source,
 )
 from hexbytes import HexBytes
-from pydantic.dataclasses import dataclass
+from pydantic import BaseModel
 
 from ape._compat import Literal
 
@@ -40,8 +40,7 @@ A raw data-type representation of an address.
 """
 
 
-@dataclass
-class ContractLog:
+class ContractLog(BaseModel):
     """
     An instance of a log from a contract.
     """
