@@ -74,13 +74,23 @@ def pytest_collection_modifyitems(session, config, items):
     items[:] = modified_items
 
 
-@pytest.fixture(params=project_names)
-def project(request, config):
-    project_source_dir = projects_directory / request.param
-    project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
-    copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
+@pytest.fixture(scope="session")
+def project_dir_map(config):
+    # Ensure only copying projects once to prevent `TooManyOpenFilesError`.
+    project_map = {}
+    for name in project_names:
+        project_source_dir = projects_directory / name
+        project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
+        copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
+        project_map[name] = project_dest_dir
 
-    with config.using_project(project_dest_dir) as project:
+    return project_map
+
+
+@pytest.fixture(params=project_names)
+def project(request, config, project_dir_map):
+    project_dir = project_dir_map[request.param]
+    with config.using_project(project_dir) as project:
         yield project
 
 
