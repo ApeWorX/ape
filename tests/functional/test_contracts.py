@@ -10,7 +10,7 @@ from hexbytes import HexBytes
 from ape import Contract
 from ape.api import Address, ReceiptAPI
 from ape.exceptions import DecodingError
-from ape.types import ContractLog
+from ape.types import AddressType, ContractLog
 
 SOLIDITY_CONTRACT_ADDRESS = "0xBcF7FFFD8B256Ec51a36782a52D0c34f6474D951"
 VYPER_CONTRACT_ADDRESS = "0x274b028b03A250cA03644E6c578D81f019eE1323"
@@ -18,8 +18,14 @@ MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
 
 @pytest.fixture
-def assert_log_values(owner, chain):
-    def _assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):
+def assert_log_values(owner, chain, contract_instance):
+    def _assert_log_values(
+        log: ContractLog,
+        number: int,
+        previous_number: Optional[int] = None,
+        address: Optional[AddressType] = None,
+    ):
+        assert log.contract_address == address or contract_instance.address
         assert isinstance(log.b, HexBytes)
         expected_previous_number = number - 1 if previous_number is None else previous_number
         assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
@@ -205,7 +211,18 @@ def test_contracts_log_multiple_addresses(
     ]
     assert len(logs) == 2, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
-    assert_log_values(logs[1], 1)
+    assert_log_values(logs[1], 1, address=another_instance.address)
+
+
+def test_contract_logs_recreate_class(contract_instance, owner):
+    contract_instance.setNumber(1, sender=owner)
+    logs = [
+        log for log in contract_instance.NumberChange.range(100, event_parameters={"newNum": 1})
+    ]
+
+    contract_log = logs[0].dict()
+    new_class = ContractLog.parse_obj(contract_log)
+    assert new_class
 
 
 def test_contract_logs_range_start_and_stop(contract_instance, owner, chain):

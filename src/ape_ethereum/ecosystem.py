@@ -484,6 +484,7 @@ class Ethereum(EcosystemAPI):
 
             yield ContractLog(  # type: ignore
                 name=abi.name,
+                contract_address=log["address"],
                 index=log["logIndex"],
                 event_arguments=event_args,
                 transaction_hash=log["transactionHash"],
