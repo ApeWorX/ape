@@ -59,7 +59,7 @@ jobs:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v2
           fetch-depth: 0
 
         - name: Setup Python
