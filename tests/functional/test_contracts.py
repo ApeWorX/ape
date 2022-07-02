@@ -1,3 +1,4 @@
+import dataclasses
 import re
 from pathlib import Path
 from typing import Optional
@@ -220,8 +221,8 @@ def test_contract_logs_recreate_class(contract_instance, owner):
         log for log in contract_instance.NumberChange.range(100, event_parameters={"newNum": 1})
     ]
 
-    contract_log = logs[0].dict()
-    new_class = ContractLog.parse_obj(contract_log)
+    contract_log = dataclasses.asdict(logs[0])
+    new_class = ContractLog(**contract_log)
     assert new_class
 
 
