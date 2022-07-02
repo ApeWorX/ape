@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from eth_typing import ChecksumAddress as AddressType
 from ethpm_types import (
@@ -69,6 +69,9 @@ class ContractLog(BaseModel):
     def __repr__(self) -> str:
         return f"<{self.name}>"
 
+    def __getitem__(self, item: str) -> Any:
+        return self.event_arguments[item]
+
     def __getattr__(self, item: str) -> Any:
         """
         Access properties from the log via ``.`` access.
@@ -77,10 +80,19 @@ class ContractLog(BaseModel):
             item (str): The name of the property.
         """
 
+        try:
+            normal_attribute = self.__getattribute__(item)
+            return normal_attribute
+        except AttributeError:
+            pass
+
         if item not in self.event_arguments:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
 
         return self.event_arguments[item]
+
+    def get(self, item: str, default: Optional[Any]) -> Any:
+        return self.event_arguments.get(item, default)
 
 
 __all__ = [
