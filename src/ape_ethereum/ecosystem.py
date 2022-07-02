@@ -486,7 +486,7 @@ class Ethereum(EcosystemAPI):
                 dict(
                     name=abi.name,
                     contract_address=log["address"],
-                    index=log["logIndex"],
+                    log_index=log["logIndex"],
                     event_arguments=event_args,
                     transaction_hash=log["transactionHash"],
                     block_hash=log["blockHash"],

@@ -73,6 +73,7 @@ def test_contract_logs_from_receipts(owner, contract_instance, assert_log_values
         logs = [log for log in event_type.from_receipt(receipt)]
         assert len(logs) == 1
         assert_log_values(logs[0], num)
+        assert logs[0].log_index == 0
 
     assert_receipt_logs(receipt_0, 1)
     assert_receipt_logs(receipt_1, 2)
@@ -154,17 +155,12 @@ def test_contract_logs_range_by_address(
     # NOTE: This spy assertion tests against a bug where address queries were not
     # 0x-prefixed. However, this was still valid in EthTester and thus was not causing
     # test failures.
-    spy.assert_called_once_with(
-        {
-            "address": [contract_instance.address],
-            "fromBlock": 0,
-            "toBlock": 3,
-            "topics": [
-                "0x7ff7bacc6cd661809ed1ddce28d4ad2c5b37779b61b9e3235f8262be529101a9",
-                "0x000000000000000000000000c89d42189f0450c2b2c3c61f58ec5d628176a1e7",
-            ],
-        }
-    )
+    call_args = spy.call_args[0][0]
+    assert call_args["address"] == [contract_instance.address]
+    assert call_args["topics"] == [
+        "0x7ff7bacc6cd661809ed1ddce28d4ad2c5b37779b61b9e3235f8262be529101a9",
+        "0x000000000000000000000000c89d42189f0450c2b2c3c61f58ec5d628176a1e7",
+    ]
     assert len(logs) == 1
     assert logs[0].newAddress == test_accounts[1]
 
