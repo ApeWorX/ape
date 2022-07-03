@@ -72,6 +72,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#test-pattern">Test Pattern</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fixtures">Fixtures</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#accounts-fixture">accounts fixture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chain-fixture">chain fixture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#networks-fixture">networks fixture</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project-fixture">project fixture</a></li>
 </ul>
 </li>
@@ -225,6 +227,30 @@ your <code class="docutils literal notranslate"><span class="pre">ape-config.yam
     <span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">other_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">OtherContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">other_contract</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="chain-fixture">
+<h3>chain fixture<a class="headerlink" href="#chain-fixture" title="Permalink to this headline"></a></h3>
+<p>Use the chain fixture to access the connected provider or adjust blockchain settings.</p>
+<p>For example, increase the pending timestamp:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_in_future</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+    <span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">86000</span>
+    <span class="k">assert</span> <span class="s2">&quot;Something&quot;</span>
+    <span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">86000</span>
+    <span class="k">assert</span> <span class="s2">&quot;Something else&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="networks-fixture">
+<h3>networks fixture<a class="headerlink" href="#networks-fixture" title="Permalink to this headline"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">networks</span></code> fixture to change the active provider in tests.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_multi_chain</span><span class="p">(</span><span class="n">networks</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="s2">&quot;Something&quot;</span>  <span class="c1"># Make assertion in root network</span>
+    
+    <span class="c1"># NOTE: Assume have ecosystem named &quot;foo&quot; with network &quot;local&quot; and provider &quot;bar&quot;</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">foo</span><span class="o">.</span><span class="n">local</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;bar&quot;</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="s2">&quot;Something else&quot;</span>
 </pre></div>
 </div>
 </section>
