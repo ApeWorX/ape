@@ -18,7 +18,7 @@ def is_relative_to(path: Path, target: Path) -> bool:
     """
     if hasattr(path, "is_relative_to"):
         # NOTE: Only available ``>=3.9``
-        return target.is_relative_to(path)  # type: ignore
+        return target.is_relative_to(path)
 
     else:
         try:

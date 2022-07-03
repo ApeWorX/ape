@@ -91,7 +91,7 @@ class BlockAPI(BaseInterfaceModel):
     @cached_property
     def transactions(self) -> List[TransactionAPI]:
         query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-        return list(self.query_manager.query(query))  # type: ignore
+        return list(self.query_manager.query(query))
 
 
 class ProviderAPI(BaseInterfaceModel):
@@ -460,11 +460,11 @@ class ProviderAPI(BaseInterfaceModel):
         from ape_ethereum.transactions import TransactionType
 
         txn_type = TransactionType(txn.type)
-        if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
-            txn.gas_price = self.gas_price  # type: ignore
+        if txn_type == TransactionType.STATIC and txn.gas_price is None:
+            txn.gas_price = self.gas_price
         elif txn_type == TransactionType.DYNAMIC:
-            if txn.max_priority_fee is None:  # type: ignore
-                txn.max_priority_fee = self.priority_fee  # type: ignore
+            if txn.max_priority_fee is None:
+                txn.max_priority_fee = self.priority_fee
 
             if txn.max_fee is None:
                 txn.max_fee = self.base_fee + txn.max_priority_fee
@@ -599,7 +599,7 @@ class Web3Provider(ProviderAPI, ABC):
         if not hasattr(block, "base_fee"):
             raise APINotImplementedError("No base fee found in block.")
         else:
-            base_fee = block.base_fee  # type: ignore
+            base_fee = block.base_fee
 
         if base_fee is None:
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
@@ -658,16 +658,16 @@ class Web3Provider(ProviderAPI, ABC):
         return self.network.ecosystem.decode_block(block_data)
 
     def get_nonce(self, address: str) -> int:
-        return self.web3.eth.get_transaction_count(address)  # type: ignore
+        return self.web3.eth.get_transaction_count(address)
 
     def get_balance(self, address: str) -> int:
-        return self.web3.eth.get_balance(address)  # type: ignore
+        return self.web3.eth.get_balance(address)
 
     def get_code(self, address: str) -> bytes:
-        return self.web3.eth.get_code(address)  # type: ignore
+        return self.web3.eth.get_code(address)
 
     def get_storage_at(self, address: str, slot: int) -> bytes:
-        return self.web3.eth.get_storage_at(address, slot)  # type: ignore
+        return self.web3.eth.get_storage_at(address, slot)
 
     def send_call(self, txn: TransactionAPI) -> bytes:
         try:
@@ -683,7 +683,7 @@ class Web3Provider(ProviderAPI, ABC):
         receipt_data = self.web3.eth.wait_for_transaction_receipt(
             HexBytes(txn_hash), timeout=timeout
         )
-        txn = self.web3.eth.get_transaction(txn_hash)  # type: ignore
+        txn = self.web3.eth.get_transaction(txn_hash)
         receipt = self.network.ecosystem.decode_receipt(
             {
                 "provider": self,
@@ -702,8 +702,8 @@ class Web3Provider(ProviderAPI, ABC):
                 block_id = add_0x_prefix(block_id)
 
         block = self.web3.eth.get_block(block_id, full_transactions=True)
-        for transaction in block.get("transactions"):  # type: ignore
-            yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
+        for transaction in block.get("transactions"):
+            yield self.network.ecosystem.create_transaction(**transaction)
 
     def get_contract_logs(
         self,
@@ -824,14 +824,14 @@ class Web3Provider(ProviderAPI, ABC):
                 encoded_topic_data = [
                     to_hex(keccak(encode_single_packed(str(abi_type), value)))
                     if is_dynamic_sized_type(abi_type)
-                    else to_hex(encode_single(abi_type, value))  # type: ignore
+                    else to_hex(encode_single(abi_type, value))
                     for abi_type, value in zip(abi_types, search_topic_values)
                 ]
                 log_filter["topics"].extend(encoded_topic_data)
             else:
                 log_filter["topics"] = event_parameters.pop("topics")
 
-            log_result = [dict(log) for log in self.web3.eth.get_logs(log_filter)]  # type: ignore
+            log_result = [dict(log) for log in self.web3.eth.get_logs(log_filter)]
             yield from self.network.ecosystem.decode_logs(abi, log_result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:

@@ -3,6 +3,11 @@ requires = ["setuptools>=51.1.1", "wheel", "setuptools_scm[toml]>=5.0"]
 
 [tool.mypy]
 exclude = "build/"
+follow_imports = "normal"
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
 
 [tool.setuptools_scm]
 write_to = "src/ape/version.py"

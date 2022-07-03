@@ -153,7 +153,7 @@ class ProjectManager(BaseManager):
             for version in compiler.get_versions(
                 [p for p in self.source_paths if p.suffix == extension]
             ):
-                compilers.append(Compiler(compiler.name, version))  # type: ignore
+                compilers.append(Compiler(compiler.name, version))
 
         return compilers
 
@@ -215,7 +215,7 @@ class ProjectManager(BaseManager):
                     name=name,
                     path=path,
                     version=version,
-                )  # type: ignore
+                )
                 if proj.is_valid:
                     return proj
 
@@ -289,7 +289,7 @@ class ProjectManager(BaseManager):
 
             # Fixes anomaly when accessing non-ContractType attributes.
             # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
-            return self.__getattribute__(attr_name)  # type: ignore
+            return self.__getattribute__(attr_name)
 
         return contract
 
@@ -453,7 +453,7 @@ class ProjectManager(BaseManager):
         https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
         Use when publishing your package manifest.
         """
-        return self.config_manager.meta  # type: ignore
+        return self.config_manager.meta
 
     # def publish_manifest(self):
     #     manifest = self.manifest.dict()

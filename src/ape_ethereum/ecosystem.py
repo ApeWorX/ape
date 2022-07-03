@@ -84,17 +84,17 @@ class NetworkConfig(PluginConfig):
 
 
 class EthereumConfig(PluginConfig):
-    mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
-    mainnet_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
-    ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
-    ropsten_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
-    kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
-    kovan_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
-    rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    rinkeby_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
-    goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    goerli_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
-    local: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
+    mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)
+    mainnet_fork: NetworkConfig = NetworkConfig(default_provider=None)
+    ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)
+    ropsten_fork: NetworkConfig = NetworkConfig(default_provider=None)
+    kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)
+    kovan_fork: NetworkConfig = NetworkConfig(default_provider=None)
+    rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)
+    rinkeby_fork: NetworkConfig = NetworkConfig(default_provider=None)
+    goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)
+    goerli_fork: NetworkConfig = NetworkConfig(default_provider=None)
+    local: NetworkConfig = NetworkConfig(default_provider="test")
     default_network: str = LOCAL_NETWORK_NAME
 
 
@@ -118,7 +118,7 @@ class Ethereum(EcosystemAPI):
 
     @property
     def config(self) -> EthereumConfig:
-        return self.config_manager.get_config("ethereum")  # type: ignore
+        return self.config_manager.get_config("ethereum")
 
     @classmethod
     def decode_address(cls, raw_address: RawAddress) -> AddressType:
@@ -232,7 +232,7 @@ class Ethereum(EcosystemAPI):
         if isinstance(input_data, str):
             input_data = bytes(HexBytes(input_data))
 
-        receipt = Receipt(  # type: ignore
+        receipt = Receipt(
             block_number=data.get("block_number") or data.get("blockNumber"),
             contract_address=data.get("contractAddress"),
             data=data.get("data") or data.get("input", b""),
@@ -276,7 +276,7 @@ class Ethereum(EcosystemAPI):
             return HexBytes(b"")
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
-        output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
+        output_types = [o.canonical_type for o in abi.outputs]
 
         try:
             vm_return_values = abi_decode(output_types, raw_data)
@@ -346,7 +346,7 @@ class Ethereum(EcosystemAPI):
         if abi:
             txn.data += self.encode_calldata(abi, *args)
 
-        return txn  # type: ignore
+        return txn
 
     def encode_transaction(
         self,
@@ -361,7 +361,7 @@ class Ethereum(EcosystemAPI):
         txn.data = keccak(to_bytes(text=abi.selector))[:4]
         txn.data += self.encode_calldata(abi, *args)
 
-        return txn  # type: ignore
+        return txn
 
     def create_transaction(self, **kwargs) -> TransactionAPI:
         """
@@ -452,7 +452,7 @@ class Ethereum(EcosystemAPI):
 
         for log in matching_logs:
             indexed_data = log["topics"] if log.get("anonymous", False) else log["topics"][1:]
-            log_data = hexstr_if_str(to_bytes, log["data"])  # type: ignore
+            log_data = hexstr_if_str(to_bytes, log["data"])
 
             if len(indexed_data) != len(abi_topics.types):
                 raise DecodingError(
@@ -471,10 +471,10 @@ class Ethereum(EcosystemAPI):
                 return [decode_value(t, v) for t, v in zip(abi_types, data)]
 
             decoded_topic_data = [
-                decode_single(topic_type, topic_data)  # type: ignore
+                decode_single(topic_type, topic_data)
                 for topic_type, topic_data in zip(abi_topics.types, indexed_data)
             ]
-            decoded_log_data = decode_abi(abi_data.types, log_data)  # type: ignore
+            decoded_log_data = decode_abi(abi_data.types, log_data)
             event_args = dict(
                 itertools.chain(
                     zip(abi_topics.names, decode_items(abi_topics.types, decoded_topic_data)),
@@ -489,4 +489,4 @@ class Ethereum(EcosystemAPI):
                 transaction_hash=log["transactionHash"],
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],
-            )  # type: ignore
+            )

@@ -6,7 +6,7 @@ from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
 from pydantic.fields import Field
-from tqdm import tqdm  # type: ignore
+from tqdm import tqdm
 
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
@@ -255,7 +255,7 @@ class ReceiptAPI(BaseInterfaceModel):
         iterations_timeout = 20
         iteration = 0
 
-        while sender_nonce == self.nonce:  # type: ignore
+        while sender_nonce == self.nonce:
             time.sleep(1)
             sender_nonce = self.provider.get_nonce(self.sender)
             iteration += 1

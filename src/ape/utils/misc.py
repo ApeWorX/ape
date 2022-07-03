@@ -9,18 +9,18 @@ import yaml
 from hexbytes import HexBytes
 from importlib_metadata import PackageNotFoundError, packages_distributions
 from importlib_metadata import version as version_metadata
-from tqdm.auto import tqdm  # type: ignore
+from tqdm.auto import tqdm
 
 from ape.exceptions import APINotImplementedError
 from ape.logging import logger
 from ape.utils.os import expand_environment_variables
 
 try:
-    from functools import cached_property  # type: ignore
+    from functools import cached_property
 except ImportError:
     from backports.cached_property import cached_property  # type: ignore
 try:
-    from functools import singledispatchmethod  # type: ignore
+    from functools import singledispatchmethod
 except ImportError:
     from singledispatchmethod import singledispatchmethod  # type: ignore
 

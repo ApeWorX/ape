@@ -11,11 +11,11 @@ from evm_trace import (
     get_calltree_from_geth_trace,
     get_calltree_from_parity_trace,
 )
-from geth import LoggingMixin  # type: ignore
-from geth.accounts import ensure_account_exists  # type: ignore
-from geth.chain import initialize_chain  # type: ignore
-from geth.process import BaseGethProcess  # type: ignore
-from geth.wrapper import construct_test_chain_kwargs  # type: ignore
+from geth import LoggingMixin
+from geth.accounts import ensure_account_exists
+from geth.chain import initialize_chain
+from geth.process import BaseGethProcess
+from geth.wrapper import construct_test_chain_kwargs
 from pydantic import Extra
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
@@ -259,7 +259,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
             self._geth = None
 
         # Must happen after geth.disconnect()
-        self._web3 = None  # type: ignore
+        self._web3 = None
         self._client_version = None
 
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
@@ -285,4 +285,4 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
     def _make_request(self, rpc: str, args: list) -> Any:
         endpoint = RPCEndpoint(rpc)
-        return self.web3.manager.request_blocking(endpoint, args)  # type: ignore
+        return self.web3.manager.request_blocking(endpoint, args)

@@ -2,7 +2,7 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
-from eth_account import Account as EthAccount  # type: ignore
+from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
@@ -99,9 +99,9 @@ class EcosystemAPI(BaseInterfaceModel):
 
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (
-            self.signature.v,  # type: ignore
-            to_int(self.signature.r),  # type: ignore
-            to_int(self.signature.s),  # type: ignore
+            self.signature.v,
+            to_int(self.signature.r),
+            to_int(self.signature.s),
         )
 
         signed_txn = encode_transaction(unsigned_txn, signature)
@@ -505,7 +505,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     @cached_property
     def _network_config(self) -> PluginConfig:
-        return self.config.dict().get(self.name, {})  # type: ignore
+        return self.config.dict().get(self.name, {})
 
     @property
     def chain_id(self) -> int:
@@ -553,7 +553,7 @@ class NetworkAPI(BaseInterfaceModel):
         Returns:
             int
         """
-        return self._network_config.get("required_confirmations", 0)  # type: ignore
+        return self._network_config.get("required_confirmations", 0)
 
     @property
     def block_time(self) -> int:
@@ -571,7 +571,7 @@ class NetworkAPI(BaseInterfaceModel):
             int
         """
 
-        return self._network_config.get("block_time", 0)  # type: ignore
+        return self._network_config.get("block_time", 0)
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:

@@ -108,7 +108,7 @@ class CompilerManager(BaseManager):
 
                 contract_types_dict[contract_type.name] = contract_type
 
-        return contract_types_dict  # type: ignore
+        return contract_types_dict
 
     def get_imports(
         self, contract_filepaths: List[Path], base_path: Optional[Path]

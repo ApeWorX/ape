@@ -7,13 +7,13 @@ from io import BytesIO
 from pathlib import Path
 from typing import Dict, Optional, Set
 
-import pygit2  # type: ignore
+import pygit2
 from github import Github, UnknownObjectException
 from github.GitRelease import GitRelease
 from github.Organization import Organization
 from github.Repository import Repository as GithubRepository
 from pygit2 import Repository as GitRepository
-from tqdm.auto import tqdm  # type: ignore
+from tqdm.auto import tqdm
 
 from ape.exceptions import CompilerError, ProjectError
 from ape.logging import logger

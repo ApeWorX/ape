@@ -33,7 +33,7 @@ class Alias(click.Choice):
         self._account_type = account_type
 
     @property
-    def choices(self) -> List[str]:  # type: ignore
+    def choices(self) -> List[str]:
         """
         The aliases available to choose from.
 
@@ -117,7 +117,6 @@ class AccountAliasPromptChoice(PromptChoice):
         self._account_type = account_type
         self._prompt_message = prompt_message or "Select an account"
 
-    # type: ignore
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
     ) -> Optional[AccountAPI]:

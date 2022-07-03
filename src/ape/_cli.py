@@ -12,7 +12,7 @@ from ape.logging import LogLevel, logger
 from ape.plugins import clean_plugin_name
 
 try:
-    from importlib import metadata  # type: ignore
+    from importlib import metadata
 except ImportError:
     import importlib_metadata as metadata  # type: ignore
 
@@ -77,7 +77,7 @@ class ApeCLI(click.MultiCommand):
             try:
                 entry_points = metadata.entry_points(group=group_name)  # type: ignore
             except TypeError:
-                entry_points = metadata.entry_points()  # type: ignore
+                entry_points = metadata.entry_points()
                 entry_points = (
                     entry_points[group_name] if group_name in entry_points else []  # type: ignore
                 )

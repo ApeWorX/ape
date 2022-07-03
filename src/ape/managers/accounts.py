@@ -89,7 +89,7 @@ class TestAccountManager(list, ManagerAccessMixin):
 
         return ImpersonatedAccount(raw_address=account_id)
 
-    def __contains__(self, address: AddressType) -> bool:  # type: ignore
+    def __contains__(self, address: AddressType) -> bool:
         return any(address in container for container in self.containers.values())
 
 
@@ -178,7 +178,7 @@ class AccountManager(BaseManager):
     def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
             for account in container.accounts:
-                yield account  # type: ignore
+                yield account
 
     def __repr__(self) -> str:
         return "[" + ", ".join(repr(a) for a in self) + "]"

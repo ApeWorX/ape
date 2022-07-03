@@ -20,7 +20,7 @@ class NodeId:
     """
 
     def __init__(self, test_method: Callable):
-        self.module_full_name = test_method.__module__  # type: ignore
+        self.module_full_name = test_method.__module__
         self.name = test_method.__name__
 
     @property

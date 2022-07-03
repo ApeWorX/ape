@@ -1,5 +1,5 @@
-from eth_tester.backends import PyEVMBackend  # type: ignore
-from eth_tester.exceptions import TransactionFailed  # type: ignore
+from eth_tester.backends import PyEVMBackend
+from eth_tester.exceptions import TransactionFailed
 from eth_utils.exceptions import ValidationError
 from web3 import EthereumTesterProvider, Web3
 from web3.middleware import simple_cache_middleware
@@ -35,7 +35,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def estimate_gas_cost(self, txn: TransactionAPI) -> int:
         try:
-            result = self.web3.eth.estimate_gas(txn.dict())  # type: ignore
+            result = self.web3.eth.estimate_gas(txn.dict())
             return result
         except ValidationError as err:
             message = gas_estimation_error_message(err)

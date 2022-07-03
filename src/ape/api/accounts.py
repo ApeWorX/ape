@@ -178,7 +178,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         logger.success(f"Contract '{contract_name}' deployed to: {address}")
 
         contract_instance = self.create_contract(
-            address=receipt.contract_address,  # type: ignore
+            address=receipt.contract_address,
             contract_type=contract.contract_type,
         )
         self.chain_manager.contracts[contract_instance.address] = contract_instance.contract_type

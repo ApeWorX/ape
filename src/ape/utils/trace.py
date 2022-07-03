@@ -180,7 +180,7 @@ class CallTraceParser:
                     }
                     call_signature += f" {json.dumps(extra_info, indent=self._indent)}"
             elif contract_name is not None:
-                call_signature = next(call.display_nodes).title  # type: ignore
+                call_signature = next(call.display_nodes).title
                 call_signature = call_signature.replace(address, contract_name)
                 call_signature = _dim_default_gas(call_signature)
         else:
@@ -213,7 +213,7 @@ class CallTraceParser:
         return parent
 
     def decode_calldata(self, method: MethodABI, raw_data: bytes) -> Dict:
-        input_types = [i.canonical_type for i in method.inputs]  # type: ignore
+        input_types = [i.canonical_type for i in method.inputs]
 
         try:
             raw_input_values = decode_abi(input_types, raw_data)

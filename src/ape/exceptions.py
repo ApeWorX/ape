@@ -223,7 +223,7 @@ class UnknownSnapshotError(ChainError):
     def __init__(self, snapshot_id: "SnapshotID"):
         if isinstance(snapshot_id, bytes):
             # Is block hash
-            snapshot_id = humanize_hash(snapshot_id)  # type: ignore
+            snapshot_id = humanize_hash(snapshot_id)
 
         super().__init__(f"Unknown snapshot ID '{str(snapshot_id)}'.")
 
