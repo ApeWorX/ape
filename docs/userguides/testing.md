@@ -113,6 +113,33 @@ def test_my_method(project, accounts):
     contract.my_method(sender=other_contract)
 ```
 
+### chain fixture
+
+Use the chain fixture to access the connected provider or adjust blockchain settings.
+
+For example, increase the pending timestamp:
+
+```python
+def test_in_future(chain):
+    chain.pending_timestamp += 86000
+    assert "Something"
+    chain.pending_timestamp += 86000
+    assert "Something else"
+```
+
+### networks fixture
+
+Use the `networks` fixture to change the active provider in tests.
+
+```python
+def test_multi_chain(networks):
+    assert "Something"  # Make assertion in root network
+    
+    # NOTE: Assume have ecosystem named "foo" with network "local" and provider "bar"
+    with networks.foo.local.use_provider("bar"):
+        assert "Something else"
+```
+
 ### project fixture
 
 You also have access to the `project` you are testing. You will need this to deploy your contracts in your tests.
