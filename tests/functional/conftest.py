@@ -3,6 +3,8 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Dict
+from distutils.dir_util import copy_tree
+
 
 import pytest
 import yaml
@@ -14,6 +16,7 @@ from ape.api import EcosystemAPI, NetworkAPI, PluginConfig, TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
 from ape.managers.config import CONFIG_FILE_NAME
+from ape.managers.project import ProjectManager
 
 
 def _get_raw_contract(compiler: str) -> Dict:
@@ -27,6 +30,7 @@ RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
+APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
 
 
 class _ContractLogicError(ContractLogicError):
@@ -185,6 +189,16 @@ def temp_config(config):
 
 
 @pytest.fixture
+def project_with_contract(config):
+    project_source_dir = APE_PROJECT_FOLDER
+    project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
+    copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
+
+    with config.using_project(project_dest_dir) as project:
+        yield project
+
+
+@pytest.fixture
 def clean_contracts_cache(chain):
     original_cached_contracts = chain.contracts._local_contracts
     chain.contracts._local_contracts = {}
@@ -210,3 +224,21 @@ def dependency_config(temp_config):
 @pytest.fixture
 def base_projects_directory():
     return BASE_PROJECTS_DIRECTORY
+
+
+# @pytest.fixture(scope="session")
+# def project_with_contract():
+#     yield ProjectManager(APE_PROJECT_FOLDER)
+
+
+@pytest.fixture
+def remove_disc_writes_contracts_mapping_before(chain):
+    if chain.contracts._contracts_mapping_cache.exists():
+        chain.contracts._contracts_mapping_cache.unlink()
+
+
+@pytest.fixture
+def remove_disc_writes_contracts_mapping_after(chain):
+    yield
+    if chain.contracts._contracts_mapping_cache.exists():
+        chain.contracts._contracts_mapping_cache.unlink()
