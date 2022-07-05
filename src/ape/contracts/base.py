@@ -343,7 +343,7 @@ class ContractEvent(ManagerAccessMixin):
         start_or_stop: int,
         stop: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        event_parameters: Optional[Dict] = None,
+        search_topics: Optional[Dict] = None,
         extra_addresses: Optional[List] = None,
     ) -> Iterator[ContractLog]:
         """
@@ -357,8 +357,8 @@ class ContractEvent(ManagerAccessMixin):
               desired log set. Defaults to delegating to provider.
             block_page_size (Optional[int]): The amount of block to request
               on each page.
-            event_parameters (Optional[Dict]): Arguments on the event that you can
-              search for.
+            search_topics (Optional[Dict]): Search topics, such as indexed event inputs,
+              to query by. Defaults to getting all events.
             extra_addresses (Optional[List[``AddressType``]]): Additional contract
               addresses containing the same event type. Defaults to only looking at
               the contract instance where this event is defined.
@@ -389,7 +389,7 @@ class ContractEvent(ManagerAccessMixin):
             start_block=start_block,
             stop_block=stop_block,
             block_page_size=block_page_size,
-            event_parameters=event_parameters,
+            search_topics=search_topics,
         )
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:

@@ -120,6 +120,12 @@ class ProviderAPI(BaseInterfaceModel):
     cached_chain_id: Optional[int] = None
     """Implementation providers may use this to cache and re-use chain ID."""
 
+    block_page_size: int = 100
+    """
+    The amount of blocks to fetch in a response, as a default.
+    This is particularly useful for querying logs across a block range.
+    """
+
     @abstractmethod
     def connect(self):
         """
@@ -317,29 +323,30 @@ class ProviderAPI(BaseInterfaceModel):
     @abstractmethod
     def get_contract_logs(
         self,
-        address: Union[AddressType, List[AddressType]],
-        abi: Union[EventABI, List[EventABI]],
+        addresses: Union[AddressType, List[AddressType]],
+        abis: Union[EventABI, List[EventABI]],
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        event_parameters: Optional[Dict] = None,
+        search_topics: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
         """
-        Get all logs matching the given set of filter parameters.
+        Get logs from contracts.
 
         Args:
-            address (``AddressType``): The contract address that defines the logs.
-            abi (``EventABI``): The event of interest's ABI.
-            start_block (Optional[int]): Get events that occurred
-              in blocks after the block with this ID.
-            stop_block (Optional[int]): Get events that occurred
-              in blocks before the block with this ID.
-            block_page_size (Optional[int]): Use this parameter to adjust
-              request block range sizes.
-            event_parameters (Optional[Dict]): Filter by event parameter values.
+            addresses (Union[AddressType, List[AddressType]): Contract addresses.
+            abis (Union[EventABI, List[EventABI]]): Event ABIs.
+            start_block (Optional[int]): The earliest block to search. Defaults
+              to ``0``.
+            stop_block (Optional[int]): The latest block to search. Defaults to
+              the latest block number.
+            block_page_size (Optional[int]): How many blocks to search at a time.
+              Defaults to :py:attr:`~ape.api.providers.ProviderAPI.block_page_size`.
+            search_topics (Optional[Dict]): Search topics, such as indexed event inputs,
+              to query by. Defaults to getting all events.
 
         Returns:
-            Iterator[:class:`~ape.contracts.base.ContractLog`]
+            Iterator[:class:`~ape.types.ContractLog`]
         """
 
     @raises_not_implemented
@@ -708,20 +715,21 @@ class Web3Provider(ProviderAPI, ABC):
 
     def get_contract_logs(
         self,
-        address: Union[AddressType, List[AddressType]],
-        abi: Union[List[EventABI], EventABI],
+        addresses: Union[AddressType, List[AddressType]],
+        abis: Union[EventABI, List[EventABI]],
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        event_parameters: Optional[Dict] = None,
+        search_topics: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
+
         if block_page_size is not None:
             if block_page_size < 0:
                 raise ValueError("'block_page_size' cannot be negative.")
         else:
-            block_page_size = 100
+            block_page_size = self.provider.block_page_size
 
-        event_parameters = event_parameters or {}
+        search_topics = search_topics or {}
         height = self.chain_manager.blocks.height
 
         required_confirmations = self.provider.network.required_confirmations
@@ -743,12 +751,12 @@ class Web3Provider(ProviderAPI, ABC):
             logs = [
                 log
                 for log in self._get_logs_in_block_range(
-                    address,
-                    abi,
+                    addresses,
+                    abis,
                     start_block=start,
                     stop_block=stop,
                     block_page_size=block_page_size,
-                    event_parameters=event_parameters,
+                    search_topics=search_topics,
                 )
             ]
 
@@ -777,55 +785,49 @@ class Web3Provider(ProviderAPI, ABC):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        event_parameters: Optional[Dict] = None,
+        search_topics: Optional[Dict] = None,
     ):
         start_block = start_block or 0
         abis = abi if isinstance(abi, (list, tuple)) else [abi]
         block_page_size = block_page_size or 100
         stop_block = start_block + block_page_size if stop_block is None else stop_block
-        event_parameters = event_parameters or {}
+        search_topics = search_topics or {}
         for abi in abis:
             if not isinstance(address, (list, tuple)):
                 address = [address]
 
             addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
             topic_filter: List[HexStr] = []
+            event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
+            topic_filter = [event_signature_hash]
+            search_topic_values = []
+            abi_types = []
+            topics = LogInputABICollection(
+                abi, [abi_input for abi_input in abi.inputs if abi_input.indexed], True
+            )
 
-            if "topics" not in event_parameters:
-                event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
-                topic_filter = [event_signature_hash]
-                search_topic_values = []
-                abi_types = []
-                topics = LogInputABICollection(
-                    abi, [abi_input for abi_input in abi.inputs if abi_input.indexed], True
-                )
+            for name, arg in search_topics.items():
+                if hasattr(arg, "address"):
+                    arg = self.conversion_manager.convert(arg, AddressType)
 
-                for name, arg in event_parameters.items():
-                    if hasattr(arg, "address"):
-                        arg = self.conversion_manager.convert(arg, AddressType)
+                abi_type = None
+                for argument in topics.values:
+                    if argument.name == name:
+                        abi_type = argument.type
 
-                    abi_type = None
-                    for argument in topics.values:
-                        if argument.name == name:
-                            abi_type = argument.type
+                if not abi_type:
+                    raise DecodingError(f"'{name}' is not an indexed topic for event '{abi.name}'.")
 
-                    if not abi_type:
-                        raise DecodingError(
-                            f"'{name}' is not an indexed topic for event '{abi.name}'."
-                        )
+                search_topic_values.append(arg)
+                abi_types.append(abi_type)
 
-                    search_topic_values.append(arg)
-                    abi_types.append(abi_type)
-
-                encoded_topic_data = [
-                    to_hex(keccak(encode_single_packed(str(abi_type), value)))
-                    if is_dynamic_sized_type(abi_type)
-                    else to_hex(encode_single(abi_type, value))  # type: ignore
-                    for abi_type, value in zip(abi_types, search_topic_values)
-                ]
-                topic_filter.extend(encoded_topic_data)
-            else:
-                topic_filter = event_parameters.pop("topics")
+            encoded_topic_data = [
+                to_hex(keccak(encode_single_packed(str(abi_type), value)))
+                if is_dynamic_sized_type(abi_type)
+                else to_hex(encode_single(abi_type, value))  # type: ignore
+                for abi_type, value in zip(abi_types, search_topic_values)
+            ]
+            topic_filter.extend(encoded_topic_data)
 
             log_filter = FilterParams(
                 address=addresses, fromBlock=start_block, toBlock=stop_block, topics=topic_filter
