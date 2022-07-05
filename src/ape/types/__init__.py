@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from eth_typing import ChecksumAddress as AddressType
 from ethpm_types import (
@@ -11,6 +11,7 @@ from ethpm_types import (
     PackageMeta,
     Source,
 )
+from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
@@ -37,6 +38,11 @@ cases.
 RawAddress = Union[str, int, HexBytes]
 """
 A raw data-type representation of an address.
+"""
+
+TopicQuery = Optional[List[Tuple[EventABI, Optional[Dict[str, Union[Any, List[Any]]]]]]]
+"""
+A query type for searching contract logs.
 """
 
 
@@ -114,4 +120,5 @@ __all__ = [
     "SnapshotID",
     "Source",
     "TransactionSignature",
+    "TopicQuery",
 ]

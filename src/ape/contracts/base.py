@@ -385,11 +385,10 @@ class ContractEvent(ManagerAccessMixin):
         )
         yield from self.provider.get_contract_logs(
             addresses,
-            self.abi,
+            [(self.abi, search_topics)],
             start_block=start_block,
             stop_block=stop_block,
             block_page_size=block_page_size,
-            search_topics=search_topics,
         )
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
@@ -410,7 +409,7 @@ class ContractEvent(ManagerAccessMixin):
         stop_block = stop_block or self.chain_manager.blocks.height
         yield from self.provider.get_contract_logs(
             self.contract.address,
-            self.abi,
+            [(self.abi, {})],
             start_block=start_block,
             stop_block=stop_block,
         )

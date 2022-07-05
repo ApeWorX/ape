@@ -10,7 +10,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi.abi import encode_single
 from eth_abi.packed import encode_single_packed
@@ -41,7 +41,7 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import logger
-from ape.types import AddressType, BlockID, ContractLog, SnapshotID
+from ape.types import AddressType, BlockID, ContractLog, SnapshotID, TopicQuery
 from ape.utils import (
     EMPTY_BYTES32,
     BaseInterfaceModel,
@@ -324,26 +324,24 @@ class ProviderAPI(BaseInterfaceModel):
     def get_contract_logs(
         self,
         addresses: Union[AddressType, List[AddressType]],
-        abis: Union[EventABI, List[EventABI]],
+        topic_query: TopicQuery = None,
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        search_topics: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
         """
         Get logs from contracts.
 
         Args:
             addresses (Union[AddressType, List[AddressType]): Contract addresses.
-            abis (Union[EventABI, List[EventABI]]): Event ABIs.
+            topic_query (Optional[Dict[EventABI], Dict]): A mapping of event ABIs to
+              topic filters. Defaults to getting all events.
             start_block (Optional[int]): The earliest block to search. Defaults
               to ``0``.
             stop_block (Optional[int]): The latest block to search. Defaults to
               the latest block number.
             block_page_size (Optional[int]): How many blocks to search at a time.
               Defaults to :py:attr:`~ape.api.providers.ProviderAPI.block_page_size`.
-            search_topics (Optional[Dict]): Search topics, such as indexed event inputs,
-              to query by. Defaults to getting all events.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
@@ -716,11 +714,10 @@ class Web3Provider(ProviderAPI, ABC):
     def get_contract_logs(
         self,
         addresses: Union[AddressType, List[AddressType]],
-        abis: Union[EventABI, List[EventABI]],
+        topic_query: TopicQuery = None,
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        search_topics: Optional[Dict] = None,
     ) -> Iterator[ContractLog]:
 
         if block_page_size is not None:
@@ -729,7 +726,7 @@ class Web3Provider(ProviderAPI, ABC):
         else:
             block_page_size = self.provider.block_page_size
 
-        search_topics = search_topics or {}
+        topic_query = topic_query or []
         height = self.chain_manager.blocks.height
 
         required_confirmations = self.provider.network.required_confirmations
@@ -752,11 +749,10 @@ class Web3Provider(ProviderAPI, ABC):
                 log
                 for log in self._get_logs_in_block_range(
                     addresses,
-                    abis,
+                    topic_query,
                     start_block=start,
                     stop_block=stop,
                     block_page_size=block_page_size,
-                    search_topics=search_topics,
                 )
             ]
 
@@ -780,26 +776,47 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _get_logs_in_block_range(
         self,
-        address: Union[AddressType, List[AddressType]],
-        abi: Union[List[EventABI], EventABI],
+        addresses: Union[AddressType, List[AddressType]],
+        topic_query: TopicQuery = None,
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         block_page_size: Optional[int] = None,
-        search_topics: Optional[Dict] = None,
     ):
         start_block = start_block or 0
-        abis = abi if isinstance(abi, (list, tuple)) else [abi]
         block_page_size = block_page_size or 100
         stop_block = start_block + block_page_size if stop_block is None else stop_block
-        search_topics = search_topics or {}
+
+        if not isinstance(addresses, (list, tuple)):
+            addresses = [addresses]
+
+        addresses = [self.conversion_manager.convert(a, AddressType) for a in addresses]
+
+        if not topic_query:
+            # Search for all events in contract
+            contract_types = [
+                c for c in [self.chain_manager.contracts.get(a) for a in addresses] if c
+            ]
+            topic_query = []
+
+            for contract_type in contract_types:
+                for event_type in contract_type.events:
+                    sub_query: Tuple[EventABI, Dict] = (event_type, {})
+                    for input_type in [i for i in event_type.inputs if i.indexed]:
+                        sub_query[1][input_type.name] = None
+
+                    topic_query.append(sub_query)
+
         topic_filter: List = []
+        event_signature_map: Dict[str, str] = {}
 
-        for abi in abis:
-            if not isinstance(address, (list, tuple)):
-                address = [address]
+        for item in topic_query:
+            if not item:
+                continue
 
-            addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
+            abi = item[0]
+            search_topic_dict: Dict = item[1] if len(item) > 1 and item[1] else {}
             event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
+            event_signature_map[event_signature_hash] = abi
             sub_topic_filter = [event_signature_hash]
             search_topic_values = []
             abi_types = []
@@ -807,7 +824,7 @@ class Web3Provider(ProviderAPI, ABC):
                 abi, [abi_input for abi_input in abi.inputs if abi_input.indexed], True
             )
 
-            for name, arg in search_topics.items():
+            for name, arg in search_topic_dict.items():
                 if hasattr(arg, "address"):
                     arg = self.conversion_manager.convert(arg, AddressType)
 
@@ -822,10 +839,21 @@ class Web3Provider(ProviderAPI, ABC):
                 search_topic_values.append(arg)
                 abi_types.append(abi_type)
 
+            def encode_topic_value(abi_type, value):
+                if value is None:
+                    return None
+
+                elif isinstance(value, (list, tuple)):
+                    return [encode_topic_value(abi_type, v) for v in value]
+
+                elif is_dynamic_sized_type(abi_type):
+                    return to_hex(keccak(encode_single_packed(str(abi_type), value)))
+
+                else:
+                    return to_hex(encode_single(abi_type, value))  # type: ignore
+
             encoded_topic_data = [
-                to_hex(keccak(encode_single_packed(str(abi_type), value)))
-                if is_dynamic_sized_type(abi_type)
-                else to_hex(encode_single(abi_type, value))  # type: ignore
+                encode_topic_value(abi_type, value)
                 for abi_type, value in zip(abi_types, search_topic_values)
             ]
             sub_topic_filter.extend(encoded_topic_data)
@@ -834,11 +862,26 @@ class Web3Provider(ProviderAPI, ABC):
         if len(topic_filter) == 1:
             topic_filter = topic_filter[0]
 
+        if not event_signature_map:
+            raise ValueError("Expected at least one EventABI but was able to discover any.")
+
         log_filter = FilterParams(
             address=addresses, fromBlock=start_block, toBlock=stop_block, topics=topic_filter
         )
-        log_result = [dict(log) for log in self.web3.eth.get_logs(log_filter)]
-        yield from self.network.ecosystem.decode_logs(abi, log_result)
+        for log_result in self.web3.eth.get_logs(log_filter):
+            if not log_result:
+                continue
+
+            log_result_topics = log_result.get("topics", [])
+            if not log_result_topics:
+                continue
+
+            topic_id = log_result_topics[0]
+            event_abi = event_signature_map.get(topic_id.hex())
+            if not event_abi:
+                continue
+
+            yield from self.network.ecosystem.decode_logs(event_abi, [dict(log_result)])
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
