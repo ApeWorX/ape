@@ -69,9 +69,6 @@ class ContractLog(BaseModel):
     def __repr__(self) -> str:
         return f"<{self.name}>"
 
-    def __getitem__(self, item: str) -> Any:
-        return self.event_arguments[item]
-
     def __getattr__(self, item: str) -> Any:
         """
         Access properties from the log via ``.`` access.
@@ -89,6 +86,12 @@ class ContractLog(BaseModel):
         if item not in self.event_arguments:
             raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
 
+        return self.event_arguments[item]
+
+    def __contains__(self, item: str) -> bool:
+        return item in self.event_arguments
+
+    def __getitem__(self, item: str) -> Any:
         return self.event_arguments[item]
 
     def get(self, item: str, default: Optional[Any]) -> Any:
