@@ -33,7 +33,7 @@ def test_decode_logs(owner, contract_instance, assert_log_values):
     assert_receipt_logs(receipt_2, 3)
 
 
-def test_decode_logs_with_multiple_types(owner, contract_instance, assert_log_values):
+def test_decode_logs_multiple_event_types(owner, contract_instance, assert_log_values):
     foo_happened = contract_instance.FooHappened
     bar_happened = contract_instance.BarHappened
     receipt = contract_instance.fooAndBar(sender=owner)

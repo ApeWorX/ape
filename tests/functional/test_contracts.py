@@ -133,9 +133,7 @@ def test_contract_logs_splicing(contract_instance, owner, assert_log_values):
 
 def test_contract_logs_range(contract_instance, owner, assert_log_values):
     contract_instance.setNumber(1, sender=owner)
-    logs = [
-        log for log in contract_instance.NumberChange.range(100, event_parameters={"newNum": 1})
-    ]
+    logs = [log for log in contract_instance.NumberChange.range(100, search_topics={"newNum": 1})]
     assert len(logs) == 1, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
 
@@ -148,7 +146,7 @@ def test_contract_logs_range_by_address(
     logs = [
         log
         for log in contract_instance.AddressChange.range(
-            100, event_parameters={"newAddress": test_accounts[1]}
+            100, search_topics={"newAddress": test_accounts[1]}
         )
     ]
 
@@ -175,7 +173,7 @@ def test_contracts_log_multiple_addresses(
     logs = [
         log
         for log in contract_instance.NumberChange.range(
-            100, event_parameters={"newNum": 1}, extra_addresses=[another_instance.address]
+            100, search_topics={"newNum": 1}, extra_addresses=[another_instance.address]
         )
     ]
     assert len(logs) == 2, "Unexpected number of logs"
@@ -185,9 +183,7 @@ def test_contracts_log_multiple_addresses(
 
 def test_contract_logs_recreate_class(contract_instance, owner):
     contract_instance.setNumber(1, sender=owner)
-    logs = [
-        log for log in contract_instance.NumberChange.range(100, event_parameters={"newNum": 1})
-    ]
+    logs = [log for log in contract_instance.NumberChange.range(100, search_topics={"newNum": 1})]
 
     contract_log = logs[0].dict()
     new_class = ContractLog.parse_obj(contract_log)
@@ -253,9 +249,7 @@ def test_contract_logs_range_over_paging(contract_instance, owner, chain):
 def test_contract_logs_from_non_indexed_range(contract_instance, owner):
     contract_instance.setNumber(1, sender=owner)
     with pytest.raises(DecodingError):
-        _ = [
-            log for log in contract_instance.NumberChange.range(0, event_parameters={"prevNum": 1})
-        ]
+        _ = [log for log in contract_instance.NumberChange.range(0, search_topics={"prevNum": 1})]
 
 
 def test_structs(contract_instance, sender, chain):

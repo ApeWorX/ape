@@ -792,14 +792,15 @@ class Web3Provider(ProviderAPI, ABC):
         block_page_size = block_page_size or 100
         stop_block = start_block + block_page_size if stop_block is None else stop_block
         search_topics = search_topics or {}
+        topic_filter: List = []
+
         for abi in abis:
             if not isinstance(address, (list, tuple)):
                 address = [address]
 
             addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
-            topic_filter: List[HexStr] = []
             event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
-            topic_filter = [event_signature_hash]
+            sub_topic_filter = [event_signature_hash]
             search_topic_values = []
             abi_types = []
             topics = LogInputABICollection(
@@ -827,13 +828,17 @@ class Web3Provider(ProviderAPI, ABC):
                 else to_hex(encode_single(abi_type, value))  # type: ignore
                 for abi_type, value in zip(abi_types, search_topic_values)
             ]
-            topic_filter.extend(encoded_topic_data)
+            sub_topic_filter.extend(encoded_topic_data)
+            topic_filter.append(sub_topic_filter)
 
-            log_filter = FilterParams(
-                address=addresses, fromBlock=start_block, toBlock=stop_block, topics=topic_filter
-            )
-            log_result = [dict(log) for log in self.web3.eth.get_logs(log_filter)]
-            yield from self.network.ecosystem.decode_logs(abi, log_result)
+        if len(topic_filter) == 1:
+            topic_filter = topic_filter[0]
+
+        log_filter = FilterParams(
+            address=addresses, fromBlock=start_block, toBlock=stop_block, topics=topic_filter
+        )
+        log_result = [dict(log) for log in self.web3.eth.get_logs(log_filter)]
+        yield from self.network.ecosystem.decode_logs(abi, log_result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
