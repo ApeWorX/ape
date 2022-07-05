@@ -22,6 +22,7 @@ from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
+from web3.types import FilterParams
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
@@ -788,16 +789,11 @@ class Web3Provider(ProviderAPI, ABC):
                 address = [address]
 
             addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
-            log_filter: Dict = {
-                "address": addresses,
-                "fromBlock": start_block,
-                "toBlock": stop_block,
-                "topics": [],
-            }
+            topic_filter: List[HexStr] = []
 
             if "topics" not in event_parameters:
                 event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
-                log_filter["topics"] = [event_signature_hash]
+                topic_filter = [event_signature_hash]
                 search_topic_values = []
                 abi_types = []
                 topics = LogInputABICollection(
@@ -827,11 +823,14 @@ class Web3Provider(ProviderAPI, ABC):
                     else to_hex(encode_single(abi_type, value))  # type: ignore
                     for abi_type, value in zip(abi_types, search_topic_values)
                 ]
-                log_filter["topics"].extend(encoded_topic_data)
+                topic_filter.extend(encoded_topic_data)
             else:
-                log_filter["topics"] = event_parameters.pop("topics")
+                topic_filter = event_parameters.pop("topics")
 
-            log_result = [dict(log) for log in self.web3.eth.get_logs(log_filter)]  # type: ignore
+            log_filter = FilterParams(
+                address=addresses, fromBlock=start_block, toBlock=stop_block, topics=topic_filter
+            )
+            log_result = [dict(log) for log in self.web3.eth.get_logs(log_filter)]
             yield from self.network.ecosystem.decode_logs(abi, log_result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
