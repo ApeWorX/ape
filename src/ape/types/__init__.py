@@ -94,7 +94,7 @@ class ContractLog(BaseModel):
     def __getitem__(self, item: str) -> Any:
         return self.event_arguments[item]
 
-    def get(self, item: str, default: Optional[Any]) -> Any:
+    def get(self, item: str, default: Optional[Any] = None) -> Any:
         return self.event_arguments.get(item, default)
 
 
