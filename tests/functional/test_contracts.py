@@ -8,7 +8,6 @@ from hexbytes import HexBytes
 
 from ape import Contract
 from ape.api import Address, ReceiptAPI
-from ape.exceptions import DecodingError
 from ape.types import ContractLog
 
 SOLIDITY_CONTRACT_ADDRESS = "0xBcF7FFFD8B256Ec51a36782a52D0c34f6474D951"
@@ -246,10 +245,12 @@ def test_contract_logs_range_over_paging(contract_instance, owner, chain):
     assert len(logs) == 3, "Unexpected number of logs"
 
 
-def test_contract_logs_from_non_indexed_range(contract_instance, owner):
+def test_contract_logs_querying_non_indexed_data(contract_instance, owner):
     contract_instance.setNumber(1, sender=owner)
-    with pytest.raises(DecodingError):
+    with pytest.raises(ValueError) as err:
         _ = [log for log in contract_instance.NumberChange.range(0, search_topics={"prevNum": 1})]
+
+    assert str(err.value) == "'prevNum' is not an indexed topic for event 'NumberChange'."
 
 
 def test_structs(contract_instance, sender, chain):

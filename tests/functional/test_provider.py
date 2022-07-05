@@ -1,6 +1,7 @@
 import pytest
 
 from ape.exceptions import ProviderNotConnectedError
+from ape.types import LogFilter, TopicFilter
 
 EXPECTED_CHAIN_ID = 61
 
@@ -31,21 +32,18 @@ def test_chain_id_when_none_raises(eth_tester_provider):
 
 
 def test_get_contracts_logs_all_logs(contract_instance, owner, eth_tester_provider):
-    logs_at_start = len(
-        [log for log in eth_tester_provider.get_contract_logs(contract_instance.address)]
-    )
+    log_filter = LogFilter(contract_addresses=[contract_instance], stop_block=100)
+    logs_at_start = len([log for log in eth_tester_provider.get_contract_logs(log_filter)])
     contract_instance.fooAndBar(sender=owner)  # Create 2 logs
-    logs = [log for log in eth_tester_provider.get_contract_logs(contract_instance.address)]
-    assert len(logs) == logs_at_start + 2
+    logs_after_new_emit = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
+    assert len(logs_after_new_emit) == logs_at_start + 2
 
 
 def test_get_contract_logs_single_log(contract_instance, owner, eth_tester_provider):
-    foo_happened = contract_instance.FooHappened
-    query = [(foo_happened.abi, {"foo": 0})]
+    topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": 0})
+    log_filter = LogFilter(contract_addresses=[contract_instance], topic_filters=[topic_filter])
     contract_instance.fooAndBar(sender=owner)  # Create logs
-    logs = [
-        log for log in eth_tester_provider.get_contract_logs([contract_instance.address], query)
-    ]
+    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 1
     assert logs[0]["foo"] == 0
 
@@ -53,55 +51,39 @@ def test_get_contract_logs_single_log(contract_instance, owner, eth_tester_provi
 def test_get_contract_logs_single_log_query_multiple_values(
     contract_instance, owner, eth_tester_provider
 ):
-    foo_happened = contract_instance.FooHappened
-    query = [(foo_happened.abi, {"foo": [0, 1]})]
+    topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": [0, 1]})
+    log_filter = LogFilter(contract_addresses=[contract_instance], topic_filters=[topic_filter])
     contract_instance.fooAndBar(sender=owner)  # Create logs
-    logs = [
-        log for log in eth_tester_provider.get_contract_logs([contract_instance.address], query)
-    ]
+    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 1
     assert logs[0]["foo"] == 0
 
 
 def test_get_contract_logs_single_log_any_value(contract_instance, owner, eth_tester_provider):
-    # NOTE: ``None`` means it matches everything at the topic position.
-    foo_happened = contract_instance.FooHappened
-    query = [
-        (foo_happened.abi, {"foo": None}),
-    ]
+    topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": None})
+    log_filter = LogFilter(contract_addresses=[contract_instance], topic_filters=[topic_filter])
     contract_instance.fooAndBar(sender=owner)  # Create logs
-
-    logs = [
-        log for log in eth_tester_provider.get_contract_logs([contract_instance.address], query)
-    ]
-
+    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 1
     assert logs[0]["foo"] == 0
 
 
 def test_get_contract_logs_single_log_unmatched(contract_instance, owner, eth_tester_provider):
-    # NOTE: ``None`` means it matches everything at the topic position.
-    foo_happened = contract_instance.FooHappened
-    query = [
-        (foo_happened.abi, {"foo": 2}),
-    ]
+    topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": 2})
+    log_filter = LogFilter(contract_addresses=[contract_instance], topic_filters=[topic_filter])
     contract_instance.fooAndBar(sender=owner)  # Create logs
-    logs = [
-        log for log in eth_tester_provider.get_contract_logs([contract_instance.address], query)
-    ]
+    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 0
 
 
 def test_get_contract_logs_multiple_event_types(contract_instance, owner, eth_tester_provider):
-    foo_happened = contract_instance.FooHappened
-    bar_happened = contract_instance.BarHappened
+    foo_topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": 0})
+    bar_topic_filter = TopicFilter(event=contract_instance.BarHappened, search_values={"bar": 1})
+    log_filter = LogFilter(
+        contract_addresses=[contract_instance], topic_filters=[foo_topic_filter, bar_topic_filter]
+    )
     contract_instance.fooAndBar(sender=owner)  # Create logs
-
-    query = [(foo_happened.abi, {"foo": 0}), (bar_happened.abi, {"bar": 1})]
-    logs = [
-        log for log in eth_tester_provider.get_contract_logs([contract_instance.address], query)
-    ]
-
+    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 2
     assert logs[0].foo == 0
     assert logs[1].bar == 1
@@ -110,15 +92,15 @@ def test_get_contract_logs_multiple_event_types(contract_instance, owner, eth_te
 def test_get_contract_logs_multiple_event_types_match_any_value(
     contract_instance, owner, eth_tester_provider
 ):
-    foo_happened = contract_instance.FooHappened
-    bar_happened = contract_instance.BarHappened
+    foo_topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": None})
+    bar_topic_filter = TopicFilter(event=contract_instance.BarHappened, search_values={"bar": None})
+    log_filter = LogFilter(
+        contract_addresses=[contract_instance],
+        topic_filters=[foo_topic_filter, bar_topic_filter],
+        stop_block=100,
+    )
     contract_instance.fooAndBar(sender=owner)  # Create logs
-
-    query = [(foo_happened.abi, {"foo": None}), (bar_happened.abi, {"bar": None})]
-    logs = [
-        log for log in eth_tester_provider.get_contract_logs([contract_instance.address], query)
-    ]
-
+    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 2
     assert logs[0].foo == 0
     assert logs[1].bar == 1

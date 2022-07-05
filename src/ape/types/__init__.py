@@ -1,6 +1,10 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
+from eth_abi.abi import encode_single
+from eth_abi.packed import encode_single_packed
 from eth_typing import ChecksumAddress as AddressType
+from eth_typing import HexStr
+from eth_utils import add_0x_prefix, keccak, to_hex
 from ethpm_types import (
     ABI,
     Bytecode,
@@ -13,7 +17,7 @@ from ethpm_types import (
 )
 from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator, validator
 
 from ape._compat import Literal
 
@@ -40,10 +44,124 @@ RawAddress = Union[str, int, HexBytes]
 A raw data-type representation of an address.
 """
 
-TopicQuery = Optional[List[Tuple[EventABI, Optional[Dict[str, Union[Any, List[Any]]]]]]]
-"""
-A query type for searching contract logs.
-"""
+
+class TopicFilter(BaseModel):
+    event: EventABI
+    search_values: Dict[str, Optional[Union[Any, List[Any]]]] = {}
+
+    @property
+    def event_signature_hash(self) -> str:
+        return add_0x_prefix(HexStr(keccak(text=self.event.selector).hex()))
+
+    @root_validator(pre=True)
+    def validate_search_values(cls, values):
+        from ape.utils import is_dynamic_sized_type
+
+        values["event"] = (
+            values["event"].abi if hasattr(values["event"], "abi") else values["event"]
+        )
+        input_types = {i.name: i.type for i in values["event"].inputs}
+
+        def encode_topic_value(key, value):
+            if hasattr(value, "address"):
+                value = value.address
+
+            abi_type = input_types.get(key)
+
+            if not abi_type or value is None:
+                return None
+
+            elif isinstance(value, (list, tuple)):
+                return [encode_topic_value(key, v) for v in value]
+
+            elif is_dynamic_sized_type(abi_type):
+                return to_hex(keccak(encode_single_packed(str(abi_type), value)))
+
+            else:
+                return to_hex(encode_single(abi_type, value))  # type: ignore
+
+        search_values = {k: encode_topic_value(k, v) for k, v in values["search_values"].items()}
+        return {**values, "search_values": search_values}
+
+    def encode(self) -> List:
+        from ape import convert
+        from ape.utils.abi import LogInputABICollection
+
+        encoded_filter_list: List = [self.event_signature_hash]
+        search_topic_values = []
+        topic_collection = LogInputABICollection(
+            self.event,
+            [abi_input for abi_input in self.event.inputs if abi_input.indexed],
+            True,
+        )
+
+        for name, value in self.search_values.items():
+            if hasattr(value, "address"):
+                value = convert(value, AddressType)
+
+            abi_type = None
+            for argument in topic_collection.values:
+                if argument.name == name:
+                    abi_type = argument.type
+
+            if not abi_type:
+                raise ValueError(f"'{name}' is not an indexed topic for event '{self.event.name}'.")
+
+            search_topic_values.append(value)
+
+        encoded_filter_list.extend(search_topic_values)
+        return encoded_filter_list
+
+
+class LogFilter(BaseModel):
+    contract_addresses: List[AddressType] = []
+    topic_filters: List[TopicFilter] = []
+    start_block: int = 0
+    stop_block: Optional[int] = None  # Use block height
+
+    @root_validator()
+    def validate_start_and_stop(cls, values):
+        start = values.get("start_block") or 0
+        stop = values.get("stop_block") or 0
+        if start > stop:
+            raise ValueError("'start_block' cannot be greater than 'stop_block'.")
+
+        return values
+
+    @validator("start_block", pre=True)
+    def validate_start_block(cls, value):
+        return value or 0
+
+    @validator("contract_addresses", pre=True)
+    def validate_addresses(cls, value):
+        from ape import convert
+
+        return [convert(a, AddressType) for a in value]
+
+    def __getitem__(self, topic_id: str) -> TopicFilter:
+        topic = self.get(topic_id)
+        if not topic:
+            raise ValueError(f"Topic '{topic_id}' not found.")
+
+        return topic
+
+    def __contains__(self, topic_id: str) -> bool:
+        return self.get(topic_id) is not None
+
+    def get(self, topic_id: str) -> Optional[TopicFilter]:
+        for topic in self.topic_filters:
+            if topic.event_signature_hash == topic_id:
+                return topic
+
+        return None
+
+    def encode_topics(self) -> List:
+        topics = [t.encode() for t in self.topic_filters]
+        if len(topics) == 1:
+            # Not OR-ing any topics
+            return topics[0]
+
+        return topics
 
 
 class ContractLog(BaseModel):
@@ -120,5 +238,4 @@ __all__ = [
     "SnapshotID",
     "Source",
     "TransactionSignature",
-    "TopicQuery",
 ]

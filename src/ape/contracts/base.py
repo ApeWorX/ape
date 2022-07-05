@@ -9,7 +9,7 @@ from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ArgumentsLengthError, ContractError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog
+from ape.types import AddressType, ContractLog, LogFilter, TopicFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 
@@ -269,6 +269,11 @@ class ContractEvent(ManagerAccessMixin):
 
         return self.abi.name
 
+    @property
+    def _default_topic_query(self) -> TopicFilter:
+        search_data = {i.name: None for i in [j for j in self.abi.inputs if j.indexed]}
+        return TopicFilter.parse_obj(dict(event=self.abi, search_values=search_data))
+
     def __iter__(self) -> Iterator[ContractLog]:
         """
         Get all logs that have occurred for this event.
@@ -369,6 +374,7 @@ class ContractEvent(ManagerAccessMixin):
 
         start_block = None
         stop_block = None
+        addresses = [self.contract.address, *(extra_addresses or [])]
 
         if stop is None:
             start_block = 0
@@ -378,18 +384,19 @@ class ContractEvent(ManagerAccessMixin):
             stop_block = stop - 1
 
         stop_block = min(stop_block, self.chain_manager.blocks.height)
-        addresses = (
-            [self.contract.address, *extra_addresses]
-            if extra_addresses
-            else [self.contract.address]
+
+        search_topic_filters = (
+            [TopicFilter.parse_obj({"event": self.abi, "search_values": search_topics})]
+            if search_topics
+            else [self._default_topic_query]
         )
-        yield from self.provider.get_contract_logs(
-            addresses,
-            [(self.abi, search_topics)],
+        log_filter = LogFilter(
+            contract_addresses=addresses,
+            topic_filters=search_topic_filters,
             start_block=start_block,
             stop_block=stop_block,
-            block_page_size=block_page_size,
         )
+        yield from self.provider.get_contract_logs(log_filter, block_page_size=block_page_size)
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """
@@ -407,12 +414,14 @@ class ContractEvent(ManagerAccessMixin):
 
     def _get_logs_iter(self, start_block: int = 0, stop_block: int = None) -> Iterator[ContractLog]:
         stop_block = stop_block or self.chain_manager.blocks.height
-        yield from self.provider.get_contract_logs(
-            self.contract.address,
-            [(self.abi, {})],
-            start_block=start_block,
+        log_filter = LogFilter(
+            contract_addresses=[self.contract.address],
             stop_block=stop_block,
+            topic_filters=[self._default_topic_query],
         )
+        log_filter.start_block = start_block
+        log_filter.stop_block = stop_block or self.chain_manager.blocks.height
+        yield from self.provider.get_contract_logs(log_filter)
 
     def poll_logs(
         self,
