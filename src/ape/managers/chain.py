@@ -482,6 +482,7 @@ class ContractCache(BaseManager):
                 proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
                 if proxy_info and self._is_live_network:
                     self._cache_proxy_info_to_disk(address, proxy_info)
+
             if proxy_info:
                 self._local_proxies[address] = proxy_info
                 return self.get(proxy_info.target)
