@@ -270,8 +270,8 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
     def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
         def _get_call_tree_from_parity():
-            data = self._make_request("trace_transaction", [txn_hash]).get("result", {})
-            traces = ParityTraceList.parse_obj(data)
+            raw_trace_list = self._make_request("trace_transaction", [txn_hash])
+            traces = ParityTraceList.parse_obj(raw_trace_list)
             return get_calltree_from_parity_trace(traces)
 
         if "erigon" in self.client_version.lower():
