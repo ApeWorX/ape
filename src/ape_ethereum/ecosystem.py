@@ -497,7 +497,7 @@ class Ethereum(EcosystemAPI):
         """
         contract_type = self.chain_manager.contracts.get(log["address"])
         if contract_type is None:
-            raise DecodingError("contract type not available")
+            raise DecodingError(f"ds-note: contract type for {log['address']} not found")
 
         # topic 0 encodes selector, the tail must be zeros
         selector, tail = log["topics"][0][:4], log["topics"][0][4:]
@@ -510,7 +510,7 @@ class Ethereum(EcosystemAPI):
                 if selector == keccak(text=func.selector)[:4]
             )
         except StopIteration:
-            return None
+            raise DecodingError(f"ds-note: selector '{selector.hex()}' not found")
 
         # in versions of ds-note the data field uses either (uint256,bytes) or (bytes) encoding
         # instead of guessing, assume the payload starts right after the selector
