@@ -6,6 +6,7 @@ from ethpm_types import HexBytes
 from eth_abi import decode_abi
 from eth_utils import decode_hex, keccak
 from ethpm_types import ContractType
+from eth_utils import keccak
 from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
 from pydantic.fields import Field
@@ -260,34 +261,6 @@ class ReceiptAPI(BaseInterfaceModel):
                     decoded.append(log)
 
         return decoded
-
-    def decode_ds_note(self, contract_type: ContractType, log: dict) -> Optional[ContractLog]:
-        selector, tail = log["topics"][0][:4], log["topics"][0][4:]
-        if sum(tail):
-            return None
-        try:
-            abi = next(
-                func
-                for func in contract_type.mutable_methods
-                if selector == keccak(text=func.selector)[:4]
-            )
-        except StopIteration:
-            return None
-
-        # in versions of ds-note the data field uses either (uint256,bytes) or (bytes) encoding
-        # instead of guessing, assume the payload starts right after the selector
-        data = decode_hex(log["data"])
-        input_types = [i.canonical_type for i in abi.inputs]
-        values = decode_abi(input_types, data[data.index(selector) + 4 :])  # noqa: E203
-
-        return ContractLog(  # type: ignore
-            name=abi.name,
-            event_arguments={input.name: value for input, value in zip(abi.inputs, values)},
-            transaction_hash=log["transactionHash"],
-            block_number=log["blockNumber"],
-            block_hash=log["blockHash"],
-            index=log["logIndex"],
-        )
 
     def await_confirmations(self) -> "ReceiptAPI":
         """

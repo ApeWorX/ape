@@ -490,3 +490,39 @@ class Ethereum(EcosystemAPI):
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],
             )  # type: ignore
+
+    def decode_ds_note(self, log: dict) -> Optional[ContractLog]:
+        """
+        Decode anonymous events emitted by DSNote library.
+        """
+        contract_type = self.chain_manager.contracts.get(log["address"])
+        if contract_type is None:
+            raise DecodingError("contract type not available")
+
+        # topic 0 encodes selector, the tail must be zeros
+        selector, tail = log["topics"][0][:4], log["topics"][0][4:]
+        if sum(tail):
+            return None
+        try:
+            abi = next(
+                func
+                for func in contract_type.mutable_methods
+                if selector == keccak(text=func.selector)[:4]
+            )
+        except StopIteration:
+            return None
+
+        # in versions of ds-note the data field uses either (uint256,bytes) or (bytes) encoding
+        # instead of guessing, assume the payload starts right after the selector
+        data = decode_hex(log["data"])
+        input_types = [i.canonical_type for i in abi.inputs]
+        values = decode_abi(input_types, data[data.index(selector) + 4 :])  # noqa: E203
+
+        return ContractLog(  # type: ignore
+            name=abi.name,
+            event_arguments={input.name: value for input, value in zip(abi.inputs, values)},
+            transaction_hash=log["transactionHash"],
+            block_number=log["blockNumber"],
+            block_hash=log["blockHash"],
+            index=log["logIndex"],
+        )
