@@ -394,8 +394,11 @@ class ContractCache(BaseManager):
     _local_proxies: Dict[AddressType, ProxyInfoAPI] = {}
     _local_deployments_mapping: Dict = {}
 
-    # We might need this... depending on if we need a conditional in the __setitem__ function
-    # _check_network_for_contract = True
+    _check_network_for_contract = True
+
+    @property
+    def deployments(self) -> List:
+        return self.chain.contract.find_deployments(self)
 
     @property
     def _network(self) -> NetworkAPI:
@@ -509,10 +512,12 @@ class ContractCache(BaseManager):
             # Contract could be a minimal proxy
             proxy_info = self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
 
-            if not proxy_info:
-                proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
-                if proxy_info and self._is_live_network:
-                    self._cache_proxy_info_to_disk(address, proxy_info)
+            # We need this line for testing - we don't want to make an RPC call on a dummy chain
+            if self._check_network_for_contract:
+                if not proxy_info:
+                    proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
+                    if proxy_info and self._is_live_network:
+                        self._cache_proxy_info_to_disk(address, proxy_info)
             if proxy_info:
                 self._local_proxies[address] = proxy_info
                 return self.get(proxy_info.target)

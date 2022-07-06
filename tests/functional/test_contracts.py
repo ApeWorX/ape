@@ -33,8 +33,7 @@ def assert_log_values(owner, chain):
 
 
 def test_init_at_unknown_address(chain):
-    ## Might not need this line
-    # chain.contracts._check_network_for_contract = False
+    chain.contracts._check_network_for_contract = False
     contract = Contract(SOLIDITY_CONTRACT_ADDRESS)
     assert type(contract) == Address
     assert contract.address == SOLIDITY_CONTRACT_ADDRESS

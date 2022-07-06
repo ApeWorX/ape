@@ -667,10 +667,6 @@ class ContractContainer(ManagerAccessMixin):
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
 
-    @property
-    def deployments(self):
-        return self.chain_manager.contracts.find_deployments(self)
-
     def at(self, address: str) -> ContractInstance:
         """
         Get a contract at the given address.
