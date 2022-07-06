@@ -50,6 +50,16 @@ def main():
   my_contract = chain.contracts.find_deployments(project.MyContract)[-1]
 ```
 
+or
+
+```python
+from ape import project, chain, accounts
+
+def main():
+  account = accounts.test_accounts[0]
+  my_contract = project.MyContract.deployments[-1]
+```
+
 `my_contract` will be of type `ContractInstance`. `find_deployments` returns a list of deployments you made of that contract type. 
 
 ## Contract Interaction
