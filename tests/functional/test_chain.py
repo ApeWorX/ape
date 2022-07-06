@@ -263,12 +263,12 @@ def test_find_deployments_local(chain, project_with_contract, owner):
     assert type(my_contracts_list[0]) == ContractInstance
 
 
-def test_can_change_network_check(chain):
-    chain.contracts._check_network_for_contract = True
-    assert chain.contracts._check_network_for_contract == True
+# def test_can_change_network_check(chain):
+#     chain.contracts._check_network_for_contract = True
+#     assert chain.contracts._check_network_for_contract == True
 
-    chain.contracts._check_network_for_contract = False
-    assert chain.contracts._check_network_for_contract == False
+#     chain.contracts._check_network_for_contract = False
+#     assert chain.contracts._check_network_for_contract == False
 
 
 def test_find_deployments_live(
@@ -276,8 +276,9 @@ def test_find_deployments_live(
 ):
     # Arrange
     chain.provider.network.name = "rinkeby"  # Dummy a live network
-    chain.contracts._check_network_for_contract = False  # Disable network check (no RPC URL!)
-    breakpoint()
+
+    ## Might not need this line
+    # chain.contracts._check_network_for_contract = False  # Disable network check (no RPC URL!)
     initial_deployed_contract = owner.deploy(
         project_with_contract.ApeContract, required_confirmations=0
     )
@@ -299,7 +300,8 @@ def test_find_multiple_deployments_live(
 ):
     # Arrange
     chain.provider.network.name = "rinkeby"  # Dummy a live network
-    chain.contracts._check_network_for_contract = False  # Disable network check (no RPC URL!)
+    ## Might not need this line
+    # chain.contracts._check_network_for_contract = False  # Disable network check (no RPC URL!)
 
     initial_deployed_contract = owner.deploy(
         project_with_contract.ApeContract, required_confirmations=0
@@ -339,7 +341,6 @@ def test_contract_cache_mapping_updated_on_many_deployments(owner, project_with_
 
 def test_deployment_property(chain, owner, project_with_contract):
     initial_deployed_contract = owner.deploy(project_with_contract.ApeContract)
-
     assert (
         project_with_contract.ApeContract.deployments[-1].address
         == initial_deployed_contract.address
