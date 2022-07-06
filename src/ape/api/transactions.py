@@ -2,18 +2,15 @@ import sys
 import time
 from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
 
-from ethpm_types import HexBytes
-from eth_abi import decode_abi
-from eth_utils import decode_hex, keccak
-from ethpm_types import ContractType
 from eth_utils import keccak
+from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
-from ape.exceptions import TransactionError
+from ape.exceptions import DecodingError, TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
@@ -246,18 +243,17 @@ class ReceiptAPI(BaseInterfaceModel):
         contract_types = {addr: self.chain_manager.contracts.get(addr) for addr in contracts}
         decoded = []
         for log in self.logs:
-            note = self.decode_ds_note(contract_types[log["address"]], log)
-            if note:
-                decoded.append(note)
-            else:
+            try:
+                event_abi = next(
+                    abi
+                    for abi in contract_types[log["address"]].events
+                    if keccak(text=abi.selector) == log["topics"][0]
+                )
+                decoded.extend(self.provider.network.ecosystem.decode_logs(event_abi, [log]))
+            except StopIteration:
                 try:
-                    event_abi = next(
-                        abi
-                        for abi in contract_types[log["address"]].events
-                        if keccak(text=abi.selector) == log["topics"][0]
-                    )
-                    decoded.extend(self.provider.network.ecosystem.decode_logs(event_abi, [log]))
-                except StopIteration:
+                    decoded.append(self.decode_ds_note(contract_types[log["address"]], log))
+                except DecodingError:
                     decoded.append(log)
 
         return decoded
