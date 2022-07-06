@@ -221,18 +221,18 @@ def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
     assert str(err.value) == "Expected type 'ContractType' for argument 'contract_type'."
 
 
-def test_contracts_mapping_cache_location(chain):
+def test_deployments_mapping_cache_location(chain):
     # Arrange / Act
-    mapping_location = chain.contracts._contracts_mapping_cache
+    mapping_location = chain.contracts._deployments_mapping_cache
     split_mapping_location = str(mapping_location).split("/")
 
     # Assert
-    assert split_mapping_location[-1] == "contracts_map.json"
+    assert split_mapping_location[-1] == "deployments_map.json"
     assert split_mapping_location[-2] == "ethereum"
 
 
-def test_cache_contract_mapping_to_disk(
-    project_with_contract, chain, owner, remove_disc_writes_contracts_mapping_after
+def test_cache_deployment_mapping_to_disc(
+    project_with_contract, chain, owner, remove_disc_writes_deployments_mapping_after
 ):
     # Arrange
     deployed_contract = owner.deploy(project_with_contract.ApeContract)
@@ -241,16 +241,20 @@ def test_cache_contract_mapping_to_disk(
     expected_contract_mapping = {"ethereum": {"local": {"ApeContract": [address]}}}
 
     # Act
-    chain.contracts._cache_contract_mapping_to_disk(address, contract_type)
-    contracts_mapping = chain.contracts._load_contracts_mapping()
+    chain.contracts._cache_deployment_mapping_to_disk(address, contract_type)
+    contracts_mapping = chain.contracts._load_deployments_mapping()
 
     # Assert
     assert contracts_mapping == expected_contract_mapping
 
 
 def test_find_deployments_local(chain, project_with_contract, owner):
-    # Arrange / Act
+    # Arrange
+    chain.contracts._local_deployments_mapping = {}
+    chain.contracts._local_contracts = {}
     deployed_contract = owner.deploy(project_with_contract.ApeContract)
+
+    # Act
     my_contracts_list = chain.contracts.find_deployments(project_with_contract.ApeContract)
 
     # Assert
@@ -259,14 +263,68 @@ def test_find_deployments_local(chain, project_with_contract, owner):
     assert type(my_contracts_list[0]) == ContractInstance
 
 
-def test_find_deployments_live(chain, project_with_contract, owner):
-    # Not sure how to do this right now...
-    pass
+def test_can_change_network_check(chain):
+    chain.contracts._check_network_for_contract = True
+    assert chain.contracts._check_network_for_contract == True
+
+    chain.contracts._check_network_for_contract = False
+    assert chain.contracts._check_network_for_contract == False
+
+
+def test_find_deployments_live(
+    chain, project_with_contract, owner, remove_disc_writes_deployments_mapping_after
+):
+    # Arrange
+    chain.provider.network.name = "rinkeby"  # Dummy a live network
+    chain.contracts._check_network_for_contract = False  # Disable network check (no RPC URL!)
+    breakpoint()
+    initial_deployed_contract = owner.deploy(
+        project_with_contract.ApeContract, required_confirmations=0
+    )
+    deployments_mapping = chain.contracts._load_deployments_mapping()
+
+    # Act
+    my_contracts_list = chain.contracts.find_deployments(project_with_contract.ApeContract)
+
+    # Assert
+    assert (
+        deployments_mapping["ethereum"]["rinkeby"]["ApeContract"][-1]
+        == initial_deployed_contract.address
+    )
+    assert my_contracts_list[-1].address == initial_deployed_contract.address
+
+
+def test_find_multiple_deployments_live(
+    chain, project_with_contract, owner, remove_disc_writes_deployments_mapping_after
+):
+    # Arrange
+    chain.provider.network.name = "rinkeby"  # Dummy a live network
+    chain.contracts._check_network_for_contract = False  # Disable network check (no RPC URL!)
+
+    initial_deployed_contract = owner.deploy(
+        project_with_contract.ApeContract, required_confirmations=0
+    )
+    owner.deploy(project_with_contract.ApeContract, required_confirmations=0)
+    final_deployed_contract = owner.deploy(
+        project_with_contract.ApeContract, required_confirmations=0
+    )
+    deployments_mapping = chain.contracts._load_deployments_mapping()
+
+    # Act
+    my_contracts_list = chain.contracts.find_deployments(project_with_contract.ApeContract)
+
+    # Assert
+    assert (
+        deployments_mapping["ethereum"]["rinkeby"]["ApeContract"][0]
+        == initial_deployed_contract.address
+    )
+    assert my_contracts_list[-1].address == final_deployed_contract.address
+    assert len(my_contracts_list) == 3
 
 
 def test_contract_cache_mapping_updated_on_many_deployments(owner, project_with_contract, chain):
     # Arrange / Act
-    owner.deploy(project_with_contract.ApeContract)
+    initial_deployed_contract = owner.deploy(project_with_contract.ApeContract)
     owner.deploy(project_with_contract.ApeContract)
     owner.deploy(project_with_contract.ApeContract)
     final_deployed_contract = owner.deploy(project_with_contract.ApeContract)
@@ -276,3 +334,13 @@ def test_contract_cache_mapping_updated_on_many_deployments(owner, project_with_
     # Assert
     assert len(my_contracts_list) == 4
     assert final_deployed_contract.address == my_contracts_list[-1].address
+    assert my_contracts_list[0].address == initial_deployed_contract.address
+
+
+def test_deployment_property(chain, owner, project_with_contract):
+    initial_deployed_contract = owner.deploy(project_with_contract.ApeContract)
+
+    assert (
+        project_with_contract.ApeContract.deployments[-1].address
+        == initial_deployed_contract.address
+    )

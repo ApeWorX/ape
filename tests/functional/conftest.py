@@ -226,19 +226,14 @@ def base_projects_directory():
     return BASE_PROJECTS_DIRECTORY
 
 
-# @pytest.fixture(scope="session")
-# def project_with_contract():
-#     yield ProjectManager(APE_PROJECT_FOLDER)
+@pytest.fixture
+def remove_disc_writes_deployments_mapping_before(chain):
+    if chain.contracts._deployments_mapping_cache.exists():
+        chain.contracts._deployments_mapping_cache.unlink()
 
 
 @pytest.fixture
-def remove_disc_writes_contracts_mapping_before(chain):
-    if chain.contracts._contracts_mapping_cache.exists():
-        chain.contracts._contracts_mapping_cache.unlink()
-
-
-@pytest.fixture
-def remove_disc_writes_contracts_mapping_after(chain):
+def remove_disc_writes_deployments_mapping_after(chain):
     yield
-    if chain.contracts._contracts_mapping_cache.exists():
-        chain.contracts._contracts_mapping_cache.unlink()
+    if chain.contracts._deployments_mapping_cache.exists():
+        chain.contracts._deployments_mapping_cache.unlink()
