@@ -13,14 +13,6 @@ def connection(networks_connected_to_tester):
     yield
 
 
-@pytest.fixture
-def chain_at_block_5(chain):
-    snapshot_id = chain.snapshot()
-    chain.mine(5)
-    yield chain
-    chain.restore(snapshot_id)
-
-
 def test_snapshot_and_restore(chain, sender, receiver):
     initial_balance = receiver.balance  # Initial balance at block 0.
     end_range = 5

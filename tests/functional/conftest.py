@@ -1,8 +1,9 @@
 import json
 import tempfile
+import threading
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import pytest
 import yaml
@@ -11,7 +12,7 @@ from ethpm_types import ContractType
 
 import ape
 from ape.api import EcosystemAPI, NetworkAPI, PluginConfig, TransactionAPI
-from ape.contracts import ContractContainer, ContractInstance
+from ape.contracts import ContractContainer, ContractInstance, ContractLog
 from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
 from ape.managers.config import CONFIG_FILE_NAME
 
@@ -210,3 +211,38 @@ def dependency_config(temp_config):
 @pytest.fixture
 def base_projects_directory():
     return BASE_PROJECTS_DIRECTORY
+
+
+@pytest.fixture
+def chain_at_block_5(chain):
+    snapshot_id = chain.snapshot()
+    chain.mine(5)
+    yield chain
+    chain.restore(snapshot_id)
+
+
+class Poller:
+    logs: List[ContractLog] = []
+
+    def __init__(self, action):
+        self._action = action
+        self._stop_event = threading.Event()
+        thread = threading.Thread(name="poll_logs", target=self.run)
+        thread.daemon = True
+        self._thread = thread
+
+    def start(self):
+        self._thread.start()
+
+    def run(self):
+        while not self._stop_event.wait(1):
+            self._action()
+
+    def stop(self):
+        self._thread.join(10)
+        self._stop_event.set()
+
+
+@pytest.fixture
+def poll_daemon():
+    return Poller

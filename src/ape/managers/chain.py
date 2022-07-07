@@ -279,6 +279,7 @@ class BlockContainer(BaseManager):
                 has_yielded = True
                 latest_confirmed_block_number = confirmable_block_number
 
+            has_yielded = False
             time.sleep(self.provider.network.block_time)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
