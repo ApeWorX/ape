@@ -620,7 +620,7 @@ class ContractCache(BaseManager):
             if not isinstance(instance, ContractInstance):
                 continue
 
-            deployments[deployment_index] = instance
+            deployments.append(instance)
 
         return deployments
 

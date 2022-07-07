@@ -232,7 +232,7 @@ def test_deployments_mapping_cache_location(chain):
 
 
 def test_cache_deployment_mapping_to_disc(
-    project_with_contract, chain, owner, remove_disk_writes_deployments_mapping_after
+    project_with_contract, chain, owner, remove_disk_writes_deployments
 ):
     # Arrange
     deployed_contract = owner.deploy(project_with_contract.ApeContract)
@@ -263,9 +263,7 @@ def test_get_deployments_local(chain, project_with_contract, owner):
     assert type(my_contracts_list[0]) == ContractInstance
 
 
-def test_get_deployments_live(
-    chain, project_with_contract, owner, remove_disk_writes_deployments_mapping_after
-):
+def test_get_deployments_live(chain, project_with_contract, owner, remove_disk_writes_deployments):
     # Arrange
     chain.provider.network.name = "rinkeby"  # Dummy a live network
 
@@ -286,7 +284,7 @@ def test_get_deployments_live(
 
 
 def test_find_multiple_deployments_live(
-    chain, project_with_contract, owner, remove_disk_writes_deployments_mapping_after
+    chain, project_with_contract, owner, remove_disk_writes_deployments
 ):
     # Arrange
     chain.provider.network.name = "rinkeby"  # Dummy a live network
