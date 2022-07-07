@@ -448,9 +448,6 @@ class ContractEvent(ManagerAccessMixin):
         required_confirmations = (
             required_confirmations or self.provider.network.required_confirmations
         )
-        stop_block = (
-            self.chain_manager.blocks.height if stop_block is None else stop_block
-        ) - required_confirmations
 
         for new_block in self.chain_manager.blocks.poll_blocks(
             start_block=start_block,
