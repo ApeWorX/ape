@@ -393,9 +393,6 @@ class ContractCache(BaseManager):
     _local_proxies: Dict[AddressType, ProxyInfoAPI] = {}
     _local_deployments_mapping: Dict = {}
 
-    # We might need this... depending on if we need a conditional in the __setitem__ function
-    # _check_network_for_contract = True
-
     @property
     def _network(self) -> NetworkAPI:
         return self.provider.network
