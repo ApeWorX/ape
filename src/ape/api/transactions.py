@@ -1,6 +1,6 @@
 import sys
 import time
-from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Dict, Iterator, List, Optional, Tuple, Union
 
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
@@ -9,7 +9,7 @@ from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
-from ape.exceptions import DecodingError, TransactionError
+from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
@@ -239,21 +239,37 @@ class ReceiptAPI(BaseInterfaceModel):
 
             yield from self.provider.network.ecosystem.decode_logs(abi, self.logs)
         else:
-            # if abi is not provided, decode all events
+            # If ABI is not provided, decode all events
+            logs_map: Dict[str, Dict[str, Tuple[EventABI, List[Dict]]]] = {}
             for log in self.logs:
-                contract_type = self.chain_manager.contracts.get(log["address"])
+                address = log["address"]
+                contract_type = self.chain_manager.contracts.get(address)
+
                 if not contract_type:
-                    logger.warning(f"Failed to locate contract at '{log['address']}'.")
+                    logger.warning(f"Failed to locate contract at '{address}'.")
                     continue
 
-                try:
-                    event_abi = contract_type.events[log["topics"][0]]
-                    yield from self.provider.network.ecosystem.decode_logs(event_abi, [log])
-                except (StopIteration, KeyError, DecodingError):
-                    try:
-                        yield self.provider.network.ecosystem.decode_ds_note(log)  # type: ignore
-                    except (DecodingError, AttributeError):
-                        yield log  # type: ignore
+                log_topics = log.get("topics", [])
+                if not log_topics:
+                    raise ValueError("Missing 'topics' in log data")
+
+                selector = log["topics"][0]
+                if selector not in contract_type.events:
+                    raise ValueError("Log missing event selector.")
+
+                # Track logs
+                event_abi = contract_type.events[selector]
+                event_selector = selector.hex()
+                if address not in logs_map:
+                    logs_map[address] = {}
+                if event_selector not in logs_map[address]:
+                    logs_map[address][event_selector] = (event_abi, [log])
+                else:
+                    logs_map[address][event_selector][1].append(log)
+
+            for addr in logs_map:
+                for _, (evt_abi, log_items) in logs_map[addr].items():
+                    yield from self.provider.network.ecosystem.decode_logs(evt_abi, log_items)
 
     def await_confirmations(self) -> "ReceiptAPI":
         """

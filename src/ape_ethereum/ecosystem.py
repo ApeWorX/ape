@@ -424,7 +424,7 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)  # type: ignore
 
-    def decode_logs(self, abi: EventABI, data: List[Dict]) -> Iterator["ContractLog"]:
+    def decode_logs(self, abi: EventABI, data: List[Dict]) -> Iterator[ContractLog]:
         if not abi.anonymous:
             event_id_bytes = keccak(to_bytes(text=abi.selector))
             matching_logs = [log for log in data if log["topics"][0] == event_id_bytes]
@@ -491,11 +491,12 @@ class Ethereum(EcosystemAPI):
                 block_number=log["blockNumber"],
             )  # type: ignore
 
-    def decode_ds_note(self, log: dict) -> ContractLog:
+    def _decode_ds_note(self, log: Dict) -> ContractLog:
         """
         Decode anonymous events emitted by the DSNote library.
         """
-        # the first topic encodes the function selector
+
+        # The first topic encodes the function selector
         selector, tail = log["topics"][0][:4], log["topics"][0][4:]
         if sum(tail):
             raise DecodingError("ds-note: non-zero bytes found after selector")
@@ -518,9 +519,9 @@ class Ethereum(EcosystemAPI):
 
         return ContractLog(  # type: ignore
             name=abi.name,
-            event_arguments={input.name: value for input, value in zip(abi.inputs, values)},
-            transaction_hash=log["transactionHash"],
-            block_number=log["blockNumber"],
             block_hash=log["blockHash"],
+            block_number=log["blockNumber"],
+            event_arguments={input.name: value for input, value in zip(abi.inputs, values)},
             index=log["logIndex"],
+            transaction_hash=log["transactionHash"],
         )
