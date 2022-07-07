@@ -242,8 +242,12 @@ class ReceiptAPI(BaseInterfaceModel):
             # if abi is not provided, decode all events
             for log in self.logs:
                 contract_type = self.chain_manager.contracts.get(log["address"])
+                if not contract_type:
+                    logger.warning(f"Failed to locate contract at '{log['address']}'.")
+                    continue
+
                 try:
-                    event_abi = contract_type.events[log["topics"][0]]  # type: ignore
+                    event_abi = contract_type.events[log["topics"][0]]
                     yield from self.provider.network.ecosystem.decode_logs(event_abi, [log])
                 except (StopIteration, KeyError, DecodingError):
                     try:
