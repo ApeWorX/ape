@@ -409,7 +409,6 @@ class ContractCache(BaseManager):
         network_name = self._network.name.replace("-fork", "")
         return self._network.ecosystem.data_folder / network_name / "contract_types"
 
-    # I don't love this. I think I'd rather it be at the config level.
     @property
     def _deployments_mapping_cache(self) -> Path:
         return self._network.ecosystem.data_folder / "deployments_map.json"
