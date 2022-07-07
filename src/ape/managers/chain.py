@@ -430,10 +430,6 @@ class ContractCache(BaseManager):
             contract_type (ContractType): The contract's type.
         """
 
-        # Do we need this?
-        # if self.get(address) and self._is_live_network:
-        #     return
-
         self._local_contracts[address] = contract_type
 
         network_name = self._network.name.replace("-fork", "")

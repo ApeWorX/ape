@@ -263,14 +263,6 @@ def test_find_deployments_local(chain, project_with_contract, owner):
     assert type(my_contracts_list[0]) == ContractInstance
 
 
-# def test_can_change_network_check(chain):
-#     chain.contracts._check_network_for_contract = True
-#     assert chain.contracts._check_network_for_contract == True
-
-#     chain.contracts._check_network_for_contract = False
-#     assert chain.contracts._check_network_for_contract == False
-
-
 def test_find_deployments_live(
     chain, project_with_contract, owner, remove_disc_writes_deployments_mapping_after
 ):
