@@ -513,7 +513,8 @@ class Ethereum(EcosystemAPI):
         # instead of guessing, assume the payload begins right after the selector
         data = decode_hex(log["data"])
         input_types = [i.canonical_type for i in abi.inputs]
-        values = decode_abi(input_types, data[data.index(selector) + 4 :])  # noqa: E203
+        start_index = data.index(selector) + 4
+        values = decode_abi(input_types, data[start_index:])
 
         return ContractLog(  # type: ignore
             name=abi.name,
