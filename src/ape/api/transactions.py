@@ -2,7 +2,6 @@ import sys
 import time
 from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
 
-from eth_utils import keccak
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
@@ -222,7 +221,9 @@ class ReceiptAPI(BaseInterfaceModel):
         :class:`~api.providers.TransactionStatusEnum`.
         """
 
-    def decode_logs(self, abi: Union[EventABI, "ContractEvent"]) -> Iterator[ContractLog]:
+    def decode_logs(
+        self, abi: Optional[Union[EventABI, "ContractEvent"]] = None
+    ) -> Iterator[ContractLog]:
         """
         Decode the logs on the receipt.
 
@@ -232,31 +233,28 @@ class ReceiptAPI(BaseInterfaceModel):
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
         """
-        if not isinstance(abi, EventABI):
-            abi = abi.abi
+        if abi:
+            if not isinstance(abi, EventABI):
+                abi = abi.abi
 
-        yield from self.provider.network.ecosystem.decode_logs(abi, self.logs)
-
-    @property
-    def events(self):
-        contracts = {log["address"] for log in self.logs}
-        contract_types = {addr: self.chain_manager.contracts.get(addr) for addr in contracts}
-        decoded = []
-        for log in self.logs:
-            try:
-                event_abi = next(
-                    abi
-                    for abi in contract_types[log["address"]].events
-                    if keccak(text=abi.selector) == log["topics"][0]
-                )
-                decoded.extend(self.provider.network.ecosystem.decode_logs(event_abi, [log]))
-            except StopIteration:
+            yield from self.provider.network.ecosystem.decode_logs(abi, self.logs)
+        else:
+            # if abi is not provided, decode all events
+            contract_addresses = {log["address"] for log in self.logs}
+            contract_types = {
+                address: self.chain_manager.contracts.get(address) for address in contract_addresses
+            }
+            for log in self.logs:
                 try:
-                    decoded.append(self.decode_ds_note(contract_types[log["address"]], log))
-                except DecodingError:
-                    decoded.append(log)
-
-        return decoded
+                    event_abi = contract_types[log["address"]].events[  # type: ignore
+                        log["topics"][0]
+                    ]
+                    yield from self.provider.network.ecosystem.decode_logs(event_abi, [log])
+                except (StopIteration, KeyError):
+                    try:
+                        yield self.provider.network.ecosystem.decode_ds_note(log)  # type: ignore
+                    except (DecodingError, AttributeError):
+                        yield log  # type: ignore
 
     def await_confirmations(self) -> "ReceiptAPI":
         """
