@@ -141,12 +141,15 @@ class KeyfileAccount(AccountAPI):
             passphrase (Optional[str]): Optionally provide the passphrase.
               If not provided, you will be prompted to enter it.
         """
-        self.unlock(passphrase=passphrase)
-
         if enabled:
+            self.unlock(passphrase=passphrase)
             logger.warning("Danger! This account will now sign any transaction its given.")
 
         self.__autosign = enabled
+        if not enabled:
+            # Re-lock if was turning off
+            self.locked = True
+            self.__cached_key = None
 
     def _prompt_for_passphrase(self, message: Optional[str] = None, **kwargs):
         message = message or f"Enter passphrase to unlock '{self.alias}'"

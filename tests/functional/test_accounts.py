@@ -178,16 +178,27 @@ def test_accounts_contains(accounts, test_accounts):
     assert test_accounts[0].address in accounts
 
 
-def test_autosign_messages(temp_ape_account):
+def test_autosign_messages(runner, temp_ape_account):
     temp_ape_account.set_autosign(True, passphrase="a")
     message = encode_defunct(text="Hello Apes!")
     signature = temp_ape_account.sign_message(message)
     assert temp_ape_account.check_signature(message, signature)
 
+    # Re-enable prompted signing
+    temp_ape_account.set_autosign(False)
+    with runner.isolation(input="y\na\n"):
+        signature = temp_ape_account.sign_message(message)
+        assert temp_ape_account.check_signature(message, signature)
 
-def test_autosign_transactions(temp_ape_account, receiver):
+
+def test_autosign_transactions(runner, temp_ape_account, receiver):
     temp_ape_account.set_autosign(True, passphrase="a")
     assert temp_ape_account.transfer(receiver, "1 gwei")
+
+    # Re-enable prompted signing
+    temp_ape_account.set_autosign(False)
+    with runner.isolation(input="y\na\n"):
+        assert temp_ape_account.transfer(receiver, "1 gwei")
 
 
 def test_impersonate_not_implemented(accounts):
