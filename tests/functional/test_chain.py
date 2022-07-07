@@ -267,6 +267,9 @@ def test_get_deployments_local(chain, project_with_contract, owner):
     # Arrange
     chain.contracts._local_deployments_mapping = {}
     chain.contracts._local_contracts = {}
+    starting_contracts_list_0 = chain.contracts.get_deployments(project_with_contract.ApeContract0)
+    starting_contracts_list_1 = chain.contracts.get_deployments(project_with_contract.ApeContract1)
+
     deployed_contract_0 = owner.deploy(project_with_contract.ApeContract0)
     deployed_contract_1 = owner.deploy(project_with_contract.ApeContract1)
 
@@ -275,12 +278,17 @@ def test_get_deployments_local(chain, project_with_contract, owner):
     contracts_list_1 = chain.contracts.get_deployments(project_with_contract.ApeContract1)
 
     # Assert
-    for contracts_list in (contracts_list_0, contracts_list_1):
-        assert len(contracts_list) == 1
-        assert type(contracts_list[0]) == ContractInstance
+    for contract_list in (contracts_list_0, contracts_list_1):
+        assert type(contract_list[0]) == ContractInstance
 
-    assert deployed_contract_0.address == contracts_list_0[0].address
-    assert deployed_contract_1.address == contracts_list_1[0].address
+    assert (
+        deployed_contract_0.address
+        == contracts_list_0[len(contracts_list_0) - len(starting_contracts_list_0) - 1].address
+    )
+    assert (
+        deployed_contract_1.address
+        == contracts_list_1[len(contracts_list_1) - len(starting_contracts_list_1) - 1].address
+    )
 
 
 def test_get_deployments_live(
@@ -312,6 +320,9 @@ def test_get_multiple_deployments_live(
     chain, project_with_contract, owner, remove_disk_writes_deployments, dummy_live_network
 ):
     # Arrange
+    starting_contracts_list_0 = chain.contracts.get_deployments(project_with_contract.ApeContract0)
+    starting_contracts_list_1 = chain.contracts.get_deployments(project_with_contract.ApeContract1)
+
     initial_deployed_contract_0 = owner.deploy(
         project_with_contract.ApeContract0, required_confirmations=0
     )
@@ -338,25 +349,28 @@ def test_get_multiple_deployments_live(
         == initial_deployed_contract_0.address
     )
     assert contracts_list_0[-1].address == final_deployed_contract_0.address
-    assert len(contracts_list_0) == 3
+    assert len(contracts_list_0) - len(starting_contracts_list_0) == 3
     assert (
         deployments_mapping["ethereum"]["rinkeby"]["ApeContract1"][0]
         == initial_deployed_contract_1.address
     )
     assert contracts_list_1[-1].address == final_deployed_contract_1.address
-    assert len(contracts_list_1) == 3
+    assert len(contracts_list_1) - len(starting_contracts_list_1) == 3
 
 
 def test_contract_cache_mapping_updated_on_many_deployments(owner, project_with_contract, chain):
     # Arrange / Act
+    starting_contracts_list = chain.contracts.get_deployments(project_with_contract.ApeContract0)
     initial_deployed_contract = owner.deploy(project_with_contract.ApeContract0)
+
     owner.deploy(project_with_contract.ApeContract0)
     owner.deploy(project_with_contract.ApeContract0)
     final_deployed_contract = owner.deploy(project_with_contract.ApeContract0)
 
     my_contracts_list = chain.contracts.get_deployments(project_with_contract.ApeContract0)
+    initial_contract_index = len(my_contracts_list) - len(starting_contracts_list) - 4
 
     # Assert
-    assert len(my_contracts_list) == 4
+    assert len(my_contracts_list) - len(starting_contracts_list) == 4
     assert final_deployed_contract.address == my_contracts_list[-1].address
-    assert my_contracts_list[0].address == initial_deployed_contract.address
+    assert my_contracts_list[initial_contract_index].address == initial_deployed_contract.address
