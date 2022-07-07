@@ -240,15 +240,10 @@ class ReceiptAPI(BaseInterfaceModel):
             yield from self.provider.network.ecosystem.decode_logs(abi, self.logs)
         else:
             # if abi is not provided, decode all events
-            contract_addresses = {log["address"] for log in self.logs}
-            contract_types = {
-                address: self.chain_manager.contracts.get(address) for address in contract_addresses
-            }
             for log in self.logs:
+                contract_type = self.chain_manager.contracts.get(log["address"])
                 try:
-                    event_abi = contract_types[log["address"]].events[  # type: ignore
-                        log["topics"][0]
-                    ]
+                    event_abi = contract_type.events[log["topics"][0]]  # type: ignore
                     yield from self.provider.network.ecosystem.decode_logs(event_abi, [log])
                 except (StopIteration, KeyError):
                     try:
