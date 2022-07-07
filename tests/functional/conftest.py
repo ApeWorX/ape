@@ -225,13 +225,13 @@ def base_projects_directory():
 
 
 @pytest.fixture
-def remove_disc_writes_deployments_mapping_before(chain):
+def remove_disk_writes_deployments_mapping_before(chain):
     if chain.contracts._deployments_mapping_cache.exists():
         chain.contracts._deployments_mapping_cache.unlink()
 
 
 @pytest.fixture
-def remove_disc_writes_deployments_mapping_after(chain):
+def remove_disk_writes_deployments_mapping_after(chain):
     yield
     if chain.contracts._deployments_mapping_cache.exists():
         chain.contracts._deployments_mapping_cache.unlink()
