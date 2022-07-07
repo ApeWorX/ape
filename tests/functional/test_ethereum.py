@@ -1,4 +1,5 @@
 import pytest
+from eth_abi import encode_single
 from eth_typing import HexAddress, HexStr
 from hexbytes import HexBytes
 
@@ -109,3 +110,34 @@ def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, recei
 
     redefined_block = Block.parse_obj(latest_block_dict)
     assert redefined_block.parent_hash == latest_block.parent_hash
+
+
+def test_decode_ds_note(ethereum, mainnet_contract, chain):
+    mainnet_contract("0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B")
+    log = {
+        "address": "0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B",
+        "topics": [
+            HexBytes("0x7608870300000000000000000000000000000000000000000000000000000000"),
+            HexBytes("0x5946492d41000000000000000000000000000000000000000000000000000000"),
+            HexBytes("0x0000000000000000000000000abb839063ef747c8432b2acc60bf8f70ec09a45"),
+            HexBytes("0x0000000000000000000000000abb839063ef747c8432b2acc60bf8f70ec09a45"),
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000e0760887035946492d410000000000000000000000000000000000000000000000000000000000000000000000000000000abb839063ef747c8432b2acc60bf8f70ec09a450000000000000000000000000abb839063ef747c8432b2acc60bf8f70ec09a450000000000000000000000000abb839063ef747c8432b2acc60bf8f70ec09a450000000000000000000000000000000000000000000000000000000000000000fffffffffffffffffffffffffffffffffffffffffffa050e82a57b7fc6b6020c00000000000000000000000000000000000000000000000000000000",  # noqa: E501
+        "blockNumber": 14623434,
+        "transactionHash": HexBytes(
+            "0xa322a9fd0e627e22bfe1b0877cca1d1f2e697d076007231d0b7a366d1a0fdd51"
+        ),
+        "transactionIndex": 333,
+        "blockHash": HexBytes("0x0fd77b0af3fa471aa040a02d4fcd1ec0a35122a4166d0bb7c31354e23823de49"),
+        "logIndex": 376,
+        "removed": False,
+    }
+    ilk = encode_single("bytes32", b"YFI-A")
+    assert ethereum.decode_ds_note(log).event_arguments == {
+        "i": ilk,
+        "u": "0x0abb839063ef747c8432b2acc60bf8f70ec09a45",
+        "v": "0x0abb839063ef747c8432b2acc60bf8f70ec09a45",
+        "w": "0x0abb839063ef747c8432b2acc60bf8f70ec09a45",
+        "dink": 0,
+        "dart": -7229675416790010075676148,
+    }

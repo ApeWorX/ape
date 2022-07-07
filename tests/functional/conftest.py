@@ -210,3 +210,21 @@ def dependency_config(temp_config):
 @pytest.fixture
 def base_projects_directory():
     return BASE_PROJECTS_DIRECTORY
+
+
+@pytest.fixture
+def mainnet_contract(chain):
+    def contract_getter(address):
+        path = (
+            Path(__file__).parent
+            / "data"
+            / "contracts"
+            / "ethereum"
+            / "mainnet"
+            / f"{address}.json"
+        )
+        contract = ContractType.parse_file(path)
+        chain.contracts._local_contracts[address] = contract
+        return contract
+
+    return contract_getter
