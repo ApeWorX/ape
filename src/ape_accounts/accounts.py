@@ -142,10 +142,7 @@ class KeyfileAccount(AccountAPI):
               If not provided, you will be prompted to enter it.
         """
         self.unlock(passphrase=passphrase)
-
-        if enabled:
-            logger.warning("Danger! This account will now sign any transaction its given.")
-
+        logger.warning("Danger! This account will now sign any transaction its given.")
         self.__autosign = enabled
 
     def _prompt_for_passphrase(self, message: Optional[str] = None, **kwargs):
