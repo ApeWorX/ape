@@ -245,7 +245,7 @@ class ReceiptAPI(BaseInterfaceModel):
                 try:
                     event_abi = contract_type.events[log["topics"][0]]  # type: ignore
                     yield from self.provider.network.ecosystem.decode_logs(event_abi, [log])
-                except (StopIteration, KeyError):
+                except (StopIteration, KeyError, DecodingError):
                     try:
                         yield self.provider.network.ecosystem.decode_ds_note(log)  # type: ignore
                     except (DecodingError, AttributeError):
