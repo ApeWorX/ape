@@ -491,7 +491,7 @@ class Ethereum(EcosystemAPI):
                 block_number=log["blockNumber"],
             )  # type: ignore
 
-    def decode_ds_note(self, log: dict) -> Optional[ContractLog]:
+    def decode_ds_note(self, log: dict) -> ContractLog:
         """
         Decode anonymous events emitted by the DSNote library.
         """
