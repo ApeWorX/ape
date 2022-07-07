@@ -433,16 +433,22 @@ class ContractCache(BaseManager):
         ecosystem_name = self._network.ecosystem.name
         name = contract_type.name
 
-        existing_list = (
+        deployments_list = (
             self._local_deployments_mapping.get(ecosystem_name, {})
             .get(network_name, {})
             .get(name, [])
         )
-        existing_list.append(address)
+        deployments_list.append(address)
 
-        self._local_deployments_mapping.update(
-            {ecosystem_name: {network_name: {contract_type.name: existing_list}}}
-        )
+        if ecosystem_name not in self._local_deployments_mapping:
+            self._local_deployments_mapping[ecosystem_name] = {}
+
+        if network_name not in self._local_deployments_mapping[ecosystem_name]:
+            self._local_deployments_mapping[ecosystem_name][network_name] = {}
+
+        self._local_deployments_mapping[ecosystem_name][network_name][
+            contract_type.name
+        ] = deployments_list
 
         if self._is_live_network:
             # NOTE: We don't cache forked network contracts in this method to avoid caching
@@ -663,15 +669,20 @@ class ContractCache(BaseManager):
         deployments_map = self._load_deployments_mapping()
         network_name = self._network.name.replace("-fork", "")
         ecosystem_name = self._network.ecosystem.name
-        existing_list = (
+        deployments_list = (
             deployments_map.get(ecosystem_name, {})
             .get(network_name, {})
             .get(contract_type.name, [])
         )
-        existing_list.append(address)
-        deployments_map.update(
-            {ecosystem_name: {network_name: {contract_type.name: existing_list}}}
-        )
+        deployments_list.append(address)
+
+        if ecosystem_name not in deployments_map:
+            deployments_map[ecosystem_name] = {}
+
+        if network_name not in deployments_map[ecosystem_name]:
+            deployments_map[ecosystem_name][network_name] = {}
+
+        deployments_map[ecosystem_name][network_name][contract_type.name] = deployments_list
         self._write_deployments_mapping(deployments_map)
 
     def _cache_proxy_info_to_disk(self, address: AddressType, proxy_info: ProxyInfoAPI):
