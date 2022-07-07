@@ -505,12 +505,8 @@ class Ethereum(EcosystemAPI):
             raise DecodingError(f"ds-note: contract type for {log['address']} not found")
 
         try:
-            abi = next(
-                func
-                for func in contract_type.mutable_methods
-                if selector == keccak(text=func.selector)[:4]
-            )
-        except StopIteration:
+            abi = contract_type.mutable_methods[selector]
+        except KeyError:
             raise DecodingError(f"ds-note: selector {selector.hex()} not found in {log['address']}")
 
         # ds-note data field uses either (uint256,bytes) or (bytes) encoding
