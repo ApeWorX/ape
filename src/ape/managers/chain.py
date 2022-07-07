@@ -264,7 +264,7 @@ class BlockContainer(BaseManager):
                     "Chain has reorganized since returning the last block. "
                     "Try adjusting the required network confirmations."
                 )
-            elif confirmable_block_number > latest_confirmed_block_number:
+            elif confirmable_block_number >= latest_confirmed_block_number:
                 # Yield all missed confirmable blocks
                 new_blocks_count = confirmable_block_number - latest_confirmed_block_number
                 for i in range(new_blocks_count):

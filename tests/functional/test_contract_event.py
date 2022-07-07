@@ -1,3 +1,5 @@
+from queue import Queue
+
 import pytest
 
 from ape.api import ReceiptAPI
@@ -211,23 +213,19 @@ def test_poll_logs_stop_block_not_in_future(
 
 
 def test_poll_logs(vyper_contract_instance, eth_tester_provider, owner, poll_daemon):
-    logs = []
+    logs = Queue(maxsize=3)
+    poller = vyper_contract_instance.NumberChange.poll_logs()
 
-    def get_logs():
-        for log in vyper_contract_instance.NumberChange.poll_logs():
-            logs.append(log)
+    with poll_daemon("logs", poller, logs.put, lambda: logs.full()):
+        vyper_contract_instance.setNumber(1, sender=owner)
+        vyper_contract_instance.setNumber(33, sender=owner)
+        vyper_contract_instance.setNumber(7, sender=owner)
+        eth_tester_provider.mine()  # Mine to fix race condition
 
-    poller = poll_daemon(get_logs)
-    poller.start()
-
-    # Create logs
-    vyper_contract_instance.setNumber(1, sender=owner)
-    vyper_contract_instance.setNumber(33, sender=owner)
-    vyper_contract_instance.setNumber(7, sender=owner)
-
-    poller.stop()
-    breakpoint()
-    assert len(logs) == 3
-    assert logs[0].newNum == 1
-    assert logs[1].newNum == 33
-    assert logs[2].newNum == 7
+    assert logs.full()
+    log_0 = logs.get()
+    log_1 = logs.get()
+    log_2 = logs.get()
+    assert log_0.newNum == 1
+    assert log_1.newNum == 33
+    assert log_2.newNum == 7

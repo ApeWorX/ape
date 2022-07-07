@@ -1,9 +1,10 @@
 import json
 import tempfile
 import threading
+import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 import pytest
 import yaml
@@ -12,7 +13,7 @@ from ethpm_types import ContractType
 
 import ape
 from ape.api import EcosystemAPI, NetworkAPI, PluginConfig, TransactionAPI
-from ape.contracts import ContractContainer, ContractInstance, ContractLog
+from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
 from ape.managers.config import CONFIG_FILE_NAME
 
@@ -221,28 +222,32 @@ def chain_at_block_5(chain):
     chain.restore(snapshot_id)
 
 
-class Poller:
-    logs: List[ContractLog] = []
+class PollDaemon(threading.Thread):
+    def __init__(self, name, poller, handler, stop_condition, *args, **kwargs):
+        super().__init__(*args, name=f"ape_poll_{name}", **kwargs)
+        self._poller = poller
+        self._handler = handler
+        self._do_stop = stop_condition
 
-    def __init__(self, action):
-        self._action = action
-        self._stop_event = threading.Event()
-        thread = threading.Thread(name="poll_logs", target=self.run)
-        thread.daemon = True
-        self._thread = thread
+    def __enter__(self):
+        self.start()
 
-    def start(self):
-        self._thread.start()
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
 
     def run(self):
-        while not self._stop_event.wait(1):
-            self._action()
+        while True:
+            if self._do_stop():
+                return
+
+            # WARN: Will wait indefinitely for more events
+            self._handler(next(self._poller))
+            time.sleep(1)
 
     def stop(self):
-        self._thread.join(10)
-        self._stop_event.set()
+        self.join()
 
 
 @pytest.fixture
 def poll_daemon():
-    return Poller
+    return PollDaemon
