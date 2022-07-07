@@ -248,14 +248,14 @@ def test_cache_deployment_mapping_to_disc(
     assert contracts_mapping == expected_contract_mapping
 
 
-def test_find_deployments_local(chain, project_with_contract, owner):
+def test_get_deployments_local(chain, project_with_contract, owner):
     # Arrange
     chain.contracts._local_deployments_mapping = {}
     chain.contracts._local_contracts = {}
     deployed_contract = owner.deploy(project_with_contract.ApeContract)
 
     # Act
-    my_contracts_list = chain.contracts.find_deployments(project_with_contract.ApeContract)
+    my_contracts_list = chain.contracts.get_deployments(project_with_contract.ApeContract)
 
     # Assert
     assert len(my_contracts_list) == 1
@@ -263,7 +263,7 @@ def test_find_deployments_local(chain, project_with_contract, owner):
     assert type(my_contracts_list[0]) == ContractInstance
 
 
-def test_find_deployments_live(
+def test_get_deployments_live(
     chain, project_with_contract, owner, remove_disc_writes_deployments_mapping_after
 ):
     # Arrange
@@ -275,7 +275,7 @@ def test_find_deployments_live(
     deployments_mapping = chain.contracts._load_deployments_mapping()
 
     # Act
-    my_contracts_list = chain.contracts.find_deployments(project_with_contract.ApeContract)
+    my_contracts_list = chain.contracts.get_deployments(project_with_contract.ApeContract)
 
     # Assert
     assert (
@@ -300,7 +300,7 @@ def test_find_multiple_deployments_live(
     deployments_mapping = chain.contracts._load_deployments_mapping()
 
     # Act
-    my_contracts_list = chain.contracts.find_deployments(project_with_contract.ApeContract)
+    my_contracts_list = chain.contracts.get_deployments(project_with_contract.ApeContract)
 
     # Assert
     assert (
@@ -318,7 +318,7 @@ def test_contract_cache_mapping_updated_on_many_deployments(owner, project_with_
     owner.deploy(project_with_contract.ApeContract)
     final_deployed_contract = owner.deploy(project_with_contract.ApeContract)
 
-    my_contracts_list = chain.contracts.find_deployments(project_with_contract.ApeContract)
+    my_contracts_list = chain.contracts.get_deployments(project_with_contract.ApeContract)
 
     # Assert
     assert len(my_contracts_list) == 4

@@ -575,9 +575,9 @@ class ContractCache(BaseManager):
 
         return Address(address)
 
-    def find_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
+    def get_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
         """
-        Finds previous deployments of a contract container or contract type.
+        Retrieves previous deployments of a contract container or contract type.
         Locally deployed contracts are saved for the duration of the script and read from
         ``_local_deployments_mapping``, while those deployed on a live network are written to
         disk in ``deployments_map.json``.

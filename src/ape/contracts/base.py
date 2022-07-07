@@ -678,7 +678,7 @@ class ContractContainer(ManagerAccessMixin):
             my_contract = project.MyContract.deployments[-1]
         """
 
-        return self.chain_manager.contracts.find_deployments(self)
+        return self.chain_manager.contracts.get_deployments(self)
 
     def at(self, address: str) -> ContractInstance:
         """
