@@ -100,6 +100,14 @@ def test_contract_logs_from_receipts(owner, contract_instance, assert_log_values
     assert_receipt_logs(receipt_2, 3)
 
 
+def test_contract_decode_logs_no_abi(owner, contract_instance):
+    receipt = contract_instance.setNumber(1, sender=owner)
+    events = list(receipt.decode_logs())  # no abi
+    assert len(events) == 1
+    assert events[0].name == "NumberChange"
+    assert events[0].newNum == 1
+
+
 def test_contract_logs_from_event_type(contract_instance, owner, assert_log_values):
     event_type = contract_instance.NumberChange
 
