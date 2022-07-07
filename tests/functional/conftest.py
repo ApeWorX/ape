@@ -1,10 +1,9 @@
 import json
 import tempfile
 from contextlib import contextmanager
+from distutils.dir_util import copy_tree
 from pathlib import Path
 from typing import Dict
-from distutils.dir_util import copy_tree
-
 
 import pytest
 import yaml
@@ -16,7 +15,6 @@ from ape.api import EcosystemAPI, NetworkAPI, PluginConfig, TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
 from ape.managers.config import CONFIG_FILE_NAME
-from ape.managers.project import ProjectManager
 
 
 def _get_raw_contract(compiler: str) -> Dict:

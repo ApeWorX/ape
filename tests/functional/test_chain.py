@@ -277,8 +277,6 @@ def test_find_deployments_live(
     # Arrange
     chain.provider.network.name = "rinkeby"  # Dummy a live network
 
-    ## Might not need this line
-    # chain.contracts._check_network_for_contract = False  # Disable network check (no RPC URL!)
     initial_deployed_contract = owner.deploy(
         project_with_contract.ApeContract, required_confirmations=0
     )
@@ -300,9 +298,6 @@ def test_find_multiple_deployments_live(
 ):
     # Arrange
     chain.provider.network.name = "rinkeby"  # Dummy a live network
-    ## Might not need this line
-    # chain.contracts._check_network_for_contract = False  # Disable network check (no RPC URL!)
-
     initial_deployed_contract = owner.deploy(
         project_with_contract.ApeContract, required_confirmations=0
     )
