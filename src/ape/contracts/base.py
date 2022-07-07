@@ -669,6 +669,15 @@ class ContractContainer(ManagerAccessMixin):
 
     @property
     def deployments(self):
+        """
+        Contract deployments.
+
+        Usage example::
+
+            # Get the latest deployment
+            my_contract = project.MyContract.deployments[-1]
+        """
+
         return self.chain_manager.contracts.find_deployments(self)
 
     def at(self, address: str) -> ContractInstance:
