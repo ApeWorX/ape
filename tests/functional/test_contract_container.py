@@ -19,8 +19,7 @@ def test_deploy(
 
 
 def test_deployment_property(chain, owner, project_with_contract, eth_tester_provider):
-    initial_deployed_contract = owner.deploy(project_with_contract.ApeContract)
-    assert (
-        project_with_contract.ApeContract.deployments[-1].address
-        == initial_deployed_contract.address
-    )
+    initial_deployed_contract = owner.deploy(project_with_contract.ApeContract0)
+    actual = project_with_contract.ApeContract0.deployments[-1].address
+    expected = initial_deployed_contract.address
+    assert actual == expected
