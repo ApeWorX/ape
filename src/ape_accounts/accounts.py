@@ -143,7 +143,7 @@ class KeyfileAccount(AccountAPI):
         """
         if enabled:
             self.unlock(passphrase=passphrase)
-            logger.warning("Danger! This account will now sign any transaction its given.")
+            logger.warning("Danger! This account will now sign any transaction it's given.")
 
         self.__autosign = enabled
         if not enabled:
