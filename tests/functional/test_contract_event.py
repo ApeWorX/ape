@@ -1,9 +1,29 @@
+from pathlib import Path
 from queue import Queue
+from typing import Optional
 
 import pytest
+from ethpm_types import ContractType
+from hexbytes import HexBytes
 
 from ape.api import ReceiptAPI
 from ape.exceptions import DecodingError
+from ape.types import ContractLog
+
+
+@pytest.fixture
+def assert_log_values(owner, chain):
+    def _assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):
+        assert isinstance(log.b, HexBytes)
+        expected_previous_number = number - 1 if previous_number is None else previous_number
+        assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
+        assert log.newNum == number, "Event param 'newNum' has unexpected value"
+        assert log.dynData == "Dynamic"
+        assert log.dynIndexed == HexBytes(
+            "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d"
+        )
+
+    return _assert_log_values
 
 
 def test_contract_logs_from_receipts(owner, contract_instance, assert_log_values):
@@ -229,3 +249,33 @@ def test_poll_logs(vyper_contract_instance, eth_tester_provider, owner, poll_dae
     assert log_0.newNum == 1
     assert log_1.newNum == 33
     assert log_2.newNum == 7
+
+
+def test_contract_two_events_with_same_name(owner, networks_connected_to_tester):
+    provider = networks_connected_to_tester
+    base_path = Path(__file__).parent / "data" / "contracts" / "ethereum" / "local"
+    interface_path = base_path / "Interface.json"
+    impl_path = base_path / "InterfaceImplementation.json"
+    interface_contract_type = ContractType.parse_raw(interface_path.read_text())
+    impl_contract_type = ContractType.parse_raw(impl_path.read_text())
+    event_name = "FooEvent"
+
+    # Ensure test is setup correctly in case scenario-data changed on accident
+    assert len([e for e in impl_contract_type.events if e.name == event_name]) == 2
+    assert len([e for e in interface_contract_type.events if e.name == event_name]) == 1
+
+    impl_container = provider.create_contract_container(impl_contract_type)
+    impl_instance = owner.deploy(impl_container)
+
+    with pytest.raises(AttributeError) as err:
+        _ = impl_instance.FooEvent
+
+    expected_err_prefix = f"Multiple events named '{event_name}'"
+    assert expected_err_prefix in str(err.value)
+
+    expected_sig_from_impl = "FooEvent(uint256 bar, uint256 baz)"
+    expected_sig_from_interface = "FooEvent(uint256 bar)"
+    event_from_impl_contract = impl_instance.get_event_by_signature(expected_sig_from_impl)
+    assert event_from_impl_contract.abi.signature == expected_sig_from_impl
+    event_from_interface = impl_instance.get_event_by_signature(expected_sig_from_interface)
+    assert event_from_interface.abi.signature == expected_sig_from_interface
