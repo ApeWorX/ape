@@ -1,6 +1,6 @@
 import sys
 from enum import Enum, IntEnum
-from typing import IO, Dict, List, Optional, Union
+from typing import IO, Dict, Iterator, List, Optional, Union
 
 from eth_abi import decode_abi
 from eth_account import Account as EthAccount  # type: ignore
@@ -8,13 +8,16 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import keccak, to_int
+from eth_utils import decode_hex, keccak, to_int
 from ethpm_types import HexBytes
+from ethpm_types.abi import EventABI
 from pydantic import BaseModel, Field, root_validator, validator
 from rich.console import Console as RichConsole
 
 from ape.api import ReceiptAPI, TransactionAPI
-from ape.exceptions import OutOfGasError, SignatureError, TransactionError
+from ape.contracts import ContractEvent
+from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
+from ape.types import ContractLog
 from ape.utils import CallTraceParser, TraceStyles
 
 
@@ -82,7 +85,7 @@ class StaticFeeTransaction(BaseTransaction):
     type: Union[str, int, bytes] = Field(TransactionType.STATIC.value, exclude=True)
     max_fee: Optional[int] = Field(None, exclude=True)
 
-    @root_validator(pre=True)
+    @root_validator(pre=True, allow_reuse=True)
     def calculate_read_only_max_fee(cls, values) -> Dict:
         # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
         values["max_fee"] = values.get("gas_limit", 0) * values.get("gas_price", 0)
@@ -100,7 +103,7 @@ class DynamicFeeTransaction(BaseTransaction):
     type: Union[int, str, bytes] = Field(TransactionType.DYNAMIC.value)
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
-    @validator("type")
+    @validator("type", allow_reuse=True)
     def check_type(cls, value):
 
         if isinstance(value, TransactionType):
@@ -118,7 +121,7 @@ class AccessListTransaction(BaseTransaction):
     type: Union[int, str, bytes] = Field(TransactionType.ACCESS_LIST.value)
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
-    @validator("type")
+    @validator("type", allow_reuse=True)
     def check_type(cls, value):
 
         if isinstance(value, TransactionType):
@@ -155,6 +158,54 @@ class Receipt(ReceiptAPI):
         elif self.status != TransactionStatusEnum.NO_ERROR:
             txn_hash = HexBytes(self.txn_hash).hex()
             raise TransactionError(message=f"Transaction '{txn_hash}' failed.")
+
+    def decode_logs(
+        self, abi: Optional[Union[EventABI, ContractEvent]] = None
+    ) -> Iterator[ContractLog]:
+        if not abi:
+            # Check for DS-Note library logs.
+            for log in self.logs:
+                try:
+                    yield self._decode_ds_note(log)
+                except DecodingError:
+                    continue
+
+        return super().decode_logs(abi)
+
+    def _decode_ds_note(self, log: Dict) -> ContractLog:
+        """
+        Decode anonymous events emitted by the DSNote library.
+        """
+
+        # The first topic encodes the function selector
+        selector, tail = log["topics"][0][:4], log["topics"][0][4:]
+        if sum(tail):
+            raise DecodingError("ds-note: non-zero bytes found after selector")
+
+        contract_type = self.chain_manager.contracts.get(log["address"])
+        if contract_type is None:
+            raise DecodingError(f"ds-note: contract type for {log['address']} not found")
+
+        try:
+            method_abi = contract_type.mutable_methods[selector]
+        except KeyError:
+            raise DecodingError(f"ds-note: selector {selector.hex()} not found in {log['address']}")
+
+        # ds-note data field uses either (uint256,bytes) or (bytes) encoding
+        # instead of guessing, assume the payload begins right after the selector
+        data = decode_hex(log["data"])
+        input_types = [i.canonical_type for i in method_abi.inputs]
+        start_index = data.index(selector) + 4
+        values = decode_abi(input_types, data[start_index:])
+
+        return ContractLog(  # type: ignore
+            name=method_abi.name,
+            block_hash=log["blockHash"],
+            block_number=log["blockNumber"],
+            event_arguments={input.name: value for input, value in zip(method_abi.inputs, values)},
+            index=log["logIndex"],
+            transaction_hash=log["transactionHash"],
+        )
 
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         tree_factory = CallTraceParser(self, verbose=verbose)

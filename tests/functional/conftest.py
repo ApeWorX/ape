@@ -17,17 +17,18 @@ from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedE
 from ape.managers.config import CONFIG_FILE_NAME
 
 
-def _get_raw_contract(compiler: str) -> Dict:
+def _get_raw_contract(name: str) -> Dict:
     here = Path(__file__).parent
     contracts_dir = here / "data" / "contracts" / "ethereum" / "local"
-    return json.loads((contracts_dir / f"{compiler}_contract.json").read_text())
+    return json.loads((contracts_dir / f"{name}.json").read_text())
 
 
-RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity")
-RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper")
+RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity_contract")
+RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper_contract")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
+DS_NOTE_TEST_CONTRACT_TYPE = _get_raw_contract("ds_note_test")
 
 
 class _ContractLogicError(ContractLogicError):
@@ -162,6 +163,13 @@ def contract_container(
 @pytest.fixture(params=("solidity", "vyper"))
 def contract_instance(request, solidity_contract_instance, vyper_contract_instance):
     return solidity_contract_instance if request.param == "solidity" else vyper_contract_instance
+
+
+@pytest.fixture
+def ds_note_test_contract(vyper_contract_type, owner, eth_tester_provider):
+    contract_type = ContractType.parse_obj(DS_NOTE_TEST_CONTRACT_TYPE)
+    contract_container = ContractContainer(contract_type=contract_type)
+    return contract_container.deploy(sender=owner)
 
 
 @pytest.fixture(scope="session")

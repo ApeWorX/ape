@@ -31,3 +31,29 @@ def test_decode_logs_specify_abi_as_event(invoke_receipt, vyper_contract_instanc
     logs = [log for log in invoke_receipt.decode_logs(abi=abi)]
     assert len(logs) == 1
     assert logs[0].newNum == 1
+
+
+def test_decode_logs_with_ds_notes(ds_note_test_contract, owner):
+    contract = ds_note_test_contract
+    receipt = contract.test_0(sender=owner)
+    logs = [log for log in receipt.decode_logs()]
+    assert len(logs) == 1
+    assert logs[0].name == "foo"
+
+    receipt = contract.test_1(sender=owner)
+    logs = [log for log in receipt.decode_logs()]
+    assert len(logs) == 1
+    assert logs[0].name == "foo"
+    assert logs[0].event_arguments == {"a": 1}
+
+    receipt = contract.test_2(sender=owner)
+    logs = [log for log in receipt.decode_logs()]
+    assert len(logs) == 1
+    assert logs[0].name == "foo"
+    assert logs[0].event_arguments == {"a": 1, "b": 2}
+
+    receipt = contract.test_3(sender=owner)
+    logs = [log for log in receipt.decode_logs()]
+    assert len(logs) == 1
+    assert logs[0].name == "foo"
+    assert logs[0].event_arguments == {"a": 1, "b": 2, "c": 3}
