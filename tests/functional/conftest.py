@@ -1,6 +1,7 @@
 import json
 import tempfile
 from contextlib import contextmanager
+from distutils.dir_util import copy_tree
 from pathlib import Path
 from typing import Dict
 
@@ -27,6 +28,9 @@ RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
+APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
+SOLIDITY_CONTRACT_ADDRESS = "0xBcF7FFFD8B256Ec51a36782a52D0c34f6474D951"
+VYPER_CONTRACT_ADDRESS = "0x274b028b03A250cA03644E6c578D81f019eE1323"
 
 
 class _ContractLogicError(ContractLogicError):
@@ -185,6 +189,16 @@ def temp_config(config):
 
 
 @pytest.fixture
+def project_with_contract(config):
+    project_source_dir = APE_PROJECT_FOLDER
+    project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
+    copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
+
+    with config.using_project(project_dest_dir) as project:
+        yield project
+
+
+@pytest.fixture
 def clean_contracts_cache(chain):
     original_cached_contracts = chain.contracts._local_contracts
     chain.contracts._local_contracts = {}
@@ -210,3 +224,14 @@ def dependency_config(temp_config):
 @pytest.fixture
 def base_projects_directory():
     return BASE_PROJECTS_DIRECTORY
+
+
+@pytest.fixture
+def remove_disk_writes_deployments(chain):
+    if chain.contracts._deployments_mapping_cache.exists():
+        chain.contracts._deployments_mapping_cache.unlink()
+
+    yield
+
+    if chain.contracts._deployments_mapping_cache.exists():
+        chain.contracts._deployments_mapping_cache.unlink()
