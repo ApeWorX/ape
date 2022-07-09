@@ -71,7 +71,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             data["gas"] = int(1e12)
 
         try:
-            return self.web3.eth.call(data)
+            block_id = data.pop("block_id", None)
+            state_override = data.pop("state_override", None)
+            return self.web3.eth.call(
+                data, block_identifier=block_id, state_override=state_override
+            )
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:

@@ -15,6 +15,7 @@ from rich.console import Console as RichConsole
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
+from ape.types import BlockID
 from ape.utils import CallTraceParser, TraceStyles
 
 
@@ -50,6 +51,9 @@ class AccessList(BaseModel):
 
 
 class BaseTransaction(TransactionAPI):
+    block_id: Optional[BlockID] = None
+    state_override: Optional[Dict] = None
+
     def serialize_transaction(self) -> bytes:
 
         if not self.signature:

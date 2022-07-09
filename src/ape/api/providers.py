@@ -671,7 +671,12 @@ class Web3Provider(ProviderAPI, ABC):
 
     def send_call(self, txn: TransactionAPI) -> bytes:
         try:
-            return self.web3.eth.call(txn.dict())
+            data = txn.dict()
+            block_id = data.pop("block_id", None)
+            state_override = data.pop("state_override", None)
+            return self.web3.eth.call(
+                data, block_identifier=block_id, state_override=state_override
+            )
         except ValueError as err:
             raise self.get_virtual_machine_error(err) from err
 
