@@ -12,3 +12,6 @@ dependencies:
 
   - name: containing_sub_dependencies
     local: ./containing_sub_dependencies
+
+  - name: renamed_contracts_folder_specified_in_config
+    local: ./renamed_contracts_folder_specified_in_config

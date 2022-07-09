@@ -1,13 +1,15 @@
 import json
+import os
 import tempfile
 from pathlib import Path
 from typing import Dict, Optional, Type
 
 from ethpm_types import PackageManifest
+from pydantic import root_validator
 
 from ape.api import DependencyAPI
 from ape.exceptions import ProjectError
-from ape.utils import ManagerAccessMixin, cached_property, github_client
+from ape.utils import ManagerAccessMixin, cached_property, github_client, load_config
 
 
 class DependencyManager(ManagerAccessMixin):
@@ -110,6 +112,27 @@ class LocalDependency(DependencyAPI):
 
     local: str
     version = "local"
+
+    @root_validator()
+    def validate_contracts_folder(cls, value):
+        if value.get("contracts_folder") not in (None, "contracts"):
+            return value
+
+        # If using default value, check if exists
+        local_path_value = value.get("local") or os.cwd()
+        local_project_path = Path(local_path_value)
+        try_contracts_path = local_project_path / "contracts"
+        if try_contracts_path.is_dir():
+            return value
+
+        # Attempt to read value from config
+        config_file = local_project_path / "ape-config.yaml"
+        if config_file.is_file():
+            config_data = load_config(config_file)
+            if "contracts_folder" in config_data:
+                value["contracts_folder"] = config_data["contracts_folder"]
+
+        return value
 
     @property
     def path(self) -> Path:
