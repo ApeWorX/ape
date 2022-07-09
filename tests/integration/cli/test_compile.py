@@ -176,6 +176,7 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         "renamed_contracts_folder",
         "containing_sub_dependencies",
         "renamed_complex_contracts_folder",
+        "renamed_contracts_folder_specified_in_config",
     ):
         assert name in project.dependencies
         assert type(project.dependencies[name]["local"]["name"]) == ContractContainer
