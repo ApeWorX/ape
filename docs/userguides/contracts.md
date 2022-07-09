@@ -36,6 +36,35 @@ from ape import Contract
 contract = Contract("v2.registry.ychad.eth")
 ```
 
+## From Previous Deployment
+
+Ape keeps track of your deployments for you so you can always refer back to a version that you deployed previously.
+On live networks, this history of deployments is saved; on local networks, this history lasts for the duration of your script. 
+
+Let's say you previously deployed a smart contract called `MyContract` on the rinkeby test network.
+You could then refer back to it like so:
+
+```python
+from ape import project, chain, accounts
+
+def main():
+  account = accounts.test_accounts[0]
+  my_contract = chain.contracts.get_deployments(project.MyContract)[-1]
+```
+
+or
+
+```python
+from ape import project, chain, accounts
+
+def main():
+  account = accounts.test_accounts[0]
+  my_contract = project.MyContract.deployments[-1]
+```
+
+`my_contract` will be of type `ContractInstance`.
+`get_deployments` returns a list of deployments you made of that contract type. 
+
 ## Contract Interaction
 
 Then, after you have a contract instance, you can call methods on the contract.
