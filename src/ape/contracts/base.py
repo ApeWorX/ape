@@ -374,7 +374,7 @@ class ContractEvent(ManagerAccessMixin):
 
         start_block = None
         stop_block = None
-        addresses = [self.contract.address, *(extra_addresses or [])]
+        addresses = [self.contract.address] + (extra_addresses or [])
 
         if stop is None:
             start_block = 0
