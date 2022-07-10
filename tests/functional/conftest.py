@@ -252,7 +252,7 @@ class PollDaemonThread(threading.Thread):
 
     def run(self):
         while True:
-            if self._do_stop:
+            if self._do_stop():
                 return
 
             self._handler(next(self._poller))
