@@ -75,7 +75,7 @@ class TopicFilter(BaseModel):
                 return [encode_topic_value(key, v) for v in value]
 
             elif is_dynamic_sized_type(abi_type):
-                return to_hex(keccak(encode_single_packed(str(abi_type), value)))
+                return encode_hex(keccak(encode_single_packed(str(abi_type), value)))
 
             else:
                 return to_hex(encode_single(abi_type, value))  # type: ignore
