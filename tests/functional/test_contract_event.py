@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 from queue import Queue
 from typing import Optional
@@ -234,21 +235,31 @@ def test_poll_logs_stop_block_not_in_future(
 
 def test_poll_logs(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
     logs = Queue(maxsize=3)
-    poller = vyper_contract_instance.NumberChange.poll_logs()
 
-    with PollDaemon("logs", poller, logs.put, lambda: logs.full()):
+    new_block_timeout = 5  # Set timeout to prevent never-ending tests.
+    poller = vyper_contract_instance.NumberChange.poll_logs(new_block_timeout=new_block_timeout)
+
+    with PollDaemon("logs", poller, logs.put, logs.full):
         vyper_contract_instance.setNumber(1, sender=owner)
         vyper_contract_instance.setNumber(33, sender=owner)
         vyper_contract_instance.setNumber(7, sender=owner)
-        eth_tester_provider.mine()  # Mine to fix race condition
+
+        # Mine to ensure last log makes it before stopping polling.
+        eth_tester_provider.mine()
 
     assert logs.full()
-    log_0 = logs.get()
-    log_1 = logs.get()
-    log_2 = logs.get()
-    assert log_0.newNum == 1
-    assert log_1.newNum == 33
-    assert log_2.newNum == 7
+    assert all(logs.get().newNum == e for e in (1, 33, 7))
+
+
+def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, PollDaemon, capsys):
+    new_block_timeout = 1
+    poller = vyper_contract_instance.NumberChange.poll_logs(new_block_timeout=new_block_timeout)
+
+    with PollDaemon("logs", poller, lambda: None, False):
+        time.sleep(1.5)
+
+    _, err = capsys.readouterr()
+    assert "ChainError: Timed out waiting for new block (time_waited=1." in str(err)
 
 
 def test_contract_two_events_with_same_name(owner, networks_connected_to_tester):

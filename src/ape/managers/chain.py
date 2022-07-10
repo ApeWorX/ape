@@ -217,6 +217,7 @@ class BlockContainer(BaseManager):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
     ) -> Iterator[BlockAPI]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
@@ -238,10 +239,25 @@ class BlockContainer(BaseManager):
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
               Defaults to the network's configured required confirmations.
+            new_block_timeout (Optional[float]): The amount of time to waiy for a new block before
+              timing out. Defaults to never-ending for 10 seconds for local networks or
+              ``3 * block_time`` for live networks.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
         """
+        network_name = self.provider.network.name
+        block_time = self.provider.network.block_time
+        timeout = (
+            (
+                10.0
+                if network_name == LOCAL_NETWORK_NAME or network_name.endswith("-fork")
+                else 3 * block_time
+            )
+            if new_block_timeout is None
+            else new_block_timeout
+        )
+
         if required_confirmations is None:
             required_confirmations = self.network_confirmations
 
@@ -257,7 +273,8 @@ class BlockContainer(BaseManager):
             yield from self.range(start_block, latest_confirmed_block_number + 1)
             has_yielded = True
 
-        time.sleep(self.provider.network.block_time)
+        time.sleep(block_time)
+        time_since_last = time.time()
 
         while True:
             confirmable_block_number = self.height - required_confirmations
@@ -266,9 +283,22 @@ class BlockContainer(BaseManager):
                     "Chain has reorganized since returning the last block. "
                     "Try adjusting the required network confirmations."
                 )
+                # Reset to prevent timeout
+                time_since_last = time.time()
+
             elif confirmable_block_number >= latest_confirmed_block_number:
                 # Yield all missed confirmable blocks
                 new_blocks_count = confirmable_block_number - latest_confirmed_block_number
+                if new_blocks_count:
+                    time_since_last = time.time()
+                elif time.time() - time_since_last > timeout:
+                    time_waited = round(time.time() - time_since_last, 4)
+                    raise ChainError(
+                        f"Timed out waiting for new block (time_waited={time_waited})."
+                    )
+                else:
+                    continue
+
                 for i in range(new_blocks_count):
                     block_num = latest_confirmed_block_number + i
                     block = self._get_block(block_num)
@@ -282,7 +312,7 @@ class BlockContainer(BaseManager):
                 latest_confirmed_block_number = confirmable_block_number
 
             has_yielded = False
-            time.sleep(self.provider.network.block_time)
+            time.sleep(block_time)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
         return self.provider.get_block(block_id)

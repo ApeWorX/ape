@@ -242,19 +242,22 @@ class PollDaemonThread(threading.Thread):
         self._poller = poller
         self._handler = handler
         self._do_stop = stop_condition
+        self.exception = False
 
     def __enter__(self):
         self.start()
+        return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_value, exc_tb):
         self.stop()
+        if exc_type is not None:
+            self.exception = exc_value
 
     def run(self):
         while True:
-            if self._do_stop():
+            if self._do_stop:
                 return
 
-            # WARN: Will wait indefinitely for more events
             self._handler(next(self._poller))
             time.sleep(1)
 
