@@ -398,12 +398,12 @@ def test_poll_blocks(chain_at_block_5, eth_tester_provider, owner, PollDaemon):
 
 
 def test_poll_blocks_timeout(
-    vyper_contract_instance, chain_at_block_5, eth_tester_provider, owner, PollDaemon, capsys
+    vyper_contract_instance, chain_at_block_5, eth_tester_provider, owner, PollDaemon
 ):
     poller = chain_at_block_5.blocks.poll_blocks(new_block_timeout=1)
 
-    with PollDaemon("blocks", poller, lambda: None, lambda: False):
-        time.sleep(1.5)
+    with pytest.raises(ChainError) as err:
+        with PollDaemon("blocks", poller, lambda: None, lambda: False):
+            time.sleep(1.5)
 
-    _, err = capsys.readouterr()
-    assert "ChainError: Timed out waiting for new block (time_waited=1." in str(err)
+    assert "Timed out waiting for new block (time_waited=1" in str(err.value)

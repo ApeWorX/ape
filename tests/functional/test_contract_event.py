@@ -8,7 +8,7 @@ from ethpm_types import ContractType
 from hexbytes import HexBytes
 
 from ape.api import ReceiptAPI
-from ape.exceptions import DecodingError
+from ape.exceptions import ChainError, DecodingError
 from ape.types import ContractLog
 
 
@@ -248,15 +248,15 @@ def test_poll_logs(vyper_contract_instance, eth_tester_provider, owner, PollDaem
     assert all(logs.get().newNum == e for e in (1, 33, 7))
 
 
-def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, PollDaemon, capsys):
+def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
     new_block_timeout = 1
     poller = vyper_contract_instance.NumberChange.poll_logs(new_block_timeout=new_block_timeout)
 
-    with PollDaemon("logs", poller, lambda: None, lambda: False):
-        time.sleep(1.5)
+    with pytest.raises(ChainError) as err:
+        with PollDaemon("logs", poller, lambda: None, lambda: False):
+            time.sleep(1.5)
 
-    _, err = capsys.readouterr()
-    assert "ChainError: Timed out waiting for new block (time_waited=1." in str(err)
+    assert "Timed out waiting for new block (time_waited=1" in str(err.value)
 
 
 def test_contract_two_events_with_same_name(owner, networks_connected_to_tester):

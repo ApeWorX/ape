@@ -242,6 +242,7 @@ class PollDaemonThread(threading.Thread):
         self._poller = poller
         self._handler = handler
         self._do_stop = stop_condition
+        self._exception = None
 
     def __enter__(self):
         self.start()
@@ -251,15 +252,23 @@ class PollDaemonThread(threading.Thread):
         self.stop()
 
     def run(self):
-        while True:
-            if self._do_stop():
-                return
+        try:
+            while True:
+                if self._do_stop():
+                    return
 
-            self._handler(next(self._poller))
-            time.sleep(1)
+                self._handler(next(self._poller))
+                time.sleep(1)
+        except Exception as err:
+            self._exception = err
 
     def stop(self):
         self.join()
+
+    def join(self, timeout=None):
+        super().join(timeout=timeout)
+        if self._exception:
+            raise self._exception
 
 
 @pytest.fixture
