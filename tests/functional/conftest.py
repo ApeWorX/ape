@@ -5,7 +5,7 @@ import time
 from contextlib import contextmanager
 from distutils.dir_util import copy_tree
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 import pytest
 import yaml
@@ -253,22 +253,38 @@ class PollDaemonThread(threading.Thread):
 
     def run(self):
         try:
-            while True:
-                if self._do_stop():
-                    return
-
-                self._handler(next(self._poller))
-                time.sleep(1)
+            self._run_until_stop()
         except Exception as err:
             self._exception = err
 
     def stop(self):
         self.join()
 
+        # Attempt to wait for stop condition
+        if not self._do_stop():
+            self._run_until_stop(timeout_iterations=10)
+
     def join(self, timeout=None):
         super().join(timeout=timeout)
         if self._exception:
             raise self._exception
+
+    def _run_until_stop(self, timeout_iterations: Optional[int] = None):
+        iterations = 0
+        while True:
+            if self._do_stop():
+                return
+
+            self._handler(next(self._poller))
+            time.sleep(1)
+
+            if timeout_iterations is None:
+                continue
+
+            elif iterations == timeout_iterations:
+                return
+
+            iterations += 1
 
 
 @pytest.fixture

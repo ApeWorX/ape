@@ -386,9 +386,6 @@ def test_poll_blocks(chain_at_block_5, eth_tester_provider, owner, PollDaemon):
     with PollDaemon("blocks", poller, blocks.put, blocks.full):
         eth_tester_provider.mine(3)
 
-        # Mine once more to ensure last block makes it before stopping polling.
-        eth_tester_provider.mine()
-
     assert blocks.full()
     first = blocks.get().number
     second = blocks.get().number
