@@ -402,7 +402,7 @@ def test_poll_blocks_timeout(
 ):
     poller = chain_at_block_5.blocks.poll_blocks(new_block_timeout=1)
 
-    with PollDaemon("blocks", poller, lambda: None, False):
+    with PollDaemon("blocks", poller, lambda: None, lambda: False):
         time.sleep(1.5)
 
     _, err = capsys.readouterr()

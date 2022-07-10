@@ -252,7 +252,7 @@ def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, 
     new_block_timeout = 1
     poller = vyper_contract_instance.NumberChange.poll_logs(new_block_timeout=new_block_timeout)
 
-    with PollDaemon("logs", poller, lambda: None, False):
+    with PollDaemon("logs", poller, lambda: None, lambda: False):
         time.sleep(1.5)
 
     _, err = capsys.readouterr()

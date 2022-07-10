@@ -267,6 +267,7 @@ def PollDaemon():
     return PollDaemonThread
 
 
+@pytest.fixture
 def remove_disk_writes_deployments(chain):
     if chain.contracts._deployments_mapping_cache.exists():
         chain.contracts._deployments_mapping_cache.unlink()
