@@ -289,7 +289,7 @@ class PollDaemonThread(threading.Thread):
             if timeout_iterations is None:
                 continue
 
-            elif iterations == timeout_iterations:
+            elif iterations >= timeout_iterations:
                 return
 
             iterations += 1

@@ -400,7 +400,7 @@ def test_poll_blocks_timeout(
     poller = chain_at_block_5.blocks.poll_blocks(new_block_timeout=1)
 
     with pytest.raises(ChainError) as err:
-        with PollDaemon("blocks", poller, lambda: None, lambda: False):
+        with PollDaemon("blocks", poller, lambda x: None, lambda: False):
             time.sleep(1.5)
 
     assert "Timed out waiting for new block (time_waited=1" in str(err.value)

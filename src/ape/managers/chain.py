@@ -276,6 +276,11 @@ class BlockContainer(BaseManager):
         time.sleep(block_time)
         time_since_last = time.time()
 
+        def _try_timeout():
+            if time.time() - time_since_last > timeout:
+                time_waited = round(time.time() - time_since_last, 4)
+                raise ChainError(f"Timed out waiting for new block (time_waited={time_waited}).")
+
         while True:
             confirmable_block_number = self.height - required_confirmations
             if (
@@ -292,13 +297,8 @@ class BlockContainer(BaseManager):
             elif confirmable_block_number >= latest_confirmed_block_number:
                 # Yield all missed confirmable blocks
                 new_blocks_count = (confirmable_block_number - latest_confirmed_block_number) + 1
-
-                if time.time() - time_since_last > timeout:
-                    time_waited = round(time.time() - time_since_last, 4)
-                    raise ChainError(
-                        f"Timed out waiting for new block (time_waited={time_waited})."
-                    )
-                elif not new_blocks_count:
+                _try_timeout()
+                if not new_blocks_count:
                     continue
 
                 block_num = latest_confirmed_block_number
@@ -315,6 +315,9 @@ class BlockContainer(BaseManager):
 
                 has_yielded_before_reorg = True
                 latest_confirmed_block_number = block_num
+
+            else:
+                _try_timeout()
 
             has_yielded_before_reorg = False
             time.sleep(block_time)
