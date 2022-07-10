@@ -78,7 +78,7 @@ class TopicFilter(BaseModel):
                 return encode_hex(keccak(encode_single_packed(str(abi_type), value)))
 
             else:
-                return to_hex(encode_single(abi_type, value))  # type: ignore
+                return encode_hex(encode_single(abi_type, value))  # type: ignore
 
         search_values = {k: encode_topic_value(k, v) for k, v in values["search_values"].items()}
         return {**values, "search_values": search_values}
