@@ -240,7 +240,7 @@ class BlockContainer(BaseManager):
               before yielding the block. The more confirmations, the less likely a reorg will occur.
               Defaults to the network's configured required confirmations.
             new_block_timeout (Optional[float]): The amount of time to wait for a new block before
-              timing out. Defaults to 10 seconds for local networks or ``3 * block_time`` for live
+              timing out. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
               networks.
 
         Returns:
@@ -252,7 +252,7 @@ class BlockContainer(BaseManager):
             (
                 10.0
                 if network_name == LOCAL_NETWORK_NAME or network_name.endswith("-fork")
-                else 3 * block_time
+                else 50 * block_time
             )
             if new_block_timeout is None
             else new_block_timeout
