@@ -235,9 +235,7 @@ def test_poll_logs_stop_block_not_in_future(
 
 def test_poll_logs(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
     logs = Queue(maxsize=3)
-
-    new_block_timeout = 5  # Set timeout to prevent never-ending tests.
-    poller = vyper_contract_instance.NumberChange.poll_logs(new_block_timeout=new_block_timeout)
+    poller = vyper_contract_instance.NumberChange.poll_logs()
 
     with PollDaemon("logs", poller, logs.put, logs.full):
         vyper_contract_instance.setNumber(1, sender=owner)
@@ -247,7 +245,6 @@ def test_poll_logs(vyper_contract_instance, eth_tester_provider, owner, PollDaem
         # Mine to ensure last log makes it before stopping polling.
         eth_tester_provider.mine()
 
-    assert logs.full()
     assert all(logs.get().newNum == e for e in (1, 33, 7))
 
 
