@@ -239,9 +239,9 @@ class BlockContainer(BaseManager):
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
               Defaults to the network's configured required confirmations.
-            new_block_timeout (Optional[float]): The amount of time to waiy for a new block before
-              timing out. Defaults to never-ending for 10 seconds for local networks or
-              ``3 * block_time`` for live networks.
+            new_block_timeout (Optional[float]): The amount of time to wait for a new block before
+              timing out. Defaults to 10 seconds for local networks or ``3 * block_time`` for live
+              networks.
 
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]

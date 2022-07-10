@@ -442,8 +442,8 @@ class ContractEvent(ManagerAccessMixin):
               before yielding the block. The more confirmations, the less likely a reorg will occur.
               Defaults to the network's configured required confirmations.
             new_block_timeout (Optional[int]): The amount of time to wait for a new block before
-              quitting. Defaults to never-ending for local networks or ``3 * block_time`` for
-              live networks.
+              quitting. Defaults to 10 seconds for local networks or ``3 * block_time`` for live
+              networks.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
