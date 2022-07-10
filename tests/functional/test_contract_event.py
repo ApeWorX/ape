@@ -232,11 +232,11 @@ def test_poll_logs_stop_block_not_in_future(
     assert str(err.value) == "'stop' argument must be in the future."
 
 
-def test_poll_logs(vyper_contract_instance, eth_tester_provider, owner, poll_daemon):
+def test_poll_logs(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
     logs = Queue(maxsize=3)
     poller = vyper_contract_instance.NumberChange.poll_logs()
 
-    with poll_daemon("logs", poller, logs.put, lambda: logs.full()):
+    with PollDaemon("logs", poller, logs.put, lambda: logs.full()):
         vyper_contract_instance.setNumber(1, sender=owner)
         vyper_contract_instance.setNumber(33, sender=owner)
         vyper_contract_instance.setNumber(7, sender=owner)
