@@ -51,7 +51,7 @@ class TopicFilter(BaseModel):
 
     @property
     def event_signature_hash(self) -> str:
-        return add_0x_prefix(HexStr(keccak(text=self.event.selector).hex()))
+        return encode_hex(keccak(text=self.event.selector))
 
     @root_validator(pre=True)
     def validate_search_values(cls, values):
