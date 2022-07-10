@@ -266,19 +266,22 @@ class BlockContainer(BaseManager):
 
         # Get number of last block with the necessary amount of confirmations.
         latest_confirmed_block_number = self.height - required_confirmations
-        has_yielded = False
+        has_yielded_before_reorg = False
 
         if start_block is not None:
             # Front-load historically confirmed blocks.
             yield from self.range(start_block, latest_confirmed_block_number + 1)
-            has_yielded = True
+            has_yielded_before_reorg = True
 
         time.sleep(block_time)
         time_since_last = time.time()
 
         while True:
             confirmable_block_number = self.height - required_confirmations
-            if confirmable_block_number < latest_confirmed_block_number and has_yielded:
+            if (
+                confirmable_block_number < latest_confirmed_block_number
+                and has_yielded_before_reorg
+            ):
                 logger.error(
                     "Chain has reorganized since returning the last block. "
                     "Try adjusting the required network confirmations."
@@ -308,10 +311,10 @@ class BlockContainer(BaseManager):
                     if stop_block and block.number == stop_block:
                         return
 
-                has_yielded = True
+                has_yielded_before_reorg = True
                 latest_confirmed_block_number = confirmable_block_number
 
-            has_yielded = False
+            has_yielded_before_reorg = False
             time.sleep(block_time)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
