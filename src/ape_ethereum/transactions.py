@@ -1,6 +1,6 @@
 import sys
 from enum import Enum, IntEnum
-from typing import IO, Dict, Iterator, List, Optional, Union
+from typing import IO, Dict, List, Optional, Union
 
 from eth_abi import decode_abi
 from eth_account import Account as EthAccount  # type: ignore
@@ -10,13 +10,11 @@ from eth_account._utils.legacy_transactions import (
 )
 from eth_utils import decode_hex, keccak, to_int
 from ethpm_types import HexBytes
-from ethpm_types.abi import EventABI
 from pydantic import BaseModel, Field, root_validator, validator
 from rich.console import Console as RichConsole
 
 from ape.api import ReceiptAPI, TransactionAPI
-from ape.contracts import ContractEvent
-from ape.exceptions import DecodingError, OutOfGasError, SignatureError, TransactionError
+from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.types import ContractLog
 from ape.utils import CallTraceParser, TraceStyles
 
@@ -159,20 +157,10 @@ class Receipt(ReceiptAPI):
             txn_hash = HexBytes(self.txn_hash).hex()
             raise TransactionError(message=f"Transaction '{txn_hash}' failed.")
 
-    def decode_logs(
-        self, abi: Optional[Union[EventABI, ContractEvent]] = None
-    ) -> Iterator[ContractLog]:
-        if not abi:
-            # Check for DS-Note library logs.
-            for log in self.logs:
-                try:
-                    yield self._decode_ds_note(log)
-                except DecodingError:
-                    continue
+    def decode_library_log(self, log: Dict) -> Optional[ContractLog]:
+        return self._decode_ds_note(log)
 
-        return super().decode_logs(abi)
-
-    def _decode_ds_note(self, log: Dict) -> ContractLog:
+    def _decode_ds_note(self, log: Dict) -> Optional[ContractLog]:
         """
         Decode anonymous events emitted by the DSNote library.
         """
@@ -180,16 +168,19 @@ class Receipt(ReceiptAPI):
         # The first topic encodes the function selector
         selector, tail = log["topics"][0][:4], log["topics"][0][4:]
         if sum(tail):
-            raise DecodingError("ds-note: non-zero bytes found after selector")
+            # non-zero bytes found after selector
+            return None
 
         contract_type = self.chain_manager.contracts.get(log["address"])
         if contract_type is None:
-            raise DecodingError(f"ds-note: contract type for {log['address']} not found")
+            # contract type for {log['address']} not found
+            return None
 
         try:
             method_abi = contract_type.mutable_methods[selector]
         except KeyError:
-            raise DecodingError(f"ds-note: selector {selector.hex()} not found in {log['address']}")
+            #  selector {selector.hex()} not found in {log['address']}
+            return None
 
         # ds-note data field uses either (uint256,bytes) or (bytes) encoding
         # instead of guessing, assume the payload begins right after the selector
@@ -202,7 +193,7 @@ class Receipt(ReceiptAPI):
             name=method_abi.name,
             block_hash=log["blockHash"],
             block_number=log["blockNumber"],
-            event_arguments={input.name: value for input, value in zip(method_abi.inputs, values)},
+            event_arguments={i.name: value for i, value in zip(method_abi.inputs, values)},
             index=log["logIndex"],
             transaction_hash=log["transactionHash"],
         )
