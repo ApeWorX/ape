@@ -233,19 +233,22 @@ def test_poll_logs_stop_block_not_in_future(
     assert str(err.value) == "'stop' argument must be in the future."
 
 
-def test_poll_logs(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
-    logs = Queue(maxsize=3)
-    poller = vyper_contract_instance.NumberChange.poll_logs()
+def test_poll_logs(chain, vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
+    size = 3
+    logs = Queue(maxsize=size)
+    poller = vyper_contract_instance.NumberChange.poll_logs(start_block=0)
+    start_block = chain.blocks.height
 
     with PollDaemon("logs", poller, logs.put, logs.full):
-        vyper_contract_instance.setNumber(1, sender=owner)
-        vyper_contract_instance.setNumber(33, sender=owner)
-        vyper_contract_instance.setNumber(7, sender=owner)
+        vyper_contract_instance.setNumber(1, sender=owner)  # block s+1
+        vyper_contract_instance.setNumber(33, sender=owner)  # block s+2
+        vyper_contract_instance.setNumber(7, sender=owner)  # block s+3
 
-        # Mine to ensure last log makes it before stopping polling.
-        eth_tester_provider.mine()
-
-    assert all(logs.get().newNum == e for e in (1, 33, 7))
+    actual = [logs.get() for _ in range(size)]
+    assert all(a.newNum == e for a, e in zip(actual, (1, 33, 7)))
+    assert actual[0].block_number == start_block + 1
+    assert actual[1].block_number == actual[0].block_number + 1
+    assert actual[2].block_number == actual[1].block_number + 1
 
 
 def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):

@@ -754,12 +754,7 @@ class Web3Provider(ProviderAPI, ABC):
             if len(logs) == 0:
                 # No events happened in this sub-block range. Go to next page.
                 start = stop + 1
-
-                if start < stop_block:
-                    stop = start + stop_increment
-                elif start == stop_block:
-                    stop = start
-
+                stop = min(start + stop_increment, stop_block)
                 continue
 
             for log in logs:
