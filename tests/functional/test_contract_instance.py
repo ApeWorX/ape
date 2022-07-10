@@ -10,8 +10,8 @@ from ape import Contract
 from ape.api import Address, ReceiptAPI
 from ape.types import ContractLog
 
-SOLIDITY_CONTRACT_ADDRESS = "0xBcF7FFFD8B256Ec51a36782a52D0c34f6474D951"
-VYPER_CONTRACT_ADDRESS = "0x274b028b03A250cA03644E6c578D81f019eE1323"
+from .conftest import SOLIDITY_CONTRACT_ADDRESS
+
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
 
@@ -31,21 +31,6 @@ def test_init_specify_contract_type(
     assert contract.contract_type == vyper_contract_type
     assert contract.setNumber(2, sender=owner)
     assert contract.myNumber() == 2
-
-
-def test_deploy(
-    sender, contract_container, networks_connected_to_tester, project, chain, clean_contracts_cache
-):
-    contract = contract_container.deploy(sender=sender, something_else="IGNORED")
-    assert contract.address in (SOLIDITY_CONTRACT_ADDRESS, VYPER_CONTRACT_ADDRESS)
-
-    # Verify can reload same contract from cache
-    contract_from_cache = Contract(contract.address)
-    assert contract_from_cache.contract_type == contract.contract_type
-    assert contract_from_cache.address == contract.address
-
-    # Clean up for next test
-    del chain.contracts._local_contracts[contract_from_cache.address]
 
 
 def test_repr(contract_instance):

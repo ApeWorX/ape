@@ -265,14 +265,15 @@ class GethProvider(Web3Provider, UpstreamProvider):
         self._client_version = None
 
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
-        frames = self._make_request("debug_traceTransaction", [txn_hash]).structLogs
+        result = self._make_request("debug_traceTransaction", [txn_hash])
+        frames = result.get("structLogs", [])
         for frame in frames:
             yield TraceFrame(**frame)
 
     def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
         def _get_call_tree_from_parity():
-            data = self._make_request("trace_transaction", [txn_hash])
-            traces = ParityTraceList.parse_obj(data)
+            raw_trace_list = self._make_request("trace_transaction", [txn_hash]).get("results", [])
+            traces = ParityTraceList.parse_obj(raw_trace_list)
             return get_calltree_from_parity_trace(traces)
 
         if "erigon" in self.client_version.lower():
@@ -286,5 +287,4 @@ class GethProvider(Web3Provider, UpstreamProvider):
             return get_calltree_from_geth_trace(frames, **root_node_kwargs)
 
     def _make_request(self, rpc: str, args: list) -> Any:
-        endpoint = RPCEndpoint(rpc)
-        return self.web3.manager.request_blocking(endpoint, args)  # type: ignore
+        return self.web3.provider.make_request(RPCEndpoint(rpc), args)

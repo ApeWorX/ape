@@ -1,3 +1,4 @@
+import json
 import time
 from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union, cast
@@ -9,6 +10,7 @@ from ape.api import Address, BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
 from ape.api.query import BlockQuery, validate_and_expand_columns
+from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ConversionError, UnknownSnapshotError
 from ape.logging import logger
 from ape.managers.base import BaseManager
@@ -389,6 +391,7 @@ class ContractCache(BaseManager):
 
     _local_contracts: Dict[AddressType, ContractType] = {}
     _local_proxies: Dict[AddressType, ProxyInfoAPI] = {}
+    _local_deployments_mapping: Dict = {}
 
     @property
     def _network(self) -> NetworkAPI:
@@ -402,6 +405,10 @@ class ContractCache(BaseManager):
     def _contract_types_cache(self) -> Path:
         network_name = self._network.name.replace("-fork", "")
         return self._network.ecosystem.data_folder / network_name / "contract_types"
+
+    @property
+    def _deployments_mapping_cache(self) -> Path:
+        return self._network.ecosystem.data_folder / "deployments_map.json"
 
     @property
     def _proxy_info_cache(self) -> Path:
@@ -420,16 +427,36 @@ class ContractCache(BaseManager):
             contract_type (ContractType): The contract's type.
         """
 
-        if self.get(address) and self._is_live_network:
-            return
-
         self._local_contracts[address] = contract_type
+
+        network_name = self._network.name.replace("-fork", "")
+        ecosystem_name = self._network.ecosystem.name
+        name = contract_type.name
+
+        deployments_list = (
+            self._local_deployments_mapping.get(ecosystem_name, {})
+            .get(network_name, {})
+            .get(name, [])
+        )
+        deployments_list.append(address)
+
+        if ecosystem_name not in self._local_deployments_mapping:
+            self._local_deployments_mapping[ecosystem_name] = {}
+
+        if network_name not in self._local_deployments_mapping[ecosystem_name]:
+            self._local_deployments_mapping[ecosystem_name][network_name] = {}
+
+        self._local_deployments_mapping[ecosystem_name][network_name][
+            contract_type.name
+        ] = deployments_list
 
         if self._is_live_network:
             # NOTE: We don't cache forked network contracts in this method to avoid caching
             # deployments from a fork. However, if you retrieve a contract from an explorer
             # when using a forked network, it will still get cached to disk.
+
             self._cache_contract_to_disk(address, contract_type)
+            self._cache_deployment_mapping_to_disk(address, contract_type)
 
     def __getitem__(self, address: AddressType) -> ContractType:
         contract_type = self.get(address)
@@ -478,10 +505,12 @@ class ContractCache(BaseManager):
         if not contract_type:
             # Contract could be a minimal proxy
             proxy_info = self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
+
             if not proxy_info:
                 proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
                 if proxy_info and self._is_live_network:
                     self._cache_proxy_info_to_disk(address, proxy_info)
+
             if proxy_info:
                 self._local_proxies[address] = proxy_info
                 return self.get(proxy_info.target)
@@ -553,6 +582,55 @@ class ContractCache(BaseManager):
 
         return Address(address)
 
+    def get_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
+        """
+        Retrieves previous deployments of a contract container or contract type.
+        Locally deployed contracts are saved for the duration of the script and read from
+        ``_local_deployments_mapping``, while those deployed on a live network are written to
+        disk in ``deployments_map.json``.
+
+        Args:
+            contract_container (:class:`~ape.contracts.ContractContainer`): The
+              ``ContractContainer`` with deployments.
+
+        Returns:
+            List[:class:`~ape.contracts.ContractInstance`]: Returns a list of contracts that
+            have been deployed.
+        """
+        deployments_map = self._load_deployments_mapping()
+        network_name = self._network.name.replace("-fork", "")
+        ecosystem_name = self._network.ecosystem.name
+
+        contract_addresses: List[AddressType] = []
+        if self._network.name == LOCAL_NETWORK_NAME or self._network.name.endswith("-fork"):
+            contract_addresses = (
+                self._local_deployments_mapping.get(ecosystem_name, {})
+                .get(network_name, {})
+                .get(contract_container.contract_type.name)
+                or []
+            )
+
+        else:
+            contract_addresses = (
+                deployments_map.get(ecosystem_name, {})
+                .get(network_name, {})
+                .get(contract_container.contract_type.name)
+                or []
+            )
+
+        deployments: List[ContractInstance] = []
+        for deployment_index in range(len(contract_addresses)):
+            instance = self.instance_at(
+                contract_addresses[deployment_index], contract_container.contract_type
+            )
+
+            if not isinstance(instance, ContractInstance):
+                continue
+
+            deployments.append(instance)
+
+        return deployments
+
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         address_file = self._contract_types_cache / f"{address}.json"
         if not address_file.is_file():
@@ -588,10 +666,42 @@ class ContractCache(BaseManager):
         address_file = self._contract_types_cache / f"{address}.json"
         address_file.write_text(contract_type.json())
 
+    def _cache_deployment_mapping_to_disk(self, address: AddressType, contract_type: ContractType):
+        deployments_map = self._load_deployments_mapping()
+        network_name = self._network.name.replace("-fork", "")
+        ecosystem_name = self._network.ecosystem.name
+        deployments_list = (
+            deployments_map.get(ecosystem_name, {})
+            .get(network_name, {})
+            .get(contract_type.name, [])
+        )
+        deployments_list.append(address)
+
+        if ecosystem_name not in deployments_map:
+            deployments_map[ecosystem_name] = {}
+
+        if network_name not in deployments_map[ecosystem_name]:
+            deployments_map[ecosystem_name][network_name] = {}
+
+        deployments_map[ecosystem_name][network_name][contract_type.name] = deployments_list
+        self._write_deployments_mapping(deployments_map)
+
     def _cache_proxy_info_to_disk(self, address: AddressType, proxy_info: ProxyInfoAPI):
         self._proxy_info_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._proxy_info_cache / f"{address}.json"
         address_file.write_text(proxy_info.json())
+
+    def _load_deployments_mapping(self) -> Dict:
+        deployments_map: Dict = {}
+        if self._deployments_mapping_cache.exists():
+            with self._deployments_mapping_cache.open("r") as fp:
+                deployments_map = json.load(fp)
+        return deployments_map
+
+    def _write_deployments_mapping(self, deployments_map: Dict):
+        self._deployments_mapping_cache.parent.mkdir(exist_ok=True, parents=True)
+        with self._deployments_mapping_cache.open("w") as fp:
+            json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
 
 
 class ChainManager(BaseManager):
