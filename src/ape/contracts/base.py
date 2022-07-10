@@ -374,7 +374,7 @@ class ContractEvent(ManagerAccessMixin):
 
         start_block = None
         stop_block = None
-        addresses = [self.contract.address, *(extra_addresses or [])]
+        addresses = [self.contract.address] + (extra_addresses or [])
 
         if stop is None:
             start_block = 0
@@ -386,7 +386,7 @@ class ContractEvent(ManagerAccessMixin):
         stop_block = min(stop_block, self.chain_manager.blocks.height)
 
         search_topic_filters = (
-            [TopicFilter.parse_obj({"event": self.abi, "search_values": search_topics})]
+            [TopicFilter(event=self.abi, search_values=search_topics)]
             if search_topics
             else [self._default_topic_query]
         )

@@ -51,7 +51,7 @@ class TopicFilter(BaseModel):
 
     @property
     def event_signature_hash(self) -> str:
-        return add_0x_prefix(HexStr(keccak(text=self.event.selector).hex()))
+        return encode_hex(keccak(text=self.event.selector))
 
     @root_validator(pre=True)
     def validate_search_values(cls, values):
@@ -75,10 +75,10 @@ class TopicFilter(BaseModel):
                 return [encode_topic_value(key, v) for v in value]
 
             elif is_dynamic_sized_type(abi_type):
-                return to_hex(keccak(encode_single_packed(str(abi_type), value)))
+                return encode_hex(keccak(encode_single_packed(str(abi_type), value)))
 
             else:
-                return to_hex(encode_single(abi_type, value))  # type: ignore
+                return encode_hex(encode_single(abi_type, value))  # type: ignore
 
         search_values = {k: encode_topic_value(k, v) for k, v in values["search_values"].items()}
         return {**values, "search_values": search_values}
