@@ -266,7 +266,8 @@ class PollDaemonThread(threading.Thread):
 
     def join(self, timeout=None):
         super().join(timeout=timeout)
-        if self._exception:
+        if self._exception and not self._do_stop():
+            # Only raise if error-ed before hitting stop condition
             raise self._exception
 
     def _run_until_stop(self, timeout_iterations: Optional[int] = None):
