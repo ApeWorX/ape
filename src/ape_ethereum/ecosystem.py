@@ -490,3 +490,44 @@ class Ethereum(EcosystemAPI):
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],
             )  # type: ignore
+
+    def decode_library_log(self, log: Dict) -> Optional[ContractLog]:
+        return self._decode_ds_note(log)
+
+    def _decode_ds_note(self, log: Dict) -> Optional[ContractLog]:
+        """
+        Decode anonymous events emitted by the DSNote library.
+        """
+
+        # The first topic encodes the function selector
+        selector, tail = log["topics"][0][:4], log["topics"][0][4:]
+        if sum(tail):
+            # non-zero bytes found after selector
+            return None
+
+        contract_type = self.chain_manager.contracts.get(log["address"])
+        if contract_type is None:
+            # contract type for {log['address']} not found
+            return None
+
+        try:
+            method_abi = contract_type.mutable_methods[selector]
+        except KeyError:
+            #  selector {selector.hex()} not found in {log['address']}
+            return None
+
+        # ds-note data field uses either (uint256,bytes) or (bytes) encoding
+        # instead of guessing, assume the payload begins right after the selector
+        data = decode_hex(log["data"])
+        input_types = [i.canonical_type for i in method_abi.inputs]
+        start_index = data.index(selector) + 4
+        values = decode_abi(input_types, data[start_index:])
+
+        return ContractLog(  # type: ignore
+            name=method_abi.name,
+            block_hash=log["blockHash"],
+            block_number=log["blockNumber"],
+            event_arguments={i.name: value for i, value in zip(method_abi.inputs, values)},
+            index=log["logIndex"],
+            transaction_hash=log["transactionHash"],
+        )

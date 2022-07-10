@@ -256,7 +256,7 @@ class ReceiptAPI(BaseInterfaceModel):
                 selector = log["topics"][0]
                 if selector not in contract_type.events:
                     # Likely a library log
-                    library_log = self.decode_library_log(log)
+                    library_log = self.provider.network.ecosystem.decode_library_log(log)
                     if library_log:
                         yield library_log
 
@@ -275,10 +275,6 @@ class ReceiptAPI(BaseInterfaceModel):
             for addr in logs_map:
                 for _, (evt_abi, log_items) in logs_map[addr].items():
                     yield from self.provider.network.ecosystem.decode_logs(evt_abi, log_items)
-
-    def decode_library_log(self, log: Dict) -> Optional[ContractLog]:
-        # Override in ecosystem implementations to handle common library logs, such as DSNote.
-        return None
 
     def await_confirmations(self) -> "ReceiptAPI":
         """

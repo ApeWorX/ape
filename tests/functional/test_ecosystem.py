@@ -112,10 +112,10 @@ def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, recei
     assert redefined_block.parent_hash == latest_block.parent_hash
 
 
-def test_decode_ds_note(ethereum, mainnet_contract, chain, ds_note):
+def test_decode_library_log(ethereum, mainnet_contract, chain, ds_note):
     mainnet_contract("0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B")
     ilk = encode_single("bytes32", b"YFI-A")
-    assert ethereum._decode_ds_note(ds_note).event_arguments == {
+    assert ethereum.decode_library_log(ds_note).event_arguments == {
         "i": ilk,
         "u": "0x0abb839063ef747c8432b2acc60bf8f70ec09a45",
         "v": "0x0abb839063ef747c8432b2acc60bf8f70ec09a45",
