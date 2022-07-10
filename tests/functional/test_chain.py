@@ -316,7 +316,9 @@ def test_get_deployments_live(
     assert my_contracts_list_1[-1].address == deployed_contract_1.address
 
 
-def test_get_multiple_deployments_live(chain, project_with_contract, owner, dummy_live_network):
+def test_get_multiple_deployments_live(
+    chain, project_with_contract, owner, remove_disk_writes_deployments, dummy_live_network
+):
     # Arrange
     starting_contracts_list_0 = chain.contracts.get_deployments(project_with_contract.ApeContract0)
     starting_contracts_list_1 = chain.contracts.get_deployments(project_with_contract.ApeContract1)
