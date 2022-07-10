@@ -386,7 +386,7 @@ class ContractEvent(ManagerAccessMixin):
         stop_block = min(stop_block, self.chain_manager.blocks.height)
 
         search_topic_filters = (
-            [TopicFilter.parse_obj({"event": self.abi, "search_values": search_topics})]
+            [TopicFilter(event=self.abi, search_values=search_topics)]
             if search_topics
             else [self._default_topic_query]
         )
