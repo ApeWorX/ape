@@ -1,10 +1,29 @@
 import pytest
+from ethpm_types.abi import EventABI
 
 from ape.exceptions import ProviderNotConnectedError
 from ape.types import LogFilter, TopicFilter
-from ethpm_types.abi import EventABI
 
 EXPECTED_CHAIN_ID = 61
+RAW_EVENT_ABI = """
+{
+  "anonymous": false,
+  "inputs": [
+    {
+      "indexed": true,
+      "name": "oldVersion",
+      "type": "address"
+    },
+    {
+      "indexed": true,
+      "name": "newVersion",
+      "type": "address"
+    }
+  ],
+  "name": "StrategyMigrated",
+  "type": "event"
+}
+"""
 
 
 def test_chain_id(eth_tester_provider):
@@ -108,9 +127,7 @@ def test_get_contract_logs_multiple_event_types_match_any_value(
 
 
 def test_topic_filter_encoding():
-    event_abi = EventABI.parse_raw(
-        '{"anonymous":false,"inputs":[{"indexed":true,"name":"oldVersion","type":"address"},{"indexed":true,"name":"newVersion","type":"address"}],"name":"StrategyMigrated","type":"event"}'
-    )
+    event_abi = EventABI.parse_raw(RAW_EVENT_ABI)
     topic_filter = TopicFilter(
         event=event_abi, search_values={"newVersion": "0x8c44Cc5c0f5CD2f7f17B9Aca85d456df25a61Ae8"}
     )
