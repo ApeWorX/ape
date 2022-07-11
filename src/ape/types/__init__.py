@@ -87,28 +87,27 @@ class TopicFilter(BaseModel):
         from ape.utils.abi import LogInputABICollection
 
         encoded_filter_list: List = [self.event_signature_hash]
-        search_topic_values = []
         topic_collection = LogInputABICollection(
             self.event,
             [abi_input for abi_input in self.event.inputs if abi_input.indexed],
             True,
         )
 
-        for name, value in self.search_values.items():
-            if hasattr(value, "address"):
-                value = convert(value, AddressType)
+        for topic in topic_collection.values:
+            if topic.name not in self.search_values:
+                encoded_filter_list.append(None)
+                continue
 
-            abi_type = None
-            for argument in topic_collection.values:
-                if argument.name == name:
-                    abi_type = argument.type
+            value = self.search_values[topic.name]
+            encoded_filter_list.append(value)
 
-            if not abi_type:
-                raise ValueError(f"'{name}' is not an indexed topic for event '{self.event.name}'.")
+        valid_names = {item.name for item in topic_collection.values}
+        requested_names = set(self.search_values)
+        if requested_names - valid_names:
+            raise ValueError(
+                f"{self.event.name} has these indexed topics {sorted(valid_names)}, but you provided: {sorted(requested_names)}"
+            )
 
-            search_topic_values.append(value)
-
-        encoded_filter_list.extend(search_topic_values)
         return encoded_filter_list
 
 
