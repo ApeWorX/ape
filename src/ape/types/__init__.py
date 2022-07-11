@@ -3,8 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 from eth_abi.abi import encode_single
 from eth_abi.packed import encode_single_packed
 from eth_typing import ChecksumAddress as AddressType
-from eth_typing import HexStr
-from eth_utils import add_0x_prefix, keccak, to_hex
+from eth_utils import encode_hex, keccak
 from ethpm_types import (
     ABI,
     Bytecode,
