@@ -101,11 +101,10 @@ class TopicFilter(BaseModel):
             value = self.search_values[topic.name]
             encoded_filter_list.append(value)
 
-        valid_names = {item.name for item in topic_collection.values}
-        requested_names = set(self.search_values)
-        if requested_names - valid_names:
+        valid_names = [item.name for item in topic_collection.values]
+        if set(self.search_values) - set(valid_names):
             raise ValueError(
-                f"{self.event.name} has these indexed topics {sorted(valid_names)}, but you provided: {sorted(requested_names)}"
+                f"{self.event.name} has these indexed topics {valid_names}, but you provided {sorted(self.search_values)}"
             )
 
         return encoded_filter_list
