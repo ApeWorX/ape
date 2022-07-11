@@ -50,6 +50,7 @@ TopicFilter = List[Union[Optional[HexStr], List[Optional[HexStr]]]]
 
 class LogFilter(BaseModel):
     contract_addresses: List[AddressType] = []
+    events: List[EventABI] = []
     topic_filter: TopicFilter = []
     start_block: int = 0
     stop_block: Optional[int] = None  # Use block height
@@ -67,17 +68,22 @@ class LogFilter(BaseModel):
     def validate_start_block(cls, value):
         return value or 0
 
-    @validator("contract_addresses", pre=True)
+    @validator("contract_addresses", pre=True, each_item=True)
     def validate_addresses(cls, value):
         from ape import convert
 
-        return [convert(a, AddressType) for a in value]
+        return str(convert(value, AddressType))
+
+    @property
+    def selectors(self):
+        return {encode_hex(keccak(text=event.selector)): event for event in self.events}
 
     @classmethod
-    def from_event(cls, event: EventABI, search_topics: Dict[str, Any]):
+    def from_event(cls, address: AddressType, event: EventABI, search_topics: Dict[str, Any]):
         """
         Construct a log filter from an event topic query.
         """
+        from ape import convert
         from ape.utils.abi import LogInputABICollection, is_dynamic_sized_type
 
         if hasattr(event, "abi"):
@@ -87,13 +93,12 @@ class LogFilter(BaseModel):
         indexed = LogInputABICollection(event, [i for i in event.inputs if i.indexed], indexed=True)
 
         def encode_topic_value(abi_type, value):
-            if hasattr(value, "address"):
-                value = value.address
             if isinstance(value, (list, tuple)):
                 return [encode_topic_value(abi_type, v) for v in value]
             elif is_dynamic_sized_type(abi_type):
                 return encode_hex(keccak(encode_single_packed(str(abi_type)), value))
-
+            elif abi_type == "address":
+                value = convert(value, AddressType)
             return encode_hex(encode_single(abi_type, value))
 
         for name, abi_type in zip(indexed.names, indexed.types):
@@ -103,7 +108,7 @@ class LogFilter(BaseModel):
             else:
                 topic_filter.append(None)
 
-        return cls(topic_filter=topic_filter)
+        return cls(contract_addresses=[address], events=[event], topic_filter=topic_filter)
 
 
 class ContractLog(BaseModel):
