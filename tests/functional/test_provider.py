@@ -2,6 +2,7 @@ import pytest
 
 from ape.exceptions import ProviderNotConnectedError
 from ape.types import LogFilter, TopicFilter
+from ethpm_types.abi import EventABI
 
 EXPECTED_CHAIN_ID = 61
 
@@ -104,3 +105,17 @@ def test_get_contract_logs_multiple_event_types_match_any_value(
     assert len(logs) == 2
     assert logs[0].foo == 0
     assert logs[1].bar == 1
+
+
+def test_topic_filter_encoding():
+    event_abi = EventABI.parse_raw(
+        '{"anonymous":false,"inputs":[{"indexed":true,"name":"oldVersion","type":"address"},{"indexed":true,"name":"newVersion","type":"address"}],"name":"StrategyMigrated","type":"event"}'
+    )
+    topic_filter = TopicFilter(
+        event=event_abi, search_values={"newVersion": "0x8c44Cc5c0f5CD2f7f17B9Aca85d456df25a61Ae8"}
+    )
+    assert topic_filter.encode() == [
+        "0x100b69bb6b504e1252e36b375233158edee64d071b399e2f81473a695fd1b021",
+        None,
+        "0x0000000000000000000000008c44cc5c0f5cd2f7f17b9aca85d456df25a61ae8",
+    ]
