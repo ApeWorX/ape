@@ -35,10 +35,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def update_settings(self, new_settings: dict):
         pass
 
-    def estimate_gas_cost(self, txn: TransactionAPI) -> int:
+    def estimate_gas_cost(self, txn: TransactionAPI, *args, **kwargs) -> int:
         try:
-            result = self.web3.eth.estimate_gas(txn.dict())  # type: ignore
-            return result
+            return self.web3.eth.estimate_gas(txn.dict())  # type: ignore
         except ValidationError as err:
             message = gas_estimation_error_message(err)
             raise TransactionError(base_err=err, message=message) from err

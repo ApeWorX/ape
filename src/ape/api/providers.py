@@ -612,10 +612,10 @@ class Web3Provider(ProviderAPI, ABC):
         self.provider_settings.update(new_settings)
         self.connect()
 
-    def estimate_gas_cost(self, txn: TransactionAPI) -> int:
+    def estimate_gas_cost(self, txn: TransactionAPI, *args, **kwargs) -> int:
         txn_dict = txn.dict()
         try:
-            return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
+            return self._web3.eth.estimate_gas(txn_dict, **kwargs)  # type: ignore
         except ValueError as err:
             tx_error = self.get_virtual_machine_error(err)
 
@@ -657,17 +657,17 @@ class Web3Provider(ProviderAPI, ABC):
         block_data = dict(self.web3.eth.get_block(block_id))
         return self.network.ecosystem.decode_block(block_data)
 
-    def get_nonce(self, address: str) -> int:
-        return self.web3.eth.get_transaction_count(address)  # type: ignore
+    def get_nonce(self, address: str, *args, **kwargs) -> int:
+        return self.web3.eth.get_transaction_count(address, **kwargs)
 
     def get_balance(self, address: str) -> int:
-        return self.web3.eth.get_balance(address)  # type: ignore
+        return self.web3.eth.get_balance(address)
 
     def get_code(self, address: str) -> bytes:
-        return self.web3.eth.get_code(address)  # type: ignore
+        return self.web3.eth.get_code(address)
 
-    def get_storage_at(self, address: str, slot: int) -> bytes:
-        return self.web3.eth.get_storage_at(address, slot)  # type: ignore
+    def get_storage_at(self, address: str, slot: int, *args, **kwargs) -> bytes:
+        return self.web3.eth.get_storage_at(address, slot, **kwargs)
 
     def send_call(
         self,
