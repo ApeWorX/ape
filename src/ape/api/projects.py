@@ -115,6 +115,38 @@ class ProjectAPI(BaseInterfaceModel):
 
         manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
+
+        manifest.compilers = []
+        # [x for x in contract_types]
+        i = 0
+        for contract_type in contract_types:
+            suffix = source_paths[i].suffix
+            if cls.compiler_manager.registered_compilers[suffix].name:
+                if suffix == ".sol":
+                    manifest.compilers.append(
+                        {
+                            "name": cls.compiler_manager.registered_compilers[suffix].name,
+                            "version": [
+                                x
+                                for x in cls.compiler_manager.registered_compilers[
+                                    suffix
+                                ].get_version_map(source_paths)
+                            ][i],
+                            "settings": None,
+                            "contractTypes": contract_types[contract_type],
+                        }
+                    )
+                else:
+                    manifest.compilers.append(
+                        {
+                            "name": cls.compiler_manager.registered_compilers[suffix].name,
+                            "version": None,
+                            "settings": None,
+                            "contractTypes": contract_types[contract_type],
+                        }
+                    )
+            i += 1
+
         return manifest
 
     @classmethod
@@ -143,6 +175,10 @@ class ProjectAPI(BaseInterfaceModel):
             )
 
         return source_dict  # {source_id: Source}
+
+    # @classmethod
+    # def _create_compiler_list(cls, contract_filepaths: List[Path]):
+    #     return
 
 
 class DependencyAPI(BaseInterfaceModel):
