@@ -146,12 +146,11 @@ class BlockContainer(BaseManager):
         )
 
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
-        data = map(lambda val: val.dict(by_alias=False), blocks)
-
         # NOTE: Allow any columns from ecosystem's BlockAPI class
         # TODO: fetch the block fields from EcosystemAPI
         columns = validate_and_expand_columns(columns, list(self.head.__fields__))  # type: ignore
-        return pd.DataFrame(columns=columns, data=data)
+        data = map(lambda val: val.dict(by_alias=False), blocks)
+        return pd.DataFrame(columns=columns, data=[val for val in data])
 
     def range(
         self,

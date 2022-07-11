@@ -7,12 +7,17 @@ class Blocks(Base):
     __tablename__ = "blocks"  # type: ignore
 
     hash = Column(String, primary_key=True, nullable=False)
-    gas_data = Column(String, nullable=False)
+    num_transactions = Column(String, nullable=False)
     consensus_data = Column(String, nullable=False)
     number = Column(Integer, nullable=False, index=True)
     parent_hash = Column(String, nullable=False)
     size = Column(Integer, nullable=False)
     timestamp = Column(DateTime, index=True)
+    gas_limit = Column(Integer, nullable=False)
+    gas_used = Column(Integer, nullable=False)
+    base_fee = Column(Integer)
+    difficulty = Column(Integer, nullable=False)
+    total_difficulty = Column(Integer, nullable=False)
 
 
 class Transactions(Base):

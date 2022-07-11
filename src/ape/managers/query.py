@@ -91,7 +91,7 @@ class QueryManager(ManagerAccessMixin):
 
         engines: Dict[str, QueryAPI] = {"__default__": DefaultQueryProvider()}
 
-        for plugin_name, (engine_class,) in self.plugin_manager.query_engines:
+        for plugin_name, engine_class in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)
             engines[engine_name] = engine_class()  # type: ignore
 
@@ -133,9 +133,10 @@ class QueryManager(ManagerAccessMixin):
 
         # Go fetch the result from the engine
         result = engine.perform_query(query)
+        data = [val for val in result]
 
         # Update any caches
         for engine in self.engines.values():
-            engine.update_cache(query, result)
+            engine.update_cache(query, data)
 
-        return result
+        return data

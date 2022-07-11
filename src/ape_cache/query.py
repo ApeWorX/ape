@@ -2,12 +2,13 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+import sqlalchemy.exc
 from sqlalchemy import create_engine  # type: ignore
 from sqlalchemy.sql import text  # type: ignore
 
 from ape.api import QueryAPI, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.api.query import AccountQuery, BlockQuery, ContractEventQuery
+from ape.api.query import AccountTransactionQuery, BlockQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.utils import singledispatchmethod  # type: ignore
@@ -16,7 +17,7 @@ from . import models
 
 TABLE_NAME = {
     BlockQuery: "blocks",
-    AccountQuery: "transactions",
+    AccountTransactionQuery: "transactions",
     ContractEventQuery: "contract_events",
 }
 
@@ -122,13 +123,32 @@ class CacheQueryProvider(QueryAPI):
             )
             return pd.DataFrame(columns=query.columns, data=q.fetchall())
 
-    def update_cache(self, query: QueryType, result: pd.DataFrame):
-        if set(result.columns) != set(query.all_fields()):
-            return  # We do not have all the data to update the database
+    def update_cache(self, query: QueryType, result: map) -> None:
+        data = map(lambda val: val.dict(by_alias=False), result)
+        df = pd.DataFrame(columns=query.columns, data=[val for val in data])
 
         try:
             with self.engine.connect() as conn:
-                result.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
+                for idx, row in df.iterrows():
+                    try:
+                        v = conn.execute(
+                            text(
+                                """
+                                SELECT * FROM blocks
+                                WHERE blocks.number = :number
+                                """
+                            ),
+                            number=row["number"],
+                        )
+                        if [i for i in v]:
+                            df = df[df["number"] != row["number"]]
+
+                    except sqlalchemy.exc.OperationalError as err:
+                        logger.info(err)
+                        df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
+                        return
+
+                df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
 
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
