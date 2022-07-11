@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 from eth_abi.abi import encode_single
 from eth_abi.packed import encode_single_packed
 from eth_typing import ChecksumAddress as AddressType
+from eth_typing import HexStr
 from eth_utils import encode_hex, keccak
 from ethpm_types import (
     ABI,
@@ -44,75 +45,12 @@ A raw data-type representation of an address.
 """
 
 
-class TopicFilter(BaseModel):
-    event: EventABI
-    search_values: Dict[str, Optional[Union[Any, List[Any]]]] = {}
-
-    @property
-    def event_signature_hash(self) -> str:
-        return encode_hex(keccak(text=self.event.selector))
-
-    @root_validator(pre=True)
-    def validate_search_values(cls, values):
-        from ape.utils import is_dynamic_sized_type
-
-        values["event"] = (
-            values["event"].abi if hasattr(values["event"], "abi") else values["event"]
-        )
-        input_types = {i.name: i.type for i in values["event"].inputs}
-
-        def encode_topic_value(key, value):
-            if hasattr(value, "address"):
-                value = value.address
-
-            abi_type = input_types.get(key)
-
-            if not abi_type or value is None:
-                return None
-
-            elif isinstance(value, (list, tuple)):
-                return [encode_topic_value(key, v) for v in value]
-
-            elif is_dynamic_sized_type(abi_type):
-                return encode_hex(keccak(encode_single_packed(str(abi_type), value)))
-
-            else:
-                return encode_hex(encode_single(abi_type, value))  # type: ignore
-
-        search_values = {k: encode_topic_value(k, v) for k, v in values["search_values"].items()}
-        return {**values, "search_values": search_values}
-
-    def encode(self) -> List:
-        from ape import convert
-        from ape.utils.abi import LogInputABICollection
-
-        encoded_filter_list: List = [self.event_signature_hash]
-        topic_collection = LogInputABICollection(
-            self.event,
-            [abi_input for abi_input in self.event.inputs if abi_input.indexed],
-            True,
-        )
-
-        for topic in topic_collection.values:
-            if topic.name not in self.search_values:
-                encoded_filter_list.append(None)
-                continue
-
-            value = self.search_values[topic.name]
-            encoded_filter_list.append(value)
-
-        valid_names = [item.name for item in topic_collection.values]
-        if set(self.search_values) - set(valid_names):
-            raise ValueError(
-                f"{self.event.name} has these indexed topics {valid_names}, but you provided {sorted(self.search_values)}"
-            )
-
-        return encoded_filter_list
+TopicFilter = List[Union[Optional[HexStr], List[Optional[HexStr]]]]
 
 
 class LogFilter(BaseModel):
     contract_addresses: List[AddressType] = []
-    topic_filters: List[TopicFilter] = []
+    topic_filter: TopicFilter = []
     start_block: int = 0
     stop_block: Optional[int] = None  # Use block height
 
@@ -135,30 +73,37 @@ class LogFilter(BaseModel):
 
         return [convert(a, AddressType) for a in value]
 
-    def __getitem__(self, topic_id: str) -> TopicFilter:
-        topic = self.get(topic_id)
-        if not topic:
-            raise ValueError(f"Topic '{topic_id}' not found.")
+    @classmethod
+    def from_event(cls, event: EventABI, search_topics: Dict[str, Any]):
+        """
+        Construct a log filter from an event topic query.
+        """
+        from ape.utils.abi import LogInputABICollection, is_dynamic_sized_type
 
-        return topic
+        if hasattr(event, "abi"):
+            event = event.abi  # type: ignore
 
-    def __contains__(self, topic_id: str) -> bool:
-        return self.get(topic_id) is not None
+        topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event.selector))]
+        indexed = LogInputABICollection(event, [i for i in event.inputs if i.indexed], indexed=True)
 
-    def get(self, topic_id: str) -> Optional[TopicFilter]:
-        for topic in self.topic_filters:
-            if topic.event_signature_hash == topic_id:
-                return topic
+        def encode_topic_value(abi_type, value):
+            if hasattr(value, "address"):
+                value = value.address
+            if isinstance(value, (list, tuple)):
+                return [encode_topic_value(abi_type, v) for v in value]
+            elif is_dynamic_sized_type(abi_type):
+                return encode_hex(keccak(encode_single_packed(str(abi_type)), value))
 
-        return None
+            return encode_hex(encode_single(abi_type, value))
 
-    def encode_topics(self) -> List:
-        topics = [t.encode() for t in self.topic_filters]
-        if len(topics) == 1:
-            # Not OR-ing any topics
-            return topics[0]
+        for name, abi_type in zip(indexed.names, indexed.types):
+            if name in search_topics:
+                encoded_value = encode_topic_value(abi_type, search_topics[name])
+                topic_filter.append(encoded_value)
+            else:
+                topic_filter.append(None)
 
-        return topics
+        return cls(topic_filter=topic_filter)
 
 
 class ContractLog(BaseModel):
