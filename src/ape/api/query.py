@@ -139,7 +139,7 @@ class QueryAPI(BaseInterfaceModel):
             Iterator
         """
 
-    def update_cache(self, query: QueryType, result: Iterator):
+    def update_cache(self, query: QueryType, result: List[Any]):
         """
         Allows a query plugin the chance to update any cache using the results obtained
         from other query plugins. Defaults to doing nothing, override to store cache data.
