@@ -123,7 +123,7 @@ class CacheQueryProvider(QueryAPI):
             )
             return pd.DataFrame(columns=query.columns, data=q.fetchall())
 
-    def update_cache(self, query: QueryType, result: Iterator[Any]) -> None:
+    def update_cache(self, query: QueryType, result: Iterator[Any]) -> None:  # type: ignore
         data = map(lambda val: val.dict(by_alias=False), result)
         df = pd.DataFrame(columns=query.columns, data=[val for val in data])
 
