@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Iterator, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 from ape.api import QueryAPI, QueryType
 from ape.api.query import BlockQuery, BlockTransactionQuery, ContractEventQuery
