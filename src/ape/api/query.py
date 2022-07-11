@@ -146,5 +146,5 @@ class QueryAPI(BaseInterfaceModel):
 
         Args:
             query (``QueryType``): query that was executed
-            result (``Iterator``): the result of the query
+            result (``List``): the result of the query
         """
