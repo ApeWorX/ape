@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, Optional
+from typing import Any, Dict, List, Iterator, Optional
 
 from ape.api import QueryAPI, QueryType
 from ape.api.query import BlockQuery, BlockTransactionQuery, ContractEventQuery
@@ -97,7 +97,7 @@ class QueryManager(ManagerAccessMixin):
 
         return engines
 
-    def query(self, query: QueryType, engine_to_use: Optional[str] = None) -> Iterator[QueryAPI]:
+    def query(self, query: QueryType, engine_to_use: Optional[str] = None) -> List[Any]:
         """
         Args:
             query (``QueryType``): The type of query to execute

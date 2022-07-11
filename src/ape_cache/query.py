@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Any, Iterator, Optional
 
 import pandas as pd
 import sqlalchemy.exc
@@ -123,7 +123,7 @@ class CacheQueryProvider(QueryAPI):
             )
             return pd.DataFrame(columns=query.columns, data=q.fetchall())
 
-    def update_cache(self, query: QueryType, result: map) -> None:
+    def update_cache(self, query: QueryType, result: Iterator[Any]) -> None:
         data = map(lambda val: val.dict(by_alias=False), result)
         df = pd.DataFrame(columns=query.columns, data=[val for val in data])
 
