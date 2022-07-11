@@ -669,11 +669,14 @@ class Web3Provider(ProviderAPI, ABC):
     def get_storage_at(self, address: str, slot: int) -> bytes:
         return self.web3.eth.get_storage_at(address, slot)  # type: ignore
 
-    def send_call(self, txn: TransactionAPI) -> bytes:
+    def send_call(
+        self,
+        txn: TransactionAPI,
+        block_id: Optional[BlockID] = None,
+        state_override: Optional[Dict] = None,
+    ) -> bytes:
         try:
             data = txn.dict()
-            block_id = data.pop("block_id", None)
-            state_override = data.pop("state_override", None)
             return self.web3.eth.call(
                 data, block_identifier=block_id, state_override=state_override
             )
