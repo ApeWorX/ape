@@ -39,11 +39,6 @@ contract ContractB {
     function methodB1(string memory lolol, uint dynamo) public {
         pumpkin[msg.sender] = lolol;
         
-        // Turns out this should not be working!
-        // string memory converted_lols = string(abi.encodePacked(lolol));
-        // string memory result = string.concat(converted_lols, " Captain Janeway");
-        // concatres = result;
-        
         contractC.getSomeList();
         contractC.methodC1("simpler", dynamo, msg.sender);
         bandPractice[msg.sender] = bandPractice[msg.sender] + dynamo;
