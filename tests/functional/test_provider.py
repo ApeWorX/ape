@@ -83,18 +83,6 @@ def test_get_contract_logs_single_log_query_multiple_values(
     assert logs[0]["foo"] == 0
 
 
-def test_get_contract_logs_single_log_any_value(contract_instance, owner, eth_tester_provider):
-    log_filter = LogFilter.from_event(
-        event=contract_instance.FooHappened,
-        search_topics={"foo": None},
-        addresses=[contract_instance],
-    )
-    contract_instance.fooAndBar(sender=owner)  # Create logs
-    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
-    assert len(logs) == 1
-    assert logs[0]["foo"] == 0
-
-
 def test_get_contract_logs_single_log_unmatched(contract_instance, owner, eth_tester_provider):
     log_filter = LogFilter.from_event(
         event=contract_instance.FooHappened, search_topics={"foo": 2}, addresses=[contract_instance]
