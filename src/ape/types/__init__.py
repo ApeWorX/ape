@@ -151,8 +151,9 @@ class ContractLog(BaseModel):
     log_index: int
     """The index of the log on the transaction."""
 
-    def __repr__(self) -> str:
-        return f"<{self.name}>"
+    def __str__(self) -> str:
+        args = ' '.join(f'{key}={val}' for key, val in self.event_arguments.items())
+        return f"{self.name} {args}"
 
     def __getattr__(self, item: str) -> Any:
         """
