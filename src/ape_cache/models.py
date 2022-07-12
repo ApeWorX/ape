@@ -23,8 +23,9 @@ class Blocks(Base):
 class Transactions(Base):
     __tablename__ = "transactions"  # type: ignore
 
-    hash = Column(String, primary_key=True, index=True)
+    hash = Column(Integer, primary_key=True, index=True)
     sender = Column(String, nullable=False)
+    receiver = Column(String, nullable=False)
     block_hash = Column(String, ForeignKey("blocks.hash", ondelete="CASCADE"))
     nonce = Column(Integer, nullable=False)
 

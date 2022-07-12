@@ -8,7 +8,7 @@ from sqlalchemy.sql import text  # type: ignore
 
 from ape.api import QueryAPI, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.api.query import AccountTransactionQuery, BlockQuery, ContractEventQuery
+from ape.api.query import BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.utils import singledispatchmethod  # type: ignore
@@ -17,7 +17,7 @@ from . import models
 
 TABLE_NAME = {
     BlockQuery: "blocks",
-    AccountTransactionQuery: "transactions",
+    BlockTransactionQuery: "transactions",
     ContractEventQuery: "contract_events",
 }
 
@@ -99,6 +99,32 @@ class CacheQueryProvider(QueryAPI):
             logger.debug(err)
             return None
 
+    @estimate_query.register
+    def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> Optional[int]:
+        try:
+            with self.engine.connect() as conn:
+                q = conn.execute(
+                    text(
+                        """
+                        SELECT COUNT(*)
+                        FROM transactions
+                        WHERE transactions.block_id = :block_id
+                        """
+                    ),
+                    block_id=query.block_id,
+                )
+                if q.rowcount > 0:
+                    # NOTE: Assume 200 msec to get data from database
+                    return 200
+                # Can't handle this query
+                return None
+
+        except Exception as err:
+            # Note: If any error, skip the data from the cache and continue to
+            #       query from provider.
+            logger.debug(err)
+            return None
+
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> pd.DataFrame:  # type: ignore
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
@@ -123,27 +149,77 @@ class CacheQueryProvider(QueryAPI):
             )
             return pd.DataFrame(columns=query.columns, data=q.fetchall())
 
+    @perform_query.register
+    def perform_transaction_query(self, query: BlockTransactionQuery) -> pd.DataFrame:
+        with self.engine.connect() as conn:
+            q = conn.execute(
+                text(
+                    """
+                    SELECT :columns
+                    FROM transactions
+                    WHERE transactions.block_id = :block_id
+                    """
+                ),
+                columns=",".join(query.columns),
+                start_block=query.block_id,
+            )
+            return pd.DataFrame(columns=query.columns, data=q.fetchall())
+
     def update_cache(self, query: QueryType, result: List[Any]) -> None:
-        data = map(lambda val: val.dict(by_alias=False), result)
-        df = pd.DataFrame(columns=query.columns, data=[val for val in data])
+        df = pd.DataFrame()
+        if isinstance(query, BlockQuery):
+            df = pd.DataFrame(
+                columns=query.columns,
+                data=[val for val in map(lambda val: val.dict(by_alias=False), result)],
+            )
+        elif isinstance(query, BlockTransactionQuery):
+            df = pd.DataFrame(
+                columns=["to", "nonce", "from"],
+                data=[(val.receiver, val.nonce, val.sender) for val in result],
+            )
+            df["block_hash"] = query.block_id
+            if query.columns != ["*"]:
+                df = df[[query.columns]]
 
         try:
             with self.engine.connect() as conn:
                 for idx, row in df.iterrows():
                     try:
-                        v = conn.execute(
-                            text(
-                                """
-                                SELECT * FROM blocks
-                                WHERE blocks.number = :number
-                                """
-                            ),
-                            number=row["number"],
-                        )
-                        if [i for i in v]:
-                            df = df[df["number"] != row["number"]]
+                        if isinstance(query, BlockQuery):
+                            v = conn.execute(
+                                text(
+                                    """
+                                    SELECT * FROM blocks
+                                    WHERE blocks.number = :number
+                                    """
+                                ),
+                                number=row["number"],
+                            )
+                            if [i for i in v]:
+                                df = df[df["number"] != row["number"]]
+
+                        elif isinstance(query, BlockTransactionQuery):
+                            v = conn.execute(
+                                text(
+                                    """
+                                    SELECT * FROM transactions
+                                    WHERE transactions.block_hash = :block_hash
+                                    """
+                                ),
+                                block_hash=row["block_hash"],
+                            )
+                            if [i for i in v]:
+                                df = df[df["block_hash"] != row["block_hash"]]
+
+                            if df.empty:
+                                return
 
                     except sqlalchemy.exc.OperationalError as err:
+                        logger.info(err)
+                        df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
+                        return
+
+                    except Exception as err:
                         logger.info(err)
                         df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
                         return
