@@ -240,7 +240,7 @@ class LogInputABICollection:
 
     @property
     def names(self) -> List[str]:
-        return [abi.name for abi in self.values if abi.name]
+        return [abi.name for abi in self.values]  # type: ignore
 
     @property
     def normalized_values(self) -> List[Dict]:
