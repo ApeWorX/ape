@@ -150,8 +150,9 @@ class GethProvider(Web3Provider, UpstreamProvider):
     _geth: Optional[EphemeralGeth] = None
     _client_version: Optional[str] = None
 
-    block_page_size = 10000
-    concurrency = 4
+    # optimal values
+    block_page_size = 50_000
+    concurrency = 8
 
     @property
     def uri(self) -> str:
