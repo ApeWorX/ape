@@ -233,14 +233,22 @@ def is_dynamic_sized_type(abi_type: Union[ABIType, str]) -> bool:
 
 
 class LogInputABICollection:
-    def __init__(self, abi: EventABI, values: List[EventABIType], indexed: bool = False):
+    def __init__(self, abi: EventABI):
         self.abi = abi
-        self.values = values
-        self.indexed = indexed
+        self.topics = [i for i in abi.inputs if i.indexed]
+        self.data = [i for i in abi.inputs if not i.indexed]
+        self.values = self.topics + self.data
+
+        if len(set(self.names)) < len(self.names):
+            raise ValueError(f"duplicate names found in log input", abi)
+
+    @property
+    def event_name(self):
+        return self.abi.name
 
     @property
     def names(self) -> List[str]:
-        return [abi.name for abi in self.values]  # type: ignore
+        return [abi.name for abi in self.values]
 
     @property
     def normalized_values(self) -> List[Dict]:
@@ -248,18 +256,16 @@ class LogInputABICollection:
 
     @property
     def types(self) -> List[Union[str, Dict]]:
-        if not self.indexed:
-            return [collapse_if_tuple(t) for t in self.normalized_values]
-
-        # Indexed inputs
-        handled_values: List[Union[str, Dict]] = []
-        for abi_input in self.normalized_values:
-            if is_dynamic_sized_type(abi_input["type"]):
-                handled_values.append("bytes32")
+        abi_types = []
+        for item in self.values:
+            # reference types as indexed arguments are written as a hash
+            # https://docs.soliditylang.org/en/v0.8.15/contracts.html#events
+            if item.indexed and is_dynamic_sized_type(item.type):
+                abi_types.append("bytes32")
             else:
-                handled_values.append(collapse_if_tuple(abi_input))
+                abi_types.append(item.canonical_type)
 
-        return handled_values
+        return abi_types
 
 
 def parse_type(output_type: str) -> Union[str, Tuple, List]:
