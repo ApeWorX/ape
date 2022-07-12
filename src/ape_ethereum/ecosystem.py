@@ -1,4 +1,3 @@
-import itertools
 import re
 from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
@@ -8,15 +7,8 @@ from eth_abi import encode_abi as abi_encode
 from eth_abi.abi import decode_abi
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
-from eth_utils import (
-    add_0x_prefix,
-    decode_hex,
-    encode_hex,
-    keccak,
-    to_bytes,
-    to_checksum_address,
-)
-from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
+from eth_utils import add_0x_prefix, decode_hex, encode_hex, keccak, to_bytes, to_checksum_address
+from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field
 
@@ -33,6 +25,7 @@ from ape.utils import (
     parse_type,
     returns_array,
 )
+from ape.utils.misc import to_int
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -448,12 +441,18 @@ class Ethereum(EcosystemAPI):
                 raise NotImplementedError(
                     "decoding anonymous logs is not supported with this method"
                 )
-
-            abi = abi_inputs[log["topics"][0]]
+            topics = log['topics']
+            # web3.py converts topics to hexbytes, data is always a hexstr
+            if isinstance(log['topics'][0], bytes):
+                topics = [encode_hex(t) for t in log['topics']]
+            try:
+                abi = abi_inputs[topics[0]]
+            except KeyError:
+                continue
             # the indexed flag doesn't affect the selector, so there could be a mismathch
             # in number of indexed topics. we deal with such potentially malformed abi by
             # decoding topics + data as one blob
-            values = b"".join(decode_hex(i) for i in log["topics"][1:] + [log["data"]])
+            values = b"".join(decode_hex(i) for i in topics[1:] + [log["data"]])
             decoded_values = decode_abi(abi.types, values)
             decoded_values = [decode_value(t, v) for t, v in zip(abi.types, decoded_values)]
             event_arguments = {name: value for name, value in zip(abi.names, decoded_values)}
@@ -463,7 +462,7 @@ class Ethereum(EcosystemAPI):
                 contract_address=self.decode_address(log["address"]),
                 event_arguments=event_arguments,
                 transaction_hash=log["transactionHash"],
-                block_number=int(log["blockNumber"], 16),
+                block_number=to_int(log["blockNumber"]),
                 block_hash=log["blockHash"],
-                log_index=int(log["logIndex"], 16),
+                log_index=to_int(log["logIndex"]),
             )
