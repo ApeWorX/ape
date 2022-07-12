@@ -2,7 +2,7 @@ import pytest
 from ethpm_types.abi import EventABI
 
 from ape.exceptions import ProviderNotConnectedError
-from ape.types import LogFilter, TopicFilter
+from ape.types import LogFilter
 
 EXPECTED_CHAIN_ID = 61
 RAW_EVENT_ABI = """
@@ -60,8 +60,9 @@ def test_get_contracts_logs_all_logs(contract_instance, owner, eth_tester_provid
 
 
 def test_get_contract_logs_single_log(contract_instance, owner, eth_tester_provider):
-    topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": 0})
-    log_filter = LogFilter(contract_addresses=[contract_instance], topic_filters=[topic_filter])
+    log_filter = LogFilter.from_event(
+        event=contract_instance.FooHappened, search_topics={"foo": 0}, addresses=[contract_instance]
+    )
     contract_instance.fooAndBar(sender=owner)  # Create logs
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 1
@@ -71,8 +72,11 @@ def test_get_contract_logs_single_log(contract_instance, owner, eth_tester_provi
 def test_get_contract_logs_single_log_query_multiple_values(
     contract_instance, owner, eth_tester_provider
 ):
-    topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": [0, 1]})
-    log_filter = LogFilter(contract_addresses=[contract_instance], topic_filters=[topic_filter])
+    log_filter = LogFilter.from_event(
+        event=contract_instance.FooHappened,
+        search_topics={"foo": [0, 1]},
+        addresses=[contract_instance],
+    )
     contract_instance.fooAndBar(sender=owner)  # Create logs
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 1
@@ -80,8 +84,11 @@ def test_get_contract_logs_single_log_query_multiple_values(
 
 
 def test_get_contract_logs_single_log_any_value(contract_instance, owner, eth_tester_provider):
-    topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": None})
-    log_filter = LogFilter(contract_addresses=[contract_instance], topic_filters=[topic_filter])
+    log_filter = LogFilter.from_event(
+        event=contract_instance.FooHappened,
+        search_topics={"foo": None},
+        addresses=[contract_instance],
+    )
     contract_instance.fooAndBar(sender=owner)  # Create logs
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 1
@@ -89,49 +96,20 @@ def test_get_contract_logs_single_log_any_value(contract_instance, owner, eth_te
 
 
 def test_get_contract_logs_single_log_unmatched(contract_instance, owner, eth_tester_provider):
-    topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": 2})
-    log_filter = LogFilter(contract_addresses=[contract_instance], topic_filters=[topic_filter])
+    log_filter = LogFilter.from_event(
+        event=contract_instance.FooHappened, search_topics={"foo": 2}, addresses=[contract_instance]
+    )
     contract_instance.fooAndBar(sender=owner)  # Create logs
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 0
 
 
-def test_get_contract_logs_multiple_event_types(contract_instance, owner, eth_tester_provider):
-    foo_topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": 0})
-    bar_topic_filter = TopicFilter(event=contract_instance.BarHappened, search_values={"bar": 1})
-    log_filter = LogFilter(
-        contract_addresses=[contract_instance], topic_filters=[foo_topic_filter, bar_topic_filter]
-    )
-    contract_instance.fooAndBar(sender=owner)  # Create logs
-    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
-    assert len(logs) == 2
-    assert logs[0].foo == 0
-    assert logs[1].bar == 1
-
-
-def test_get_contract_logs_multiple_event_types_match_any_value(
-    contract_instance, owner, eth_tester_provider
-):
-    foo_topic_filter = TopicFilter(event=contract_instance.FooHappened, search_values={"foo": None})
-    bar_topic_filter = TopicFilter(event=contract_instance.BarHappened, search_values={"bar": None})
-    log_filter = LogFilter(
-        contract_addresses=[contract_instance],
-        topic_filters=[foo_topic_filter, bar_topic_filter],
-        stop_block=100,
-    )
-    contract_instance.fooAndBar(sender=owner)  # Create logs
-    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
-    assert len(logs) == 2
-    assert logs[0].foo == 0
-    assert logs[1].bar == 1
-
-
 def test_topic_filter_encoding():
     event_abi = EventABI.parse_raw(RAW_EVENT_ABI)
-    topic_filter = TopicFilter(
-        event=event_abi, search_values={"newVersion": "0x8c44Cc5c0f5CD2f7f17B9Aca85d456df25a61Ae8"}
+    log_filter = LogFilter.from_event(
+        event=event_abi, search_topics={"newVersion": "0x8c44Cc5c0f5CD2f7f17B9Aca85d456df25a61Ae8"}
     )
-    assert topic_filter.encode() == [
+    assert log_filter.topic_filter == [
         "0x100b69bb6b504e1252e36b375233158edee64d071b399e2f81473a695fd1b021",
         None,
         "0x0000000000000000000000008c44cc5c0f5cd2f7f17b9aca85d456df25a61ae8",
