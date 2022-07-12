@@ -49,7 +49,7 @@ TopicFilter = List[Union[Optional[HexStr], List[Optional[HexStr]]]]
 
 
 class LogFilter(BaseModel):
-    contract_addresses: List[AddressType] = []
+    addresses: List[AddressType] = []
     events: List[EventABI] = []
     topic_filter: TopicFilter = []
     start_block: int = 0
@@ -68,18 +68,25 @@ class LogFilter(BaseModel):
     def validate_start_block(cls, value):
         return value or 0
 
-    @validator("contract_addresses", pre=True, each_item=True)
+    @validator("addresses", pre=True, each_item=True)
     def validate_addresses(cls, value):
         from ape import convert
 
-        return str(convert(value, AddressType))
+        return convert(value, AddressType)
 
     @property
     def selectors(self):
         return {encode_hex(keccak(text=event.selector)): event for event in self.events}
 
     @classmethod
-    def from_event(cls, address: AddressType, event: EventABI, search_topics: Dict[str, Any]):
+    def from_event(
+        cls,
+        event: EventABI,
+        search_topics: Optional[Dict[str, Any]] = None,
+        addresses: List[AddressType] = None,
+        start_block=None,
+        stop_block=None,
+    ):
         """
         Construct a log filter from an event topic query.
         """
@@ -89,6 +96,7 @@ class LogFilter(BaseModel):
         if hasattr(event, "abi"):
             event = event.abi  # type: ignore
 
+        search_topics = search_topics or {}
         topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event.selector))]
         indexed = LogInputABICollection(event, [i for i in event.inputs if i.indexed], indexed=True)
 
@@ -108,7 +116,13 @@ class LogFilter(BaseModel):
             else:
                 topic_filter.append(None)
 
-        return cls(contract_addresses=[address], events=[event], topic_filter=topic_filter)
+        return cls(
+            addresses=addresses or [],
+            events=[event],
+            topic_filter=topic_filter,
+            start_block=start_block,
+            stop_block=stop_block,
+        )
 
 
 class ContractLog(BaseModel):
