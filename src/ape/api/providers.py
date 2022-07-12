@@ -761,19 +761,6 @@ class Web3Provider(ProviderAPI, ABC):
         self._try_track_receipt(receipt)
         return receipt
 
-    def encode_topic_value(self, abi_type, value):
-        if value is None:
-            return None
-
-        elif isinstance(value, (list, tuple)):
-            return [self.encode_topic_value(abi_type, v) for v in value]
-
-        elif is_dynamic_sized_type(abi_type):
-            return to_hex(keccak(encode_single_packed(str(abi_type), value)))
-
-        else:
-            return to_hex(encode_single(abi_type, value))  # type: ignore
-
 
 class UpstreamProvider(ProviderAPI):
     """
