@@ -251,11 +251,7 @@ class LogInputABICollection:
         return [abi.name for abi in self.values]
 
     @property
-    def normalized_values(self) -> List[Dict]:
-        return [abi.dict() for abi in self.values]
-
-    @property
-    def types(self) -> List[Union[str, Dict]]:
+    def types(self) -> List[str]:
         abi_types = []
         for item in self.values:
             # reference types as indexed arguments are written as a hash
