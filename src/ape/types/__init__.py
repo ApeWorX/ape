@@ -103,7 +103,7 @@ class LogFilter(BaseModel):
 
         search_topics = search_topics or {}
         topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event.selector))]
-        indexed = LogInputABICollection(event, [i for i in event.inputs if i.indexed], indexed=True)
+        abi_inputs = LogInputABICollection(event)
 
         def encode_topic_value(abi_type, value):
             if isinstance(value, (list, tuple)):
@@ -114,12 +114,16 @@ class LogFilter(BaseModel):
                 value = convert(value, AddressType)
             return encode_hex(encode_single(abi_type, value))
 
-        for name, abi_type in zip(indexed.names, indexed.types):
-            if name in search_topics:
-                encoded_value = encode_topic_value(abi_type, search_topics[name])
+        for topic in abi_inputs.topics:
+            if topic.name in search_topics:
+                encoded_value = encode_topic_value(topic.type, search_topics[topic.name])
                 topic_filter.append(encoded_value)
             else:
                 topic_filter.append(None)
+
+        # remove trailing wildcards since they have no effect
+        while topic_filter[-1] is None:
+            topic_filter.pop()
 
         return cls(
             addresses=addresses or [],
