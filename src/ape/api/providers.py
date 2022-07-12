@@ -6,7 +6,7 @@ import shutil
 import sys
 import time
 from abc import ABC
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
@@ -728,23 +728,20 @@ class Web3Provider(ProviderAPI, ABC):
         height = self.chain_manager.blocks.height
         start_block = log_filter.start_block
         stop_block = min(log_filter.stop_block or height, height)
+        block_ranges = self.block_ranges(start_block, stop_block, page_size)
+
+        def fetch_log_page(block_range):
+            start, stop = block_range
+            page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
+            logs = []
+            for log in self.web3.eth.get_logs(page_filter.to_web3()):
+                event = log_filter.selectors[log["topics"][0].hex()]
+                logs.extend(self.network.ecosystem.decode_logs(event, [log]))
+            return logs
 
         with ThreadPoolExecutor(self.concurrency) as pool:
-            tasks = []
-            for start, stop in self.block_ranges(start_block, stop_block, page_size):
-                page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
-                tasks.append(pool.submit(self._get_logs, page_filter))
-
-            for task in as_completed(tasks):
-                yield from task.result()
-
-    def _get_logs(self, log_filter: LogFilter):
-        response = self.web3.provider.make_request("eth_getLogs", [log_filter.to_web3()])
-        logs = []
-        for log in response["result"]:
-            event = log_filter.selectors[log["topics"][0]]
-            logs.append(self.network.ecosystem.decode_logs(event, [log]))
-        return logs
+            for page in pool.map(fetch_log_page, block_ranges):
+                yield from page
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
