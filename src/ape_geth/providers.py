@@ -221,6 +221,8 @@ class GethProvider(Web3Provider, UpstreamProvider):
         else:
             if "geth" in self.client_version.lower():
                 logger.info(f"Connecting to existing Geth node at '{self.uri}'.")
+            elif "erigon" in self.client_version.lower():
+                logger.info(f"Connecting to existing Erigon node at '{self.uri}'.")
             else:
                 network_name = self.client_version.split("/")[0]
                 logger.warning(f"Connecting Geth plugin to non-Geth network '{network_name}'.")
