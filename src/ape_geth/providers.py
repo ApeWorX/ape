@@ -180,6 +180,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
     def connect(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
         self._web3 = Web3(HTTPProvider(self.uri))
+        self._web3.provider._request_kwargs["timeout"] = 30 * 60
 
         if not self._web3.isConnected():
             if self.network.name != LOCAL_NETWORK_NAME:
