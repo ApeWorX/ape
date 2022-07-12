@@ -137,6 +137,6 @@ class QueryManager(ManagerAccessMixin):
 
         # Update any caches
         for engine in self.engines.values():
-            engine.update_cache(query, data)  # type: ignore
+            engine.update_cache(query, data)
 
         return data
