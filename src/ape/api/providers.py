@@ -770,10 +770,10 @@ class Web3Provider(ProviderAPI, ABC):
     ):
         block_page_size = block_page_size or self.block_page_size
         web3_filter_params = FilterParams(
-            address=log_filter.contract_addresses,
+            address=log_filter.addresses,
             fromBlock=log_filter.start_block,
             toBlock=log_filter.stop_block or log_filter.start_block + block_page_size,
-            topics=log_filter.encode_topics(),
+            topics=log_filter.topic_filter,  # type: ignore
         )
         for log_result in self.web3.eth.get_logs(web3_filter_params):
             if not log_result:
@@ -783,11 +783,12 @@ class Web3Provider(ProviderAPI, ABC):
             if not log_result_topics:
                 continue
 
-            matching_topic = log_filter.get(log_result_topics[0].hex())
-            if not matching_topic:
+            try:
+                event = log_filter.selectors[log_result_topics[0].hex()]
+            except KeyError:
                 continue
 
-            yield from self.network.ecosystem.decode_logs(matching_topic.event, [dict(log_result)])
+            yield from self.network.ecosystem.decode_logs(event, [dict(log_result)])
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
