@@ -33,6 +33,7 @@ from ape.utils import (
     parse_type,
     returns_array,
 )
+from ape.utils.abi import EventABIInputs
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -492,4 +493,45 @@ class Ethereum(EcosystemAPI):
                     block_hash=log["blockHash"],
                     block_number=log["blockNumber"],
                 )
+            )
+
+    def decode_raw_logs(
+        self, selectors: Dict[str, EventABI], logs: List[Dict]
+    ) -> List[ContractLog]:
+        """
+        Decode a raw ``eth_getLogs`` response provided a mapping of ``{topics[0]: abi}``.
+        """
+        abi_inputs = {selector: EventABIInputs(abi) for selector, abi in selectors.items()}
+
+        def decode_value(t, v) -> Any:
+            if t == "address":
+                return self.decode_address(v)
+            elif t == "bytes32":
+                return HexBytes(v)
+
+            return v
+
+        for log in logs:
+            if log.get("anonymous"):
+                raise NotImplementedError(
+                    "decoding anonymous logs is not supported with this method"
+                )
+
+            abi = abi_inputs[log["topics"][0]]
+            # the indexed flag doesn't affect the selector, so there could be a mismathch
+            # in number of indexed topics. we deal with such potentially malformed abi by
+            # decoding topics + data as one blob
+            values = b"".join(decode_hex(i) for i in log["topics"][1:] + [log["data"]])
+            decoded_values = decode_abi(abi.types, values)
+            decoded_values = [decode_value(t, v) for t, v in zip(abi.types, decoded_values)]
+            event_arguments = {name: value for name, value in zip(abi.names, decoded_values)}
+            
+            yield ContractLog(
+                name=abi.event_name,
+                contract_address=self.decode_address(log["address"]),
+                event_arguments=event_arguments,
+                transaction_hash=log["transactionHash"],
+                block_number=int(log["blockNumber"], 16),
+                block_hash=log["blockHash"],
+                log_index=int(log["logIndex"], 16),
             )
