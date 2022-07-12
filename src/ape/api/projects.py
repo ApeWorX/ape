@@ -140,7 +140,9 @@ class ProjectAPI(BaseInterfaceModel):
                     manifest.compilers.append(
                         {
                             "name": cls.compiler_manager.registered_compilers[suffix].name,
-                            "version": None,
+                            "version": cls.compiler_manager.registered_compilers[
+                                suffix
+                            ].get_versions(source_paths),
                             "settings": None,
                             "contractTypes": contract_types[contract_type],
                         }
