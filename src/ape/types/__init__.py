@@ -55,13 +55,13 @@ class LogFilter(BaseModel):
     topic_filter: TopicFilter = []
     start_block: int = 0
     stop_block: Optional[int] = None  # Use block height
+    selectors: Dict[str, EventABI] = {}
 
     @root_validator()
-    def validate_start_and_stop(cls, values):
-        start = values.get("start_block") or 0
-        stop = values.get("stop_block") or 0
-        if start > stop:
-            raise ValueError("'start_block' cannot be greater than 'stop_block'.")
+    def compute_selectors(cls, values):
+        values["selectors"] = {
+            encode_hex(keccak(text=event.selector)): event for event in values["events"]
+        }
 
         return values
 
@@ -74,10 +74,6 @@ class LogFilter(BaseModel):
         from ape import convert
 
         return convert(value, AddressType)
-
-    @property
-    def selectors(self):
-        return {encode_hex(keccak(text=event.selector)): event for event in self.events}
 
     def to_web3(self):
         return FilterParams(
