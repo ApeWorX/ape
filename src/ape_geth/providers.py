@@ -151,6 +151,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
     _client_version: Optional[str] = None
 
     block_page_size = 10000
+    concurrency = 4
 
     @property
     def uri(self) -> str:

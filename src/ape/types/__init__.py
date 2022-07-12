@@ -18,6 +18,7 @@ from ethpm_types import (
 from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import BaseModel, root_validator, validator
+from web3.types import FilterParams
 
 from ape._compat import Literal
 
@@ -77,6 +78,14 @@ class LogFilter(BaseModel):
     @property
     def selectors(self):
         return {encode_hex(keccak(text=event.selector)): event for event in self.events}
+
+    def to_web3(self):
+        return FilterParams(
+            address=self.addresses,
+            fromBlock=self.start_block,
+            toBlock=self.stop_block,
+            topics=self.topic_filter,  # type: ignore
+        )
 
     @classmethod
     def from_event(
@@ -152,7 +161,7 @@ class ContractLog(BaseModel):
     """The index of the log on the transaction."""
 
     def __str__(self) -> str:
-        args = ' '.join(f'{key}={val}' for key, val in self.event_arguments.items())
+        args = " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
         return f"{self.name} {args}"
 
     def __getattr__(self, item: str) -> Any:

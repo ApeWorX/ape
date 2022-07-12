@@ -6,6 +6,7 @@ import shutil
 import sys
 import time
 from abc import ABC
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
@@ -21,7 +22,6 @@ from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
-from web3.types import FilterParams
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
@@ -121,6 +121,11 @@ class ProviderAPI(BaseInterfaceModel):
     """
     The amount of blocks to fetch in a response, as a default.
     This is particularly useful for querying logs across a block range.
+    """
+
+    concurrency: int = 4
+    """
+    How many parallel threads to use when fetching logs.
     """
 
     @abstractmethod
@@ -704,91 +709,42 @@ class Web3Provider(ProviderAPI, ABC):
         for transaction in block.get("transactions"):  # type: ignore
             yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
 
+    def block_ranges(self, start=0, stop=None, page=None):
+        if stop is None:
+            stop = self.chain_manager.blocks.height
+        if page is None:
+            page = self.chain_manager.provider.block_page_size
+
+        for start_block in range(start, stop + 1, page):
+            stop_block = min(stop, start_block + page - 1)
+            yield start_block, stop_block
+
     def get_contract_logs(
         self,
         log_filter: LogFilter,
         block_page_size: Optional[int] = None,
     ) -> Iterator[ContractLog]:
-
-        if block_page_size is not None:
-            if block_page_size < 0:
-                raise ValueError("'block_page_size' cannot be negative.")
-        else:
-            block_page_size = self.provider.block_page_size
-
+        page_size = block_page_size or self.block_page_size
         height = self.chain_manager.blocks.height
-        if log_filter.stop_block is None:
-            log_filter.stop_block = height
+        start_block = log_filter.start_block
+        stop_block = min(log_filter.stop_block or height, height)
 
-        required_confirmations = self.provider.network.required_confirmations
-        stop_block = (
-            height - required_confirmations
-            if log_filter.stop_block is None
-            else log_filter.stop_block
-        )
-        if stop_block > height:
-            logger.warning(f"Stop-block '{stop_block}' greater than height '{height}'.")
-            stop_block = height
+        with ThreadPoolExecutor(self.concurrency) as pool:
+            tasks = []
+            for start, stop in self.block_ranges(start_block, stop_block, page_size):
+                page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
+                tasks.append(pool.submit(self._get_logs, page_filter))
 
-        start = log_filter.start_block
-        stop_increment = block_page_size - 1
-        stop = min(start + stop_increment, stop_block)
+            for task in as_completed(tasks):
+                yield from task.result()
 
-        while start <= stop_block:
-            log_filter.start_block = start
-            log_filter.stop_block = stop
-            logs = [
-                log
-                for log in self._get_logs_in_block_range(
-                    log_filter,
-                    block_page_size=block_page_size,
-                )
-            ]
-
-            if len(logs) == 0:
-                # No events happened in this sub-block range. Go to next page.
-                start = stop + 1
-
-                if start < stop_block:
-                    stop = start + stop_increment
-                elif start == stop_block:
-                    stop = start
-
-                continue
-
-            for log in logs:
-                yield log
-
-            # Start the next iteration on the largest block number to get remaining events.
-            start = stop + 1
-            stop = min(start + stop_increment, stop_block)
-
-    def _get_logs_in_block_range(
-        self,
-        log_filter: LogFilter,
-        block_page_size: Optional[int] = None,
-    ):
-        block_page_size = block_page_size or self.block_page_size
-        web3_filter_params = FilterParams(
-            address=log_filter.addresses,
-            fromBlock=log_filter.start_block,
-            toBlock=log_filter.stop_block or log_filter.start_block + block_page_size,
-            topics=log_filter.topic_filter,  # type: ignore
-        )
-        for log_result in self.web3.eth.get_logs(web3_filter_params):
-            if not log_result:
-                continue
-
-            log_result_topics = log_result.get("topics", [])
-            if not log_result_topics:
-                continue
-
-            try:
-                event = log_filter.selectors[log_result_topics[0].hex()]
-            except KeyError:
-                continue
-
-            yield from self.network.ecosystem.decode_logs(event, [dict(log_result)])
+    def _get_logs(self, log_filter: LogFilter):
+        response = self.web3.provider.make_request("eth_getLogs", [log_filter.to_web3()])
+        logs = []
+        for log in response["result"]:
+            event = log_filter.selectors[log["topics"][0]]
+            logs.append(self.network.ecosystem.decode_logs(event, [log]))
+        return logs
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
