@@ -662,12 +662,8 @@ class Web3Provider(ProviderAPI, ABC):
         return self.web3.eth.max_priority_fee
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
-        if isinstance(block_id, str):
-            block_id = HexStr(block_id)
-
-            if block_id.isnumeric():
-                block_id = add_0x_prefix(block_id)
-
+        if isinstance(block_id, str) and block_id.isnumeric():
+            block_id = int(block_id)
         block_data = dict(self.web3.eth.get_block(block_id))
         return self.network.ecosystem.decode_block(block_data)
 
