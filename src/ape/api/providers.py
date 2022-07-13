@@ -734,7 +734,8 @@ class Web3Provider(ProviderAPI, ABC):
             start, stop = block_range
             page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
             response = self.web3.provider.make_request("eth_getLogs", [page_filter.to_web3()])
-
+            if "error" in response:
+                raise ValueError(response['error']['message'])
             return self.network.ecosystem.decode_logs(log_filter.events, response["result"])
 
         with ThreadPoolExecutor(self.concurrency) as pool:
