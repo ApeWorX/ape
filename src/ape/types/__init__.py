@@ -78,8 +78,8 @@ class LogFilter(BaseModel):
     def to_web3(self):
         return FilterParams(
             address=self.addresses,
-            fromBlock=self.start_block,
-            toBlock=self.stop_block,
+            fromBlock=hex(self.start_block),
+            toBlock=hex(self.stop_block),
             topics=self.topic_filter,  # type: ignore
         )
 
