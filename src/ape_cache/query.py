@@ -165,59 +165,75 @@ class CacheQueryProvider(QueryAPI):
             )
             return pd.DataFrame(columns=query.columns, data=q.fetchall())
 
-    def update_cache(self, query: QueryType, result: List[Any]) -> None:
-        df = pd.DataFrame()
-        if isinstance(query, BlockQuery):
-            df = pd.DataFrame(
-                columns=query.columns,
-                data=[val for val in map(lambda val: val.dict(by_alias=False), result)],
-            )
-        elif isinstance(query, BlockTransactionQuery):
-            df = pd.DataFrame(
-                columns=["to", "nonce", "from"],
-                data=[(val.receiver, val.nonce, val.sender) for val in result],
-            )
-            df["block_hash"] = query.block_id
-            if query.columns != ["*"]:
-                df = df[[query.columns]]
+    @singledispatchmethod
+    def update_cache(self, query: QueryType) -> None:  # type: ignore
+        raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
+    @update_cache.register
+    def update_block_cache(self, query: BlockQuery, result: List[Any]) -> None:
+        df = pd.DataFrame(
+            columns=query.columns,
+            data=[val for val in map(lambda val: val.dict(by_alias=False), result)],
+        )
         try:
             with self.engine.connect() as conn:
                 for idx, row in df.iterrows():
                     try:
-                        if isinstance(query, BlockQuery):
-                            v = conn.execute(
-                                text(
-                                    """
-                                    SELECT * FROM blocks
-                                    WHERE blocks.number = :number
-                                    """
-                                ),
-                                number=row["number"],
-                            )
-                            if [i for i in v]:
-                                df = df[df["number"] != row["number"]]
+                        v = conn.execute(
+                            text(
+                                """
+                                SELECT * FROM blocks
+                                WHERE blocks.number = :number
+                                """
+                            ),
+                            number=row["number"],
+                        )
+                        if [i for i in v]:
+                            df = df[df["number"] != row["number"]]
 
-                        elif isinstance(query, BlockTransactionQuery):
-                            v = conn.execute(
-                                text(
-                                    """
-                                    SELECT * FROM transactions
-                                    WHERE transactions.block_hash = :block_hash
-                                    """
-                                ),
-                                block_hash=row["block_hash"],
-                            )
-                            if [i for i in v]:
-                                df = df[df["block_hash"] != row["block_hash"]]
-
-                            if df.empty:
-                                return
+                        if df.empty:
+                            return
 
                     except sqlalchemy.exc.OperationalError as err:
                         logger.info(err)
                         df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
                         return
+
+                df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
+
+        except Exception as err:
+            # Note: If any error, skip the data from the cache and continue to
+            #       query from provider.
+            logger.debug(err)
+
+    @update_cache.register
+    def update_transaction_cache(self, query: BlockTransactionQuery, result: List[Any]) -> None:
+        df = pd.DataFrame(
+            columns=["to", "nonce", "from"],
+            data=[(val.receiver, val.nonce, val.sender) for val in result],
+        )
+        df["block_hash"] = query.block_id
+        if query.columns != ["*"]:
+            df = df[[query.columns]]
+
+        try:
+            with self.engine.connect() as conn:
+                for idx, row in df.iterrows():
+                    try:
+                        v = conn.execute(
+                            text(
+                                """
+                                SELECT * FROM transactions
+                                WHERE transactions.block_hash = :block_hash
+                                """
+                            ),
+                            block_hash=row["block_hash"],
+                        )
+                        if [i for i in v]:
+                            df = df[df["block_hash"] != row["block_hash"]]
+
+                        if df.empty:
+                            return
 
                     except Exception as err:
                         logger.info(err)
