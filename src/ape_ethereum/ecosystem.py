@@ -4,7 +4,6 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
-from eth_abi.abi import decode_abi
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, decode_hex, encode_hex, keccak, to_bytes, to_checksum_address
@@ -428,14 +427,6 @@ class Ethereum(EcosystemAPI):
             encode_hex(keccak(text=abi.selector)): LogInputABICollection(abi) for abi in events
         }
 
-        def decode_value(t, v) -> Any:
-            if t == "address":
-                return self.decode_address(v)
-            elif t == "bytes32":
-                return HexBytes(v)
-
-            return v
-
         for log in logs:
             if log.get("anonymous"):
                 raise NotImplementedError(
@@ -449,13 +440,8 @@ class Ethereum(EcosystemAPI):
                 abi = abi_inputs[topics[0]]
             except KeyError:
                 continue
-            # the indexed flag doesn't affect the selector, so there could be a mismathch
-            # in number of indexed topics. we deal with such potentially malformed abi by
-            # decoding topics + data as one blob
-            values = b"".join(decode_hex(i) for i in topics[1:] + [log["data"]])
-            decoded_values = decode_abi(abi.types, values)
-            decoded_values = [decode_value(t, v) for t, v in zip(abi.types, decoded_values)]
-            event_arguments = {name: value for name, value in zip(abi.names, decoded_values)}
+            
+            event_arguments = abi.decode(topics, log['data'])
 
             yield ContractLog(
                 name=abi.event_name,
