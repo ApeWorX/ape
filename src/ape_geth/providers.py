@@ -167,17 +167,6 @@ class GethProvider(Web3Provider, UpstreamProvider):
     def connection_str(self) -> str:
         return self.uri
 
-    @property
-    def client_version(self) -> str:
-        if not self._web3:
-            return ""
-
-        # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
-        if self._client_version is None:
-            self._client_version = self._web3.clientVersion
-
-        return self._client_version
-
     def connect(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
         self._web3 = Web3(HTTPProvider(self.uri))

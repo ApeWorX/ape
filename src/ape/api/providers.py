@@ -13,10 +13,8 @@ from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
 from typing import Any, Iterator, List, Optional
 
-from eth_abi.abi import encode_single
-from eth_abi.packed import encode_single_packed
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, keccak, to_hex
+from eth_utils import add_0x_prefix
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
@@ -589,6 +587,7 @@ class Web3Provider(ProviderAPI, ABC):
     """
 
     _web3: Optional[Web3] = None
+    _client_version: Optional[str] = None
 
     @property
     def web3(self) -> Web3:
@@ -596,6 +595,17 @@ class Web3Provider(ProviderAPI, ABC):
             raise ProviderNotConnectedError()
 
         return self._web3
+
+    @property
+    def client_version(self) -> str:
+        if not self._web3:
+            return ""
+
+        # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
+        if self._client_version is None:
+            self._client_version = self._web3.clientVersion
+
+        return self._client_version
 
     @property
     def base_fee(self) -> int:
