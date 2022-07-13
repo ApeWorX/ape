@@ -342,7 +342,6 @@ class ContractEvent(ManagerAccessMixin):
         self,
         start_or_stop: int,
         stop: Optional[int] = None,
-        block_page_size: Optional[int] = None,
         search_topics: Optional[Dict[str, Any]] = None,
         extra_addresses: Optional[List] = None,
     ) -> Iterator[ContractLog]:
@@ -355,8 +354,6 @@ class ContractEvent(ManagerAccessMixin):
               Otherwise, it is the total amount of blocks to get starting from ``0``.
             stop (Optional[int]): The latest block number in the
               desired log set. Defaults to delegating to provider.
-            block_page_size (Optional[int]): The amount of block to request
-              on each page.
             search_topics (Optional[Dict]): Search topics, such as indexed event inputs,
               to query by. Defaults to getting all events.
             extra_addresses (Optional[List[``AddressType``]]): Additional contract
@@ -387,7 +384,7 @@ class ContractEvent(ManagerAccessMixin):
             start_block=start_block,
             stop_block=stop_block,
         )
-        yield from self.provider.get_contract_logs(log_filter, block_page_size=block_page_size)
+        yield from self.provider.get_contract_logs(log_filter)
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """

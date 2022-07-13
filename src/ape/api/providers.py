@@ -320,23 +320,13 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_contract_logs(
-        self,
-        log_filter: LogFilter,
-        block_page_size: Optional[int] = None,
-    ) -> Iterator[ContractLog]:
+    def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
         """
         Get logs from contracts.
 
         Args:
             log_filter (:class:`~ape.types.LogFilter`): A mapping of event ABIs to
               topic filters. Defaults to getting all events.
-            start_block (Optional[int]): The earliest block to search. Defaults
-              to ``0``.
-            stop_block (Optional[int]): The latest block to search. Defaults to
-              the latest block number.
-            block_page_size (Optional[int]): How many blocks to search at a time.
-              Defaults to :py:attr:`~ape.api.providers.ProviderAPI.block_page_size`.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
@@ -724,16 +714,11 @@ class Web3Provider(ProviderAPI, ABC):
             stop_block = min(stop, start_block + page - 1)
             yield start_block, stop_block
 
-    def get_contract_logs(
-        self,
-        log_filter: LogFilter,
-        block_page_size: Optional[int] = None,
-    ) -> Iterator[ContractLog]:
-        page_size = block_page_size or self.block_page_size
+    def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
         height = self.chain_manager.blocks.height
         start_block = log_filter.start_block
         stop_block = min(log_filter.stop_block or height, height)
-        block_ranges = self.block_ranges(start_block, stop_block, page_size)
+        block_ranges = self.block_ranges(start_block, stop_block, self.block_page_size)
 
         def fetch_log_page(block_range):
             start, stop = block_range
