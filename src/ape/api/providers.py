@@ -45,7 +45,6 @@ from ape.utils import (
     abstractmethod,
     cached_property,
     gas_estimation_error_message,
-    is_dynamic_sized_type,
     raises_not_implemented,
     spawn,
 )
@@ -739,14 +738,23 @@ class Web3Provider(ProviderAPI, ABC):
         def fetch_log_page(block_range):
             start, stop = block_range
             page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
-            response = self.web3.provider.make_request("eth_getLogs", [page_filter.to_web3()])
-            if "error" in response:
-                raise ValueError(response['error']['message'])
-            return self.network.ecosystem.decode_logs(log_filter.events, response["result"])
+            # eth-tester expects a different format, let web3 handle the conversions for it
+            raw = "EthereumTester" not in self.client_version
+            logs = self._get_logs(page_filter.dict(), raw)
+            return self.network.ecosystem.decode_logs(log_filter.events, logs)
 
         with ThreadPoolExecutor(self.concurrency) as pool:
             for page in pool.map(fetch_log_page, block_ranges):
                 yield from page
+
+    def _get_logs(self, filter_params, raw=True):
+        if raw:
+            response = self.web3.provider.make_request("eth_getLogs", [filter_params])
+            if "error" in response:
+                raise ValueError(response["error"]["message"])
+            return response["result"]
+        else:
+            return self.web3.eth.get_logs(filter_params)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:

@@ -75,7 +75,7 @@ class LogFilter(BaseModel):
 
         return convert(value, AddressType)
 
-    def to_web3(self):
+    def dict(self, client=None):
         return FilterParams(
             address=self.addresses,
             fromBlock=hex(self.start_block),
