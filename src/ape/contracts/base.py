@@ -305,7 +305,7 @@ class ContractEvent(ManagerAccessMixin):
                 return next(itertools.islice(logs, index, index + 1))
             else:
                 return list(logs)[index]
-        except (IndexError, StopIteration):
+        except (IndexError, StopIteration) as err:
             raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
 
     @__getitem__.register
