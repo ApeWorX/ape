@@ -117,36 +117,32 @@ class ProjectAPI(BaseInterfaceModel):
         manifest.contract_types = contract_types
 
         manifest.compilers = []
-        # [x for x in contract_types]
+
         i = 0
         for contract_type in contract_types:
             suffix = source_paths[i].suffix
             if cls.compiler_manager.registered_compilers[suffix].name:
                 if suffix == ".sol":
-                    manifest.compilers.append(
-                        {
-                            "name": cls.compiler_manager.registered_compilers[suffix].name,
-                            "version": [
-                                x
-                                for x in cls.compiler_manager.registered_compilers[
-                                    suffix
-                                ].get_version_map(source_paths)
-                            ][i],
-                            "settings": None,
-                            "contractTypes": contract_types[contract_type],
-                        }
-                    )
+                    compiler_version = [
+                        x
+                        for x in cls.compiler_manager.registered_compilers[suffix].get_version_map(
+                            source_paths
+                        )
+                    ][i]
                 else:
-                    manifest.compilers.append(
-                        {
-                            "name": cls.compiler_manager.registered_compilers[suffix].name,
-                            "version": cls.compiler_manager.registered_compilers[
-                                suffix
-                            ].get_versions(source_paths),
-                            "settings": None,
-                            "contractTypes": contract_types[contract_type],
-                        }
+                    compiler_version = (
+                        cls.compiler_manager.registered_compilers[suffix].get_versions(
+                            source_paths
+                        ),
                     )
+                manifest.compilers.append(
+                    {
+                        "name": cls.compiler_manager.registered_compilers[suffix].name,
+                        "version": compiler_version,
+                        "settings": None,
+                        "contractTypes": contract_types[contract_type],
+                    }
+                )
             i += 1
 
         return manifest
