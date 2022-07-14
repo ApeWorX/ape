@@ -150,9 +150,9 @@ class GethProvider(Web3Provider, UpstreamProvider):
     _geth: Optional[EphemeralGeth] = None
     _client_version: Optional[str] = None
 
-    # optimal values
-    block_page_size = 50_000
-    concurrency = 8
+    # optimal values for geth
+    block_page_size = 5000
+    concurrency = 16
 
     @property
     def uri(self) -> str:
@@ -212,6 +212,8 @@ class GethProvider(Web3Provider, UpstreamProvider):
                 logger.info(f"Connecting to existing Geth node at '{self.uri}'.")
             elif "erigon" in self.client_version.lower():
                 logger.info(f"Connecting to existing Erigon node at '{self.uri}'.")
+                self.concurrency = 8
+                self.block_page_size = 40_000
             else:
                 network_name = self.client_version.split("/")[0]
                 logger.warning(f"Connecting Geth plugin to non-Geth network '{network_name}'.")
