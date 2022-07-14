@@ -1,3 +1,4 @@
+import itertools
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
@@ -276,6 +277,10 @@ class ContractEvent(ManagerAccessMixin):
 
         yield from self.range(self.chain_manager.blocks.height + 1)
 
+    @property
+    def log_filter(self):
+        return LogFilter(addresses=[self.contract], events=[self.abi])
+
     @singledispatchmethod
     def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
         raise NotImplementedError(f"Cannot use '{type(value)}' to access logs.")
@@ -292,19 +297,15 @@ class ContractEvent(ManagerAccessMixin):
         Returns:
             :class:`~ape.contracts.base.ContractLog`
         """
-
-        if index == 0:
-            logs_slice = [next(self._get_logs_iter())]
-        elif index > 0:
-            # Call over to 'self.__getitem_slice'.
-            logs_slice = self[: index + 1]  # type: ignore
-        else:
-            # Call over to 'self.__getitem_slice'.
-            logs_slice = self[index:]  # type: ignore
-
+        logs = self.provider.get_contract_logs(self.log_filter)
         try:
-            return logs_slice[index]
-        except IndexError as err:
+            if index == 0:
+                return next(logs)
+            elif index > 0:
+                return next(itertools.islice(logs, index, index + 1))
+            else:
+                return list(logs)[index]
+        except (IndexError, StopIteration):
             raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
 
     @__getitem__.register
