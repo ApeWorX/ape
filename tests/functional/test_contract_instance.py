@@ -235,7 +235,10 @@ def test_contract_logs_querying_non_indexed_data(contract_instance, owner):
     with pytest.raises(ValueError) as err:
         _ = [log for log in contract_instance.NumberChange.range(0, search_topics={"prevNum": 1})]
 
-    assert str(err.value) == "NumberChange defines newNum, dynIndexed as indexed topics, but you provided prevNum"
+    assert (
+        str(err.value)
+        == "NumberChange defines newNum, dynIndexed as indexed topics, but you provided prevNum"
+    )
 
 
 def test_structs(contract_instance, sender, chain):

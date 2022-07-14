@@ -2,8 +2,7 @@ import re
 from dataclasses import make_dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from eth_abi import grammar
-from eth_abi import decode_single, decode_abi
+from eth_abi import decode_abi, decode_single, grammar
 from eth_utils import decode_hex, to_checksum_address
 from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, EventABI, MethodABI
@@ -242,7 +241,7 @@ class LogInputABICollection:
 
         names = [i.name for i in abi.inputs]
         if len(set(names)) < len(names):
-            raise ValueError(f"duplicate names found in log input", abi)
+            raise ValueError("duplicate names found in log input", abi)
 
     @property
     def event_name(self):

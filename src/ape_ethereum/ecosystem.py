@@ -432,16 +432,16 @@ class Ethereum(EcosystemAPI):
                 raise NotImplementedError(
                     "decoding anonymous logs is not supported with this method"
                 )
-            topics = log['topics']
+            topics = log["topics"]
             # web3.py converts topics to hexbytes, data is always a hexstr
-            if isinstance(log['topics'][0], bytes):
-                topics = [encode_hex(t) for t in log['topics']]
+            if isinstance(log["topics"][0], bytes):
+                topics = [encode_hex(t) for t in log["topics"]]
             try:
                 abi = abi_inputs[topics[0]]
             except KeyError:
                 continue
-            
-            event_arguments = abi.decode(topics, log['data'])
+
+            event_arguments = abi.decode(topics, log["data"])
 
             yield ContractLog(
                 name=abi.event_name,
