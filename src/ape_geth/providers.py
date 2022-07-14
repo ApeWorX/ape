@@ -150,6 +150,10 @@ class GethProvider(Web3Provider, UpstreamProvider):
     _geth: Optional[EphemeralGeth] = None
     _client_version: Optional[str] = None
 
+    # optimal values for geth
+    block_page_size = 5000
+    concurrency = 16
+
     @property
     def uri(self) -> str:
         ecosystem_config = self.config.dict().get(self.network.ecosystem.name, None)
@@ -163,20 +167,10 @@ class GethProvider(Web3Provider, UpstreamProvider):
     def connection_str(self) -> str:
         return self.uri
 
-    @property
-    def client_version(self) -> str:
-        if not self._web3:
-            return ""
-
-        # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
-        if self._client_version is None:
-            self._client_version = self._web3.clientVersion
-
-        return self._client_version
-
     def connect(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
         self._web3 = Web3(HTTPProvider(self.uri))
+        self._web3.provider._request_kwargs["timeout"] = 30 * 60
 
         if not self._web3.isConnected():
             if self.network.name != LOCAL_NETWORK_NAME:
@@ -216,6 +210,10 @@ class GethProvider(Web3Provider, UpstreamProvider):
         else:
             if "geth" in self.client_version.lower():
                 logger.info(f"Connecting to existing Geth node at '{self.uri}'.")
+            elif "erigon" in self.client_version.lower():
+                logger.info(f"Connecting to existing Erigon node at '{self.uri}'.")
+                self.concurrency = 8
+                self.block_page_size = 40_000
             else:
                 network_name = self.client_version.split("/")[0]
                 logger.warning(f"Connecting Geth plugin to non-Geth network '{network_name}'.")
