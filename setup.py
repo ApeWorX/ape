@@ -90,6 +90,7 @@ setup(
         "pandas>=1.3.0,<2",
         "pluggy>=1.0.0,<2",
         "pydantic>=1.9.2,<2",
+        "pyethhash==0.1.23",
         "PyGithub>=1.54,<2",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
