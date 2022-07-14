@@ -249,6 +249,7 @@ def assert_log_values(owner, chain, contract_instance):
     return _assert_log_values
 
 
+@pytest.fixture
 def remove_disk_writes_deployments(chain):
     if chain.contracts._deployments_mapping_cache.exists():
         chain.contracts._deployments_mapping_cache.unlink()
