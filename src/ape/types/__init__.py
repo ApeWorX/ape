@@ -24,7 +24,7 @@ from ape._compat import Literal
 
 from .signatures import MessageSignature, SignableMessage, TransactionSignature
 
-BlockID = Union[str, int, HexBytes, Literal["earliest", "latest", "pending"]]
+BlockID = Union[int, HexStr, HexBytes, Literal["earliest", "latest", "pending"]]
 """
 An ID that can match a block, such as the literals ``"earliest"``, ``"latest"``, or ``"pending"``
 as well as a block number or hash (HexBytes).
@@ -121,7 +121,7 @@ class LogFilter(BaseModel):
             else:
                 topic_filter.append(None)
 
-        topic_names = [i.name for i in abi_inputs.topics]
+        topic_names = [i.name for i in abi_inputs.topics if i.name]
         invalid_topics = set(search_topics) - set(topic_names)
         if invalid_topics:
             raise ValueError(
