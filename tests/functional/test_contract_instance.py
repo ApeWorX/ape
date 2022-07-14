@@ -212,7 +212,7 @@ def test_contract_logs_range_with_paging(contract_instance, owner, chain, assert
     # Create one more log after the empty blocks.
     contract_instance.setNumber(100, sender=owner)
 
-    logs = [log for log in contract_instance.NumberChange.range(100, block_page_size=1)]
+    logs = [log for log in contract_instance.NumberChange.range(100)]
     assert len(logs) == 4, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
     assert_log_values(logs[1], 2)
@@ -226,7 +226,7 @@ def test_contract_logs_range_over_paging(contract_instance, owner, chain):
         contract_instance.setNumber(i + 1, sender=owner)
 
     # 50 is way more than 3 but it shouldn't matter.
-    logs = [log for log in contract_instance.NumberChange.range(100, block_page_size=50)]
+    logs = [log for log in contract_instance.NumberChange.range(100)]
     assert len(logs) == 3, "Unexpected number of logs"
 
 
@@ -235,7 +235,7 @@ def test_contract_logs_querying_non_indexed_data(contract_instance, owner):
     with pytest.raises(ValueError) as err:
         _ = [log for log in contract_instance.NumberChange.range(0, search_topics={"prevNum": 1})]
 
-    assert str(err.value) == "'prevNum' is not an indexed topic for event 'NumberChange'."
+    assert str(err.value) == "NumberChange defines newNum, dynIndexed as indexed topics, but you provided prevNum"
 
 
 def test_structs(contract_instance, sender, chain):
