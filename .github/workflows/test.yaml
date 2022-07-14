@@ -15,6 +15,8 @@ jobs:
               python-version: 3.8
 
         - name: Install Dependencies
+          env:
+            ARGS: "-av"
           run: |
             python -m pip install --upgrade pip
             pip install .[lint]
@@ -40,9 +42,7 @@ jobs:
               python-version: 3.8
 
         - name: Install Dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install .[lint,test]
+          run: pip install .[lint,test]
 
         - name: Run MyPy
           run: mypy .
@@ -61,8 +61,6 @@ jobs:
 
         steps:
         - uses: actions/checkout@v2
-          with:
-            fetch-depth: 0
 
         - name: Setup Python
           uses: actions/setup-python@v2
@@ -111,9 +109,7 @@ jobs:
               python-version: 3.8
 
         - name: Install Dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install .[test]
+          run: pip install .[test]
 
         - name: Run Tests
           run: pytest -m "fuzzing" --no-cov -s
