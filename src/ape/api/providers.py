@@ -510,11 +510,11 @@ class ProviderAPI(BaseInterfaceModel):
         if not isinstance(err_data, dict):
             return VirtualMachineError(base_err=exception)
 
-        message = str(err_data.get("message"))
-        if not message:
+        err_msg = err_data.get("message")
+        if not err_msg:
             return VirtualMachineError(base_err=exception)
 
-        return VirtualMachineError(message=message, code=err_data.get("code"))
+        return VirtualMachineError(message=str(err_msg), code=err_data.get("code"))
 
 
 class TestProviderAPI(ProviderAPI):
