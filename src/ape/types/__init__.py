@@ -121,6 +121,14 @@ class LogFilter(BaseModel):
             else:
                 topic_filter.append(None)
 
+        topic_names = [i.name for i in abi_inputs.topics]
+        invalid_topics = set(search_topics) - set(topic_names)
+        if invalid_topics:
+            raise ValueError(
+                f"{event.name} defines {', '.join(topic_names)} as indexed topics, "
+                f"but you provided {', '.join(invalid_topics)}"
+            )
+
         # remove trailing wildcards since they have no effect
         while topic_filter[-1] is None:
             topic_filter.pop()
