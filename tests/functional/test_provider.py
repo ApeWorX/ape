@@ -52,7 +52,9 @@ def test_chain_id_when_none_raises(eth_tester_provider):
 
 
 def test_get_contracts_logs_all_logs(contract_instance, owner, eth_tester_provider):
-    log_filter = LogFilter(contract_addresses=[contract_instance], stop_block=100)
+    log_filter = LogFilter(
+        addresses=[contract_instance], events=contract_instance.contract_type.events, stop_block=100
+    )
     logs_at_start = len([log for log in eth_tester_provider.get_contract_logs(log_filter)])
     contract_instance.fooAndBar(sender=owner)  # Create 2 logs
     logs_after_new_emit = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
