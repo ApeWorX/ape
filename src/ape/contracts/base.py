@@ -322,6 +322,10 @@ class ContractEvent(ManagerAccessMixin):
         logs = self.provider.get_contract_logs(self.log_filter)
         return list(islice(logs, value.start, value.stop, value.step))
 
+    def __len__(self):
+        logs = self.provider.get_contract_logs(self.log_filter)
+        return len(list(logs))
+
     def range(
         self,
         start_or_stop: int,
