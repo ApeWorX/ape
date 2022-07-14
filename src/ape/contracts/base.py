@@ -1,4 +1,4 @@
-import itertools
+from itertools import islice
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
@@ -302,7 +302,7 @@ class ContractEvent(ManagerAccessMixin):
             if index == 0:
                 return next(logs)
             elif index > 0:
-                return next(itertools.islice(logs, index, index + 1))
+                return next(islice(logs, index, index + 1))
             else:
                 return list(logs)[index]
         except (IndexError, StopIteration) as err:
@@ -319,25 +319,8 @@ class ContractEvent(ManagerAccessMixin):
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
-
-        start = value.start or 0
-        stop = value.stop if value.stop is not None else self.chain_manager.blocks.height
-        step = value.step or 1
-        collected_logs: List[ContractLog] = []
-        counter = 0
-        for log in self._get_logs_iter():
-            if counter < start:
-                counter += 1
-                continue
-
-            elif counter >= stop:
-                return collected_logs
-
-            elif counter >= start:
-                collected_logs.append(log)
-                counter += step
-
-        return collected_logs
+        logs = self.provider.get_contract_logs(self.log_filter)
+        return list(islice(logs, value.start, value.stop, value.step))
 
     def range(
         self,
@@ -397,17 +380,8 @@ class ContractEvent(ManagerAccessMixin):
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
-
         ecosystem = self.provider.network.ecosystem
         yield from ecosystem.decode_logs(self.abi, receipt.logs)
-
-    def _get_logs_iter(self, start_block: int = 0, stop_block: int = None) -> Iterator[ContractLog]:
-        log_filter = LogFilter(
-            addresses=[self.contract.address],
-            start_block=start_block,
-            stop_block=stop_block or self.chain_manager.blocks.height,
-        )
-        yield from self.provider.get_contract_logs(log_filter)
 
     def poll_logs(
         self,
