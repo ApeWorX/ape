@@ -28,17 +28,3 @@ class Transactions(Base):
     receiver = Column(String, nullable=False)
     block_hash = Column(String, ForeignKey("blocks.hash", ondelete="CASCADE"))
     nonce = Column(Integer, nullable=False)
-
-
-class ContractEvents(Base):
-    __tablename__ = "contract_events"  # type: ignore
-
-    id = Column(Integer, primary_key=True, index=True)
-    contract = Column(String, nullable=False)
-    event_data = Column(String, nullable=False)
-    transaction_hash = Column(
-        String,
-        ForeignKey("transactions.hash", ondelete="CASCADE"),
-        nullable=False,
-    )
-    event_id = Column(String, nullable=False)

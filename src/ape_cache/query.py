@@ -86,7 +86,7 @@ class CacheQueryProvider(QueryAPI):
                     stop_block=query.stop_block,
                     step=query.step,
                 )
-                if q.rowcount == query.stop_block - query.start_block:
+                if q.rowcount == (query.stop_block - query.start_block) / query.step:
                     # NOTE: Assume 200 msec to get data from database
                     return 200
                 # Can't handle this query
