@@ -447,6 +447,9 @@ class ContractEvent(ManagerAccessMixin):
             start_block = start_or_stop
             stop_block = stop - 1
 
+        if self.provider.is_async:
+            return self._range_async(start_or_stop, stop, search_topics, extra_addresses)
+
         stop_block = min(stop_block, self.chain_manager.blocks.height)
 
         addresses = [self.contract.address] + (extra_addresses or [])
@@ -458,6 +461,27 @@ class ContractEvent(ManagerAccessMixin):
             stop_block=stop_block,
         )
         yield from self.provider.get_contract_logs(log_filter)
+        
+    async def _range_async(
+        self,
+        start_block: int,
+        stop_block: Optional[int] = None,
+        search_topics: Optional[Dict[str, Any]] = None,
+        extra_addresses: Optional[List] = None,
+    ) -> Iterator[ContractLog]:
+
+        stop_block = min(stop_block, await self.chain_manager.blocks.height)
+
+        addresses = [self.contract.address] + (extra_addresses or [])
+        log_filter = LogFilter.from_event(
+            event=self.abi,
+            search_topics=search_topics,
+            addresses=addresses,
+            start_block=start_block,
+            stop_block=stop_block,
+        )
+        async for log in self.provider.get_contract_logs(log_filter):
+            yield log
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """
