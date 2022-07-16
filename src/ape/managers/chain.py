@@ -44,10 +44,20 @@ class BlockContainer(BaseManager):
         """
         The latest block number.
         """
+        if self.provider.is_async:
+            return self._height_async()
+
         if self.head.number is None:
             raise ChainError("Latest block has no number.")
 
         return self.head.number
+    
+    async def _height_async(self):
+        current_block = (await self.head).number
+        if current_block is None:
+            raise ChainError("Latest block has no number.")
+
+        return current_block
 
     @property
     def network_confirmations(self) -> int:
