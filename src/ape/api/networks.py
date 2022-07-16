@@ -12,7 +12,6 @@ from eth_utils import to_int
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
-from ape.api.providers import AsyncProviderAPI
 
 from ape.exceptions import NetworkError, NetworkNotFoundError, SignatureError
 from ape.types import AddressType, ContractLog, RawAddress
