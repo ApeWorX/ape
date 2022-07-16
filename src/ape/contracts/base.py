@@ -76,10 +76,7 @@ class ContractCall(ManagerAccessMixin):
             self.address, self.abi, *args, **kwargs
         )
 
-    def __call__(self, *args, **kwargs) -> Any:
-        txn = self.serialize_transaction(*args, **kwargs)
-        txn.chain_id = self.provider.network.chain_id
-        raw_output = self.provider.send_call(txn, **kwargs)
+    def decode_response(self, raw_output: bytes) -> Any:
         output = self.provider.network.ecosystem.decode_returndata(
             self.abi,
             raw_output,
@@ -93,6 +90,21 @@ class ContractCall(ManagerAccessMixin):
             return output[0] if len(output) == 1 else None
 
         return output
+
+    def __call__(self, *args, **kwargs) -> Any:
+        txn = self.serialize_transaction(*args, **kwargs)
+        txn.chain_id = self.provider.network.chain_id
+
+        if self.provider.is_async:
+            return self._coro(txn)
+
+        raw_output = self.provider.send_call(txn)
+        return self.decode_response(raw_output)
+    
+    async def _coro(self, txn: TransactionAPI) -> Any:
+        """ Returns a coroutine that will return ``txn`` response when awaited. """
+        raw_output = await self.provider.send_call(txn)
+        return self.decode_response(raw_output)
 
 
 class ContractCallHandler(ManagerAccessMixin):
@@ -208,6 +220,7 @@ class ContractTransaction(ManagerAccessMixin):
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             return kwargs["sender"].call(txn)
 
+        # This will return a coroutine if an AsyncProviderAPI is used.
         return self.provider.send_transaction(txn)
 
 
