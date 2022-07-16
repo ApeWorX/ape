@@ -125,6 +125,9 @@ class ContractCallHandler(ManagerAccessMixin):
         return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> Any:
+        if self.provider.is_async:
+            return self._coro(*args, **kwargs)
+        
         if not self.contract.is_contract:
             network = self.provider.network.name
             raise _get_non_contract_error(self.contract.address, network)
@@ -133,6 +136,20 @@ class ContractCallHandler(ManagerAccessMixin):
         selected_abi = _select_method_abi(self.abis, args)
 
         return ContractCall(  # type: ignore
+            abi=selected_abi,
+            address=self.contract.address,
+        )(*args, **kwargs)
+    
+    async def _coro(self, *args, **kwargs) -> Any:
+        """ Returns a coroutine for the call. """
+        if not await self.contract.is_contract:
+            network = self.provider.network.name
+            raise _get_non_contract_error(self.contract.address, network)
+
+        args = self._convert_tuple(args)
+        selected_abi = _select_method_abi(self.abis, args)
+
+        return await ContractCall(  # type: ignore
             abi=selected_abi,
             address=self.contract.address,
         )(*args, **kwargs)
