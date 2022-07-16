@@ -628,6 +628,66 @@ class ContractCache(BaseManager):
 
         return contract_type
 
+    async def _get_async(
+        self, address: AddressType, default: Optional[ContractType] = None
+    ) -> Optional[ContractType]:
+        """
+        A hakcy "async" replacement for `get` that will allow you to call `Contract(address)` within async code.
+        """
+
+        contract_type = self._local_contracts.get(address)
+        if contract_type:
+            if default and default != contract_type:
+                # Replacing contract type
+                self._local_contracts[address] = default
+                return default
+
+            return contract_type
+
+        if self._network.name == LOCAL_NETWORK_NAME:
+            # Don't check disk-cache or explorer when using local
+            if default:
+                self._local_contracts[address] = default
+
+            return default
+
+        contract_type = self._get_contract_type_from_disk(address)
+
+        if not contract_type:
+            # Contract could be a minimal proxy
+            proxy_info = self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
+
+            if not proxy_info:
+                proxy_info = await self.provider.network.ecosystem.get_proxy_info_async(address)
+                if proxy_info and self._is_live_network:
+                    self._cache_proxy_info_to_disk(address, proxy_info)
+
+            if proxy_info:
+                self._local_proxies[address] = proxy_info
+                return await self._get_async(proxy_info.target)
+
+            # Also gets cached to disk for faster lookup next time.
+            contract_type = self._get_contract_type_from_explorer(address)
+
+        # Cache locally for faster in-session look-up.
+        if contract_type:
+            self._local_contracts[address] = contract_type
+
+        if not contract_type:
+            if default:
+                self._local_contracts[address] = default
+                self._cache_contract_to_disk(address, default)
+
+            return default
+
+        if default and default != contract_type:
+            # Replacing contract type
+            self._local_contracts[address] = default
+            self._cache_contract_to_disk(address, default)
+            return default
+
+        return contract_type
+    
     def instance_at(
         self, address: Union[str, "AddressType"], contract_type: Optional[ContractType] = None
     ) -> BaseAddress:
@@ -661,7 +721,31 @@ class ContractCache(BaseManager):
             address = address
 
         address = self.provider.network.ecosystem.decode_address(address)
+        
+        if self.provider.is_async:
+            return self._instance_at_async(address, contract_type)
+        
         contract_type = self.get(address, default=contract_type)
+
+        if contract_type:
+            if not isinstance(contract_type, ContractType):
+                raise TypeError(
+                    f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
+                )
+
+            return self.create_contract(address, contract_type)
+
+        return Address(address)
+
+    async def _instance_at_async(
+        self, address: Union[str, "AddressType"], contract_type: Optional[ContractType] = None
+    ) -> BaseAddress:
+        """
+        A hacky way to implement instance_at() for async providers so you can call `Contract(address)` from async code.
+        There is likely a much better way to integrate this into the wider Ape framework but for now this works.
+        """
+
+        contract_type = await self._get_async(address, default=contract_type)
 
         if contract_type:
             if not isinstance(contract_type, ContractType):
@@ -737,7 +821,9 @@ class ContractCache(BaseManager):
         return ProxyInfoAPI.parse_raw(address_file.read_text())
 
     def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
+        logger.error(self._network.explorer)
         if not self._network.explorer:
+            logger.error(f"No explorer set for {self._network}.")
             return None
 
         try:

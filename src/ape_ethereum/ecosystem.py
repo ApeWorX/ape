@@ -206,6 +206,90 @@ class Ethereum(EcosystemAPI):
             pass
 
         return None
+    
+    async def _get_proxy_info_async(self, address: AddressType) -> Optional[ProxyInfo]:
+        code = (await self.provider.get_code(address)).hex()[2:]
+        patterns = {
+            ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
+            ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
+            ProxyType.Clones: r"36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",  # noqa: E501
+            ProxyType.ZeroAge: r"3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e602a57fd5bf3",
+        }
+        for type, pattern in patterns.items():
+            match = re.match(pattern, code)
+            if match:
+                target = self.conversion_manager.convert(match.group(1), AddressType)
+                return ProxyInfo(type=type, target=target)
+
+        str_to_slot = lambda text: int(keccak(text=text).hex(), 16)  # noqa: E731
+        slots = {
+            ProxyType.Standard: str_to_slot("eip1967.proxy.implementation") - 1,
+            ProxyType.Beacon: str_to_slot("eip1967.proxy.beacon") - 1,
+            ProxyType.OpenZeppelin: str_to_slot("org.zeppelinos.proxy.implementation"),
+            ProxyType.UUPS: str_to_slot("PROXIABLE"),
+        }
+        for type, slot in slots.items():
+            storage = await self.provider.get_storage_at(address, slot)
+            if sum(storage) == 0:
+                continue
+
+            target = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+
+            # read `target.implementation()`
+            if type == ProxyType.Beacon:
+                abi = MethodABI(
+                    type="function",
+                    name="implementation",
+                    stateMutability="view",
+                    outputs=[ABIType(type="address")],
+                )
+                target = await ContractCall(abi, target)()
+
+            return ProxyInfo(type=type, target=target)
+
+        # gnosis safe stores implementation in slot 0, read `masterCopy()` to be sure
+        abi = MethodABI(
+            type="function",
+            name="masterCopy",
+            stateMutability="view",
+            outputs=[ABIType(type="address")],
+        )
+        try:
+            master_copy = await ContractCall(abi, address)()
+            storage = await self.provider.get_storage_at(address, 0)
+            slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+            if master_copy == slot_0:
+                return ProxyInfo(type=ProxyType.GnosisSafe, target=master_copy)
+        except (DecodingError, TransactionError):
+            pass
+
+        # delegate proxy, read `proxyType()` and `implementation()`
+        proxy_type_abi = MethodABI(
+            type="function",
+            name="proxyType",
+            stateMutability="view",
+            outputs=[ABIType(type="uint256")],
+        )
+        implementation_abi = MethodABI(
+            type="function",
+            name="implementation",
+            stateMutability="view",
+            outputs=[ABIType(type="address")],
+        )
+        try:
+            proxy_type = await ContractCall(proxy_type_abi, address)()
+            if proxy_type not in (1, 2):
+                raise ValueError(f"ProxyType '{proxy_type}' not permitted by EIP-897.")
+
+            target = await ContractCall(implementation_abi, address)()
+            # avoid recursion
+            if target != "0x0000000000000000000000000000000000000000":
+                return ProxyInfo(type=ProxyType.Delegate, target=target)
+
+        except (DecodingError, TransactionError, ValueError):
+            pass
+
+        return None
 
     def decode_receipt(self, data: dict) -> ReceiptAPI:
         status = data.get("status")
