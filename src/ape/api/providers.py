@@ -12,7 +12,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, Awaitable, Iterator, List, Optional
+from typing import Any, AsyncGenerator, Awaitable, Iterator, List, Optional, Tuple
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
@@ -1025,6 +1025,13 @@ class AsyncWeb3Provider(AsyncProviderAPI, Web3Provider, ABC):
 
     _web3: Optional[Web3] = None
     _client_version: Optional[str] = None
+    _semaphore_get_logs: Optional[asyncio.Semaphore] = None
+
+    @property
+    def semaphore_get_logs(self) -> asyncio.Semaphore:
+        if self._semaphore_get_logs is None:
+            self._semaphore_get_logs = asyncio.Semaphore(self.concurrency)
+        return self._semaphore_get_logs
 
     @property
     def client_version(self) -> Awaitable[str]:
@@ -1162,23 +1169,24 @@ class AsyncWeb3Provider(AsyncProviderAPI, Web3Provider, ABC):
         for transaction in block.get("transactions"):  # type: ignore
             yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
 
-    async def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
-        height = self.chain_manager.blocks.height
+    async def get_contract_logs(self, log_filter: LogFilter) -> AsyncGenerator[ContractLog]:
+        height = await self.chain_manager.blocks.height
         start_block = log_filter.start_block
         stop_block = min(log_filter.stop_block or height, height)
         block_ranges = self.block_ranges(start_block, stop_block, self.block_page_size)
 
-        async def fetch_log_page(block_range):
+        async def fetch_log_page(block_range: Tuple[int, int]) -> Iterator(ContractLog):
             start, stop = block_range
             page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
             # eth-tester expects a different format, let web3 handle the conversions for it
             raw = "EthereumTester" not in await self.client_version
-            logs = await self._get_logs(page_filter.dict(), raw)
+            async with self.semaphore_get_logs:
+                logs = await self._get_logs(page_filter.dict(), raw)
             return self.network.ecosystem.decode_logs(log_filter.events, logs)
-        
-        with asyncio.Semaphore(self.concurrency):
-            for page in asyncio.as_completed(fetch_log_page(block_range) for block_range in block_ranges):
-                yield page
+
+        for page in asyncio.as_completed([fetch_log_page(block_range) for block_range in block_ranges]):
+            for log in await page:
+                yield log
 
     async def _get_logs(self, filter_params, raw=True):
         if raw:
