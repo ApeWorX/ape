@@ -95,7 +95,12 @@ class BaseAddress(BaseInterface):
         ``True`` when there is code associated with the address.
         """
 
+        if self.provider.is_async:
+            return self._is_contract_async()
         return len(self.code) > 0
+    
+    async def _is_contract_async(self) -> bool:
+        return len(await self.code) >0
 
 
 class Address(BaseAddress):
