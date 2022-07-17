@@ -12,7 +12,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, AsyncGenerator, Awaitable, Iterator, List, Optional, Tuple
+from typing import Any, AsyncIterator, Awaitable, Iterator, List, Optional, Tuple
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
@@ -1169,7 +1169,7 @@ class AsyncWeb3Provider(AsyncProviderAPI, Web3Provider, ABC):
         for transaction in block.get("transactions"):  # type: ignore
             yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
 
-    async def get_contract_logs(self, log_filter: LogFilter) -> AsyncGenerator[ContractLog]:
+    async def get_contract_logs(self, log_filter: LogFilter) -> AsyncIterator[ContractLog]:
         height = await self.chain_manager.blocks.height
         start_block = log_filter.start_block
         stop_block = min(log_filter.stop_block or height, height)
