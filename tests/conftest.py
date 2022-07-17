@@ -12,6 +12,17 @@ ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
 ape.config.PROJECT_FOLDER = Path(mkdtemp()).resolve()
 
 
+@pytest.fixture(autouse=True)
+def setenviron(monkeypatch):
+    """
+    Sets the APE_TESTING environment variable during tests.
+
+    With this variable set fault handling and IPython command history logging
+    will be disabled in the ape console.
+    """
+    monkeypatch.setenv("APE_TESTING", "1")
+
+
 @pytest.fixture(scope="session")
 def config():
     yield ape.config
