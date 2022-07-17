@@ -1175,7 +1175,7 @@ class AsyncWeb3Provider(AsyncProviderAPI, Web3Provider, ABC):
         stop_block = min(log_filter.stop_block or height, height)
         block_ranges = self.block_ranges(start_block, stop_block, self.block_page_size)
 
-        async def fetch_log_page(block_range: Tuple[int, int]) -> Iterator(ContractLog):
+        async def fetch_log_page(block_range: Tuple[int, int]) -> AsyncIterator[ContractLog]:
             start, stop = block_range
             page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
             # eth-tester expects a different format, let web3 handle the conversions for it
