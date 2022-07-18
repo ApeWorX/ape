@@ -5,7 +5,6 @@ import click
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
-from toolz import count
 
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
@@ -325,7 +324,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def __len__(self):
         logs = self.provider.get_contract_logs(self.log_filter)
-        return count(logs)
+        return sum(1 for _ in logs)
 
     def range(
         self,
