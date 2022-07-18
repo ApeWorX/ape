@@ -2,8 +2,6 @@ import shutil
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Union
 
-import ijson
-import requests
 from eth_utils import to_wei
 from evm_trace import (
     CallTreeNode,
@@ -269,19 +267,6 @@ class GethProvider(Web3Provider, UpstreamProvider):
         # Must happen after geth.disconnect()
         self._web3 = None  # type: ignore
         self._client_version = None
-
-    def stream_request(self, method, params, iter_path="result.item"):
-        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
-        results = ijson.sendable_list()
-        coro = ijson.items_coro(results, iter_path)
-
-        resp = requests.post(self.connection_str, json=payload, stream=True)
-        resp.raise_for_status()
-
-        for chunk in resp.iter_content(chunk_size=2**17):
-            coro.send(chunk)
-            yield from results
-            del results[:]
 
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
         frames = self.stream_request("debug_traceTransaction", [txn_hash], "result.structLogs.item")
