@@ -26,7 +26,6 @@ Integration Testing covers the end-user level testing scenarios that we expect o
 of users to encounter in using Ape as both a CLI and plugin system. For testing the plugin writers'
 experience, various testing-only plugin modules are defined to validate that the plugin writing
 experience stays consistent, as well as ensuring that API objects do not contain breaking changes.
-
 For testing user-level interactions, the use of Click's testing functionality allow us to run the
 CLI under various configurations, including over a series of projects that simulate different ways
 the application can be used in production.
