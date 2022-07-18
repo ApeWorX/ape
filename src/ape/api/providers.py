@@ -13,8 +13,6 @@ from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
 from typing import Any, Iterator, List, Optional
 
-import ijson
-import requests
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
 from evm_trace import CallTreeNode, TraceFrame
@@ -705,19 +703,6 @@ class Web3Provider(ProviderAPI, ABC):
         block = self.web3.eth.get_block(block_id, full_transactions=True)
         for transaction in block.get("transactions"):  # type: ignore
             yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
-
-    def stream_request(self, method, params, iter_path="result.item"):
-        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
-        results = ijson.sendable_list()
-        coro = ijson.items_coro(results, iter_path)
-
-        resp = requests.post(self.connection_str, json=payload, stream=True)
-        resp.raise_for_status()
-
-        for chunk in resp.iter_content(chunk_size=2**17):
-            coro.send(chunk)
-            yield from results
-            del results[:]
 
     def block_ranges(self, start=0, stop=None, page=None):
         if stop is None:
