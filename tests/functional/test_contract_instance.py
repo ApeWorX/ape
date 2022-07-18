@@ -1,6 +1,5 @@
 import re
 from pathlib import Path
-from typing import Optional
 
 import pytest
 from eth_utils import is_checksum_address
@@ -9,27 +8,11 @@ from hexbytes import HexBytes
 
 from ape import Contract
 from ape.api import Address, ReceiptAPI
-from ape.exceptions import DecodingError
 from ape.types import ContractLog
 
 from .conftest import SOLIDITY_CONTRACT_ADDRESS
 
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
-
-
-@pytest.fixture
-def assert_log_values(owner, chain):
-    def _assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):
-        assert isinstance(log.b, HexBytes)
-        expected_previous_number = number - 1 if previous_number is None else previous_number
-        assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
-        assert log.newNum == number, "Event param 'newNum' has unexpected value"
-        assert log.dynData == "Dynamic"
-        assert log.dynIndexed == HexBytes(
-            "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d"
-        )
-
-    return _assert_log_values
 
 
 def test_init_at_unknown_address():
@@ -85,11 +68,7 @@ def test_contract_logs_from_receipts(owner, contract_instance, assert_log_values
         logs = [log for log in event_type.from_receipt(receipt)]
         assert len(logs) == 1
         assert_log_values(logs[0], num)
-
-        # Also verify can we logs the other way
-        logs = [log for log in receipt.decode_logs(event_type)]
-        assert len(logs) == 1
-        assert_log_values(logs[0], num)
+        assert logs[0].log_index == 0
 
     assert_receipt_logs(receipt_0, 1)
     assert_receipt_logs(receipt_1, 2)
@@ -149,9 +128,7 @@ def test_contract_logs_splicing(contract_instance, owner, assert_log_values):
 
 def test_contract_logs_range(contract_instance, owner, assert_log_values):
     contract_instance.setNumber(1, sender=owner)
-    logs = [
-        log for log in contract_instance.NumberChange.range(100, event_parameters={"newNum": 1})
-    ]
+    logs = [log for log in contract_instance.NumberChange.range(100, search_topics={"newNum": 1})]
     assert len(logs) == 1, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
 
@@ -164,24 +141,19 @@ def test_contract_logs_range_by_address(
     logs = [
         log
         for log in contract_instance.AddressChange.range(
-            100, event_parameters={"newAddress": test_accounts[1]}
+            100, search_topics={"newAddress": test_accounts[1]}
         )
     ]
 
     # NOTE: This spy assertion tests against a bug where address queries were not
     # 0x-prefixed. However, this was still valid in EthTester and thus was not causing
     # test failures.
-    spy.assert_called_once_with(
-        {
-            "address": [contract_instance.address],
-            "fromBlock": 0,
-            "toBlock": 3,
-            "topics": [
-                "0x7ff7bacc6cd661809ed1ddce28d4ad2c5b37779b61b9e3235f8262be529101a9",
-                "0x000000000000000000000000c89d42189f0450c2b2c3c61f58ec5d628176a1e7",
-            ],
-        }
-    )
+    call_args = spy.call_args[0][0]
+    assert call_args["address"] == [contract_instance.address]
+    assert call_args["topics"] == [
+        "0x7ff7bacc6cd661809ed1ddce28d4ad2c5b37779b61b9e3235f8262be529101a9",
+        "0x000000000000000000000000c89d42189f0450c2b2c3c61f58ec5d628176a1e7",
+    ]
     assert len(logs) == 1
     assert logs[0].newAddress == test_accounts[1]
 
@@ -196,12 +168,21 @@ def test_contracts_log_multiple_addresses(
     logs = [
         log
         for log in contract_instance.NumberChange.range(
-            100, event_parameters={"newNum": 1}, extra_addresses=[another_instance.address]
+            100, search_topics={"newNum": 1}, extra_addresses=[another_instance.address]
         )
     ]
     assert len(logs) == 2, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
-    assert_log_values(logs[1], 1)
+    assert_log_values(logs[1], 1, address=another_instance.address)
+
+
+def test_contract_logs_recreate_class(contract_instance, owner):
+    contract_instance.setNumber(1, sender=owner)
+    logs = [log for log in contract_instance.NumberChange.range(100, search_topics={"newNum": 1})]
+
+    contract_log = logs[0].dict()
+    new_class = ContractLog.parse_obj(contract_log)
+    assert new_class
 
 
 def test_contract_logs_range_start_and_stop(contract_instance, owner, chain):
@@ -242,7 +223,7 @@ def test_contract_logs_range_with_paging(contract_instance, owner, chain, assert
     # Create one more log after the empty blocks.
     contract_instance.setNumber(100, sender=owner)
 
-    logs = [log for log in contract_instance.NumberChange.range(100, block_page_size=1)]
+    logs = [log for log in contract_instance.NumberChange.range(100)]
     assert len(logs) == 4, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
     assert_log_values(logs[1], 2)
@@ -256,16 +237,19 @@ def test_contract_logs_range_over_paging(contract_instance, owner, chain):
         contract_instance.setNumber(i + 1, sender=owner)
 
     # 50 is way more than 3 but it shouldn't matter.
-    logs = [log for log in contract_instance.NumberChange.range(100, block_page_size=50)]
+    logs = [log for log in contract_instance.NumberChange.range(100)]
     assert len(logs) == 3, "Unexpected number of logs"
 
 
-def test_contract_logs_from_non_indexed_range(contract_instance, owner):
+def test_contract_logs_querying_non_indexed_data(contract_instance, owner):
     contract_instance.setNumber(1, sender=owner)
-    with pytest.raises(DecodingError):
-        _ = [
-            log for log in contract_instance.NumberChange.range(0, event_parameters={"prevNum": 1})
-        ]
+    with pytest.raises(ValueError) as err:
+        _ = [log for log in contract_instance.NumberChange.range(0, search_topics={"prevNum": 1})]
+
+    assert (
+        str(err.value)
+        == "NumberChange defines newNum, dynIndexed as indexed topics, but you provided prevNum"
+    )
 
 
 def test_structs(contract_instance, sender, chain):

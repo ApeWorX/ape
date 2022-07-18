@@ -1,3 +1,4 @@
+from itertools import islice
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
@@ -9,7 +10,7 @@ from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ArgumentsLengthError, ContractError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog
+from ape.types import AddressType, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 
@@ -275,6 +276,10 @@ class ContractEvent(ManagerAccessMixin):
 
         yield from self.range(self.chain_manager.blocks.height + 1)
 
+    @property
+    def log_filter(self):
+        return LogFilter(addresses=[self.contract], events=[self.abi])
+
     @singledispatchmethod
     def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
         raise NotImplementedError(f"Cannot use '{type(value)}' to access logs.")
@@ -291,19 +296,15 @@ class ContractEvent(ManagerAccessMixin):
         Returns:
             :class:`~ape.contracts.base.ContractLog`
         """
-
-        if index == 0:
-            logs_slice = [next(self._get_logs_iter())]
-        elif index > 0:
-            # Call over to 'self.__getitem_slice'.
-            logs_slice = self[: index + 1]  # type: ignore
-        else:
-            # Call over to 'self.__getitem_slice'.
-            logs_slice = self[index:]  # type: ignore
-
+        logs = self.provider.get_contract_logs(self.log_filter)
         try:
-            return logs_slice[index]
-        except IndexError as err:
+            if index == 0:
+                return next(logs)
+            elif index > 0:
+                return next(islice(logs, index, index + 1))
+            else:
+                return list(logs)[index]
+        except (IndexError, StopIteration) as err:
             raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
 
     @__getitem__.register
@@ -317,32 +318,18 @@ class ContractEvent(ManagerAccessMixin):
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
+        logs = self.provider.get_contract_logs(self.log_filter)
+        return list(islice(logs, value.start, value.stop, value.step))
 
-        start = value.start or 0
-        stop = value.stop if value.stop is not None else self.chain_manager.blocks.height
-        step = value.step or 1
-        collected_logs: List[ContractLog] = []
-        counter = 0
-        for log in self._get_logs_iter():
-            if counter < start:
-                counter += 1
-                continue
-
-            elif counter >= stop:
-                return collected_logs
-
-            elif counter >= start:
-                collected_logs.append(log)
-                counter += step
-
-        return collected_logs
+    def __len__(self):
+        logs = self.provider.get_contract_logs(self.log_filter)
+        return len(list(logs))
 
     def range(
         self,
         start_or_stop: int,
         stop: Optional[int] = None,
-        block_page_size: Optional[int] = None,
-        event_parameters: Optional[Dict] = None,
+        search_topics: Optional[Dict[str, Any]] = None,
         extra_addresses: Optional[List] = None,
     ) -> Iterator[ContractLog]:
         """
@@ -354,10 +341,8 @@ class ContractEvent(ManagerAccessMixin):
               Otherwise, it is the total amount of blocks to get starting from ``0``.
             stop (Optional[int]): The latest block number in the
               desired log set. Defaults to delegating to provider.
-            block_page_size (Optional[int]): The amount of block to request
-              on each page.
-            event_parameters (Optional[Dict]): Arguments on the event that you can
-              search for.
+            search_topics (Optional[Dict]): Search topics, such as indexed event inputs,
+              to query by. Defaults to getting all events.
             extra_addresses (Optional[List[``AddressType``]]): Additional contract
               addresses containing the same event type. Defaults to only looking at
               the contract instance where this event is defined.
@@ -377,19 +362,16 @@ class ContractEvent(ManagerAccessMixin):
             stop_block = stop - 1
 
         stop_block = min(stop_block, self.chain_manager.blocks.height)
-        addresses = (
-            [self.contract.address, *extra_addresses]
-            if extra_addresses
-            else [self.contract.address]
-        )
-        yield from self.provider.get_contract_logs(
-            addresses,
-            self.abi,
+
+        addresses = [self.contract.address] + (extra_addresses or [])
+        log_filter = LogFilter.from_event(
+            event=self.abi,
+            search_topics=search_topics,
+            addresses=addresses,
             start_block=start_block,
             stop_block=stop_block,
-            block_page_size=block_page_size,
-            event_parameters=event_parameters,
         )
+        yield from self.provider.get_contract_logs(log_filter)
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """
@@ -401,18 +383,8 @@ class ContractEvent(ManagerAccessMixin):
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
-
         ecosystem = self.provider.network.ecosystem
         yield from ecosystem.decode_logs(self.abi, receipt.logs)
-
-    def _get_logs_iter(self, start_block: int = 0, stop_block: int = None) -> Iterator[ContractLog]:
-        stop_block = stop_block or self.chain_manager.blocks.height
-        yield from self.provider.get_contract_logs(
-            self.contract.address,
-            self.abi,
-            start_block=start_block,
-            stop_block=stop_block,
-        )
 
     def poll_logs(
         self,

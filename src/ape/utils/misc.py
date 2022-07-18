@@ -235,6 +235,20 @@ def raises_not_implemented(fn):
     return inner
 
 
+def to_int(value) -> int:
+    if isinstance(value, int):
+        return value
+    elif isinstance(value, str):
+        if value.startswith("0x"):
+            return int(value, 16)
+        else:
+            return int(value)
+    elif isinstance(value, bytes):
+        return int.from_bytes(value, "big")
+
+    raise ValueError(f"cannot convert {repr(value)} to int")
+
+
 __all__ = [
     "cached_property",
     "expand_environment_variables",
