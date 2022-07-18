@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional
 
-from ethpm_types import Checksum, ContractType, PackageManifest, Source
+from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
 from packaging import version as version_util
@@ -113,39 +113,37 @@ class ProjectAPI(BaseInterfaceModel):
         if version:
             manifest.version = version
 
+        manifest.compilers = cls._create_compilers_list(source_paths, contract_types)
         manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
 
-        manifest.compilers = []
-
-        i = 0
-        for contract_type in contract_types:
-            suffix = source_paths[i].suffix
-            if cls.compiler_manager.registered_compilers[suffix].name:
-                if suffix == ".sol":
-                    compiler_version = [
-                        x
-                        for x in cls.compiler_manager.registered_compilers[suffix].get_version_map(
-                            source_paths
-                        )
-                    ][i]
-                else:
-                    compiler_version = (
-                        cls.compiler_manager.registered_compilers[suffix].get_versions(
-                            source_paths
-                        ),
-                    )
-                manifest.compilers.append(
-                    {
-                        "name": cls.compiler_manager.registered_compilers[suffix].name,
-                        "version": compiler_version,
-                        "settings": None,
-                        "contractTypes": contract_types[contract_type],
-                    }
-                )
-            i += 1
-
         return manifest
+
+    @classmethod
+    def _create_compilers_list(
+        cls,
+        source_paths: List[Path],
+        contract_types: Dict[str, ContractType],
+    ):
+        compiler_list: List[Compiler] = []
+        for key, compiler in cls.compiler_manager.registered_compilers.items():
+            compiler_list.append(
+                Compiler(
+                    name=compiler.name,
+                    # TODO: Figure out if this should be str
+                    version=str(compiler.get_versions(source_paths)),
+                    # TODO: Find compiler settings
+                    settings={},
+                    # TODO: Figure out what file type/compiler for each contract_typeT
+                    # TODO: You'll need to filter these to match the compiler used
+                    # NOTE: Consider adding a compiler member to ContractType class?
+                    # NOTE: Check data type, ethpm-types says List[str] 
+                    # not sure what this data should be example passes name of contract
+                    contractTypes=[str(x) for x in contract_types.keys()],
+                )
+            )
+        breakpoint()
+        return compiler_list
 
     @classmethod
     def _create_source_dict(
@@ -173,10 +171,6 @@ class ProjectAPI(BaseInterfaceModel):
             )
 
         return source_dict  # {source_id: Source}
-
-    # @classmethod
-    # def _create_compiler_list(cls, contract_filepaths: List[Path]):
-    #     return
 
 
 class DependencyAPI(BaseInterfaceModel):
