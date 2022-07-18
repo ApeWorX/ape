@@ -386,6 +386,9 @@ def test_poll_blocks(chain_at_block_5, eth_tester_provider, owner, PollDaemon):
     with PollDaemon("blocks", poller, blocks.put, blocks.full):
         eth_tester_provider.mine(3)
 
+        # Fixes rare race condition in poll daemon fixture
+        eth_tester_provider.mine()
+
     assert blocks.full()
     first = blocks.get().number
     second = blocks.get().number
