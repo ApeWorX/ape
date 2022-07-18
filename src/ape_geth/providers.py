@@ -284,8 +284,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
             del results[:]
 
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
-        result = self._make_request("debug_traceTransaction", [txn_hash])
-        frames = result.get("structLogs", [])
+        frames = self.stream_request("debug_traceTransaction", [txn_hash], "result.structLogs.item")
         for frame in frames:
             yield TraceFrame(**frame)
 
