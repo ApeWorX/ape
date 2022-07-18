@@ -214,6 +214,10 @@ class GethProvider(Web3Provider, UpstreamProvider):
                 logger.info(f"Connecting to existing Erigon node at '{self.uri}'.")
                 self.concurrency = 8
                 self.block_page_size = 40_000
+            elif "nethermind" in self.client_version.lower():
+                logger.info(f"Connecting to existing Nethermind node at '{self.uri}'.")
+                self.concurrency = 32
+                self.block_page_size = 50_000
             else:
                 network_name = self.client_version.split("/")[0]
                 logger.warning(f"Connecting Geth plugin to non-Geth network '{network_name}'.")
