@@ -384,10 +384,9 @@ def test_poll_blocks(chain_at_block_5, eth_tester_provider, owner, PollDaemon):
     poller = chain_at_block_5.blocks.poll_blocks()
 
     with PollDaemon("blocks", poller, blocks.put, blocks.full):
+        # Sleep first to ensure listening before mining.
+        time.sleep(1)
         eth_tester_provider.mine(3)
-
-        # Fixes rare race condition in poll daemon fixture
-        eth_tester_provider.mine()
 
     assert blocks.full()
     first = blocks.get().number

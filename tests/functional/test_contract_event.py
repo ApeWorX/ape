@@ -200,6 +200,9 @@ def test_poll_logs(chain, vyper_contract_instance, eth_tester_provider, owner, P
     start_block = chain.blocks.height
 
     with PollDaemon("logs", poller, logs.put, logs.full):
+        # Sleep first to ensure listening before emitting logs.
+        time.sleep(1)
+
         vyper_contract_instance.setNumber(1, sender=owner)  # block s+1
         vyper_contract_instance.setNumber(33, sender=owner)  # block s+2
         vyper_contract_instance.setNumber(7, sender=owner)  # block s+3
