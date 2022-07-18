@@ -61,6 +61,10 @@ def test_send_transaction_no_revert_message(mock_web3, geth_provider, mock_trans
     assert str(err.value) == TransactionError.DEFAULT_MESSAGE
 
 
+def test_uri_default_value(geth_provider):
+    assert geth_provider.uri == "http://localhost:8545"
+
+
 def test_uri_uses_value_from_config(mock_network_api, mock_web3, temp_config):
     config = {"geth": {"ethereum": {"local": {"uri": "value/from/config"}}}}
     with temp_config(config):
@@ -69,6 +73,7 @@ def test_uri_uses_value_from_config(mock_network_api, mock_web3, temp_config):
 
 
 def test_uri_uses_value_from_settings(mock_network_api, mock_web3, temp_config):
+    # The value from the adhoc-settings is valued over the value from the config file.
     config = {"geth": {"ethereum": {"local": {"uri": "value/from/config"}}}}
     with temp_config(config):
         provider = create_geth(mock_network_api, mock_web3)
