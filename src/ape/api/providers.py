@@ -6,17 +6,15 @@ import shutil
 import sys
 import time
 from abc import ABC
+from concurrent.futures import ThreadPoolExecutor
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Iterator, List, Optional
 
-from eth_abi.abi import encode_single
-from eth_abi.packed import encode_single_packed
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, keccak, to_hex
-from ethpm_types.abi import EventABI
+from eth_utils import add_0x_prefix
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
@@ -30,7 +28,6 @@ from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
-    DecodingError,
     ProviderError,
     ProviderNotConnectedError,
     RPCTimeoutError,
@@ -40,16 +37,14 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import logger
-from ape.types import AddressType, BlockID, ContractLog, SnapshotID
+from ape.types import AddressType, BlockID, ContractLog, LogFilter, SnapshotID
 from ape.utils import (
     EMPTY_BYTES32,
     BaseInterfaceModel,
     JoinableQueue,
-    LogInputABICollection,
     abstractmethod,
     cached_property,
     gas_estimation_error_message,
-    is_dynamic_sized_type,
     raises_not_implemented,
     spawn,
 )
@@ -118,6 +113,17 @@ class ProviderAPI(BaseInterfaceModel):
 
     cached_chain_id: Optional[int] = None
     """Implementation providers may use this to cache and re-use chain ID."""
+
+    block_page_size: int = 100
+    """
+    The amount of blocks to fetch in a response, as a default.
+    This is particularly useful for querying logs across a block range.
+    """
+
+    concurrency: int = 4
+    """
+    How many parallel threads to use when fetching logs.
+    """
 
     @abstractmethod
     def connect(self):
@@ -314,31 +320,16 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_contract_logs(
-        self,
-        address: Union[AddressType, List[AddressType]],
-        abi: Union[EventABI, List[EventABI]],
-        start_block: Optional[int] = None,
-        stop_block: Optional[int] = None,
-        block_page_size: Optional[int] = None,
-        event_parameters: Optional[Dict] = None,
-    ) -> Iterator[ContractLog]:
+    def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
         """
-        Get all logs matching the given set of filter parameters.
+        Get logs from contracts.
 
         Args:
-            address (``AddressType``): The contract address that defines the logs.
-            abi (``EventABI``): The event of interest's ABI.
-            start_block (Optional[int]): Get events that occurred
-              in blocks after the block with this ID.
-            stop_block (Optional[int]): Get events that occurred
-              in blocks before the block with this ID.
-            block_page_size (Optional[int]): Use this parameter to adjust
-              request block range sizes.
-            event_parameters (Optional[Dict]): Filter by event parameter values.
+            log_filter (:class:`~ape.types.LogFilter`): A mapping of event ABIs to
+              topic filters. Defaults to getting all events.
 
         Returns:
-            Iterator[:class:`~ape.contracts.base.ContractLog`]
+            Iterator[:class:`~ape.types.ContractLog`]
         """
 
     @raises_not_implemented
@@ -519,11 +510,11 @@ class ProviderAPI(BaseInterfaceModel):
         if not isinstance(err_data, dict):
             return VirtualMachineError(base_err=exception)
 
-        message = str(err_data.get("message"))
-        if not message:
+        err_msg = err_data.get("message")
+        if not err_msg:
             return VirtualMachineError(base_err=exception)
 
-        return VirtualMachineError(message=message, code=err_data.get("code"))
+        return VirtualMachineError(message=str(err_msg), code=err_data.get("code"))
 
 
 class TestProviderAPI(ProviderAPI):
@@ -585,6 +576,7 @@ class Web3Provider(ProviderAPI, ABC):
     """
 
     _web3: Optional[Web3] = None
+    _client_version: Optional[str] = None
 
     @property
     def web3(self) -> Web3:
@@ -592,6 +584,17 @@ class Web3Provider(ProviderAPI, ABC):
             raise ProviderNotConnectedError()
 
         return self._web3
+
+    @property
+    def client_version(self) -> str:
+        if not self._web3:
+            return ""
+
+        # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
+        if self._client_version is None:
+            self._client_version = self._web3.clientVersion
+
+        return self._client_version
 
     @property
     def base_fee(self) -> int:
@@ -648,12 +651,8 @@ class Web3Provider(ProviderAPI, ABC):
         return self.web3.eth.max_priority_fee
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
-        if isinstance(block_id, str):
-            block_id = HexStr(block_id)
-
-            if block_id.isnumeric():
-                block_id = add_0x_prefix(block_id)
-
+        if isinstance(block_id, str) and block_id.isnumeric():
+            block_id = int(block_id)
         block_data = dict(self.web3.eth.get_block(block_id))
         return self.network.ecosystem.decode_block(block_data)
 
@@ -705,129 +704,42 @@ class Web3Provider(ProviderAPI, ABC):
         for transaction in block.get("transactions"):  # type: ignore
             yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
 
-    def get_contract_logs(
-        self,
-        address: Union[AddressType, List[AddressType]],
-        abi: Union[List[EventABI], EventABI],
-        start_block: Optional[int] = None,
-        stop_block: Optional[int] = None,
-        block_page_size: Optional[int] = None,
-        event_parameters: Optional[Dict] = None,
-    ) -> Iterator[ContractLog]:
-        if block_page_size is not None:
-            if block_page_size < 0:
-                raise ValueError("'block_page_size' cannot be negative.")
-        else:
-            block_page_size = 100
+    def block_ranges(self, start=0, stop=None, page=None):
+        if stop is None:
+            stop = self.chain_manager.blocks.height
+        if page is None:
+            page = self.chain_manager.provider.block_page_size
 
-        event_parameters = event_parameters or {}
+        for start_block in range(start, stop + 1, page):
+            stop_block = min(stop, start_block + page - 1)
+            yield start_block, stop_block
+
+    def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
         height = self.chain_manager.blocks.height
+        start_block = log_filter.start_block
+        stop_block = min(log_filter.stop_block or height, height)
+        block_ranges = self.block_ranges(start_block, stop_block, self.block_page_size)
 
-        required_confirmations = self.provider.network.required_confirmations
-        stop_block = height - required_confirmations if stop_block is None else stop_block
-        if stop_block > height:
-            raise ValueError(f"Stop-block '{stop_block}' greater than height '{height}'.")
+        def fetch_log_page(block_range):
+            start, stop = block_range
+            page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
+            # eth-tester expects a different format, let web3 handle the conversions for it
+            raw = "EthereumTester" not in self.client_version
+            logs = self._get_logs(page_filter.dict(), raw)
+            return self.network.ecosystem.decode_logs(log_filter.events, logs)
 
-        start_block = start_block or 0
-        if start_block > stop_block:
-            raise ValueError(
-                f"Start block '{start_block}' cannot be greater than stop block '{stop_block}'."
-            )
+        with ThreadPoolExecutor(self.concurrency) as pool:
+            for page in pool.map(fetch_log_page, block_ranges):
+                yield from page
 
-        start = start_block
-        stop_increment = block_page_size - 1
-        stop = min(start + stop_increment, stop_block)
-
-        while start <= stop_block:
-            logs = [
-                log
-                for log in self._get_logs_in_block_range(
-                    address,
-                    abi,
-                    start_block=start,
-                    stop_block=stop,
-                    block_page_size=block_page_size,
-                    event_parameters=event_parameters,
-                )
-            ]
-
-            if len(logs) == 0:
-                # No events happened in this sub-block range. Go to next page.
-                start = stop + 1
-                stop = min(start + stop_increment, stop_block)
-                continue
-
-            for log in logs:
-                yield log
-
-            # Start the next iteration on the largest block number to get remaining events.
-            start = stop + 1
-            stop = min(start + stop_increment, stop_block)
-
-    def _get_logs_in_block_range(
-        self,
-        address: Union[AddressType, List[AddressType]],
-        abi: Union[List[EventABI], EventABI],
-        start_block: Optional[int] = None,
-        stop_block: Optional[int] = None,
-        block_page_size: Optional[int] = None,
-        event_parameters: Optional[Dict] = None,
-    ):
-        start_block = start_block or 0
-        abis = abi if isinstance(abi, (list, tuple)) else [abi]
-        block_page_size = block_page_size or 100
-        stop_block = start_block + block_page_size if stop_block is None else stop_block
-        event_parameters = event_parameters or {}
-        for abi in abis:
-            if not isinstance(address, (list, tuple)):
-                address = [address]
-
-            addresses = [self.conversion_manager.convert(a, AddressType) for a in address]
-            log_filter: Dict = {
-                "address": addresses,
-                "fromBlock": start_block,
-                "toBlock": stop_block,
-                "topics": [],
-            }
-
-            if "topics" not in event_parameters:
-                event_signature_hash = add_0x_prefix(HexStr(keccak(text=abi.selector).hex()))
-                log_filter["topics"] = [event_signature_hash]
-                search_topic_values = []
-                abi_types = []
-                topics = LogInputABICollection(
-                    abi, [abi_input for abi_input in abi.inputs if abi_input.indexed], True
-                )
-
-                for name, arg in event_parameters.items():
-                    if hasattr(arg, "address"):
-                        arg = self.conversion_manager.convert(arg, AddressType)
-
-                    abi_type = None
-                    for argument in topics.values:
-                        if argument.name == name:
-                            abi_type = argument.type
-
-                    if not abi_type:
-                        raise DecodingError(
-                            f"'{name}' is not an indexed topic for event '{abi.name}'."
-                        )
-
-                    search_topic_values.append(arg)
-                    abi_types.append(abi_type)
-
-                encoded_topic_data = [
-                    to_hex(keccak(encode_single_packed(str(abi_type), value)))
-                    if is_dynamic_sized_type(abi_type)
-                    else to_hex(encode_single(abi_type, value))  # type: ignore
-                    for abi_type, value in zip(abi_types, search_topic_values)
-                ]
-                log_filter["topics"].extend(encoded_topic_data)
-            else:
-                log_filter["topics"] = event_parameters.pop("topics")
-
-            log_result = [dict(log) for log in self.web3.eth.get_logs(log_filter)]  # type: ignore
-            yield from self.network.ecosystem.decode_logs(abi, log_result)
+    def _get_logs(self, filter_params, raw=True):
+        if raw:
+            response = self.web3.provider.make_request("eth_getLogs", [filter_params])
+            if "error" in response:
+                raise ValueError(response["error"]["message"])
+            return response["result"]
+        else:
+            return self.web3.eth.get_logs(filter_params)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
