@@ -303,6 +303,7 @@ def PollDaemon():
     return PollDaemonThread
 
 
+@pytest.fixture
 def assert_log_values(contract_instance):
     def _assert_log_values(
         log: ContractLog,
