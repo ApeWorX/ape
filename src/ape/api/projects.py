@@ -127,6 +127,11 @@ class ProjectAPI(BaseInterfaceModel):
     ):
         compiler_list: List[Compiler] = []
         for key, compiler in cls.compiler_manager.registered_compilers.items():
+            contractTypes = [
+                str(x)
+                for x in contract_types.keys()
+                if key.strip(".") in contract_types[x].source_id
+            ]
             compiler_list.append(
                 Compiler(
                     name=compiler.name,
@@ -137,12 +142,11 @@ class ProjectAPI(BaseInterfaceModel):
                     # TODO: Figure out what file type/compiler for each contract_typeT
                     # TODO: You'll need to filter these to match the compiler used
                     # NOTE: Consider adding a compiler member to ContractType class?
-                    # NOTE: Check data type, ethpm-types says List[str] 
+                    # NOTE: Check data type, ethpm-types says List[str]
                     # not sure what this data should be example passes name of contract
-                    contractTypes=[str(x) for x in contract_types.keys()],
+                    contractTypes=contractTypes,
                 )
             )
-        breakpoint()
         return compiler_list
 
     @classmethod
