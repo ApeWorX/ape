@@ -275,7 +275,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
         results = ijson.sendable_list()
         coro = ijson.items_coro(results, iter_path)
 
-        resp = requests.post(self.connection_str, json=payload, stream=True)
+        resp = requests.post(self.uri, json=payload, stream=True)
         resp.raise_for_status()
 
         for chunk in resp.iter_content(chunk_size=2**17):
