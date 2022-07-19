@@ -158,11 +158,16 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
     @property
     def uri(self) -> str:
-        ecosystem_config = self.config.dict().get(self.network.ecosystem.name, None)
-        if ecosystem_config is None:
+        if "uri" in self.provider_settings:
+            # Use adhoc, scripted value
+            return self.provider_settings["uri"]
+
+        config = self.config.dict().get(self.network.ecosystem.name, None)
+        if config is None:
             return DEFAULT_SETTINGS["uri"]
 
-        network_config = ecosystem_config.get(self.network.name)
+        # Use value from config file
+        network_config = config.get(self.network.name)
         return network_config.get("uri", DEFAULT_SETTINGS["uri"])
 
     @property
@@ -175,8 +180,8 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
     def connect(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
-        self._web3 = Web3(HTTPProvider(self.uri))
-        self._web3.provider._request_kwargs["timeout"] = 30 * 60
+        provider = HTTPProvider(self.uri, request_kwargs={"timeout": 30 * 60})
+        self._web3 = Web3(provider)
 
         if not self._web3.isConnected():
             if self.network.name != LOCAL_NETWORK_NAME:
