@@ -453,7 +453,11 @@ def test_contract_two_events_with_same_name(owner, networks_connected_to_tester)
     assert event_from_interface.abi.signature == expected_sig_from_interface
 
 
-def test_estimating_fees(solidity_contract_instance, eth_tester_provider, owner):
-    transaction = solidity_contract_instance.setNumber.as_transaction(10, sender=owner)
-    estimated_fees = eth_tester_provider.estimate_gas_cost(transaction)
-    assert estimated_fees > 0
+def test_estimate_fee_txn(vyper_contract_instance, eth_tester_provider, owner):
+    fee = vyper_contract_instance.setNumber.estimate_fee(10, sender=owner)
+    assert fee > 0
+
+
+def test_estimate_fee_call(vyper_contract_instance, eth_tester_provider, owner):
+    fee = vyper_contract_instance.myNumber.estimate_fee(sender=owner)
+    assert fee > 0

@@ -126,6 +126,47 @@ class ContractCallHandler(ManagerAccessMixin):
             address=self.contract.address,
         )(*args, **kwargs)
 
+    def as_transaction(self, *args, **kwargs):
+        """
+        Convert the Call to a transaction. This is useful for checking coverage
+        or estimating fees.
+
+        Args:
+            *args: The contract method invocation arguments.
+            **kwargs: Transaction kwargs, such as value or
+              sender.
+
+        Returns:
+            :class:`~ape.api.transactions.TransactionAPI`
+        """
+        args = self._convert_tuple(args)
+        selected_abi = _select_method_abi(self.abis, args)
+
+        contract_transaction = ContractTransaction(  # type: ignore
+            abi=selected_abi,
+            address=self.contract.address,
+        )
+
+        transaction = contract_transaction.serialize_transaction(*args, **kwargs)
+        self.provider.prepare_transaction(transaction)
+        return transaction
+
+    def estimate_fee(self, *args, **kwargs) -> int:
+        """
+        Get the estimated fee (according to the provider) for the
+        contract method call (as if it were a transaction).
+
+        Args:
+            *args: The contract method invocation arguments.
+            **kwargs: Transaction kwargs, such as value or
+              sender.
+
+        Returns:
+            int: The estimated fee to invoke the transaction.
+        """
+        txn = self.as_transaction(*args, **kwargs)
+        return self.provider.estimate_gas_cost(txn)
+
 
 def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> MethodABI:
     args = args or []
@@ -203,6 +244,22 @@ class ContractTransactionHandler(ManagerAccessMixin):
         transaction = contract_transaction.serialize_transaction(*args, **kwargs)
         self.provider.prepare_transaction(transaction)
         return transaction
+
+    def estimate_fee(self, *args, **kwargs) -> int:
+        """
+        Get the estimated fee (according to the provider) for the
+        contract method-invocation transaction.
+
+        Args:
+            *args: The contract method invocation arguments.
+            **kwargs: Transaction kwargs, such as value or
+              sender.
+
+        Returns:
+            int: The estimated fee to invoke the transaction.
+        """
+        txn = self.as_transaction(*args, **kwargs)
+        return self.provider.estimate_gas_cost(txn)
 
     @property
     def call(self) -> ContractCallHandler:
