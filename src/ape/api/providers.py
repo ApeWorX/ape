@@ -668,17 +668,9 @@ class Web3Provider(ProviderAPI, ABC):
     def get_storage_at(self, address: str, slot: int, *args, **kwargs) -> bytes:
         return self.web3.eth.get_storage_at(address, slot, **kwargs)
 
-    def send_call(
-        self,
-        txn: TransactionAPI,
-        block_id: Optional[BlockID] = None,
-        state_override: Optional[Dict] = None,
-    ) -> bytes:
+    def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         try:
-            data = txn.dict()
-            return self.web3.eth.call(
-                data, block_identifier=block_id, state_override=state_override
-            )
+            return self.web3.eth.call(txn.dict(), **kwargs)
         except ValueError as err:
             raise self.get_virtual_machine_error(err) from err
 

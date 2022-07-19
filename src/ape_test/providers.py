@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
@@ -9,7 +7,7 @@ from web3.providers.eth_tester.defaults import API_ENDPOINTS
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, VirtualMachineError
-from ape.types import BlockID, SnapshotID
+from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
 
 
@@ -66,20 +64,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         """Returns 0 because test chains do not care about priority fees."""
         return 0
 
-    def send_call(
-        self,
-        txn: TransactionAPI,
-        block_id: Optional[BlockID] = None,
-        state_override: Optional[Dict] = None,
-    ) -> bytes:
+    def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         data = txn.dict(exclude_none=True)
         if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)
 
         try:
-            return self.web3.eth.call(
-                data, block_identifier=block_id, state_override=state_override
-            )
+            return self.web3.eth.call(data, **kwargs)
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:

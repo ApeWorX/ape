@@ -40,7 +40,7 @@ def test_call_using_block_identifier(
     contract.setNumber(1, sender=owner)
     height = chain.blocks.height
     contract.setNumber(33, sender=owner)
-    actual = contract.myNumber(block_id=height)
+    actual = contract.myNumber(block_identifier=height)
     assert actual == 1
 
 
