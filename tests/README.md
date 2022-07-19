@@ -1,27 +1,24 @@
 ## Testing Strategy
 
-Due to its plugin-based architecture and registration as a pytest plugin, testing the mechanics
-of the core Ape repository is a bit more complex than other Python-based repositories.
+Due to its plugin-based architecture and registration as a pytest plugin, testing the mechanics of the core Ape repository is a bit more complex than other Python-based repositories.
 
 ### MyPy Type Annotations
 
-This codebase uses MyPy extensively, not only to help aide in finding typing issues within the
-codebase, but also as a means to help plugin writers avoid integration issues with the library.
-Please try to use MyPy Type Annotations as much as possible in the Core codebase, except where
-there exists an issue that would hugely complicate its use from a lack of available machinery.
+This codebase uses MyPy extensively, not only to help aide in finding typing issues within the codebase, but also as a means to help plugin writers avoid integration issues with the library.
+Please try to use MyPy Type Annotations as much as possible in the Core codebase, except where there exists an issue that would hugely complicate its use from a lack of available machinery.
 
 ### Functional Tests
 
-Functional testing covers the unit testing of different functional elements of the Ape library's
-API types and plugin-based managers. Each folder underneath this folder represents one functional
-component of Ape e.g. `accounts`, `networks`, etc.
+Functional testing covers the unit testing of different functional elements of the Ape library's API types and plugin-based managers.
+Each folder underneath this folder represents one functional component of Ape e.g. `accounts`, `networks`, etc.
 
-Use this section to improve coverage and discovery of lower-level parts of the Ape codebase. This
-section should achieve 100% coverage when executed alongside the Integration Test suite by filling
-in gaps in the Integration suite's testing.
+Use this section to improve coverage and discovery of lower-level parts of the Ape codebase.
+This section should achieve 100% coverage when executed alongside the Integration Test suite by filling in gaps in the Integration suite's testing.
 
-Code under test should be directly imported from the Ape core library's submodules, and abstract
-classes should be subclassed for testing purposes to achieve maximal coverage of their behavior.
+Code under test should be directly imported from the Ape core library's submodules, and abstract classes should be subclassed for testing purposes to achieve maximal coverage of their behavior.
+
+If your tests require contracts, put the uncompiled contract types in the `functional/data/sources` directory for reference purposes.
+Then, after compiling them (however necessary), put the raw contract-type JSON files in the `functional/data/contracts` directory and parse the `ContractType` objects in your tests and/or fixtures.
 
 ### Integration Tests
 
