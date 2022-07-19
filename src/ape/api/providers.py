@@ -618,7 +618,8 @@ class Web3Provider(ProviderAPI, ABC):
     def estimate_gas_cost(self, txn: TransactionAPI, *args, **kwargs) -> int:
         txn_dict = txn.dict()
         try:
-            return self._web3.eth.estimate_gas(txn_dict, **kwargs)  # type: ignore
+            block_id = kwargs.pop("block_identifier", None)
+            return self.web3.eth.estimate_gas(txn_dict, block_identifier=block_id)  # type: ignore
         except ValueError as err:
             tx_error = self.get_virtual_machine_error(err)
 
@@ -670,7 +671,9 @@ class Web3Provider(ProviderAPI, ABC):
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         try:
-            return self.web3.eth.call(txn.dict(), **kwargs)
+            block_id = kwargs.pop("block_identifier", None)
+            state = kwargs.pop("state_override", None)
+            return self.web3.eth.call(txn.dict(), block_identifier=block_id, state_override=state)
         except ValueError as err:
             raise self.get_virtual_machine_error(err) from err
 

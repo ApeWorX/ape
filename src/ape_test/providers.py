@@ -35,7 +35,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def estimate_gas_cost(self, txn: TransactionAPI, *args, **kwargs) -> int:
         try:
-            return self.web3.eth.estimate_gas(txn.dict())  # type: ignore
+            block_id = kwargs.pop("block_identifier", None)
+            return self.web3.eth.estimate_gas(txn.dict(), block_identifier=block_id)  # type: ignore
         except ValidationError as err:
             message = gas_estimation_error_message(err)
             raise TransactionError(base_err=err, message=message) from err
@@ -70,7 +71,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             data["gas"] = int(1e12)
 
         try:
-            return self.web3.eth.call(data, **kwargs)
+            block_id = kwargs.pop("block_identifier", None)
+            state = kwargs.pop("state_override", None)
+            return self.web3.eth.call(data, block_identifier=block_id, state_override=state)
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:
