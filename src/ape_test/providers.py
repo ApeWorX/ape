@@ -33,7 +33,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def update_settings(self, new_settings: dict):
         pass
 
-    def estimate_gas_cost(self, txn: TransactionAPI, *args, **kwargs) -> int:
+    def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
         try:
             block_id = kwargs.pop("block_identifier", None)
             return self.web3.eth.estimate_gas(txn.dict(), block_identifier=block_id)  # type: ignore

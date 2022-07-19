@@ -615,7 +615,7 @@ class Web3Provider(ProviderAPI, ABC):
         self.provider_settings.update(new_settings)
         self.connect()
 
-    def estimate_gas_cost(self, txn: TransactionAPI, *args, **kwargs) -> int:
+    def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
         txn_dict = txn.dict()
         try:
             block_id = kwargs.pop("block_identifier", None)
@@ -657,7 +657,7 @@ class Web3Provider(ProviderAPI, ABC):
         block_data = dict(self.web3.eth.get_block(block_id))
         return self.network.ecosystem.decode_block(block_data)
 
-    def get_nonce(self, address: str, *args, **kwargs) -> int:
+    def get_nonce(self, address: str, **kwargs) -> int:
         block_id = kwargs.pop("block_identifier", None)
         return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
