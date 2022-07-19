@@ -151,7 +151,7 @@ class ContractCallHandler(ManagerAccessMixin):
         self.provider.prepare_transaction(transaction)
         return transaction
 
-    def estimate_fee(self, *args, **kwargs) -> int:
+    def estimate_gas_cost(self, *args, **kwargs) -> int:
         """
         Get the estimated fee (according to the provider) for the
         contract method call (as if it were a transaction).
@@ -162,7 +162,8 @@ class ContractCallHandler(ManagerAccessMixin):
               sender.
 
         Returns:
-            int: The estimated fee to invoke the transaction.
+            int: The estimated cost of gas to execute the transaction
+            reported in the fee-currency's smallest unit, e.g. Wei.
         """
         txn = self.as_transaction(*args, **kwargs)
         return self.provider.estimate_gas_cost(txn)
@@ -245,7 +246,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
         self.provider.prepare_transaction(transaction)
         return transaction
 
-    def estimate_fee(self, *args, **kwargs) -> int:
+    def estimate_gas_cost(self, *args, **kwargs) -> int:
         """
         Get the estimated fee (according to the provider) for the
         contract method-invocation transaction.
@@ -256,7 +257,8 @@ class ContractTransactionHandler(ManagerAccessMixin):
               sender.
 
         Returns:
-            int: The estimated fee to invoke the transaction.
+            int: The estimated cost of gas to execute the transaction
+            reported in the fee-currency's smallest unit, e.g. Wei.
         """
         txn = self.as_transaction(*args, **kwargs)
         return self.provider.estimate_gas_cost(txn)

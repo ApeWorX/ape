@@ -214,7 +214,8 @@ class ProviderAPI(BaseInterfaceModel):
                 The transaction to estimate the gas for.
 
         Returns:
-            int: The estimated cost of gas.
+            int: The estimated cost of gas to execute the transaction
+            reported in the fee-currency's smallest unit, e.g. Wei.
         """
 
     @property
