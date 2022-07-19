@@ -392,6 +392,7 @@ class ContractEvent(ManagerAccessMixin):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
     ) -> Iterator[ContractLog]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
@@ -412,6 +413,9 @@ class ContractEvent(ManagerAccessMixin):
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
               Defaults to the network's configured required confirmations.
+            new_block_timeout (Optional[int]): The amount of time to wait for a new block before
+              quitting. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
+              networks.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
@@ -420,14 +424,12 @@ class ContractEvent(ManagerAccessMixin):
         required_confirmations = (
             required_confirmations or self.provider.network.required_confirmations
         )
-        stop_block = (
-            self.chain_manager.blocks.height if stop_block is None else stop_block
-        ) - required_confirmations
 
         for new_block in self.chain_manager.blocks.poll_blocks(
             start_block=start_block,
             stop_block=stop_block,
             required_confirmations=required_confirmations,
+            new_block_timeout=new_block_timeout,
         ):
             if new_block.number is None:
                 continue
