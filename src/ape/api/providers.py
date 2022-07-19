@@ -658,7 +658,8 @@ class Web3Provider(ProviderAPI, ABC):
         return self.network.ecosystem.decode_block(block_data)
 
     def get_nonce(self, address: str, *args, **kwargs) -> int:
-        return self.web3.eth.get_transaction_count(address, **kwargs)
+        block_id = kwargs.pop("block_identifier", None)
+        return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
     def get_balance(self, address: str) -> int:
         return self.web3.eth.get_balance(address)
@@ -667,7 +668,8 @@ class Web3Provider(ProviderAPI, ABC):
         return self.web3.eth.get_code(address)
 
     def get_storage_at(self, address: str, slot: int, *args, **kwargs) -> bytes:
-        return self.web3.eth.get_storage_at(address, slot, **kwargs)
+        block_id = kwargs.pop("block_identifier", None)
+        return self.web3.eth.get_storage_at(address, slot, block_identifier=block_id)
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         try:
