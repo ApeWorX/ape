@@ -1,7 +1,7 @@
 import pytest
 from ethpm_types.abi import EventABI
 
-from ape.exceptions import ProviderNotConnectedError
+from ape.exceptions import ProviderError, ProviderNotConnectedError
 from ape.types import LogFilter
 
 EXPECTED_CHAIN_ID = 61
@@ -49,6 +49,22 @@ def test_chain_id_when_none_raises(eth_tester_provider):
         _ = eth_tester_provider.chain_id
 
     eth_tester_provider.connect()  # Undo
+
+
+def test_get_transaction_not_exists_with_timeout(eth_tester_provider):
+    unknown_txn = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
+    with pytest.raises(ProviderError) as err:
+        eth_tester_provider.get_transaction(unknown_txn, timeout=0)
+
+    assert f"Transaction '{unknown_txn}' not found" in str(err.value)
+
+
+def test_get_transaction_exists_with_timeout(eth_tester_provider, vyper_contract_instance, owner):
+    receipt_from_invoke = vyper_contract_instance.setNumber(123, sender=owner)
+    receipt_from_provider = eth_tester_provider.get_transaction(
+        receipt_from_invoke.txn_hash, timeout=0
+    )
+    assert receipt_from_provider.txn_hash == receipt_from_invoke.txn_hash
 
 
 def test_get_contracts_logs_all_logs(contract_instance, owner, eth_tester_provider):
