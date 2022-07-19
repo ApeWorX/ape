@@ -129,7 +129,7 @@ class ContractCallHandler(ManagerAccessMixin):
     def as_transaction(self, *args, **kwargs):
         """
         Convert the Call to a transaction. This is useful for checking coverage
-        or estimating fees.
+        or checking gas costs.
 
         Args:
             *args: The contract method invocation arguments.

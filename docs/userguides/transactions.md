@@ -217,7 +217,7 @@ receipt.show_trace()
 
 ## Estimate Gas Cost
 
-To estimate the gas cost on a transaction without sending it, use the `estimate_gas_cost()` method from the contract's transaction / call handler:
+To estimate the gas cost on a transaction or call without sending it, use the `estimate_gas_cost()` method from the contract's transaction / call handler:
 (Assume I have a contract instance named `contract_a` that has a method named `methodToCall`)
 
 ```bash
