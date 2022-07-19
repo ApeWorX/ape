@@ -915,14 +915,22 @@ class SubprocessProvider(ProviderAPI):
             output = line.decode("utf8").strip()
             logger.debug(output)
             self._stdout_logger.info(output)
-            self.stdout_queue.task_done()
+
+            if self.stdout_queue is not None:
+                self.stdout_queue.task_done()
+                self.stdout_queue = None
+
             time.sleep(0)
 
     def consume_stderr_queue(self):
         for line in self.stderr_queue:
             logger.debug(line.decode("utf8").strip())
             self._stdout_logger.info(line)
-            self.stderr_queue.task_done()
+
+            if self.stderr_queue is not None:
+                self.stderr_queue.task_done()
+                self.stderr_queue = None
+
             time.sleep(0)
 
     def stop(self):
@@ -936,8 +944,6 @@ class SubprocessProvider(ProviderAPI):
         self._kill_process()
         self.is_stopping = False
         self.process = None
-        self.stdout_queue = None
-        self.stderr_queue = None
 
     def _wait_for_popen(self, timeout: int = 30):
         if not self.process:
