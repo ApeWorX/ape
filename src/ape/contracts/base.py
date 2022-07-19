@@ -101,10 +101,10 @@ class ContractCall(ManagerAccessMixin):
 
 
 class ContractCallHandler(ManagerAccessMixin):
-    def __init__(self, abi: MethodABI, contract: "ContractInstance") -> None:
+    def __init__(self, contract: "ContractInstance", abi: MethodABI) -> None:
         super().__init__()
-        self.abi = abi
         self.contract = contract
+        self.abi = abi
 
     def __repr__(self) -> str:
         return self.abi.signature
@@ -169,10 +169,10 @@ class ContractTransaction(ManagerAccessMixin):
 
 
 class ContractTransactionHandler(ManagerAccessMixin):
-    def __init__(self, abi: MethodABI, contract: "ContractInstance") -> None:
+    def __init__(self, contract: "ContractInstance", abi: MethodABI) -> None:
         super().__init__()
-        self.abi = abi
         self.contract = contract
+        self.abi = abi
 
     def __repr__(self) -> str:
         return self.abi.signature
@@ -207,7 +207,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
         This a useful way to simulate a transaction without invoking it.
         """
 
-        return ContractCallHandler(self.abi, self.contract)
+        return ContractCallHandler(self.contract, self.abi)
 
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.conversion_manager.convert(v, tuple)
@@ -463,8 +463,7 @@ class ContractInstance(BaseAddress):
     def _view_methods_(self) -> Dict[str, ContractCallHandler]:
         try:
             return {
-                abi.name: ContractCallHandler(abi, contract=self)
-                for abi in self.contract_type.view_methods
+                abi.name: ContractCallHandler(self, abi) for abi in self.contract_type.view_methods
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
@@ -474,7 +473,7 @@ class ContractInstance(BaseAddress):
     def _mutable_methods_(self) -> Dict[str, ContractTransactionHandler]:
         try:
             return {
-                abi.name: ContractTransactionHandler(abi, contract=self)
+                abi.name: ContractTransactionHandler(self, abi)
                 for abi in self.contract_type.mutable_methods
             }
         except Exception as err:
