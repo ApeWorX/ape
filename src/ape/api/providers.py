@@ -918,7 +918,6 @@ class SubprocessProvider(ProviderAPI):
 
             if self.stdout_queue is not None:
                 self.stdout_queue.task_done()
-                self.stdout_queue = None
 
             time.sleep(0)
 
@@ -929,7 +928,6 @@ class SubprocessProvider(ProviderAPI):
 
             if self.stderr_queue is not None:
                 self.stderr_queue.task_done()
-                self.stderr_queue = None
 
             time.sleep(0)
 
