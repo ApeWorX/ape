@@ -84,6 +84,7 @@ class ContractCall(ManagerAccessMixin):
         output = self.provider.network.ecosystem.decode_returndata(
             self.abi,
             raw_output,
+            address=self.address,
         )
 
         if not isinstance(output, (list, tuple)):
