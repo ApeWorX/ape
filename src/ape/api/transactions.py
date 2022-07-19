@@ -221,7 +221,9 @@ class ReceiptAPI(BaseInterfaceModel):
         :class:`~api.providers.TransactionStatusEnum`.
         """
 
-    def decode_logs(self, abi: Union[EventABI, "ContractEvent"]) -> Iterator[ContractLog]:
+    def decode_logs(
+        self, abi: Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+    ) -> Iterator[ContractLog]:
         """
         Decode the logs on the receipt.
 
@@ -231,10 +233,14 @@ class ReceiptAPI(BaseInterfaceModel):
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
         """
-        if not isinstance(abi, EventABI):
-            abi = abi.abi
+        if not isinstance(abi, (list, tuple)):
+            abi = [abi]
 
-        yield from self.provider.network.ecosystem.decode_logs(abi, self.logs)
+        for event_abi in abi:
+            if not isinstance(event_abi, EventABI):
+                event_abi = event_abi.abi
+
+            yield from self.provider.network.ecosystem.decode_logs(event_abi, self.logs)
 
     def await_confirmations(self) -> "ReceiptAPI":
         """
