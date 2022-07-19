@@ -349,6 +349,8 @@ class EcosystemAPI(BaseInterfaceModel):
         Arg:
             abi (MethodABI): The method called.
             raw_data (bytes): Raw returned data.
+            address (Optional[AddressType]): The address of the contract, if needed.
+              Useful for looking up additional ABIs. Defaults to None.
 
         Returns:
             Any: All of the values returned from the contract function.
