@@ -14,7 +14,7 @@ from ethpm_types import ContractType
 from hexbytes import HexBytes
 
 import ape
-from ape.api import EcosystemAPI, NetworkAPI, PluginConfig, TransactionAPI
+from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
 from ape.managers.config import CONFIG_FILE_NAME
@@ -77,11 +77,6 @@ def mock_network_api(mocker):
 @pytest.fixture
 def mock_web3(mocker):
     return mocker.MagicMock()
-
-
-@pytest.fixture
-def mock_config_item(mocker):
-    return mocker.MagicMock(spec=PluginConfig)
 
 
 @pytest.fixture
