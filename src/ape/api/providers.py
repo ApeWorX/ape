@@ -825,13 +825,13 @@ class SubprocessProvider(ProviderAPI):
 
     @cached_property
     def _stdout_logger(self) -> Logger:
-        return self._make_logger("stdout", self.stdout_logs_path)
+        return self._get_process_output_logger("stdout", self.stdout_logs_path)
 
     @cached_property
     def _stderr_logger(self) -> Logger:
-        return self._make_logger("stderr", self.stderr_logs_path)
+        return self._get_process_output_logger("stderr", self.stderr_logs_path)
 
-    def _make_logger(self, name: str, path: Path):
+    def _get_process_output_logger(self, name: str, path: Path):
         logger = getLogger(f"{self.name}_{name}_subprocessProviderLogger")
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():
@@ -841,7 +841,7 @@ class SubprocessProvider(ProviderAPI):
         handler = FileHandler(str(path))
         handler.setFormatter(Formatter("%(message)s"))
         logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.DEBUG)
         return logger
 
     def connect(self):
