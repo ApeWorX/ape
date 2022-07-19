@@ -20,6 +20,7 @@ from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
+from web3.exceptions import TimeExhausted
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
@@ -674,14 +675,23 @@ class Web3Provider(ProviderAPI, ABC):
         except ValueError as err:
             raise self.get_virtual_machine_error(err) from err
 
-    def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
+    def get_transaction(
+        self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
+    ) -> ReceiptAPI:
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
 
-        timeout = self.config_manager.transaction_acceptance_timeout
-        receipt_data = self.web3.eth.wait_for_transaction_receipt(
-            HexBytes(txn_hash), timeout=timeout
+        timeout = (
+            timeout if timeout is not None else self.config_manager.transaction_acceptance_timeout
         )
+
+        try:
+            receipt_data = self.web3.eth.wait_for_transaction_receipt(
+                HexBytes(txn_hash), timeout=timeout
+            )
+        except TimeExhausted as err:
+            raise ProviderError(f"Transaction '{txn_hash}' not found.") from err
+
         txn = self.web3.eth.get_transaction(txn_hash)  # type: ignore
         receipt = self.network.ecosystem.decode_receipt(
             {

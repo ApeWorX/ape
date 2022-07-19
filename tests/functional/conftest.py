@@ -1,5 +1,7 @@
 import json
 import tempfile
+import threading
+import time
 from contextlib import contextmanager
 from distutils.dir_util import copy_tree
 from pathlib import Path
@@ -12,7 +14,7 @@ from ethpm_types import ContractType
 from hexbytes import HexBytes
 
 import ape
-from ape.api import EcosystemAPI, NetworkAPI, PluginConfig, TransactionAPI
+from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
 from ape.managers.config import CONFIG_FILE_NAME
@@ -75,11 +77,6 @@ def mock_network_api(mocker):
 @pytest.fixture
 def mock_web3(mocker):
     return mocker.MagicMock()
-
-
-@pytest.fixture
-def mock_config_item(mocker):
-    return mocker.MagicMock(spec=PluginConfig)
 
 
 @pytest.fixture
@@ -229,7 +226,80 @@ def base_projects_directory():
 
 
 @pytest.fixture
-def assert_log_values(owner, chain, contract_instance):
+def chain_at_block_5(chain):
+    snapshot_id = chain.snapshot()
+    chain.mine(5)
+    yield chain
+    chain.restore(snapshot_id)
+
+
+class PollDaemonThread(threading.Thread):
+    def __init__(self, name, poller, handler, stop_condition, *args, **kwargs):
+        super().__init__(*args, name=f"ape_poll_{name}", **kwargs)
+        self._poller = poller
+        self._handler = handler
+        self._do_stop = stop_condition
+        self._exception = None
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self.stop()
+
+    def run(self):
+        try:
+            self._run_until_stop()
+        except Exception as err:
+            self._exception = err
+
+    def stop(self):
+        self.join()
+
+        # Attempt to wait for stop condition
+        if not self._do_stop():
+            self._run_until_stop(timeout_iterations=10)
+
+    def join(self, timeout=None):
+        super().join(timeout=timeout)
+        if self._exception and not self._do_stop():
+            # Only raise if error-ed before hitting stop condition
+            raise self._exception
+
+    def _run_until_stop(self, timeout_iterations: Optional[int] = None):
+        iterations = 0
+        while True:
+            if self._do_stop():
+                return
+
+            try:
+                self._handler(next(self._poller))
+            except ChainError:
+                # Check if can stop once more before exiting
+                if self._do_stop():
+                    return
+
+                raise  # The timeout ChainError
+
+            time.sleep(1)
+
+            if timeout_iterations is None:
+                continue
+
+            elif iterations >= timeout_iterations:
+                return
+
+            iterations += 1
+
+
+@pytest.fixture
+def PollDaemon():
+    return PollDaemonThread
+
+
+@pytest.fixture
+def assert_log_values(contract_instance):
     def _assert_log_values(
         log: ContractLog,
         number: int,

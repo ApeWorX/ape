@@ -118,6 +118,7 @@ setup(
         "eth-utils>=1.10.0,<2.0",
         "eth-rlp>=0.2.1,<0.3",
         "eth-account==0.5.7",
+        "ijson>=3.1.4",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
