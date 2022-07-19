@@ -323,7 +323,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def __len__(self):
         logs = self.provider.get_contract_logs(self.log_filter)
-        return len(list(logs))
+        return sum(1 for _ in logs)
 
     def range(
         self,
