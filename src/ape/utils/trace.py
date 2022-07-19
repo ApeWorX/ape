@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union
 from eth_abi import decode_abi
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_utils import humanize_hash, is_hex_address
-from ethpm_types.abi import MethodABI
+from ethpm_types.abi import ABI, MethodABI
 from evm_trace import CallTreeNode, CallType
 from evm_trace.display import DisplayableCallTreeNode
 from hexbytes import HexBytes
@@ -151,7 +151,9 @@ class CallTraceParser:
                 # The revert-message appears at the top of the trace output.
                 try:
                     return_value = (
-                        self.decode_returndata(method, call.returndata) if not call.failed else None
+                        self.decode_returndata(method, call.returndata, contract_type.abi)
+                        if not call.failed
+                        else None
                     )
                 except (DecodingError, InsufficientDataBytes):
                     return_value = "<?>"
@@ -235,8 +237,11 @@ class CallTraceParser:
 
         return arguments
 
-    def decode_returndata(self, method: MethodABI, raw_data: bytes) -> Any:
-        values = [self.decode_value(v) for v in self._ecosystem.decode_returndata(method, raw_data)]
+    def decode_returndata(self, method: MethodABI, raw_data: bytes, full_abi: List[ABI]) -> Any:
+        values = [
+            self.decode_value(v)
+            for v in self._ecosystem.decode_returndata(method, raw_data, full_abi)
+        ]
 
         if len(values) == 1:
             return values[0]

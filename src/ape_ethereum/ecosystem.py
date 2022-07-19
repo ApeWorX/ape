@@ -7,7 +7,7 @@ from eth_abi import encode_abi as abi_encode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, decode_hex, encode_hex, keccak, to_bytes, to_checksum_address
-from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
+from ethpm_types.abi import ABI, ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field
 
@@ -267,7 +267,9 @@ class Ethereum(EcosystemAPI):
         else:
             return HexBytes(b"")
 
-    def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
+    def decode_returndata(
+        self, abi: MethodABI, raw_data: bytes, full_abi: List[ABI]
+    ) -> Tuple[Any, ...]:
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
 
         try:

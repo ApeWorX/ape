@@ -8,7 +8,7 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_utils import to_int
-from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from ethpm_types.abi import ABI, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
@@ -342,7 +342,7 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Any:
+    def decode_returndata(self, abi: MethodABI, raw_data: bytes, full_abi: List[ABI]) -> Any:
         """
         Get the result of a contract call.
 

@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
 from ethpm_types import ContractType
-from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from ethpm_types.abi import ABI, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
@@ -62,10 +62,13 @@ class ContractConstructor(ManagerAccessMixin):
 
 
 class ContractCall(ManagerAccessMixin):
-    def __init__(self, abi: MethodABI, address: AddressType) -> None:
+    def __init__(
+        self, abi: MethodABI, address: AddressType, full_abi: Optional[List[ABI]] = None
+    ) -> None:
         super().__init__()
         self.abi = abi
         self.address = address
+        self.full_abi = full_abi
 
     def __repr__(self) -> str:
         return self.abi.signature
@@ -84,6 +87,7 @@ class ContractCall(ManagerAccessMixin):
         output = self.provider.network.ecosystem.decode_returndata(
             self.abi,
             raw_output,
+            self.full_abi or [self.abi],
         )
 
         if not isinstance(output, (list, tuple)):
@@ -97,18 +101,13 @@ class ContractCall(ManagerAccessMixin):
 
 
 class ContractCallHandler(ManagerAccessMixin):
-
-    contract: "ContractInstance"
-    abis: List[MethodABI]
-
-    def __init__(self, contract: "ContractInstance", abis: List[MethodABI]) -> None:
+    def __init__(self, abi: MethodABI, contract: "ContractInstance") -> None:
         super().__init__()
+        self.abi = abi
         self.contract = contract
-        self.abis = abis
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
-        return abis[-1].signature
+        return self.abi.signature
 
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.conversion_manager.convert(v, tuple)
@@ -119,11 +118,8 @@ class ContractCallHandler(ManagerAccessMixin):
             raise _get_non_contract_error(self.contract.address, network)
 
         args = self._convert_tuple(args)
-        selected_abi = _select_method_abi(self.abis, args)
-
-        return ContractCall(  # type: ignore
-            abi=selected_abi,
-            address=self.contract.address,
+        return ContractCall(
+            self.abi, self.contract.address, full_abi=self.contract.contract_type.abi
         )(*args, **kwargs)
 
 
@@ -142,14 +138,13 @@ def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> Metho
 
 
 class ContractTransaction(ManagerAccessMixin):
-
-    abi: MethodABI
-    address: AddressType
-
-    def __init__(self, abi: MethodABI, address: AddressType) -> None:
+    def __init__(
+        self, abi: MethodABI, address: AddressType, full_abi: Optional[List[ABI]] = None
+    ) -> None:
         super().__init__()
         self.abi = abi
         self.address = address
+        self.full_abi = full_abi
 
     def __repr__(self) -> str:
         return self.abi.signature
@@ -174,14 +169,13 @@ class ContractTransaction(ManagerAccessMixin):
 
 
 class ContractTransactionHandler(ManagerAccessMixin):
-    def __init__(self, contract: "ContractInstance", abis: List[MethodABI]) -> None:
+    def __init__(self, abi: MethodABI, contract: "ContractInstance") -> None:
         super().__init__()
+        self.abi = abi
         self.contract = contract
-        self.abis = abis
 
     def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
-        return abis[-1].signature
+        return self.abi.signature
 
     def as_transaction(self, *args, **kwargs) -> TransactionAPI:
         """
@@ -199,7 +193,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
             :class:`~ape.api.transactions.TransactionAPI`
         """
 
-        contract_transaction = self._as_transaction(*args)
+        contract_transaction = self._as_transaction()
         transaction = contract_transaction.serialize_transaction(*args, **kwargs)
         self.provider.prepare_transaction(transaction)
         return transaction
@@ -213,27 +207,23 @@ class ContractTransactionHandler(ManagerAccessMixin):
         This a useful way to simulate a transaction without invoking it.
         """
 
-        return ContractCallHandler(self.contract, self.abis)
+        return ContractCallHandler(self.abi, self.contract)
 
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         function_arguments = self._convert_tuple(args)
-        contract_transaction = self._as_transaction(*function_arguments)
+        contract_transaction = self._as_transaction()
         return contract_transaction(*function_arguments, **kwargs)
 
-    def _as_transaction(self, *args) -> ContractTransaction:
+    def _as_transaction(self) -> ContractTransaction:
         if not self.contract.is_contract:
             network = self.provider.network.name
             raise _get_non_contract_error(self.contract.address, network)
 
-        args = self._convert_tuple(args)
-        selected_abi = _select_method_abi(self.abis, args)
-
-        return ContractTransaction(  # type: ignore
-            abi=selected_abi,
-            address=self.contract.address,
+        return ContractTransaction(
+            self.abi, self.contract.address, full_abi=self.contract.contract_type.abi
         )
 
 
@@ -471,18 +461,10 @@ class ContractInstance(BaseAddress):
 
     @cached_property
     def _view_methods_(self) -> Dict[str, ContractCallHandler]:
-        view_methods: Dict[str, List[MethodABI]] = dict()
-
-        for abi in self.contract_type.view_methods:
-            if abi.name in view_methods:
-                view_methods[abi.name].append(abi)
-            else:
-                view_methods[abi.name] = [abi]
-
         try:
             return {
-                abi_name: ContractCallHandler(contract=self, abis=abis)
-                for abi_name, abis in view_methods.items()
+                abi.name: ContractCallHandler(abi, contract=self)
+                for abi in self.contract_type.view_methods
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
@@ -490,18 +472,10 @@ class ContractInstance(BaseAddress):
 
     @cached_property
     def _mutable_methods_(self) -> Dict[str, ContractTransactionHandler]:
-        mutable_methods: Dict[str, List[MethodABI]] = dict()
-
-        for abi in self.contract_type.mutable_methods:
-            if abi.name in mutable_methods:
-                mutable_methods[abi.name].append(abi)
-            else:
-                mutable_methods[abi.name] = [abi]
-
         try:
             return {
-                abi_name: ContractTransactionHandler(contract=self, abis=abis)
-                for abi_name, abis in mutable_methods.items()
+                abi.name: ContractTransactionHandler(abi, contract=self)
+                for abi in self.contract_type.mutable_methods
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
