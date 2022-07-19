@@ -221,9 +221,9 @@ To estimate the gas cost on a transaction or call without sending it, use the `e
 (Assume I have a contract instance named `contract_a` that has a method named `methodToCall`)
 
 ```bash
-estimated_txn_cost = contract_a.myMutableMethod.estimate_gas_cost(1, sender=accounts.load("me"))
-print(estimate_gas_cost)
+txn_cost = contract_a.myMutableMethod.estimate_gas_cost(1, sender=accounts.load("me"))
+print(txn_cost)
 
-estimated_view_cost = contract_a.myViewMethod.estimate_gas_cost()
-print(estimate_gas_cost)
+view_cost = contract_a.myViewMethod.estimate_gas_cost()
+print(view_cost)
 ```

@@ -128,7 +128,7 @@ class ContractCallHandler(ManagerAccessMixin):
 
     def as_transaction(self, *args, **kwargs):
         """
-        Convert the Call to a transaction. This is useful for checking coverage
+        Convert the call to a transaction. This is useful for checking coverage
         or checking gas costs.
 
         Args:
@@ -153,7 +153,7 @@ class ContractCallHandler(ManagerAccessMixin):
 
     def estimate_gas_cost(self, *args, **kwargs) -> int:
         """
-        Get the estimated fee (according to the provider) for the
+        Get the estimated gas cost (according to the provider) for the
         contract method call (as if it were a transaction).
 
         Args:
@@ -248,7 +248,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
 
     def estimate_gas_cost(self, *args, **kwargs) -> int:
         """
-        Get the estimated fee (according to the provider) for the
+        Get the estimated gas cost (according to the provider) for the
         contract method-invocation transaction.
 
         Args:
