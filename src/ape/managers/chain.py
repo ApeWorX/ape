@@ -527,18 +527,19 @@ class ContractCache(BaseManager):
 
             if not contract_type:
                 logger.warning(f"Failed to locate contract at '{address}'.")
+                return address, None
             else:
-                return contract_type, address
+                return address, contract_type
 
         contract_types = {}
         num_threads = concurrency if concurrency is not None else min(len(addresses), 4)
         with ThreadPoolExecutor(num_threads) as pool:
 
-            for result in pool.map(get_contract_type, addresses):
-                if not result:
+            for address, contract_type in pool.map(get_contract_type, addresses):
+                if contract_type is None:
                     continue
 
-                contract_types[result[1]] = result[0]
+                contract_types[address] = contract_type
 
         return contract_types
 
