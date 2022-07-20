@@ -275,7 +275,7 @@ class ReceiptAPI(BaseInterfaceModel):
                 if address not in logs_map:
                     logs_map[address] = {}
                 if event_selector not in logs_map[address]:
-                    logs_map[address][event_selector] = (event_abi, [log])
+                    logs_map[address][event_selector] = (event_abi, [log])  # type: ignore
                 else:
                     logs_map[address][event_selector][1].append(log)
 

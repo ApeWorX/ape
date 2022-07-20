@@ -483,11 +483,12 @@ class Ethereum(EcosystemAPI):
         start_index = data.index(selector) + 4
         values = abi_decode(input_types, data[start_index:])
 
-        return ContractLog(  # type: ignore
-            name=method_abi.name,
+        return ContractLog(
             block_hash=log["blockHash"],
             block_number=log["blockNumber"],
+            contract_address=self.decode_address(log["address"]),
             event_arguments={i.name: value for i, value in zip(method_abi.inputs, values)},
-            index=log["logIndex"],
+            log_index=log["logIndex"],
+            name=method_abi.name,
             transaction_hash=log["transactionHash"],
-        )
+        )  # type: ignore
