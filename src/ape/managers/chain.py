@@ -522,6 +522,7 @@ class ContractCache(BaseManager):
         """
 
         def get_contract_type(address: AddressType):
+            address = self.conversion_manager.convert(address, AddressType)
             contract_type = self.get(address)
 
             if not contract_type:
@@ -532,8 +533,12 @@ class ContractCache(BaseManager):
         contract_types = {}
         num_threads = concurrency if concurrency is not None else min(len(addresses), 4)
         with ThreadPoolExecutor(num_threads) as pool:
-            for contract_type, address in pool.map(get_contract_type, addresses):
-                contract_types[address] = contract_type
+
+            for result in pool.map(get_contract_type, addresses):
+                if not result:
+                    continue
+
+                contract_types[result[1]] = result[0]
 
         return contract_types
 
@@ -556,11 +561,12 @@ class ContractCache(BaseManager):
               otherwise the default parameter.
         """
 
-        contract_type = self._local_contracts.get(address)
+        address_key: AddressType = self.conversion_manager.convert(address, AddressType)
+        contract_type = self._local_contracts.get(address_key)
         if contract_type:
             if default and default != contract_type:
                 # Replacing contract type
-                self._local_contracts[address] = default
+                self._local_contracts[address_key] = default
                 return default
 
             return contract_type
@@ -568,43 +574,45 @@ class ContractCache(BaseManager):
         if self._network.name == LOCAL_NETWORK_NAME:
             # Don't check disk-cache or explorer when using local
             if default:
-                self._local_contracts[address] = default
+                self._local_contracts[address_key] = default
 
             return default
 
-        contract_type = self._get_contract_type_from_disk(address)
+        contract_type = self._get_contract_type_from_disk(address_key)
 
         if not contract_type:
             # Contract could be a minimal proxy
-            proxy_info = self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
+            proxy_info = self._local_proxies.get(address_key) or self._get_proxy_info_from_disk(
+                address_key
+            )
 
             if not proxy_info:
-                proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
+                proxy_info = self.provider.network.ecosystem.get_proxy_info(address_key)
                 if proxy_info and self._is_live_network:
-                    self._cache_proxy_info_to_disk(address, proxy_info)
+                    self._cache_proxy_info_to_disk(address_key, proxy_info)
 
             if proxy_info:
-                self._local_proxies[address] = proxy_info
+                self._local_proxies[address_key] = proxy_info
                 return self.get(proxy_info.target)
 
             # Also gets cached to disk for faster lookup next time.
-            contract_type = self._get_contract_type_from_explorer(address)
+            contract_type = self._get_contract_type_from_explorer(address_key)
 
         # Cache locally for faster in-session look-up.
         if contract_type:
-            self._local_contracts[address] = contract_type
+            self._local_contracts[address_key] = contract_type
 
         if not contract_type:
             if default:
-                self._local_contracts[address] = default
-                self._cache_contract_to_disk(address, default)
+                self._local_contracts[address_key] = default
+                self._cache_contract_to_disk(address_key, default)
 
             return default
 
         if default and default != contract_type:
             # Replacing contract type
-            self._local_contracts[address] = default
-            self._cache_contract_to_disk(address, default)
+            self._local_contracts[address_key] = default
+            self._cache_contract_to_disk(address_key, default)
             return default
 
         return contract_type
