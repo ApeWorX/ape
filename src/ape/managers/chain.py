@@ -505,7 +505,7 @@ class ContractCache(BaseManager):
 
         return contract_type
 
-    def get_all(
+    def get_multiple(
         self, addresses: Collection[AddressType], concurrency: Optional[int] = None
     ) -> Dict[AddressType, ContractType]:
         """
