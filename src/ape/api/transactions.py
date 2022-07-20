@@ -1,5 +1,6 @@
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import IO, TYPE_CHECKING, Dict, Iterator, List, Optional, Tuple, Union
 
 from ethpm_types import HexBytes
@@ -11,7 +12,7 @@ from tqdm import tqdm  # type: ignore
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import ContractLog, TransactionSignature
+from ape.types import AddressType, ContractLog, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -245,14 +246,25 @@ class ReceiptAPI(BaseInterfaceModel):
 
         else:
             # If ABI is not provided, decode all events
-            logs_map: Dict[str, Dict[str, Tuple[EventABI, List[Dict]]]] = {}
-            for log in self.logs:
-                address = log["address"]
+            addressess = {x["address"] for x in self.logs}
+            num_threads = min(len(addressess), 4)
+            contract_types = {}
+
+            def get_contract_type(address: AddressType):
                 contract_type = self.chain_manager.contracts.get(address)
 
                 if not contract_type:
                     logger.warning(f"Failed to locate contract at '{address}'.")
-                    continue
+                else:
+                    contract_types[address] = contract_type
+
+            with ThreadPoolExecutor(num_threads) as pool:
+                pool.map(get_contract_type, addressess)
+
+            logs_map: Dict[str, Dict[str, Tuple[EventABI, List[Dict]]]] = {}
+            for log in self.logs:
+                address = log["address"]
+                contract_type = contract_types[address]
 
                 log_topics = log.get("topics", [])
                 if not log_topics:

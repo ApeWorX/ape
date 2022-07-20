@@ -81,3 +81,11 @@ def test_decode_logs_multiple_event_types(owner, contract_instance, assert_log_v
     assert len(logs) == 2
     assert logs[0].foo == 0
     assert logs[1].bar == 1
+
+
+def test_decode_logs_unspecified_abi_gets_all_logs(owner, contract_instance):
+    receipt = contract_instance.fooAndBar(sender=owner)
+    logs = [log for log in receipt.decode_logs()]
+    assert len(logs) == 2
+    assert logs[0].foo == 0
+    assert logs[1].bar == 1
