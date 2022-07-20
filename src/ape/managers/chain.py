@@ -510,10 +510,12 @@ class ContractCache(BaseManager):
     ) -> Dict[AddressType, ContractType]:
         """
         Get contract types for all given addresses.
+
         Args:
             addresses (List[AddressType): A list of addresses to get contract types for.
             concurrency (Optional[int]): The number of threads to use. Defaults to
               ``min(4, len(addresses))``.
+
         Returns:
             Dict[AddressType, ContractType]: A mapping of addresses to their respective
             contract types.
