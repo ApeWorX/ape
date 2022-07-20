@@ -264,8 +264,10 @@ class ReceiptAPI(BaseInterfaceModel):
             logs_map: Dict[str, Dict[str, Tuple[EventABI, List[Dict]]]] = {}
             for log in self.logs:
                 address = log["address"]
-                contract_type = contract_types[address]
+                if address not in contract_types:
+                    continue
 
+                contract_type = contract_types[address]
                 log_topics = log.get("topics", [])
                 if not log_topics:
                     raise ValueError("Missing 'topics' in log data")
