@@ -440,9 +440,7 @@ class ProjectManager(BaseManager):
 
     def _get_contract(self, name: str) -> Optional[ContractContainer]:
         if name in self.contracts:
-            return self.create_contract_container(
-                contract_type=self.contracts[name],
-            )
+            return self.chain_manager.contracts.get_container(self.contracts[name])
 
         return None
 

@@ -667,7 +667,13 @@ class Web3Provider(ProviderAPI, ABC):
         return self.web3.eth.get_code(address)  # type: ignore
 
     def get_storage_at(self, address: str, slot: int) -> bytes:
-        return self.web3.eth.get_storage_at(address, slot)  # type: ignore
+        try:
+            return self.web3.eth.get_storage_at(address, slot)  # type: ignore
+        except ValueError as err:
+            if "RPC Endpoint has not been implemented" in str(err):
+                raise APINotImplementedError(str(err)) from err
+
+            raise  # Raise original error
 
     def send_call(self, txn: TransactionAPI) -> bytes:
         try:

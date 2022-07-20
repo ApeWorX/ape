@@ -1,16 +1,13 @@
 from abc import ABC
 from typing import TYPE_CHECKING, ClassVar, Dict, List, cast
 
-from ethpm_types import ContractType
 from pydantic import BaseModel
 
 from ape.exceptions import ProviderNotConnectedError
-from ape.types import AddressType
 from ape.utils.misc import cached_property, singledispatchmethod
 
 if TYPE_CHECKING:
     from ape.api.providers import ProviderAPI
-    from ape.contracts.base import ContractContainer, ContractInstance
     from ape.managers.accounts import AccountManager
     from ape.managers.chain import ChainManager
     from ape.managers.compilers import CompilerManager
@@ -74,37 +71,6 @@ class ManagerAccessMixin:
         if self.network_manager.active_provider is None:
             raise ProviderNotConnectedError()
         return self.network_manager.active_provider
-
-    def create_contract_container(self, contract_type: ContractType) -> "ContractContainer":
-        """
-        Helper method for creating a ``ContractContainer``.
-
-        Args:
-            contract_type (``ContractType``): Type of contract for the container
-
-        Returns:
-            :class:`~ape.contracts.ContractContainer`
-        """
-        from ape.contracts.base import ContractContainer
-
-        return ContractContainer(contract_type=contract_type)
-
-    def get_contract_instance(
-        self, address: "AddressType", contract_type: "ContractType"
-    ) -> "ContractInstance":
-        """
-        Helper method for creating a ``ContractInstance``.
-
-        Args:
-            address (``AddressType``): Address of contract
-            contract_type (``ContractType``): Type of contract
-
-        Returns:
-            :class:`~ape.contracts.ContractInstance`
-        """
-        from ape.contracts.base import ContractInstance
-
-        return ContractInstance(address=address, contract_type=contract_type)
 
 
 class BaseInterface(ManagerAccessMixin, ABC):

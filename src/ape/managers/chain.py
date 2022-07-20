@@ -576,6 +576,19 @@ class ContractCache(BaseManager):
 
         return contract_type
 
+    def get_container(self, contract_type: ContractType) -> ContractContainer:
+        """
+        Get a contract container for the given contract type.
+
+        Args:
+            contract_type (ContractType): The contract type to wrap.
+
+        Returns:
+            ContractContainer: A container object you can deploy.
+        """
+
+        return ContractContainer(contract_type)
+
     def instance_at(
         self, address: Union[str, "AddressType"], contract_type: Optional[ContractType] = None
     ) -> BaseAddress:
@@ -618,8 +631,9 @@ class ContractCache(BaseManager):
                     f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
                 )
 
-            return self.get_contract_instance(address, contract_type)
+            return ContractInstance(address, contract_type)
 
+        logger.warning(f"Failed to find contract type at address '{address}'.")
         return Address(address)
 
     def get_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
