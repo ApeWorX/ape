@@ -52,8 +52,10 @@ class TransactionAPI(BaseInterfaceModel):
         Useful for determining if an account balance can afford
         to submit the transaction.
         """
-        max_fee = self.max_fee or 0
-        return self.value + max_fee
+        if self.max_fee is None:
+            raise TransactionError(message="Max fee must not be null.")
+
+        return self.value + self.max_fee
 
     @property
     @abstractmethod
