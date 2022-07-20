@@ -1,7 +1,8 @@
 import sys
 import time
-from typing import IO, TYPE_CHECKING, Dict, Iterator, List, Optional, Tuple, Union
+from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
 
+from eth_utils import keccak
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
@@ -246,40 +247,24 @@ class ReceiptAPI(BaseInterfaceModel):
         else:
             # If ABI is not provided, decode all events
             addresses = {x["address"] for x in self.logs}
-            contract_types = self.chain_manager.contracts.get_all(addresses)
-            logs_map: Dict[str, Dict[str, Tuple[EventABI, List[Dict]]]] = {}
+            contract_types = self.chain_manager.contracts.get_multiple(addresses)
+            # address → selector → abi
+            selectors = {
+                address: {keccak(text=abi.selector): abi for abi in contract.events}
+                for address, contract in contract_types.items()
+            }
             for log in self.logs:
-                address = log["address"]
-                if address not in contract_types:
+                if log["address"] not in selectors:
                     continue
-
-                contract_type = contract_types[address]
-                log_topics = log.get("topics", [])
-                if not log_topics:
-                    raise ValueError("Missing 'topics' in log data")
-
-                selector = log["topics"][0]
-                if selector not in contract_type.events:
+                try:
+                    event_abi = selectors[log["address"]][log["topics"][0]]
+                except KeyError:
                     # Likely a library log
                     library_log = self.provider.network.ecosystem.decode_library_log(log)
                     if library_log:
                         yield library_log
-
-                    continue
-
-                # Track logs
-                event_abi = contract_type.events[selector]
-                event_selector = selector.hex()
-                if address not in logs_map:
-                    logs_map[address] = {}
-                if event_selector not in logs_map[address]:
-                    logs_map[address][event_selector] = (event_abi, [log])  # type: ignore
                 else:
-                    logs_map[address][event_selector][1].append(log)
-
-            for addr in logs_map:
-                for _, (evt_abi, log_items) in logs_map[addr].items():
-                    yield from self.provider.network.ecosystem.decode_logs(evt_abi, log_items)
+                    yield from self.provider.network.ecosystem.decode_logs([event_abi], [log])
 
     def await_confirmations(self) -> "ReceiptAPI":
         """
