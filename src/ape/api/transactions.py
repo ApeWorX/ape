@@ -222,7 +222,10 @@ class ReceiptAPI(BaseInterfaceModel):
         """
 
     def decode_logs(
-        self, abi: Optional[Union[EventABI, "ContractEvent"]] = None
+        self,
+        abi: Optional[
+            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+        ] = None,
     ) -> Iterator[ContractLog]:
         """
         Decode the logs on the receipt.
@@ -234,10 +237,14 @@ class ReceiptAPI(BaseInterfaceModel):
             Iterator[:class:`~ape.types.ContractLog`]
         """
         if abi:
-            if not isinstance(abi, EventABI):
-                abi = abi.abi
+            if not isinstance(abi, (list, tuple)):
+                abi = [abi]
 
-            yield from self.provider.network.ecosystem.decode_logs(abi, self.logs)
+            for event_abi in abi:
+                if not isinstance(event_abi, EventABI):
+                    event_abi = event_abi.abi
+
+                yield from self.provider.network.ecosystem.decode_logs(event_abi, self.logs)
         else:
             # If ABI is not provided, decode all events
             logs_map: Dict[str, Dict[str, Tuple[EventABI, List[Dict]]]] = {}

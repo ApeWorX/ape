@@ -2,9 +2,10 @@ import re
 from dataclasses import make_dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from eth_abi import grammar
-from eth_utils.abi import collapse_if_tuple
-from ethpm_types.abi import ABIType, EventABI, EventABIType, MethodABI
+from eth_abi import decode_abi, decode_single, grammar
+from eth_utils import decode_hex, to_checksum_address
+from ethpm_types import HexBytes
+from ethpm_types.abi import ABIType, EventABI, MethodABI
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d?]")
 
@@ -233,33 +234,43 @@ def is_dynamic_sized_type(abi_type: Union[ABIType, str]) -> bool:
 
 
 class LogInputABICollection:
-    def __init__(self, abi: EventABI, values: List[EventABIType], indexed: bool = False):
+    def __init__(self, abi: EventABI):
         self.abi = abi
-        self.values = values
-        self.indexed = indexed
+        self.topics = [i for i in abi.inputs if i.indexed]
+        self.data = [i for i in abi.inputs if not i.indexed]
+
+        names = [i.name for i in abi.inputs]
+        if len(set(names)) < len(names):
+            raise ValueError("duplicate names found in log input", abi)
 
     @property
-    def names(self) -> List[str]:
-        return [abi.name for abi in self.values if abi.name]
+    def event_name(self):
+        return self.abi.name
 
-    @property
-    def normalized_values(self) -> List[Dict]:
-        return [abi.dict() for abi in self.values]
+    def decode(self, topics: List[str], data: str) -> Dict:
+        decoded = {}
+        for abi, topic_value in zip(self.topics, topics[1:]):
+            # reference types as indexed arguments are written as a hash
+            # https://docs.soliditylang.org/en/v0.8.15/contracts.html#events
+            abi_type = "bytes32" if is_dynamic_sized_type(abi.type) else abi.canonical_type
+            decoded[abi.name] = self.decode_value(
+                abi_type, decode_single(abi_type, decode_hex(topic_value))
+            )
 
-    @property
-    def types(self) -> List[Union[str, Dict]]:
-        if not self.indexed:
-            return [collapse_if_tuple(t) for t in self.normalized_values]
+        data_abi_types = [abi.canonical_type for abi in self.data]
+        data_values = decode_abi(data_abi_types, decode_hex(data))
+        for abi, value in zip(self.data, data_values):
+            decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 
-        # Indexed inputs
-        handled_values: List[Union[str, Dict]] = []
-        for abi_input in self.normalized_values:
-            if is_dynamic_sized_type(abi_input["type"]):
-                handled_values.append("bytes32")
-            else:
-                handled_values.append(collapse_if_tuple(abi_input))
+        return decoded
 
-        return handled_values
+    def decode_value(self, abi_type, value):
+        if abi_type == "address":
+            return to_checksum_address(value)
+        elif abi_type == "bytes32":
+            return HexBytes(value)
+
+        return value
 
 
 def parse_type(output_type: str) -> Union[str, Tuple, List]:

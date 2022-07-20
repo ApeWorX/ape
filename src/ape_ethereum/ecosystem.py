@@ -1,22 +1,13 @@
-import itertools
 import re
 from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode_abi as abi_decode
 from eth_abi import encode_abi as abi_encode
-from eth_abi.abi import decode_abi, decode_single
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
-from eth_utils import (
-    add_0x_prefix,
-    decode_hex,
-    hexstr_if_str,
-    keccak,
-    to_bytes,
-    to_checksum_address,
-)
-from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
+from eth_utils import add_0x_prefix, decode_hex, encode_hex, keccak, to_bytes, to_checksum_address
+from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field
 
@@ -33,6 +24,7 @@ from ape.utils import (
     parse_type,
     returns_array,
 )
+from ape.utils.misc import to_int
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -424,71 +416,39 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)  # type: ignore
 
-    def decode_logs(self, abi: EventABI, data: List[Dict]) -> Iterator[ContractLog]:
-        if not abi.anonymous:
-            event_id_bytes = keccak(to_bytes(text=abi.selector))
-            matching_logs = [log for log in data if log["topics"][0] == event_id_bytes]
-        else:
-            matching_logs = data
+    def decode_logs(
+        self, events: Union[EventABI, List[EventABI]], logs: List[Dict]
+    ) -> Iterator["ContractLog"]:
+        if not isinstance(events, list):
+            events = [events]
 
-        topics_list: List[EventABIType] = []
-        data_list: List[EventABIType] = []
-        for abi_input in abi.inputs:
-            if abi_input.indexed:
-                topics_list.append(abi_input)
-            else:
-                data_list.append(abi_input)
+        abi_inputs = {
+            encode_hex(keccak(text=abi.selector)): LogInputABICollection(abi) for abi in events
+        }
 
-        abi_topics = LogInputABICollection(abi, topics_list, True)
-        abi_data = LogInputABICollection(abi, data_list, False)
-
-        duplicate_names = set(abi_topics.names).intersection(abi_data.names)
-        if duplicate_names:
-            duplicate_names_str = ", ".join([n for n in duplicate_names if n])
-            raise DecodingError(
-                "The following argument names are duplicated "
-                f"between event inputs: '{duplicate_names_str}'."
-            )
-
-        for log in matching_logs:
-            indexed_data = log["topics"] if log.get("anonymous", False) else log["topics"][1:]
-            log_data = hexstr_if_str(to_bytes, log["data"])  # type: ignore
-
-            if len(indexed_data) != len(abi_topics.types):
-                raise DecodingError(
-                    f"Expected '{len(indexed_data)}' log topics.  Got '{len(abi_topics.types)}'."
+        for log in logs:
+            if log.get("anonymous"):
+                raise NotImplementedError(
+                    "decoding anonymous logs is not supported with this method"
                 )
+            topics = log["topics"]
+            # web3.py converts topics to hexbytes, data is always a hexstr
+            if isinstance(log["topics"][0], bytes):
+                topics = [encode_hex(t) for t in log["topics"]]
+            try:
+                abi = abi_inputs[topics[0]]
+            except KeyError:
+                continue
 
-            def decode_items(abi_types, data):
-                def decode_value(t, v) -> Any:
-                    if t == "address":
-                        return self.decode_address(v)
-                    elif t == "bytes32":
-                        return HexBytes(v)
+            event_arguments = abi.decode(topics, log["data"])
 
-                    return v
-
-                return [decode_value(t, v) for t, v in zip(abi_types, data)]
-
-            decoded_topic_data = [
-                decode_single(topic_type, topic_data)  # type: ignore
-                for topic_type, topic_data in zip(abi_topics.types, indexed_data)
-            ]
-            decoded_log_data = decode_abi(abi_data.types, log_data)  # type: ignore
-            event_args = dict(
-                itertools.chain(
-                    zip(abi_topics.names, decode_items(abi_topics.types, decoded_topic_data)),
-                    zip(abi_data.names, decode_items(abi_data.types, decoded_log_data)),
-                )
-            )
-
-            yield ContractLog(  # type: ignore
-                name=abi.name,
-                index=log["logIndex"],
-                event_arguments=event_args,
+            yield ContractLog(
+                name=abi.event_name,
+                contract_address=self.decode_address(log["address"]),
+                event_arguments=event_arguments,
                 transaction_hash=log["transactionHash"],
                 block_hash=log["blockHash"],
-                block_number=log["blockNumber"],
+                block_number=to_int(log["blockNumber"]),
             )  # type: ignore
 
     def decode_library_log(self, log: Dict) -> Optional[ContractLog]:
@@ -521,7 +481,7 @@ class Ethereum(EcosystemAPI):
         data = decode_hex(log["data"])
         input_types = [i.canonical_type for i in method_abi.inputs]
         start_index = data.index(selector) + 4
-        values = decode_abi(input_types, data[start_index:])
+        values = abi_decode(input_types, data[start_index:])
 
         return ContractLog(  # type: ignore
             name=method_abi.name,

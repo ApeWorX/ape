@@ -1,8 +1,9 @@
 import shutil
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Union
-from urllib.parse import urlparse
 
+import ijson  # type: ignore
+import requests
 from eth_utils import to_wei
 from evm_trace import (
     CallTreeNode,
@@ -24,6 +25,7 @@ from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from web3.types import RPCEndpoint
+from yarl import URL
 
 from ape.api import PluginConfig, UpstreamProvider, Web3Provider
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -150,47 +152,50 @@ class GethProvider(Web3Provider, UpstreamProvider):
     _geth: Optional[EphemeralGeth] = None
     _client_version: Optional[str] = None
 
+    # optimal values for geth
+    block_page_size = 5000
+    concurrency = 16
+
     @property
     def uri(self) -> str:
-        ecosystem_config = self.config.dict().get(self.network.ecosystem.name, None)
-        if ecosystem_config is None:
+        if "uri" in self.provider_settings:
+            # Use adhoc, scripted value
+            return self.provider_settings["uri"]
+
+        config = self.config.dict().get(self.network.ecosystem.name, None)
+        if config is None:
             return DEFAULT_SETTINGS["uri"]
 
-        network_config = ecosystem_config.get(self.network.name)
+        # Use value from config file
+        network_config = config.get(self.network.name)
         return network_config.get("uri", DEFAULT_SETTINGS["uri"])
+
+    @property
+    def _clean_uri(self) -> str:
+        return str(URL(self.uri).with_user(None).with_password(None))
 
     @property
     def connection_str(self) -> str:
         return self.uri
 
-    @property
-    def client_version(self) -> str:
-        if not self._web3:
-            return ""
-
-        # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
-        if self._client_version is None:
-            self._client_version = self._web3.clientVersion
-
-        return self._client_version
-
     def connect(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
-        self._web3 = Web3(HTTPProvider(self.uri))
+        provider = HTTPProvider(self.uri, request_kwargs={"timeout": 30 * 60})
+        self._web3 = Web3(provider)
 
         if not self._web3.isConnected():
             if self.network.name != LOCAL_NETWORK_NAME:
                 raise ProviderError(
                     f"When running on network '{self.network.name}', "
                     f"the Geth plugin expects the Geth process to already "
-                    f"be running on '{self.uri}'."
+                    f"be running on '{self._clean_uri}'."
                 )
 
             # Start an ephemeral geth process.
-            parsed_uri = urlparse(self.uri)
+            parsed_uri = URL(self.uri)
 
-            if parsed_uri.hostname not in ("localhost", "127.0.0.1"):
-                raise ConnectionError(f"Unable to connect web3 to {parsed_uri.hostname}.")
+            if parsed_uri.host not in ("localhost", "127.0.0.1"):
+                raise ConnectionError(f"Unable to connect web3 to {parsed_uri.host}.")
 
             if not shutil.which("geth"):
                 raise GethNotInstalledError()
@@ -203,7 +208,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
             self._geth = EphemeralGeth(
                 self.data_folder,
-                parsed_uri.hostname,
+                parsed_uri.host,
                 parsed_uri.port,
                 mnemonic,
                 number_of_accounts=num_of_accounts,
@@ -215,10 +220,18 @@ class GethProvider(Web3Provider, UpstreamProvider):
                 raise ConnectionError("Unable to connect to locally running geth.")
         else:
             if "geth" in self.client_version.lower():
-                logger.info(f"Connecting to existing Geth node at '{self.uri}'.")
+                logger.info(f"Connecting to existing Geth node at '{self._clean_uri}'.")
+            elif "erigon" in self.client_version.lower():
+                logger.info(f"Connecting to existing Erigon node at '{self._clean_uri}'.")
+                self.concurrency = 8
+                self.block_page_size = 40_000
+            elif "nethermind" in self.client_version.lower():
+                logger.info(f"Connecting to existing Nethermind node at '{self._clean_uri}'.")
+                self.concurrency = 32
+                self.block_page_size = 50_000
             else:
-                network_name = self.client_version.split("/")[0]
-                logger.warning(f"Connecting Geth plugin to non-Geth network '{network_name}'.")
+                client_name = self.client_version.split("/")[0]
+                logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
 
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
@@ -262,9 +275,21 @@ class GethProvider(Web3Provider, UpstreamProvider):
         self._web3 = None  # type: ignore
         self._client_version = None
 
+    def stream_request(self, method, params, iter_path="result.item"):
+        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
+        results = ijson.sendable_list()
+        coro = ijson.items_coro(results, iter_path)
+
+        resp = requests.post(self.uri, json=payload, stream=True)
+        resp.raise_for_status()
+
+        for chunk in resp.iter_content(chunk_size=2**17):
+            coro.send(chunk)
+            yield from results
+            del results[:]
+
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
-        result = self._make_request("debug_traceTransaction", [txn_hash])
-        frames = result.get("structLogs", [])
+        frames = self.stream_request("debug_traceTransaction", [txn_hash], "result.structLogs.item")
         for frame in frames:
             yield TraceFrame(**frame)
 
