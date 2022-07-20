@@ -125,6 +125,8 @@ class Ethereum(EcosystemAPI):
 
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
         code = self.provider.get_code(address).hex()[2:]
+        if not code:
+            return None
         patterns = {
             ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
             ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501

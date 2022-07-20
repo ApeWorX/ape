@@ -563,6 +563,8 @@ class ContractCache(BaseManager):
         """
 
         address_key: AddressType = self.conversion_manager.convert(address, AddressType)
+        if not self.provider.get_code(address_key):
+            return None
         contract_type = self._local_contracts.get(address_key)
         if contract_type:
             if default and default != contract_type:
