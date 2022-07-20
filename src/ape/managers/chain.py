@@ -1,7 +1,8 @@
 import json
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union, cast
+from typing import Callable, Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import pandas as pd
 from ethpm_types import ContractType
@@ -503,6 +504,38 @@ class ContractCache(BaseManager):
             raise IndexError(f"No contract type found at address '{address}'.")
 
         return contract_type
+
+    def get_all(
+        self, addresses: Collection[AddressType], concurrency: Optional[int] = None
+    ) -> Dict[AddressType, ContractType]:
+        """
+        Get contract types for all given addresses.
+
+        Args:
+            addresses (List[AddressType): A list of addresses to get contract types for.
+            concurrency (Optional[int]): The number of threads to use. Defaults to
+              ``min(4, len(addresses))``.
+
+        Returns:
+            Dict[AddressType, ContractType]: A mapping of addresses to their respective
+            contract types.
+        """
+
+        def get_contract_type(address: AddressType):
+            contract_type = self.get(address)
+
+            if not contract_type:
+                logger.warning(f"Failed to locate contract at '{address}'.")
+            else:
+                return contract_type, address
+
+        contract_types = {}
+        num_threads = concurrency if concurrency is not None else min(len(addresses), 4)
+        with ThreadPoolExecutor(num_threads) as pool:
+            for contract_type, address in pool.map(get_contract_type, addresses):
+                contract_types[address] = contract_type
+
+        return contract_types
 
     def get(
         self, address: AddressType, default: Optional[ContractType] = None

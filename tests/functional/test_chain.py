@@ -406,3 +406,14 @@ def test_poll_blocks_timeout(
             time.sleep(1.5)
 
     assert "Timed out waiting for new block (time_waited=1" in str(err.value)
+
+
+def test_contracts_get_all(vyper_contract_instance, solidity_contract_instance, chain):
+    contract_map = chain.contracts.get_all(
+        [vyper_contract_instance.address, solidity_contract_instance.address]
+    )
+    assert len(contract_map) == 2
+    assert contract_map[vyper_contract_instance.address] == vyper_contract_instance.contract_type
+    assert (
+        contract_map[solidity_contract_instance.address] == solidity_contract_instance.contract_type
+    )
