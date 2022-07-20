@@ -441,14 +441,14 @@ class Ethereum(EcosystemAPI):
                 continue
 
             event_arguments = abi.decode(topics, log["data"])
-
             yield ContractLog(
-                name=abi.event_name,
-                contract_address=self.decode_address(log["address"]),
-                event_arguments=event_arguments,
-                transaction_hash=log["transactionHash"],
                 block_hash=log["blockHash"],
                 block_number=to_int(log["blockNumber"]),
+                contract_address=self.decode_address(log["address"]),
+                event_arguments=event_arguments,
+                log_index=log["logIndex"],
+                name=abi.event_name,
+                transaction_hash=log["transactionHash"],
             )  # type: ignore
 
     def decode_library_log(self, log: Dict) -> Optional[ContractLog]:

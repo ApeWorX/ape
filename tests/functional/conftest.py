@@ -273,6 +273,7 @@ def ds_note():
     }
 
 
+@pytest.fixture
 def chain_at_block_5(chain):
     snapshot_id = chain.snapshot()
     chain.mine(5)
