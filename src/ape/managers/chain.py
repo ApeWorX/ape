@@ -563,8 +563,6 @@ class ContractCache(BaseManager):
         """
 
         address_key: AddressType = self.conversion_manager.convert(address, AddressType)
-        if not self.provider.get_code(address_key):
-            return None
         contract_type = self._local_contracts.get(address_key)
         if contract_type:
             if default and default != contract_type:
@@ -598,6 +596,8 @@ class ContractCache(BaseManager):
                 self._local_proxies[address_key] = proxy_info
                 return self.get(proxy_info.target)
 
+            if not self.provider.get_code(address_key):
+                return None
             # Also gets cached to disk for faster lookup next time.
             contract_type = self._get_contract_type_from_explorer(address_key)
 
