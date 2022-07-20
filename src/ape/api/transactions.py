@@ -240,11 +240,9 @@ class ReceiptAPI(BaseInterfaceModel):
             if not isinstance(abi, (list, tuple)):
                 abi = [abi]
 
-            for event_abi in abi:
-                if not isinstance(event_abi, EventABI):
-                    event_abi = event_abi.abi
+            event_abis: List[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
+            yield from self.provider.network.ecosystem.decode_logs(event_abis, self.logs)
 
-                yield from self.provider.network.ecosystem.decode_logs(event_abi, self.logs)
         else:
             # If ABI is not provided, decode all events
             logs_map: Dict[str, Dict[str, Tuple[EventABI, List[Dict]]]] = {}
