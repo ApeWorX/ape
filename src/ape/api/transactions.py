@@ -248,7 +248,6 @@ class ReceiptAPI(BaseInterfaceModel):
             # If ABI is not provided, decode all events
             addressess = {x["address"] for x in self.logs}
             num_threads = min(len(addressess), 4)
-            contract_types = {}
 
             def get_contract_type(address: AddressType):
                 contract_type = self.chain_manager.contracts.get(address)
@@ -256,10 +255,12 @@ class ReceiptAPI(BaseInterfaceModel):
                 if not contract_type:
                     logger.warning(f"Failed to locate contract at '{address}'.")
                 else:
-                    contract_types[address] = contract_type
+                    return contract_type, address
 
+            contract_types = {}
             with ThreadPoolExecutor(num_threads) as pool:
-                pool.map(get_contract_type, addressess)
+                for contract_type, address in pool.map(get_contract_type, addressess):
+                    contract_types[address] = contract_type
 
             logs_map: Dict[str, Dict[str, Tuple[EventABI, List[Dict]]]] = {}
             for log in self.logs:
