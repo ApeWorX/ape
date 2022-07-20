@@ -612,12 +612,13 @@ class ContractCache(BaseManager):
         contract_type = self.get(address, default=contract_type)
 
         if contract_type:
+
             if not isinstance(contract_type, ContractType):
                 raise TypeError(
                     f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
                 )
 
-            return self.create_contract(address, contract_type)
+            return self.get_contract_instance(address, contract_type)
 
         return Address(address)
 

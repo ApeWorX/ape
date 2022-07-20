@@ -132,7 +132,7 @@ class CallTraceParser:
             method = None
             contract_name = contract_type.name
             if "symbol" in contract_type.view_methods:
-                contract = self._receipt.create_contract(address, contract_type)
+                contract = self._receipt.get_contract_instance(address, contract_type)
 
                 try:
                     contract_name = contract.symbol() or contract_name

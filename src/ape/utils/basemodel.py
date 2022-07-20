@@ -89,7 +89,7 @@ class ManagerAccessMixin:
 
         return ContractContainer(contract_type=contract_type)
 
-    def create_contract(
+    def get_contract_instance(
         self, address: "AddressType", contract_type: "ContractType"
     ) -> "ContractInstance":
         """
