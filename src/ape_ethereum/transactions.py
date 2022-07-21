@@ -51,15 +51,12 @@ class AccessList(BaseModel):
 
 class BaseTransaction(TransactionAPI):
     def serialize_transaction(self) -> bytes:
-
         if not self.signature:
             raise SignatureError("The transaction is not signed.")
 
         txn_data = self.dict(exclude={"sender"})
-
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
-
         signed_txn = encode_transaction(unsigned_txn, signature)
 
         if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
