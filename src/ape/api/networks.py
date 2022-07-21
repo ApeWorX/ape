@@ -342,15 +342,17 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_returndata(self, abi: MethodABI, raw_data: bytes, full_abi: List[ABI]) -> Any:
+    def decode_returndata(
+        self, abi: MethodABI, raw_data: bytes, full_abi: Optional[List[ABI]] = None
+    ) -> Any:
         """
         Get the result of a contract call.
 
         Arg:
             abi (MethodABI): The method called.
             raw_data (bytes): Raw returned data.
-            address (Optional[AddressType]): The address of the contract, if needed.
-              Useful for looking up additional ABIs. Defaults to None.
+            full_abi (Optional[List[ABI]]): The complete contract's ABI, if needed.
+              Defaults to None.
 
         Returns:
             Any: All of the values returned from the contract function.

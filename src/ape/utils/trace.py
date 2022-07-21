@@ -151,7 +151,7 @@ class CallTraceParser:
                 # The revert-message appears at the top of the trace output.
                 try:
                     return_value = (
-                        self.decode_returndata(method, call.returndata, contract_type.abi)
+                        self.decode_returndata(method, call.returndata, full_abi=contract_type.abi)
                         if not call.failed
                         else None
                     )
@@ -237,10 +237,12 @@ class CallTraceParser:
 
         return arguments
 
-    def decode_returndata(self, method: MethodABI, raw_data: bytes, full_abi: List[ABI]) -> Any:
+    def decode_returndata(
+        self, method: MethodABI, raw_data: bytes, full_abi: Optional[List[ABI]] = None
+    ) -> Any:
         values = [
             self.decode_value(v)
-            for v in self._ecosystem.decode_returndata(method, raw_data, full_abi)
+            for v in self._ecosystem.decode_returndata(method, raw_data, full_abi=full_abi)
         ]
 
         if len(values) == 1:

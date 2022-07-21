@@ -268,7 +268,7 @@ class Ethereum(EcosystemAPI):
             return HexBytes(b"")
 
     def decode_returndata(
-        self, abi: MethodABI, raw_data: bytes, full_abi: List[ABI]
+        self, abi: MethodABI, raw_data: bytes, full_abi: Optional[List[ABI]] = None
     ) -> Tuple[Any, ...]:
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
 
