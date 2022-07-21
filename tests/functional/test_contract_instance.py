@@ -29,6 +29,17 @@ def test_init_specify_contract_type(
     assert contract.myNumber() == 2
 
 
+def test_call_using_block_identifier(
+    vyper_contract_instance, owner, chain, networks_connected_to_tester
+):
+    contract = vyper_contract_instance
+    contract.setNumber(1, sender=owner)
+    height = chain.blocks.height
+    contract.setNumber(33, sender=owner)
+    actual = contract.myNumber(block_identifier=height)
+    assert actual == 1
+
+
 def test_repr(contract_instance):
     assert re.match(
         rf"<TestContract((Sol)|(Vy)) {contract_instance.address}>", repr(contract_instance)
