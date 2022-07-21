@@ -139,8 +139,7 @@ class ContractCallHandler(ManagerAccessMixin):
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
-        handler = ContractTransactionHandler(self.contract, self.abis)
-        return handler.as_transaction(*args, **kwargs)
+        return self.transact.as_transaction(*args, **kwargs)
 
     @property
     def transact(self) -> "ContractTransactionHandler":
