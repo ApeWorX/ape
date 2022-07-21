@@ -139,17 +139,16 @@ class ContractCallHandler(ManagerAccessMixin):
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
-        args = self._convert_tuple(args)
-        selected_abi = _select_method_abi(self.abis, args)
+        handler = ContractTransactionHandler(self.contract, self.abis)
+        return handler.as_transaction(*args, **kwargs)
 
-        contract_transaction = ContractTransaction(  # type: ignore
-            abi=selected_abi,
-            address=self.contract.address,
-        )
+    @property
+    def transact(self) -> "ContractTransactionHandler":
+        """
+        Send the call as a transaction.
+        """
 
-        transaction = contract_transaction.serialize_transaction(*args, **kwargs)
-        self.provider.prepare_transaction(transaction)
-        return transaction
+        return ContractTransactionHandler(self.contract, self.abis)
 
     def estimate_gas_cost(self, *args, **kwargs) -> int:
         """
