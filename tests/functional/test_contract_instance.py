@@ -235,7 +235,7 @@ def test_call_transaction(contract_instance, owner, chain):
     assert init_block == chain.blocks[-1]
 
 
-def test_estimate_fee_txn(vyper_contract_instance, eth_tester_provider, owner):
+def test_estimate_gas_cost_txn(vyper_contract_instance, eth_tester_provider, owner):
     gas_cost = vyper_contract_instance.setNumber.estimate_gas_cost(10, sender=owner)
     assert gas_cost > 0
 
