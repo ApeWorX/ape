@@ -166,7 +166,7 @@ class ContractCallHandler(ManagerAccessMixin):
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
         txn = self.as_transaction(*args, **kwargs)
-        return txn.max_fee if txn.max_fee else self.provider.estimate_gas_cost(txn)
+        return self.provider.estimate_gas_cost(txn)
 
 
 def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> MethodABI:
@@ -261,7 +261,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
         txn = self.as_transaction(*args, **kwargs)
-        return txn.max_fee if txn.max_fee else self.provider.estimate_gas_cost(txn)
+        return self.provider.estimate_gas_cost(txn)
 
     @property
     def call(self) -> ContractCallHandler:

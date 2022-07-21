@@ -231,13 +231,3 @@ def test_estimate_fee_txn(vyper_contract_instance, eth_tester_provider, owner):
 def test_estimate_gas_cost_call(vyper_contract_instance, eth_tester_provider, owner):
     gas_cost = vyper_contract_instance.myNumber.estimate_gas_cost(sender=owner)
     assert gas_cost > 0
-
-
-def test_estimate_fee_txn_when_fee_given(vyper_contract_instance, eth_tester_provider, owner):
-    gas_cost = vyper_contract_instance.setNumber.estimate_gas_cost(10, sender=owner, max_fee=123)
-    assert gas_cost == 123
-
-
-def test_estimate_gas_cost_call_when_fee_given(vyper_contract_instance, eth_tester_provider, owner):
-    gas_cost = vyper_contract_instance.myNumber.estimate_gas_cost(sender=owner, max_fee=123)
-    assert gas_cost == 123
