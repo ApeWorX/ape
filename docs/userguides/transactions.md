@@ -220,7 +220,7 @@ receipt.show_trace()
 To estimate the gas cost on a transaction or call without sending it, use the `estimate_gas_cost()` method from the contract's transaction / call handler:
 (Assume I have a contract instance named `contract_a` that has a method named `methodToCall`)
 
-```bash
+```python
 txn_cost = contract_a.myMutableMethod.estimate_gas_cost(1, sender=accounts.load("me"))
 print(txn_cost)
 
