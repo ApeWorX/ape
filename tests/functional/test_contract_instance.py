@@ -5,6 +5,7 @@ from hexbytes import HexBytes
 
 from ape import Contract
 from ape.api import Address
+from ape_ethereum.transactions import TransactionStatusEnum
 
 from .conftest import SOLIDITY_CONTRACT_ADDRESS
 
@@ -27,6 +28,17 @@ def test_init_specify_contract_type(
     assert contract.contract_type == vyper_contract_type
     assert contract.setNumber(2, sender=owner)
     assert contract.myNumber() == 2
+
+
+def test_call_using_block_identifier(
+    vyper_contract_instance, owner, chain, networks_connected_to_tester
+):
+    contract = vyper_contract_instance
+    contract.setNumber(1, sender=owner)
+    height = chain.blocks.height
+    contract.setNumber(33, sender=owner)
+    actual = contract.myNumber(block_identifier=height)
+    assert actual == 1
 
 
 def test_repr(contract_instance):
@@ -223,7 +235,17 @@ def test_call_transaction(contract_instance, owner, chain):
     assert init_block == chain.blocks[-1]
 
 
-def test_estimating_fees(solidity_contract_instance, eth_tester_provider, owner):
-    transaction = solidity_contract_instance.setNumber.as_transaction(10, sender=owner)
-    estimated_fees = eth_tester_provider.estimate_gas_cost(transaction)
-    assert estimated_fees > 0
+def test_estimate_gas_cost_txn(vyper_contract_instance, eth_tester_provider, owner):
+    gas_cost = vyper_contract_instance.setNumber.estimate_gas_cost(10, sender=owner)
+    assert gas_cost > 0
+
+
+def test_estimate_gas_cost_call(vyper_contract_instance, eth_tester_provider, owner):
+    gas_cost = vyper_contract_instance.myNumber.estimate_gas_cost(sender=owner)
+    assert gas_cost > 0
+
+
+def test_call_transact(vyper_contract_instance, owner):
+    receipt = vyper_contract_instance.myNumber.transact(sender=owner)
+    assert receipt.sender == owner
+    assert receipt.status == TransactionStatusEnum.NO_ERROR

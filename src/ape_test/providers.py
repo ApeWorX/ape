@@ -33,10 +33,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def update_settings(self, new_settings: dict):
         pass
 
-    def estimate_gas_cost(self, txn: TransactionAPI) -> int:
+    def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
         try:
-            result = self.web3.eth.estimate_gas(txn.dict())  # type: ignore
-            return result
+            block_id = kwargs.pop("block_identifier", None)
+            return self.web3.eth.estimate_gas(txn.dict(), block_identifier=block_id)  # type: ignore
         except ValidationError as err:
             message = gas_estimation_error_message(err)
             raise TransactionError(base_err=err, message=message) from err
@@ -65,13 +65,15 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         """Returns 0 because test chains do not care about priority fees."""
         return 0
 
-    def send_call(self, txn: TransactionAPI) -> bytes:
+    def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         data = txn.dict(exclude_none=True)
         if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)
 
         try:
-            return self.web3.eth.call(data)
+            block_id = kwargs.pop("block_identifier", None)
+            state = kwargs.pop("state_override", None)
+            return self.web3.eth.call(data, block_identifier=block_id, state_override=state)
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:

@@ -94,6 +94,7 @@ setup(
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.1.0",
         "ethpm-types>=0.3.2,<0.4.0",
+        "eip712>=0.1.0,<0.2",
         "evm-trace>=0.1.0.a6",
         "hexbytes>=0.2.2,<1.0.0",
         "packaging>=20.9,<21.0",
