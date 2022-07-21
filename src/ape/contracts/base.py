@@ -729,12 +729,7 @@ class ContractContainer(ManagerAccessMixin):
             :class:`~ape.contracts.ContractInstance`
         """
 
-        contract = self.chain_manager.contracts.instance_at(address, self.contract_type)
-
-        if not isinstance(contract, ContractInstance):
-            raise ValueError(f"Address '{address}' is not a contract.")
-
-        return contract
+        return self.chain_manager.contracts.instance_at(address, self.contract_type)
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)

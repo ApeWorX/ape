@@ -132,11 +132,10 @@ class CallTraceParser:
             method = None
             contract_name = contract_type.name
             if "symbol" in contract_type.view_methods:
-                # Type ignores below because we know it's a ContractInstance at this point.
                 contract = self._receipt.chain_manager.contracts.instance_at(address, contract_type)
 
                 try:
-                    contract_name = contract.symbol() or contract_name  # type: ignore
+                    contract_name = contract.symbol() or contract_name
                 except ContractError:
                     contract_name = contract_type.name
 

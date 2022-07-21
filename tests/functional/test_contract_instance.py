@@ -1,11 +1,12 @@
 import re
 
+import pytest
 from eth_utils import is_checksum_address
 from hexbytes import HexBytes
 
 from ape import Contract
-from ape.api import Address
 from ape_ethereum.transactions import TransactionStatusEnum
+from ape.exceptions import ChainError
 
 from .conftest import SOLIDITY_CONTRACT_ADDRESS
 
@@ -13,9 +14,8 @@ MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
 
 def test_init_at_unknown_address():
-    contract = Contract(SOLIDITY_CONTRACT_ADDRESS)
-    assert type(contract) == Address
-    assert contract.address == SOLIDITY_CONTRACT_ADDRESS
+    with pytest.raises(ChainError):
+        Contract(SOLIDITY_CONTRACT_ADDRESS)
 
 
 def test_init_specify_contract_type(
