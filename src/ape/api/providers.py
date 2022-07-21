@@ -617,10 +617,11 @@ class Web3Provider(ProviderAPI, ABC):
         self.provider_settings.update(new_settings)
         self.connect()
 
-    def estimate_gas_cost(self, txn: TransactionAPI) -> int:
+    def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
         txn_dict = txn.dict()
         try:
-            return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
+            block_id = kwargs.pop("block_identifier", None)
+            return self.web3.eth.estimate_gas(txn_dict, block_identifier=block_id)  # type: ignore
         except ValueError as err:
             tx_error = self.get_virtual_machine_error(err)
 
@@ -658,21 +659,25 @@ class Web3Provider(ProviderAPI, ABC):
         block_data = dict(self.web3.eth.get_block(block_id))
         return self.network.ecosystem.decode_block(block_data)
 
-    def get_nonce(self, address: str) -> int:
-        return self.web3.eth.get_transaction_count(address)  # type: ignore
+    def get_nonce(self, address: str, **kwargs) -> int:
+        block_id = kwargs.pop("block_identifier", None)
+        return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
     def get_balance(self, address: str) -> int:
-        return self.web3.eth.get_balance(address)  # type: ignore
+        return self.web3.eth.get_balance(address)
 
     def get_code(self, address: str) -> bytes:
-        return self.web3.eth.get_code(address)  # type: ignore
+        return self.web3.eth.get_code(address)
 
-    def get_storage_at(self, address: str, slot: int) -> bytes:
-        return self.web3.eth.get_storage_at(address, slot)  # type: ignore
+    def get_storage_at(self, address: str, slot: int, *args, **kwargs) -> bytes:
+        block_id = kwargs.pop("block_identifier", None)
+        return self.web3.eth.get_storage_at(address, slot, block_identifier=block_id)
 
-    def send_call(self, txn: TransactionAPI) -> bytes:
+    def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         try:
-            return self.web3.eth.call(txn.dict())
+            block_id = kwargs.pop("block_identifier", None)
+            state = kwargs.pop("state_override", None)
+            return self.web3.eth.call(txn.dict(), block_identifier=block_id, state_override=state)
         except ValueError as err:
             raise self.get_virtual_machine_error(err) from err
 
