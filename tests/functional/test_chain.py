@@ -1,4 +1,6 @@
+import time
 from datetime import datetime, timedelta
+from queue import Queue
 
 import pytest
 from hexbytes import HexBytes
@@ -12,14 +14,6 @@ from ape.exceptions import APINotImplementedError, ChainError
 @pytest.fixture(scope="module", autouse=True)
 def connection(networks_connected_to_tester):
     yield
-
-
-@pytest.fixture
-def chain_at_block_5(chain):
-    snapshot_id = chain.snapshot()
-    chain.mine(5)
-    yield chain
-    chain.restore(snapshot_id)
 
 
 @pytest.fixture
@@ -374,3 +368,41 @@ def test_contract_cache_mapping_updated_on_many_deployments(owner, project_with_
     assert len(my_contracts_list) - len(starting_contracts_list) == 4
     assert final_deployed_contract.address == my_contracts_list[-1].address
     assert my_contracts_list[initial_contract_index].address == initial_deployed_contract.address
+
+
+def test_poll_blocks_stop_block_not_in_future(chain_at_block_5):
+    bad_stop_block = chain_at_block_5.blocks.height
+
+    with pytest.raises(ValueError) as err:
+        _ = [x for x in chain_at_block_5.blocks.poll_blocks(stop_block=bad_stop_block)]
+
+    assert str(err.value) == "'stop' argument must be in the future."
+
+
+def test_poll_blocks(chain_at_block_5, eth_tester_provider, owner, PollDaemon):
+    blocks = Queue(maxsize=3)
+    poller = chain_at_block_5.blocks.poll_blocks()
+
+    with PollDaemon("blocks", poller, blocks.put, blocks.full):
+        # Sleep first to ensure listening before mining.
+        time.sleep(1)
+        eth_tester_provider.mine(3)
+
+    assert blocks.full()
+    first = blocks.get().number
+    second = blocks.get().number
+    third = blocks.get().number
+    assert first == second - 1
+    assert second == third - 1
+
+
+def test_poll_blocks_timeout(
+    vyper_contract_instance, chain_at_block_5, eth_tester_provider, owner, PollDaemon
+):
+    poller = chain_at_block_5.blocks.poll_blocks(new_block_timeout=1)
+
+    with pytest.raises(ChainError) as err:
+        with PollDaemon("blocks", poller, lambda x: None, lambda: False):
+            time.sleep(1.5)
+
+    assert "Timed out waiting for new block (time_waited=1" in str(err.value)

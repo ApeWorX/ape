@@ -20,6 +20,7 @@ from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
+from web3.exceptions import TimeExhausted
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
@@ -214,7 +215,8 @@ class ProviderAPI(BaseInterfaceModel):
                 The transaction to estimate the gas for.
 
         Returns:
-            int: The estimated cost of gas.
+            int: The estimated cost of gas to execute the transaction
+            reported in the fee-currency's smallest unit, e.g. Wei.
         """
 
     @property
@@ -615,10 +617,11 @@ class Web3Provider(ProviderAPI, ABC):
         self.provider_settings.update(new_settings)
         self.connect()
 
-    def estimate_gas_cost(self, txn: TransactionAPI) -> int:
+    def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
         txn_dict = txn.dict()
         try:
-            return self._web3.eth.estimate_gas(txn_dict)  # type: ignore
+            block_id = kwargs.pop("block_identifier", None)
+            return self.web3.eth.estimate_gas(txn_dict, block_identifier=block_id)  # type: ignore
         except ValueError as err:
             tx_error = self.get_virtual_machine_error(err)
 
@@ -656,32 +659,45 @@ class Web3Provider(ProviderAPI, ABC):
         block_data = dict(self.web3.eth.get_block(block_id))
         return self.network.ecosystem.decode_block(block_data)
 
-    def get_nonce(self, address: str) -> int:
-        return self.web3.eth.get_transaction_count(address)  # type: ignore
+    def get_nonce(self, address: str, **kwargs) -> int:
+        block_id = kwargs.pop("block_identifier", None)
+        return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
     def get_balance(self, address: str) -> int:
-        return self.web3.eth.get_balance(address)  # type: ignore
+        return self.web3.eth.get_balance(address)
 
     def get_code(self, address: str) -> bytes:
-        return self.web3.eth.get_code(address)  # type: ignore
+        return self.web3.eth.get_code(address)
 
-    def get_storage_at(self, address: str, slot: int) -> bytes:
-        return self.web3.eth.get_storage_at(address, slot)  # type: ignore
+    def get_storage_at(self, address: str, slot: int, *args, **kwargs) -> bytes:
+        block_id = kwargs.pop("block_identifier", None)
+        return self.web3.eth.get_storage_at(address, slot, block_identifier=block_id)
 
-    def send_call(self, txn: TransactionAPI) -> bytes:
+    def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         try:
-            return self.web3.eth.call(txn.dict())
+            block_id = kwargs.pop("block_identifier", None)
+            state = kwargs.pop("state_override", None)
+            return self.web3.eth.call(txn.dict(), block_identifier=block_id, state_override=state)
         except ValueError as err:
             raise self.get_virtual_machine_error(err) from err
 
-    def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
+    def get_transaction(
+        self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
+    ) -> ReceiptAPI:
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
 
-        timeout = self.config_manager.transaction_acceptance_timeout
-        receipt_data = self.web3.eth.wait_for_transaction_receipt(
-            HexBytes(txn_hash), timeout=timeout
+        timeout = (
+            timeout if timeout is not None else self.config_manager.transaction_acceptance_timeout
         )
+
+        try:
+            receipt_data = self.web3.eth.wait_for_transaction_receipt(
+                HexBytes(txn_hash), timeout=timeout
+            )
+        except TimeExhausted as err:
+            raise ProviderError(f"Transaction '{txn_hash}' not found.") from err
+
         txn = self.web3.eth.get_transaction(txn_hash)  # type: ignore
         receipt = self.network.ecosystem.decode_receipt(
             {
@@ -825,13 +841,13 @@ class SubprocessProvider(ProviderAPI):
 
     @cached_property
     def _stdout_logger(self) -> Logger:
-        return self._make_logger("stdout", self.stdout_logs_path)
+        return self._get_process_output_logger("stdout", self.stdout_logs_path)
 
     @cached_property
     def _stderr_logger(self) -> Logger:
-        return self._make_logger("stderr", self.stderr_logs_path)
+        return self._get_process_output_logger("stderr", self.stderr_logs_path)
 
-    def _make_logger(self, name: str, path: Path):
+    def _get_process_output_logger(self, name: str, path: Path):
         logger = getLogger(f"{self.name}_{name}_subprocessProviderLogger")
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():
@@ -841,7 +857,7 @@ class SubprocessProvider(ProviderAPI):
         handler = FileHandler(str(path))
         handler.setFormatter(Formatter("%(message)s"))
         logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.DEBUG)
         return logger
 
     def connect(self):
@@ -915,14 +931,20 @@ class SubprocessProvider(ProviderAPI):
             output = line.decode("utf8").strip()
             logger.debug(output)
             self._stdout_logger.info(output)
-            self.stdout_queue.task_done()
+
+            if self.stdout_queue is not None:
+                self.stdout_queue.task_done()
+
             time.sleep(0)
 
     def consume_stderr_queue(self):
         for line in self.stderr_queue:
             logger.debug(line.decode("utf8").strip())
             self._stdout_logger.info(line)
-            self.stderr_queue.task_done()
+
+            if self.stderr_queue is not None:
+                self.stderr_queue.task_done()
+
             time.sleep(0)
 
     def stop(self):
@@ -936,8 +958,6 @@ class SubprocessProvider(ProviderAPI):
         self._kill_process()
         self.is_stopping = False
         self.process = None
-        self.stdout_queue = None
-        self.stderr_queue = None
 
     def _wait_for_popen(self, timeout: int = 30):
         if not self.process:

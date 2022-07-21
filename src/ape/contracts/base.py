@@ -79,8 +79,7 @@ class ContractCall(ManagerAccessMixin):
     def __call__(self, *args, **kwargs) -> Any:
         txn = self.serialize_transaction(*args, **kwargs)
         txn.chain_id = self.provider.network.chain_id
-
-        raw_output = self.provider.send_call(txn)
+        raw_output = self.provider.send_call(txn, **kwargs)
         output = self.provider.network.ecosystem.decode_returndata(
             self.abi,
             raw_output,
@@ -125,6 +124,45 @@ class ContractCallHandler(ManagerAccessMixin):
             abi=selected_abi,
             address=self.contract.address,
         )(*args, **kwargs)
+
+    def as_transaction(self, *args, **kwargs):
+        """
+        Convert the call to a transaction. This is useful for checking coverage
+        or checking gas costs.
+
+        Args:
+            *args: The contract method invocation arguments.
+            **kwargs: Transaction kwargs, such as value or
+              sender.
+
+        Returns:
+            :class:`~ape.api.transactions.TransactionAPI`
+        """
+        return self.transact.as_transaction(*args, **kwargs)
+
+    @property
+    def transact(self) -> "ContractTransactionHandler":
+        """
+        Send the call as a transaction.
+        """
+
+        return ContractTransactionHandler(self.contract, self.abis)
+
+    def estimate_gas_cost(self, *args, **kwargs) -> int:
+        """
+        Get the estimated gas cost (according to the provider) for the
+        contract method call (as if it were a transaction).
+
+        Args:
+            *args: The contract method invocation arguments.
+            **kwargs: Transaction kwargs, such as value or
+              sender.
+
+        Returns:
+            int: The estimated cost of gas to execute the transaction
+            reported in the fee-currency's smallest unit, e.g. Wei.
+        """
+        return self.transact.estimate_gas_cost(*args, **kwargs)
 
 
 def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> MethodABI:
@@ -203,6 +241,23 @@ class ContractTransactionHandler(ManagerAccessMixin):
         transaction = contract_transaction.serialize_transaction(*args, **kwargs)
         self.provider.prepare_transaction(transaction)
         return transaction
+
+    def estimate_gas_cost(self, *args, **kwargs) -> int:
+        """
+        Get the estimated gas cost (according to the provider) for the
+        contract method-invocation transaction.
+
+        Args:
+            *args: The contract method invocation arguments.
+            **kwargs: Transaction kwargs, such as value or
+              sender.
+
+        Returns:
+            int: The estimated cost of gas to execute the transaction
+            reported in the fee-currency's smallest unit, e.g. Wei.
+        """
+        txn = self.as_transaction(*args, **kwargs)
+        return self.provider.estimate_gas_cost(txn)
 
     @property
     def call(self) -> ContractCallHandler:
@@ -392,6 +447,7 @@ class ContractEvent(ManagerAccessMixin):
         start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
     ) -> Iterator[ContractLog]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
@@ -412,6 +468,9 @@ class ContractEvent(ManagerAccessMixin):
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
               Defaults to the network's configured required confirmations.
+            new_block_timeout (Optional[int]): The amount of time to wait for a new block before
+              quitting. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
+              networks.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
@@ -420,14 +479,12 @@ class ContractEvent(ManagerAccessMixin):
         required_confirmations = (
             required_confirmations or self.provider.network.required_confirmations
         )
-        stop_block = (
-            self.chain_manager.blocks.height if stop_block is None else stop_block
-        ) - required_confirmations
 
         for new_block in self.chain_manager.blocks.poll_blocks(
             start_block=start_block,
             stop_block=stop_block,
             required_confirmations=required_confirmations,
+            new_block_timeout=new_block_timeout,
         ):
             if new_block.number is None:
                 continue

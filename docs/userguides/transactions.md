@@ -215,14 +215,15 @@ receipt = networks.provider.get_transaction(txn_hash)
 receipt.show_trace()
 ```
 
-## Estimate Fees
+## Estimate Gas Cost
 
-To estimate the fees on a transaction without sending it, use the `as_transaction()` method to get a reference to a transaction API object.
-Then, use the `ProviderAPI.estimate_gas_cost()` method with the transaction as the argument.
-
+To estimate the gas cost on a transaction or call without sending it, use the `estimate_gas_cost()` method from the contract's transaction / call handler:
 (Assume I have a contract instance named `contract_a` that has a method named `methodToCall`)
 
-```bash
-txn = contract_a.methodToCall.as_transaction(1, sender=accounts.load("me"))
-estimated_fees = provider.estimate_gas_cost(txn)
+```python
+txn_cost = contract_a.myMutableMethod.estimate_gas_cost(1, sender=accounts.load("me"))
+print(txn_cost)
+
+view_cost = contract_a.myViewMethod.estimate_gas_cost()
+print(view_cost)
 ```
