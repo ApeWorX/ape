@@ -308,7 +308,7 @@ class EcosystemAPI(BaseInterfaceModel):
             raw_logs (List[Dict]): A list of raw log data from the chain.
 
         Returns:
-           Iterator[:class:`~ape.types.ContractLog`]
+            Iterator[:class:`~ape.types.ContractLog`]
         """
 
     @raises_not_implemented
