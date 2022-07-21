@@ -142,7 +142,7 @@ class ContractCallHandler(ManagerAccessMixin):
         Send the call as a transaction.
         """
 
-        return ContractTransactionHandler(self.contract, self.abis)
+        return ContractTransactionHandler(self.contract, self.abi)
 
     def estimate_gas_cost(self, *args, **kwargs) -> int:
         """
