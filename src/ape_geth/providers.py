@@ -19,7 +19,8 @@ from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
 from pydantic import Extra
 from requests.exceptions import ConnectionError
-from web3 import HTTPProvider, Web3
+from web3 import AsyncHTTPProvider, HTTPProvider, Web3
+from web3.eth import AsyncEth
 from web3.exceptions import ExtraDataLengthError
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
@@ -27,7 +28,7 @@ from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from web3.types import RPCEndpoint
 from yarl import URL
 
-from ape.api import PluginConfig, UpstreamProvider, Web3Provider
+from ape.api import AsyncWeb3Provider, PluginConfig, UpstreamProvider, Web3Provider
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import ProviderError
 from ape.logging import logger
@@ -311,3 +312,152 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
     def _make_request(self, rpc: str, args: list) -> Any:
         return self.web3.provider.make_request(RPCEndpoint(rpc), args)
+
+
+class AsyncGethProvider(AsyncWeb3Provider, UpstreamProvider): #, GethBase):
+    """
+    An async-based Geth provider.
+
+    `self._geth` still uses sync code. 
+    """
+
+    _geth: Optional[EphemeralGeth] = None
+    _client_version: Optional[str] = None
+
+    # optimal values for geth
+    block_page_size = 5000
+    concurrency = 16
+
+    @property
+    def uri(self) -> str:
+        ecosystem_config = self.config.dict().get(self.network.ecosystem.name, None)
+        if ecosystem_config is None:
+            return DEFAULT_SETTINGS["uri"]
+
+        network_config = ecosystem_config.get(self.network.name)
+        return network_config.get("uri", DEFAULT_SETTINGS["uri"])
+
+    @property
+    def connection_str(self) -> str:
+        return self.uri
+
+
+    async def connect(self):
+        self._client_version = None  # Clear cached version when connecting to another URI.
+        self._web3 = Web3(AsyncHTTPProvider(self.uri))
+        self._web3.eth = AsyncEth(self._web3)
+        self._web3.provider._request_kwargs["timeout"] = 30 * 60
+
+        if not await self._web3.isConnected():
+            if self.network.name != LOCAL_NETWORK_NAME:
+                raise ProviderError(
+                    f"When running on network '{self.network.name}', "
+                    f"the Geth plugin expects the Geth process to already "
+                    f"be running on '{self.uri}'."
+                )
+
+            # Start an ephemeral geth process.
+            parsed_uri = urlparse(self.uri)
+
+            if parsed_uri.hostname not in ("localhost", "127.0.0.1"):
+                raise ConnectionError(f"Unable to connect web3 to {parsed_uri.hostname}.")
+
+            if not shutil.which("geth"):
+                raise GethNotInstalledError()
+
+            # Use mnemonic from test config
+            config_manager = self.network.config_manager
+            test_config = config_manager.get_config("test")
+            mnemonic = test_config["mnemonic"]
+            num_of_accounts = test_config["number_of_accounts"]
+
+            self._geth = EphemeralGeth(
+                self.data_folder,
+                parsed_uri.hostname,
+                parsed_uri.port,
+                mnemonic,
+                number_of_accounts=num_of_accounts,
+            )
+            self._geth.connect()
+
+            if not await self._web3.isConnected():
+                self._geth.disconnect()
+                raise ConnectionError("Unable to connect to locally running geth.")
+        else:
+            client_version = await self.client_version
+            if "geth" in client_version.lower():
+                logger.info(f"Connecting to existing Geth node at '{self.uri}'.")
+            elif "erigon" in client_version.lower():
+                logger.info(f"Connecting to existing Erigon node at '{self.uri}'.")
+                self.concurrency = 8
+                self.block_page_size = 40_000
+            else:
+                network_name = client_version.split("/")[0]
+                logger.warning(f"Connecting Geth plugin to non-Geth network '{network_name}'.")
+
+        await self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
+
+        async def is_likely_poa() -> bool:
+            try:
+                block = await self.web3.eth.get_block("latest")
+            except ExtraDataLengthError:
+                return True
+
+            return (
+                "proofOfAuthorityData" in block
+                or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
+            )
+
+        # Check for chain errors, including syncing
+        try:
+            chain_id = await self._web3.eth.chain_id
+        except ValueError as err:
+            raise ProviderError(
+                err.args[0].get("message")
+                if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
+                else "Error getting chain id."
+            )
+
+        # If network is rinkeby, goerli, or kovan (PoA test-nets)
+        if chain_id in (4, 5, 42) or is_likely_poa():
+            self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+        if self.network.name != LOCAL_NETWORK_NAME and self.network.chain_id != self.chain_id:
+            raise ProviderError(
+                "HTTP Connection does not match expected chain ID. "
+                f"Are you connected to '{self.network.name}'?"
+            )
+
+    async def disconnect(self):
+        if self._geth is not None:
+            self._geth.disconnect()
+            self._geth = None
+
+        # Must happen after geth.disconnect()
+        self._web3 = None  # type: ignore
+        self._client_version = None
+
+    async def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
+        result = await self._make_request("debug_traceTransaction", [txn_hash])
+        frames = result.get("structLogs", [])
+        for frame in frames:
+            yield TraceFrame(**frame)
+
+    async def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
+        async def _get_call_tree_from_parity():
+            raw_trace_list = await self._make_request("trace_transaction", [txn_hash]).get("results", [])
+            traces = ParityTraceList.parse_obj(raw_trace_list)
+            return get_calltree_from_parity_trace(traces)
+
+        if "erigon" in self.client_version.lower():
+            return await _get_call_tree_from_parity()
+
+        try:
+            # Try the Parity traces first just in case
+            return await _get_call_tree_from_parity()
+        except ValueError:
+            frames = await self.get_transaction_trace(txn_hash)
+            return get_calltree_from_geth_trace(frames, **root_node_kwargs)
+
+    async def _make_request(self, rpc: str, args: list) -> Any:
+        return await self.web3.provider.make_request(RPCEndpoint(rpc), args)
