@@ -13,6 +13,7 @@ from .explorers import ExplorerAPI
 from .networks import EcosystemAPI, NetworkAPI, ProviderContextManager, create_network_type
 from .projects import DependencyAPI, ProjectAPI
 from .providers import (
+    AsyncWeb3Provider,
     BlockAPI,
     ProviderAPI,
     SubprocessProvider,
@@ -27,6 +28,7 @@ __all__ = [
     "AccountAPI",
     "AccountContainerAPI",
     "Address",
+    "AsyncWeb3Provider",
     "BlockAPI",
     "CompilerAPI",
     "ConfigDict",

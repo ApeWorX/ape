@@ -1,3 +1,4 @@
+import asyncio
 from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
@@ -11,6 +12,7 @@ from eth_utils import to_int
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
+from ape.api.providers import AsyncProviderAPI
 
 from ape.exceptions import NetworkError, NetworkNotFoundError, SignatureError
 from ape.types import AddressType, ContractLog, RawAddress
@@ -452,7 +454,13 @@ class ProviderContextManager:
 
     def __enter__(self, *args, **kwargs):
         # Connect to our provider
-        self.provider.connect()
+        if self.provider.is_async:
+            try:
+                asyncio.get_event_loop().run_until_complete(self.provider.connect())
+            except RuntimeError:
+                raise RuntimeError("The event loop is already running. You're not able to enter a provider context within async code.")
+        else:
+            self.provider.connect()
         self.network_manager.active_provider = self.provider
         self._connected_providers.append(self.provider)
 
@@ -466,7 +474,13 @@ class ProviderContextManager:
         if id(self.provider) != id(provider):
             raise ValueError("Previous provider value unknown.")
 
-        provider.disconnect()
+        if self.provider.is_async:
+            try:
+                asyncio.get_event_loop().run_until_complete(self.provider.disconnect())
+            except RuntimeError:
+                raise RuntimeError("The event loop is already running. You're not able to enter a provider context within async code. You shouldn't even have made it to this point.")
+        else:
+            self.provider.disconnect()
 
         if self._connected_providers:
             self.network_manager.active_provider = self._connected_providers[-1]

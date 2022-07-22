@@ -1,3 +1,4 @@
+import asyncio
 import atexit
 import ctypes
 import logging
@@ -11,7 +12,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, Iterator, List, Optional
+from typing import Any, Awaitable, Iterator, List, Optional
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
@@ -19,6 +20,7 @@ from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
+from web3._utils.rpc_abi import RPC
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
 
@@ -125,6 +127,13 @@ class ProviderAPI(BaseInterfaceModel):
     """
     How many parallel threads to use when fetching logs.
     """
+
+    @property
+    def is_async(self) -> bool:
+        """
+        Whether or not this provider is asynchronous.
+        """
+        return isinstance(self, AsyncProviderAPI)
 
     @abstractmethod
     def connect(self):
@@ -519,6 +528,236 @@ class ProviderAPI(BaseInterfaceModel):
         return VirtualMachineError(message=str(err_msg), code=err_data.get("code"))
 
 
+class AsyncProviderAPI(ProviderAPI):
+    """
+    A modified version of ``ProviderAPI`` for use with asynchronous code. 
+    
+    Example ``ProviderAPI`` implementations include the
+    `ape-infura <https://github.com/ApeWorX/ape-infura>`__ plugin
+    or the `ape-hardhat <https://github.com/ApeWorX/ape-hardhat>`__ plugin.
+    """
+
+    @abstractmethod
+    async def connect(self):
+        """
+        Connect a to a provider, such as start-up a process or create an HTTP connection.
+        """
+
+    @abstractmethod
+    async def disconnect(self):
+        """
+        Disconnect from a provider, such as tear-down a process or quit an HTTP session.
+        """
+
+    # @async_property - NOTE: use `@async_property` decorator on your implementation
+    @abstractmethod
+    async def chain_id(self) -> int:
+        """
+        The blockchain ID.
+        See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
+        """
+
+    @abstractmethod
+    async def get_balance(self, address: str) -> int:
+        """
+        Get the balance of an account.
+
+        Args:
+            address (str): The address of the account.
+
+        Returns:
+            int: The account balance.
+        """
+
+    @abstractmethod
+    async def get_code(self, address: str) -> bytes:
+        """
+        Get the bytes a contract.
+
+        Args:
+            address (str): The address of the contract.
+
+        Returns:
+            bytes: The contract byte-code.
+        """
+
+    @abstractmethod
+    async def get_nonce(self, address: str) -> int:
+        """
+        Get the number of times an account has transacted.
+
+        Args:
+            address (str): The address of the account.
+
+        Returns:
+            int
+        """
+
+    @abstractmethod
+    async def estimate_gas_cost(self, txn: TransactionAPI) -> int:
+        """
+        Estimate the cost of gas for a transaction.
+
+        Args:
+            txn (:class:`~ape.api.transactions.TransactionAPI`):
+                The transaction to estimate the gas for.
+
+        Returns:
+            int: The estimated cost of gas.
+        """
+
+    # @async_property - NOTE: use `@async_property` decorator on your implementation
+    @abstractmethod
+    async def gas_price(self) -> int:
+        """
+        The price for what it costs to transact
+        (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
+        """
+
+    @abstractmethod
+    async def get_block(self, block_id: BlockID) -> BlockAPI:
+        """
+        Get a block.
+
+        Args:
+            block_id (:class:`~ape.types.BlockID`): The ID of the block to get.
+                Can be ``"latest"``, ``"earliest"``, ``"pending"``, a block hash or a block number.
+
+        Returns:
+            :class:`~ape.types.BlockID`: The block for the given ID.
+        """
+
+    @abstractmethod
+    async def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
+        """
+        Execute a new transaction call immediately without creating a
+        transaction on the block chain.
+
+        Args:
+            txn: :class:`~ape.api.transactions.TransactionAPI`
+
+        Returns:
+            str: The result of the transaction call.
+        """
+
+    @abstractmethod
+    async def get_transaction(self, txn_hash: str) -> ReceiptAPI:
+        """
+        Get the information about a transaction from a transaction hash.
+
+        Args:
+            txn_hash (str): The hash of the transaction to retrieve.
+
+        Returns:
+            :class:`~api.providers.ReceiptAPI`:
+            The receipt of the transaction with the given hash.
+        """
+
+    @abstractmethod
+    async def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
+        """
+        Get the information about a set of transactions from a block.
+
+        Args:
+            block_id (:class:`~ape.types.BlockID`): The ID of the block.
+
+        Returns:
+            Iterator[:class: `~ape.api.transactions.TransactionAPI`]
+        """
+
+    @abstractmethod
+    async def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+        """
+        Send a transaction to the network.
+
+        Args:
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to send.
+
+        Returns:
+            :class:`~ape.api.transactions.ReceiptAPI`
+        """
+
+    @abstractmethod
+    async def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
+        """
+        Get logs from contracts.
+
+        Args:
+            log_filter (:class:`~ape.types.LogFilter`): A mapping of event ABIs to
+              topic filters. Defaults to getting all events.
+
+        Returns:
+            Iterator[:class:`~ape.types.ContractLog`]
+        """
+
+    def __repr__(self) -> str:
+        # Reproduce logic from ``self.chain_id`` because can't run
+        # async code in ``__repr__`` if calling from other async code.
+        if self.network.name != LOCAL_NETWORK_NAME and not self.network.name.endswith("-fork"):
+            # If using a live network, the chain ID is hardcoded.
+            chainid = self.network.chain_id
+
+        elif hasattr(self.web3, "eth"):
+            try:
+                chainid = asyncio.get_event_loop().run_until_complete(self.web3.eth.chain_id)
+            except RuntimeError:
+                # If ``__repr__`` is called from async code you will get a
+                # RuntimeError: The event loop is already running.
+                chainid = None
+
+        else:
+            raise ProviderNotConnectedError()
+        
+        if not chainid:
+            f"<{self.name}>"
+        return f"<{self.name} chain_id={chainid}>"
+
+    async def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+        """
+        Set default values on the transaction.
+
+        Raises:
+            :class:`~ape.exceptions.TransactionError`: When given negative required confirmations.
+
+        Args:
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to prepare.
+
+        Returns:
+            :class:`~ape.api.transactions.TransactionAPI`
+        """
+
+        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
+        txn.chain_id = self.network.chain_id
+
+        from ape_ethereum.transactions import TransactionType
+
+        txn_type = TransactionType(txn.type)
+        if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
+            txn.gas_price = await self.gas_price  # type: ignore
+        elif txn_type == TransactionType.DYNAMIC:
+            if txn.max_priority_fee is None:  # type: ignore
+                txn.max_priority_fee = await self.priority_fee  # type: ignore
+
+            if txn.max_fee is None:
+                txn.max_fee = await self.base_fee + txn.max_priority_fee
+            # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        if txn.gas_limit is None:
+            txn.gas_limit = await self.estimate_gas_cost(txn)
+        # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        if txn.required_confirmations is None:
+            txn.required_confirmations = self.network.required_confirmations
+        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
+            raise TransactionError(message="'required_confirmations' must be a positive integer.")
+
+        return txn
+
+    def _try_track_receipt(self, receipt: ReceiptAPI):
+        if self.chain_manager:
+            self.chain_manager.account_history.append(receipt)
+
+
 class TestProviderAPI(ProviderAPI):
     """
     An API for providers that have development functionality, such as snapshotting.
@@ -770,6 +1009,199 @@ class Web3Provider(ProviderAPI, ABC):
         )
 
         receipt = self.get_transaction(
+            txn_hash.hex(), required_confirmations=required_confirmations
+        )
+        receipt.raise_for_status()
+        logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
+        self._try_track_receipt(receipt)
+        return receipt
+
+
+class AsyncWeb3Provider(AsyncProviderAPI, Web3Provider, ABC):
+    """
+    A base provider mixin class that uses the
+    [web3.py](https://web3py.readthedocs.io/en/stable/) python package.
+    """
+
+    _web3: Optional[Web3] = None
+    _client_version: Optional[str] = None
+
+    @property
+    def client_version(self) -> Awaitable[str]:
+        return self.__client_version()
+
+    async def __client_version(self) -> str:
+        if not self._web3:
+            return ""
+
+        # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
+        if self._client_version is None:
+            # DEV: `self._client_version = await self._web3.clientVersion`
+            #      does not work due to a bug in web3py's async implementation.
+            self._client_version = await self._web3.manager.coro_request(RPC.web3_clientVersion, [])
+
+        return self._client_version
+    
+    @property
+    def base_fee(self) -> Awaitable[int]:
+        return self.__base_fee()
+
+    async def __base_fee(self) -> int:
+        block = await self.get_block("latest")
+        if not hasattr(block, "base_fee"):
+            raise APINotImplementedError("No base fee found in block.")
+        else:
+            base_fee = block.base_fee  # type: ignore
+
+        if base_fee is None:
+            # Non-EIP-1559 chains or we time-travelled pre-London fork.
+            raise APINotImplementedError("base_fee is not implemented by this provider.")
+
+        return base_fee
+
+    async def update_settings(self, new_settings: dict) -> None:
+        await self.disconnect()
+        self.provider_settings.update(new_settings)
+        await self.connect()
+
+    async def estimate_gas_cost(self, txn: TransactionAPI) -> int:
+        txn_dict = txn.dict()
+        try:
+            return await self._web3.eth.estimate_gas(txn_dict)  # type: ignore
+        except ValueError as err:
+            tx_error = self.get_virtual_machine_error(err)
+
+            # If this is the cause of a would-be revert,
+            # raise ContractLogicError so that we can confirm tx-reverts.
+            if isinstance(tx_error, ContractLogicError):
+                raise tx_error from err
+
+            message = gas_estimation_error_message(tx_error)
+            raise TransactionError(base_err=tx_error, message=message) from err
+
+    @property
+    def chain_id(self) -> Awaitable[int]:
+        return self.__chain_id()
+
+    async def __chain_id(self) -> int:
+        if self.network.name != LOCAL_NETWORK_NAME and not self.network.name.endswith("-fork"):
+            # If using a live network, the chain ID is hardcoded.
+            return self.network.chain_id
+
+        elif hasattr(self.web3, "eth"):
+            return await self.web3.eth.chain_id
+
+        else:
+            raise ProviderNotConnectedError()
+
+    @property
+    def gas_price(self) -> Awaitable[int]:
+        return self.__gas_price()
+
+    async def __gas_price(self) -> int:
+        return await self._web3.eth.generate_gas_price()  # type: ignore
+
+    @property
+    def priority_fee(self) -> Awaitable[int]:
+        return self.__priority_fee()
+    
+    async def __priority_fee(self) -> int:
+        return await self.web3.eth.max_priority_fee
+
+    async def get_block(self, block_id: BlockID) -> BlockAPI:
+        if isinstance(block_id, str) and block_id.isnumeric():
+            block_id = int(block_id)
+        block_data = dict(await self.web3.eth.get_block(block_id))
+        return self.network.ecosystem.decode_block(block_data)
+
+    async def get_nonce(self, address: str) -> int:
+        return await self.web3.eth.get_transaction_count(address)  # type: ignore
+
+    async def get_balance(self, address: str) -> int:
+        return await self.web3.eth.get_balance(address)  # type: ignore
+
+    async def get_code(self, address: str) -> bytes:
+        return await self.web3.eth.get_code(address)  # type: ignore
+
+    async def get_storage_at(self, address: str, slot: int) -> bytes:
+        return await self.web3.eth.get_storage_at(address, slot)  # type: ignore
+
+    async def send_call(self, txn: TransactionAPI) -> bytes:
+        try:
+            return await self.web3.eth.call(txn.dict())
+        except ValueError as err:
+            raise self.get_virtual_machine_error(err) from err
+
+    async def get_transaction(self, txn_hash: str, required_confirmations: int = 0) -> ReceiptAPI:
+        if required_confirmations < 0:
+            raise TransactionError(message="Required confirmations cannot be negative.")
+
+        timeout = self.config_manager.transaction_acceptance_timeout
+        receipt_data = await self.web3.eth.wait_for_transaction_receipt(
+            HexBytes(txn_hash), timeout=timeout
+        )
+        txn = await self.web3.eth.get_transaction(txn_hash)  # type: ignore
+        receipt = self.network.ecosystem.decode_receipt(
+            {
+                "provider": self,
+                "required_confirmations": required_confirmations,
+                **txn,
+                **receipt_data,
+            }
+        )
+        return receipt.await_confirmations()
+
+    async def get_transactions_by_block(self, block_id: BlockID) -> Iterator:
+        if isinstance(block_id, str):
+            block_id = HexStr(block_id)
+
+            if block_id.isnumeric():
+                block_id = add_0x_prefix(block_id)
+
+        block = await self.web3.eth.get_block(block_id, full_transactions=True)
+        for transaction in block.get("transactions"):  # type: ignore
+            yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
+
+    async def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
+        height = self.chain_manager.blocks.height
+        start_block = log_filter.start_block
+        stop_block = min(log_filter.stop_block or height, height)
+        block_ranges = self.block_ranges(start_block, stop_block, self.block_page_size)
+
+        async def fetch_log_page(block_range):
+            start, stop = block_range
+            page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
+            # eth-tester expects a different format, let web3 handle the conversions for it
+            raw = "EthereumTester" not in await self.client_version
+            logs = await self._get_logs(page_filter.dict(), raw)
+            return self.network.ecosystem.decode_logs(log_filter.events, logs)
+        
+        with asyncio.Semaphore(self.concurrency):
+            for page in asyncio.as_completed(fetch_log_page(block_range) for block_range in block_ranges):
+                yield page
+
+    async def _get_logs(self, filter_params, raw=True):
+        if raw:
+            response = await self.web3.provider.make_request("eth_getLogs", [filter_params])
+            if "error" in response:
+                raise ValueError(response["error"]["message"])
+            return response["result"]
+        else:
+            return await self.web3.eth.get_logs(filter_params)
+
+    async def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+        try:
+            txn_hash = await self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+        except ValueError as err:
+            raise self.get_virtual_machine_error(err) from err
+
+        required_confirmations = (
+            txn.required_confirmations
+            if txn.required_confirmations is not None
+            else self.network.required_confirmations
+        )
+
+        receipt = await self.get_transaction(
             txn_hash.hex(), required_confirmations=required_confirmations
         )
         receipt.raise_for_status()
