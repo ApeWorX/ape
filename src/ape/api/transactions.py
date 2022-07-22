@@ -2,7 +2,7 @@ import sys
 import time
 from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
 
-from eth_utils import keccak
+from eth_utils import encode_hex
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
@@ -250,14 +250,19 @@ class ReceiptAPI(BaseInterfaceModel):
             contract_types = self.chain_manager.contracts.get_multiple(addresses)
             # address → selector → abi
             selectors = {
-                address: {keccak(text=abi.selector): abi for abi in contract.events}
+                address: {
+                    self.provider.network.ecosystem.event_selector(abi): abi
+                    for abi in contract.events
+                }
                 for address, contract in contract_types.items()
             }
             for log in self.logs:
-                if log["address"] not in selectors:
+                contract_address = log["address"]
+                if contract_address not in selectors:
                     continue
                 try:
-                    event_abi = selectors[log["address"]][log["topics"][0]]
+                    selector = encode_hex(log["topics"][0])
+                    event_abi = selectors[contract_address][selector]
                 except KeyError:
                     # Likely a library log
                     library_log = self.provider.network.ecosystem.decode_library_log(log)

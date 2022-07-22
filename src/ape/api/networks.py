@@ -298,6 +298,12 @@ class EcosystemAPI(BaseInterfaceModel):
             class:`~ape.api.transactions.TransactionAPI`
         """
 
+    @raises_not_implemented
+    def event_selector(self, abi: EventABI) -> str:
+        """
+        Convert EventABI to a selector which usually appears as topics[0].
+        """
+
     @abstractmethod
     def decode_logs(
         self, events: Union[EventABI, List[EventABI]], logs: List[Dict]
