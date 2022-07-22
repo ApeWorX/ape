@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from eip712.messages import EIP712Message
 from eth_account.messages import encode_defunct
 
 import ape
@@ -33,9 +34,24 @@ def temp_ape_account(sender, keyparams, temp_accounts_path):
         test_keyfile_path.unlink()
 
 
-def test_sign_message(test_accounts):
-    signer = test_accounts[2]
+@pytest.fixture
+def signer(test_accounts):
+    return test_accounts[2]
+
+
+class Foo(EIP712Message):
+    _name_: "string" = "Foo"  # type: ignore  # noqa: F821
+    bar: "address"  # type: ignore  # noqa: F821
+
+
+def test_sign_message(signer):
     message = encode_defunct(text="Hello Apes!")
+    signature = signer.sign_message(message)
+    assert signer.check_signature(message, signature)
+
+
+def test_sign_eip712_message(signer):
+    message = Foo(signer.address).signable_message
     signature = signer.sign_message(message)
     assert signer.check_signature(message, signature)
 
