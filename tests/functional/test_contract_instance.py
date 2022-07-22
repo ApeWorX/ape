@@ -5,8 +5,8 @@ from eth_utils import is_checksum_address
 from hexbytes import HexBytes
 
 from ape import Contract
-from ape_ethereum.transactions import TransactionStatusEnum
 from ape.exceptions import ChainError
+from ape_ethereum.transactions import TransactionStatusEnum
 
 from .conftest import SOLIDITY_CONTRACT_ADDRESS
 
