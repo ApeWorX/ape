@@ -110,4 +110,4 @@ def temp_accounts_path(config):
 
 @pytest.fixture
 def runner(project):
-    yield CliRunner(echo_stdin=True)
+    yield CliRunner()
