@@ -1,8 +1,9 @@
 import sys
 import time
-from typing import IO, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
+from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
@@ -10,8 +11,11 @@ from tqdm import tqdm  # type: ignore
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import TransactionSignature
+from ape.types import ContractLog, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
+
+if TYPE_CHECKING:
+    from ape.contracts import ContractEvent
 
 
 class TransactionAPI(BaseInterfaceModel):
@@ -210,6 +214,23 @@ class ReceiptAPI(BaseInterfaceModel):
             return 0
 
         return latest_block.number - self.block_number
+
+    @abstractmethod
+    def decode_logs(
+        self,
+        abi: Optional[
+            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+        ] = None,
+    ) -> Iterator[ContractLog]:
+        """
+        Decode the logs on the receipt.
+
+        Args:
+            abi (``EventABI``): The ABI of the event to decode into logs.
+
+        Returns:
+            Iterator[:class:`~ape.types.ContractLog`]
+        """
 
     def raise_for_status(self):
         """

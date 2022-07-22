@@ -187,15 +187,6 @@ class Receipt(ReceiptAPI):
             Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
     ) -> Iterator[ContractLog]:
-        """
-        Decode the logs on the receipt.
-
-        Args:
-            abi (``EventABI``): The ABI of the event to decode into logs.
-
-        Returns:
-            Iterator[:class:`~ape.types.ContractLog`]
-        """
         if abi:
             if not isinstance(abi, (list, tuple)):
                 abi = [abi]
