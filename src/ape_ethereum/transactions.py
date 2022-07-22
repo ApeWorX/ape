@@ -1,6 +1,6 @@
 import sys
 from enum import Enum, IntEnum
-from typing import IO, Dict, List, Optional, Union
+from typing import IO, Dict, Iterator, List, Optional, Union
 
 from eth_abi import decode_abi
 from eth_account import Account as EthAccount  # type: ignore
@@ -8,13 +8,16 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import keccak, to_int
+from eth_utils import encode_hex, keccak, to_int
 from ethpm_types import HexBytes
+from ethpm_types.abi import EventABI
 from pydantic import BaseModel, Field, root_validator, validator
 from rich.console import Console as RichConsole
 
 from ape.api import ReceiptAPI, TransactionAPI
+from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
+from ape.types import ContractLog
 from ape.utils import CallTraceParser, TraceStyles
 
 
@@ -177,3 +180,49 @@ class Receipt(ReceiptAPI):
 
         console.print(f"txn.origin=[{TraceStyles.CONTRACTS}]{self.sender}[/]")
         console.print(root)
+
+    def decode_logs(
+        self,
+        abi: Optional[
+            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+        ] = None,
+    ) -> Iterator[ContractLog]:
+        """
+        Decode the logs on the receipt.
+
+        Args:
+            abi (``EventABI``): The ABI of the event to decode into logs.
+
+        Returns:
+            Iterator[:class:`~ape.types.ContractLog`]
+        """
+        if abi:
+            if not isinstance(abi, (list, tuple)):
+                abi = [abi]
+
+            event_abis: List[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
+            yield from self.provider.network.ecosystem.decode_logs(event_abis, self.logs)
+
+        else:
+            # If ABI is not provided, decode all events
+            addresses = {x["address"] for x in self.logs}
+            contract_types = self.chain_manager.contracts.get_multiple(addresses)
+            # address → selector → abi
+            selectors = {
+                address: {encode_hex(keccak(text=abi.selector)): abi for abi in contract.events}
+                for address, contract in contract_types.items()
+            }
+            for log in self.logs:
+                contract_address = log["address"]
+                if contract_address not in selectors:
+                    continue
+                try:
+                    selector = encode_hex(log["topics"][0])
+                    event_abi = selectors[contract_address][selector]
+                except KeyError:
+                    # Likely a library log
+                    library_log = self.provider.network.ecosystem.decode_library_log(log)
+                    if library_log:
+                        yield library_log
+                else:
+                    yield from self.provider.network.ecosystem.decode_logs([event_abi], [log])

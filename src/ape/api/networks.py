@@ -298,12 +298,6 @@ class EcosystemAPI(BaseInterfaceModel):
             class:`~ape.api.transactions.TransactionAPI`
         """
 
-    @raises_not_implemented
-    def event_selector(self, abi: EventABI) -> str:
-        """
-        Convert EventABI to a selector which usually appears as topics[0].
-        """
-
     @abstractmethod
     def decode_logs(
         self, events: Union[EventABI, List[EventABI]], logs: List[Dict]
@@ -312,8 +306,8 @@ class EcosystemAPI(BaseInterfaceModel):
         Decode any contract logs that match the given event ABI from the raw log data.
 
         Args:
-            abi (EventABI): The event producing the logs.
-            raw_logs (List[Dict]): A list of raw log data from the chain.
+            events (Union[EventABI, List[EventABI]]): Event definitions to decode.
+            logs (List[Dict]): A list of raw log data from the chain.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]

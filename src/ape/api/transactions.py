@@ -1,10 +1,8 @@
 import sys
 import time
-from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
+from typing import IO, Iterator, List, Optional, Union
 
-from eth_utils import encode_hex
 from ethpm_types import HexBytes
-from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
@@ -12,11 +10,8 @@ from tqdm import tqdm  # type: ignore
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import ContractLog, TransactionSignature
+from ape.types import TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
-
-if TYPE_CHECKING:
-    from ape.contracts import ContractEvent
 
 
 class TransactionAPI(BaseInterfaceModel):
@@ -221,55 +216,6 @@ class ReceiptAPI(BaseInterfaceModel):
         Handle provider-specific errors regarding a non-successful
         :class:`~api.providers.TransactionStatusEnum`.
         """
-
-    def decode_logs(
-        self,
-        abi: Optional[
-            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
-        ] = None,
-    ) -> Iterator[ContractLog]:
-        """
-        Decode the logs on the receipt.
-
-        Args:
-            abi (``EventABI``): The ABI of the event to decode into logs.
-
-        Returns:
-            Iterator[:class:`~ape.types.ContractLog`]
-        """
-        if abi:
-            if not isinstance(abi, (list, tuple)):
-                abi = [abi]
-
-            event_abis: List[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
-            yield from self.provider.network.ecosystem.decode_logs(event_abis, self.logs)
-
-        else:
-            # If ABI is not provided, decode all events
-            addresses = {x["address"] for x in self.logs}
-            contract_types = self.chain_manager.contracts.get_multiple(addresses)
-            # address → selector → abi
-            selectors = {
-                address: {
-                    self.provider.network.ecosystem.event_selector(abi): abi
-                    for abi in contract.events
-                }
-                for address, contract in contract_types.items()
-            }
-            for log in self.logs:
-                contract_address = log["address"]
-                if contract_address not in selectors:
-                    continue
-                try:
-                    selector = encode_hex(log["topics"][0])
-                    event_abi = selectors[contract_address][selector]
-                except KeyError:
-                    # Likely a library log
-                    library_log = self.provider.network.ecosystem.decode_library_log(log)
-                    if library_log:
-                        yield library_log
-                else:
-                    yield from self.provider.network.ecosystem.decode_logs([event_abi], [log])
 
     def await_confirmations(self) -> "ReceiptAPI":
         """
