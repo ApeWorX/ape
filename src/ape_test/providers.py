@@ -3,7 +3,6 @@ from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
 from web3 import EthereumTesterProvider, Web3
 from web3.middleware import simple_cache_middleware
-from web3.providers.eth_tester.defaults import API_ENDPOINTS
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, VirtualMachineError
@@ -27,7 +26,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self._web3.middleware_onion.add(simple_cache_middleware)
 
     def disconnect(self):
-        self.cached_chain_id = None
         self._web3 = None
 
     def update_settings(self, new_settings: dict):
@@ -45,16 +43,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     @property
     def chain_id(self) -> int:
-        if self.cached_chain_id is not None:
-            return self.cached_chain_id
-        elif hasattr(self.web3, "eth"):
-            chain_id = self.web3.eth.chain_id
-        else:
-            default_value = API_ENDPOINTS["eth"]["chainId"]()
-            chain_id = int(default_value, 16)
-
-        self.cached_chain_id = chain_id
-        return chain_id
+        return 131277322940537
 
     @property
     def gas_price(self) -> int:

@@ -3,7 +3,7 @@ import pytest
 from ape.exceptions import ProviderError, ProviderNotConnectedError
 from ape.types import LogFilter
 
-EXPECTED_CHAIN_ID = 61
+EXPECTED_CHAIN_ID = 131277322940537
 
 
 def test_chain_id(eth_tester_provider):
