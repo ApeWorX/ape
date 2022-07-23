@@ -289,6 +289,7 @@ class Ethereum(EcosystemAPI):
             self.decode_primitive_value(v, parse_type(t))
             for v, t in zip(vm_return_values, output_types)
         ]
+
         parser = StructParser(abi)
         output_values = parser.parse(abi.outputs, output_values)
 
