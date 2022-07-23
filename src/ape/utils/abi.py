@@ -7,7 +7,7 @@ from eth_utils import decode_hex, to_checksum_address
 from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 
-ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d?]")
+ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 
 
 def is_array(abi_type: Union[str, ABIType]) -> bool:
@@ -83,27 +83,39 @@ class StructParser:
 
         return_values = []
         has_array_return = _is_array_return(output_types)
-        has_tuple_array_return = (
+        has_array_of_tuples_return = (
             has_array_return and len(output_types) == 1 and "tuple" in output_types[0].type
         )
-        if has_array_return and not has_tuple_array_return:
+        if has_array_return and not has_array_of_tuples_return:
             # Normal array
             return values
 
-        elif has_tuple_array_return:
-            data = {**output_types[0].dict(), "type": str(output_types[0].type).split("[")[0]}
+        elif has_array_of_tuples_return:
+            item_type_str = str(output_types[0].type).split("[")[0]
+            data = {**output_types[0].dict(), "type": item_type_str, "internalType": item_type_str}
             output_type = ABIType.parse_obj(data)
             for value in values[0]:
-                struct_item = self.parse([output_type], [value])
-                return_values.append(struct_item)
+                item = self.parse([output_type], [value])
+                return_values.append(item)
 
         else:
             for output_type, value in zip(output_types, values):
                 if isinstance(value, (tuple, list)):
-                    data = {**output_type.dict(), "type": str(output_type.type).split("[")[0]}
-                    output_type = ABIType.parse_obj(data)
-                    struct_item = self.parse([output_type], [value])
-                    return_values.append(struct_item)
+                    item_type_str = str(output_type.type).split("[")[0]
+
+                    if item_type_str == "tuple":
+                        item_type_data = {
+                            **output_type.dict(),
+                            "type": item_type_str,
+                            "internalType": item_type_str,
+                        }
+                        item_type = ABIType.parse_obj(item_type_data)
+                        parsed_item = self.parse([item_type], [value])
+                    else:
+                        # Handle tuple of arrays
+                        parsed_item = [v for v in value]
+
+                    return_values.append(parsed_item)
                 else:
                     return_values.append(value)
 

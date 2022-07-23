@@ -101,28 +101,28 @@ def getStructWithArray() -> WithArray:
 
 @pure
 @external
-def getEmptyList() -> DynArray[uint256, 1]:
+def getEmptyArray() -> DynArray[uint256, 1]:
     return []
 
 @pure
 @external
-def getSingleItemList() -> DynArray[uint256, 1]:
+def getSingleItemArray() -> DynArray[uint256, 1]:
     return [1]
 
 @pure
 @external
-def getFilledList() -> DynArray[uint256, 3]:
+def getFilledArray() -> DynArray[uint256, 3]:
     return [1, 2, 3]
 
 @view
 @external
-def getAddressList() -> DynArray[address, 2]:
+def getAddressArray() -> DynArray[address, 2]:
     return [msg.sender, msg.sender]
 
 
 @view
 @external
-def getDynamicStructList() -> DynArray[NestedStruct1, 2]:
+def getDynamicStructArray() -> DynArray[NestedStruct1, 2]:
     return [
         NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash}), foo: 1}),
         NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash}), foo: 2})
@@ -130,7 +130,7 @@ def getDynamicStructList() -> DynArray[NestedStruct1, 2]:
 
 @view
 @external
-def getStaticStructList() -> NestedStruct2[2]:
+def getStaticStructArray() -> NestedStruct2[2]:
     return [
         NestedStruct2({foo: 1, t: MyStruct({a: msg.sender, b: block.prevhash})}),
         NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash})})
@@ -138,5 +138,23 @@ def getStaticStructList() -> NestedStruct2[2]:
 
 @pure
 @external
+def getArrayWithBiggerSize() -> uint256[20]:
+    return empty(uint256[20])
+
+
+@pure
+@external
+def getTupleOfArrays() -> (uint256[20], uint256[20]):
+    return (empty(uint256[20]), empty(uint256[20]))
+
+
+@pure
+@external
 def getMultipleValues() -> (uint256, uint256):
     return (123, 321)
+
+
+@pure
+@external
+def getUnnamedTuple() -> (uint256, uint256):
+    return (0, 0)
