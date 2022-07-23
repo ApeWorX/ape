@@ -153,4 +153,11 @@ contract TestContractSol {
     function getPartiallyNamedTuple() public pure returns(uint256 foo, uint256) {
         return (123, 321);
     }
+
+    function getTupleOfAddressArray() public pure returns(address[20], int128[20]) {
+        address[20] memory addresses;
+        addresses[0] = msg.sender;
+        int128[20] memory data;
+        return (addresses, data);
+    }
 }

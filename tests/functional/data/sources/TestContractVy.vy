@@ -158,3 +158,11 @@ def getMultipleValues() -> (uint256, uint256):
 @external
 def getUnnamedTuple() -> (uint256, uint256):
     return (0, 0)
+
+
+@pure
+@external
+def getTupleOfAddressArray() -> (address[20], uint128[20]):
+    addresses = empty(address[20])
+    addresses[0] = msg.sender
+    return (addresses, empty(uint128[20]))

@@ -5,6 +5,7 @@ from hexbytes import HexBytes
 
 from ape import Contract
 from ape.api import Address
+from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
 from .conftest import SOLIDITY_CONTRACT_ADDRESS
@@ -241,6 +242,15 @@ def test_vyper_named_tuple(vyper_contract_instance):
 def test_get_unnamed_tuple(contract_instance):
     actual = contract_instance.getUnnamedTuple()
     assert actual == (0, 0)
+
+
+def test_get_tuple_of_address_array(contract_instance):
+    actual = contract_instance.getTupleOfAddressArray()
+    assert len(actual) == 2
+    assert len(actual[0]) == 20
+    assert is_checksum_address(actual[0][0])
+    assert all(x == ZERO_ADDRESS for x in actual[0][1:])
+    assert actual[1] == [0] * 20
 
 
 def test_call_transaction(contract_instance, owner, chain):
