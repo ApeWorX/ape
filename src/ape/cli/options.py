@@ -174,13 +174,13 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[Cont
     # and therefore we should also return a list.
     is_multiple = isinstance(value, (tuple, list))
 
-    def create_contract(contract_name: str) -> ContractType:
+    def get_contract(contract_name: str) -> ContractType:
         if contract_name not in project.contracts:
             raise ContractError(f"No contract named '{value}'")
 
         return project.contracts[contract_name]
 
-    return [create_contract(c) for c in value] if is_multiple else create_contract(value)
+    return [get_contract(c) for c in value] if is_multiple else get_contract(value)
 
 
 def contract_option(help=None, required=False, multiple=False):
