@@ -27,7 +27,7 @@ class Alias(click.Choice):
 
     name = "alias"
 
-    def __init__(self, account_type: Optional[Type[AccountAPI]] = None):  # noqa
+    def __init__(self, account_type: Optional[Type[AccountAPI]] = None):
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False
         self._account_type = account_type
@@ -113,9 +113,7 @@ class AccountAliasPromptChoice(PromptChoice):
     Useful for adhoc scripts to lessen the need to hard-code aliases.
     """
 
-    def __init__(
-        self, account_type: Optional[Type[AccountAPI]] = None, prompt_message: str = None
-    ):  # noqa
+    def __init__(self, account_type: Optional[Type[AccountAPI]] = None, prompt_message: str = None):
         # NOTE: we purposely skip the constructor of `PromptChoice`
         self._account_type = account_type
         self._prompt_message = prompt_message or "Select an account"
