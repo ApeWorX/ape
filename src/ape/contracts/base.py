@@ -709,7 +709,7 @@ class ContractContainer(ManagerAccessMixin):
 
         return self.chain_manager.contracts.get_deployments(self)
 
-    def at(self, address: str) -> ContractInstance:
+    def at(self, address: AddressType) -> ContractInstance:
         """
         Get a contract at the given address.
 
@@ -729,10 +729,7 @@ class ContractContainer(ManagerAccessMixin):
             :class:`~ape.contracts.ContractInstance`
         """
 
-        return self.create_contract(
-            address=address,  # type: ignore
-            contract_type=self.contract_type,
-        )
+        return self.chain_manager.contracts.instance_at(address, self.contract_type)
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
