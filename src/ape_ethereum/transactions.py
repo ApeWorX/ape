@@ -242,11 +242,12 @@ class Receipt(ReceiptAPI):
         input_types = [i.canonical_type for i in method_abi.inputs]
         start_index = data.index(selector) + 4
         values = decode_abi(input_types, data[start_index:])
+        address = self.provider.network.ecosystem.decode_address(log["address"])
 
         return ContractLog(
             block_hash=log["blockHash"],
             block_number=log["blockNumber"],
-            contract_address=self.decode_address(log["address"]),
+            contract_address=address,
             event_arguments={i.name: value for i, value in zip(method_abi.inputs, values)},
             log_index=log["logIndex"],
             name=method_abi.name,
