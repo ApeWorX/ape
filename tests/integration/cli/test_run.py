@@ -43,3 +43,11 @@ def test_run_when_script_errors(ape_cli, runner, project):
 def test_run_interactive(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["run", "--interactive"], input="exit\n")
     assert result.exit_code == 0, result.output
+
+
+@skip_projects_except(["script"])
+def test_run_adhoc_network(ape_cli, runner, project):
+    result = runner.invoke(
+        ape_cli, ["run", "deploy", "--network", "ethereum:local:http://127.0.0.1:9545"]
+    )
+    assert result.exit_code == 0, result.output
