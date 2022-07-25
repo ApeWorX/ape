@@ -66,17 +66,36 @@ def test_get_user_selected_account_unknown_type(runner, keyfile_account):
 
 def test_network_option_default(runner, network_cmd):
     result = runner.invoke(network_cmd)
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert OUTPUT_FORMAT.format("ethereum") in result.output
 
 
 def test_network_option_specified(runner, network_cmd):
     result = runner.invoke(network_cmd, ["--network", "ethereum:local:test"])
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert OUTPUT_FORMAT.format("ethereum:local:test") in result.output
 
 
 def test_network_option_unknown(runner, network_cmd):
     result = runner.invoke(network_cmd, ["--network", "UNKNOWN"])
-    assert result.exit_code != 0
+    assert result.exit_code != 0, result.output
     assert "Invalid value for '--network'" in result.output
+
+
+@pytest.mark.parametrize(
+    "network_input",
+    (
+        "something:else:https://127.0.0.1:4545",
+        "something:else:https://127.0.0.1",
+        "something:else:http://127.0.0.1:4545",
+        "something:else:http://127.0.0.1",
+        "something:else:http://foo.bar",
+        "something:else:https://foo.bar:8000",
+        "::https://foo.bar:8000",
+        ":else:https://foo.bar:8000",
+    )
+)
+def test_network_option_adhoc(runner, network_cmd, network_input):
+    result = runner.invoke(network_cmd, ["--network", network_input])
+    assert result.exit_code == 0, result.output
+    assert OUTPUT_FORMAT.format(network_input) in result.output
