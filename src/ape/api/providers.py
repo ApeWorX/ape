@@ -594,7 +594,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
         if self._client_version is None:
-            self._client_version = self._web3.clientVersion
+            self._client_version = self.web3.clientVersion
 
         return self._client_version
 
@@ -669,9 +669,17 @@ class Web3Provider(ProviderAPI, ABC):
     def get_code(self, address: str) -> bytes:
         return self.web3.eth.get_code(address)
 
-    def get_storage_at(self, address: str, slot: int, *args, **kwargs) -> bytes:
+    def get_storage_at(self, address: str, slot: int, **kwargs) -> bytes:
         block_id = kwargs.pop("block_identifier", None)
-        return self.web3.eth.get_storage_at(address, slot, block_identifier=block_id)
+        try:
+            return self.web3.eth.get_storage_at(
+                address, slot, block_identifier=block_id
+            )  # type: ignore
+        except ValueError as err:
+            if "RPC Endpoint has not been implemented" in str(err):
+                raise APINotImplementedError(str(err)) from err
+
+            raise  # Raise original error
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         try:

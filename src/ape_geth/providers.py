@@ -297,8 +297,16 @@ class GethProvider(Web3Provider, UpstreamProvider):
         def _get_call_tree_from_parity():
             response = self._make_request("trace_transaction", [txn_hash])
             if "error" in response:
-                raise ValueError(response["error"]["message"])
-            traces = ParityTraceList.parse_obj(response["result"])
+                raise ProviderError(
+                    response["error"].get("message", f"Failed to get trace for '{txn_hash}'.")
+                )
+
+            raw_trace_list = response.get("result", [])
+
+            if not raw_trace_list:
+                raise ProviderError(f"Failed to get trace for '{txn_hash}'.")
+
+            traces = ParityTraceList.parse_obj(raw_trace_list)
             return get_calltree_from_parity_trace(traces)
 
         if "erigon" in self.client_version.lower():

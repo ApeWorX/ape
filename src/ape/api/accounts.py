@@ -174,15 +174,14 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         if not receipt.contract_address:
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
-        address = click.style(receipt.contract_address, bold=True)
+        address = self.provider.network.ecosystem.decode_address(receipt.contract_address)
+        styled_address = click.style(receipt.contract_address, bold=True)
         contract_name = contract.contract_type.name or "<Unnamed Contract>"
-        logger.success(f"Contract '{contract_name}' deployed to: {address}")
-
-        contract_instance = self.create_contract(
-            address=receipt.contract_address,  # type: ignore
-            contract_type=contract.contract_type,
+        logger.success(f"Contract '{contract_name}' deployed to: {styled_address}")
+        contract_instance = self.chain_manager.contracts.instance_at(
+            address, contract.contract_type
         )
-        self.chain_manager.contracts[contract_instance.address] = contract_instance.contract_type
+        self.chain_manager.contracts[address] = contract_instance.contract_type
         return contract_instance
 
     def check_signature(

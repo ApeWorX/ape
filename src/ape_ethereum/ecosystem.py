@@ -14,7 +14,7 @@ from pydantic import Field
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
-from ape.exceptions import DecodingError, TransactionError
+from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
 from ape.types import AddressType, ContractLog, RawAddress, TransactionSignature
 from ape.utils import (
     LogInputABICollection,
@@ -145,7 +145,11 @@ class Ethereum(EcosystemAPI):
             ProxyType.UUPS: str_to_slot("PROXIABLE"),
         }
         for type, slot in slots.items():
-            storage = self.provider.get_storage_at(address, slot)
+            try:
+                storage = self.provider.get_storage_at(address, slot)
+            except APINotImplementedError:
+                continue
+
             if sum(storage) == 0:
                 continue
 
@@ -285,6 +289,7 @@ class Ethereum(EcosystemAPI):
             self.decode_primitive_value(v, parse_type(t))
             for v, t in zip(vm_return_values, output_types)
         ]
+
         parser = StructParser(abi)
         output_values = parser.parse(abi.outputs, output_values)
 
