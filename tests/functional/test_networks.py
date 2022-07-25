@@ -50,7 +50,9 @@ def test_repr(networks_connected_to_tester):
 
 
 def test_get_provider_from_choice_adhoc(networks_connected_to_tester):
+    uri = "https://erigon:1234567890abcdef@erigon.foo.bar/"
     provider = networks_connected_to_tester.get_provider_from_choice(
-        "ethereum:local:http://127.0.0.1:9545"
+        f"ethereum:local:{uri}"
     )
     assert provider.name == "geth"
+    assert provider.uri == uri

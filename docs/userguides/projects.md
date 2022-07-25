@@ -77,31 +77,6 @@ deployed_contract = my_account.deploy(dependency_contract, "argument")
 print(deployed_contract.address)
 ```
 
-## Networks
-
-The default provider for the development network is the
-[Ethereum Tester provider](https://github.com/ethereum/eth-tester). However, you can change the default provider per
-network using the `ape-config.yaml` file.
-
-```yaml
-ethereum:
-  development:
-    default_provider: hardhat
-```
-
-For specifying the network in an ad-hoc fashion, commands such as `run`, `test`, and `console` offer a `--network`
-option:
-
-```bash
-ape console --network ethereum:local:hardhat
-```
-
-**NOTE**: If you are using the default ecosystem or network, you can omit them from the option:
-
-```bash
-ape console --network ::hardhat
-```
-
 ## Scripts
 
 The scripts folder contains project automation scripts, such as deploy scripts, as well as other executable jobs, such as scripts for running simulations.
@@ -120,10 +95,8 @@ installed, giving you more flexibility in how you define your scripts.
 
 ## Testing
 
-
-Use tests to verify your project. Testing is a complex topic, learn more about testing using Ape framework
-[here](./testing.html)
-
-You can test your project using the `ape test` command. The `ape test` command comes with the core-plugin `ape-test`.
-The `ape-test` plugin extends the popular python testing framework
-[pytest](https://docs.pytest.org/en/6.2.x/contents.html).
+Use tests to verify your project.
+You can test your project using the `ape test` command.
+The `ape test` command comes with the core-plugin `ape-test`.
+The `ape-test` plugin extends the popular python testing framework [pytest](https://docs.pytest.org/en/6.2.x/contents.html).
+Testing is a complex topic; learn more about testing using Ape framework [here](./testing.html).
