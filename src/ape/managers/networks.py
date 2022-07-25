@@ -1,10 +1,12 @@
 from typing import Dict, Iterator, List, Optional, Set, Union
 
+import requests
 import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, create_network_type
 from ape.exceptions import NetworkError
+from ape.logging import logger
 
 from .base import BaseManager
 
@@ -303,7 +305,11 @@ class NetworkManager(BaseManager):
                 provider_settings=provider_settings
             )
 
-        selections = network_choice.split(":")
+        elif network_choice.startswith("http://") or network_choice.startswith("https://"):
+            # Adhoc ecosystem / network
+            selections = ["adhoc", "adhoc", network_choice]
+        else:
+            selections = network_choice.split(":")
 
         # NOTE: Handle case when URI is passed e.g. "http://..."
         if len(selections) > 3:

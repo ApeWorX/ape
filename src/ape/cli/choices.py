@@ -197,7 +197,11 @@ class NetworkChoice(click.Choice):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
     def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
-        if ADHOC_NETWORK_PATTERN.match(value):
+        if (
+            ADHOC_NETWORK_PATTERN.match(value)
+            or str(value).startswith("http://")
+            or str(value).startswith("https://")
+        ):
             # By-pass choice constraints when using adhoc network
             return value
 
