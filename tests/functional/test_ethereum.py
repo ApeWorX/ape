@@ -4,6 +4,7 @@ from hexbytes import HexBytes
 
 from ape.exceptions import OutOfGasError
 from ape.types import AddressType
+from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.transactions import (
     Receipt,
@@ -109,3 +110,14 @@ def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, recei
 
     redefined_block = Block.parse_obj(latest_block_dict)
     assert redefined_block.parent_hash == latest_block.parent_hash
+
+
+def test_transaction_acceptance_timeout(temp_config, config, networks):
+    assert (
+        networks.provider.network.transaction_acceptance_timeout
+        == DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
+    )
+    new_value = DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT + 1
+    timeout_config = {"ethereum": {"local": {"transaction_acceptance_timeout": new_value}}}
+    with temp_config(timeout_config):
+        assert networks.provider.network.transaction_acceptance_timeout == new_value

@@ -14,7 +14,13 @@ from pydantic import BaseModel
 
 from ape.exceptions import NetworkError, NetworkNotFoundError, SignatureError
 from ape.types import AddressType, ContractLog, RawAddress
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
+from ape.utils import (
+    DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    BaseInterfaceModel,
+    abstractmethod,
+    cached_property,
+    raises_not_implemented,
+)
 
 from .config import PluginConfig
 
@@ -494,7 +500,7 @@ class NetworkAPI(BaseInterfaceModel):
     def __repr__(self) -> str:
         return f"<{self.name} chain_id={self.chain_id}>"
 
-    @cached_property
+    @property
     def config(self) -> PluginConfig:
         """
         The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
@@ -503,9 +509,9 @@ class NetworkAPI(BaseInterfaceModel):
 
         return self.config_manager.get_config(self.ecosystem.name)
 
-    @cached_property
-    def _network_config(self) -> PluginConfig:
-        return self.config.dict().get(self.name, {})  # type: ignore
+    @property
+    def _network_config(self) -> Dict:
+        return self.config.dict().get(self.name, {})
 
     @property
     def chain_id(self) -> int:
@@ -514,9 +520,6 @@ class NetworkAPI(BaseInterfaceModel):
 
         **NOTE**: Unless overridden, returns same as
         :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
-
-        Returns:
-            int
         """
 
         provider = self.ecosystem.network_manager.active_provider
@@ -536,9 +539,6 @@ class NetworkAPI(BaseInterfaceModel):
 
         **NOTE**: Unless overridden, returns same as
         :py:attr:`~ape.api.networks.NetworkAPI.chain_id`.
-
-        Returns:
-            int
         """
         return self.chain_id
 
@@ -549,11 +549,8 @@ class NetworkAPI(BaseInterfaceModel):
         before considering a transaction "confirmed". Confirmations
         refer to the number of blocks that have been added since the
         transaction's block.
-
-        Returns:
-            int
         """
-        return self._network_config.get("required_confirmations", 0)  # type: ignore
+        return self._network_config.get("required_confirmations", 0)
 
     @property
     def block_time(self) -> int:
@@ -566,12 +563,19 @@ class NetworkAPI(BaseInterfaceModel):
             ethereum:
               mainnet:
                 block_time: 15
-
-        Returns:
-            int
         """
+        return self._network_config.get("block_time", 0)
 
-        return self._network_config.get("block_time", 0)  # type: ignore
+    @property
+    def transaction_acceptance_timeout(self) -> int:
+        """
+        The amount of time to wait for a transaction to be accepted on the network.
+        Does not include waiting for block-confirmations. Defaults to two minutes.
+        Local networks use smaller timeouts.
+        """
+        return self._network_config.get(
+            "transaction_acceptance_timeout", DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+        )
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:
