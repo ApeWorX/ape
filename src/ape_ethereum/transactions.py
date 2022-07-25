@@ -8,7 +8,7 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import encode_hex, keccak, to_int
+from eth_utils import decode_hex, encode_hex, keccak, to_int
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from pydantic import BaseModel, Field, root_validator, validator
@@ -212,8 +212,43 @@ class Receipt(ReceiptAPI):
                     event_abi = selectors[contract_address][selector]
                 except KeyError:
                     # Likely a library log
-                    library_log = self.provider.network.ecosystem.decode_library_log(log)
+                    library_log = self._decode_ds_note(log)
                     if library_log:
                         yield library_log
                 else:
                     yield from self.provider.network.ecosystem.decode_logs([event_abi], [log])
+
+    def _decode_ds_note(self, log: Dict) -> Optional[ContractLog]:
+        # The first topic encodes the function selector
+        selector, tail = log["topics"][0][:4], log["topics"][0][4:]
+        if sum(tail):
+            # non-zero bytes found after selector
+            return None
+
+        contract_type = self.chain_manager.contracts.get(log["address"])
+        if contract_type is None:
+            # contract type for {log['address']} not found
+            return None
+
+        try:
+            method_abi = contract_type.mutable_methods[selector]
+        except KeyError:
+            #  selector {selector.hex()} not found in {log['address']}
+            return None
+
+        # ds-note data field uses either (uint256,bytes) or (bytes) encoding
+        # instead of guessing, assume the payload begins right after the selector
+        data = decode_hex(log["data"])
+        input_types = [i.canonical_type for i in method_abi.inputs]
+        start_index = data.index(selector) + 4
+        values = decode_abi(input_types, data[start_index:])
+
+        return ContractLog(
+            block_hash=log["blockHash"],
+            block_number=log["blockNumber"],
+            contract_address=self.decode_address(log["address"]),
+            event_arguments={i.name: value for i, value in zip(method_abi.inputs, values)},
+            log_index=log["logIndex"],
+            name=method_abi.name,
+            transaction_hash=log["transactionHash"],
+        )  # type: ignore

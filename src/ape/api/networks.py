@@ -313,19 +313,6 @@ class EcosystemAPI(BaseInterfaceModel):
             Iterator[:class:`~ape.types.ContractLog`]
         """
 
-    def decode_library_log(self, log: Dict) -> Optional[ContractLog]:
-        """
-        Decode logs that come from contract libraries such as DS-Note.
-
-        Args:
-            log (Dict): Raw log data.
-
-        Returns:
-            Optional[:class:`~ape.types.ContractLog`]: A contract log object
-              if it is able to decode one else ``None``.
-        """
-        return None
-
     @raises_not_implemented
     def decode_primitive_value(
         self, value: Any, output_type: Union[str, Tuple, List]
