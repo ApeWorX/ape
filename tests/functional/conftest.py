@@ -27,6 +27,8 @@ def _get_raw_contract(name: str) -> Dict:
     return json.loads((contracts_dir / f"{name}.json").read_text())
 
 
+ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
+ALIAS_2 = "__FUNCTIONAL_TESTS_ALIAS_2__"
 RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity_contract")
 RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper_contract")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
@@ -119,6 +121,38 @@ def receiver(test_accounts):
 @pytest.fixture(scope="session")
 def owner(test_accounts):
     return test_accounts[2]
+
+
+@pytest.fixture
+def keyfile_account(sender, keyparams, temp_accounts_path, eth_tester_provider):
+    test_keyfile_path = temp_accounts_path / f"{ALIAS}.json"
+    yield _make_keyfile_account(temp_accounts_path, ALIAS, keyparams, sender)
+
+    if test_keyfile_path.exists():
+        test_keyfile_path.unlink()
+
+
+@pytest.fixture
+def second_keyfile_account(sender, keyparams, temp_accounts_path, eth_tester_provider):
+    test_keyfile_path = temp_accounts_path / f"{ALIAS_2}.json"
+    yield _make_keyfile_account(temp_accounts_path, ALIAS_2, keyparams, sender)
+
+    if test_keyfile_path.exists():
+        test_keyfile_path.unlink()
+
+
+def _make_keyfile_account(base_path: Path, alias: str, params: Dict, funder):
+    test_keyfile_path = base_path / f"{alias}.json"
+
+    if test_keyfile_path.exists():
+        # Corrupted from a previous test
+        test_keyfile_path.unlink()
+
+    test_keyfile_path.write_text(json.dumps(params))
+
+    acct = ape.accounts.load(alias)
+    funder.transfer(acct, "1 ETH")  # Auto-fund this account
+    return acct
 
 
 @pytest.fixture

@@ -1,10 +1,12 @@
 import re
 
+import pytest
 from eth_utils import is_checksum_address
 from hexbytes import HexBytes
 
 from ape import Contract
-from ape.api import Address
+from ape.exceptions import ChainError
+from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
 from .conftest import SOLIDITY_CONTRACT_ADDRESS
@@ -13,9 +15,8 @@ MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
 
 def test_init_at_unknown_address():
-    contract = Contract(SOLIDITY_CONTRACT_ADDRESS)
-    assert type(contract) == Address
-    assert contract.address == SOLIDITY_CONTRACT_ADDRESS
+    with pytest.raises(ChainError):
+        Contract(SOLIDITY_CONTRACT_ADDRESS)
 
 
 def test_init_specify_contract_type(
@@ -135,13 +136,13 @@ def test_solidity_structs_with_array(solidity_contract_instance, sender):
 
 
 def test_arrays(contract_instance, sender):
-    assert contract_instance.getEmptyList() == []
-    assert contract_instance.getSingleItemList() == [1]
-    assert contract_instance.getFilledList() == [1, 2, 3]
+    assert contract_instance.getEmptyArray() == []
+    assert contract_instance.getSingleItemArray() == [1]
+    assert contract_instance.getFilledArray() == [1, 2, 3]
 
 
 def test_address_arrays(contract_instance, sender):
-    actual = contract_instance.getAddressList()
+    actual = contract_instance.getAddressArray()
     assert actual == [sender, sender]
     assert is_checksum_address(actual[0])
     assert is_checksum_address(actual[1])
@@ -159,7 +160,7 @@ def test_account_as_address_input(contract_instance, sender):
 
 def test_vyper_struct_arrays(vyper_contract_instance, sender):
     # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
-    actual_dynamic = vyper_contract_instance.getDynamicStructList()
+    actual_dynamic = vyper_contract_instance.getDynamicStructArray()
     assert len(actual_dynamic) == 2
     assert actual_dynamic[0][0][0] == sender
     assert is_checksum_address(actual_dynamic[0][0][0])
@@ -168,7 +169,7 @@ def test_vyper_struct_arrays(vyper_contract_instance, sender):
     assert is_checksum_address(actual_dynamic[1][0][0])
     assert actual_dynamic[1][1] == 2
 
-    actual_static = vyper_contract_instance.getStaticStructList()
+    actual_static = vyper_contract_instance.getStaticStructArray()
     assert len(actual_static) == 2
     assert actual_static[0][0] == 1
     assert actual_static[0][1][0] == sender
@@ -182,7 +183,7 @@ def test_solidity_dynamic_struct_arrays(solidity_contract_instance, sender):
     # Run test twice to make sure we can call method more than 1 time and have
     # the same result.
     for _ in range(2):
-        actual_dynamic = solidity_contract_instance.getDynamicStructList()
+        actual_dynamic = solidity_contract_instance.getDynamicStructArray()
         assert len(actual_dynamic) == 2
         assert actual_dynamic[0].foo == 1
         assert actual_dynamic[0].t.a == sender
@@ -197,7 +198,7 @@ def test_solidity_static_struct_arrays(solidity_contract_instance, sender):
     # Run test twice to make sure we can call method more than 1 time and have
     # the same result.
     for _ in range(2):
-        actual_dynamic = solidity_contract_instance.getStaticStructList()
+        actual_dynamic = solidity_contract_instance.getStaticStructArray()
         assert len(actual_dynamic) == 2
         assert actual_dynamic[0].foo == 1
         assert actual_dynamic[0].t.a == sender
@@ -221,9 +222,35 @@ def test_solidity_named_tuple(solidity_contract_instance):
     assert actual == (123, 321)
 
 
+def test_get_array_with_bigger_size(contract_instance):
+    # Tests against bug where if array had size > 9, it would fail to parse.
+    # Method set to return an array of size 20
+    actual = contract_instance.getArrayWithBiggerSize()
+    assert actual == [0] * 20
+
+
+def test_get_tuple_of_arrays(contract_instance):
+    actual = contract_instance.getTupleOfArrays()
+    assert actual == ([0] * 20, [0] * 20)
+
+
 def test_vyper_named_tuple(vyper_contract_instance):
     actual = vyper_contract_instance.getMultipleValues()
     assert actual == (123, 321)
+
+
+def test_get_unnamed_tuple(contract_instance):
+    actual = contract_instance.getUnnamedTuple()
+    assert actual == (0, 0)
+
+
+def test_get_tuple_of_address_array(contract_instance):
+    actual = contract_instance.getTupleOfAddressArray()
+    assert len(actual) == 2
+    assert len(actual[0]) == 20
+    assert is_checksum_address(actual[0][0])
+    assert all(x == ZERO_ADDRESS for x in actual[0][1:])
+    assert actual[1] == [0] * 20
 
 
 def test_call_transaction(contract_instance, owner, chain):

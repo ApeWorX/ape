@@ -89,3 +89,12 @@ def test_decode_logs_unspecified_abi_gets_all_logs(owner, contract_instance):
     assert len(logs) == 2
     assert logs[0].foo == 0
     assert logs[1].bar == 1
+
+
+def test_get_failed_receipt(owner, vyper_contract_instance, eth_tester_provider):
+    # Setting to '5' always fails.
+    transaction = vyper_contract_instance.setNumber.as_transaction(
+        5, sender=owner, gas_limit=100000
+    )
+    receipt = owner.call(transaction)
+    assert receipt.failed

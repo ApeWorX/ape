@@ -82,7 +82,8 @@ class PromptChoice(click.ParamType):
 
 
 def get_user_selected_account(
-    account_type: Optional[Type[AccountAPI]] = None, prompt_message: Optional[str] = None
+    prompt_message: Optional[str] = None,
+    account_type: Optional[Type[AccountAPI]] = None,
 ) -> AccountAPI:
     """
     Prompt the user to pick from their accounts and return that account.
@@ -91,9 +92,9 @@ def get_user_selected_account(
     :meth:`~ape.cli.options.account_option`.
 
     Args:
+        prompt_message (str, optional): Customize the prompt message.
         account_type (type[:class:`~ape.api.accounts.AccountAPI`], optional):
           If given, the user may only select an account of this type.
-        prompt_message (str, optional): Customize the prompt message.
 
     Returns:
         :class:`~ape.api.accounts.AccountAPI`
@@ -102,7 +103,7 @@ def get_user_selected_account(
     if account_type and not issubclass(account_type, AccountAPI):
         raise AccountsError(f"Cannot return accounts with type '{account_type}'.")
 
-    prompt = AccountAliasPromptChoice(account_type=account_type, prompt_message=prompt_message)
+    prompt = AccountAliasPromptChoice(prompt_message=prompt_message, account_type=account_type)
     return prompt.get_user_selected_account()
 
 

@@ -7,7 +7,7 @@ from typing import Callable, Collection, Dict, Iterator, List, Optional, Tuple, 
 import pandas as pd
 from ethpm_types import ContractType
 
-from ape.api import Address, BlockAPI, ReceiptAPI
+from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
 from ape.api.query import BlockQuery, validate_and_expand_columns
@@ -620,16 +620,27 @@ class ContractCache(BaseManager):
 
         return contract_type
 
+    def get_container(self, contract_type: ContractType) -> ContractContainer:
+        """
+        Get a contract container for the given contract type.
+
+        Args:
+            contract_type (ContractType): The contract type to wrap.
+
+        Returns:
+            ContractContainer: A container object you can deploy.
+        """
+
+        return ContractContainer(contract_type)
+
     def instance_at(
         self, address: Union[str, "AddressType"], contract_type: Optional[ContractType] = None
-    ) -> BaseAddress:
+    ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
         either from a local deploy or a :class:`~ape.api.explorers.ExplorerAPI`, it will use that
         contract type. You can also provide the contract type from which it will cache and use
-        next time. If the contract type is not known, returns a
-        :class:`~ape.api.address.BaseAddress` object; otherwise returns a
-        :class:`~ape.contracts.ContractInstance` (subclass).
+        next time.
 
         Raises:
             TypeError: When passing an invalid type for the `contract_type` arguments
@@ -642,9 +653,7 @@ class ContractCache(BaseManager):
               in case it is not already known.
 
         Returns:
-            :class:`~ape.api.address.BaseAddress`: Will be a
-              :class:`~ape.contracts.ContractInstance` if the contract type is discovered,
-              which is a subclass of the ``BaseAddress`` class.
+            :class:`~ape.contracts.base.ContractInstance`
         """
 
         try:
@@ -655,15 +664,15 @@ class ContractCache(BaseManager):
         address = self.provider.network.ecosystem.decode_address(address)
         contract_type = self.get(address, default=contract_type)
 
-        if contract_type:
-            if not isinstance(contract_type, ContractType):
-                raise TypeError(
-                    f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
-                )
+        if not contract_type:
+            raise ChainError(f"Failed to get contract type for address '{address}'.")
 
-            return self.create_contract(address, contract_type)
+        elif not isinstance(contract_type, ContractType):
+            raise TypeError(
+                f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
+            )
 
-        return Address(address)
+        return ContractInstance(address, contract_type)
 
     def get_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
         """
@@ -706,10 +715,6 @@ class ContractCache(BaseManager):
             instance = self.instance_at(
                 contract_addresses[deployment_index], contract_container.contract_type
             )
-
-            if not isinstance(instance, ContractInstance):
-                continue
-
             deployments.append(instance)
 
         return deployments

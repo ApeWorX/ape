@@ -225,8 +225,7 @@ def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, 
     assert "Timed out waiting for new block (time_waited=1" in str(err.value)
 
 
-def test_contract_two_events_with_same_name(owner, networks_connected_to_tester):
-    provider = networks_connected_to_tester
+def test_contract_two_events_with_same_name(owner, chain, networks_connected_to_tester):
     base_path = Path(__file__).parent / "data" / "contracts" / "ethereum" / "local"
     interface_path = base_path / "Interface.json"
     impl_path = base_path / "InterfaceImplementation.json"
@@ -238,7 +237,7 @@ def test_contract_two_events_with_same_name(owner, networks_connected_to_tester)
     assert len([e for e in impl_contract_type.events if e.name == event_name]) == 2
     assert len([e for e in interface_contract_type.events if e.name == event_name]) == 1
 
-    impl_container = provider.create_contract_container(impl_contract_type)
+    impl_container = chain.contracts.get_container(impl_contract_type)
     impl_instance = owner.deploy(impl_container)
 
     with pytest.raises(AttributeError) as err:
