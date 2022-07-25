@@ -1,7 +1,20 @@
+import click
 import pytest
 
-from ape.cli import get_user_selected_account
+from ape.cli import get_user_selected_account, network_option
 from ape.exceptions import AccountsError
+
+OUTPUT_FORMAT = "__TEST__{}__"
+
+
+@pytest.fixture
+def network_cmd():
+    @click.command()
+    @network_option()
+    def cmd(network):
+        click.echo(OUTPUT_FORMAT.format(network))
+
+    return cmd
 
 
 def test_get_user_selected_account_no_accounts_found():
@@ -49,3 +62,21 @@ def test_get_user_selected_account_unknown_type(runner, keyfile_account):
         get_user_selected_account(account_type=str)  # type: ignore
 
     assert "Cannot return accounts with type '<class 'str'>'" in str(err.value)
+
+
+def test_network_option_default(runner, network_cmd):
+    result = runner.invoke(network_cmd)
+    assert result.exit_code == 0
+    assert OUTPUT_FORMAT.format("ethereum") in result.output
+
+
+def test_network_option_specified(runner, network_cmd):
+    result = runner.invoke(network_cmd, ["--network", "ethereum:local:test"])
+    assert result.exit_code == 0
+    assert OUTPUT_FORMAT.format("ethereum:local:test") in result.output
+
+
+def test_network_option_unknown(runner, network_cmd):
+    result = runner.invoke(network_cmd, ["--network", "UNKNOWN"])
+    assert result.exit_code != 0
+    assert "Invalid value for '--network'" in result.output
