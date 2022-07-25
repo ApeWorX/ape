@@ -596,6 +596,10 @@ class ContractCache(BaseManager):
                 return self.get(proxy_info.target)
 
             if not self.provider.get_code(address_key):
+                if default:
+                    self._local_contracts[address_key] = default
+                    self._cache_contract_to_disk(address_key, default)
+
                 return default
 
             # Also gets cached to disk for faster lookup next time.
