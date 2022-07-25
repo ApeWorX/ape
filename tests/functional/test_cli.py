@@ -93,7 +93,7 @@ def test_network_option_unknown(runner, network_cmd):
         "something:else:https://foo.bar:8000",
         "::https://foo.bar:8000",
         ":else:https://foo.bar:8000",
-    )
+    ),
 )
 def test_network_option_adhoc(runner, network_cmd, network_input):
     result = runner.invoke(network_cmd, ["--network", network_input])

@@ -9,7 +9,6 @@ from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AccountsError
 
-
 ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
 
 
@@ -197,9 +196,7 @@ class NetworkChoice(click.Choice):
     def get_metavar(self, param):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
-    def convert(
-        self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
-    ) -> Any:
+    def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
         if ADHOC_NETWORK_PATTERN.match(value):
             # By-pass choice constraints when using adhoc network
             return value

@@ -308,6 +308,7 @@ class NetworkManager(BaseManager):
         # NOTE: Handle case when URI is passed e.g. "http://..."
         if len(selections) > 3:
             selections[2] = ":".join(selections[2:])
+            selections = selections[:3]
 
         if selections == network_choice or len(selections) == 1:
             # Either split didn't work (in which case it matches the start)
