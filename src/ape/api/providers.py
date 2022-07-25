@@ -389,7 +389,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     def __repr__(self) -> str:
-        return f"<{self.name} chain_id={self.chain_id}>"
+        try:
+            chain_id = self.chain_id
+        except ProviderNotConnectedError:
+            chain_id = None
+
+        return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
 
     @raises_not_implemented
     def unlock_account(self, address: AddressType) -> bool:

@@ -657,7 +657,7 @@ class NetworkAPI(BaseInterfaceModel):
         if ":" in provider_name:
             # NOTE: Shortcut that allows `--network ecosystem:network:http://...` to work
             provider_settings["uri"] = provider_name
-            provider_name = provider_name.split(":")[0]
+            provider_name = "geth"
 
         if provider_name in self.providers:
             return self.providers[provider_name](provider_settings=provider_settings)

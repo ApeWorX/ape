@@ -47,3 +47,10 @@ def test_repr(networks_connected_to_tester):
 
     # Check individual network
     assert repr(networks_connected_to_tester.provider.network) == "<local chain_id=61>"
+
+
+def test_get_provider_from_choice_adhoc(networks_connected_to_tester):
+    provider = networks_connected_to_tester.get_provider_from_choice(
+        "ethereum:local:http://127.0.0.1:9545"
+    )
+    assert provider.name == "geth"
