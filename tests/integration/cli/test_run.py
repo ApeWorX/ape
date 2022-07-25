@@ -10,6 +10,7 @@ def test_run_unknown_script(ape_cli, runner, project):
     assert f"No such command '{BAD_COMMAND}'." in result.output
 
 
+@skip_projects_except(["script"])
 def test_run(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["run"])
     assert result.exit_code == 0, result.output
@@ -30,6 +31,7 @@ def test_run(ape_cli, runner, project):
             assert "Super secret script output" in result.output
 
 
+@skip_projects_except(["script"])
 def test_run_when_script_errors(ape_cli, runner, project):
     scripts = [s for s in project.scripts_folder.glob("*.py") if s.name.startswith("error")]
     for script_file in scripts:
@@ -40,6 +42,7 @@ def test_run_when_script_errors(ape_cli, runner, project):
         assert str(result.exception) == "Expected exception"
 
 
+@skip_projects_except(["script"])
 def test_run_interactive(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["run", "--interactive"], input="exit\n")
     assert result.exit_code == 0, result.output
@@ -48,6 +51,9 @@ def test_run_interactive(ape_cli, runner, project):
 @skip_projects_except(["script"])
 def test_run_adhoc_network(ape_cli, runner, project):
     result = runner.invoke(
-        ape_cli, ["run", "deploy", "--network", "ethereum:local:http://127.0.0.1:9545"]
+        ape_cli, ["run", "deploy", "--network", "ethereum:mainnet:http://127.0.0.1:9545"]
     )
-    assert result.exit_code == 0, result.output
+
+    # Show that it attempts to connect
+    assert result.exit_code == 1, result.output
+    assert "No node found on ethereum:mainnet:http://127.0.0.1:9545"
