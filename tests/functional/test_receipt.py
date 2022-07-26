@@ -1,6 +1,8 @@
 import pytest
 
 from ape.api import ReceiptAPI
+from ape.exceptions import OutOfGasError
+from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
 @pytest.fixture
@@ -112,3 +114,21 @@ def test_get_failed_receipt(owner, vyper_contract_instance, eth_tester_provider)
     )
     receipt = owner.call(transaction)
     assert receipt.failed
+
+
+def test_receipt_raise_for_status_out_of_gas_error(mocker):
+    gas_limit = 100000
+    receipt = Receipt(
+        provider=mocker.MagicMock(),
+        txn_hash="",
+        gas_used=gas_limit,
+        gas_limit=gas_limit,
+        status=TransactionStatusEnum.FAILING,
+        gas_price=0,
+        block_number=0,
+        sender="",
+        receiver="",
+        nonce=0,
+    )
+    with pytest.raises(OutOfGasError):
+        receipt.raise_for_status()

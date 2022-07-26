@@ -1,4 +1,5 @@
 import pytest
+from eth_utils import to_hex
 from ethpm_types.abi import EventABI
 
 from ape.types import ContractLog, LogFilter
@@ -47,14 +48,32 @@ def log():
 
 
 def test_contract_log_serialization(log):
-    log = ContractLog.parse_obj(log.dict())
-    assert log.contract_address == ZERO_ADDRESS
-    assert log.block_hash == BLOCK_HASH
-    assert log.block_number == BLOCK_NUMBER
-    assert log.event_name == EVENT_NAME
-    assert log.log_index == 7
-    assert log.transaction_hash == TXN_HASH
-    assert log.transaction_index == TXN_INDEX
+    obj = ContractLog.parse_obj(log.dict())
+    assert obj.contract_address == ZERO_ADDRESS
+    assert obj.block_hash == BLOCK_HASH
+    assert obj.block_number == BLOCK_NUMBER
+    assert obj.event_name == EVENT_NAME
+    assert obj.log_index == 7
+    assert obj.transaction_hash == TXN_HASH
+    assert obj.transaction_index == TXN_INDEX
+
+
+def test_contract_log_serialization_with_hex_strings_and_non_checksum_addresses(log):
+    data = log.dict()
+    data["log_index"] = to_hex(log.log_index)
+    data["transaction_index"] = to_hex(log.transaction_index)
+    data["block_number"] = to_hex(log.block_number)
+    data["contract_address"] = log.contract_address.lower()
+
+    obj = ContractLog(**data)
+
+    assert obj.contract_address == ZERO_ADDRESS
+    assert obj.block_hash == BLOCK_HASH
+    assert obj.block_number == BLOCK_NUMBER
+    assert obj.event_name == EVENT_NAME
+    assert obj.log_index == 7
+    assert obj.transaction_hash == TXN_HASH
+    assert obj.transaction_index == TXN_INDEX
 
 
 def test_contract_log_access(log):

@@ -12,12 +12,12 @@ from evm_trace.display import DisplayableCallTreeNode
 from hexbytes import HexBytes
 from rich.tree import Tree
 
-from ape.api.networks import EcosystemAPI
 from ape.exceptions import ContractError, DecodingError
 from ape.utils.abi import Struct, parse_type
 from ape.utils.misc import ZERO_ADDRESS
 
 if TYPE_CHECKING:
+    from ape.api.networks import EcosystemAPI
     from ape.api.transactions import ReceiptAPI
 
 
@@ -85,7 +85,7 @@ class CallTraceParser:
         self.colors = color_set
 
     @property
-    def _ecosystem(self) -> EcosystemAPI:
+    def _ecosystem(self) -> "EcosystemAPI":
         return self._receipt.provider.network.ecosystem
 
     def parse_as_tree(self, call: CallTreeNode) -> Tree:

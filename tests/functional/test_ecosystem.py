@@ -2,34 +2,40 @@ import pytest
 from eth_typing import HexAddress, HexStr
 from hexbytes import HexBytes
 
-from ape.exceptions import OutOfGasError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import Block
-from ape_ethereum.transactions import (
-    Receipt,
-    StaticFeeTransaction,
-    TransactionStatusEnum,
-    TransactionType,
-)
 
-
-@pytest.mark.parametrize("type_kwarg", (0, "0x0", b"\x00", "0", HexBytes("0x0"), HexBytes("0x00")))
-def test_create_static_fee_transaction(ethereum, type_kwarg):
-    txn = ethereum.create_transaction(type=type_kwarg)
-    assert txn.type == TransactionType.STATIC.value
-
-
-@pytest.mark.parametrize("type_kwarg", (1, "0x01", b"\x01", "1", "01", HexBytes("0x01")))
-def test_create_access_list_transaction(ethereum, type_kwarg):
-    txn = ethereum.create_transaction(type=type_kwarg)
-    assert txn.type == TransactionType.ACCESS_LIST.value
-
-
-@pytest.mark.parametrize("type_kwarg", (None, 2, "0x02", b"\x02", "2", "02", HexBytes("0x02")))
-def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
-    txn = ethereum.create_transaction(type=type_kwarg)
-    assert txn.type == TransactionType.DYNAMIC.value
+LOG_FROM_RESPONSE = {
+    "removed": False,
+    "logIndex": "0x0",
+    "transactionIndex": "0x0",
+    "transactionHash": "0x74dd040dfa06f0af9af8ca95d7aae409978400151c746f55ecce19e7356cfc5a",
+    "blockHash": "0x2c99950b07accf3e442512a3352a11e6fed37b2331de5f71b7743b357d96e4e8",
+    "blockNumber": "0xa946ac",
+    "address": "0x274b028b03a250ca03644e6c578d81f019ee1323",
+    "data": "0xabffd4675206dab5d04a6b0d62c975049665d1f512f29f303908abdd20bc08a100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000744796e616d696300000000000000000000000000000000000000000000000000",  # noqa: E501
+    "topics": [
+        "0xa84473122c11e32cd505595f246a28418b8ecd6cf819f4e3915363fad1b8f968",
+        "0x0000000000000000000000000000000000000000000000000000000000000006",
+        "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d",
+    ],
+}
+LOG_FROM_ETH_TESTER = {
+    "removed": False,
+    "log_index": 0,
+    "transaction_index": 0,
+    "transaction_hash": "0x74dd040dfa06f0af9af8ca95d7aae409978400151c746f55ecce19e7356cfc5a",
+    "block_hash": "0x2c99950b07accf3e442512a3352a11e6fed37b2331de5f71b7743b357d96e4e8",
+    "block_number": 11093676,
+    "address": "0x274b028b03a250ca03644e6c578d81f019ee1323",
+    "data": "0xabffd4675206dab5d04a6b0d62c975049665d1f512f29f303908abdd20bc08a100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000744796e616d696300000000000000000000000000000000000000000000000000",  # noqa: E501
+    "topics": [
+        "0xa84473122c11e32cd505595f246a28418b8ecd6cf819f4e3915363fad1b8f968",
+        "0x0000000000000000000000000000000000000000000000000000000000000006",
+        "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d",
+    ],
+}
 
 
 @pytest.mark.parametrize(
@@ -50,53 +56,6 @@ def test_encode_address(ethereum):
     address = AddressType(HexAddress(HexStr(raw_address)))
     actual = ethereum.encode_address(address)
     assert actual == raw_address
-
-
-def test_transaction_dict_excludes_none_values():
-    txn = StaticFeeTransaction()
-    txn.value = 1000000
-    actual = txn.dict()
-    assert "value" in actual
-    txn.value = None
-    actual = txn.dict()
-    assert "value" not in actual
-
-
-def test_receipt_raise_for_status_out_of_gas_error(mocker):
-    gas_limit = 100000
-    receipt = Receipt(
-        provider=mocker.MagicMock(),
-        txn_hash="",
-        gas_used=gas_limit,
-        gas_limit=gas_limit,
-        status=TransactionStatusEnum.FAILING,
-        gas_price=0,
-        block_number=0,
-        sender="",
-        receiver="",
-        nonce=0,
-    )
-    with pytest.raises(OutOfGasError):
-        receipt.raise_for_status()
-
-
-def test_txn_hash(owner, eth_tester_provider):
-    txn = StaticFeeTransaction()
-    txn = owner.prepare_transaction(txn)
-    txn.signature = owner.sign_transaction(txn)
-
-    actual = txn.txn_hash.hex()
-    receipt = eth_tester_provider.send_transaction(txn)
-    expected = receipt.txn_hash
-
-    assert actual == expected
-
-
-def test_whitespace_in_transaction_data():
-    data = b"Should not clip whitespace\t\n"
-    txn_dict = {"data": data}
-    txn = StaticFeeTransaction.parse_obj(txn_dict)
-    assert txn.data == data, "Whitespace should not be removed from data"
 
 
 def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, receiver):
@@ -121,3 +80,28 @@ def test_transaction_acceptance_timeout(temp_config, config, networks):
     timeout_config = {"ethereum": {"local": {"transaction_acceptance_timeout": new_value}}}
     with temp_config(timeout_config):
         assert networks.provider.network.transaction_acceptance_timeout == new_value
+
+
+@pytest.mark.parametrize("log_data", (LOG_FROM_RESPONSE, LOG_FROM_ETH_TESTER))
+def test_decode_logs(ethereum, project, vyper_contract_instance, log_data):
+    abi = vyper_contract_instance.NumberChange.abi
+    result = [x for x in ethereum.decode_logs([log_data], abi)]
+    assert len(result) == 1
+    assert result[0] == {
+        "event_name": "NumberChange",
+        "contract_address": "0x274b028b03A250cA03644E6c578D81f019eE1323",
+        "event_arguments": {
+            "newNum": 6,
+            "dynIndexed": HexBytes(
+                "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d"
+            ),
+            "b": HexBytes("0xabffd4675206dab5d04a6b0d62c975049665d1f512f29f303908abdd20bc08a1"),
+            "prevNum": 0,
+            "dynData": "Dynamic",
+        },
+        "transaction_hash": "0x74dd040dfa06f0af9af8ca95d7aae409978400151c746f55ecce19e7356cfc5a",
+        "block_number": 11093676,
+        "block_hash": "0x2c99950b07accf3e442512a3352a11e6fed37b2331de5f71b7743b357d96e4e8",
+        "log_index": 0,
+        "transaction_index": 0,
+    }

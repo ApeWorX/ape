@@ -251,6 +251,10 @@ def to_int(value) -> int:
     raise ValueError(f"cannot convert {repr(value)} to int")
 
 
+def to_snake_case(string: str) -> str:
+    return "".join(["_" + i.lower() if i.isupper() else i for i in string]).lstrip("_")
+
+
 __all__ = [
     "cached_property",
     "expand_environment_variables",
@@ -261,5 +265,6 @@ __all__ = [
     "raises_not_implemented",
     "singledispatchmethod",
     "stream_response",
+    "to_snake_case",
     "USER_AGENT",
 ]
