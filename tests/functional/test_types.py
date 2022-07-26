@@ -9,6 +9,7 @@ BLOCK_HASH = "0x999999998d4f99f68db9999999999da27ed049458b139999999999e910155b99
 BLOCK_NUMBER = 323423
 EVENT_NAME = "MyEvent"
 LOG_INDEX = 7
+TXN_INDEX = 2
 RAW_LOG = {
     "block_hash": BLOCK_HASH,
     "block_number": BLOCK_NUMBER,
@@ -17,6 +18,7 @@ RAW_LOG = {
     "log_index": LOG_INDEX,
     "event_name": EVENT_NAME,
     "transaction_hash": TXN_HASH,
+    "transaction_index": TXN_INDEX,
 }
 RAW_EVENT_ABI = """
 {
@@ -49,9 +51,10 @@ def test_contract_log_serialization(log):
     assert log.contract_address == ZERO_ADDRESS
     assert log.block_hash == BLOCK_HASH
     assert log.block_number == BLOCK_NUMBER
-    assert log.name == EVENT_NAME
+    assert log.event_name == EVENT_NAME
     assert log.log_index == 7
     assert log.transaction_hash == TXN_HASH
+    assert log.transaction_index == TXN_INDEX
 
 
 def test_contract_log_access(log):

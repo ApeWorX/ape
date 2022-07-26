@@ -472,4 +472,5 @@ class Ethereum(EcosystemAPI):
                 event_name=abi.event_name,
                 log_index=log["logIndex"],
                 transaction_hash=log["transactionHash"],
+                transaction_index=log["transactionIndex"],
             )  # type: ignore

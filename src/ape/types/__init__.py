@@ -168,6 +168,12 @@ class ContractLog(BaseModel):
     log_index: int
     """The index of the log on the transaction."""
 
+    transaction_index: Optional[int] = None
+    """
+    The index of the transaction's position when the log was created.
+    Is `None` when from the pending block.
+    """
+
     def __str__(self) -> str:
         args = " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
         return f"{self.name} {args}"
