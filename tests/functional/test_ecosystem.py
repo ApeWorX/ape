@@ -38,6 +38,11 @@ LOG_FROM_ETH_TESTER = {
 }
 
 
+@pytest.fixture
+def event_abi(vyper_contract_instance):
+    return vyper_contract_instance.NumberChange.abi
+
+
 @pytest.mark.parametrize(
     "address",
     (
@@ -83,7 +88,7 @@ def test_transaction_acceptance_timeout(temp_config, config, networks):
 
 
 @pytest.mark.parametrize("log_data", (LOG_FROM_RESPONSE, LOG_FROM_ETH_TESTER))
-def test_decode_logs(ethereum, project, vyper_contract_instance, log_data):
+def test_decode_logs(ethereum, vyper_contract_instance, log_data):
     abi = vyper_contract_instance.NumberChange.abi
     result = [x for x in ethereum.decode_logs([log_data], abi)]
     assert len(result) == 1
@@ -105,3 +110,8 @@ def test_decode_logs(ethereum, project, vyper_contract_instance, log_data):
         "log_index": 0,
         "transaction_index": 0,
     }
+
+
+def test_decode_logs_empty_list(ethereum, event_abi):
+    actual = [x for x in ethereum.decode_logs([], event_abi)]
+    assert actual == []

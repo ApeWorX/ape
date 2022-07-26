@@ -11,7 +11,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
@@ -732,7 +732,7 @@ class Web3Provider(ProviderAPI, ABC):
         if stop is None:
             stop = self.chain_manager.blocks.height
         if page is None:
-            page = self.chain_manager.provider.block_page_size
+            page = self.block_page_size
 
         for start_block in range(start, stop + 1, page):
             stop_block = min(stop, start_block + page - 1)
@@ -748,7 +748,7 @@ class Web3Provider(ProviderAPI, ABC):
             start, stop = block_range
             page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
             # eth-tester expects a different format, let web3 handle the conversions for it
-            raw = "EthereumTester" not in self.client_version
+            raw = True if not hasattr(self, "client_version") else "EthereumTester" not in self.client_version
             logs = self._get_logs(page_filter.dict(), raw)
             return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
@@ -756,11 +756,12 @@ class Web3Provider(ProviderAPI, ABC):
             for page in pool.map(fetch_log_page, block_ranges):
                 yield from page
 
-    def _get_logs(self, filter_params, raw=True):
+    def _get_logs(self, filter_params, raw=True) -> List[Dict]:
         if raw:
             response = self.web3.provider.make_request("eth_getLogs", [filter_params])
             if "error" in response:
                 raise ValueError(response["error"]["message"])
+
             return response["result"]
         else:
             return self.web3.eth.get_logs(filter_params)
