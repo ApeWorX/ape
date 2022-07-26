@@ -4,7 +4,7 @@ from typing import Dict
 import pytest
 
 from ape.exceptions import NetworkError
-from ape.managers.config import DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT, DeploymentConfigCollection
+from ape.managers.config import DeploymentConfigCollection
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 
@@ -54,14 +54,6 @@ def test_default_provider_not_found(temp_config, networks):
         ):
             # Trigger re-loading the Ethereum config.
             _ = networks.ecosystems
-
-
-def test_transaction_acceptance_timeout(temp_config, config, networks):
-    assert config.transaction_acceptance_timeout == DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
-    new_value = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT + 10
-    timeout_config = {"transaction_acceptance_timeout": new_value}
-    with temp_config(timeout_config):
-        assert config.transaction_acceptance_timeout == new_value
 
 
 def test_dependencies(dependency_config, config):
