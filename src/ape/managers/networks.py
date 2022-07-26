@@ -1,11 +1,10 @@
-from typing import Dict, Iterator, List, Optional, Set, Type, Union
+from typing import Dict, Iterator, List, Optional, Set, Union
 
 import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import NetworkError
-from ape.utils import cached_property
 
 from .base import BaseManager
 
@@ -130,7 +129,8 @@ class NetworkManager(BaseManager):
             uri (str): The URI of the node.
 
         Returns:
-            :class:`~ape.api.providers.ProviderAPI`: The Geth provider implementation that comes with Ape.
+            :class:`~ape.api.providers.ProviderAPI`: The Geth provider
+              implementation that comes with Ape.
         """
 
         geth_class = None
