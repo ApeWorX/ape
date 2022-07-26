@@ -594,7 +594,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
         if self._client_version is None:
-            self._client_version = self._web3.clientVersion
+            self._client_version = self.web3.clientVersion
 
         return self._client_version
 
@@ -696,7 +696,7 @@ class Web3Provider(ProviderAPI, ABC):
             raise TransactionError(message="Required confirmations cannot be negative.")
 
         timeout = (
-            timeout if timeout is not None else self.config_manager.transaction_acceptance_timeout
+            timeout if timeout is not None else self.provider.network.transaction_acceptance_timeout
         )
 
         try:

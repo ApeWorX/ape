@@ -17,6 +17,8 @@ from ape.contracts.base import ContractCall
 from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
 from ape.types import AddressType, ContractLog, RawAddress, TransactionSignature
 from ape.utils import (
+    DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     LogInputABICollection,
     Struct,
     StructParser,
@@ -73,20 +75,39 @@ class NetworkConfig(PluginConfig):
     """
 
     block_time: int = 0
+    transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
 
 
 class EthereumConfig(PluginConfig):
     mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
-    mainnet_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
+    mainnet_fork: NetworkConfig = NetworkConfig(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
     ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
-    ropsten_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
+    ropsten_fork: NetworkConfig = NetworkConfig(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
     kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
-    kovan_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
+    kovan_fork: NetworkConfig = NetworkConfig(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
     rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    rinkeby_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
+    rinkeby_fork: NetworkConfig = NetworkConfig(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
     goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    goerli_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
-    local: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
+    goerli_fork: NetworkConfig = NetworkConfig(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
+    local: NetworkConfig = NetworkConfig(
+        default_provider="test",
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
     default_network: str = LOCAL_NETWORK_NAME
 
 
