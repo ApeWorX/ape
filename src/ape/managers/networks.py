@@ -121,6 +121,18 @@ class NetworkManager(BaseManager):
         return ecosystem_dict
 
     def create_adhoc_geth_provider(self, uri: str) -> ProviderAPI:
+        """
+        Create an ad-hoc connection to a URI using the GethProvider core plugin.
+        **NOTE**: This provider will assume EVM-like provider and this is generally not recommended.
+        Use plugins when possible!
+
+        Args:
+            uri (str): The URI of the node.
+
+        Returns:
+            :class:`~ape.api.providers.ProviderAPI`: The Geth provider implementation that comes with Ape.
+        """
+
         geth_class = None
         for plugin_name, (_, _, provider_class) in self.plugin_manager.providers:
             if plugin_name == "geth":

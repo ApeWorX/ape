@@ -25,7 +25,7 @@ as a short-cut for `ethereum:local:foundry`.
 # Local Network
 
 The default network in Ape is the local network (keyword `"local"`).
-It is meant for running testing and debugging contracts.
+It is meant for running tests and debugging contracts.
 Out-of-the-box, Ape ships with two development providers you can use for the `local` network:
 
 * [EthTester](https://github.com/ethereum/eth-tester)
@@ -59,3 +59,12 @@ If you would like to connect to a URI using the `geth` provider, you can specify
 ```bash
 ape run script --network etheruem:mainnet:https://foo.bar
 ```
+
+Additionally, if you want to connect to an unknown ecosystem or network, you can use the URI by itself.
+However, this is not recommended.
+
+```bash
+ape run script --network https://foo.bar
+```
+
+**The recommended approach is to find or build a plugin to have more native support.**
