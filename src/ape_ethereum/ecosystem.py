@@ -444,12 +444,7 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)  # type: ignore
 
-    def decode_logs(
-        self, events: Union[EventABI, List[EventABI]], logs: List[Dict]
-    ) -> Iterator["ContractLog"]:
-        if not isinstance(events, list):
-            events = [events]
-
+    def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         abi_inputs = {
             encode_hex(keccak(text=abi.selector)): LogInputABICollection(abi) for abi in events
         }

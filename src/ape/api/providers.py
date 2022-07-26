@@ -750,7 +750,7 @@ class Web3Provider(ProviderAPI, ABC):
             # eth-tester expects a different format, let web3 handle the conversions for it
             raw = "EthereumTester" not in self.client_version
             logs = self._get_logs(page_filter.dict(), raw)
-            return self.network.ecosystem.decode_logs(log_filter.events, logs)
+            return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
         with ThreadPoolExecutor(self.concurrency) as pool:
             for page in pool.map(fetch_log_page, block_ranges):

@@ -305,15 +305,13 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_logs(
-        self, events: Union[EventABI, List[EventABI]], logs: List[Dict]
-    ) -> Iterator["ContractLog"]:
+    def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         """
         Decode any contract logs that match the given event ABI from the raw log data.
 
         Args:
-            events (Union[EventABI, List[EventABI]]): Event definitions to decode.
             logs (List[Dict]): A list of raw log data from the chain.
+            *events (EventABI): Event definitions to decode.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]

@@ -192,7 +192,7 @@ class Receipt(ReceiptAPI):
                 abi = [abi]
 
             event_abis: List[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
-            yield from self.provider.network.ecosystem.decode_logs(event_abis, self.logs)
+            yield from self.provider.network.ecosystem.decode_logs(self.logs, *event_abis)
 
         else:
             # If ABI is not provided, decode all events
@@ -216,7 +216,7 @@ class Receipt(ReceiptAPI):
                     if library_log:
                         yield library_log
                 else:
-                    yield from self.provider.network.ecosystem.decode_logs([event_abi], [log])
+                    yield from self.provider.network.ecosystem.decode_logs([log], event_abi)
 
     def _decode_ds_note(self, log: Dict) -> Optional[ContractLog]:
         # The first topic encodes the function selector
