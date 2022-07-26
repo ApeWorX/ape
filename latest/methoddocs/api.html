@@ -1181,11 +1181,6 @@ Configure in your <code class="docutils literal notranslate"><span class="pre">a
     <span class="n">block_time</span><span class="p">:</span> <span class="mi">15</span>
 </pre></div>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -1194,11 +1189,6 @@ Configure in your <code class="docutils literal notranslate"><span class="pre">a
 <dd><p>The ID of the blockchain.</p>
 <p><strong>NOTE</strong>: Unless overridden, returns same as
 <a class="reference internal" href="#ape.api.providers.ProviderAPI.chain_id" title="ape.api.providers.ProviderAPI.chain_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI.chain_id</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -1273,11 +1263,6 @@ When <code class="docutils literal notranslate"><span class="pre">None</span></c
 <dd><p>The ID of the network.</p>
 <p><strong>NOTE</strong>: Unless overridden, returns same as
 <a class="reference internal" href="#ape.api.networks.NetworkAPI.chain_id" title="ape.api.networks.NetworkAPI.chain_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">chain_id</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -1304,11 +1289,6 @@ When <code class="docutils literal notranslate"><span class="pre">None</span></c
 before considering a transaction “confirmed”. Confirmations
 refer to the number of blocks that have been added since the
 transaction’s block.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1323,6 +1303,14 @@ transaction’s block.</p>
 <dd class="field-even"><p><strong>provider_name</strong> (<em>str</em>) – The name of the provider to switch to.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.networks.NetworkAPI.transaction_acceptance_timeout">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transaction_acceptance_timeout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.networks.NetworkAPI.transaction_acceptance_timeout" title="Permalink to this definition"></a></dt>
+<dd><p>The amount of time to wait for a transaction to be accepted on the network.
+Does not include waiting for block-confirmations. Defaults to two minutes.
+Local networks use smaller timeouts.</p>
 </dd></dl>
 
 <dl class="py method">

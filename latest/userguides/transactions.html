@@ -231,9 +231,11 @@ argument <code class="docutils literal notranslate"><span class="pre">type</span
 <section id="transaction-acceptance-timeout">
 <h2>Transaction Acceptance Timeout<a class="headerlink" href="#transaction-acceptance-timeout" title="Permalink to this headline"></a></h2>
 <p><strong>NOTE</strong> For longer running scripts, you may need to increase the transaction acceptance timeout.
-The default value is 2 minutes.
+The default value is 2 minutes for live networks and 20 seconds for local networks.
 In your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file, add the following:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">transaction_acceptance_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span><span class="w">  </span><span class="c1"># 5 minutes</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">transaction_acceptance_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span><span class="w">  </span><span class="c1"># 5 minutes</span><span class="w"></span>
 </pre></div>
 </div>
 </section>
