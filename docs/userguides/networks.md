@@ -4,14 +4,16 @@ When interacting with the blockchain, you will have to select a network.
 
 ## Selecting a Network
 
-Commonly, you will use the `--network` option to configre your network during Ape commands.
+Commonly, you will use the `--network` option to configure your network during Ape commands.
 The following is a list of common Ape commands that can use the `--network` option:
 
 ```bash
 ape test --network ethereum:local:foundry
-ape run deploy --network ethereum:mainnet:geth  # NOTE: Must be defined if using CLI script
 ape console --network arbitrum:testnet:alchemy
 ```
+
+You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `NetworkBoundCommand` command type.
+See [the scripting guide]("./scripts.html") to learn more about scripts and how to add the network option.
 
 **NOTE**: You can omit values to use defaults.
 For example, the default ecosystem is `ethereum` and the default network is `local`, so you can do:
@@ -36,7 +38,7 @@ ape test --network ::test
 ape test --network ::geth  # Launch a local Development geth process
 ```
 
-To learn more about testing in ape, follow [this guide]("../testing.html).
+To learn more about testing in ape, follow [this guide]("./testing.html).
 
 ## Live Networks
 
@@ -67,4 +69,11 @@ However, this is not recommended.
 ape run script --network https://foo.bar
 ```
 
-**The recommended approach is to find or build a plugin to have more native support.**
+**WARNING**: The recommended approach is to find or build a plugin to have more native support.
+Some reasons for this include:
+
+1. You may need to integrate with other plugins, such as explorer plugins for getting contract types.
+2. Some chains may not implement EIP-1559 or may have forked from a specific configuration.
+3. Response differences in uncommon blocks, such as the `"pending"` block or the genesis block.
+4. Revert messages and exception-handling differences.
+5. You are limited to using `web3.py` and an EVM-based chain.

@@ -80,18 +80,7 @@ print(deployed_contract.address)
 ## Scripts
 
 The scripts folder contains project automation scripts, such as deploy scripts, as well as other executable jobs, such as scripts for running simulations.
-
-You can write scripts that run using the `ape run` command. The `ape run` command will register and run Python
-files defined under the `scripts/` directory that do not start with an `_` underscore. If the scripts take
-advantage of utilities from our [`ape.cli`](../methoddocs/cli.html#ape-cli) submodule,
-you can build a [Click](https://click.palletsprojects.com/) command line interface
-by defining a `click.Command` or `click.Group` object called `cli` in your file.
-Otherwise, if the script has a `main()` method, it will execute that method when called.
-
-Note that by default, `cli` scripts do not have
-[`ape.cli.network_option`](../methoddocs/cli.html?highlight=options#ape.cli.options.network_option)
-installed, giving you more flexibility in how you define your scripts.
-`main` scripts will always provide a network option to the call.
+To learn more about scripting in Ape, see [the scripting guide](./scripts.html).
 
 ## Testing
 
