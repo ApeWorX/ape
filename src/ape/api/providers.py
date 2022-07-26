@@ -7,6 +7,7 @@ import sys
 import time
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
@@ -21,6 +22,7 @@ from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
+from web3.types import RPCEndpoint
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
@@ -758,13 +760,18 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _get_logs(self, filter_params, raw=True) -> List[Dict]:
         if raw:
-            response = self.web3.provider.make_request("eth_getLogs", [filter_params])
+            response = self.web3.provider.make_request(RPCEndpoint("eth_getLogs"), [filter_params])
             if "error" in response:
-                raise ValueError(response["error"]["message"])
+                error = response["error"]
+                if isinstance(error, dict) and "message" in error:
+                    raise ValueError(error["message"])
+                else:
+                    # Should never get here, mostly for mypy
+                    raise ValueError(str(error))
 
             return response["result"]
         else:
-            return self.web3.eth.get_logs(filter_params)
+            return [vars(d) for d in self.web3.eth.get_logs(filter_params)]
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
