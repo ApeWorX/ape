@@ -249,7 +249,7 @@ class Receipt(ReceiptAPI):
             block_number=log["blockNumber"],
             contract_address=address,
             event_arguments={i.name: value for i, value in zip(method_abi.inputs, values)},
+            event_name=method_abi.name,
             log_index=log["logIndex"],
-            name=method_abi.name,
             transaction_hash=log["transactionHash"],
         )  # type: ignore

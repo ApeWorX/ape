@@ -147,7 +147,7 @@ class ContractLog(BaseModel):
     An instance of a log from a contract.
     """
 
-    name: str
+    event_name: str
     """The name of the event."""
 
     contract_address: AddressType

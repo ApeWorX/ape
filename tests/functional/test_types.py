@@ -15,7 +15,7 @@ RAW_LOG = {
     "contract_address": ZERO_ADDRESS,
     "event_arguments": {"foo": 0, "bar": 1},
     "log_index": LOG_INDEX,
-    "name": EVENT_NAME,
+    "event_name": EVENT_NAME,
     "transaction_hash": TXN_HASH,
 }
 RAW_EVENT_ABI = """

@@ -469,7 +469,7 @@ class Ethereum(EcosystemAPI):
                 block_number=to_int(log["blockNumber"]),
                 contract_address=self.decode_address(log["address"]),
                 event_arguments=event_arguments,
+                event_name=abi.event_name,
                 log_index=log["logIndex"],
-                name=abi.event_name,
                 transaction_hash=log["transactionHash"],
             )  # type: ignore
