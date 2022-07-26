@@ -1,4 +1,4 @@
-# Network
+# Networks
 
 When interacting with the blockchain, you will have to select a network.
 
@@ -13,7 +13,7 @@ ape console --network arbitrum:testnet:alchemy
 ```
 
 You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `NetworkBoundCommand` command type.
-See [the scripting guide]("./scripts.html") to learn more about scripts and how to add the network option.
+See [the scripting guide](./scripts.html) to learn more about scripts and how to add the network option.
 
 **NOTE**: You can omit values to use defaults.
 For example, the default ecosystem is `ethereum` and the default network is `local`, so you can do:
@@ -24,7 +24,20 @@ ape run --network ::foundry
 
 as a short-cut for `ethereum:local:foundry`.
 
-# Local Network
+## Configuring Networks
+
+Change network defaults using your project's `ape-config.yaml` file.
+The following configuration changes the default ecosystem, network, and provider such that if you omitted the `--network` option on network-bound commands, it would use the value `<ecosystem-name>:<network-name>:<provider-name>`.
+
+```yaml
+default_ecosystem: <ecosystem-name>
+fantom:
+  default_network: <network-name>
+  testnet:
+    default_provider: <provider-name>
+```
+
+## Local Network
 
 The default network in Ape is the local network (keyword `"local"`).
 It is meant for running tests and debugging contracts.
@@ -38,7 +51,7 @@ ape test --network ::test
 ape test --network ::geth  # Launch a local Development geth process
 ```
 
-To learn more about testing in ape, follow [this guide]("./testing.html).
+To learn more about testing in ape, follow [this guide](./testing.html).
 
 ## Live Networks
 
@@ -76,4 +89,4 @@ Some reasons for this include:
 2. Some chains may not implement EIP-1559 or may have forked from a specific configuration.
 3. Response differences in uncommon blocks, such as the `"pending"` block or the genesis block.
 4. Revert messages and exception-handling differences.
-5. You are limited to using `web3.py` and an EVM-based chain.
+5. You are limited to using `web3.py` and an EVM-based chains.
