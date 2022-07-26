@@ -19,6 +19,8 @@ from ape.utils.basemodel import (
 )
 from ape.utils.github import GithubClient, github_client
 from ape.utils.misc import (
+    DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     EMPTY_BYTES32,
     USER_AGENT,
     ZERO_ADDRESS,
@@ -50,8 +52,10 @@ __all__ = [
     "BaseInterfaceModel",
     "cached_property",
     "CallTraceParser",
+    "DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT",
     "DEFAULT_NUMBER_OF_TEST_ACCOUNTS",
     "DEFAULT_TEST_MNEMONIC",
+    "DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT",
     "EMPTY_BYTES32",
     "expand_environment_variables",
     "extract_nested_value",
