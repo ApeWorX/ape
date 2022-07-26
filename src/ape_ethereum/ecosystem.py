@@ -103,6 +103,8 @@ class Block(BlockAPI):
 
 
 class Ethereum(EcosystemAPI):
+    name: str = "ethereum"
+
     default_transaction_type = TransactionType.DYNAMIC
     """
     Default transaction type should be overidden id chain doesn't support EIP-1559

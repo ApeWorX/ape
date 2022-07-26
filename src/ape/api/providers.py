@@ -640,7 +640,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def chain_id(self) -> int:
-        if self.network.name != LOCAL_NETWORK_NAME and not self.network.name.endswith("-fork"):
+        if self.network.name not in (
+            "adhoc",
+            LOCAL_NETWORK_NAME,
+        ) and not self.network.name.endswith("-fork"):
             # If using a live network, the chain ID is hardcoded.
             return self.network.chain_id
 

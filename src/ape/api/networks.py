@@ -491,6 +491,28 @@ class NetworkAPI(BaseInterfaceModel):
 
     _default_provider: str = ""
 
+    @classmethod
+    def create_adhoc_network(cls) -> "NetworkAPI":
+        ethereum_class = None
+        for plugin_name, ecosystem_class in cls.plugin_manager.ecosystems:
+            if plugin_name == "ethereum":
+                ethereum_class = ecosystem_class
+                break
+
+        if ethereum_class is None:
+            raise NetworkError("Core Ethereum plugin missing.")
+
+        data_folder = cls.config_manager.DATA_FOLDER / "adhoc"
+        request_header = cls.config_manager.REQUEST_HEADER
+        ethereum = ethereum_class(data_folder=data_folder, request_header=request_header)
+        return cls(
+            name="adhoc",
+            ecosystem=ethereum,
+            data_folder=data_folder,
+            request_header=request_header,
+            _default_provider="geth",
+        )
+
     def __repr__(self) -> str:
         return f"<{self.name} chain_id={self.chain_id}>"
 

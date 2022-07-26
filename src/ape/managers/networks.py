@@ -1,12 +1,11 @@
-from typing import Dict, Iterator, List, Optional, Set, Union
+from typing import Dict, Iterator, List, Optional, Set, Type, Union
 
-import requests
 import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
-from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, create_network_type
+from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import NetworkError
-from ape.logging import logger
+from ape.utils import cached_property
 
 from .base import BaseManager
 
@@ -120,6 +119,24 @@ class NetworkManager(BaseManager):
 
         self._ecosystems_by_project[project_name] = ecosystem_dict
         return ecosystem_dict
+
+    def create_adhoc_geth_provider(self, uri: str) -> ProviderAPI:
+        geth_class = None
+        for plugin_name, (_, _, provider_class) in self.plugin_manager.providers:
+            if plugin_name == "geth":
+                geth_class = provider_class
+                break
+
+        if geth_class is None:
+            raise NetworkError("Core Geth plugin missing.")
+
+        network = NetworkAPI.create_adhoc_network()
+        return geth_class(
+            network=network,
+            provider_settings={"uri": uri},
+            data_folder=network.data_folder,
+            request_header=network.request_header,
+        )
 
     def __iter__(self) -> Iterator[str]:
         """
@@ -306,10 +323,9 @@ class NetworkManager(BaseManager):
             )
 
         elif network_choice.startswith("http://") or network_choice.startswith("https://"):
-            # Adhoc ecosystem / network
-            selections = ["adhoc", "adhoc", network_choice]
-        else:
-            selections = network_choice.split(":")
+            return self.create_adhoc_geth_provider(network_choice)
+
+        selections = network_choice.split(":")
 
         # NOTE: Handle case when URI is passed e.g. "http://..."
         if len(selections) > 3:
