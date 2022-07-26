@@ -52,16 +52,23 @@ def test_contract_logs_from_receipts(owner, contract_instance, assert_log_values
 
 def test_contract_logs_from_event_type(contract_instance, owner, assert_log_values):
     event_type = contract_instance.NumberChange
+    start_num = 6
+    size = 20
+    num_range = range(start_num, start_num + size)
 
-    contract_instance.setNumber(1, sender=owner)
-    contract_instance.setNumber(2, sender=owner)
-    contract_instance.setNumber(3, sender=owner)
+    # Generate 20 logs
+    for i in num_range:
+        contract_instance.setNumber(i, sender=owner)
 
+    # Collect 20 logs
     logs = [log for log in event_type]
-    assert len(logs) == 3, "Unexpected number of logs"
-    assert_log_values(logs[0], 1)
-    assert_log_values(logs[1], 2)
-    assert_log_values(logs[2], 3)
+
+    assert len(logs) == size, "Unexpected number of logs"
+    for num, log in zip(num_range, logs):
+        if num == start_num:
+            assert_log_values(log, num, previous_number=0)
+        else:
+            assert_log_values(log, num)
 
 
 def test_contract_logs_index_access(contract_instance, owner, assert_log_values):
