@@ -748,7 +748,7 @@ class Web3Provider(ProviderAPI, ABC):
             start, stop = block_range
             page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
             # eth-tester expects a different format, let web3 handle the conversions for it
-            raw = True if not hasattr(self, "client_version") else "EthereumTester" not in self.client_version
+            raw = "EthereumTester" not in self.client_version
             logs = self._get_logs(page_filter.dict(), raw)
             return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
