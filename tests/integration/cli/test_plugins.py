@@ -25,8 +25,17 @@ def plugins_xfail():
 
 @pytest.fixture
 def installed_plugin(runner, ape_cli):
-    # TODO: Figure out how to install plugin prior to test **that actually works**.
-    runner.invoke(ape_cli, ["plugins", "install", TEST_PLUGIN_NAME])
+    # TODO: Figure out how to correctly modify site packages mid-test run.
+    #  The installed plugin does not show in `list` command but does at end of tests.
+    is_already_installed = TEST_PLUGIN_NAME in runner.invoke(ape_cli, ["plugins", "list"]).output
+
+    if not is_already_installed:
+        runner.invoke(ape_cli, ["plugins", "install", TEST_PLUGIN_NAME])
+
+    yield
+
+    if not is_already_installed:
+        runner.invoke(ape_cli, ["plugins", "uninstall", TEST_PLUGIN_NAME, "--yes"])
 
 
 @plugins_xfail()
@@ -42,16 +51,16 @@ def test_list_excludes_core_plugins(ape_cli, runner):
 def test_list_include_version(ape_cli, runner, installed_plugin):
     result = runner.invoke(ape_cli, ["plugins", "list"])
     assert result.exit_code == 0, result.output
-    assert "0.2" in result.output, "version is not in output"
+    assert "0." in result.output, "version is not in output"
 
 
 @plugins_xfail()
 def test_list_does_not_repeat(ape_cli, runner, installed_plugin):
     result = runner.invoke(ape_cli, ["plugins", "list", "--all"])
     sections = result.output.split("\n\n")
-    assert "tokens" in sections[1]
-    assert "tokens" not in sections[0]
-    assert "tokens" not in sections[2]
+    assert "ethereum" in sections[0]
+    assert "ethereum" not in sections[1]
+    assert "ethereum" not in sections[2]
 
 
 @plugins_xfail()

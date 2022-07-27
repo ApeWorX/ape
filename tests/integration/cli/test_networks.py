@@ -1,7 +1,7 @@
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape_geth.providers import DEFAULT_SETTINGS
 
-from .utils import skip_projects, skip_projects_except
+from .utils import skip_projects_except
 
 _DEFAULT_NETWORKS_TREE = """
 ethereum  (default)
@@ -93,29 +93,40 @@ def assert_rich_text(actual: str, expected: str):
     """
     The output from `rich` causes a bunch of extra spaces to
     appear at the end of each line. For easier testing, we remove those here.
+    Also, we ignore whether the expected line is at the end of in the middle
+    of the output to handle cases when the test-runner has additional plugins
+    installed.
     """
-    expected = expected.strip()
-    lines = actual.split("\n")
-    new_lines = []
-    for line in lines:
-        if line:
-            new_lines.append(line.rstrip())
+    expected_lines = [
+        x.replace("└", "").replace("├", "").replace("│", "").strip()
+        for x in expected.strip().split("\n")
+    ]
+    actual_lines = [
+        x.replace("└", "").replace("├", "").replace("│", "").strip()
+        for x in actual.strip().split("\n")
+    ]
 
-    actual = "\n".join(new_lines)
-    assert actual == expected
+    for expected_line in expected_lines:
+        assert expected_line in actual_lines
 
 
-@skip_projects(["geth"])
+@skip_projects_except(["test"])
 def test_list(ape_cli, runner):
     result = runner.invoke(ape_cli, ["networks", "list"])
     assert_rich_text(result.output, _DEFAULT_NETWORKS_TREE)
 
 
-@skip_projects(["geth"])
+@skip_projects_except(["test"])
 def test_list_yaml(ape_cli, runner):
     result = runner.invoke(ape_cli, ["networks", "list", "--format", "yaml"])
-    expected = _DEFAULT_NETWORKS_YAML.strip()
-    assert expected in result.output, result.output
+    expected_lines = _DEFAULT_NETWORKS_YAML.strip().split("\n")
+
+    for expected_line in expected_lines:
+        if expected_line.lstrip() == "providers: []":
+            # Skip these lines in case test-runner has installed providers
+            continue
+
+        assert expected_line in result.output
 
 
 @skip_projects_except(["geth"])
@@ -129,13 +140,13 @@ def test_geth(ape_cli, runner, networks):
     assert geth_provider.uri == DEFAULT_SETTINGS["uri"]
 
 
-@skip_projects(["geth"])
+@skip_projects_except(["test"])
 def test_filter_networks(ape_cli, runner, networks):
     result = runner.invoke(ape_cli, ["networks", "list", "--network", "rinkeby"])
     assert_rich_text(result.output, _RINKEBY_NETWORK_TREE_OUTPUT)
 
 
-@skip_projects(["geth"])
+@skip_projects_except(["test"])
 def test_filter_providers(ape_cli, runner, networks):
     result = runner.invoke(ape_cli, ["networks", "list", "--provider", "test"])
     assert_rich_text(result.output, _TEST_PROVIDER_TREE_OUTPUT)
