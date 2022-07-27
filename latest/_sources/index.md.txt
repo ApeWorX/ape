@@ -7,12 +7,14 @@
 
    userguides/quickstart
    userguides/projects
+   userguides/networks
    userguides/plugins
    userguides/config
    userguides/transactions
    userguides/console
    userguides/contracts
    userguides/testing
+   userguides/scripts   
    
 ```
 
