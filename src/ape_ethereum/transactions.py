@@ -1,6 +1,6 @@
 import sys
 from enum import Enum, IntEnum
-from typing import IO, Dict, List, Optional, Union
+from typing import IO, Dict, Iterator, List, Optional, Union
 
 from eth_abi import decode_abi
 from eth_account import Account as EthAccount  # type: ignore
@@ -8,13 +8,16 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import keccak, to_int
+from eth_utils import decode_hex, encode_hex, keccak, to_int
 from ethpm_types import HexBytes
+from ethpm_types.abi import EventABI
 from pydantic import BaseModel, Field, root_validator, validator
 from rich.console import Console as RichConsole
 
 from ape.api import ReceiptAPI, TransactionAPI
+from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
+from ape.types import ContractLog
 from ape.utils import CallTraceParser, TraceStyles
 
 
@@ -79,7 +82,7 @@ class StaticFeeTransaction(BaseTransaction):
     type: Union[str, int, bytes] = Field(TransactionType.STATIC.value, exclude=True)
     max_fee: Optional[int] = Field(None, exclude=True)
 
-    @root_validator(pre=True)
+    @root_validator(pre=True, allow_reuse=True)
     def calculate_read_only_max_fee(cls, values) -> Dict:
         # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
         values["max_fee"] = values.get("gas_limit", 0) * values.get("gas_price", 0)
@@ -97,7 +100,7 @@ class DynamicFeeTransaction(BaseTransaction):
     type: Union[int, str, bytes] = Field(TransactionType.DYNAMIC.value)
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
-    @validator("type")
+    @validator("type", allow_reuse=True)
     def check_type(cls, value):
 
         if isinstance(value, TransactionType):
@@ -115,7 +118,7 @@ class AccessListTransaction(BaseTransaction):
     type: Union[int, str, bytes] = Field(TransactionType.ACCESS_LIST.value)
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
-    @validator("type")
+    @validator("type", allow_reuse=True)
     def check_type(cls, value):
 
         if isinstance(value, TransactionType):
@@ -177,3 +180,77 @@ class Receipt(ReceiptAPI):
 
         console.print(f"txn.origin=[{TraceStyles.CONTRACTS}]{self.sender}[/]")
         console.print(root)
+
+    def decode_logs(
+        self,
+        abi: Optional[
+            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+        ] = None,
+    ) -> Iterator[ContractLog]:
+        if abi:
+            if not isinstance(abi, (list, tuple)):
+                abi = [abi]
+
+            event_abis: List[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
+            yield from self.provider.network.ecosystem.decode_logs(self.logs, *event_abis)
+
+        else:
+            # If ABI is not provided, decode all events
+            addresses = {x["address"] for x in self.logs}
+            contract_types = self.chain_manager.contracts.get_multiple(addresses)
+            # address → selector → abi
+            selectors = {
+                address: {encode_hex(keccak(text=abi.selector)): abi for abi in contract.events}
+                for address, contract in contract_types.items()
+            }
+            for log in self.logs:
+                contract_address = log["address"]
+                if contract_address not in selectors:
+                    continue
+                try:
+                    selector = encode_hex(log["topics"][0])
+                    event_abi = selectors[contract_address][selector]
+                except KeyError:
+                    # Likely a library log
+                    library_log = self._decode_ds_note(log)
+                    if library_log:
+                        yield library_log
+                else:
+                    yield from self.provider.network.ecosystem.decode_logs([log], event_abi)
+
+    def _decode_ds_note(self, log: Dict) -> Optional[ContractLog]:
+        # The first topic encodes the function selector
+        selector, tail = log["topics"][0][:4], log["topics"][0][4:]
+        if sum(tail):
+            # non-zero bytes found after selector
+            return None
+
+        contract_type = self.chain_manager.contracts.get(log["address"])
+        if contract_type is None:
+            # contract type for {log['address']} not found
+            return None
+
+        try:
+            method_abi = contract_type.mutable_methods[selector]
+        except KeyError:
+            #  selector {selector.hex()} not found in {log['address']}
+            return None
+
+        # ds-note data field uses either (uint256,bytes) or (bytes) encoding
+        # instead of guessing, assume the payload begins right after the selector
+        data = decode_hex(log["data"])
+        input_types = [i.canonical_type for i in method_abi.inputs]
+        start_index = data.index(selector) + 4
+        values = decode_abi(input_types, data[start_index:])
+        address = self.provider.network.ecosystem.decode_address(log["address"])
+
+        return ContractLog(
+            block_hash=log["blockHash"],
+            block_number=log["blockNumber"],
+            contract_address=address,
+            event_arguments={i.name: value for i, value in zip(method_abi.inputs, values)},
+            event_name=method_abi.name,
+            log_index=log["logIndex"],
+            transaction_hash=log["transactionHash"],
+            transaction_index=log["transactionIndex"],
+        )  # type: ignore

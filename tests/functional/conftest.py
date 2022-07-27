@@ -21,19 +21,20 @@ from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType, ContractLog
 
 
-def _get_raw_contract(compiler: str) -> Dict:
+def _get_raw_contract(name: str) -> Dict:
     here = Path(__file__).parent
     contracts_dir = here / "data" / "contracts" / "ethereum" / "local"
-    return json.loads((contracts_dir / f"{compiler}_contract.json").read_text())
+    return json.loads((contracts_dir / f"{name}.json").read_text())
 
 
 ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
 ALIAS_2 = "__FUNCTIONAL_TESTS_ALIAS_2__"
-RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity")
-RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper")
+RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity_contract")
+RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper_contract")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
+DS_NOTE_TEST_CONTRACT_TYPE = _get_raw_contract("ds_note_test")
 APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
 SOLIDITY_CONTRACT_ADDRESS = "0xBcF7FFFD8B256Ec51a36782a52D0c34f6474D951"
 VYPER_CONTRACT_ADDRESS = "0x274b028b03A250cA03644E6c578D81f019eE1323"
@@ -200,6 +201,13 @@ def contract_instance(request, solidity_contract_instance, vyper_contract_instan
     return solidity_contract_instance if request.param == "solidity" else vyper_contract_instance
 
 
+@pytest.fixture
+def ds_note_test_contract(vyper_contract_type, owner, eth_tester_provider):
+    contract_type = ContractType.parse_obj(DS_NOTE_TEST_CONTRACT_TYPE)
+    contract_container = ContractContainer(contract_type=contract_type)
+    return contract_container.deploy(sender=owner)
+
+
 @pytest.fixture(scope="session")
 def temp_config(config):
     @contextmanager
@@ -257,6 +265,46 @@ def dependency_config(temp_config):
 @pytest.fixture
 def base_projects_directory():
     return BASE_PROJECTS_DIRECTORY
+
+
+@pytest.fixture
+def mainnet_contract(chain):
+    def contract_getter(address):
+        path = (
+            Path(__file__).parent
+            / "data"
+            / "contracts"
+            / "ethereum"
+            / "mainnet"
+            / f"{address}.json"
+        )
+        contract = ContractType.parse_file(path)
+        chain.contracts._local_contracts[address] = contract
+        return contract
+
+    return contract_getter
+
+
+@pytest.fixture
+def ds_note():
+    return {
+        "address": "0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B",
+        "topics": [
+            HexBytes("0x7608870300000000000000000000000000000000000000000000000000000000"),
+            HexBytes("0x5946492d41000000000000000000000000000000000000000000000000000000"),
+            HexBytes("0x0000000000000000000000000abb839063ef747c8432b2acc60bf8f70ec09a45"),
+            HexBytes("0x0000000000000000000000000abb839063ef747c8432b2acc60bf8f70ec09a45"),
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000e0760887035946492d410000000000000000000000000000000000000000000000000000000000000000000000000000000abb839063ef747c8432b2acc60bf8f70ec09a450000000000000000000000000abb839063ef747c8432b2acc60bf8f70ec09a450000000000000000000000000abb839063ef747c8432b2acc60bf8f70ec09a450000000000000000000000000000000000000000000000000000000000000000fffffffffffffffffffffffffffffffffffffffffffa050e82a57b7fc6b6020c00000000000000000000000000000000000000000000000000000000",  # noqa: E501
+        "blockNumber": 14623434,
+        "transactionHash": HexBytes(
+            "0xa322a9fd0e627e22bfe1b0877cca1d1f2e697d076007231d0b7a366d1a0fdd51"
+        ),
+        "transactionIndex": 333,
+        "blockHash": HexBytes("0x0fd77b0af3fa471aa040a02d4fcd1ec0a35122a4166d0bb7c31354e23823de49"),
+        "logIndex": 376,
+        "removed": False,
+    }
 
 
 @pytest.fixture

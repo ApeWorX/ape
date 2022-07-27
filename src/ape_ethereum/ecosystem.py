@@ -26,7 +26,6 @@ from ape.utils import (
     parse_type,
     returns_array,
 )
-from ape.utils.misc import to_int
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -148,6 +147,8 @@ class Ethereum(EcosystemAPI):
 
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
         code = self.provider.get_code(address).hex()[2:]
+        if not code:
+            return None
         patterns = {
             ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
             ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
@@ -444,13 +445,7 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)  # type: ignore
 
-    def decode_logs(
-        self, events: Union[EventABI, List[EventABI]], logs: List[Dict]
-    ) -> Iterator["ContractLog"]:
-
-        if not isinstance(events, list):
-            events = [events]
-
+    def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         abi_inputs = {
             encode_hex(keccak(text=abi.selector)): LogInputABICollection(abi) for abi in events
         }
@@ -470,13 +465,13 @@ class Ethereum(EcosystemAPI):
                 continue
 
             event_arguments = abi.decode(topics, log["data"])
-
             yield ContractLog(
-                name=abi.event_name,
+                block_hash=log["blockHash"],
+                block_number=log["blockNumber"],
                 contract_address=self.decode_address(log["address"]),
                 event_arguments=event_arguments,
+                event_name=abi.event_name,
+                log_index=log["logIndex"],
                 transaction_hash=log["transactionHash"],
-                block_number=to_int(log["blockNumber"]),
-                block_hash=log["blockHash"],
-                log_index=to_int(log["logIndex"]),
-            )
+                transaction_index=log["transactionIndex"],
+            )  # type: ignore

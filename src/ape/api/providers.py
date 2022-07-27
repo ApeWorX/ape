@@ -11,7 +11,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
@@ -21,6 +21,7 @@ from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
+from web3.types import RPCEndpoint
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
@@ -740,7 +741,7 @@ class Web3Provider(ProviderAPI, ABC):
         if stop is None:
             stop = self.chain_manager.blocks.height
         if page is None:
-            page = self.chain_manager.provider.block_page_size
+            page = self.block_page_size
 
         for start_block in range(start, stop + 1, page):
             stop_block = min(stop, start_block + page - 1)
@@ -758,20 +759,26 @@ class Web3Provider(ProviderAPI, ABC):
             # eth-tester expects a different format, let web3 handle the conversions for it
             raw = "EthereumTester" not in self.client_version
             logs = self._get_logs(page_filter.dict(), raw)
-            return self.network.ecosystem.decode_logs(log_filter.events, logs)
+            return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
         with ThreadPoolExecutor(self.concurrency) as pool:
             for page in pool.map(fetch_log_page, block_ranges):
                 yield from page
 
-    def _get_logs(self, filter_params, raw=True):
+    def _get_logs(self, filter_params, raw=True) -> List[Dict]:
         if raw:
-            response = self.web3.provider.make_request("eth_getLogs", [filter_params])
+            response = self.web3.provider.make_request(RPCEndpoint("eth_getLogs"), [filter_params])
             if "error" in response:
-                raise ValueError(response["error"]["message"])
+                error = response["error"]
+                if isinstance(error, dict) and "message" in error:
+                    raise ValueError(error["message"])
+                else:
+                    # Should never get here, mostly for mypy
+                    raise ValueError(str(error))
+
             return response["result"]
         else:
-            return self.web3.eth.get_logs(filter_params)
+            return [vars(d) for d in self.web3.eth.get_logs(filter_params)]
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:

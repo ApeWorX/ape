@@ -52,16 +52,23 @@ def test_contract_logs_from_receipts(owner, contract_instance, assert_log_values
 
 def test_contract_logs_from_event_type(contract_instance, owner, assert_log_values):
     event_type = contract_instance.NumberChange
+    start_num = 6
+    size = 20
+    num_range = range(start_num, start_num + size)
 
-    contract_instance.setNumber(1, sender=owner)
-    contract_instance.setNumber(2, sender=owner)
-    contract_instance.setNumber(3, sender=owner)
+    # Generate 20 logs
+    for i in num_range:
+        contract_instance.setNumber(i, sender=owner)
 
+    # Collect 20 logs
     logs = [log for log in event_type]
-    assert len(logs) == 3, "Unexpected number of logs"
-    assert_log_values(logs[0], 1)
-    assert_log_values(logs[1], 2)
-    assert_log_values(logs[2], 3)
+
+    assert len(logs) == size, "Unexpected number of logs"
+    for num, log in zip(num_range, logs):
+        if num == start_num:
+            assert_log_values(log, num, previous_number=0)
+        else:
+            assert_log_values(log, num)
 
 
 def test_contract_logs_index_access(contract_instance, owner, assert_log_values):
@@ -252,3 +259,12 @@ def test_contract_two_events_with_same_name(owner, chain, networks_connected_to_
     assert event_from_impl_contract.abi.signature == expected_sig_from_impl
     event_from_interface = impl_instance.get_event_by_signature(expected_sig_from_interface)
     assert event_from_interface.abi.signature == expected_sig_from_interface
+
+
+def test_contract_decode_logs_no_abi(owner, contract_instance):
+    receipt = contract_instance.setNumber(1, sender=owner)
+    events = list(receipt.decode_logs())  # no abi
+    assert len(events) == 1
+    assert events[0].event_name == "NumberChange"
+    assert events[0].newNum == 1
+    assert events[0].transaction_index == 0

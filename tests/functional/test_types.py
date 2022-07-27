@@ -1,4 +1,5 @@
 import pytest
+from eth_utils import to_hex
 from ethpm_types.abi import EventABI
 
 from ape.types import ContractLog, LogFilter
@@ -9,14 +10,16 @@ BLOCK_HASH = "0x999999998d4f99f68db9999999999da27ed049458b139999999999e910155b99
 BLOCK_NUMBER = 323423
 EVENT_NAME = "MyEvent"
 LOG_INDEX = 7
+TXN_INDEX = 2
 RAW_LOG = {
     "block_hash": BLOCK_HASH,
     "block_number": BLOCK_NUMBER,
     "contract_address": ZERO_ADDRESS,
     "event_arguments": {"foo": 0, "bar": 1},
     "log_index": LOG_INDEX,
-    "name": EVENT_NAME,
+    "event_name": EVENT_NAME,
     "transaction_hash": TXN_HASH,
+    "transaction_index": TXN_INDEX,
 }
 RAW_EVENT_ABI = """
 {
@@ -45,13 +48,32 @@ def log():
 
 
 def test_contract_log_serialization(log):
-    log = ContractLog.parse_obj(log.dict())
-    assert log.contract_address == ZERO_ADDRESS
-    assert log.block_hash == BLOCK_HASH
-    assert log.block_number == BLOCK_NUMBER
-    assert log.name == EVENT_NAME
-    assert log.log_index == 7
-    assert log.transaction_hash == TXN_HASH
+    obj = ContractLog.parse_obj(log.dict())
+    assert obj.contract_address == ZERO_ADDRESS
+    assert obj.block_hash == BLOCK_HASH
+    assert obj.block_number == BLOCK_NUMBER
+    assert obj.event_name == EVENT_NAME
+    assert obj.log_index == 7
+    assert obj.transaction_hash == TXN_HASH
+    assert obj.transaction_index == TXN_INDEX
+
+
+def test_contract_log_serialization_with_hex_strings_and_non_checksum_addresses(log):
+    data = log.dict()
+    data["log_index"] = to_hex(log.log_index)
+    data["transaction_index"] = to_hex(log.transaction_index)
+    data["block_number"] = to_hex(log.block_number)
+    data["contract_address"] = log.contract_address.lower()
+
+    obj = ContractLog(**data)
+
+    assert obj.contract_address == ZERO_ADDRESS
+    assert obj.block_hash == BLOCK_HASH
+    assert obj.block_number == BLOCK_NUMBER
+    assert obj.event_name == EVENT_NAME
+    assert obj.log_index == 7
+    assert obj.transaction_hash == TXN_HASH
+    assert obj.transaction_index == TXN_INDEX
 
 
 def test_contract_log_access(log):

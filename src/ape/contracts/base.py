@@ -440,7 +440,7 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
         ecosystem = self.provider.network.ecosystem
-        yield from ecosystem.decode_logs(self.abi, receipt.logs)
+        yield from ecosystem.decode_logs(receipt.logs, self.abi)
 
     def poll_logs(
         self,
