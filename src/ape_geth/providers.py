@@ -17,7 +17,7 @@ from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
-from pydantic import Extra
+from pydantic import Extra, PositiveInt
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
 from web3.exceptions import ExtraDataLengthError
@@ -47,7 +47,7 @@ class EphemeralGeth(LoggingMixin, BaseGethProcess):
         hostname: str,
         port: int,
         mnemonic: str,
-        number_of_accounts: int,
+        number_of_accounts: PositiveInt,
         chain_id: int = 1337,
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
     ):

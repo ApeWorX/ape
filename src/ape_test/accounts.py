@@ -17,7 +17,7 @@ class TestAccountContainer(TestAccountContainerAPI):
     @cached_property
     def _dev_accounts(self) -> List[GeneratedDevAccount]:
         mnemonic = self.config["mnemonic"]
-        return generate_dev_accounts(mnemonic)
+        return generate_dev_accounts(mnemonic, number_of_accounts=self.config["number_of_accounts"])
 
     @property
     def aliases(self) -> Iterator[str]:
