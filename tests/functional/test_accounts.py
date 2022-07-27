@@ -262,7 +262,7 @@ def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiv
 def test_custom_num_of_test_accts_config(test_accounts, temp_config):
     from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 
-    CUSTOM_NUMBER_OF_TEST_ACCOUNTS = -20
+    CUSTOM_NUMBER_OF_TEST_ACCOUNTS = 20
 
     test_config = {
         "test": {
