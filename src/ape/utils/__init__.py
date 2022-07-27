@@ -34,6 +34,7 @@ from ape.utils.misc import (
     raises_not_implemented,
     singledispatchmethod,
     stream_response,
+    to_int,
 )
 from ape.utils.os import get_all_files_in_directory, get_relative_path, use_temp_sys_path
 from ape.utils.process import JoinableQueue, spawn
@@ -85,6 +86,7 @@ __all__ = [
     "Struct",
     "StructParser",
     "TraceStyles",
+    "to_int",
     "use_temp_sys_path",
     "USER_AGENT",
     "ZERO_ADDRESS",

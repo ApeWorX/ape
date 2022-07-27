@@ -580,7 +580,6 @@ class ContractCache(BaseManager):
             return default
 
         contract_type = self._get_contract_type_from_disk(address_key)
-
         if not contract_type:
             # Contract could be a minimal proxy
             proxy_info = self._local_proxies.get(address_key) or self._get_proxy_info_from_disk(
@@ -595,6 +594,13 @@ class ContractCache(BaseManager):
             if proxy_info:
                 self._local_proxies[address_key] = proxy_info
                 return self.get(proxy_info.target)
+
+            if not self.provider.get_code(address_key):
+                if default:
+                    self._local_contracts[address_key] = default
+                    self._cache_contract_to_disk(address_key, default)
+
+                return default
 
             # Also gets cached to disk for faster lookup next time.
             contract_type = self._get_contract_type_from_explorer(address_key)
