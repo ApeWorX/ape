@@ -3,7 +3,7 @@ from typing import Dict, Iterator, List, Optional, Set, Union
 import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import NetworkError
 
 from .base import BaseManager
@@ -118,6 +118,37 @@ class NetworkManager(BaseManager):
 
         self._ecosystems_by_project[project_name] = ecosystem_dict
         return ecosystem_dict
+
+    def create_adhoc_geth_provider(self, uri: str) -> ProviderAPI:
+        """
+        Create an ad-hoc connection to a URI using the GethProvider core plugin.
+        **NOTE**: This provider will assume EVM-like behavior and this is generally not recommended.
+        Use plugins when possible!
+
+        Args:
+            uri (str): The URI of the node.
+
+        Returns:
+            :class:`~ape.api.providers.ProviderAPI`: The Geth provider
+              implementation that comes with Ape.
+        """
+
+        geth_class = None
+        for plugin_name, (_, _, provider_class) in self.plugin_manager.providers:
+            if plugin_name == "geth":
+                geth_class = provider_class
+                break
+
+        if geth_class is None:
+            raise NetworkError("Core Geth plugin missing.")
+
+        network = NetworkAPI.create_adhoc_network()
+        return geth_class(
+            network=network,
+            provider_settings={"uri": uri},
+            data_folder=network.data_folder,
+            request_header=network.request_header,
+        )
 
     def __iter__(self) -> Iterator[str]:
         """
@@ -303,11 +334,15 @@ class NetworkManager(BaseManager):
                 provider_settings=provider_settings
             )
 
+        elif network_choice.startswith("http://") or network_choice.startswith("https://"):
+            return self.create_adhoc_geth_provider(network_choice)
+
         selections = network_choice.split(":")
 
         # NOTE: Handle case when URI is passed e.g. "http://..."
         if len(selections) > 3:
             selections[2] = ":".join(selections[2:])
+            selections = selections[:3]
 
         if selections == network_choice or len(selections) == 1:
             # Either split didn't work (in which case it matches the start)

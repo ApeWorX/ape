@@ -156,6 +156,8 @@ class GethProvider(Web3Provider, UpstreamProvider):
     block_page_size = 5000
     concurrency = 16
 
+    name: str = "geth"
+
     @property
     def uri(self) -> str:
         if "uri" in self.provider_settings:
@@ -185,11 +187,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
         if not self._web3.isConnected():
             if self.network.name != LOCAL_NETWORK_NAME:
-                raise ProviderError(
-                    f"When running on network '{self.network.name}', "
-                    f"the Geth plugin expects the Geth process to already "
-                    f"be running on '{self._clean_uri}'."
-                )
+                raise ProviderError(f"No node found on '{self._clean_uri}'.")
 
             # Start an ephemeral geth process.
             parsed_uri = URL(self.uri)
@@ -260,7 +258,10 @@ class GethProvider(Web3Provider, UpstreamProvider):
         if chain_id in (4, 5, 42) or is_likely_poa():
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
-        if self.network.name != LOCAL_NETWORK_NAME and self.network.chain_id != self.chain_id:
+        if (
+            self.network.name not in ("adhoc", LOCAL_NETWORK_NAME)
+            and self.network.chain_id != self.chain_id
+        ):
             raise ProviderError(
                 "HTTP Connection does not match expected chain ID. "
                 f"Are you connected to '{self.network.name}'?"

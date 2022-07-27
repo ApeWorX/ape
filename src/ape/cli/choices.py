@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 from typing import Any, List, Optional, Type, Union
 
@@ -7,6 +8,8 @@ from click import Choice, Context, Parameter
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AccountsError
+
+ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
 
 
 def _get_account_by_type(account_type: Optional[Type[AccountAPI]] = None) -> List[AccountAPI]:
@@ -192,6 +195,17 @@ class NetworkChoice(click.Choice):
 
     def get_metavar(self, param):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
+
+    def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
+        if (
+            ADHOC_NETWORK_PATTERN.match(value)
+            or str(value).startswith("http://")
+            or str(value).startswith("https://")
+        ):
+            # By-pass choice constraints when using adhoc network
+            return value
+
+        return super().convert(value, param, ctx)
 
 
 class OutputFormat(Enum):

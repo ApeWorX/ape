@@ -119,7 +119,7 @@ def network_option(
             case_sensitive=False, ecosystem=ecosystem, network=network, provider=provider
         ),
         default=default,
-        help="Override the default network and provider. (see ``ape networks list`` for options)",
+        help="Override the default network and provider. (see `ape networks list` for options)",
         show_default=True,
         show_choices=False,
     )
