@@ -1,5 +1,6 @@
 from functools import partial
 from pathlib import Path
+from tempfile import mkdtemp
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 from eth_account import Account as EthAccount  # type: ignore
@@ -508,7 +509,7 @@ class NetworkAPI(BaseInterfaceModel):
         if ethereum_class is None:
             raise NetworkError("Core Ethereum plugin missing.")
 
-        data_folder = cls.config_manager.DATA_FOLDER / "adhoc"
+        data_folder = mkdtemp()
         request_header = cls.config_manager.REQUEST_HEADER
         ethereum = ethereum_class(
             data_folder=data_folder, request_header=request_header
