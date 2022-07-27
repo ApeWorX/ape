@@ -7,7 +7,6 @@ import sys
 import time
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
