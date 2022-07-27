@@ -122,7 +122,7 @@ class NetworkManager(BaseManager):
     def create_adhoc_geth_provider(self, uri: str) -> ProviderAPI:
         """
         Create an ad-hoc connection to a URI using the GethProvider core plugin.
-        **NOTE**: This provider will assume EVM-like provider and this is generally not recommended.
+        **NOTE**: This provider will assume EVM-like behavior and this is generally not recommended.
         Use plugins when possible!
 
         Args:

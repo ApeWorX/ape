@@ -91,8 +91,8 @@ def test_network_option_unknown(runner, network_cmd):
         "something:else:http://127.0.0.1",
         "something:else:http://foo.bar",
         "something:else:https://foo.bar:8000",
-        "::https://foo.bar:8000",
         ":else:https://foo.bar:8000",
+        "::https://foo.bar:8000",
         "https://foo.bar:8000",
     ),
 )
