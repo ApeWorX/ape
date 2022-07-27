@@ -14,9 +14,11 @@ from pydantic import Field
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
-from ape.exceptions import DecodingError, TransactionError
+from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
 from ape.types import AddressType, ContractLog, RawAddress, TransactionSignature
 from ape.utils import (
+    DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     LogInputABICollection,
     Struct,
     StructParser,
@@ -24,7 +26,6 @@ from ape.utils import (
     parse_type,
     returns_array,
 )
-from ape.utils.misc import to_int
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -73,20 +74,39 @@ class NetworkConfig(PluginConfig):
     """
 
     block_time: int = 0
+    transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
 
 
 class EthereumConfig(PluginConfig):
     mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
-    mainnet_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
+    mainnet_fork: NetworkConfig = NetworkConfig(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
     ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
-    ropsten_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
+    ropsten_fork: NetworkConfig = NetworkConfig(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
     kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
-    kovan_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
+    kovan_fork: NetworkConfig = NetworkConfig(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
     rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    rinkeby_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
+    rinkeby_fork: NetworkConfig = NetworkConfig(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
     goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    goerli_fork: NetworkConfig = NetworkConfig(default_provider=None)  # type: ignore
-    local: NetworkConfig = NetworkConfig(default_provider="test")  # type: ignore
+    goerli_fork: NetworkConfig = NetworkConfig(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
+    local: NetworkConfig = NetworkConfig(
+        default_provider="test",
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    )  # type: ignore
     default_network: str = LOCAL_NETWORK_NAME
 
 
@@ -103,6 +123,8 @@ class Block(BlockAPI):
 
 
 class Ethereum(EcosystemAPI):
+    name: str = "ethereum"
+
     default_transaction_type = TransactionType.DYNAMIC
     """
     Default transaction type should be overidden id chain doesn't support EIP-1559
@@ -125,6 +147,8 @@ class Ethereum(EcosystemAPI):
 
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
         code = self.provider.get_code(address).hex()[2:]
+        if not code:
+            return None
         patterns = {
             ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
             ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
@@ -145,7 +169,11 @@ class Ethereum(EcosystemAPI):
             ProxyType.UUPS: str_to_slot("PROXIABLE"),
         }
         for type, slot in slots.items():
-            storage = self.provider.get_storage_at(address, slot)
+            try:
+                storage = self.provider.get_storage_at(address, slot)
+            except APINotImplementedError:
+                continue
+
             if sum(storage) == 0:
                 continue
 
@@ -285,6 +313,7 @@ class Ethereum(EcosystemAPI):
             self.decode_primitive_value(v, parse_type(t))
             for v, t in zip(vm_return_values, output_types)
         ]
+
         parser = StructParser(abi)
         output_values = parser.parse(abi.outputs, output_values)
 
@@ -416,13 +445,7 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)  # type: ignore
 
-    def decode_logs(
-        self, events: Union[EventABI, List[EventABI]], logs: List[Dict]
-    ) -> Iterator["ContractLog"]:
-
-        if not isinstance(events, list):
-            events = [events]
-
+    def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         abi_inputs = {
             encode_hex(keccak(text=abi.selector)): LogInputABICollection(abi) for abi in events
         }
@@ -442,13 +465,13 @@ class Ethereum(EcosystemAPI):
                 continue
 
             event_arguments = abi.decode(topics, log["data"])
-
             yield ContractLog(
-                name=abi.event_name,
+                block_hash=log["blockHash"],
+                block_number=log["blockNumber"],
                 contract_address=self.decode_address(log["address"]),
                 event_arguments=event_arguments,
+                event_name=abi.event_name,
+                log_index=log["logIndex"],
                 transaction_hash=log["transactionHash"],
-                block_number=to_int(log["blockNumber"]),
-                block_hash=log["blockHash"],
-                log_index=to_int(log["logIndex"]),
-            )
+                transaction_index=log["transactionIndex"],
+            )  # type: ignore

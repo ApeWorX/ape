@@ -267,7 +267,8 @@ class DependencyAPI(BaseInterfaceModel):
     def get(self, contract_name: str) -> Optional["ContractContainer"]:
         manifest = self.extract_manifest()
         if hasattr(manifest, contract_name):
-            return self.create_contract_container(contract_type=getattr(manifest, contract_name))
+            contract_type = getattr(manifest, contract_name)
+            return self.chain_manager.contracts.get_container(contract_type)
 
         return None
 

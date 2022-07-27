@@ -11,7 +11,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
@@ -21,6 +21,7 @@ from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
+from web3.types import RPCEndpoint
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
@@ -389,7 +390,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     def __repr__(self) -> str:
-        return f"<{self.name} chain_id={self.chain_id}>"
+        try:
+            chain_id = self.chain_id
+        except ProviderNotConnectedError:
+            chain_id = None
+
+        return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
 
     @raises_not_implemented
     def unlock_account(self, address: AddressType) -> bool:
@@ -594,7 +600,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
         if self._client_version is None:
-            self._client_version = self._web3.clientVersion
+            self._client_version = self.web3.clientVersion
 
         return self._client_version
 
@@ -635,7 +641,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def chain_id(self) -> int:
-        if self.network.name != LOCAL_NETWORK_NAME and not self.network.name.endswith("-fork"):
+        if self.network.name not in (
+            "adhoc",
+            LOCAL_NETWORK_NAME,
+        ) and not self.network.name.endswith("-fork"):
             # If using a live network, the chain ID is hardcoded.
             return self.network.chain_id
 
@@ -669,9 +678,17 @@ class Web3Provider(ProviderAPI, ABC):
     def get_code(self, address: str) -> bytes:
         return self.web3.eth.get_code(address)
 
-    def get_storage_at(self, address: str, slot: int, *args, **kwargs) -> bytes:
+    def get_storage_at(self, address: str, slot: int, **kwargs) -> bytes:
         block_id = kwargs.pop("block_identifier", None)
-        return self.web3.eth.get_storage_at(address, slot, block_identifier=block_id)
+        try:
+            return self.web3.eth.get_storage_at(
+                address, slot, block_identifier=block_id
+            )  # type: ignore
+        except ValueError as err:
+            if "RPC Endpoint has not been implemented" in str(err):
+                raise APINotImplementedError(str(err)) from err
+
+            raise  # Raise original error
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         try:
@@ -688,7 +705,7 @@ class Web3Provider(ProviderAPI, ABC):
             raise TransactionError(message="Required confirmations cannot be negative.")
 
         timeout = (
-            timeout if timeout is not None else self.config_manager.transaction_acceptance_timeout
+            timeout if timeout is not None else self.provider.network.transaction_acceptance_timeout
         )
 
         try:
@@ -724,7 +741,7 @@ class Web3Provider(ProviderAPI, ABC):
         if stop is None:
             stop = self.chain_manager.blocks.height
         if page is None:
-            page = self.chain_manager.provider.block_page_size
+            page = self.block_page_size
 
         for start_block in range(start, stop + 1, page):
             stop_block = min(stop, start_block + page - 1)
@@ -742,20 +759,26 @@ class Web3Provider(ProviderAPI, ABC):
             # eth-tester expects a different format, let web3 handle the conversions for it
             raw = "EthereumTester" not in self.client_version
             logs = self._get_logs(page_filter.dict(), raw)
-            return self.network.ecosystem.decode_logs(log_filter.events, logs)
+            return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
         with ThreadPoolExecutor(self.concurrency) as pool:
             for page in pool.map(fetch_log_page, block_ranges):
                 yield from page
 
-    def _get_logs(self, filter_params, raw=True):
+    def _get_logs(self, filter_params, raw=True) -> List[Dict]:
         if raw:
-            response = self.web3.provider.make_request("eth_getLogs", [filter_params])
+            response = self.web3.provider.make_request(RPCEndpoint("eth_getLogs"), [filter_params])
             if "error" in response:
-                raise ValueError(response["error"]["message"])
+                error = response["error"]
+                if isinstance(error, dict) and "message" in error:
+                    raise ValueError(error["message"])
+                else:
+                    # Should never get here, mostly for mypy
+                    raise ValueError(str(error))
+
             return response["result"]
         else:
-            return self.web3.eth.get_logs(filter_params)
+            return [vars(d) for d in self.web3.eth.get_logs(filter_params)]
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:

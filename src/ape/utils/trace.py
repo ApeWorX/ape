@@ -12,12 +12,12 @@ from evm_trace.display import DisplayableCallTreeNode
 from hexbytes import HexBytes
 from rich.tree import Tree
 
-from ape.api.networks import EcosystemAPI
 from ape.exceptions import ContractError, DecodingError
 from ape.utils.abi import Struct, parse_type
 from ape.utils.misc import ZERO_ADDRESS
 
 if TYPE_CHECKING:
+    from ape.api.networks import EcosystemAPI
     from ape.api.transactions import ReceiptAPI
 
 
@@ -60,7 +60,7 @@ class CallTraceParser:
     A class for parsing a call trace, used in the
     :meth:`~ape.api.transactions.ReceiptAPI.show_trace` method,
     which uses the response from
-    :method:`~ape.api.providers.ProviderAPI.get_call_trace` and the
+    :meth:`~ape.api.providers.ProviderAPI.get_call_trace` and the
     ``evm-trace`` Python package.
 
     Usage example::
@@ -85,7 +85,7 @@ class CallTraceParser:
         self.colors = color_set
 
     @property
-    def _ecosystem(self) -> EcosystemAPI:
+    def _ecosystem(self) -> "EcosystemAPI":
         return self._receipt.provider.network.ecosystem
 
     def parse_as_tree(self, call: CallTreeNode) -> Tree:
@@ -132,7 +132,7 @@ class CallTraceParser:
             method = None
             contract_name = contract_type.name
             if "symbol" in contract_type.view_methods:
-                contract = self._receipt.create_contract(address, contract_type)
+                contract = self._receipt.chain_manager.contracts.instance_at(address, contract_type)
 
                 try:
                     contract_name = contract.symbol() or contract_name

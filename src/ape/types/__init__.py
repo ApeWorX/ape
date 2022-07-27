@@ -21,6 +21,7 @@ from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
 from ape._compat import Literal
+from ape.utils.misc import to_int
 
 from .signatures import MessageSignature, SignableMessage, TransactionSignature
 
@@ -78,8 +79,8 @@ class LogFilter(BaseModel):
     def dict(self, client=None):
         return FilterParams(
             address=self.addresses,
-            fromBlock=hex(self.start_block),
-            toBlock=hex(self.stop_block),
+            fromBlock=hex(self.start_block),  # type: ignore
+            toBlock=hex(self.stop_block),  # type: ignore
             topics=self.topic_filter,  # type: ignore
         )
 
@@ -147,7 +148,7 @@ class ContractLog(BaseModel):
     An instance of a log from a contract.
     """
 
-    name: str
+    event_name: str
     """The name of the event."""
 
     contract_address: AddressType
@@ -167,6 +168,25 @@ class ContractLog(BaseModel):
 
     log_index: int
     """The index of the log on the transaction."""
+
+    transaction_index: Optional[int] = None
+    """
+    The index of the transaction's position when the log was created.
+    Is `None` when from the pending block.
+    """
+
+    @validator("block_number", "log_index", "transaction_index", pre=True)
+    def validate_hex_ints(cls, value):
+        if not isinstance(value, int):
+            return to_int(value)
+
+        return value
+
+    @validator("contract_address", pre=True)
+    def validate_address(cls, value):
+        from ape import convert
+
+        return convert(value, AddressType)
 
     def __str__(self) -> str:
         args = " ".join(f"{key}={val}" for key, val in self.event_arguments.items())

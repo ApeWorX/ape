@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 from typing import Any, List, Optional, Type, Union
 
@@ -7,6 +8,8 @@ from click import Choice, Context, Parameter
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AccountsError
+
+ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
 
 
 def _get_account_by_type(account_type: Optional[Type[AccountAPI]] = None) -> List[AccountAPI]:
@@ -82,7 +85,8 @@ class PromptChoice(click.ParamType):
 
 
 def get_user_selected_account(
-    account_type: Optional[Type[AccountAPI]] = None, prompt_message: Optional[str] = None
+    prompt_message: Optional[str] = None,
+    account_type: Optional[Type[AccountAPI]] = None,
 ) -> AccountAPI:
     """
     Prompt the user to pick from their accounts and return that account.
@@ -91,9 +95,9 @@ def get_user_selected_account(
     :meth:`~ape.cli.options.account_option`.
 
     Args:
+        prompt_message (str, optional): Customize the prompt message.
         account_type (type[:class:`~ape.api.accounts.AccountAPI`], optional):
           If given, the user may only select an account of this type.
-        prompt_message (str, optional): Customize the prompt message.
 
     Returns:
         :class:`~ape.api.accounts.AccountAPI`
@@ -102,7 +106,7 @@ def get_user_selected_account(
     if account_type and not issubclass(account_type, AccountAPI):
         raise AccountsError(f"Cannot return accounts with type '{account_type}'.")
 
-    prompt = AccountAliasPromptChoice(account_type=account_type, prompt_message=prompt_message)
+    prompt = AccountAliasPromptChoice(prompt_message=prompt_message, account_type=account_type)
     return prompt.get_user_selected_account()
 
 
@@ -191,6 +195,17 @@ class NetworkChoice(click.Choice):
 
     def get_metavar(self, param):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
+
+    def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
+        if (
+            ADHOC_NETWORK_PATTERN.match(value)
+            or str(value).startswith("http://")
+            or str(value).startswith("https://")
+        ):
+            # By-pass choice constraints when using adhoc network
+            return value
+
+        return super().convert(value, param, ctx)
 
 
 class OutputFormat(Enum):

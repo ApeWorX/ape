@@ -8,7 +8,7 @@ from hexbytes import HexBytes
 import ape
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractInstance
-from ape.exceptions import APINotImplementedError, ChainError
+from ape.exceptions import APINotImplementedError, ChainError, ConversionError
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -406,3 +406,35 @@ def test_poll_blocks_timeout(
             time.sleep(1.5)
 
     assert "Timed out waiting for new block (time_waited=1" in str(err.value)
+
+
+def test_contracts_get_multiple(vyper_contract_instance, solidity_contract_instance, chain):
+    contract_map = chain.contracts.get_multiple(
+        (vyper_contract_instance.address, solidity_contract_instance.address)
+    )
+    assert len(contract_map) == 2
+    assert contract_map[vyper_contract_instance.address] == vyper_contract_instance.contract_type
+    assert (
+        contract_map[solidity_contract_instance.address] == solidity_contract_instance.contract_type
+    )
+
+
+def test_contracts_get_all_include_non_contract_address(vyper_contract_instance, chain, owner):
+    actual = chain.contracts.get_multiple((vyper_contract_instance.address, owner.address))
+    assert len(actual) == 1
+    assert actual[vyper_contract_instance.address] == vyper_contract_instance.contract_type
+
+
+def test_contracts_get_multiple_attempts_to_convert(chain):
+    with pytest.raises(ConversionError):
+        chain.contracts.get_multiple(("test.eth",))
+
+
+def test_contracts_get_non_contract_address(chain, owner):
+    actual = chain.contracts.get(owner.address)
+    assert actual is None
+
+
+def test_contracts_get_attempts_to_convert(chain):
+    with pytest.raises(ConversionError):
+        chain.contracts.get("test.eth")

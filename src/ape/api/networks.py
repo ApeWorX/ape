@@ -1,5 +1,6 @@
 from functools import partial
 from pathlib import Path
+from tempfile import mkdtemp
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 from eth_account import Account as EthAccount  # type: ignore
@@ -14,7 +15,13 @@ from pydantic import BaseModel
 
 from ape.exceptions import NetworkError, NetworkNotFoundError, SignatureError
 from ape.types import AddressType, ContractLog, RawAddress
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
+from ape.utils import (
+    DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    BaseInterfaceModel,
+    abstractmethod,
+    cached_property,
+    raises_not_implemented,
+)
 
 from .config import PluginConfig
 
@@ -299,13 +306,13 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_logs(self, abi: EventABI, raw_logs: List[Dict]) -> Iterator[ContractLog]:
+    def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         """
         Decode any contract logs that match the given event ABI from the raw log data.
 
         Args:
-            abi (EventABI): The event producing the logs.
-            raw_logs (List[Dict]): A list of raw log data from the chain.
+            logs (List[Dict]): A list of raw log data from the chain.
+            *events (EventABI): Event definitions to decode.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
@@ -491,10 +498,34 @@ class NetworkAPI(BaseInterfaceModel):
 
     _default_provider: str = ""
 
+    @classmethod
+    def create_adhoc_network(cls) -> "NetworkAPI":
+        ethereum_class = None
+        for plugin_name, ecosystem_class in cls.plugin_manager.ecosystems:
+            if plugin_name == "ethereum":
+                ethereum_class = ecosystem_class
+                break
+
+        if ethereum_class is None:
+            raise NetworkError("Core Ethereum plugin missing.")
+
+        data_folder = mkdtemp()
+        request_header = cls.config_manager.REQUEST_HEADER
+        ethereum = ethereum_class(
+            data_folder=data_folder, request_header=request_header
+        )  # type: ignore
+        return cls(
+            name="adhoc",
+            ecosystem=ethereum,
+            data_folder=data_folder,
+            request_header=request_header,
+            _default_provider="geth",
+        )
+
     def __repr__(self) -> str:
         return f"<{self.name} chain_id={self.chain_id}>"
 
-    @cached_property
+    @property
     def config(self) -> PluginConfig:
         """
         The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
@@ -503,9 +534,9 @@ class NetworkAPI(BaseInterfaceModel):
 
         return self.config_manager.get_config(self.ecosystem.name)
 
-    @cached_property
-    def _network_config(self) -> PluginConfig:
-        return self.config.dict().get(self.name, {})  # type: ignore
+    @property
+    def _network_config(self) -> Dict:
+        return self.config.dict().get(self.name, {})
 
     @property
     def chain_id(self) -> int:
@@ -514,9 +545,6 @@ class NetworkAPI(BaseInterfaceModel):
 
         **NOTE**: Unless overridden, returns same as
         :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
-
-        Returns:
-            int
         """
 
         provider = self.ecosystem.network_manager.active_provider
@@ -536,9 +564,6 @@ class NetworkAPI(BaseInterfaceModel):
 
         **NOTE**: Unless overridden, returns same as
         :py:attr:`~ape.api.networks.NetworkAPI.chain_id`.
-
-        Returns:
-            int
         """
         return self.chain_id
 
@@ -549,11 +574,8 @@ class NetworkAPI(BaseInterfaceModel):
         before considering a transaction "confirmed". Confirmations
         refer to the number of blocks that have been added since the
         transaction's block.
-
-        Returns:
-            int
         """
-        return self._network_config.get("required_confirmations", 0)  # type: ignore
+        return self._network_config.get("required_confirmations", 0)
 
     @property
     def block_time(self) -> int:
@@ -566,12 +588,19 @@ class NetworkAPI(BaseInterfaceModel):
             ethereum:
               mainnet:
                 block_time: 15
-
-        Returns:
-            int
         """
+        return self._network_config.get("block_time", 0)
 
-        return self._network_config.get("block_time", 0)  # type: ignore
+    @property
+    def transaction_acceptance_timeout(self) -> int:
+        """
+        The amount of time to wait for a transaction to be accepted on the network.
+        Does not include waiting for block-confirmations. Defaults to two minutes.
+        Local networks use smaller timeouts.
+        """
+        return self._network_config.get(
+            "transaction_acceptance_timeout", DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+        )
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:
@@ -657,7 +686,7 @@ class NetworkAPI(BaseInterfaceModel):
         if ":" in provider_name:
             # NOTE: Shortcut that allows `--network ecosystem:network:http://...` to work
             provider_settings["uri"] = provider_name
-            provider_name = provider_name.split(":")[0]
+            provider_name = "geth"
 
         if provider_name in self.providers:
             return self.providers[provider_name](provider_settings=provider_settings)

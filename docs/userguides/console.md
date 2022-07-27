@@ -37,6 +37,9 @@ In [1]: networks
 Out[1]: <NetworkManager active_provider=<test chain_id=61>>
 ```
 
+**NOTE**: To change the network of the active console, use the `--network` option.
+Follow [this guide]("./networks.html") for more information on networks in Ape.
+
 ## Namespace Extras
 
 You can also create scripts to be included in the console namespace by adding a file (`ape_console_extras.py`) to your root project directory.  All non-internal symbols from this file will be included in the console namespace.  Internal symbols are prefixed by an underscore (`_`).

@@ -19,7 +19,7 @@ extras_require = {
     ],
     "lint": [
         "black>=22.3.0,<23.0",  # auto-formatter and linter
-        "mypy>=0.961,<1.0",  # Static type analyzer
+        "mypy>=0.971,<1.0",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
         "flake8>=4.0.1,<5.0",  # Style linter
@@ -94,6 +94,7 @@ setup(
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.1.0",
         "ethpm-types>=0.3.2,<0.4.0",
+        "eip712>=0.1.0,<0.2",
         "evm-trace>=0.1.0.a6",
         "hexbytes>=0.2.2,<1.0.0",
         "packaging>=20.9,<21.0",

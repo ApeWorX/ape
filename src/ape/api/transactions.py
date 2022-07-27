@@ -215,14 +215,12 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return latest_block.number - self.block_number
 
-    def raise_for_status(self):
-        """
-        Handle provider-specific errors regarding a non-successful
-        :class:`~api.providers.TransactionStatusEnum`.
-        """
-
+    @abstractmethod
     def decode_logs(
-        self, abi: Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+        self,
+        abi: Optional[
+            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+        ] = None,
     ) -> Iterator[ContractLog]:
         """
         Decode the logs on the receipt.
@@ -233,14 +231,12 @@ class ReceiptAPI(BaseInterfaceModel):
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
         """
-        if not isinstance(abi, (list, tuple)):
-            abi = [abi]
 
-        for event_abi in abi:
-            if not isinstance(event_abi, EventABI):
-                event_abi = event_abi.abi
-
-            yield from self.provider.network.ecosystem.decode_logs(event_abi, self.logs)
+    def raise_for_status(self):
+        """
+        Handle provider-specific errors regarding a non-successful
+        :class:`~api.providers.TransactionStatusEnum`.
+        """
 
     def await_confirmations(self) -> "ReceiptAPI":
         """

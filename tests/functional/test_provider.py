@@ -1,29 +1,20 @@
 import pytest
-from ethpm_types.abi import EventABI
+from eth_typing import HexStr
 
 from ape.exceptions import ProviderError, ProviderNotConnectedError
 from ape.types import LogFilter
 
 EXPECTED_CHAIN_ID = 61
-RAW_EVENT_ABI = """
-{
-  "anonymous": false,
-  "inputs": [
-    {
-      "indexed": true,
-      "name": "oldVersion",
-      "type": "address"
-    },
-    {
-      "indexed": true,
-      "name": "newVersion",
-      "type": "address"
-    }
-  ],
-  "name": "StrategyMigrated",
-  "type": "event"
-}
-"""
+
+
+@pytest.mark.parametrize("block_id", ("latest", 0, "0", "0x0", HexStr("0x0")))
+def test_get_block(eth_tester_provider, block_id):
+    latest_block = eth_tester_provider.get_block(block_id)
+
+    # Each parameter is the same as requesting the first block.
+    assert latest_block.number == 0
+    assert latest_block.base_fee == 1000000000
+    assert latest_block.gas_used == 0
 
 
 def test_chain_id(eth_tester_provider):
@@ -108,15 +99,3 @@ def test_get_contract_logs_single_log_unmatched(contract_instance, owner, eth_te
     contract_instance.fooAndBar(sender=owner)  # Create logs
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 0
-
-
-def test_topic_filter_encoding():
-    event_abi = EventABI.parse_raw(RAW_EVENT_ABI)
-    log_filter = LogFilter.from_event(
-        event=event_abi, search_topics={"newVersion": "0x8c44Cc5c0f5CD2f7f17B9Aca85d456df25a61Ae8"}
-    )
-    assert log_filter.topic_filter == [
-        "0x100b69bb6b504e1252e36b375233158edee64d071b399e2f81473a695fd1b021",
-        None,
-        "0x0000000000000000000000008c44cc5c0f5cd2f7f17b9aca85d456df25a61ae8",
-    ]
