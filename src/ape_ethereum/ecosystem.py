@@ -25,7 +25,6 @@ from ape.utils import (
     is_array,
     parse_type,
     returns_array,
-    to_snake_case,
 )
 from ape_ethereum.transactions import (
     AccessListTransaction,
@@ -464,14 +463,13 @@ class Ethereum(EcosystemAPI):
                 continue
 
             event_arguments = abi.decode(topics, log["data"])
-            log = {to_snake_case(k): v for k, v in log.items()}
             yield ContractLog(
-                block_hash=log["block_hash"],
-                block_number=log["block_number"],
+                block_hash=log["blockHash"],
+                block_number=log["blockNumber"],
                 contract_address=self.decode_address(log["address"]),
                 event_arguments=event_arguments,
                 event_name=abi.event_name,
-                log_index=log["log_index"],
-                transaction_hash=log["transaction_hash"],
-                transaction_index=log["transaction_index"],
+                log_index=log["logIndex"],
+                transaction_hash=log["transactionHash"],
+                transaction_index=log["transactionIndex"],
             )  # type: ignore

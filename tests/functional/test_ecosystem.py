@@ -6,28 +6,13 @@ from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import Block
 
-LOG_FROM_RESPONSE = {
+LOG = {
     "removed": False,
     "logIndex": "0x0",
     "transactionIndex": "0x0",
     "transactionHash": "0x74dd040dfa06f0af9af8ca95d7aae409978400151c746f55ecce19e7356cfc5a",
     "blockHash": "0x2c99950b07accf3e442512a3352a11e6fed37b2331de5f71b7743b357d96e4e8",
     "blockNumber": "0xa946ac",
-    "address": "0x274b028b03a250ca03644e6c578d81f019ee1323",
-    "data": "0xabffd4675206dab5d04a6b0d62c975049665d1f512f29f303908abdd20bc08a100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000744796e616d696300000000000000000000000000000000000000000000000000",  # noqa: E501
-    "topics": [
-        "0xa84473122c11e32cd505595f246a28418b8ecd6cf819f4e3915363fad1b8f968",
-        "0x0000000000000000000000000000000000000000000000000000000000000006",
-        "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d",
-    ],
-}
-LOG_FROM_ETH_TESTER = {
-    "removed": False,
-    "log_index": 0,
-    "transaction_index": 0,
-    "transaction_hash": "0x74dd040dfa06f0af9af8ca95d7aae409978400151c746f55ecce19e7356cfc5a",
-    "block_hash": "0x2c99950b07accf3e442512a3352a11e6fed37b2331de5f71b7743b357d96e4e8",
-    "block_number": 11093676,
     "address": "0x274b028b03a250ca03644e6c578d81f019ee1323",
     "data": "0xabffd4675206dab5d04a6b0d62c975049665d1f512f29f303908abdd20bc08a100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000744796e616d696300000000000000000000000000000000000000000000000000",  # noqa: E501
     "topics": [
@@ -87,10 +72,9 @@ def test_transaction_acceptance_timeout(temp_config, config, networks):
         assert networks.provider.network.transaction_acceptance_timeout == new_value
 
 
-@pytest.mark.parametrize("log_data", (LOG_FROM_RESPONSE, LOG_FROM_ETH_TESTER))
-def test_decode_logs(ethereum, vyper_contract_instance, log_data):
+def test_decode_logs(ethereum, vyper_contract_instance):
     abi = vyper_contract_instance.NumberChange.abi
-    result = [x for x in ethereum.decode_logs([log_data], abi)]
+    result = [x for x in ethereum.decode_logs([LOG], abi)]
     assert len(result) == 1
     assert result[0] == {
         "event_name": "NumberChange",

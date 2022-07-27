@@ -21,7 +21,7 @@ from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
 from ape._compat import Literal
-from ape.utils.misc import to_int, to_snake_case
+from ape.utils.misc import to_int
 
 from .signatures import MessageSignature, SignableMessage, TransactionSignature
 
@@ -174,9 +174,6 @@ class ContractLog(BaseModel):
     The index of the transaction's position when the log was created.
     Is `None` when from the pending block.
     """
-
-    class Config:
-        alias_generator = to_snake_case
 
     @validator("block_number", "log_index", "transaction_index", pre=True)
     def validate_hex_ints(cls, value):
