@@ -60,7 +60,7 @@ class CallTraceParser:
     A class for parsing a call trace, used in the
     :meth:`~ape.api.transactions.ReceiptAPI.show_trace` method,
     which uses the response from
-    :method:`~ape.api.providers.ProviderAPI.get_call_trace` and the
+    :meth:`~ape.api.providers.ProviderAPI.get_call_trace` and the
     ``evm-trace`` Python package.
 
     Usage example::

@@ -77,53 +77,15 @@ deployed_contract = my_account.deploy(dependency_contract, "argument")
 print(deployed_contract.address)
 ```
 
-## Networks
-
-The default provider for the development network is the
-[Ethereum Tester provider](https://github.com/ethereum/eth-tester). However, you can change the default provider per
-network using the `ape-config.yaml` file.
-
-```yaml
-ethereum:
-  development:
-    default_provider: hardhat
-```
-
-For specifying the network in an ad-hoc fashion, commands such as `run`, `test`, and `console` offer a `--network`
-option:
-
-```bash
-ape console --network ethereum:local:hardhat
-```
-
-**NOTE**: If you are using the default ecosystem or network, you can omit them from the option:
-
-```bash
-ape console --network ::hardhat
-```
-
 ## Scripts
 
 The scripts folder contains project automation scripts, such as deploy scripts, as well as other executable jobs, such as scripts for running simulations.
-
-You can write scripts that run using the `ape run` command. The `ape run` command will register and run Python
-files defined under the `scripts/` directory that do not start with an `_` underscore. If the scripts take
-advantage of utilities from our [`ape.cli`](../methoddocs/cli.html#ape-cli) submodule,
-you can build a [Click](https://click.palletsprojects.com/) command line interface
-by defining a `click.Command` or `click.Group` object called `cli` in your file.
-Otherwise, if the script has a `main()` method, it will execute that method when called.
-
-Note that by default, `cli` scripts do not have
-[`ape.cli.network_option`](../methoddocs/cli.html?highlight=options#ape.cli.options.network_option)
-installed, giving you more flexibility in how you define your scripts.
-`main` scripts will always provide a network option to the call.
+To learn more about scripting in Ape, see [the scripting guide](./scripts.html).
 
 ## Testing
 
-
-Use tests to verify your project. Testing is a complex topic, learn more about testing using Ape framework
-[here](./testing.html)
-
-You can test your project using the `ape test` command. The `ape test` command comes with the core-plugin `ape-test`.
-The `ape-test` plugin extends the popular python testing framework
-[pytest](https://docs.pytest.org/en/6.2.x/contents.html).
+Use tests to verify your project.
+You can test your project using the `ape test` command.
+The `ape test` command comes with the core-plugin `ape-test`.
+The `ape-test` plugin extends the popular python testing framework [pytest](https://docs.pytest.org/en/6.2.x/contents.html).
+Testing is a complex topic; learn more about testing using Ape framework [here](./testing.html).

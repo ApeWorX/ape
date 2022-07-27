@@ -1,5 +1,6 @@
 from functools import partial
 from pathlib import Path
+from tempfile import mkdtemp
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 from eth_account import Account as EthAccount  # type: ignore
@@ -497,6 +498,30 @@ class NetworkAPI(BaseInterfaceModel):
 
     _default_provider: str = ""
 
+    @classmethod
+    def create_adhoc_network(cls) -> "NetworkAPI":
+        ethereum_class = None
+        for plugin_name, ecosystem_class in cls.plugin_manager.ecosystems:
+            if plugin_name == "ethereum":
+                ethereum_class = ecosystem_class
+                break
+
+        if ethereum_class is None:
+            raise NetworkError("Core Ethereum plugin missing.")
+
+        data_folder = mkdtemp()
+        request_header = cls.config_manager.REQUEST_HEADER
+        ethereum = ethereum_class(
+            data_folder=data_folder, request_header=request_header
+        )  # type: ignore
+        return cls(
+            name="adhoc",
+            ecosystem=ethereum,
+            data_folder=data_folder,
+            request_header=request_header,
+            _default_provider="geth",
+        )
+
     def __repr__(self) -> str:
         return f"<{self.name} chain_id={self.chain_id}>"
 
@@ -661,7 +686,7 @@ class NetworkAPI(BaseInterfaceModel):
         if ":" in provider_name:
             # NOTE: Shortcut that allows `--network ecosystem:network:http://...` to work
             provider_settings["uri"] = provider_name
-            provider_name = provider_name.split(":")[0]
+            provider_name = "geth"
 
         if provider_name in self.providers:
             return self.providers[provider_name](provider_settings=provider_settings)

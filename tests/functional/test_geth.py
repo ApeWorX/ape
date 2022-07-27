@@ -96,3 +96,13 @@ def test_get_call_tree_erigon(mock_web3, geth_provider, trace_response):
     assert "CALL: 0xC17f2C69aE2E66FD87367E3260412EEfF637F70E.<0x96d373e5> [1401584 gas]" in repr(
         result
     )
+
+
+def test_repr_disconnected(networks_connected_to_tester):
+    geth = networks_connected_to_tester.get_provider_from_choice("ethereum:local:geth")
+    assert repr(geth) == "<geth>"
+
+
+def test_repr_connected(mock_web3, geth_provider):
+    mock_web3.eth.chain_id = 123
+    assert repr(geth_provider) == "<geth chain_id=123>"

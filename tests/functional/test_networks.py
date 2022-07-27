@@ -1,17 +1,6 @@
 import pytest
-from eth_typing import HexStr
 
 from ape.exceptions import NetworkError
-
-
-@pytest.mark.parametrize("block_id", ("latest", 0, "0", "0x0", HexStr("0x0")))
-def test_get_block(eth_tester_provider, block_id):
-    latest_block = eth_tester_provider.get_block(block_id)
-
-    # Each parameter is the same as requesting the first block.
-    assert latest_block.number == 0
-    assert latest_block.base_fee == 1000000000
-    assert latest_block.gas_used == 0
 
 
 def test_get_network_choices_filter_ecosystem(networks):
@@ -58,3 +47,21 @@ def test_repr(networks_connected_to_tester):
 
     # Check individual network
     assert repr(networks_connected_to_tester.provider.network) == "<local chain_id=61>"
+
+
+def test_get_provider_from_choice_adhoc_provider(networks_connected_to_tester):
+    uri = "https://geth:1234567890abcdef@geth.foo.bar/"
+    provider = networks_connected_to_tester.get_provider_from_choice(f"ethereum:local:{uri}")
+    assert provider.name == "geth"
+    assert provider.uri == uri
+    assert provider.network.name == "local"
+    assert provider.network.ecosystem.name == "ethereum"
+
+
+def test_get_provider_from_choice_adhoc_ecosystem(networks_connected_to_tester):
+    uri = "https://geth:1234567890abcdef@geth.foo.bar/"
+    provider = networks_connected_to_tester.get_provider_from_choice(uri)
+    assert provider.name == "geth"
+    assert provider.uri == uri
+    assert provider.network.name == "adhoc"
+    assert provider.network.ecosystem.name == "ethereum"
