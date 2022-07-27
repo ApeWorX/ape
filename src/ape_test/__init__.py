@@ -1,3 +1,5 @@
+from pydantic import PositiveInt
+
 from ape import plugins
 from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -9,7 +11,7 @@ from .providers import LocalProvider
 
 class Config(PluginConfig):
     mnemonic: str = DEFAULT_TEST_MNEMONIC
-    number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS
+    number_of_accounts: PositiveInt = DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 
 
 @plugins.register(plugins.Config)
