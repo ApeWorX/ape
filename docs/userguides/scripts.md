@@ -52,7 +52,7 @@ To do this, define a method named `main()` in your script:
 
 ```python
 def main():
-    print("Hello World!")
+    print("Hello world!")
 ```
 
 **NOTE**: main-method scripts will always provide a network option to the call and thus will always connect to a network.

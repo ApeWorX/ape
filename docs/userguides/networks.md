@@ -48,7 +48,7 @@ Out-of-the-box, Ape ships with two development providers you can use for the `lo
 
 ```bash
 ape test --network ::test
-ape test --network ::geth  # Launch a local Development geth process
+ape test --network ::geth  # Launch a local development geth process
 ```
 
 To learn more about testing in ape, follow [this guide](./testing.html).
@@ -89,4 +89,4 @@ Some reasons for this include:
 2. Some chains may not implement EIP-1559 or may have forked from a specific configuration.
 3. Response differences in uncommon blocks, such as the `"pending"` block or the genesis block.
 4. Revert messages and exception-handling differences.
-5. You are limited to using `web3.py` and an EVM-based chains.
+5. You are limited to using `web3.py` and EVM-based chains.
