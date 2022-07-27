@@ -257,3 +257,20 @@ def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiv
     with runner.isolation(input="y\n"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
         assert receipt.receiver == receiver
+
+
+def test_custom_num_of_test_accts_config(test_accounts, temp_config):
+    from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
+
+    CUSTOM_NUMBER_OF_TEST_ACCOUNTS = -20
+
+    test_config = {
+        "test": {
+            "number_of_accounts": CUSTOM_NUMBER_OF_TEST_ACCOUNTS,
+        }
+    }
+
+    assert len(test_accounts) == DEFAULT_NUMBER_OF_TEST_ACCOUNTS
+
+    with temp_config(test_config):
+        assert len(test_accounts) == CUSTOM_NUMBER_OF_TEST_ACCOUNTS
