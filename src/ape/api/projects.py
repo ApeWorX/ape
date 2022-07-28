@@ -6,8 +6,9 @@ from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
 from packaging import version as version_util
 from pydantic import ValidationError
+from semantic_version import Version  # type: ignore
 
-from ape.exceptions import ProjectError
+from ape.exceptions import APINotImplementedError, ProjectError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
@@ -126,27 +127,40 @@ class ProjectAPI(BaseInterfaceModel):
         contract_types: Dict[str, ContractType],
     ):
         compiler_list: List[Compiler] = []
-        for key, compiler in cls.compiler_manager.registered_compilers.items():
-            filtered_contract_types = [
-                str(x)
-                for x in contract_types.keys()
-                if key.strip(".") in contract_types[x].source_id.split(".")[-1]
-            ]
-            compiler_list.append(
-                Compiler(
-                    name=compiler.name,
-                    # TODO: Figure out if this should be str
-                    version=str(compiler.get_versions(source_paths)),
-                    # TODO: Find compiler settings
-                    settings={},
-                    # TODO: Figure out what file type/compiler for each contract_typeT
-                    # TODO: You'll need to filter these to match the compiler used
-                    # NOTE: Consider adding a compiler member to ContractType class?
-                    # NOTE: Check data type, ethpm-types says List[str]
-                    # not sure what this data should be example passes name of contract
-                    contractTypes=filtered_contract_types,
+        contracts_folder = cls.config_manager.contracts_folder
+        for ext, compiler in cls.compiler_manager.registered_compilers.items():
+            sources = [x for x in source_paths if x.suffix == ext]
+            if not sources:
+                continue
+
+            try:
+                version_map = compiler.get_version_map(sources, contracts_folder)
+            except APINotImplementedError:
+                versions = list(compiler.get_versions(sources))
+                if len(versions) == 0:
+                    # Some compilers like json compiler doesn't use versioning
+                    versions = [Version("0.1.0")]
+                elif len(versions) > 1:
+                    raise (ProjectError(f"Unable to create version map for '{ext}'."))
+
+                version = versions[0]
+                filtered_paths = [p for p in source_paths if p.suffix == ext]
+                version_map = {version: filtered_paths}
+
+            for version, paths in version_map.items():
+                source_ids = [str(get_relative_path(p, contracts_folder)) for p in paths]
+                filtered_contract_types = [
+                    ct for ct in contract_types.values() if ct.source_id in source_ids
+                ]
+                contract_type_names = [ct.name for ct in filtered_contract_types]
+                compiler_list.append(
+                    Compiler(
+                        name=compiler.name,
+                        version=str(version),
+                        settings={},
+                        contractTypes=contract_type_names,
+                    )
                 )
-            )
         return compiler_list
 
     @classmethod

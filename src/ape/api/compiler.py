@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 from ethpm_types import ContractType
+from semantic_version import Version  # type: ignore
 
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
@@ -67,6 +68,12 @@ class CompilerAPI(BaseInterfaceModel):
         Returns:
             Dict[str, List[str]]: A dictionary like ``{source_id: [import_source_id, ...], ...}``
         """
+
+    @raises_not_implemented
+    def get_version_map(
+        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
+    ) -> Dict[Version, Set[Path]]:
+        pass
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.name}>"
