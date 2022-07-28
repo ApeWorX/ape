@@ -31,7 +31,7 @@ class DefaultQueryProvider(QueryAPI):
 
     @estimate_query.register
     def estimate_contract_events_query(self, query: LogFilter) -> int:
-        # NOTE: Very loos estimate of 100ms per block for this query.
+        # NOTE: Very loose estimate of 100ms per block for this query.
         return (query.stop_block - query.start_block) * 100  # type: ignore
 
     @singledispatchmethod

@@ -421,15 +421,15 @@ class ContractEvent(ManagerAccessMixin):
         """
 
         if start_block < 0:
-            start_block = len(self.chain_manager.block) + start_block
+            start_block = self.chain_manager.blocks.height + start_block
 
         if stop_block is None:
             stop_block = self.chain_manager.blocks.height
 
         elif stop_block < 0:
-            stop_block = len(self.chain_manager.block) + stop_block
+            stop_block = self.chain_manager.blocks.height + stop_block
 
-        elif stop_block > len(self.chain_manager.block):
+        elif stop_block > self.chain_manager.blocks.height:
             raise AttributeError(
                 f"'stop={stop_block}' cannot be greater than the "
                 f"chain length ({self.chain_manager.blocks.height})."

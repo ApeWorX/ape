@@ -123,7 +123,7 @@ def console(project=None, verbose=None, extra_locals=None):
     if console_extras:
         namespace.update(console_extras)
 
-    from traitlets.config import Config  # type: ignore
+    from traitlets.config.loader import Config
 
     config = Config()
 
