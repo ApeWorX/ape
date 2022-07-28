@@ -27,7 +27,8 @@ def test_decode_logs_specify_abi(invoke_receipt, vyper_contract_instance):
     assert logs[0].transaction_index == 0
 
 
-def test_decode_logs_specify_abi_as_event(invoke_receipt, vyper_contract_instance):
+def test_decode_logs_specify_abi_as_event(mocker, invoke_receipt, vyper_contract_instance, eth_tester_provider):
+    spy = mocker.spy(eth_tester_provider.web3.eth, "get_logs")
     abi = vyper_contract_instance.NumberChange
     logs = [log for log in invoke_receipt.decode_logs(abi=abi)]
     assert len(logs) == 1
@@ -35,6 +36,10 @@ def test_decode_logs_specify_abi_as_event(invoke_receipt, vyper_contract_instanc
     assert logs[0].event_name == "NumberChange"
     assert logs[0].log_index == 0
     assert logs[0].transaction_index == 0
+
+    # Tests against a bug where the API was called unnecessarily
+    assert spy.call_count == 0
+
 
 
 def test_decode_logs_with_ds_notes(ds_note_test_contract, owner):
