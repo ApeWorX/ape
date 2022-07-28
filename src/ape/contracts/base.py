@@ -1,4 +1,5 @@
 from itertools import islice
+import pandas as pd
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import click
@@ -388,7 +389,7 @@ class ContractEvent(ManagerAccessMixin):
         search_topics: Optional[Dict[str, Any]] = None,
         extra_addresses: Optional[List] = None,
         engine_to_use: Optional[str] = None,
-    ) -> Iterator:
+    ) -> pd.DataFrame:
         """
         Iterate through blocks for log events
 
@@ -416,7 +417,7 @@ class ContractEvent(ManagerAccessMixin):
               engine selection algorithm.
 
         Returns:
-            Iterator[:class:`~ape.contracts.base.ContractLog`]
+            pd.DataFrame
         """
 
         if start_block < 0:
@@ -442,8 +443,13 @@ class ContractEvent(ManagerAccessMixin):
             start_block=start_block,
             stop_block=stop_block,
         )
-        contract_events = self.query_manager.query(log_filter, engine_to_use=engine_to_use)
-        yield from cast(Iterator[ContractEvent], contract_events)
+        contract_events = list(
+            self.query_manager.query(log_filter, engine_to_use=engine_to_use)
+        )
+        return pd.DataFrame(
+            columns=contract_events[0].dict().keys(),
+            data=[val.dict() for val in contract_events]
+        )
 
     def range(
         self,
