@@ -54,12 +54,12 @@ def test_block_transaction_query(eth_tester_provider, sender, receiver):
 def test_transaction_contract_event_query(contract_instance, owner, eth_tester_provider):
     contract_instance.fooAndBar(sender=owner)
     time.sleep(0.1)
-    df_event = contract_instance.FooHappened.query(start_block=-1)
-    assert isinstance(df_event, pd.DataFrame)
-    assert df_event.event_name[0] == "FooHappened"
-    event = list(contract_instance.FooHappened.range(start_or_stop=3))
-    assert isinstance(event[0], ContractLog)
-    assert "FooHappened" in event[0].dict().values()
+    df_events = contract_instance.FooHappened.query(start_block=-1)
+    assert isinstance(df_events, pd.DataFrame)
+    assert df_events.event_name[0] == "FooHappened"
+    events = list(contract_instance.FooHappened.range(start_or_stop=3))
+    assert isinstance(events[0], ContractLog)
+    assert "FooHappened" in events[0].dict().values()
 
 
 def test_column_expansion():
