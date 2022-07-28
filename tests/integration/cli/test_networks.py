@@ -93,7 +93,7 @@ def assert_rich_text(actual: str, expected: str):
     """
     The output from `rich` causes a bunch of extra spaces to
     appear at the end of each line. For easier testing, we remove those here.
-    Also, we ignore whether the expected line is at the end of in the middle
+    Also, we ignore whether the expected line is at the end or in the middle
     of the output to handle cases when the test-runner has additional plugins
     installed.
     """
