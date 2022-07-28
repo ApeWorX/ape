@@ -1,8 +1,8 @@
 from itertools import islice
-import pandas as pd
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import click
+import pandas as pd
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
@@ -421,21 +421,21 @@ class ContractEvent(ManagerAccessMixin):
         """
 
         if start_block < 0:
-            start_block = len(self) + start_block
+            start_block = len(self.chain_manager.block) + start_block
 
         if stop_block is None:
             stop_block = self.chain_manager.blocks.height
 
         elif stop_block < 0:
-            stop_block = len(self) + stop_block
+            stop_block = len(self.chain_manager.block) + stop_block
 
-        elif stop_block > len(self):
+        elif stop_block > len(self.chain_manager.block):
             raise AttributeError(
                 f"'stop={stop_block}' cannot be greater than the "
                 f"chain length ({self.chain_manager.blocks.height})."
             )
 
-        addresses = [self.contract.address] + (extra_addresses or [])
+        addresses = list(set([self.contract.address] + (extra_addresses or [])))
         log_filter = LogFilter.from_event(
             event=self.abi,
             search_topics=search_topics,
@@ -443,12 +443,9 @@ class ContractEvent(ManagerAccessMixin):
             start_block=start_block,
             stop_block=stop_block,
         )
-        contract_events = list(
-            self.query_manager.query(log_filter, engine_to_use=engine_to_use)
-        )
+        contract_events = list(self.query_manager.query(log_filter, engine_to_use=engine_to_use))
         return pd.DataFrame(
-            columns=contract_events[0].dict().keys(),
-            data=[val.dict() for val in contract_events]
+            columns=contract_events[0].dict().keys(), data=[val.dict() for val in contract_events]
         )
 
     def range(
