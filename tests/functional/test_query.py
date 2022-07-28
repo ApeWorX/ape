@@ -1,7 +1,9 @@
 import pytest
+import time
 
 from ape import chain
 from ape.api.query import validate_and_expand_columns
+from ape.types import ContractLog
 
 
 def test_basic_query(eth_tester_provider):
@@ -49,12 +51,13 @@ def test_block_transaction_query(eth_tester_provider, sender, receiver):
 
 def test_transaction_contract_event_query(contract_instance, owner, eth_tester_provider):
     contract_instance.fooAndBar(sender=owner)
+    time.sleep(0.1)
     event = list(contract_instance.FooHappened.query(start_block=-1))
-    assert event[0].name == "FooHappened"
-    assert event[0].block_number == 3
+    assert isinstance(event[0], ContractLog)
+    assert "FooHappened" in event[0].dict().values()
     event = list(contract_instance.FooHappened.range(start_or_stop=3))
-    assert event[0].name == "FooHappened"
-    assert event[0].block_number == 3
+    assert isinstance(event[0], ContractLog)
+    assert "FooHappened" in event[0].dict().values()
 
 
 def test_column_expansion():
