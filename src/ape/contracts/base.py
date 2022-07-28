@@ -392,13 +392,13 @@ class ContractEvent(ManagerAccessMixin):
         """
         Iterate through blocks for log events
 
-            Raises:
-        :class:`~AttributeError`: When ``stop_block`` is greater
-            than the chain length.
-        :class:`~AttributeError`: When ``stop_block`` is less
-            than ``start_block``.
-        :class:`~AttributeError`: When ``stop_block`` is less
-            than 0.
+        Raises:
+            :class:`~AttributeError`: When ``stop_block`` is greater
+                than the chain length.
+            :class:`~AttributeError`: When ``stop_block`` is less
+                than ``start_block``.
+            :class:`~AttributeError`: When ``stop_block`` is less
+                than 0.
 
         Args:
             start_block (int): When given just a single value, it is the stop.
