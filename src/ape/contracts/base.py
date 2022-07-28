@@ -389,6 +389,36 @@ class ContractEvent(ManagerAccessMixin):
         extra_addresses: Optional[List] = None,
         engine_to_use: Optional[str] = None,
     ) -> Iterator:
+        """
+        Iterate through blocks for log events
+
+            Raises:
+        :class:`~AttributeError`: When ``stop_block`` is greater
+            than the chain length.
+        :class:`~AttributeError`: When ``stop_block`` is less
+            than ``start_block``.
+        :class:`~AttributeError`: When ``stop_block`` is less
+            than 0.
+
+        Args:
+            start_block (int): When given just a single value, it is the stop.
+              Otherwise, it is the start. This mimics the behavior of ``range``
+              built-in Python function.
+            stop_block (Optional[int]): The block number to stop before. Also the total
+              number of blocks to get. If not setting a start value, is set by
+              the first argument.
+            search_topics (Optional[Dict]): Search topics, such as indexed event inputs,
+              to query by. Defaults to getting all events.
+            extra_addresses (Optional[List[``AddressType``]]): Additional contract
+              addresses containing the same event type. Defaults to only looking at
+              the contract instance where this event is defined.
+            engine_to_use (Optional[str]): query engine to use, bypasses query
+              engine selection algorithm.
+
+        Returns:
+            Iterator[:class:`~ape.contracts.base.ContractLog`]
+        """
+
         if start_block < 0:
             start_block = len(self) + start_block
 

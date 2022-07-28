@@ -1,5 +1,6 @@
-import pytest
 import time
+
+import pytest
 
 from ape import chain
 from ape.api.query import validate_and_expand_columns
