@@ -77,8 +77,7 @@ def test_get_provider_when_no_default(network_with_no_providers):
     with pytest.raises(NetworkError) as err:
         # Not provider installed out-of-the-box for rinkeby-fork network
         provider = network_with_no_providers.get_provider()
-        if provider:
-            assert False, f"Provider should be None but got '{provider.name}'"
+        assert not provider, f"Provider should be None but got '{provider.name}'"
 
     assert f"No default provider for network '{network_with_no_providers.name}'" in str(err.value)
 
