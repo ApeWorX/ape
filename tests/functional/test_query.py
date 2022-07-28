@@ -47,6 +47,16 @@ def test_block_transaction_query(eth_tester_provider, sender, receiver):
     assert query[0].chain_id == 61
 
 
+def test_transaction_contract_event_query(contract_instance, owner, eth_tester_provider):
+    contract_instance.fooAndBar(sender=owner)
+    event = list(contract_instance.FooHappened.query(start_block=-1))
+    assert event[0].name == "FooHappened"
+    assert event[0].block_number == 3
+    event = list(contract_instance.FooHappened.range(start_or_stop=3))
+    assert event[0].name == "FooHappened"
+    assert event[0].block_number == 3
+
+
 def test_column_expansion():
     all_fields = [
         "chain_id",

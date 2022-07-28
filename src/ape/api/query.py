@@ -12,6 +12,7 @@ QueryType = Union[
     "AccountTransactionQuery",
     "ContractEventQuery",
     "ContractMethodQuery",
+    "LogFilter",  # type: ignore # noqa: F821
 ]
 
 

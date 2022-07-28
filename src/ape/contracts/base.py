@@ -1,5 +1,5 @@
 from itertools import islice
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import click
 from ethpm_types import ContractType
@@ -381,13 +381,48 @@ class ContractEvent(ManagerAccessMixin):
         logs = self.provider.get_contract_logs(self.log_filter)
         return sum(1 for _ in logs)
 
+    def query(
+        self,
+        start_block: int,
+        stop_block: Optional[int] = None,
+        search_topics: Optional[Dict[str, Any]] = None,
+        extra_addresses: Optional[List] = None,
+        engine_to_use: Optional[str] = None,
+    ) -> Iterator:
+        if start_block < 0:
+            start_block = len(self) + start_block
+
+        if stop_block is None:
+            stop_block = self.chain_manager.blocks.height
+
+        elif stop_block < 0:
+            stop_block = len(self) + stop_block
+
+        elif stop_block > len(self):
+            raise AttributeError(
+                f"'stop={stop_block}' cannot be greater than the "
+                f"chain length ({self.chain_manager.blocks.height})."
+            )
+
+        addresses = [self.contract.address] + (extra_addresses or [])
+        log_filter = LogFilter.from_event(
+            event=self.abi,
+            search_topics=search_topics,
+            addresses=addresses,
+            start_block=start_block,
+            stop_block=stop_block,
+        )
+        contract_events = self.query_manager.query(log_filter, engine_to_use=engine_to_use)
+        yield from cast(Iterator[ContractEvent], contract_events)
+
     def range(
         self,
         start_or_stop: int,
         stop: Optional[int] = None,
         search_topics: Optional[Dict[str, Any]] = None,
         extra_addresses: Optional[List] = None,
-    ) -> Iterator[ContractLog]:
+        engine_to_use: Optional[str] = None,
+    ) -> Iterator:
         """
         Search through the logs for this event using the given filter parameters.
 
@@ -427,7 +462,8 @@ class ContractEvent(ManagerAccessMixin):
             start_block=start_block,
             stop_block=stop_block,
         )
-        yield from self.provider.get_contract_logs(log_filter)
+        contract_events = self.query_manager.query(log_filter, engine_to_use=engine_to_use)
+        yield from cast(Iterator[ContractEvent], contract_events)
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """
