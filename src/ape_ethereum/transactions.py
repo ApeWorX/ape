@@ -187,7 +187,7 @@ class Receipt(ReceiptAPI):
             Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
     ) -> Iterator[ContractLog]:
-        if abi:
+        if abi is not None:
             if not isinstance(abi, (list, tuple)):
                 abi = [abi]
 
