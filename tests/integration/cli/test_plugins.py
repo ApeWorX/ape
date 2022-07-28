@@ -23,19 +23,13 @@ def plugins_xfail():
     return wrapper
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def installed_plugin(runner, ape_cli):
-    # TODO: Figure out how to correctly modify site packages mid-test run.
-    #  The installed plugin does not show in `list` command but does at end of tests.
-    is_already_installed = TEST_PLUGIN_NAME in runner.invoke(ape_cli, ["plugins", "list"]).output
+    # TODO: Figure out how to install if not installed
+    #  Everything we try so far does not affect in-session site packages
 
-    if not is_already_installed:
-        runner.invoke(ape_cli, ["plugins", "install", TEST_PLUGIN_NAME])
-
-    yield
-
-    if not is_already_installed:
-        runner.invoke(ape_cli, ["plugins", "uninstall", TEST_PLUGIN_NAME, "--yes"])
+    plugins_installed = TEST_PLUGIN_NAME in runner.invoke(ape_cli, ["plugins", "list"]).output
+    assert TEST_PLUGIN_NAME in plugins_installed, "Must have plugin pre-installed to run test."
 
 
 @plugins_xfail()
