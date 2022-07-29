@@ -5,7 +5,6 @@ from typing import List, Optional, Set
 from ethpm_types import ContractType
 
 from ape.api import CompilerAPI
-from ape.logging import logger
 from ape.utils import get_relative_path
 
 
@@ -24,25 +23,25 @@ class InterfaceCompiler(CompilerAPI):
     ) -> List[ContractType]:
         contract_types: List[ContractType] = []
         for path in filepaths:
-            abi = json.loads(path.read_text())
+            data = json.loads(path.read_text())
 
             source_id = (
                 str(get_relative_path(path, base_path))
                 if base_path and path.is_absolute()
                 else str(path)
             )
-            if not isinstance(abi, list):
-                logger.warning(f"Not a valid ABI interface JSON file (sourceID={source_id}).")
+            if isinstance(data, list):
+                # ABI JSON list
+                contract_type_data = {"contractName": path.stem, "abi": data, "sourceId": source_id}
+
+            elif isinstance(data, dict):
+                # Raw contract type JSON
+                contract_type_data = data
 
             else:
-                contract = ContractType.parse_obj(
-                    {
-                        "contractName": path.stem,
-                        "abi": abi,
-                        "sourceId": source_id,
-                    }
-                )
+                raise TypeError(f"Unable to parse contract type '{data}'.")
 
-                contract_types.append(contract)
+            contract_type = ContractType(**contract_type_data)
+            contract_types.append(contract_type)
 
         return contract_types
