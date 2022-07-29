@@ -464,7 +464,10 @@ class Ethereum(EcosystemAPI):
             except KeyError:
                 continue
 
-            event_arguments = abi.decode(topics, log["data"])
+            try:
+                event_arguments = abi.decode(topics, log["data"])
+            except InsufficientDataBytes:
+                continue
             yield ContractLog(
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],
