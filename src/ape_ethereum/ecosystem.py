@@ -468,7 +468,7 @@ class Ethereum(EcosystemAPI):
             try:
                 event_arguments = abi.decode(topics, log["data"])
             except InsufficientDataBytes:
-                logger.debug(f"failed to decode log data for {log}")
+                logger.debug("failed to decode log data for %s", log, exc_info=True)
                 continue
             yield ContractLog(
                 block_hash=log["blockHash"],
