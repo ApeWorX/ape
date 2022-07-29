@@ -1,6 +1,6 @@
 # Developing Plugins
 
-Your plugin project can be any type of python project, so long as its package name starts with `ape_` (such as`ape_ethereum`).
+Your plugin project can be any type of python project, so long as its package name starts with `ape_` (such as `ape_ethereum`).
 To create an `ape` plugin, implement one or more API classes from the the `ape.api` namespace or add key `ape_cli_subcommands` to your entry-points list in your project's `setup.py`, depending on what type of plugin you want to create.
 This guide is intended to assist in both of those use-cases.
 
@@ -127,10 +127,11 @@ my_trezor_account = accounts.load("trezor_0")  # Created using the 'ape-trezor' 
 Similarly, if you implemented a `ProviderAPI`, that provider is now accessible in the CLI via the `--network` option:
 
 ```bash
-ape run my_script --network ethereum:local:my_provider_plugin
+ape console my_script --network ethereum:local:my_provider_plugin
 ```
 
-**NOTE**: The `--network` option is available on the commands `run`, `test`, and `console` or any CLI command that uses the [network option decorator](../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option).
+**NOTE**: The `--network` option is available on the commands `test` and `console` as well as any CLI command that uses the [network option decorator](../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option).
+To learn more about networking in Ape, follow [this guide](./networks.html).
 
 When creating the CLI-based plugins, you should see your CLI command as a top-level command in the `ape --help` output:
 
@@ -141,10 +142,26 @@ Commands:
   ...
 ```
 
+To edit the description of the CLI command (or group), you can either set the `short_help` kwarg or use a doc-str on the command:
+
+```python
+import click
+
+
+@click.command(short_help="Utilities for my plugin")
+def cli():
+    pass
+
+""" Or """
+
+@click.command()
+def cli():
+    """Utilities for my plugin"""
+```
+
 ## Logging
 
-Use Ape's logger in your plugins or scripts by importing it from the `ape.logging` module or 
-by using it off the CLI context (from using the `@ape_cli_context` decorator).
+Use Ape's logger in your plugin by importing it from the `ape.logging` module or by using it off the CLI context (from using the `@ape_cli_context` decorator).
   
 ### Import the logger from the logging module
 

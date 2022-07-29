@@ -17,7 +17,7 @@ contracts_folder: src  # Default is 'contracts/'
 Ape ships with a compiler that is able to compile `.json` files.
 This compiler is useful for the following:
 
-**Interfaces**: If you know the address of existing contracts, you can include interfaces in your project and create contract objects around them:
+1. **Interfaces**: If you know the address of an existing contract, you can include its ABI in your project and create a contract wrapper around it:
 
 ```python
 from ape import project
@@ -27,7 +27,7 @@ contract = project.MyInterface.at(address)
 contract.my_method()
 ```
 
-**Pre-existing Contract Types**: If you have a contract type JSON that was compiled elsewhere, you can include it in your project.
+2. **Pre-existing Contract Types**: If you have a contract type JSON that was compiled elsewhere, you can include it in your project.
 This is useful if you are unable or unwilling to install a compiler.
 
 **WARN**: You may have to adjust the name and source ID of the contract type in the JSON to match the new file name in your project.

@@ -1,6 +1,6 @@
 # Plugins
 
-Plugins are core to the Ape's architecture.
+Plugins are core to Ape's architecture.
 Here are some plugin examples in Ape:
 
 * `CompilerAPI`: For supporting various languages, like Vyper or Solidity.
