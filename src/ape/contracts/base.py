@@ -406,7 +406,7 @@ class ContractEvent(ManagerAccessMixin):
             stop_block = self.chain_manager.blocks.height + stop_block + 1
 
         if columns[0] == "*":
-            columns = list(ContractLog.__fields__)
+            columns = list(ContractLog.__fields__)  # type: ignore
 
         start_block = stop_block - 1
 

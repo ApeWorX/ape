@@ -55,7 +55,7 @@ class DefaultQueryProvider(QueryAPI):
     def perform_contract_events_query(self, query: ContractEventQuery):
         addresses = query.contract
         if not isinstance(addresses, list):
-            addresses = [query.contract]
+            addresses = [query.contract]  # type: ignore
 
         log_filter = LogFilter.from_event(
             event=query.event,
