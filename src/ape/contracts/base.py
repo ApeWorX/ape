@@ -1,5 +1,5 @@
 from itertools import islice
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
 import pandas as pd
@@ -9,6 +9,7 @@ from hexbytes import HexBytes
 
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
+from ape.api.query import ContractEventQuery
 from ape.exceptions import ArgumentsLengthError, ContractError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
@@ -384,35 +385,15 @@ class ContractEvent(ManagerAccessMixin):
 
     def query(
         self,
-        start_block: int,
-        stop_block: Optional[int] = None,
-        search_topics: Optional[Dict[str, Any]] = None,
-        extra_addresses: Optional[List] = None,
+        *columns: List[str],
+        block: int = -1,
         engine_to_use: Optional[str] = None,
     ) -> pd.DataFrame:
         """
         Iterate through blocks for log events
 
-        Raises:
-            :class:`~AttributeError`: When ``stop_block`` is greater
-                than the chain length.
-            :class:`~AttributeError`: When ``stop_block`` is less
-                than ``start_block``.
-            :class:`~AttributeError`: When ``stop_block`` is less
-                than 0.
-
         Args:
-            start_block (int): When given just a single value, it is the stop.
-              Otherwise, it is the start. This mimics the behavior of ``range``
-              built-in Python function.
-            stop_block (Optional[int]): The block number to stop before. Also the total
-              number of blocks to get. If not setting a start value, is set by
-              the first argument.
-            search_topics (Optional[Dict]): Search topics, such as indexed event inputs,
-              to query by. Defaults to getting all events.
-            extra_addresses (Optional[List[``AddressType``]]): Additional contract
-              addresses containing the same event type. Defaults to only looking at
-              the contract instance where this event is defined.
+            block (int): initially set to -1 to grab the last block events
             engine_to_use (Optional[str]): query engine to use, bypasses query
               engine selection algorithm.
 
@@ -420,30 +401,25 @@ class ContractEvent(ManagerAccessMixin):
             pd.DataFrame
         """
 
-        if start_block < 0:
-            start_block = self.chain_manager.blocks.height + start_block
+        stop_block = block
+        if block < 0:
+            stop_block = self.chain_manager.blocks.height + stop_block + 1
 
-        if stop_block is None:
-            stop_block = self.chain_manager.blocks.height
+        if columns[0] == "*":
+            columns = list(ContractLog.__fields__)
 
-        elif stop_block < 0:
-            stop_block = self.chain_manager.blocks.height + stop_block
+        start_block = stop_block - 1
 
-        elif stop_block > self.chain_manager.blocks.height:
-            raise AttributeError(
-                f"'stop={stop_block}' cannot be greater than the "
-                f"chain length ({self.chain_manager.blocks.height})."
-            )
-
-        addresses = list(set([self.contract.address] + (extra_addresses or [])))
-        log_filter = LogFilter.from_event(
+        contract_event_query = ContractEventQuery(
+            columns=columns,
+            contract=self.contract.address,
             event=self.abi,
-            search_topics=search_topics,
-            addresses=addresses,
             start_block=start_block,
             stop_block=stop_block,
         )
-        contract_events = list(self.query_manager.query(log_filter, engine_to_use=engine_to_use))
+        contract_events = list(
+            self.query_manager.query(contract_event_query, engine_to_use=engine_to_use)
+        )
         return pd.DataFrame(
             columns=contract_events[0].dict().keys(), data=[val.dict() for val in contract_events]
         )
@@ -454,7 +430,6 @@ class ContractEvent(ManagerAccessMixin):
         stop: Optional[int] = None,
         search_topics: Optional[Dict[str, Any]] = None,
         extra_addresses: Optional[List] = None,
-        engine_to_use: Optional[str] = None,
     ) -> Iterator:
         """
         Search through the logs for this event using the given filter parameters.
@@ -487,16 +462,16 @@ class ContractEvent(ManagerAccessMixin):
 
         stop_block = min(stop_block, self.chain_manager.blocks.height)
 
-        addresses = [self.contract.address] + (extra_addresses or [])
-        log_filter = LogFilter.from_event(
+        addresses = set([self.contract.address] + (extra_addresses or []))
+        contract_event_query = ContractEventQuery(
+            columns=list(ContractLog.__fields__.keys()),
+            contract=addresses,
             event=self.abi,
             search_topics=search_topics,
-            addresses=addresses,
             start_block=start_block,
             stop_block=stop_block,
         )
-        contract_events = self.query_manager.query(log_filter, engine_to_use=engine_to_use)
-        yield from cast(Iterator[ContractEvent], contract_events)
+        yield from self.query_manager.query(contract_event_query)
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """

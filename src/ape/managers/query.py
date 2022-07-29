@@ -1,10 +1,10 @@
 from typing import Dict, Iterator, Optional
 
 from ape.api import QueryAPI, QueryType
-from ape.api.query import BlockQuery, BlockTransactionQuery
+from ape.api.query import BlockQuery, BlockTransactionQuery, ContractEventQuery
+from ape.contracts.base import LogFilter
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
-from ape.types import LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 
@@ -30,9 +30,9 @@ class DefaultQueryProvider(QueryAPI):
         return 100
 
     @estimate_query.register
-    def estimate_contract_events_query(self, query: LogFilter) -> int:
+    def estimate_contract_events_query(self, query: ContractEventQuery) -> int:
         # NOTE: Very loose estimate of 100ms per block for this query.
-        return (query.stop_block - query.start_block) * 100  # type: ignore
+        return 100
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
@@ -52,8 +52,19 @@ class DefaultQueryProvider(QueryAPI):
         return self.provider.get_transactions_by_block(query.block_id)
 
     @perform_query.register
-    def perform_contract_events_query(self, query: LogFilter) -> Iterator:
-        return self.provider.get_contract_logs(query)
+    def perform_contract_events_query(self, query: ContractEventQuery):
+        addresses = query.contract
+        if not isinstance(addresses, list):
+            addresses = [query.contract]
+
+        log_filter = LogFilter.from_event(
+            event=query.event,
+            search_topics=query.search_topics,
+            addresses=addresses,
+            start_block=query.start_block,
+            stop_block=query.stop_block,
+        )
+        return self.provider.get_contract_logs(log_filter)
 
 
 class QueryManager(ManagerAccessMixin):
