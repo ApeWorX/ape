@@ -15,6 +15,7 @@ from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, Transactio
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
 from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
+from ape.logging import logger
 from ape.types import AddressType, ContractLog, RawAddress, TransactionSignature
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -464,7 +465,11 @@ class Ethereum(EcosystemAPI):
             except KeyError:
                 continue
 
-            event_arguments = abi.decode(topics, log["data"])
+            try:
+                event_arguments = abi.decode(topics, log["data"])
+            except InsufficientDataBytes:
+                logger.debug("failed to decode log data for %s", log, exc_info=True)
+                continue
             yield ContractLog(
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],

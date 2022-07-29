@@ -190,7 +190,7 @@ class ContractLog(BaseModel):
 
     def __str__(self) -> str:
         args = " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
-        return f"{self.name} {args}"
+        return f"{self.event_name} {args}"
 
     def __getattr__(self, item: str) -> Any:
         """
