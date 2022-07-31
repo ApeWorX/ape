@@ -92,6 +92,18 @@ contract.fundMyContract(value="1 gwei", type="0x0", sender=sender)
 
 When declaring `type="0x0"` and _not_ specifying a `gas_price`, the `gas_price` gets set using the provider's estimation.
 
+## Waiting for confirmations
+
+When you send a transaction to a network, you can chose to wait X blocks for the transaction to confirm, like so:
+
+```python
+receipt = provider.send_transaction(txn)
+receipt.await_confirmations(2)
+```
+
+This example will wait 2 blocks for the transaction to be confirmed. 
+
+
 ## Transaction Logs
 
 To get logs that occurred during a transaction, you can use the [ContractEvent.from_receipt(receipt)](../methoddocs/contracts.html?highlight=contractevent#ape.contracts.base.ContractEvent.from_receipt) and access your data from the [ContractLog](../methoddocs/types.html#ape.types.ContractLog) objects that it returns.

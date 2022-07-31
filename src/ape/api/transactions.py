@@ -238,7 +238,7 @@ class ReceiptAPI(BaseInterfaceModel):
         :class:`~api.providers.TransactionStatusEnum`.
         """
 
-    def await_confirmations(self) -> "ReceiptAPI":
+    def await_confirmations(self, confirmations: Optional[int] = None) -> "ReceiptAPI":
         """
         Wait for a transaction to be considered confirmed.
 
@@ -251,7 +251,7 @@ class ReceiptAPI(BaseInterfaceModel):
         except TransactionError:
             # Skip waiting for confirmations when the transaction has failed.
             return self
-
+        breakpoint()
         # Wait for nonce from provider to increment.
         sender_nonce = self.provider.get_nonce(self.sender)
         iterations_timeout = 20
@@ -264,13 +264,14 @@ class ReceiptAPI(BaseInterfaceModel):
             if iteration == iterations_timeout:
                 raise TransactionError(message="Timeout waiting for sender's nonce to increase.")
 
-        if self.required_confirmations == 0:
+        configured_confirmations = confirmations or self.required_confirmations or 0
+        if configured_confirmations == 0:
             # The transaction might not yet be confirmed but
             # the user is aware of this. Or, this is a development environment.
             return self
 
         confirmations_occurred = self._confirmations_occurred
-        if confirmations_occurred >= self.required_confirmations:
+        if confirmations_occurred >= configured_confirmations:
             return self
 
         # If we get here, that means the transaction has been recently submitted.
@@ -282,12 +283,12 @@ class ReceiptAPI(BaseInterfaceModel):
 
         logger.info(log_message)
 
-        with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
-            while confirmations_occurred < self.required_confirmations:
+        with ConfirmationsProgressBar(configured_confirmations) as progress_bar:
+            while confirmations_occurred < configured_confirmations:
                 confirmations_occurred = self._confirmations_occurred
                 progress_bar.confs = confirmations_occurred
 
-                if confirmations_occurred == self.required_confirmations:
+                if confirmations_occurred == configured_confirmations:
                     break
 
                 time_to_sleep = int(self._block_time / 2)

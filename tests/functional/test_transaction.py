@@ -34,6 +34,22 @@ def test_txn_hash(owner, eth_tester_provider):
     assert actual == expected
 
 
+def test_await_confirmations(owner, eth_tester_provider):
+    # Arrange
+    txn = StaticFeeTransaction()
+    txn = owner.prepare_transaction(txn)
+    txn.signature = owner.sign_transaction(txn)
+
+    # Act
+    receipt = eth_tester_provider.send_transaction(txn)
+    receipt_number = receipt.await_confirmations(0)
+    receipt_number_keyword = receipt.await_confirmations(confirmations=0)
+    receipt_blank = receipt.await_confirmations()
+
+    # Assert
+    assert receipt_number == receipt_number_keyword == receipt_blank
+
+
 def test_whitespace_in_transaction_data():
     data = b"Should not clip whitespace\t\n"
     txn_dict = {"data": data}
