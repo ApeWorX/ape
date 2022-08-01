@@ -132,7 +132,7 @@ ape console my_script --network ethereum:local:my_provider_plugin
 ```
 
 **NOTE**: The `--network` option is available on the commands `test` and `console` as well as any CLI command that uses the [network option decorator](../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option).
-To learn more about networking in Ape, follow [this guide](./networks.html).
+To learn more about networks in Ape, follow [this guide](./networks.html).
 
 When creating the CLI-based plugins, you should see your CLI command as a top-level command in the `ape --help` output:
 
