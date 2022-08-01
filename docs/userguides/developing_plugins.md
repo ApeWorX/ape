@@ -98,7 +98,7 @@ entry_points={
 **NOTE**: Typically, a `_cli.py` module is used instead of a `__init__.py` module for the location of the Click CLI group because it is logically separate from the Python module loading process.
 If you try to define them together and use `ape` as a library as well, there is a race condition in the loading process that will prevent the CLI plugin from working.
 
-For common `ape-click` usages, use the `ape.cli` namespace.
+For common `click` usages, use the `ape.cli` namespace.
 For example, use the [@existing_alias_argument() decorator](../methoddocs/cli.html#ape.cli.arguments.existing_alias_argument)) when you need a CLI argument for specifying an existing account alias:
 
 ```python
