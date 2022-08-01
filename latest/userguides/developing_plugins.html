@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developing Plugins &mdash; ape  documentation</title>
+  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="canonical" href="/ape/userguides/developing_plugins.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <script src="../_static/custom.js"></script>
+  <script>
+      var PROJECT = "ape";
+  </script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Configure Ape" href="config.html" />
+    <link rel="prev" title="Networks" href="networks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> ape
+            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+          </a>
+
+          <div class="version">
+            <label for="version-picker" id="version-picker-label">Version:</label>
+            <select id="version-picker">
+              <option value="">Select version...</option>
+              <option value="latest">latest</option>
+              <option value="stable">stable</option>
+            </select>
+          </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div>
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Developing Plugins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#initialize-a-plugin-project">Initialize a Plugin Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#implementing-api-classes">Implementing API Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#registering-api-classes">Registering API Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cli-plugins">CLI Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#using-plugins">Using Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#logging">Logging</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#import-the-logger-from-the-logging-module">Import the logger from the logging module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#use-the-logger-from-the-ape-cli-context">Use the logger from the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" aria-label="Top" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ape</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Developing Plugins</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/userguides/developing_plugins.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="developing-plugins">
+<h1>Developing Plugins<a class="headerlink" href="#developing-plugins" title="Permalink to this headline"></a></h1>
+<p>Your plugin project can be any type of python project, so long as its package name starts with <code class="docutils literal notranslate"><span class="pre">ape_</span></code> (such as <code class="docutils literal notranslate"><span class="pre">ape_ethereum</span></code>).
+To create an <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugin, implement one or more API classes from the the <code class="docutils literal notranslate"><span class="pre">ape.api</span></code> namespace and/or add key
+<code class="docutils literal notranslate"><span class="pre">ape_cli_subcommands</span></code> to your entry-points list in your project’s <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>, depending on what type of plugin you want to create.
+This guide is intended to assist in both of those use-cases.</p>
+<p>The following is a list of example plugins to use as a reference when developing plugins:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/apeworx/ape-solidity">the Solidity plugin</a>, an example <code class="docutils literal notranslate"><span class="pre">CompilerAPI</span></code></p></li>
+<li><p><a class="reference external" href="https://github.com/apeworx/ape-infura">the Infura plugin</a>, an example <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code></p></li>
+<li><p><a class="reference external" href="https://github.com/apeworx/ape-trezor">the Trezor plugin</a>, an example <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code></p></li>
+<li><p><a class="reference external" href="https://github.com/apeworx/ape-tokens">the Tokenlists plugin</a>, an example CLI Extension</p></li>
+</ul>
+<section id="initialize-a-plugin-project">
+<h2>Initialize a Plugin Project<a class="headerlink" href="#initialize-a-plugin-project" title="Permalink to this headline"></a></h2>
+<p>As previously mentioned, a plugin project is merely a python project.
+However, you can optionally use this <a class="reference external" href="https://github.com/ApeWorX/project-template">project template</a> for initializing your plugin.
+<strong>NOTE</strong>: this template is primarily designed for plugins built within the ApeWorX team organization; not everything may apply.
+It is okay to delete anything that does not work or that you don’t find helpful.
+The template may be good to follow if you want to keep your plugin of similar quality to plugins developed by the ApeWorX team.</p>
+</section>
+<section id="implementing-api-classes">
+<h2>Implementing API Classes<a class="headerlink" href="#implementing-api-classes" title="Permalink to this headline"></a></h2>
+<p>API classes (classes from the <code class="docutils literal notranslate"><span class="pre">ape.api</span></code> namespace) are primary composed of abstract methods and properties that plugins must implement.
+A benefit of the plugin system is that each plugin can implement these however they need, so long as they conform to the API interface.
+Two plugins with the same API may do entirely different things and yet be interchangeable in their usage.</p>
+<p>To implement an API, import its class and use it as a base-class in your implementation class.
+<strong>WARNING</strong>: The plugin will fail to work properly if you do not implement all the abstract methods.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.api</span> <span class="kn">import</span> <span class="n">ProviderAPI</span>
+<span class="kn">from</span> <span class="nn">web3</span> <span class="kn">import</span> <span class="n">Web3</span><span class="p">,</span> <span class="n">HTTPProvider</span>
+
+
+<span class="k">class</span> <span class="nc">MyProvider</span><span class="p">(</span><span class="n">ProviderAPI</span><span class="p">):</span>
+    <span class="n">_web3</span><span class="p">:</span> <span class="n">Web3</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
+    
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_web3</span>  <span class="o">=</span> <span class="n">Web3</span><span class="p">(</span><span class="n">HTTPProvider</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;https://localhost:1337&quot;</span><span class="p">)))</span>
+
+    <span class="sd">&quot;&quot;&quot;Implement rest of abstract methods&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<section id="registering-api-classes">
+<h3>Registering API Classes<a class="headerlink" href="#registering-api-classes" title="Permalink to this headline"></a></h3>
+<p>Once you have finished implementing your API classes, you need to register them using the <a class="reference external" href="../methoddocs/plugins.html#ape.plugins.register">&#64;plugins.register</a> method decorator.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">plugins</span>
+
+<span class="c1"># Here, we register our provider plugin so we can use it in &#39;ape&#39;.</span>
+<span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">ProviderPlugin</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">providers</span><span class="p">():</span>
+    <span class="c1"># NOTE: &#39;MyProvider&#39; defined in a prior code-block.</span>
+    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">MyProvider</span>
+</pre></div>
+</div>
+<p>This decorator hooks into ape core and ties everything together by looking for all local installed site-packages that start with <code class="docutils literal notranslate"><span class="pre">ape_</span></code>.
+Then, it will loop through these potential <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugins and see which ones have created a plugin type registration.
+If the plugin type registration is found, then <code class="docutils literal notranslate"><span class="pre">ape</span></code> knows this package is a plugin and attempts to process it according to its registration interface.</p>
+</section>
+<section id="cli-plugins">
+<h3>CLI Plugins<a class="headerlink" href="#cli-plugins" title="Permalink to this headline"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">ape</span></code> CLI is built using the python package <a class="reference external" href="https://palletsprojects.com/p/click/">click</a>.
+To create a CLI plugin, create any type of <code class="docutils literal notranslate"><span class="pre">click</span></code> command (such as a <code class="docutils literal notranslate"><span class="pre">click.group</span></code> or a <code class="docutils literal notranslate"><span class="pre">click.command</span></code>).</p>
+<p><code class="docutils literal notranslate"><span class="pre">_cli.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">group</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;My custom commands.&quot;&quot;&quot;</span>
+
+
+<span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">my_sub_cmd</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;My subcommand.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>Then, register it using <code class="docutils literal notranslate"><span class="pre">entrypoints</span></code>, which is a built-in python registry of items declared in <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">setup.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">entry_points</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;ape_cli_subcommands&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;ape_myplugin=ape_myplugin._cli:cli&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">},</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: Typically, a <code class="docutils literal notranslate"><span class="pre">_cli.py</span></code> module is used instead of a <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> module for the location of the Click CLI group because it is logically separate from the Python module loading process.
+If you try to define them together and use <code class="docutils literal notranslate"><span class="pre">ape</span></code> as a library as well, there is a race condition in the loading process that will prevent the CLI plugin from working.</p>
+<p>For common <code class="docutils literal notranslate"><span class="pre">click</span></code> usages, use the <code class="docutils literal notranslate"><span class="pre">ape.cli</span></code> namespace.
+For example, use the <a class="reference external" href="../methoddocs/cli.html#ape.cli.arguments.existing_alias_argument">&#64;existing_alias_argument() decorator</a>) when you need a CLI argument for specifying an existing account alias:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">existing_alias_argument</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@existing_alias_argument</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">my_cmd</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+  <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2"> is an existing account!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="using-plugins">
+<h2>Using Plugins<a class="headerlink" href="#using-plugins" title="Permalink to this headline"></a></h2>
+<p>Once you have finished implementing and registering your API classes, they will now be part of <code class="docutils literal notranslate"><span class="pre">ape</span></code>. For example,
+if you implemented the <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code>, you can now use accounts created from this plugin. The top-level <code class="docutils literal notranslate"><span class="pre">ape</span></code> manager
+classes are indifferent about the source of the plugin.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+
+<span class="c1"># The manager can load accounts from any account-based plugin.</span>
+<span class="n">my_ledger_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;ledger_0&quot;</span><span class="p">)</span>  <span class="c1"># Created using the &#39;ape-ledger&#39; plugin</span>
+<span class="n">my_trezor_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;trezor_0&quot;</span><span class="p">)</span>  <span class="c1"># Created using the &#39;ape-trezor&#39; plugin</span>
+</pre></div>
+</div>
+<p>Similarly, if you implemented a <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code>, that provider is now accessible in the CLI via the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape console my_script --network ethereum:local:my_provider_plugin
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: The <code class="docutils literal notranslate"><span class="pre">--network</span></code> option is available on the commands <code class="docutils literal notranslate"><span class="pre">test</span></code> and <code class="docutils literal notranslate"><span class="pre">console</span></code> as well as any CLI command that uses the <a class="reference external" href="../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option">network option decorator</a>.
+To learn more about networks in Ape, follow <a class="reference external" href="./networks.html">this guide</a>.</p>
+<p>When creating the CLI-based plugins, you should see your CLI command as a top-level command in the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">--help</span></code> output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Commands</span><span class="p">:</span>
+  <span class="o">...</span>
+  <span class="n">my</span><span class="o">-</span><span class="n">plugin</span>  <span class="n">Utilities</span> <span class="k">for</span> <span class="n">my</span> <span class="n">plugin</span>
+  <span class="o">...</span>
+</pre></div>
+</div>
+<p>To edit the description of the CLI command (or group), you can either set the <code class="docutils literal notranslate"><span class="pre">short_help</span></code> kwarg or use a doc-str on the command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">short_help</span><span class="o">=</span><span class="s2">&quot;Utilities for my plugin&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="sd">&quot;&quot;&quot; Or &quot;&quot;&quot;</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Utilities for my plugin&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="logging">
+<h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline"></a></h2>
+<p>Use Ape’s logger in your plugin by importing it from the <code class="docutils literal notranslate"><span class="pre">ape.logging</span></code> module or by using it off the CLI context (from using the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code> decorator).</p>
+<section id="import-the-logger-from-the-logging-module">
+<h3>Import the logger from the logging module<a class="headerlink" href="#import-the-logger-from-the-logging-module" title="Permalink to this headline"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.logging</span> <span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;This is a log message&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="use-the-logger-from-the-ape-cli-context">
+<h3>Use the logger from the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code><a class="headerlink" href="#use-the-logger-from-the-ape-cli-context" title="Permalink to this headline"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">ape_cli_context</span>
+
+<span class="nd">@ape_cli_context</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">my_command</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
+  <span class="n">cli_ctx</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;my log message&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="networks.html" class="btn btn-neutral float-left" title="Networks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-right" title="Configure Ape" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ApeWorX LTD.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

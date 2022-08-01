@@ -28,8 +28,8 @@
   </script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Networks" href="networks.html" />
-    <link rel="prev" title="Quick Start" href="quickstart.html" /> 
+    <link rel="next" title="Compile" href="compile.html" />
+    <link rel="prev" title="Plugins" href="installing_plugins.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -61,8 +61,11 @@
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Developing Projects with Ape</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#compiling-contracts">Compiling Contracts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#adding-plugins">Adding Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compiling-contracts">Compiling Contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deploying-contracts">Deploying Contracts</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 </ul>
 </li>
@@ -70,8 +73,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
@@ -130,38 +134,44 @@
              
   <section id="developing-projects-with-ape">
 <h1>Developing Projects with Ape<a class="headerlink" href="#developing-projects-with-ape" title="Permalink to this headline"></a></h1>
-<p>Use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">init</span></code> to create your project. A common project structure looks like this:</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">init</span></code> to create your project.
+A common project structure looks like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>project                             # The root project directory
 ├── contracts/                      # Project source files, such as &#39;.sol&#39; or &#39;.vy&#39; files
-    └── smart_contract_example.sol  # Sample of a smart contract
+│   └── smart_contract_example.sol  # Sample of a smart contract
 ├── tests/                          # Project tests, ran using the &#39;ape test&#39; command
-    └── test_sample.py              # Sample of a test to run against your sample contract
+│   └── test_sample.py              # Sample of a test to run against your sample contract
 ├── scripts/                        # Project scripts, such as deploy scripts, ran using the &#39;ape run   &lt;`name&gt;&#39; command
-    └── deploy.py                   # Sample script to automate a deployment of an ape project
+│   └── deploy.py                   # Sample script to automate a deployment of an ape project
 └── ape-config.yaml                 # The ape project configuration file
 </pre></div>
 </div>
-<p><a class="reference external" href="../userguides/config.md">Configuration guide</a> for a more detailed explanation of settings you can
-use in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> files.</p>
+<p>Notice that you can configure you ape project using the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
+See the <a class="reference external" href="./config.html">configuration guide</a> for a more detailed explanation of settings you can adjust.</p>
+<section id="adding-plugins">
+<h2>Adding Plugins<a class="headerlink" href="#adding-plugins" title="Permalink to this headline"></a></h2>
+<p>Your project may require plugins.
+To install plugins, use the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">plugins</span> <span class="pre">install</span> <span class="pre">.</span></code> command.
+Learn more about configuring your project’s required plugins by following <a class="reference external" href="./installing_plugins.md">this guide</a>.</p>
+</section>
 <section id="compiling-contracts">
 <h2>Compiling Contracts<a class="headerlink" href="#compiling-contracts" title="Permalink to this headline"></a></h2>
-<p>The project manager object is a representation of your current project. Access it from the root <code class="docutils literal notranslate"><span class="pre">ape</span></code> namespace:</p>
+<p>The project manager object is a representation of your current project.
+Access it from the root <code class="docutils literal notranslate"><span class="pre">ape</span></code> namespace:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
 </pre></div>
 </div>
-<p>Your <code class="docutils literal notranslate"><span class="pre">project</span></code> contains all the “relevant” files, such as source files in the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory. The
-<code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory is where compilers look for contracts to compile. File extensions found within the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code>
-directory determines which compiler plugin <code class="docutils literal notranslate"><span class="pre">ape</span></code> uses. Make sure to install the compiler plugins you need if they are
-missing by adding them to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>’s <code class="docutils literal notranslate"><span class="pre">plugin</span></code> section, or manually adding via the following:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install solidity vyper
-</pre></div>
-</div>
-<p>Then, use the following command to compile all contracts in the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory:</p>
+<p>Your <code class="docutils literal notranslate"><span class="pre">project</span></code> contains all the “relevant” files, such as source files in the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
+Use the following command to compile all contracts in the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape compile
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: Compiler plugins download missing compiler version binaries, based on the contracts’ pragma-spec.</p>
-<p>The contract containers are then accessible from the <code class="docutils literal notranslate"><span class="pre">project</span></code> manager; deploy them in the <code class="docutils literal notranslate"><span class="pre">console</span></code> or in scripts:</p>
+<p>For more information on compiling your project, see <a class="reference external" href="./compile.html">this guide</a>.</p>
+</section>
+<section id="deploying-contracts">
+<h2>Deploying Contracts<a class="headerlink" href="#deploying-contracts" title="Permalink to this headline"></a></h2>
+<p>After compiling, the contract containers are accessible from the <code class="docutils literal notranslate"><span class="pre">project</span></code> manager.
+Deploy them in the <code class="docutils literal notranslate"><span class="pre">console</span></code> or in scripts; for example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 
 <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my_account_alias&quot;</span><span class="p">)</span>
@@ -210,8 +220,8 @@ Testing is a complex topic; learn more about testing using Ape framework <a clas
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quick Start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="networks.html" class="btn btn-neutral float-right" title="Networks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installing_plugins.html" class="btn btn-neutral float-left" title="Plugins" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="compile.html" class="btn btn-neutral float-right" title="Compile" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
