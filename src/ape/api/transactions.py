@@ -61,7 +61,7 @@ class TransactionAPI(BaseInterfaceModel):
         to submit the transaction.
         """
         if self.max_fee is None:
-            raise TransactionError(message="Max fee must not be null.")
+            raise TransactionError(message="Max fee must not be null.", txn=self)
 
         return self.value + self.max_fee
 
@@ -279,7 +279,7 @@ class ReceiptAPI(BaseInterfaceModel):
                 iteration += 1
                 if iteration == iterations_timeout:
                     raise TransactionError(
-                        message="Timeout waiting for sender's nonce to increase."
+                        message="Timeout waiting for sender's nonce to increase.", txn=self
                     )
 
         if self.required_confirmations == 0:

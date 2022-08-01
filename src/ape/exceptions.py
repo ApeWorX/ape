@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import time
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Iterator, Optional
 
 from eth_utils import humanize_hash
 
 if TYPE_CHECKING:
+    from evm_trace import TraceFrame
+
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
+    from ape.api.transactions import TransactionAPI
     from ape.types import BlockID, SnapshotID
 
 
@@ -88,6 +93,7 @@ class TransactionError(ContractError):
         base_err: Optional[Exception] = None,
         message: Optional[str] = None,
         code: Optional[int] = None,
+        txn: Optional[TransactionAPI] = None,
     ):
         self.base_err = base_err
         if not message:
@@ -95,9 +101,17 @@ class TransactionError(ContractError):
 
         self.message = message
         self.code = code
+        self.txn = txn
 
         ex_message = f"({code}) {message}" if code else message
         super().__init__(ex_message)
+
+    @property
+    def trace(self) -> Optional[Iterator[TraceFrame]]:
+        if self.txn is not None:
+            yield from self.txn.provider.get_transaction_trace(self.txn.txn_hash.hex())
+
+        return None
 
 
 class VirtualMachineError(TransactionError):
@@ -112,8 +126,8 @@ class ContractLogicError(VirtualMachineError):
     such as from an assert/require statement.
     """
 
-    def __init__(self, revert_message: Optional[str] = None):
-        super().__init__(message=revert_message)
+    def __init__(self, revert_message: Optional[str] = None, *args, **kwargs):
+        super().__init__(message=revert_message, *args, **kwargs)
 
     @property
     def revert_message(self):

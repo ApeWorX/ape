@@ -1,26 +1,159 @@
+import re
+from collections import deque
 from typing import Optional, Type
 
-from ape.exceptions import ContractLogicError, TransactionError
+import ape
+from ape.exceptions import APINotImplementedError, ContractLogicError, TransactionError
 
 
 class RevertsContextManager:
-    def __init__(self, expected_message: Optional[str] = None):
+    def __init__(self, expected_message: Optional[str] = None, dev_message: Optional[str] = None):
+        if dev_message is not None and expected_message is not None:
+            raise ValueError("Cannot supply both 'expected_message' and 'dev_message'.")
+
         self.expected_message = expected_message
+        self.dev_message = dev_message
 
-    def __enter__(self):
-        pass
+    def _check_dev_message(self, exception: ContractLogicError):
+        """
+        Attempts to extract a dev-message from the contract source code by inspecting what
+        instruction(s) led to a transaction revert.
 
-    def __exit__(self, exc_type: Type, exc_value: Exception, traceback) -> bool:
-        if exc_type is None:
-            raise AssertionError("Transaction did not revert.")
+        Raises:
+            AssertionError: When the trace or source can not be retrieved, the trace does not end in
+            a REVERT instruction, or the dev message cannot be found or does not match the expected
+            dev message.
+        """
+        if exception.txn is None:
+            raise AssertionError("Could not fetch transaction information to check dev message.")
 
-        if not isinstance(exc_value, ContractLogicError):
+        receipt = exception.txn.provider.get_receipt(
+            str(exception.txn.txn_hash),
+            raise_on_fail=False,
+        )
+
+        if receipt.receiver is None:
+            raise AssertionError("Could not fetch transaction information to check dev message.")
+
+        try:
+            contract = ape.Contract(receipt.receiver)
+        except ValueError as exc:
             raise AssertionError(
-                f"Transaction did not revert.\n"
-                f"However, an exception of type {type(exc_value)} occurred: {exc_value}"
-            ) from exc_value
+                f"Could not fetch contract at {receipt.receiver} to check dev message."
+            ) from exc
 
-        actual = exc_value.revert_message
+        if contract.contract_type.pcmap is None:
+            raise AssertionError("Compiler does not support source code mapping.")
+
+        # Trace should not be None, but need to check for Mypy
+        if exception.trace is None:
+            raise AssertionError(
+                "Cannot check dev message; provider must support transaction tracing."
+            )
+
+        try:
+            trace = deque(exception.trace)
+        except APINotImplementedError as exc:
+            raise AssertionError(
+                "Cannot check dev message; provider must support transaction tracing."
+            ) from exc
+
+        if trace[-1].op != "REVERT":
+            raise AssertionError("Transaction trace did not end with REVERT.")
+
+        pc = None
+        pcmap = contract.contract_type.pcmap.parse()
+
+        # To find a suitable line for inspecting dev messages, we must start at the revert and work
+        # our way backwards. If the last frame's PC is in the PC map, the offending line is very
+        # likely a 'raise' statement.
+        if trace[-1].pc in pcmap:
+            pc = trace[-1].pc
+
+        # Otherwise we must traverse the trace backwards until we find our first suitable candidate.
+        # It should be noted that when an error happens, typically the contract will execute:
+        #
+        #   <...>
+        #   JUMPI    <- jump to revert routine on a failing condition
+        #
+        #   <...>
+        #   JUMPDEST <- beginning of revert routine
+        #   PUSH1
+        #   DUP1
+        #   REVERT
+        #
+        # So we must step backwards until we find the initial instructions that caused the failing
+        # condition. This will not be the JUMPI or even an arithmetic instruction like DIV, but
+        # rather the starting instruction for a given line.
+        else:
+            while len(trace) > 0:
+                frame = trace.pop()
+                if frame.pc in pcmap:
+                    pc = frame.pc
+                    break
+
+        # We were unable to find a suitable PC that matched the compiler's map.
+        if pc is None:
+            raise AssertionError("Could not find line that caused revert.")
+
+        offending_source = pcmap[pc]
+
+        # The compiler PC map had PC information, but not source information.
+        if offending_source is None or offending_source.line_start is None:
+            raise AssertionError("Could not find line that caused revert.")
+
+        sources = ape.project.extract_manifest().sources or {}
+        source_id = contract.contract_type.source_id or ""
+
+        if not (sources and source_id):
+            AssertionError("Could not retrieve contract source.")
+
+        if source_id not in sources:
+            AssertionError("Could not retrieve contract source.")
+
+        content = sources[source_id].content or ""
+
+        if not content:
+            AssertionError("Could not retrieve contract source.")
+
+        contract_source_lines = content.split("\n")
+
+        if offending_source.line_start > len(contract_source_lines):
+            raise AssertionError(
+                "Could not find line that caused revert (line outside of contract range)."
+            )
+
+        # Line numbers will not be zero-indexed
+        offending_line = contract_source_lines[offending_source.line_start - 1]
+
+        # Match '# dev: (...)' with any variation of whitespace
+        match = re.search(r"#\s*dev\s*:\s*(.+)", offending_line)
+
+        if not match:
+            raise AssertionError(
+                f"Could not find dev message '{self.dev_message}' in line:\n\t{offending_line}."
+            )
+
+        contract_dev_message = match.group(1)
+        assertion_error_prefix = f"Expected dev revert message '{self.dev_message}'."
+
+        if contract_dev_message is None:
+            raise AssertionError(f"{assertion_error_prefix} but there was none.")
+
+        if contract_dev_message != self.dev_message:
+            raise AssertionError(f"{assertion_error_prefix} but got '{contract_dev_message}'.")
+
+        return True
+
+    def _check_expected_message(self, exception: ContractLogicError):
+        """
+        Compares the revert message given by the exception to the expected message.
+
+        Raises:
+            AssertionError: When the exception message is ``None`` or if the message does not match
+            the expected message.
+        """
+        actual = exception.revert_message
 
         # Validate the expected revert message if given one.
         if self.expected_message is not None and self.expected_message != actual:
@@ -32,6 +165,24 @@ class RevertsContextManager:
                 raise AssertionError(f"{assertion_error_prefix} but there was none.")
 
             raise AssertionError(f"{assertion_error_prefix} but got '{actual}'.")
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type: Type, exc_value: Exception, traceback) -> bool:
+        if exc_type is None:
+            raise AssertionError("Transaction did not revert.")
+
+        if not isinstance(exc_value, ContractLogicError):
+            raise AssertionError(
+                f"Transaction did not revert.\n"
+                f"However, an exception of type {type(exc_value)} occurred: {exc_value}."
+            ) from exc_value
+
+        if self.dev_message is not None:
+            self._check_dev_message(exc_value)
+        else:
+            self._check_expected_message(exc_value)
 
         # Returning True causes the expected exception not to get raised
         # and the test to pass

@@ -72,7 +72,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         try:
             return estimate_gas(txn.dict(), block_identifier=block_id)  # type: ignore
         except (ValidationError, TransactionFailed) as err:
-            ape_err = self.get_virtual_machine_error(err, sender=txn.sender)
+            ape_err = self.get_virtual_machine_error(err, sender=txn.sender, txn=txn)
             gas_match = self._INVALID_NONCE_PATTERN.match(str(ape_err))
             if gas_match:
                 # Sometimes, EthTester is confused about the sender nonce
@@ -88,7 +88,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 raise ape_err from err
             else:
                 message = gas_estimation_error_message(ape_err)
-                raise TransactionError(base_err=ape_err, message=message) from ape_err
+                raise TransactionError(base_err=ape_err, message=message, txn=txn) from ape_err
 
     @property
     def chain_id(self) -> int:
@@ -123,15 +123,15 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             tx_params = cast(TxParams, txn.dict())
             return self.web3.eth.call(tx_params, **call_kwargs)
         except ValidationError as err:
-            raise VirtualMachineError(base_err=err) from err
+            raise VirtualMachineError(base_err=err, txn=txn) from err
         except TransactionFailed as err:
-            raise self.get_virtual_machine_error(err, sender=txn.sender) from err
+            raise self.get_virtual_machine_error(err, sender=txn.sender, txn=txn) from err
 
     def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = True) -> ReceiptAPI:
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except (ValidationError, TransactionFailed) as err:
-            raise self.get_virtual_machine_error(err, sender=txn.sender) from err
+            raise self.get_virtual_machine_error(err, sender=txn.sender, txn=txn) from err
 
         receipt = self.get_receipt(
             txn_hash.hex(),
