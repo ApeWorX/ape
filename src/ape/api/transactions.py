@@ -251,7 +251,6 @@ class ReceiptAPI(BaseInterfaceModel):
         except TransactionError:
             # Skip waiting for confirmations when the transaction has failed.
             return self
-        breakpoint()
         # Wait for nonce from provider to increment.
         sender_nonce = self.provider.get_nonce(self.sender)
         iterations_timeout = 20
