@@ -278,6 +278,7 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
 
     try:
         return PackageManifest.parse_raw(file_path.read_text())
-    except ValidationError:
+    except ValidationError as err:
         logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
+        logger.debug(str(err))
         return None

@@ -1,48 +1,50 @@
 # Developing Projects with Ape
 
-Use `ape init` to create your project. A common project structure looks like this:
+Use `ape init` to create your project.
+A common project structure looks like this:
 
 ```
 project                             # The root project directory
 ├── contracts/                      # Project source files, such as '.sol' or '.vy' files
-    └── smart_contract_example.sol  # Sample of a smart contract
+│   └── smart_contract_example.sol  # Sample of a smart contract
 ├── tests/                          # Project tests, ran using the 'ape test' command
-    └── test_sample.py              # Sample of a test to run against your sample contract
+│   └── test_sample.py              # Sample of a test to run against your sample contract
 ├── scripts/                        # Project scripts, such as deploy scripts, ran using the 'ape run   <`name>' command
-    └── deploy.py                   # Sample script to automate a deployment of an ape project
+│   └── deploy.py                   # Sample script to automate a deployment of an ape project
 └── ape-config.yaml                 # The ape project configuration file
 ```
 
+Notice that you can configure you ape project using the `ape-config.yaml` file.
+See the [configuration guide](./config.html) for a more detailed explanation of settings you can adjust.
 
- [Configuration guide](../userguides/config.md) for a more detailed explanation of settings you can
-use in your `ape-config.yaml` files.
+## Adding Plugins
+
+Your project may require plugins.
+To install plugins, use the `ape plugins install .` command.
+Learn more about configuring your project's required plugins by following [this guide](./installing_plugins.md).
 
 ## Compiling Contracts
 
-The project manager object is a representation of your current project. Access it from the root `ape` namespace:
+The project manager object is a representation of your current project.
+Access it from the root `ape` namespace:
 
 ```python
 from ape import project
 ```
 
-Your `project` contains all the "relevant" files, such as source files in the `contracts/` directory. The
-`contracts/` directory is where compilers look for contracts to compile. File extensions found within the `contracts/`
-directory determines which compiler plugin `ape` uses. Make sure to install the compiler plugins you need if they are
-missing by adding them to your `ape-config.yaml`'s `plugin` section, or manually adding via the following:
-
-```bash
-ape plugins install solidity vyper
-```
-
-Then, use the following command to compile all contracts in the `contracts/` directory:
+Your `project` contains all the "relevant" files, such as source files in the `contracts/` directory.
+Use the following command to compile all contracts in the `contracts/` directory:
 
 ```bash
 ape compile
 ```
 
-**NOTE**: Compiler plugins download missing compiler version binaries, based on the contracts' pragma-spec.
+For more information on compiling your project, see [this guide](./compile.html).
 
-The contract containers are then accessible from the `project` manager; deploy them in the `console` or in scripts:
+## Deploying Contracts
+
+After compiling, the contract containers are accessible from the `project` manager.
+Deploy them in the `console` or in scripts; for example:
 
 ```python
 from ape import accounts, project

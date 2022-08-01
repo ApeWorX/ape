@@ -26,6 +26,7 @@ skip_non_compilable_projects = skip_projects(
         "geth",
         "only-dependencies",
         "with-dependencies",
+        "with-contracts",
     ]
 )
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
