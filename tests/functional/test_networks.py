@@ -3,16 +3,68 @@ import pytest
 from ape.exceptions import NetworkError
 
 
+@pytest.fixture
+def network_with_no_providers(ethereum):
+    network = ethereum.get_network("rinkeby-fork")
+    default_provider = network.default_provider
+    providers = network.__dict__["providers"]
+
+    if default_provider or providers:
+        # Handle user running tests with forked-network plugins installed
+        network._default_provider = None
+        network.__dict__["providers"] = []
+
+    yield network
+
+    if default_provider or providers:
+        network._default_provider = default_provider
+        network.__dict__["providers"] = providers
+
+
 def test_get_network_choices_filter_ecosystem(networks):
     actual = {c for c in networks.get_network_choices(ecosystem_filter="ethereum")}
-    expected = {c for c in networks.get_network_choices()}
-    assert len(actual) == 27
-    assert actual == expected
+    all_choices = {
+        "::geth",
+        "::test",
+        ":goerli",
+        ":goerli:geth",
+        ":kovan",
+        ":kovan:geth",
+        ":local",
+        ":mainnet",
+        ":mainnet:geth",
+        ":rinkeby",
+        ":rinkeby:geth",
+        ":ropsten",
+        ":ropsten:geth",
+        "ethereum",
+        "ethereum:goerli",
+        "ethereum:goerli:geth",
+        "ethereum:kovan",
+        "ethereum:kovan:geth",
+        "ethereum:local",
+        "ethereum:local:geth",
+        "ethereum:local:test",
+        "ethereum:mainnet",
+        "ethereum:mainnet:geth",
+        "ethereum:rinkeby",
+        "ethereum:rinkeby:geth",
+        "ethereum:ropsten",
+        "ethereum:ropsten:geth",
+    }
+    assert all_choices.issubset(actual)
 
 
 def test_get_network_choices_filter_network(networks):
-    actual = {c for c in networks.get_network_choices(network_filter="mainnet-fork")}
-    assert actual == set()
+    actual = {c for c in networks.get_network_choices(network_filter="mainnet")}
+    mainnet_choices = {
+        ":mainnet",
+        ":mainnet:geth",
+        "ethereum",
+        "ethereum:mainnet",
+        "ethereum:mainnet:geth",
+    }
+    assert mainnet_choices.issubset(actual)
 
 
 def test_get_network_choices_filter_provider(networks):
@@ -21,14 +73,13 @@ def test_get_network_choices_filter_provider(networks):
     assert actual == expected
 
 
-def test_get_provider_when_no_default(networks):
-    ethereum = networks.get_ecosystem("ethereum")
-    network = ethereum.get_network("rinkeby-fork")
+def test_get_provider_when_no_default(network_with_no_providers):
     with pytest.raises(NetworkError) as err:
         # Not provider installed out-of-the-box for rinkeby-fork network
-        network.get_provider()
+        provider = network_with_no_providers.get_provider()
+        assert not provider, f"Provider should be None but got '{provider.name}'"
 
-    assert "No default provider for network 'rinkeby-fork'" in str(err.value)
+    assert f"No default provider for network '{network_with_no_providers.name}'" in str(err.value)
 
 
 def test_get_provider_when_not_found(networks):
