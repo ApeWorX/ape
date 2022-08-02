@@ -163,7 +163,7 @@ def my_contract(project, owner):
     return owner.deploy(project.MyContract)
 ```
 
-It has the same interface as the [ProjectManager(../methoddocs/managers.html#module-ape.managers.project.manager)
+It has the same interface as the [ProjectManager](../methoddocs/managers.html#module-ape.managers.project.manager)
 
 ## Ape testing commands
 
