@@ -254,3 +254,8 @@ def test_starknet_thing(stark_contract, stark_account):
     receipt = stark_contract.my_method(sender=stark_account)
     assert not receipt.failed
 ```
+
+When you exit a provider's context, Ape **does not** disconnect the provider.
+When you re-enter that provider's context, Ape finds the provider in its list of connected providers and sets it as the active provider.
+At the end of the tests, Ape disconnects all the providers.
+Thus, you can enter and exit a provider's context as much as you need in tests and it will always use the same provider.
