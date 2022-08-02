@@ -6,7 +6,6 @@ from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
 from packaging import version as version_util
 from pydantic import ValidationError
-from semantic_version import Version  # type: ignore
 
 from ape.exceptions import APINotImplementedError, ProjectError
 from ape.logging import logger
