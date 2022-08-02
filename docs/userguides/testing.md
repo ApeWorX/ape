@@ -217,3 +217,39 @@ def test_account_balance(project, owner, receiver, nft):
     expect = quantity
     assert actual == expect
 ```
+
+## Multi-chain Testing
+
+The Ape framework supports connecting to alternative providers in tests.
+The easiest way to achieve this is to use the `networks` provider context-manager.
+
+```python
+# Switch to Fantom mid test
+from ape import networks
+
+
+with networks.fantom.local.use_provider("test") as provider:
+    print(f"Using provider {provider.name}")
+
+""" or """
+
+with networks.parse_network_choice("fantom:local:test") as provider:
+    print(f"Using provider {provider.name}")
+```
+
+You can also create fixtures to assist:
+
+```python
+import pytest
+
+@pytest.fixture(scope="module")
+def stark_contract(networks, project):
+    with networks.parse_network_choice("starknet:local"):
+        yield project.MyStarknetContract.deploy()
+
+
+def test_starknet_thing(stark_contract, stark_account):
+    # Uses the starknet connection via the stark_contract fixture
+    receipt = stark_contract.my_method(sender=stark_account)
+    assert not receipt.failed
+```
