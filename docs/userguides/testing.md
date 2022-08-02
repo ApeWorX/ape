@@ -225,24 +225,25 @@ The easiest way to achieve this is to use the `networks` provider context-manage
 
 ```python
 # Switch to Fantom mid test
-from ape import networks
-
-
-with networks.fantom.local.use_provider("test") as provider:
-    print(f"Using provider {provider.name}")
-
-""" or """
-
-with networks.parse_network_choice("fantom:local:test") as provider:
-    print(f"Using provider {provider.name}")
+def test_my_fantom_test(networks):
+    # The test starts in 1 ecosystem but switches to another
+    assert networks.provider.network.ecosystem.name == "ethereum"
+    
+    with networks.fantom.local.use_provider("test") as provider:
+        assert provider.network.ecosystem.name == "fantom"
+    
+    # You can also use the context manager like this:
+    with networks.parse_network_choice("fantom:local:test") as provider:
+       assert provider.network.ecosystem.name == "fantom"
 ```
 
-You can also create fixtures to assist:
+Use fixtures to assist as well:
 
 ```python
 import pytest
 
-@pytest.fixture(scope="module")
+
+@pytest.fixture
 def stark_contract(networks, project):
     with networks.parse_network_choice("starknet:local"):
         yield project.MyStarknetContract.deploy()

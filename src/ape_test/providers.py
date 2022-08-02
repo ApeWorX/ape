@@ -47,7 +47,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def chain_id(self) -> int:
         if self.cached_chain_id is not None:
             return self.cached_chain_id
-        elif self._web3 and hasattr(self._web3, "eth"):
+        elif hasattr(self._web3, "eth"):
             chain_id = self._web3.eth.chain_id
         else:
             default_value = API_ENDPOINTS["eth"]["chainId"]()

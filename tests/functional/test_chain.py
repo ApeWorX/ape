@@ -445,5 +445,5 @@ def test_revert(chain, owner, vyper_contract_instance):
     snapshot_id = chain.snapshot()
     receipt_to_lose = vyper_contract_instance.setNumber(3, sender=owner)
     chain.restore(snapshot_id)
-    assert receipt_to_keep.txn_hash not in [chain.account_history[owner]]
-    assert receipt_to_lose.txn_hash not in [chain.account_history[owner]]
+    assert receipt_to_keep.txn_hash in [x.txn_hash for x in chain.account_history[owner]]
+    assert receipt_to_lose.txn_hash not in [x.txn_hash for x in chain.account_history[owner]]
