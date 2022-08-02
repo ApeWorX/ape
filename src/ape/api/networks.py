@@ -430,6 +430,10 @@ class EcosystemAPI(BaseInterfaceModel):
         return None
 
 
+def _id_of(provider: "ProviderAPI"):
+    return f"{provider.name}-{provider.chain_id}"
+
+
 class ProviderContextManager:
     """
     A context manager for temporarily connecting to a network.
@@ -451,6 +455,7 @@ class ProviderContextManager:
 
     # NOTE: Class variable, so it will manage stack across instances of this object
     _connected_providers: List["ProviderAPI"] = []
+    _provider_stack: List[str] = []
     network_manager: "NetworkManager"
 
     def __init__(self, provider: "ProviderAPI", network_manager: "NetworkManager"):
@@ -458,25 +463,54 @@ class ProviderContextManager:
         self.network_manager = network_manager
 
     def __enter__(self, *args, **kwargs):
-        # Connect to our provider
-        self.provider.connect()
-        self.network_manager.active_provider = self.provider
-        self._connected_providers.append(self.provider)
-
+        self.connect()
         return self.provider
 
     def __exit__(self, *args, **kwargs):
-        # Put our providers back the way it was
-        provider = self._connected_providers.pop()
+        self.disconnect()
 
-        # NOTE: using id() to prevent pydantic recursive serialization
-        if id(self.provider) != id(provider):
-            raise ValueError("Previous provider value unknown.")
+    def connect(self):
+        self.provider.connect()
+        self._safe_append(self.provider)
+        self.network_manager.active_provider = self.provider
 
-        provider.disconnect()
+    def disconnect(self):
+        if not self._connected_providers or not self._provider_stack:
+            return
 
-        if self._connected_providers:
-            self.network_manager.active_provider = self._connected_providers[-1]
+        # Clear last provider
+        self._provider_stack.pop()
+        if not self._provider_stack:
+            return
+
+        # Reset the original active provider
+        provider_id = self._provider_stack[-1]
+        previous_provider = self._get_provider(provider_id)
+        if previous_provider:
+            self.network_manager.active_provider = previous_provider
+
+    def disconnect_all(self):
+        if not self._connected_providers or not self._provider_stack:
+            return
+
+        for provider in self._connected_providers:
+            provider.disconnect()
+
+        self.network_manager.active_provider = None
+        self._connected_providers = []
+        self._provider_stack = []
+
+    def _get_provider(self, provider_id: str) -> Optional["ProviderAPI"]:
+        result = [p for p in self._connected_providers if _id_of(p) == provider_id]
+        return result[0] if result else None
+
+    def _safe_append(self, provider: "ProviderAPI"):
+        provider_object_id = _id_of(provider)
+        self._provider_stack.append(provider_object_id)
+
+        # Add provider if connecting for first time
+        if not any(_id_of(p) == provider_object_id for p in self._connected_providers):
+            self._connected_providers.append(provider)
 
 
 class NetworkAPI(BaseInterfaceModel):

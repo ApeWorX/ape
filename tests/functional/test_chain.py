@@ -438,3 +438,12 @@ def test_contracts_get_non_contract_address(chain, owner):
 def test_contracts_get_attempts_to_convert(chain):
     with pytest.raises(ConversionError):
         chain.contracts.get("test.eth")
+
+
+def test_revert(chain, owner, vyper_contract_instance):
+    receipt_to_keep = vyper_contract_instance.setNumber(3, sender=owner)
+    snapshot_id = chain.snapshot()
+    receipt_to_lose = vyper_contract_instance.setNumber(3, sender=owner)
+    chain.restore(snapshot_id)
+    assert receipt_to_keep.txn_hash not in [chain.account_history[owner]]
+    assert receipt_to_lose.txn_hash not in [chain.account_history[owner]]
