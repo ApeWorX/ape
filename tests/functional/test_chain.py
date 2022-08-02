@@ -23,24 +23,35 @@ def dummy_live_network(chain):
     chain.provider.network.name = LOCAL_NETWORK_NAME
 
 
-def test_snapshot_and_restore(chain, sender, receiver):
+def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, owner):
     initial_balance = receiver.balance  # Initial balance at block 0.
-    end_range = 5
+    blocks_to_mine = 5
     snapshot_ids = []
 
-    for i in range(end_range):
+    # Since this receipt is before the snapshotting, it will be present after restoring
+    receipt_to_keep = vyper_contract_instance.setNumber(3, sender=owner)
+    start_block = chain.blocks.height
+
+    for i in range(blocks_to_mine):
         snapshot_id = chain.snapshot()
         snapshot_ids.append(snapshot_id)
         chain.mine()
 
-    assert chain.blocks[-1].number == end_range
+    # Since this receipt is after snapshotting, it will be gone after restoring
+    assert chain.blocks[-1].number == start_block + blocks_to_mine
+    receipt_to_lose = vyper_contract_instance.setNumber(3, sender=owner)
 
     # Increase receiver's balance
     sender.transfer(receiver, "123 wei")
 
     # Show that we can also provide the snapshot ID as an argument.
-    chain.restore(snapshot_ids[2])
-    assert chain.blocks[-1].number == 2
+    restore_index = 2
+    chain.restore(snapshot_ids[restore_index])
+    assert chain.blocks[-1].number == start_block + restore_index
+
+    # Verify we lost and kept the expected transaction hashes from the account history
+    assert receipt_to_keep.txn_hash in [x.txn_hash for x in chain.account_history[owner]]
+    assert receipt_to_lose.txn_hash not in [x.txn_hash for x in chain.account_history[owner]]
 
     # Head back to the initial block.
     while chain.blocks[-1].number != 0:
@@ -438,12 +449,3 @@ def test_contracts_get_non_contract_address(chain, owner):
 def test_contracts_get_attempts_to_convert(chain):
     with pytest.raises(ConversionError):
         chain.contracts.get("test.eth")
-
-
-def test_revert(chain, owner, vyper_contract_instance):
-    receipt_to_keep = vyper_contract_instance.setNumber(3, sender=owner)
-    snapshot_id = chain.snapshot()
-    receipt_to_lose = vyper_contract_instance.setNumber(3, sender=owner)
-    chain.restore(snapshot_id)
-    assert receipt_to_keep.txn_hash in [x.txn_hash for x in chain.account_history[owner]]
-    assert receipt_to_lose.txn_hash not in [x.txn_hash for x in chain.account_history[owner]]
