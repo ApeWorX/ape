@@ -138,7 +138,8 @@ class ProjectAPI(BaseInterfaceModel):
             except APINotImplementedError:
                 versions = list(compiler.get_versions(sources))
                 if len(versions) == 0:
-                    # Some compilers like json compiler doesn't use versioning
+                    # Skipping compilers that don't use versions
+                    # These are unlikely to be part of the published manifest
                     continue
                 elif len(versions) > 1:
                     raise (ProjectError(f"Unable to create version map for '{ext}'."))
