@@ -387,7 +387,7 @@ class ContractEvent(ManagerAccessMixin):
         self,
         *columns: List[str],
         start_block: int = 0,
-        stop_block: int = None,
+        stop_block: Optional[int] = None,
         step: int = 1,
         engine_to_use: Optional[str] = None,
     ) -> pd.DataFrame:
