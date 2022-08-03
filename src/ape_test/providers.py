@@ -23,6 +23,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         )
 
     def connect(self):
+        if self._web3 is not None:
+            return
+
         self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
         self._web3.middleware_onion.add(simple_cache_middleware)
 

@@ -7,7 +7,7 @@ from ape.types import LogFilter
 EXPECTED_CHAIN_ID = 61
 
 
-@pytest.mark.parametrize("block_id", ("latest", 0, "0", "0x0", HexStr("0x0")))
+@pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
 def test_get_block(eth_tester_provider, block_id):
     latest_block = eth_tester_provider.get_block(block_id)
 
@@ -69,33 +69,36 @@ def test_get_contracts_logs_all_logs(contract_instance, owner, eth_tester_provid
 
 
 def test_get_contract_logs_single_log(contract_instance, owner, eth_tester_provider):
+    contract_instance.fooAndBar(sender=owner)  # Create logs
     log_filter = LogFilter.from_event(
         event=contract_instance.FooHappened, search_topics={"foo": 0}, addresses=[contract_instance]
     )
-    contract_instance.fooAndBar(sender=owner)  # Create logs
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 1
     assert logs[0]["foo"] == 0
 
 
 def test_get_contract_logs_single_log_query_multiple_values(
-    contract_instance, owner, eth_tester_provider
+    chain, contract_instance, owner, eth_tester_provider
 ):
+    contract_instance.fooAndBar(sender=owner)  # Create logs
     log_filter = LogFilter.from_event(
         event=contract_instance.FooHappened,
         search_topics={"foo": [0, 1]},
         addresses=[contract_instance],
     )
-    contract_instance.fooAndBar(sender=owner)  # Create logs
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
-    assert len(logs) == 1
-    assert logs[0]["foo"] == 0
+    assert len(logs) >= 1
+    assert logs[-1]["foo"] == 0
 
 
 def test_get_contract_logs_single_log_unmatched(contract_instance, owner, eth_tester_provider):
-    log_filter = LogFilter.from_event(
-        event=contract_instance.FooHappened, search_topics={"foo": 2}, addresses=[contract_instance]
-    )
+    unmatched_search = {"foo": 2}  # Foo is created with a value of 0
     contract_instance.fooAndBar(sender=owner)  # Create logs
+    log_filter = LogFilter.from_event(
+        event=contract_instance.FooHappened,
+        search_topics=unmatched_search,
+        addresses=[contract_instance],
+    )
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 0

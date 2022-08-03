@@ -750,7 +750,8 @@ class Web3Provider(ProviderAPI, ABC):
     def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
         height = self.chain_manager.blocks.height
         start_block = log_filter.start_block
-        stop_block = min(log_filter.stop_block or height, height)
+        stop_block_arg = log_filter.stop_block if log_filter.stop_block is not None else height
+        stop_block = min(stop_block_arg, height)
         block_ranges = self.block_ranges(start_block, stop_block, self.block_page_size)
 
         def fetch_log_page(block_range):
@@ -766,19 +767,16 @@ class Web3Provider(ProviderAPI, ABC):
                 yield from page
 
     def _get_logs(self, filter_params, raw=True) -> List[Dict]:
-        if raw:
-            response = self.web3.provider.make_request(RPCEndpoint("eth_getLogs"), [filter_params])
-            if "error" in response:
-                error = response["error"]
-                if isinstance(error, dict) and "message" in error:
-                    raise ValueError(error["message"])
-                else:
-                    # Should never get here, mostly for mypy
-                    raise ValueError(str(error))
-
-            return response["result"]
-        else:
+        if not raw:
             return [vars(d) for d in self.web3.eth.get_logs(filter_params)]
+
+        response = self.web3.provider.make_request(RPCEndpoint("eth_getLogs"), [filter_params])
+        if "error" not in response:
+            return response["result"]
+
+        error = response["error"]
+        message = error["message"] if isinstance(error, dict) and "message" in error else str(error)
+        raise ValueError(message)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:

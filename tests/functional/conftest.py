@@ -51,21 +51,21 @@ def pytest_collection_finish(session):
         yield
 
 
-@pytest.hookimpl(hookwrapper=True)
-def pytest_runtest_protocol(item, nextitem):
-    module_name = item.module.__name__
-    prefix = "tests.functional"
-
-    if module_name.startswith(prefix):
-        snapshot_id = ape.chain.snapshot()
-        yield
-
-        try:
-            ape.chain.restore(snapshot_id)
-        except (HeaderNotFound, ChainError, ProviderNotConnectedError):
-            pass
-    else:
-        yield
+# @pytest.hookimpl(hookwrapper=True)
+# def pytest_runtest_protocol(item, nextitem):
+#     module_name = item.module.__name__
+#     prefix = "tests.functional"
+#
+#     if module_name.startswith(prefix):
+#         snapshot_id = ape.chain.snapshot()
+#         yield
+#
+#         try:
+#             ape.chain.restore(snapshot_id)
+#         except (HeaderNotFound, ChainError, ProviderNotConnectedError):
+#             pass
+#     else:
+#         yield
 
 
 @pytest.fixture
@@ -308,7 +308,7 @@ def ds_note():
 
 
 @pytest.fixture
-def chain_at_block_5(chain):
+def chain_that_mined_5(chain):
     snapshot_id = chain.snapshot()
     chain.mine(5)
     yield chain

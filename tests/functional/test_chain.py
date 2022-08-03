@@ -38,6 +38,7 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
         chain.mine()
 
     # Since this receipt is after snapshotting, it will be gone after restoring
+
     assert chain.blocks[-1].number == start_block + blocks_to_mine
     receipt_to_lose = vyper_contract_instance.setNumber(3, sender=owner)
 
@@ -47,17 +48,16 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     # Show that we can also provide the snapshot ID as an argument.
     restore_index = 2
     chain.restore(snapshot_ids[restore_index])
+
     assert chain.blocks[-1].number == start_block + restore_index
 
     # Verify we lost and kept the expected transaction hashes from the account history
     assert receipt_to_keep.txn_hash in [x.txn_hash for x in chain.account_history[owner]]
     assert receipt_to_lose.txn_hash not in [x.txn_hash for x in chain.account_history[owner]]
 
-    # Head back to the initial block.
-    while chain.blocks[-1].number != 0:
-        chain.restore()
-
-    assert chain.blocks[-1].number == 0
+    # Head back to the start block
+    chain.restore(snapshot_ids[0])
+    assert chain.blocks[-1].number == start_block
     assert receiver.balance == initial_balance
 
 
@@ -97,24 +97,29 @@ def test_account_history(sender, receiver, chain):
     assert txn.receiver == receipt.receiver == receiver
 
 
-def test_iterate_blocks(chain_at_block_5):
-    expected_number_of_blocks = 6  # chain_at_block_5: [0, 1, 2, 3, 4, 5] (len=6)
-    blocks = [b for b in chain_at_block_5.blocks]
-    assert len(blocks) == expected_number_of_blocks, "Blocks are mined after fixture set"
+def test_iterate_blocks(chain_that_mined_5):
+    blocks = [b for b in chain_that_mined_5.blocks]
+    assert len(blocks) >= 5  # Because mined 5 blocks so is at least 5
 
-    expected_number = 0
+    iterator = blocks[0].number
     for block in blocks:
-        assert block.number == expected_number
-        expected_number += 1
+        assert block.number == iterator
+        iterator += 1
 
 
-def test_blocks_range(chain_at_block_5):
-    expected_number_of_blocks = 3  # Expecting blocks [0, 1, 2]
-    blocks = [b for b in chain_at_block_5.blocks.range(3)]
-    assert len(blocks) == expected_number_of_blocks
+def test_blocks_range(chain_that_mined_5):
+    # The number of the block before mining the 5
+    start_block = len(chain_that_mined_5.blocks) - 5
+    num_to_get = 3  # Expecting blocks [s, s+1, s+2]
+    blocks = [b for b in chain_that_mined_5.blocks.range(start_block, start_block + num_to_get)]
+    assert len(blocks) == num_to_get
 
-    expected_number = 0
-    prev_block_hash = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
+    expected_number = start_block
+    prev_block_hash = (
+        HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
+        if start_block == 0
+        else chain_that_mined_5.blocks[start_block - 1].hash
+    )
     for block in blocks:
         assert block.number == expected_number
         expected_number += 1
@@ -122,35 +127,36 @@ def test_blocks_range(chain_at_block_5):
         prev_block_hash = block.hash
 
 
-def test_blocks_range_too_high_stop(chain_at_block_5):
-    len_plus_1 = len(chain_at_block_5.blocks) + 1
+def test_blocks_range_too_high_stop(chain_that_mined_5):
+    num_blocks = len(chain_that_mined_5.blocks)
+    num_blocks_add_1 = num_blocks + 1
     with pytest.raises(ChainError) as err:
         # Have to run through generator to trigger code in definition.
-        _ = [_ for _ in chain_at_block_5.blocks.range(len_plus_1)]
+        _ = [_ for _ in chain_that_mined_5.blocks.range(num_blocks_add_1)]
 
     assert str(err.value) == (
-        f"'stop={len_plus_1}' cannot be greater than the chain length (6). "
+        f"'stop={num_blocks_add_1}' cannot be greater than the chain length ({num_blocks}). "
         f"Use 'poll_blocks()' to wait for future blocks."
     )
 
 
-def test_block_range_with_step(chain_at_block_5):
-    blocks = [b for b in chain_at_block_5.blocks.range(3, step=2)]
+def test_block_range_with_step(chain_that_mined_5):
+    blocks = [b for b in chain_that_mined_5.blocks.range(3, step=2)]
     assert len(blocks) == 2
     assert blocks[0].number == 0
     assert blocks[1].number == 2
 
 
-def test_block_range_negative_start(chain_at_block_5):
+def test_block_range_negative_start(chain_that_mined_5):
     with pytest.raises(ValueError) as err:
-        _ = [b for b in chain_at_block_5.blocks.range(-1, 3, step=2)]
+        _ = [b for b in chain_that_mined_5.blocks.range(-1, 3, step=2)]
 
     assert "ensure this value is greater than or equal to 0" in str(err.value)
 
 
-def test_block_range_out_of_order(chain_at_block_5):
+def test_block_range_out_of_order(chain_that_mined_5):
     with pytest.raises(ValueError) as err:
-        _ = [b for b in chain_at_block_5.blocks.range(3, 1, step=2)]
+        _ = [b for b in chain_that_mined_5.blocks.range(3, 1, step=2)]
 
     assert "stop_block: '0' cannot be less than start_block: '3'." in str(err.value)
 
@@ -365,34 +371,37 @@ def test_get_multiple_deployments_live(
 
 def test_contract_cache_mapping_updated_on_many_deployments(owner, project_with_contract, chain):
     # Arrange / Act
-    starting_contracts_list = chain.contracts.get_deployments(project_with_contract.ApeContract0)
-    initial_deployed_contract = owner.deploy(project_with_contract.ApeContract0)
+    initial_contracts = chain.contracts.get_deployments(project_with_contract.ApeContract0)
+    expected_first_contract = owner.deploy(project_with_contract.ApeContract0)
 
     owner.deploy(project_with_contract.ApeContract0)
     owner.deploy(project_with_contract.ApeContract0)
-    final_deployed_contract = owner.deploy(project_with_contract.ApeContract0)
+    expected_last_contract = owner.deploy(project_with_contract.ApeContract0)
 
-    my_contracts_list = chain.contracts.get_deployments(project_with_contract.ApeContract0)
-    initial_contract_index = len(my_contracts_list) - len(starting_contracts_list) - 4
+    actual_contracts = chain.contracts.get_deployments(project_with_contract.ApeContract0)
+    first_index = len(initial_contracts)  # next index before deploys from this test
+    actual_first_contract = actual_contracts[first_index].address
+    actual_last_contract = actual_contracts[-1].address
 
     # Assert
-    assert len(my_contracts_list) - len(starting_contracts_list) == 4
-    assert final_deployed_contract.address == my_contracts_list[-1].address
-    assert my_contracts_list[initial_contract_index].address == initial_deployed_contract.address
+    fail_msg = f"Check deployments: {', '.join([c.address for c in actual_contracts])}"
+    assert len(actual_contracts) - len(initial_contracts) == 4, fail_msg
+    assert actual_first_contract == expected_first_contract.address, fail_msg
+    assert actual_last_contract == expected_last_contract.address, fail_msg
 
 
-def test_poll_blocks_stop_block_not_in_future(chain_at_block_5):
-    bad_stop_block = chain_at_block_5.blocks.height
+def test_poll_blocks_stop_block_not_in_future(chain_that_mined_5):
+    bad_stop_block = chain_that_mined_5.blocks.height
 
     with pytest.raises(ValueError) as err:
-        _ = [x for x in chain_at_block_5.blocks.poll_blocks(stop_block=bad_stop_block)]
+        _ = [x for x in chain_that_mined_5.blocks.poll_blocks(stop_block=bad_stop_block)]
 
     assert str(err.value) == "'stop' argument must be in the future."
 
 
-def test_poll_blocks(chain_at_block_5, eth_tester_provider, owner, PollDaemon):
+def test_poll_blocks(chain_that_mined_5, eth_tester_provider, owner, PollDaemon):
     blocks = Queue(maxsize=3)
-    poller = chain_at_block_5.blocks.poll_blocks()
+    poller = chain_that_mined_5.blocks.poll_blocks()
 
     with PollDaemon("blocks", poller, blocks.put, blocks.full):
         # Sleep first to ensure listening before mining.
@@ -408,9 +417,9 @@ def test_poll_blocks(chain_at_block_5, eth_tester_provider, owner, PollDaemon):
 
 
 def test_poll_blocks_timeout(
-    vyper_contract_instance, chain_at_block_5, eth_tester_provider, owner, PollDaemon
+    vyper_contract_instance, chain_that_mined_5, eth_tester_provider, owner, PollDaemon
 ):
-    poller = chain_at_block_5.blocks.poll_blocks(new_block_timeout=1)
+    poller = chain_that_mined_5.blocks.poll_blocks(new_block_timeout=1)
 
     with pytest.raises(ChainError) as err:
         with PollDaemon("blocks", poller, lambda x: None, lambda: False):

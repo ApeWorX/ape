@@ -190,9 +190,9 @@ def test_contract_logs_range_only_stop(contract_instance, owner, chain):
 
 
 def test_poll_logs_stop_block_not_in_future(
-    chain_at_block_5, vyper_contract_instance, eth_tester_provider
+    chain_that_mined_5, vyper_contract_instance, eth_tester_provider
 ):
-    bad_stop_block = chain_at_block_5.blocks.height
+    bad_stop_block = chain_that_mined_5.blocks.height
 
     with pytest.raises(ValueError) as err:
         _ = [x for x in vyper_contract_instance.NumberChange.poll_logs(stop_block=bad_stop_block)]
