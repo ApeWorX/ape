@@ -463,14 +463,15 @@ class ProviderContextManager:
         self.network_manager = network_manager
 
     def __enter__(self, *args, **kwargs):
-        self.connect()
-        return self.provider
+        return self.push_provider()
 
     def __exit__(self, *args, **kwargs):
-        self.disconnect()
+        self.pop_provider()
 
-    def connect(self):
-        self.provider.connect()
+    def push_provider(self):
+        if not self.provider.is_connected:
+            self.provider.connect()
+
         provider_object_id = self.get_provider_id(self.provider)
         self.provider_stack.append(provider_object_id)
 
@@ -484,7 +485,7 @@ class ProviderContextManager:
             self.connected_providers[provider_object_id] = self.provider
             self.network_manager.active_provider = self.provider
 
-    def disconnect(self):
+    def pop_provider(self):
         if not self.connected_providers or not self.provider_stack:
             return
 

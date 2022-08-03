@@ -139,6 +139,13 @@ class ProviderAPI(BaseInterfaceModel):
         Disconnect from a provider, such as tear-down a process or quit an HTTP session.
         """
 
+    @property
+    def is_connected(self) -> bool:
+        """
+        ``True`` if currently connected to the provider. ``False`` otherwise.
+        """
+        return self.chain_id is not None
+
     @abstractmethod
     def update_settings(self, new_settings: dict):
         """
@@ -618,6 +625,10 @@ class Web3Provider(ProviderAPI, ABC):
 
         return base_fee
 
+    @property
+    def is_connected(self) -> bool:
+        return self._web3 is not None and self._web3.isConnected()
+
     def update_settings(self, new_settings: dict):
         self.disconnect()
         self.provider_settings.update(new_settings)
@@ -829,14 +840,6 @@ class SubprocessProvider(ProviderAPI):
     @abstractmethod
     def process_name(self) -> str:
         """The name of the process, such as ``Hardhat node``."""
-
-    @property
-    @abstractmethod
-    def is_connected(self) -> bool:
-        """
-        ``True`` if the process is running and connected.
-        ``False`` otherwise.
-        """
 
     @abstractmethod
     def build_command(self) -> List[str]:

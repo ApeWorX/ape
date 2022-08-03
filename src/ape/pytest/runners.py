@@ -150,7 +150,7 @@ class PytestApeRunner(ManagerAccessMixin):
 
         # Only start provider if collected tests.
         if not outcome.get_result() and session.items and not self.network_manager.active_provider:
-            self._provider_context.connect()
+            self._provider_context.push_provider()
             self._provider_is_connected = True
 
     def pytest_sessionfinish(self):
