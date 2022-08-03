@@ -50,23 +50,6 @@ def pytest_collection_finish(session):
         yield
 
 
-# @pytest.hookimpl(hookwrapper=True)
-# def pytest_runtest_protocol(item, nextitem):
-#     module_name = item.module.__name__
-#     prefix = "tests.functional"
-#
-#     if module_name.startswith(prefix):
-#         snapshot_id = ape.chain.snapshot()
-#         yield
-#
-#         try:
-#             ape.chain.restore(snapshot_id)
-#         except (HeaderNotFound, ChainError, ProviderNotConnectedError):
-#             pass
-#     else:
-#         yield
-
-
 @pytest.fixture
 def mock_network_api(mocker):
     mock = mocker.MagicMock(spec=NetworkAPI)

@@ -475,12 +475,12 @@ class ProviderContextManager:
         self.provider_stack.append(provider_object_id)
 
         if provider_object_id in self.connected_providers:
-            # Provider already connected and known
+            # Already connected and known
             connected_provider = self.connected_providers[provider_object_id]
             self.network_manager.active_provider = connected_provider
 
         else:
-            # Already connected but and unknown
+            # Already connected and unknown
             self.connected_providers[provider_object_id] = self.provider
             self.network_manager.active_provider = self.provider
 

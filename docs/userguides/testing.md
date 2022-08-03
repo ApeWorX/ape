@@ -237,7 +237,7 @@ def test_my_fantom_test(networks):
        assert provider.network.ecosystem.name == "fantom"
 ```
 
-Use fixtures to assist as well:
+You can also set the network context in a context-manager pytest fixture:
 
 ```python
 import pytest
@@ -256,6 +256,6 @@ def test_starknet_thing(stark_contract, stark_account):
 ```
 
 When you exit a provider's context, Ape **does not** disconnect the provider.
-When you re-enter that provider's context, Ape finds the provider in its list of connected providers and sets it as the active provider.
+When you re-enter that provider's context, Ape uses the previously-connected provider.
 At the end of the tests, Ape disconnects all the providers.
-Thus, you can enter and exit a provider's context as much as you need in tests and it will always use the same provider.
+Thus, you can enter and exit a provider's context as much as you need in tests.
