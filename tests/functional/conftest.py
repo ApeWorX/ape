@@ -9,14 +9,13 @@ from typing import Dict, Optional
 
 import pytest
 import yaml
-from eth.exceptions import HeaderNotFound
 from ethpm_types import ContractType
 from hexbytes import HexBytes
 
 import ape
 from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
-from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
+from ape.exceptions import ChainError, ContractLogicError
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType, ContractLog
 

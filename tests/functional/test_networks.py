@@ -2,7 +2,6 @@ from contextlib import contextmanager
 
 import pytest
 
-from ape.api import ProviderAPI
 from ape.exceptions import NetworkError
 
 
