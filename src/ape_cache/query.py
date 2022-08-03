@@ -86,7 +86,7 @@ class CacheQueryProvider(QueryAPI):
                     stop_block=query.stop_block,
                     step=query.step,
                 )
-                if q.rowcount == (query.stop_block - query.start_block) / query.step:
+                if q.rowcount == (query.stop_block - query.start_block) // query.step:
                     # NOTE: Assume 200 msec to get data from database
                     return 200
                 # Can't handle this query
@@ -117,6 +117,37 @@ class CacheQueryProvider(QueryAPI):
                     # NOTE: Assume 200 msec to get data from database
                     return 200
                 # Can't handle this query
+                return None
+
+        except Exception as err:
+            # Note: If any error, skip the data from the cache and continue to
+            #       query from provider.
+            logger.debug(err)
+            return None
+
+    @estimate_query.register
+    def estimate_contract_events_query(self, query: ContractEventQuery) -> Optional[int]:
+        try:
+            with self.engine.connect() as conn:
+                q = conn.execute(
+                    text(
+                        """
+                        SELECT COUNT(*)
+                        FROM contract_events
+                        WHERE contract_events.block_number >= :start_block
+                        AND contract_events.block_number <= :stop_block
+                        AND contract_events.block_number mod :step = 0
+                        """
+                    ),
+                    start_block=query.start_block,
+                    stop_block=query.stop_block,
+                    step=query.step,
+                )
+                if q.rowcount == (query.stop_block - query.start_block) // query.step:
+                    # NOTE: Assume 200 msec to get data from database
+                    return 200
+                # Can't handle this query
+                # TODO: Allow partial queries
                 return None
 
         except Exception as err:
@@ -162,6 +193,26 @@ class CacheQueryProvider(QueryAPI):
                 ),
                 columns=",".join(query.columns),
                 start_block=query.block_id,
+            )
+            return pd.DataFrame(columns=query.columns, data=q.fetchall())
+
+    @perform_query.register
+    def perform_contract_events_query(self, query: ContractEventQuery) -> pd.DataFrame:
+        with self.engine.connect() as conn:
+            q = conn.execute(
+                text(
+                    """
+                    SELECT :columns
+                    FROM contract_events
+                    WHERE contract_events.block_number >= :start_block
+                    AND contract_events.block_number <= :stop_block
+                    AND contract_events.block_number mod :step = 0
+                    """
+                ),
+                columns=",".join(query.columns),
+                start_block=query.start_block,
+                stop_block=query.stop_block,
+                step=query.step,
             )
             return pd.DataFrame(columns=query.columns, data=q.fetchall())
 
@@ -246,3 +297,41 @@ class CacheQueryProvider(QueryAPI):
             # Note: If any error, skip the data from the cache and continue to
             #       query from provider.
             logger.debug(err)
+
+    @update_cache.register
+    def update_contract_events_cache(self, query: ContractEventQuery, result: List[Any]) -> None:
+        df = pd.DataFrame(
+            columns=query.columns,
+            data=[val for val in map(lambda val: val.dict(by_alias=False), result)],
+        )
+        try:
+            with self.engine.connect() as conn:
+                for idx, row in df.iterrows():
+                    try:
+                        v = conn.execute(
+                            text(
+                                """
+                                SELECT * FROM contract_events
+                                WHERE contract_events.block_number = :number
+                                """
+                            ),
+                            number=row["block_number"],
+                        )
+                        if [i for i in v]:
+                            df = df[df["block_number"] != row["block_number"]]
+
+                        if df.empty:
+                            return
+
+                    except sqlalchemy.exc.OperationalError as err:
+                        logger.info(err)
+                        df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
+                        return
+
+                df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
+
+        except Exception as err:
+            # Note: If any error, skip the data from the cache and continue to
+            #       query from provider.
+            logger.debug(err)
+            print(err)

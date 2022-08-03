@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String  # type: ignore
+from sqlalchemy import Column, DateTime, ForeignKey, JSON, Integer, String  # type: ignore
 
 from .base import Base
 
@@ -28,3 +28,17 @@ class Transactions(Base):
     receiver = Column(String, nullable=False)
     block_hash = Column(String, ForeignKey("blocks.hash", ondelete="CASCADE"))
     nonce = Column(Integer, nullable=False)
+
+
+class ContractEvents(Base):
+    __tablename__ = "contract_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    event_name = Column(String, nullable=False, index=True)
+    contract_address = Column(String, nullable=False, index=True)
+    event_arguments = Column(JSON, index=True)
+    transaction_hash = Column(String, nullable=False, index=True)
+    block_number = Column(Integer, nullable=False, index=True)
+    block_hash = Column(String, nullable=False, index=True)
+    log_index = Column(Integer, nullable=False, index=True)
+    transaction_index = Column(Integer, nullable=False, index=True)
