@@ -95,8 +95,9 @@ class ContractEventQuery(_BaseBlockQuery):
     logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
     """
 
-    contract: AddressType
+    contract: Union[AddressType, List[AddressType]]
     event: EventABI
+    search_topics: Optional[Dict[str, Any]] = None
 
 
 class ContractMethodQuery(_BaseBlockQuery):
