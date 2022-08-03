@@ -1,7 +1,11 @@
+import time
+
+import pandas as pd
 import pytest
 
 from ape import chain
 from ape.api.query import validate_and_expand_columns
+from ape.types import ContractLog
 
 
 def test_basic_query(eth_tester_provider):
@@ -45,6 +49,17 @@ def test_block_transaction_query(eth_tester_provider, sender, receiver):
     assert len(query) == 1
     assert query[0].value == 100
     assert query[0].chain_id == 61
+
+
+def test_transaction_contract_event_query(contract_instance, owner, eth_tester_provider):
+    contract_instance.fooAndBar(sender=owner)
+    time.sleep(0.1)
+    df_events = contract_instance.FooHappened.query("*", start_block=-1)
+    assert isinstance(df_events, pd.DataFrame)
+    assert df_events.event_name[0] == "FooHappened"
+    events = list(contract_instance.FooHappened.range(start_or_stop=0))
+    assert isinstance(events[0], ContractLog)
+    assert "FooHappened" in events[0].dict().values()
 
 
 def test_column_expansion():
