@@ -209,7 +209,7 @@ class CacheQueryProvider(QueryAPI):
     @update_cache.register
     def update_transaction_cache(self, query: BlockTransactionQuery, result: List[Any]) -> None:
         df = pd.DataFrame(
-            columns=["to", "nonce", "from"],
+            columns=["receiver", "nonce", "sender"],
             data=[(val.receiver, val.nonce, val.sender) for val in result],
         )
         df["block_hash"] = query.block_id
