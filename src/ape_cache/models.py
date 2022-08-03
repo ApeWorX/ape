@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, JSON, Integer, String  # type: ignore
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String  # type: ignore
 
 from .base import Base
 
@@ -31,7 +31,7 @@ class Transactions(Base):
 
 
 class ContractEvents(Base):
-    __tablename__ = "contract_events"
+    __tablename__ = "contract_events"  # type: ignore
 
     id = Column(Integer, primary_key=True, index=True)
     event_name = Column(String, nullable=False, index=True)
