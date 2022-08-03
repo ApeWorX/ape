@@ -334,4 +334,3 @@ class CacheQueryProvider(QueryAPI):
             # Note: If any error, skip the data from the cache and continue to
             #       query from provider.
             logger.debug(err)
-            print(err)
