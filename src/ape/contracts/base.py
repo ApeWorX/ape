@@ -489,7 +489,7 @@ class ContractEvent(ManagerAccessMixin):
             start_block=start_block,
             stop_block=stop_block,
         )
-        yield from self.query_manager.query(contract_event_query)
+        yield from self.query_manager.query(contract_event_query)  # type: ignore
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """
