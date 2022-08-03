@@ -10,7 +10,7 @@ from hexbytes import HexBytes
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery
-from ape.exceptions import ArgumentsLengthError, ContractError
+from ape.exceptions import ArgumentsLengthError, ChainError, ContractError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -386,14 +386,22 @@ class ContractEvent(ManagerAccessMixin):
     def query(
         self,
         *columns: List[str],
-        block: int = -1,
+        start_block: int = 0,
+        stop_block: int = None,
+        step: int = 1,
         engine_to_use: Optional[str] = None,
     ) -> pd.DataFrame:
         """
         Iterate through blocks for log events
 
         Args:
-            block (int): initially set to -1 to grab the last block events
+            columns (List[str]): columns in the DataFrame to return
+            start_block (int): The first block, by number, to include in the
+              query. Defaults to 0.
+            stop_block (Optional[int]): The last block, by number, to include
+              in the query. Defaults to the latest block.
+            step (int): The number of blocks to iterate between block numbers.
+              Defaults to ``1``.
             engine_to_use (Optional[str]): query engine to use, bypasses query
               engine selection algorithm.
 
@@ -401,14 +409,23 @@ class ContractEvent(ManagerAccessMixin):
             pd.DataFrame
         """
 
-        stop_block = block
-        if block < 0:
-            stop_block = self.chain_manager.blocks.height + stop_block + 1
+        if start_block < 0:
+            start_block = self.chain_manager.blocks.height + start_block
+
+        if stop_block is None:
+            stop_block = self.chain_manager.blocks.height
+
+        elif stop_block < 0:
+            stop_block = self.chain_manager.blocks.height + stop_block
+
+        elif stop_block > self.chain_manager.blocks.height:
+            raise ChainError(
+                f"'stop={stop_block}' cannot be greater than "
+                f"the chain length ({self.chain_manager.blocks.height})."
+            )
 
         if columns[0] == "*":
             columns = list(ContractLog.__fields__)  # type: ignore
-
-        start_block = stop_block - 1
 
         contract_event_query = ContractEventQuery(
             columns=columns,
@@ -416,12 +433,13 @@ class ContractEvent(ManagerAccessMixin):
             event=self.abi,
             start_block=start_block,
             stop_block=stop_block,
+            step=step,
         )
-        contract_events = list(
-            self.query_manager.query(contract_event_query, engine_to_use=engine_to_use)
+        contract_events = self.query_manager.query(
+            contract_event_query, engine_to_use=engine_to_use
         )
         return pd.DataFrame(
-            columns=contract_events[0].dict().keys(), data=[val.dict() for val in contract_events]
+            columns=contract_event_query.columns, data=[val.dict() for val in contract_events]
         )
 
     def range(
@@ -430,7 +448,7 @@ class ContractEvent(ManagerAccessMixin):
         stop: Optional[int] = None,
         search_topics: Optional[Dict[str, Any]] = None,
         extra_addresses: Optional[List] = None,
-    ) -> Iterator:
+    ) -> Iterator[ContractLog]:
         """
         Search through the logs for this event using the given filter parameters.
 

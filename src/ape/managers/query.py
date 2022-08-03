@@ -2,7 +2,7 @@ from typing import Dict, Iterator, Optional
 
 from ape.api import QueryAPI, QueryType
 from ape.api.query import BlockQuery, BlockTransactionQuery, ContractEventQuery
-from ape.contracts.base import LogFilter
+from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -52,7 +52,7 @@ class DefaultQueryProvider(QueryAPI):
         return self.provider.get_transactions_by_block(query.block_id)
 
     @perform_query.register
-    def perform_contract_events_query(self, query: ContractEventQuery):
+    def perform_contract_events_query(self, query: ContractEventQuery) -> Iterator[ContractLog]:
         addresses = query.contract
         if not isinstance(addresses, list):
             addresses = [query.contract]  # type: ignore
