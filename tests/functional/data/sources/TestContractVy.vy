@@ -1,9 +1,4 @@
-# @version ^0.3.3
-
-owner: public(address)
-myNumber: public(uint256)
-prevNumber: public(uint256)
-theAddress: public(address)
+# @version 0.3.3
 
 event NumberChange:
     b: bytes32
@@ -38,6 +33,12 @@ struct WithArray:
     arr: MyStruct[2]
     bar: uint256
 
+owner: public(address)
+myNumber: public(uint256)
+prevNumber: public(uint256)
+theAddress: public(address)
+balances: public(HashMap[address, uint256])
+
 @external
 def __init__():
     self.owner = msg.sender
@@ -59,6 +60,10 @@ def setNumber(num: uint256):
 def setAddress(_address: address):
     self.theAddress = _address
     log AddressChange(_address)
+
+@external
+def setBalance(_address: address, bal: uint256):
+    self.balances[_address] += bal
 
 @view
 @external
@@ -160,9 +165,9 @@ def getUnnamedTuple() -> (uint256, uint256):
     return (0, 0)
 
 
-@pure
+@view
 @external
 def getTupleOfAddressArray() -> (address[20], uint128[20]):
-    addresses = empty(address[20])
+    addresses: address[20] = empty(address[20])
     addresses[0] = msg.sender
     return (addresses, empty(uint128[20]))
