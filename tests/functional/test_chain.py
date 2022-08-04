@@ -43,11 +43,13 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     receipt_to_lose = vyper_contract_instance.setNumber(3, sender=owner)
 
     # Increase receiver's balance
+    account_nonce = sender.nonce
     sender.transfer(receiver, "123 wei")
 
     # Show that we can also provide the snapshot ID as an argument.
     restore_index = 2
     chain.restore(snapshot_ids[restore_index])
+    assert sender.nonce == account_nonce
 
     assert chain.blocks[-1].number == start_block + restore_index
 
@@ -87,12 +89,12 @@ def test_snapshot_and_restore_no_snapshots(chain):
 
 
 def test_account_history(sender, receiver, chain):
-    assert not chain.account_history[sender]
+    length_at_start = len(chain.account_history[sender])
     receipt = sender.transfer(receiver, "1 wei")
     transactions_from_cache = chain.account_history[sender]
-    assert len(transactions_from_cache) == 1
+    assert len(transactions_from_cache) == length_at_start + 1
 
-    txn = transactions_from_cache[0]
+    txn = transactions_from_cache[-1]
     assert txn.sender == receipt.sender == sender
     assert txn.receiver == receipt.receiver == receiver
 

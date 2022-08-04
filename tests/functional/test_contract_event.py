@@ -4,6 +4,7 @@ from queue import Queue
 from typing import Optional
 
 import pytest
+from eth_utils import to_hex
 from ethpm_types import ContractType
 from hexbytes import HexBytes
 
@@ -108,9 +109,15 @@ def test_contract_logs_splicing(contract_instance, owner, assert_log_values):
     assert_log_values(log, 2)
 
 
-def test_contract_logs_range(contract_instance, owner, assert_log_values):
+def test_contract_logs_range(chain, contract_instance, owner, assert_log_values):
     contract_instance.setNumber(1, sender=owner)
-    logs = [log for log in contract_instance.NumberChange.range(100, search_topics={"newNum": 1})]
+    start = chain.blocks.height
+    logs = [
+        log
+        for log in contract_instance.NumberChange.range(
+            start, start + 100, search_topics={"newNum": 1}
+        )
+    ]
     assert len(logs) == 1, "Unexpected number of logs"
     assert_log_values(logs[0], 1)
 
@@ -118,23 +125,25 @@ def test_contract_logs_range(contract_instance, owner, assert_log_values):
 def test_contract_logs_range_by_address(
     mocker, chain, eth_tester_provider, test_accounts, contract_instance, owner, assert_log_values
 ):
-    spy = mocker.spy(eth_tester_provider.web3.eth, "get_logs")
+    get_logs_spy = mocker.spy(eth_tester_provider.web3.eth, "get_logs")
     contract_instance.setAddress(test_accounts[1], sender=owner)
+    height = chain.blocks.height
     logs = [
         log
         for log in contract_instance.AddressChange.range(
-            100, search_topics={"newAddress": test_accounts[1]}
+            height, height + 1, search_topics={"newAddress": test_accounts[1]}
         )
     ]
 
     # NOTE: This spy assertion tests against a bug where address queries were not
     # 0x-prefixed. However, this was still valid in EthTester and thus was not causing
     # test failures.
-    spy.assert_called_once_with(
+    height_arg = to_hex(chain.blocks.height)
+    get_logs_spy.assert_called_once_with(
         {
             "address": [contract_instance.address],
-            "fromBlock": "0x0",
-            "toBlock": f"0x{chain.blocks.height}",
+            "fromBlock": height_arg,
+            "toBlock": height_arg,
             "topics": [
                 "0x7ff7bacc6cd661809ed1ddce28d4ad2c5b37779b61b9e3235f8262be529101a9",
                 "0x000000000000000000000000c89d42189f0450c2b2c3c61f58ec5d628176a1e7",
@@ -146,16 +155,20 @@ def test_contract_logs_range_by_address(
 
 
 def test_contracts_log_multiple_addresses(
-    contract_instance, contract_container, owner, assert_log_values
+    chain, contract_instance, contract_container, owner, assert_log_values
 ):
     another_instance = contract_container.deploy(sender=owner)
+    start_block = chain.blocks.height
     contract_instance.setNumber(1, sender=owner)
     another_instance.setNumber(1, sender=owner)
 
     logs = [
         log
         for log in contract_instance.NumberChange.range(
-            100, search_topics={"newNum": 1}, extra_addresses=[another_instance.address]
+            start_block,
+            start_block + 100,
+            search_topics={"newNum": 1},
+            extra_addresses=[another_instance.address],
         )
     ]
     assert len(logs) == 2, "Unexpected number of logs"
@@ -173,20 +186,21 @@ def test_contract_logs_range_start_and_stop(contract_instance, owner, chain):
     contract_instance.setNumber(2, sender=owner)
     contract_instance.setNumber(3, sender=owner)
 
-    stop = 30  # Stop can be bigger than height, it doesn't not matter
+    stop = start_block + 30  # Stop can be bigger than height, it doesn't not matter
     logs = [log for log in contract_instance.NumberChange.range(start_block, stop=stop)]
     assert len(logs) == 3, "Unexpected number of logs"
 
 
 def test_contract_logs_range_only_stop(contract_instance, owner, chain):
     # Create 1 event
+    start = chain.blocks.height
     contract_instance.setNumber(1, sender=owner)
     contract_instance.setNumber(2, sender=owner)
     contract_instance.setNumber(3, sender=owner)
 
-    stop = 100  # Stop can be bigger than height, it doesn't not matter
+    stop = start + 100  # Stop can be bigger than height, it doesn't not matter
     logs = [log for log in contract_instance.NumberChange.range(stop)]
-    assert len(logs) == 3, "Unexpected number of logs"
+    assert len(logs) >= 3, "Unexpected number of logs"
 
 
 def test_poll_logs_stop_block_not_in_future(
@@ -194,10 +208,8 @@ def test_poll_logs_stop_block_not_in_future(
 ):
     bad_stop_block = chain_that_mined_5.blocks.height
 
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(ValueError, match="'stop' argument must be in the future."):
         _ = [x for x in vyper_contract_instance.NumberChange.poll_logs(stop_block=bad_stop_block)]
-
-    assert str(err.value) == "'stop' argument must be in the future."
 
 
 def test_poll_logs(chain, vyper_contract_instance, eth_tester_provider, owner, PollDaemon):

@@ -68,12 +68,12 @@ def project(config):
     yield ape.Project(config.PROJECT_FOLDER)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def project_manager():
     return ape.project
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def keyparams():
     # NOTE: password is 'a'
     return {
@@ -97,7 +97,7 @@ def keyparams():
     }
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def temp_accounts_path(config):
     path = Path(config.DATA_FOLDER) / "accounts"
     path.mkdir(exist_ok=True, parents=True)

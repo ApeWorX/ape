@@ -485,6 +485,8 @@ class ProviderContextManager:
             self.connected_providers[provider_object_id] = self.provider
             self.network_manager.active_provider = self.provider
 
+        return self.provider
+
     def pop_provider(self):
         if not self.connected_providers or not self.provider_stack:
             return

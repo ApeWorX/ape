@@ -9,14 +9,15 @@ from ape.exceptions import ChainError
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
-from .conftest import SOLIDITY_CONTRACT_ADDRESS
+from .conftest import TEST_ADDRESS
 
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
 
-def test_init_at_unknown_address():
+def test_init_at_unknown_address(networks_connected_to_tester):
+    _ = networks_connected_to_tester  # Need fixture or else get ProviderNotConnectedError
     with pytest.raises(ChainError):
-        Contract(SOLIDITY_CONTRACT_ADDRESS)
+        Contract(TEST_ADDRESS)
 
 
 def test_init_specify_contract_type(

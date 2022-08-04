@@ -100,9 +100,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
                 raise TransactionError(message="The txn.gas_limit is not set.")
             txn.value = self.balance - (txn.max_fee * txn.gas_limit)
             if txn.value <= 0:
-                raise ValueError(
-                    f"Sender does not have enough to cover transaction value and gas: \
-                    {txn.max_fee * txn.gas_limit}"
+                raise AccountsError(
+                    f"Sender does not have enough to cover transaction value and gas: "
+                    f"{txn.max_fee * txn.gas_limit}"
                 )
 
         txn.signature = self.sign_transaction(txn)
@@ -143,14 +143,12 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         if value:
             if "send_everything" in kwargs and kwargs["send_everything"]:
-                raise ValueError(
-                    "Kwarg send_everything=True requires transfer without value argument"
-                )
+                raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
             txn.value = self._convert(value, int)
             return self.call(txn)
 
         elif not kwargs.get("send_everything"):
-            raise ValueError("Transfer without value argument requires kwarg send_everything=True")
+            raise AccountsError("Must provide 'VALUE' or use 'send_everything=True'")
         else:
             return self.call(txn, send_everything=True)
 
@@ -205,13 +203,13 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             if signature:
                 return self.address == Account.recover_message(data, vrs=signature)
             else:
-                raise ValueError(
+                raise AccountsError(
                     "Parameter 'signature' required when verifying a 'SignableMessage'."
                 )
         elif isinstance(data, TransactionAPI):
             return self.address == Account.recover_transaction(data.serialize_transaction())
         else:
-            raise ValueError(f"Unsupported Message type: {type(data)}.")
+            raise AccountsError(f"Unsupported message type: {type(data)}.")
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
         """
