@@ -83,7 +83,7 @@ class CacheQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def table(self, query: QueryType):
-        pass
+        raise QueryEngineError("Not a compatible QueryType")
 
     @table.register
     def block_table(self, query: BlockQuery) -> str:
@@ -99,7 +99,7 @@ class CacheQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def column(self, query: QueryType) -> str:
-        pass
+        raise QueryEngineError("Not a compatible QueryType")
 
     @column.register
     def block_column(self, query: BlockQuery) -> str:
@@ -115,7 +115,7 @@ class CacheQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def cache_query(self) -> str:
-        pass
+        raise QueryEngineError("Not a compatible QueryType")
 
     @cache_query.register
     def block_cache_query(self, query: BlockQuery) -> str:
@@ -131,7 +131,7 @@ class CacheQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def estimate_query_stmt(self, query: QueryType) -> str:
-        pass
+        raise QueryEngineError("Not a compatible QueryType")
 
     @estimate_query_stmt.register
     def block_estimate_stmt(self, query: BlockQuery) -> str:
@@ -163,7 +163,7 @@ class CacheQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def perform_query_stmt(self, query: QueryType) -> str:
-        pass
+        raise QueryEngineError("Not a compatible QueryType")
 
     @perform_query_stmt.register
     def perform_block_stmt(self, query: BlockQuery) -> str:
