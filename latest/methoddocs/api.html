@@ -1806,6 +1806,12 @@ checked in <code class="docutils literal notranslate"><span class="pre">ape.reve
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.is_connected">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_connected</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.is_connected" title="Permalink to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if currently connected to the provider. <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.name">
 <span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.name" title="Permalink to this definition"></a></dt>
@@ -1937,13 +1943,6 @@ Subclasses handle the connection-related tasks.</p>
 <span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.SubprocessProvider.disconnect" title="Permalink to this definition"></a></dt>
 <dd><p>Stop the process if it exists.
 Subclasses override this method to do provider-specific disconnection tasks.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ape.api.providers.SubprocessProvider.is_connected">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_connected</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.api.providers.SubprocessProvider.is_connected" title="Permalink to this definition"></a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the process is running and connected.
-<code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2208,6 +2207,12 @@ topic filters. Defaults to getting all events.</p>
 <dd class="field-odd"><p>Iterator[</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.providers.Web3Provider.is_connected">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_connected</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.api.providers.Web3Provider.is_connected" title="Permalink to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if currently connected to the provider. <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py property">

@@ -83,6 +83,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape-testing-commands">Ape testing commands</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#test-providers">Test Providers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#advanced-testing-tips">Advanced Testing Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multi-chain-testing">Multi-chain Testing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
@@ -325,6 +326,44 @@ manually installing it using the command:</p>
     <span class="k">assert</span> <span class="n">actual</span> <span class="o">==</span> <span class="n">expect</span>
 </pre></div>
 </div>
+</section>
+<section id="multi-chain-testing">
+<h2>Multi-chain Testing<a class="headerlink" href="#multi-chain-testing" title="Permalink to this headline"></a></h2>
+<p>The Ape framework supports connecting to alternative providers in tests.
+The easiest way to achieve this is to use the <code class="docutils literal notranslate"><span class="pre">networks</span></code> provider context-manager.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Switch to Fantom mid test</span>
+<span class="k">def</span> <span class="nf">test_my_fantom_test</span><span class="p">(</span><span class="n">networks</span><span class="p">):</span>
+    <span class="c1"># The test starts in 1 ecosystem but switches to another</span>
+    <span class="k">assert</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;ethereum&quot;</span>
+    
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fantom</span><span class="o">.</span><span class="n">local</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;fantom&quot;</span>
+    
+    <span class="c1"># You can also use the context manager like this:</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;fantom:local:test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+       <span class="k">assert</span> <span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;fantom&quot;</span>
+</pre></div>
+</div>
+<p>You can also set the network context in a context-manager pytest fixture:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
+
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">stark_contract</span><span class="p">(</span><span class="n">networks</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;starknet:local&quot;</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">project</span><span class="o">.</span><span class="n">MyStarknetContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">test_starknet_thing</span><span class="p">(</span><span class="n">stark_contract</span><span class="p">,</span> <span class="n">stark_account</span><span class="p">):</span>
+    <span class="c1"># Uses the starknet connection via the stark_contract fixture</span>
+    <span class="n">receipt</span> <span class="o">=</span> <span class="n">stark_contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">stark_account</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">receipt</span><span class="o">.</span><span class="n">failed</span>
+</pre></div>
+</div>
+<p>When you exit a provider’s context, Ape <strong>does not</strong> disconnect the provider.
+When you re-enter that provider’s context, Ape uses the previously-connected provider.
+At the end of the tests, Ape disconnects all the providers.
+Thus, you can enter and exit a provider’s context as much as you need in tests.</p>
 </section>
 </section>
 
