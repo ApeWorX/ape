@@ -68,22 +68,6 @@ def mock_transaction(mocker):
 
 
 @pytest.fixture(scope="session")
-def networks_connected_to_tester():
-    with ape.networks.parse_network_choice("::test"):
-        yield ape.networks
-
-
-@pytest.fixture(scope="session")
-def ethereum(networks_connected_to_tester):
-    return networks_connected_to_tester.ethereum
-
-
-@pytest.fixture(scope="session")
-def eth_tester_provider(networks_connected_to_tester):
-    yield networks_connected_to_tester.active_provider
-
-
-@pytest.fixture(scope="session")
 def test_accounts(accounts):
     return accounts.test_accounts
 
@@ -390,10 +374,3 @@ def remove_disk_writes_deployments(chain):
 
     if chain.contracts._deployments_mapping_cache.exists():
         chain.contracts._deployments_mapping_cache.unlink()
-
-
-@pytest.fixture
-def isolation(chain):
-    snapshot = chain.snapshot()
-    yield
-    chain.restore(snapshot)

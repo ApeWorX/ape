@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
@@ -8,36 +9,47 @@ from web3.middleware import simple_cache_middleware
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
-from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, VirtualMachineError
+from ape.exceptions import (
+    ContractLogicError,
+    OutOfGasError,
+    ProviderNotConnectedError,
+    TransactionError,
+    VirtualMachineError,
+)
 from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
 
-    _tester: PyEVMBackend
+    _evm_backend: Optional[PyEVMBackend] = None
     _CANNOT_AFFORD_GAS_PATTERN = re.compile(
         r"Sender b'[\\*|\w]*' cannot afford txn gas (\d+) with account balance (\d+)"
     )
     _INVALID_NONCE_PATTERN = re.compile(r"Invalid transaction nonce: Expected (\d+), but got (\d+)")
 
-    def __init__(self, **data) -> None:
-        super().__init__(**data)
-        self._tester = PyEVMBackend.from_mnemonic(
-            mnemonic=self.config["mnemonic"],
-            num_accounts=self.config["number_of_accounts"],
-        )
+    @property
+    def evm_backend(self) -> PyEVMBackend:
+        if self._evm_backend is None:
+            raise ProviderNotConnectedError()
+
+        return self._evm_backend
 
     def connect(self):
         if self._web3 is not None:
             return
 
-        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
+        self._evm_backend = PyEVMBackend.from_mnemonic(
+            mnemonic=self.config["mnemonic"],
+            num_accounts=self.config["number_of_accounts"],
+        )
+        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._evm_backend))
         self._web3.middleware_onion.add(simple_cache_middleware)
 
     def disconnect(self):
         self.cached_chain_id = None
         self._web3 = None
+        self._evm_backend = None
 
     def update_settings(self, new_settings: dict):
         pass
@@ -119,19 +131,19 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return receipt
 
     def snapshot(self) -> SnapshotID:
-        return self._tester.take_snapshot()
+        return self.evm_backend.take_snapshot()
 
     def revert(self, snapshot_id: SnapshotID):
         if snapshot_id:
             current_hash = self.get_block("latest").hash
             if current_hash != snapshot_id:
-                return self._tester.revert_to_snapshot(snapshot_id)
+                return self.evm_backend.revert_to_snapshot(snapshot_id)
 
     def set_timestamp(self, new_timestamp: int):
-        self._tester.time_travel(new_timestamp)
+        self.evm_backend.time_travel(new_timestamp)
 
     def mine(self, num_blocks: int = 1):
-        self._tester.mine_blocks(num_blocks)
+        self.evm_backend.mine_blocks(num_blocks)
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         if isinstance(exception, ValidationError):

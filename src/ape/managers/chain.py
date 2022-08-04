@@ -926,7 +926,7 @@ class ChainManager(BaseManager):
             snapshot_id (Optional[:class:`~ape.types.SnapshotID`]): The snapshot ID. Defaults
               to the most recent snapshot ID.
         """
-        if not self._snapshots:
+        if snapshot_id is None and not self._snapshots:
             raise ChainError("There are no snapshots to revert to.")
         elif snapshot_id is None:
             snapshot_id = self._snapshots.pop()

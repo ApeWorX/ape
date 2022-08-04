@@ -1,6 +1,14 @@
+import pytest
+
 from .utils import skip_projects_except
 
 projects_with_tests = skip_projects_except(["test", "with-contracts"])
+
+
+@pytest.fixture(autouse=True, scope="module")
+def reset_provider(eth_tester_provider):
+    eth_tester_provider.disconnect()
+    eth_tester_provider.connect()
 
 
 @projects_with_tests

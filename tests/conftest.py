@@ -111,3 +111,28 @@ def temp_accounts_path(config):
 @pytest.fixture
 def runner(project):
     yield CliRunner()
+
+
+@pytest.fixture(scope="session")
+def networks_connected_to_tester():
+    with ape.networks.parse_network_choice("::test"):
+        yield ape.networks
+
+
+@pytest.fixture(scope="session")
+def ethereum(networks_connected_to_tester):
+    return networks_connected_to_tester.ethereum
+
+
+@pytest.fixture(scope="session")
+def eth_tester_provider(networks_connected_to_tester):
+    yield networks_connected_to_tester.active_provider
+
+
+@pytest.fixture
+def isolation(chain):
+    snapshot = chain.snapshot()
+    yield
+
+    if snapshot:
+        chain.restore(snapshot)
