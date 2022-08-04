@@ -334,5 +334,4 @@ class CacheQueryProvider(QueryAPI):
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
             #       query from provider.
-            print(err)
             logger.info(err)
