@@ -114,7 +114,7 @@ class CacheQueryProvider(QueryAPI):
         return "block_number"
 
     @singledispatchmethod
-    def cache_query(self) -> str:
+    def cache_query(self, query: QueryType) -> str:
         raise QueryEngineError("Not a compatible QueryType")
 
     @cache_query.register
