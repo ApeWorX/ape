@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Any, List, Optional
+from pydantic import BaseModel
+from typing import Any, List, Optional, Union
 
 import pandas as pd
 import sqlalchemy.exc
@@ -15,12 +16,6 @@ from ape.utils import singledispatchmethod  # type: ignore
 
 from . import models
 
-TABLE_NAME = {
-    BlockQuery: "blocks",
-    BlockTransactionQuery: "transactions",
-    ContractEventQuery: "contract_events",
-}
-
 
 class CacheQueryProvider(QueryAPI):
     """
@@ -29,7 +24,7 @@ class CacheQueryProvider(QueryAPI):
     """
 
     @property
-    def database_file(self) -> Path:
+    def database_file(self) -> Optional[Path]:
         if not self.network_manager.active_provider:
             raise QueryEngineError("Not connected to a network")
 
@@ -64,6 +59,140 @@ class CacheQueryProvider(QueryAPI):
 
         self.database_file.unlink()
 
+    def _block_query(
+        self, query_stmt: str, query: Union[BlockQuery, ContractEventQuery]
+    ) -> Union[int, pd.DataFrame]:
+        with self.engine.connect() as conn:
+            if "COUNT" in query_stmt:
+                q = conn.execute(
+                    text(query_stmt),
+                    start_block=query.start_block,
+                    stop_block=query.stop_block,
+                    step=query.step
+                )
+                return q.rowcount
+            elif "SELECT :" in query_stmt:
+                q = conn.execute(
+                    text(query_stmt),
+                    columns=",".join(query.columns),
+                    start_block=query.start_block,
+                    stop_block=query.stop_block,
+                    step=query.step,
+                )
+                return pd.DataFrame(columns=query.columns, data=q.fetchall())
+
+    @singledispatchmethod
+    def table(self, query: QueryType):
+        pass
+
+    @table.register
+    def block_table(self, query: BlockQuery):
+        return "blocks"
+
+    @table.register
+    def transactions_table(self, query: BlockTransactionQuery):
+        return "transactions"
+
+    @table.register
+    def contract_events_table(self, query: ContractEventQuery):
+        return "contract_events"
+
+    @singledispatchmethod
+    def column(self, query: QueryType):
+        pass
+
+    @column.register
+    def block_column(self, query: BlockQuery):
+        return "number"
+
+    @column.register
+    def block_transaction_column(self, query: BlockTransactionQuery):
+        return "block_hash"
+
+    @column.register
+    def contract_event_column(self, query: ContractEventQuery):
+        return "block_number"
+
+    @singledispatchmethod
+    def cache_query(self):
+        pass
+
+    @cache_query.register
+    def block_cache_query(self, query: BlockQuery):
+        return "SELECT * FROM blocks WHERE number = :val"
+
+    @cache_query.register
+    def block_transaction_cache_query(self, query: BlockTransactionQuery):
+        return "SELECT * FROM transactions WHERE block_hash = :val"
+
+    @cache_query.register
+    def contract_event_cache_query(self, query: ContractEventQuery):
+        return "SELECT * FROM contract_events WHERE block_number = :val"
+
+    @singledispatchmethod
+    def estimate_query_stmt(self, query: QueryType):
+        pass
+
+    @estimate_query_stmt.register
+    def block_estimate_stmt(self, query: BlockQuery):
+        return """
+            SELECT COUNT(*)
+            FROM blocks
+            WHERE blocks.number >= :start_block
+            AND blocks.number <= :stop_block
+            AND blocks.number mod :step = 0
+        """
+
+    @estimate_query_stmt.register
+    def transaction_estimate_stmt(self, query: BlockTransactionQuery):
+        return """
+            SELECT COUNT(*)
+            FROM transactions
+            WHERE transactions.block_id = :block_id
+        """
+
+    @estimate_query_stmt.register
+    def contract_events_estimate_stmt(self, query: ContractEventQuery):
+        return """
+            SELECT COUNT(*)
+            FROM contract_events
+            WHERE contract_events.block_number >= :start_block
+            AND contract_events.block_number <= :stop_block
+            AND contract_events.block_number mod :step = 0
+        """
+
+    @singledispatchmethod
+    def perform_query_stmt(self, query: QueryType):
+        pass
+
+    @perform_query_stmt.register
+    def perform_block_stmt(self, query: BlockQuery):
+        return """
+            SELECT :columns
+            FROM blocks
+            WHERE blocks.number >= :start_block
+            AND blocks.number <= :stop_block
+            AND blocks.number mod :step = 0
+        """
+
+    @perform_query_stmt.register
+    def perform_transaction_stmt(self, query: BlockTransactionQuery):
+        return """
+            SELECT :columns
+            FROM transactions
+            WHERE transactions.block_id = :block_id
+        """
+
+    @perform_query_stmt.register
+    def perform_contract_event_stmt(self, query: ContractEventQuery):
+        return """
+            SELECT :columns
+            FROM contract_events
+            WHERE contract_events.block_number >= :start_block
+            AND contract_events.block_number <= :stop_block
+            AND contract_events.block_number mod :step = 0
+        """
+
     @singledispatchmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
         return None  # can't handle this query
@@ -71,27 +200,15 @@ class CacheQueryProvider(QueryAPI):
     @estimate_query.register
     def estimate_block_query(self, query: BlockQuery) -> Optional[int]:
         try:
-            with self.engine.connect() as conn:
-                q = conn.execute(
-                    text(
-                        """
-                        SELECT COUNT(*)
-                        FROM blocks
-                        WHERE blocks.number >= :start_block
-                        AND blocks.number <= :stop_block
-                        AND blocks.number mod :step = 0
-                        """
-                    ),
-                    start_block=query.start_block,
-                    stop_block=query.stop_block,
-                    step=query.step,
-                )
-                if q.rowcount == (query.stop_block - query.start_block) // query.step:
-                    # NOTE: Assume 200 msec to get data from database
-                    return 200
-                # Can't handle this query
-                # TODO: Allow partial queries
-                return None
+            if (
+                self._block_query(self.estimate_query_stmt(query), query)
+                == (query.stop_block - query.start_block) // query.step
+            ):
+                # NOTE: Assume 200 msec to get data from database
+                return 200
+            # Can't handle this query
+            # TODO: Allow partial queries
+            return None
 
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
@@ -104,13 +221,7 @@ class CacheQueryProvider(QueryAPI):
         try:
             with self.engine.connect() as conn:
                 q = conn.execute(
-                    text(
-                        """
-                        SELECT COUNT(*)
-                        FROM transactions
-                        WHERE transactions.block_id = :block_id
-                        """
-                    ),
+                    text(self.estimate_query_stmt(query)),
                     block_id=query.block_id,
                 )
                 if q.rowcount > 0:
@@ -128,27 +239,15 @@ class CacheQueryProvider(QueryAPI):
     @estimate_query.register
     def estimate_contract_events_query(self, query: ContractEventQuery) -> Optional[int]:
         try:
-            with self.engine.connect() as conn:
-                q = conn.execute(
-                    text(
-                        """
-                        SELECT COUNT(*)
-                        FROM contract_events
-                        WHERE contract_events.block_number >= :start_block
-                        AND contract_events.block_number <= :stop_block
-                        AND contract_events.block_number mod :step = 0
-                        """
-                    ),
-                    start_block=query.start_block,
-                    stop_block=query.stop_block,
-                    step=query.step,
-                )
-                if q.rowcount == (query.stop_block - query.start_block) // query.step:
-                    # NOTE: Assume 200 msec to get data from database
-                    return 200
-                # Can't handle this query
-                # TODO: Allow partial queries
-                return None
+            if (
+                self._block_query(self.estimate_query_stmt(query), query)
+                == (query.stop_block - query.start_block) // query.step
+            ):
+                # NOTE: Assume 200 msec to get data from database
+                return 200
+            # Can't handle this query
+            # TODO: Allow partial queries
+            return None
 
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
@@ -162,35 +261,13 @@ class CacheQueryProvider(QueryAPI):
 
     @perform_query.register
     def perform_block_query(self, query: BlockQuery) -> pd.DataFrame:
-        with self.engine.connect() as conn:
-            q = conn.execute(
-                text(
-                    """
-                    SELECT :columns
-                    FROM blocks
-                    WHERE blocks.number >= :start_block
-                    AND blocks.number <= :stop_block
-                    AND blocks.number mod :step = 0
-                    """
-                ),
-                columns=",".join(query.columns),
-                start_block=query.start_block,
-                stop_block=query.stop_block,
-                step=query.step,
-            )
-            return pd.DataFrame(columns=query.columns, data=q.fetchall())
+        return self._block_query(self.perform_query_stmt(query), query)
 
     @perform_query.register
     def perform_transaction_query(self, query: BlockTransactionQuery) -> pd.DataFrame:
         with self.engine.connect() as conn:
             q = conn.execute(
-                text(
-                    """
-                    SELECT :columns
-                    FROM transactions
-                    WHERE transactions.block_id = :block_id
-                    """
-                ),
+                text(self.perform_query_stmt(query)),
                 columns=",".join(query.columns),
                 start_block=query.block_id,
             )
@@ -198,67 +275,21 @@ class CacheQueryProvider(QueryAPI):
 
     @perform_query.register
     def perform_contract_events_query(self, query: ContractEventQuery) -> pd.DataFrame:
-        with self.engine.connect() as conn:
-            q = conn.execute(
-                text(
-                    """
-                    SELECT :columns
-                    FROM contract_events
-                    WHERE contract_events.block_number >= :start_block
-                    AND contract_events.block_number <= :stop_block
-                    AND contract_events.block_number mod :step = 0
-                    """
-                ),
-                columns=",".join(query.columns),
-                start_block=query.start_block,
-                stop_block=query.stop_block,
-                step=query.step,
-            )
-            return pd.DataFrame(columns=query.columns, data=q.fetchall())
+        return self._block_query(self.perform_query_stmt(query), query)
 
     @singledispatchmethod
-    def update_cache(self, query: QueryType) -> None:  # type: ignore
-        raise QueryEngineError(f"Cannot handle '{type(query)}'.")
+    def get_dataframe(self, query: QueryType, result: List[Any]):
+        pass
 
-    @update_cache.register
-    def update_block_cache(self, query: BlockQuery, result: List[Any]) -> None:
-        df = pd.DataFrame(
+    @get_dataframe.register
+    def get_block_dataframe(self, query: BlockQuery, result: List[Any]):
+        return pd.DataFrame(
             columns=query.columns,
             data=[val for val in map(lambda val: val.dict(by_alias=False), result)],
         )
-        try:
-            with self.engine.connect() as conn:
-                for idx, row in df.iterrows():
-                    try:
-                        v = conn.execute(
-                            text(
-                                """
-                                SELECT * FROM blocks
-                                WHERE blocks.number = :number
-                                """
-                            ),
-                            number=row["number"],
-                        )
-                        if [i for i in v]:
-                            df = df[df["number"] != row["number"]]
 
-                        if df.empty:
-                            return
-
-                    except sqlalchemy.exc.OperationalError as err:
-                        logger.info(err)
-                        df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
-                        return
-
-                df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
-
-        except Exception as err:
-            # Note: If any error, skip the data from the cache and continue to
-            #       query from provider.
-            logger.debug(err)
-
-    @update_cache.register
-    def update_transaction_cache(self, query: BlockTransactionQuery, result: List[Any]) -> None:
+    @get_dataframe.register
+    def get_transaction_dataframe(self, query: BlockTransactionQuery, result: List[Any]):
         df = pd.DataFrame(
             columns=["receiver", "nonce", "sender"],
             data=[(val.receiver, val.nonce, val.sender) for val in result],
@@ -266,71 +297,44 @@ class CacheQueryProvider(QueryAPI):
         df["block_hash"] = query.block_id
         if query.columns != ["*"]:
             df = df[[query.columns]]
+        return df
 
-        try:
-            with self.engine.connect() as conn:
-                for idx, row in df.iterrows():
-                    try:
-                        v = conn.execute(
-                            text(
-                                """
-                                SELECT * FROM transactions
-                                WHERE transactions.block_hash = :block_hash
-                                """
-                            ),
-                            block_hash=row["block_hash"],
-                        )
-                        if [i for i in v]:
-                            df = df[df["block_hash"] != row["block_hash"]]
-
-                        if df.empty:
-                            return
-
-                    except Exception as err:
-                        logger.info(err)
-                        df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
-                        return
-
-                df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
-
-        except Exception as err:
-            # Note: If any error, skip the data from the cache and continue to
-            #       query from provider.
-            logger.debug(err)
-
-    @update_cache.register
-    def update_contract_events_cache(self, query: ContractEventQuery, result: List[Any]) -> None:
-        df = pd.DataFrame(
+    @get_dataframe.register
+    def get_contract_event_dataframe(self, query: ContractEventQuery, result: List[Any]):
+        return pd.DataFrame(
             columns=query.columns,
             data=[val for val in map(lambda val: val.dict(by_alias=False), result)],
         )
+
+    def update_cache(
+        self, query: QueryType, result: List[Any]
+    ) -> None:
+        df = self.get_dataframe(query, result)
+
         try:
             with self.engine.connect() as conn:
                 for idx, row in df.iterrows():
                     try:
                         v = conn.execute(
-                            text(
-                                """
-                                SELECT * FROM contract_events
-                                WHERE contract_events.block_number = :number
-                                """
-                            ),
-                            number=row["block_number"],
+                            text(self.cache_query(query)),
+                            column=self.column(query),
+                            val=str(row[self.column(query)])
                         )
                         if [i for i in v]:
-                            df = df[df["block_number"] != row["block_number"]]
+                            df = df[df[self.column(query)] != row[self.column(query)]]
 
                         if df.empty:
                             return
 
                     except sqlalchemy.exc.OperationalError as err:
                         logger.info(err)
-                        df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
+                        df.to_sql(self.table(query), conn, if_exists="append", index=False)
                         return
 
-                df.to_sql(TABLE_NAME[type(query)], conn, if_exists="append", index=False)
+                df.to_sql(self.table(query), conn, if_exists="append", index=False)
 
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
             #       query from provider.
-            logger.debug(err)
+            print(err)
+            logger.info(err)

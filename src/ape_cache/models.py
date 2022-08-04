@@ -25,7 +25,7 @@ class Transactions(Base):
 
     hash = Column(Integer, primary_key=True, index=True)
     sender = Column(String, nullable=False)
-    receiver = Column(String, nullable=False)
+    receiver = Column(String, nullable=True)
     block_hash = Column(String, ForeignKey("blocks.hash", ondelete="CASCADE"))
     nonce = Column(Integer, nullable=False)
 
