@@ -9,14 +9,13 @@ from typing import Dict, Optional
 
 import pytest
 import yaml
-from eth.exceptions import HeaderNotFound
 from ethpm_types import ContractType
 from hexbytes import HexBytes
 
 import ape
 from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
-from ape.exceptions import ChainError, ContractLogicError, ProviderNotConnectedError
+from ape.exceptions import ChainError, ContractLogicError
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType, ContractLog
 
@@ -36,8 +35,6 @@ BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
 DS_NOTE_TEST_CONTRACT_TYPE = _get_raw_contract("ds_note_test")
 APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
-SOLIDITY_CONTRACT_ADDRESS = "0xBcF7FFFD8B256Ec51a36782a52D0c34f6474D951"
-VYPER_CONTRACT_ADDRESS = "0x274b028b03A250cA03644E6c578D81f019eE1323"
 
 
 class _ContractLogicError(ContractLogicError):
@@ -48,23 +45,6 @@ class _ContractLogicError(ContractLogicError):
 def pytest_collection_finish(session):
     with ape.networks.parse_network_choice("::test"):
         # Sets the active provider
-        yield
-
-
-@pytest.hookimpl(hookwrapper=True)
-def pytest_runtest_protocol(item, nextitem):
-    module_name = item.module.__name__
-    prefix = "tests.functional"
-
-    if module_name.startswith(prefix):
-        snapshot_id = ape.chain.snapshot()
-        yield
-
-        try:
-            ape.chain.restore(snapshot_id)
-        except (HeaderNotFound, ChainError, ProviderNotConnectedError):
-            pass
-    else:
         yield
 
 
@@ -88,32 +68,16 @@ def mock_transaction(mocker):
 
 
 @pytest.fixture(scope="session")
-def networks_connected_to_tester():
-    with ape.networks.parse_network_choice("::test"):
-        yield ape.networks
-
-
-@pytest.fixture(scope="session")
-def ethereum(networks_connected_to_tester):
-    return networks_connected_to_tester.ethereum
-
-
-@pytest.fixture(scope="session")
-def eth_tester_provider(networks_connected_to_tester):
-    yield networks_connected_to_tester.active_provider
-
-
-@pytest.fixture(scope="session")
 def test_accounts(accounts):
     return accounts.test_accounts
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def sender(test_accounts):
     return test_accounts[0]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def receiver(test_accounts):
     return test_accounts[1]
 
@@ -123,7 +87,7 @@ def owner(test_accounts):
     return test_accounts[2]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def keyfile_account(sender, keyparams, temp_accounts_path, eth_tester_provider):
     test_keyfile_path = temp_accounts_path / f"{ALIAS}.json"
     yield _make_keyfile_account(temp_accounts_path, ALIAS, keyparams, sender)
@@ -132,7 +96,7 @@ def keyfile_account(sender, keyparams, temp_accounts_path, eth_tester_provider):
         test_keyfile_path.unlink()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def second_keyfile_account(sender, keyparams, temp_accounts_path, eth_tester_provider):
     test_keyfile_path = temp_accounts_path / f"{ALIAS_2}.json"
     yield _make_keyfile_account(temp_accounts_path, ALIAS_2, keyparams, sender)
@@ -151,7 +115,7 @@ def _make_keyfile_account(base_path: Path, alias: str, params: Dict, funder):
     test_keyfile_path.write_text(json.dumps(params))
 
     acct = ape.accounts.load(alias)
-    funder.transfer(acct, "1 ETH")  # Auto-fund this account
+    funder.transfer(acct, "25 ETH")  # Auto-fund this account
     return acct
 
 
@@ -308,7 +272,7 @@ def ds_note():
 
 
 @pytest.fixture
-def chain_at_block_5(chain):
+def chain_that_mined_5(chain):
     snapshot_id = chain.snapshot()
     chain.mine(5)
     yield chain

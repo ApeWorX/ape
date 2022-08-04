@@ -5,11 +5,11 @@ import pytest
 from _pytest.config import Config as PytestConfig
 
 import ape
+from ape.api import ProviderContextManager
 from ape.logging import logger
+from ape.pytest.contextmanagers import RevertsContextManager
 from ape.utils import ManagerAccessMixin
 from ape_console._cli import console
-
-from .contextmanagers import RevertsContextManager
 
 
 class PytestApeRunner(ManagerAccessMixin):
@@ -25,6 +25,10 @@ class PytestApeRunner(ManagerAccessMixin):
     def _network_choice(self) -> str:
         # The option the user providers via --network (or the default).
         return self.pytest_config.getoption("network")
+
+    @property
+    def _provider_context(self) -> ProviderContextManager:
+        return self.network_manager.parse_network_choice(self._network_choice)
 
     def pytest_exception_interact(self, report, call):
         """
@@ -146,10 +150,7 @@ class PytestApeRunner(ManagerAccessMixin):
 
         # Only start provider if collected tests.
         if not outcome.get_result() and session.items and not self.network_manager.active_provider:
-            self.network_manager.active_provider = self.network_manager.get_provider_from_choice(
-                self._network_choice
-            )
-            self.network_manager.active_provider.connect()
+            self._provider_context.push_provider()
             self._provider_is_connected = True
 
     def pytest_sessionfinish(self):
@@ -161,5 +162,5 @@ class PytestApeRunner(ManagerAccessMixin):
         assume the provider successfully connected.
         """
         if self._provider_is_connected:
-            self.chain_manager.provider.disconnect()
+            self._provider_context.disconnect_all()
             self._provider_is_connected = False

@@ -1,22 +1,25 @@
+import time
+
+import pandas as pd
 import pytest
 
-from ape import chain
 from ape.api.query import validate_and_expand_columns
 
 
-def test_basic_query(eth_tester_provider):
+def test_basic_query(chain, eth_tester_provider):
     chain.mine(3)
-    df1 = chain.blocks.query("*")
-    assert list(df1["number"].values) == [0, 1, 2, 3]
-    df2 = chain.blocks.query("number", "timestamp")
-    assert len(df2) == 4
+    blocks_df0 = chain.blocks.query("*")
+    blocks_df1 = chain.blocks.query("number", "timestamp")
+
+    assert list(blocks_df0["number"].values)[:4] == [0, 1, 2, 3]
+    assert len(blocks_df1) == len(chain.blocks)
     assert (
-        df2.iloc[3]["timestamp"]
-        >= df2.iloc[2]["timestamp"]
-        >= df2.iloc[1]["timestamp"]
-        >= df2.iloc[0]["timestamp"]
+        blocks_df1.iloc[3]["timestamp"]
+        >= blocks_df1.iloc[2]["timestamp"]
+        >= blocks_df1.iloc[1]["timestamp"]
+        >= blocks_df1.iloc[0]["timestamp"]
     )
-    assert list(df1.columns) == [
+    assert list(blocks_df0.columns) == [
         "num_transactions",
         "hash",
         "number",
@@ -31,20 +34,29 @@ def test_basic_query(eth_tester_provider):
     ]
 
 
-def test_relative_block_query(eth_tester_provider):
+def test_relative_block_query(chain, eth_tester_provider):
+    start_block = chain.blocks.height
     chain.mine(10)
     df = chain.blocks.query("*", start_block=-8, stop_block=-2)
     assert len(df) == 7
-    assert df.number.min() == chain.blocks[-8].number == 3
-    assert df.number.max() == chain.blocks[-2].number == 9
+    assert df.number.min() == chain.blocks[-8].number == start_block + 3
+    assert df.number.max() == chain.blocks[-2].number == start_block + 9
 
 
-def test_block_transaction_query(eth_tester_provider, sender, receiver):
+def test_block_transaction_query(chain, eth_tester_provider, sender, receiver):
     sender.transfer(receiver, 100)
     query = chain.blocks[-1].transactions
     assert len(query) == 1
     assert query[0].value == 100
     assert query[0].chain_id == 61
+
+
+def test_transaction_contract_event_query(contract_instance, owner, eth_tester_provider):
+    contract_instance.fooAndBar(sender=owner)
+    time.sleep(0.1)
+    df_events = contract_instance.FooHappened.query("*", start_block=-1)
+    assert isinstance(df_events, pd.DataFrame)
+    assert df_events.event_name[0] == "FooHappened"
 
 
 def test_column_expansion():
@@ -68,9 +80,10 @@ def test_column_expansion():
 
 def test_column_validation(eth_tester_provider):
     all_fields = ["number", "timestamp"]
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(ValueError, match="Unrecognized field 'numbr'"):
         validate_and_expand_columns(["numbr"], all_fields)
-    assert "Unrecognized field 'numbr'" in str(err.value)
-    with pytest.raises(ValueError) as err:
+
+    with pytest.raises(
+        ValueError, match=r"Duplicate fields in \['number', 'timestamp', 'number'\]"
+    ):
         validate_and_expand_columns(["number", "timestamp", "number"], all_fields)
-    assert "Duplicate fields in ['number', 'timestamp', 'number']" in str(err.value)

@@ -9,14 +9,15 @@ from ape.exceptions import ChainError
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
-from .conftest import SOLIDITY_CONTRACT_ADDRESS
+from .conftest import TEST_ADDRESS
 
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
 
-def test_init_at_unknown_address():
+def test_init_at_unknown_address(networks_connected_to_tester):
+    _ = networks_connected_to_tester  # Need fixture or else get ProviderNotConnectedError
     with pytest.raises(ChainError):
-        Contract(SOLIDITY_CONTRACT_ADDRESS)
+        Contract(TEST_ADDRESS)
 
 
 def test_init_specify_contract_type(
@@ -270,6 +271,15 @@ def test_estimate_gas_cost_txn(vyper_contract_instance, eth_tester_provider, own
 def test_estimate_gas_cost_call(vyper_contract_instance, eth_tester_provider, owner):
     gas_cost = vyper_contract_instance.myNumber.estimate_gas_cost(sender=owner)
     assert gas_cost > 0
+
+
+def test_estimate_gas_cost_account_as_input(vyper_contract_instance, eth_tester_provider, owner):
+    gas_cost = vyper_contract_instance.setAddress.estimate_gas_cost(owner, sender=owner)
+    assert gas_cost > 0
+
+
+def test_estimate_gas_cost_call_account_as_input(contract_instance, eth_tester_provider, owner):
+    assert contract_instance.balances.estimate_gas_cost(owner) > 0
 
 
 def test_call_transact(vyper_contract_instance, owner):

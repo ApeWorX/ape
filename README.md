@@ -208,7 +208,7 @@ ape compile --size
 Provide the same arguments to `pytest` as you would to the `ape test` command.
 
 ```bash
-ape test -k test_only_one_thing --coverage
+ape test -k test_only_one_thing
 ```
 
 Connect an IPython session through your favorite provider.

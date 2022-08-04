@@ -6,6 +6,7 @@ contract TestContractSol {
     uint256 public myNumber;
     uint256 public prevNumber;
     address public theAddress;
+    mapping(address => uint256) public balances;
 
     event NumberChange(
         bytes32 b,
@@ -48,6 +49,11 @@ contract TestContractSol {
         uint256 bar;
     }
 
+    modifier onlyOwner() {
+        require(msg.sender == owner, "!authorized");
+        _;
+    }
+
     constructor() {
         owner = msg.sender;
     }
@@ -57,8 +63,7 @@ contract TestContractSol {
         emit BarHappened(1);
     }
 
-    function setNumber(uint256 num) public {
-        require(msg.sender == owner, "!authorized");
+    function setNumber(uint256 num) public onlyOwner {
         require(num != 5);
         prevNumber = myNumber;
         myNumber = num;
@@ -68,6 +73,10 @@ contract TestContractSol {
     function setAddress(address _address) public {
         theAddress = _address;
         emit AddressChange(_address);
+    }
+
+    function setBalance(address _address, uint256 bal) public {
+        balances[_address] += bal;
     }
 
     function getStruct() public view returns(MyStruct memory) {
@@ -154,7 +163,7 @@ contract TestContractSol {
         return (123, 321);
     }
 
-    function getTupleOfAddressArray() public pure returns(address[20], int128[20]) {
+    function getTupleOfAddressArray() public view returns(address[20] memory, int128[20] memory) {
         address[20] memory addresses;
         addresses[0] = msg.sender;
         int128[20] memory data;

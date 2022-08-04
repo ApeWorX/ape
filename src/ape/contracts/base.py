@@ -2,13 +2,15 @@ from itertools import islice
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
+import pandas as pd
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
-from ape.exceptions import ArgumentsLengthError, ContractError
+from ape.api.query import ContractEventQuery
+from ape.exceptions import ArgumentsLengthError, ChainError, ContractError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -162,7 +164,9 @@ class ContractCallHandler(ManagerAccessMixin):
             int: The estimated cost of gas to execute the transaction
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
-        return self.transact.estimate_gas_cost(*args, **kwargs)
+
+        arguments = self.conversion_manager.convert(args, tuple)
+        return self.transact.estimate_gas_cost(*arguments, **kwargs)
 
 
 def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> MethodABI:
@@ -256,7 +260,8 @@ class ContractTransactionHandler(ManagerAccessMixin):
             int: The estimated cost of gas to execute the transaction
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
-        txn = self.as_transaction(*args, **kwargs)
+        arguments = self.conversion_manager.convert(args, tuple)
+        txn = self.as_transaction(*arguments, **kwargs)
         return self.provider.estimate_gas_cost(txn)
 
     @property
@@ -381,6 +386,65 @@ class ContractEvent(ManagerAccessMixin):
         logs = self.provider.get_contract_logs(self.log_filter)
         return sum(1 for _ in logs)
 
+    def query(
+        self,
+        *columns: List[str],
+        start_block: int = 0,
+        stop_block: Optional[int] = None,
+        step: int = 1,
+        engine_to_use: Optional[str] = None,
+    ) -> pd.DataFrame:
+        """
+        Iterate through blocks for log events
+
+        Args:
+            columns (List[str]): columns in the DataFrame to return
+            start_block (int): The first block, by number, to include in the
+              query. Defaults to 0.
+            stop_block (Optional[int]): The last block, by number, to include
+              in the query. Defaults to the latest block.
+            step (int): The number of blocks to iterate between block numbers.
+              Defaults to ``1``.
+            engine_to_use (Optional[str]): query engine to use, bypasses query
+              engine selection algorithm.
+
+        Returns:
+            pd.DataFrame
+        """
+
+        if start_block < 0:
+            start_block = self.chain_manager.blocks.height + start_block
+
+        if stop_block is None:
+            stop_block = self.chain_manager.blocks.height
+
+        elif stop_block < 0:
+            stop_block = self.chain_manager.blocks.height + stop_block
+
+        elif stop_block > self.chain_manager.blocks.height:
+            raise ChainError(
+                f"'stop={stop_block}' cannot be greater than "
+                f"the chain length ({self.chain_manager.blocks.height})."
+            )
+
+        if columns[0] == "*":
+            columns = list(ContractLog.__fields__)  # type: ignore
+
+        contract_event_query = ContractEventQuery(
+            columns=columns,
+            contract=self.contract.address,
+            event=self.abi,
+            start_block=start_block,
+            stop_block=stop_block,
+            step=step,
+        )
+        contract_events = self.query_manager.query(
+            contract_event_query, engine_to_use=engine_to_use
+        )
+        return pd.DataFrame(
+            columns=contract_event_query.columns, data=[val.dict() for val in contract_events]
+        )
+
     def range(
         self,
         start_or_stop: int,
@@ -419,15 +483,16 @@ class ContractEvent(ManagerAccessMixin):
 
         stop_block = min(stop_block, self.chain_manager.blocks.height)
 
-        addresses = [self.contract.address] + (extra_addresses or [])
-        log_filter = LogFilter.from_event(
+        addresses = set([self.contract.address] + (extra_addresses or []))
+        contract_event_query = ContractEventQuery(
+            columns=list(ContractLog.__fields__.keys()),
+            contract=addresses,
             event=self.abi,
             search_topics=search_topics,
-            addresses=addresses,
             start_block=start_block,
             stop_block=stop_block,
         )
-        yield from self.provider.get_contract_logs(log_filter)
+        yield from self.query_manager.query(contract_event_query)  # type: ignore
 
     def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
         """
