@@ -46,6 +46,7 @@ def test_extract_manifest(dependency_config, project_manager):
     # NOTE: Only setting dependency_config to ensure existence of project.
     manifest = project_manager.extract_manifest()
     assert type(manifest) == PackageManifest
+    assert type(manifest.compilers) == list
 
 
 def test_meta(temp_config, project_manager):
