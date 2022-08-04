@@ -1,5 +1,4 @@
 from pathlib import Path
-from pydantic import BaseModel
 from typing import Any, List, Optional, Union
 
 import pandas as pd
@@ -68,7 +67,7 @@ class CacheQueryProvider(QueryAPI):
                     text(query_stmt),
                     start_block=query.start_block,
                     stop_block=query.stop_block,
-                    step=query.step
+                    step=query.step,
                 )
                 return q.rowcount
             elif "SELECT :" in query_stmt:
@@ -80,61 +79,62 @@ class CacheQueryProvider(QueryAPI):
                     step=query.step,
                 )
                 return pd.DataFrame(columns=query.columns, data=q.fetchall())
+        raise Exception("SELECT statement improperly set.")
 
     @singledispatchmethod
     def table(self, query: QueryType):
         pass
 
     @table.register
-    def block_table(self, query: BlockQuery):
+    def block_table(self, query: BlockQuery) -> str:
         return "blocks"
 
     @table.register
-    def transactions_table(self, query: BlockTransactionQuery):
+    def transactions_table(self, query: BlockTransactionQuery) -> str:
         return "transactions"
 
     @table.register
-    def contract_events_table(self, query: ContractEventQuery):
+    def contract_events_table(self, query: ContractEventQuery) -> str:
         return "contract_events"
 
     @singledispatchmethod
-    def column(self, query: QueryType):
+    def column(self, query: QueryType) -> str:
         pass
 
     @column.register
-    def block_column(self, query: BlockQuery):
+    def block_column(self, query: BlockQuery) -> str:
         return "number"
 
     @column.register
-    def block_transaction_column(self, query: BlockTransactionQuery):
+    def block_transaction_column(self, query: BlockTransactionQuery) -> str:
         return "block_hash"
 
     @column.register
-    def contract_event_column(self, query: ContractEventQuery):
+    def contract_event_column(self, query: ContractEventQuery) -> str:
         return "block_number"
 
     @singledispatchmethod
-    def cache_query(self):
+    def cache_query(self) -> str:
         pass
 
     @cache_query.register
-    def block_cache_query(self, query: BlockQuery):
+    def block_cache_query(self, query: BlockQuery) -> str:
         return "SELECT * FROM blocks WHERE number = :val"
 
     @cache_query.register
-    def block_transaction_cache_query(self, query: BlockTransactionQuery):
+    def block_transaction_cache_query(self, query: BlockTransactionQuery) -> str:
         return "SELECT * FROM transactions WHERE block_hash = :val"
 
     @cache_query.register
-    def contract_event_cache_query(self, query: ContractEventQuery):
+    def contract_event_cache_query(self, query: ContractEventQuery) -> str:
         return "SELECT * FROM contract_events WHERE block_number = :val"
 
     @singledispatchmethod
-    def estimate_query_stmt(self, query: QueryType):
+    def estimate_query_stmt(self, query: QueryType) -> str:
         pass
 
     @estimate_query_stmt.register
-    def block_estimate_stmt(self, query: BlockQuery):
+    def block_estimate_stmt(self, query: BlockQuery) -> str:
         return """
             SELECT COUNT(*)
             FROM blocks
@@ -144,7 +144,7 @@ class CacheQueryProvider(QueryAPI):
         """
 
     @estimate_query_stmt.register
-    def transaction_estimate_stmt(self, query: BlockTransactionQuery):
+    def transaction_estimate_stmt(self, query: BlockTransactionQuery) -> str:
         return """
             SELECT COUNT(*)
             FROM transactions
@@ -152,7 +152,7 @@ class CacheQueryProvider(QueryAPI):
         """
 
     @estimate_query_stmt.register
-    def contract_events_estimate_stmt(self, query: ContractEventQuery):
+    def contract_events_estimate_stmt(self, query: ContractEventQuery) -> str:
         return """
             SELECT COUNT(*)
             FROM contract_events
@@ -162,11 +162,11 @@ class CacheQueryProvider(QueryAPI):
         """
 
     @singledispatchmethod
-    def perform_query_stmt(self, query: QueryType):
+    def perform_query_stmt(self, query: QueryType) -> str:
         pass
 
     @perform_query_stmt.register
-    def perform_block_stmt(self, query: BlockQuery):
+    def perform_block_stmt(self, query: BlockQuery) -> str:
         return """
             SELECT :columns
             FROM blocks
@@ -176,7 +176,7 @@ class CacheQueryProvider(QueryAPI):
         """
 
     @perform_query_stmt.register
-    def perform_transaction_stmt(self, query: BlockTransactionQuery):
+    def perform_transaction_stmt(self, query: BlockTransactionQuery) -> str:
         return """
             SELECT :columns
             FROM transactions
@@ -184,7 +184,7 @@ class CacheQueryProvider(QueryAPI):
         """
 
     @perform_query_stmt.register
-    def perform_contract_event_stmt(self, query: ContractEventQuery):
+    def perform_contract_event_stmt(self, query: ContractEventQuery) -> str:
         return """
             SELECT :columns
             FROM contract_events
@@ -261,7 +261,7 @@ class CacheQueryProvider(QueryAPI):
 
     @perform_query.register
     def perform_block_query(self, query: BlockQuery) -> pd.DataFrame:
-        return self._block_query(self.perform_query_stmt(query), query)
+        return self._block_query(self.perform_query_stmt(query), query)  # type: ignore
 
     @perform_query.register
     def perform_transaction_query(self, query: BlockTransactionQuery) -> pd.DataFrame:
@@ -275,7 +275,7 @@ class CacheQueryProvider(QueryAPI):
 
     @perform_query.register
     def perform_contract_events_query(self, query: ContractEventQuery) -> pd.DataFrame:
-        return self._block_query(self.perform_query_stmt(query), query)
+        return self._block_query(self.perform_query_stmt(query), query)  # type: ignore
 
     @singledispatchmethod
     def get_dataframe(self, query: QueryType, result: List[Any]):
@@ -306,9 +306,7 @@ class CacheQueryProvider(QueryAPI):
             data=[val for val in map(lambda val: val.dict(by_alias=False), result)],
         )
 
-    def update_cache(
-        self, query: QueryType, result: List[Any]
-    ) -> None:
+    def update_cache(self, query: QueryType, result: List[Any]) -> None:
         df = self.get_dataframe(query, result)
 
         try:
@@ -318,7 +316,7 @@ class CacheQueryProvider(QueryAPI):
                         v = conn.execute(
                             text(self.cache_query(query)),
                             column=self.column(query),
-                            val=str(row[self.column(query)])
+                            val=str(row[self.column(query)]),
                         )
                         if [i for i in v]:
                             df = df[df[self.column(query)] != row[self.column(query)]]
