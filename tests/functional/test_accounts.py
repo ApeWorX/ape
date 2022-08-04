@@ -6,6 +6,8 @@ import ape
 from ape import convert
 from ape.exceptions import AccountsError, ContractLogicError, SignatureError, TransactionError
 
+MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
+
 
 @pytest.fixture(autouse=True, scope="module")
 def connected(eth_tester_provider):
@@ -55,31 +57,27 @@ def test_transfer(sender, receiver):
 
 
 def test_transfer_without_value(sender, receiver):
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(AccountsError, match=MISSING_VALUE_TRANSFER_ERR_MSG):
         sender.transfer(receiver)
-    assert str(err.value) == "Transfer without value argument requires kwarg send_everything=True"
 
 
 def test_transfer_without_value_send_everything_false(sender, receiver):
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(AccountsError, match=MISSING_VALUE_TRANSFER_ERR_MSG):
         sender.transfer(receiver, send_everything=False)
-    assert str(err.value) == "Transfer without value argument requires kwarg send_everything=True"
 
 
-def test_transfer_without_value_send_everything_true(sender, receiver):
-    initial_balance = receiver.balance
+def test_transfer_without_value_send_everything_true(sender, receiver, isolation):
+    # Clear balance of sender
     sender.transfer(receiver, send_everything=True)
-    assert receiver.balance > initial_balance, "Receiver has same balance after transfer"
-    assert sender.balance < convert("1 finney", int), "Sender balance is not nominal"
-    with pytest.raises(ValueError) as err:
+
+    expected_err_regex = r"Sender does not have enough to cover transaction value and gas: \d*"
+    with pytest.raises(AccountsError, match=expected_err_regex):
         sender.transfer(receiver, send_everything=True)
-    assert "Sender does not have enough to cover transaction value and gas:" in str(err.value)
 
 
-def test_transfer_with_value_send_everything_true(sender, receiver):
-    with pytest.raises(ValueError) as err:
+def test_transfer_with_value_send_everything_true(sender, receiver, isolation):
+    with pytest.raises(AccountsError, match="Cannot use 'send_everything=True' with 'VALUE'."):
         sender.transfer(receiver, 1, send_everything=True)
-    assert str(err.value) == "Kwarg send_everything=True requires transfer without value argument"
 
 
 def test_transfer_with_prompts(runner, receiver, keyfile_account):

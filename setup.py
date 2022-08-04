@@ -22,6 +22,7 @@ extras_require = {
         "mypy>=0.971,<1.0",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
+        "types-pkg-resources",  # NOTE: Needed due to mypy typeshed
         "flake8>=4.0.1,<5.0",  # Style linter
         "flake8-breakpoint>=1.1.0,<2.0.0",  # detect breakpoints left in code
         "flake8-print>=4.0.0,<5.0.0",  # detect print statements left in code
@@ -105,7 +106,7 @@ setup(
         "pygit2>=1.7.2,<2.0",
         "pyyaml>=0.2.5",
         "py-geth>=3.6.0",
-        "requests>=2.25.1,<3.0",
+        "requests>=2.28.1,<3.0",
         "importlib-metadata",
         "singledispatchmethod ; python_version<'3.8'",
         "IPython>=7.31.1",

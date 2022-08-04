@@ -217,3 +217,45 @@ def test_account_balance(project, owner, receiver, nft):
     expect = quantity
     assert actual == expect
 ```
+
+## Multi-chain Testing
+
+The Ape framework supports connecting to alternative providers in tests.
+The easiest way to achieve this is to use the `networks` provider context-manager.
+
+```python
+# Switch to Fantom mid test
+def test_my_fantom_test(networks):
+    # The test starts in 1 ecosystem but switches to another
+    assert networks.provider.network.ecosystem.name == "ethereum"
+    
+    with networks.fantom.local.use_provider("test") as provider:
+        assert provider.network.ecosystem.name == "fantom"
+    
+    # You can also use the context manager like this:
+    with networks.parse_network_choice("fantom:local:test") as provider:
+       assert provider.network.ecosystem.name == "fantom"
+```
+
+You can also set the network context in a context-manager pytest fixture:
+
+```python
+import pytest
+
+
+@pytest.fixture
+def stark_contract(networks, project):
+    with networks.parse_network_choice("starknet:local"):
+        yield project.MyStarknetContract.deploy()
+
+
+def test_starknet_thing(stark_contract, stark_account):
+    # Uses the starknet connection via the stark_contract fixture
+    receipt = stark_contract.my_method(sender=stark_account)
+    assert not receipt.failed
+```
+
+When you exit a provider's context, Ape **does not** disconnect the provider.
+When you re-enter that provider's context, Ape uses the previously-connected provider.
+At the end of the tests, Ape disconnects all the providers.
+Thus, you can enter and exit a provider's context as much as you need in tests.

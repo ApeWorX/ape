@@ -13,7 +13,12 @@ from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
-from ape.exceptions import NetworkError, NetworkNotFoundError, SignatureError
+from ape.exceptions import (
+    NetworkError,
+    NetworkNotFoundError,
+    ProviderNotConnectedError,
+    SignatureError,
+)
 from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -449,34 +454,75 @@ class ProviderContextManager:
             ...
     """
 
-    # NOTE: Class variable, so it will manage stack across instances of this object
-    _connected_providers: List["ProviderAPI"] = []
     network_manager: "NetworkManager"
+    connected_providers: Dict[str, "ProviderAPI"] = {}
+    provider_stack: List[str] = []
 
     def __init__(self, provider: "ProviderAPI", network_manager: "NetworkManager"):
         self.provider = provider
         self.network_manager = network_manager
 
     def __enter__(self, *args, **kwargs):
-        # Connect to our provider
-        self.provider.connect()
-        self.network_manager.active_provider = self.provider
-        self._connected_providers.append(self.provider)
+        return self.push_provider()
+
+    def __exit__(self, *args, **kwargs):
+        self.pop_provider()
+
+    def push_provider(self):
+        if not self.provider.is_connected:
+            self.provider.connect()
+
+        provider_object_id = self.get_provider_id(self.provider)
+        self.provider_stack.append(provider_object_id)
+
+        if provider_object_id in self.connected_providers:
+            # Already connected and known
+            connected_provider = self.connected_providers[provider_object_id]
+            self.network_manager.active_provider = connected_provider
+
+        else:
+            # Already connected and unknown
+            self.connected_providers[provider_object_id] = self.provider
+            self.network_manager.active_provider = self.provider
 
         return self.provider
 
-    def __exit__(self, *args, **kwargs):
-        # Put our providers back the way it was
-        provider = self._connected_providers.pop()
+    def pop_provider(self):
+        if not self.connected_providers or not self.provider_stack:
+            return
 
-        # NOTE: using id() to prevent pydantic recursive serialization
-        if id(self.provider) != id(provider):
-            raise ValueError("Previous provider value unknown.")
+        # Clear last provider
+        exiting_provider_id = self.provider_stack.pop()
+        if not self.provider_stack:
+            self.network_manager.active_provider = None
+            return
 
-        provider.disconnect()
+        # Reset the original active provider
+        previous_provider_id = self.provider_stack[-1]
+        if previous_provider_id == exiting_provider_id:
+            # Active provider is not changing
+            return
 
-        if self._connected_providers:
-            self.network_manager.active_provider = self._connected_providers[-1]
+        previous_provider = self.connected_providers[previous_provider_id]
+        if previous_provider:
+            self.network_manager.active_provider = previous_provider
+
+    def disconnect_all(self):
+        if not self.connected_providers or not self.provider_stack:
+            return
+
+        for provider in self.connected_providers.values():
+            provider.disconnect()
+
+        self.network_manager.active_provider = None
+        self.connected_providers = {}
+
+    @classmethod
+    def get_provider_id(cls, provider: "ProviderAPI") -> Optional[str]:
+        try:
+            return f"{provider.name}-{provider.chain_id}"
+        except ProviderNotConnectedError:
+            return None
 
 
 class NetworkAPI(BaseInterfaceModel):
@@ -689,7 +735,17 @@ class NetworkAPI(BaseInterfaceModel):
             provider_name = "geth"
 
         if provider_name in self.providers:
-            return self.providers[provider_name](provider_settings=provider_settings)
+            provider = self.providers[provider_name](provider_settings=provider_settings)
+
+            provider_id = ProviderContextManager.get_provider_id(provider)
+            if not provider_id:
+                # Provider not yet connected
+                return provider
+
+            if provider_id in ProviderContextManager.connected_providers:
+                return ProviderContextManager.connected_providers[provider_id]
+
+            return provider
 
         else:
             message = f"'{provider_name}' is not a valid provider for network '{self.name}'"

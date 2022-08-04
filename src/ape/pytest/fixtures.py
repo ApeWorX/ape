@@ -3,6 +3,7 @@ from typing import Iterator, List
 import pytest
 
 from ape.api import TestAccountAPI
+from ape.exceptions import ProviderNotConnectedError
 from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
@@ -57,6 +58,10 @@ class PytestApeFixtures(ManagerAccessMixin):
         snapshot_id = None
         try:
             snapshot_id = self.chain_manager.snapshot()
+        except ProviderNotConnectedError:
+            logger.warning("Provider became disconnected mid-test.")
+            pass
+
         except NotImplementedError:
             if not self._warned_for_unimplemented_snapshot:
                 logger.warning(
@@ -68,7 +73,11 @@ class PytestApeFixtures(ManagerAccessMixin):
         yield
 
         if snapshot_id is not None and snapshot_id in self.chain_manager._snapshots:
-            self.chain_manager.restore(snapshot_id)
+            try:
+                self.chain_manager.restore(snapshot_id)
+            except ProviderNotConnectedError:
+                logger.warning("Provider became disconnected mid-test.")
+                pass
 
     # isolation fixtures
     _session_isolation = pytest.fixture(_isolation, scope="session")
