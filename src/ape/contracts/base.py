@@ -164,7 +164,9 @@ class ContractCallHandler(ManagerAccessMixin):
             int: The estimated cost of gas to execute the transaction
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
-        return self.transact.estimate_gas_cost(*args, **kwargs)
+
+        arguments = self.conversion_manager.convert(args, tuple)
+        return self.transact.estimate_gas_cost(*arguments, **kwargs)
 
 
 def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> MethodABI:
@@ -258,7 +260,8 @@ class ContractTransactionHandler(ManagerAccessMixin):
             int: The estimated cost of gas to execute the transaction
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
-        txn = self.as_transaction(*args, **kwargs)
+        arguments = self.conversion_manager.convert(args, tuple)
+        txn = self.as_transaction(*arguments, **kwargs)
         return self.provider.estimate_gas_cost(txn)
 
     @property

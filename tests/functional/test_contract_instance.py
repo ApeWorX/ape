@@ -273,6 +273,15 @@ def test_estimate_gas_cost_call(vyper_contract_instance, eth_tester_provider, ow
     assert gas_cost > 0
 
 
+def test_estimate_gas_cost_account_as_input(vyper_contract_instance, eth_tester_provider, owner):
+    gas_cost = vyper_contract_instance.setAddress.estimate_gas_cost(owner, sender=owner)
+    assert gas_cost > 0
+
+
+def test_estimate_gas_cost_call_account_as_input(contract_instance, eth_tester_provider, owner):
+    assert contract_instance.balances.estimate_gas_cost(owner) > 0
+
+
 def test_call_transact(vyper_contract_instance, owner):
     receipt = vyper_contract_instance.myNumber.transact(sender=owner)
     assert receipt.sender == owner
