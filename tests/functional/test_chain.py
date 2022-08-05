@@ -23,6 +23,16 @@ def dummy_live_network(chain):
     chain.provider.network.name = LOCAL_NETWORK_NAME
 
 
+@pytest.fixture
+def contract_0(project_with_contract):
+    return project_with_contract.ApeContract0
+
+
+@pytest.fixture
+def contract_1(project_with_contract):
+    return project_with_contract.ApeContract1
+
+
 def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, owner):
     initial_balance = receiver.balance  # Initial balance at block 0.
     blocks_to_mine = 5
@@ -253,134 +263,130 @@ def test_deployments_mapping_cache_location(chain):
 
 
 def test_cache_deployment_mapping_to_disk(
-    project_with_contract, chain, owner, remove_disk_writes_deployments
+    chain, owner, remove_disk_writes_deployments, contract_0, contract_1
 ):
     # Arrange
-
-    deployed_contract_0 = owner.deploy(project_with_contract.ApeContract0)
-    deployed_contract_1 = owner.deploy(project_with_contract.ApeContract1)
+    deployed_contract_0 = owner.deploy(contract_0)
+    deployed_contract_1 = owner.deploy(contract_1)
     address_0 = deployed_contract_0.address
     address_1 = deployed_contract_1.address
-    contract_type_0 = project_with_contract.ApeContract0.contract_type
-    contract_type_1 = project_with_contract.ApeContract1.contract_type
+    contract_type_0 = contract_0.contract_type
+    contract_type_1 = contract_1.contract_type
     expected_contract_mapping = {
-        "ethereum": {"local": {"ApeContract0": [address_0], "ApeContract1": [address_1]}}
+        "ethereum": {
+            "local": {
+                "ApeContract0": [{"address": address_0}],
+                "ApeContract1": [{"address": address_1}],
+            }
+        }
     }
 
     # Act
     chain.contracts._cache_deployment_mapping_to_disk(address_0, contract_type_0)
     chain.contracts._cache_deployment_mapping_to_disk(address_1, contract_type_1)
-    contracts_mapping = chain.contracts._load_deployments_mapping()
+    contracts_mapping = chain.contracts._load_deployments_cache()
 
     # Assert
     assert contracts_mapping == expected_contract_mapping
 
 
-def test_get_deployments_local(chain, project_with_contract, owner):
+def test_get_deployments_local(chain, owner, contract_0, contract_1):
     # Arrange
     chain.contracts._local_deployments_mapping = {}
     chain.contracts._local_contracts = {}
-    starting_contracts_list_0 = chain.contracts.get_deployments(project_with_contract.ApeContract0)
-    starting_contracts_list_1 = chain.contracts.get_deployments(project_with_contract.ApeContract1)
-
-    deployed_contract_0 = owner.deploy(project_with_contract.ApeContract0)
-    deployed_contract_1 = owner.deploy(project_with_contract.ApeContract1)
+    starting_contracts_list_0 = chain.contracts.get_deployments(contract_0)
+    starting_contracts_list_1 = chain.contracts.get_deployments(contract_1)
+    deployed_contract_0 = owner.deploy(contract_0)
+    deployed_contract_1 = owner.deploy(contract_1)
 
     # Act
-    contracts_list_0 = chain.contracts.get_deployments(project_with_contract.ApeContract0)
-    contracts_list_1 = chain.contracts.get_deployments(project_with_contract.ApeContract1)
+    contracts_list_0 = chain.contracts.get_deployments(contract_0)
+    contracts_list_1 = chain.contracts.get_deployments(contract_1)
 
     # Assert
     for contract_list in (contracts_list_0, contracts_list_1):
         assert type(contract_list[0]) == ContractInstance
 
-    assert (
-        deployed_contract_0.address
-        == contracts_list_0[len(contracts_list_0) - len(starting_contracts_list_0) - 1].address
-    )
-    assert (
-        deployed_contract_1.address
-        == contracts_list_1[len(contracts_list_1) - len(starting_contracts_list_1) - 1].address
-    )
+    index_0 = len(contracts_list_0) - len(starting_contracts_list_0) - 1
+    index_1 = len(contracts_list_1) - len(starting_contracts_list_1) - 1
+    actual_address_0 = contracts_list_0[index_0].address
+    assert actual_address_0 == deployed_contract_0.address
+    actual_address_1 = contracts_list_1[index_1].address
+    assert actual_address_1 == deployed_contract_1.address
 
 
 def test_get_deployments_live(
-    chain, project_with_contract, owner, remove_disk_writes_deployments, dummy_live_network
+    chain, owner, contract_0, contract_1, remove_disk_writes_deployments, dummy_live_network
 ):
-    # Arrange
-    deployed_contract_0 = owner.deploy(project_with_contract.ApeContract0, required_confirmations=0)
-    deployed_contract_1 = owner.deploy(project_with_contract.ApeContract1, required_confirmations=0)
-    deployments_mapping = chain.contracts._load_deployments_mapping()
+    deployed_contract_0 = owner.deploy(contract_0, required_confirmations=0)
+    deployed_contract_1 = owner.deploy(contract_1, required_confirmations=0)
+    deployments_mapping = chain.contracts._load_deployments_cache()
+    rinkeby_map = deployments_mapping["ethereum"]["rinkeby"]
 
     # Act
-    my_contracts_list_0 = chain.contracts.get_deployments(project_with_contract.ApeContract0)
-    my_contracts_list_1 = chain.contracts.get_deployments(project_with_contract.ApeContract1)
+    my_contracts_list_0 = chain.contracts.get_deployments(contract_0)
+    my_contracts_list_1 = chain.contracts.get_deployments(contract_1)
 
     # Assert
-    assert (
-        deployments_mapping["ethereum"]["rinkeby"]["ApeContract0"][-1]
-        == deployed_contract_0.address
-    )
-    assert my_contracts_list_0[-1].address == deployed_contract_0.address
-    assert (
-        deployments_mapping["ethereum"]["rinkeby"]["ApeContract1"][-1]
-        == deployed_contract_1.address
-    )
-    assert my_contracts_list_1[-1].address == deployed_contract_1.address
+    address_from_mapping_0 = rinkeby_map["ApeContract0"][-1]["address"]
+    address_from_api_0 = my_contracts_list_0[-1].address
+    assert address_from_mapping_0 == address_from_api_0 == deployed_contract_0.address
+    address_from_mapping_1 = rinkeby_map["ApeContract1"][-1]["address"]
+    address_from_api_1 = my_contracts_list_1[-1].address
+    assert address_from_mapping_1 == address_from_api_1 == deployed_contract_1.address
+
+
+def test_get_deployments_live_migration(
+    chain, owner, contract_0, dummy_live_network, caplog, use_debug
+):
+    contract = owner.deploy(contract_0, required_confirmations=0)
+    old_style_map = {"ethereum": {"rinkeby": {"ApeContract0": [contract.address]}}}
+    chain.contracts._write_deployments_mapping(old_style_map)
+    actual = chain.contracts.get_deployments(contract_0)
+    assert actual == [contract]
+    assert caplog.records[-1].message == "Migrating 'deployments_map.json'."
 
 
 def test_get_multiple_deployments_live(
-    chain, project_with_contract, owner, remove_disk_writes_deployments, dummy_live_network
+    chain, owner, contract_0, contract_1, remove_disk_writes_deployments, dummy_live_network
 ):
-    # Arrange
-    starting_contracts_list_0 = chain.contracts.get_deployments(project_with_contract.ApeContract0)
-    starting_contracts_list_1 = chain.contracts.get_deployments(project_with_contract.ApeContract1)
+    starting_contracts_list_0 = chain.contracts.get_deployments(contract_0)
+    starting_contracts_list_1 = chain.contracts.get_deployments(contract_1)
+    initial_deployed_contract_0 = owner.deploy(contract_0, required_confirmations=0)
+    initial_deployed_contract_1 = owner.deploy(contract_1, required_confirmations=0)
+    owner.deploy(contract_0, required_confirmations=0)
+    owner.deploy(contract_1, required_confirmations=0)
+    final_deployed_contract_0 = owner.deploy(contract_0, required_confirmations=0)
+    final_deployed_contract_1 = owner.deploy(contract_1, required_confirmations=0)
+    deployments_mapping = chain.contracts._load_deployments_cache()
+    contracts_list_0 = chain.contracts.get_deployments(contract_0)
+    contracts_list_1 = chain.contracts.get_deployments(contract_1)
+    rinkeby_map = deployments_mapping["ethereum"]["rinkeby"]
+    contract_type_map = {
+        "ApeContract0": (initial_deployed_contract_0, final_deployed_contract_0),
+        "ApeContract1": (initial_deployed_contract_1, final_deployed_contract_1),
+    }
 
-    initial_deployed_contract_0 = owner.deploy(
-        project_with_contract.ApeContract0, required_confirmations=0
-    )
-    initial_deployed_contract_1 = owner.deploy(
-        project_with_contract.ApeContract1, required_confirmations=0
-    )
-    owner.deploy(project_with_contract.ApeContract0, required_confirmations=0)
-    owner.deploy(project_with_contract.ApeContract1, required_confirmations=0)
-    final_deployed_contract_0 = owner.deploy(
-        project_with_contract.ApeContract0, required_confirmations=0
-    )
-    final_deployed_contract_1 = owner.deploy(
-        project_with_contract.ApeContract1, required_confirmations=0
-    )
-    deployments_mapping = chain.contracts._load_deployments_mapping()
+    assert len(contracts_list_0) == len(starting_contracts_list_0) + 3
+    assert len(contracts_list_1) == len(starting_contracts_list_1) + 3
 
-    # Act
-    contracts_list_0 = chain.contracts.get_deployments(project_with_contract.ApeContract0)
-    contracts_list_1 = chain.contracts.get_deployments(project_with_contract.ApeContract1)
-
-    # Assert
-    assert (
-        deployments_mapping["ethereum"]["rinkeby"]["ApeContract0"][0]
-        == initial_deployed_contract_0.address
-    )
-    assert contracts_list_0[-1].address == final_deployed_contract_0.address
-    assert len(contracts_list_0) - len(starting_contracts_list_0) == 3
-    assert (
-        deployments_mapping["ethereum"]["rinkeby"]["ApeContract1"][0]
-        == initial_deployed_contract_1.address
-    )
-    assert contracts_list_1[-1].address == final_deployed_contract_1.address
-    assert len(contracts_list_1) - len(starting_contracts_list_1) == 3
+    for ct_name, ls in zip(("ApeContract0", "ApeContract1"), (contracts_list_0, contracts_list_1)):
+        contract_list = rinkeby_map[ct_name]
+        initial_ct, final_ct = contract_type_map[ct_name]
+        assert contract_list[0]["address"] == ls[0].address == initial_ct.address
+        assert contract_list[-1]["address"] == ls[-1].address == final_ct.address
 
 
-def test_contract_cache_mapping_updated_on_many_deployments(owner, project_with_contract, chain):
+def test_contract_cache_mapping_updated_on_many_deployments(owner, chain, contract_0, contract_1):
     # Arrange / Act
-    initial_contracts = chain.contracts.get_deployments(project_with_contract.ApeContract0)
-    expected_first_contract = owner.deploy(project_with_contract.ApeContract0)
+    initial_contracts = chain.contracts.get_deployments(contract_0)
+    expected_first_contract = owner.deploy(contract_0)
 
-    owner.deploy(project_with_contract.ApeContract0)
-    owner.deploy(project_with_contract.ApeContract0)
-    expected_last_contract = owner.deploy(project_with_contract.ApeContract0)
+    owner.deploy(contract_0)
+    owner.deploy(contract_0)
+    expected_last_contract = owner.deploy(contract_0)
 
-    actual_contracts = chain.contracts.get_deployments(project_with_contract.ApeContract0)
+    actual_contracts = chain.contracts.get_deployments(contract_0)
     first_index = len(initial_contracts)  # next index before deploys from this test
     actual_first_contract = actual_contracts[first_index].address
     actual_last_contract = actual_contracts[-1].address
@@ -395,10 +401,8 @@ def test_contract_cache_mapping_updated_on_many_deployments(owner, project_with_
 def test_poll_blocks_stop_block_not_in_future(chain_that_mined_5):
     bad_stop_block = chain_that_mined_5.blocks.height
 
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(ValueError, match="'stop' argument must be in the future."):
         _ = [x for x in chain_that_mined_5.blocks.poll_blocks(stop_block=bad_stop_block)]
-
-    assert str(err.value) == "'stop' argument must be in the future."
 
 
 def test_poll_blocks(chain_that_mined_5, eth_tester_provider, owner, PollDaemon):
@@ -423,11 +427,9 @@ def test_poll_blocks_timeout(
 ):
     poller = chain_that_mined_5.blocks.poll_blocks(new_block_timeout=1)
 
-    with pytest.raises(ChainError) as err:
+    with pytest.raises(ChainError, match=r"Timed out waiting for new block \(time_waited=1.\d+\)."):
         with PollDaemon("blocks", poller, lambda x: None, lambda: False):
             time.sleep(1.5)
-
-    assert "Timed out waiting for new block (time_waited=1" in str(err.value)
 
 
 def test_contracts_get_multiple(vyper_contract_instance, solidity_contract_instance, chain):
