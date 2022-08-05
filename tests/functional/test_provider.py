@@ -4,7 +4,7 @@ from eth_typing import HexStr
 from ape.exceptions import ProviderError, ProviderNotConnectedError
 from ape.types import LogFilter
 
-EXPECTED_CHAIN_ID = 61
+EXPECTED_CHAIN_ID = 131277322940537
 
 
 @pytest.mark.parametrize("block_id", ("latest", 0, "0", "0x0", HexStr("0x0")))
