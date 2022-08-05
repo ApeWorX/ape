@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import pytest
 
 from ape.exceptions import NetworkError
+from ape_test.providers import CHAIN_ID
 
 
 class NewChainID:
@@ -135,12 +136,14 @@ def test_get_provider_when_not_found(networks):
 
 
 def test_repr(networks_connected_to_tester):
-    assert (
-        repr(networks_connected_to_tester) == "<NetworkManager active_provider=<test chain_id=61>>"
-    )
+    actual = repr(networks_connected_to_tester)
+    expected = f"<NetworkManager active_provider=<test chain_id={CHAIN_ID}>>"
+    assert actual == expected
 
     # Check individual network
-    assert repr(networks_connected_to_tester.provider.network) == "<local chain_id=61>"
+    actual = repr(networks_connected_to_tester.provider.network)
+    expected = f"<local chain_id={CHAIN_ID}>"
+    assert actual == expected
 
 
 def test_get_provider_from_choice_adhoc_provider(networks_connected_to_tester):

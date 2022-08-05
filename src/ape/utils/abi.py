@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from eth_abi import decode_abi, decode_single, grammar
 from eth_utils import decode_hex, to_checksum_address
 from ethpm_types import HexBytes
-from ethpm_types.abi import ABIType, EventABI, MethodABI
+from ethpm_types.abi import ABIType, EventABI, EventABIType, MethodABI
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 
@@ -249,7 +249,7 @@ class LogInputABICollection:
     def __init__(self, abi: EventABI):
         self.abi = abi
         self.topics = [i for i in abi.inputs if i.indexed]
-        self.data = [i for i in abi.inputs if not i.indexed]
+        self.data: List[EventABIType] = [i for i in abi.inputs if not i.indexed]
 
         names = [i.name for i in abi.inputs]
         if len(set(names)) < len(names):
@@ -270,7 +270,8 @@ class LogInputABICollection:
             )
 
         data_abi_types = [abi.canonical_type for abi in self.data]
-        data_values = decode_abi(data_abi_types, decode_hex(data))
+        hex_data = decode_hex(data) if isinstance(data, str) else data
+        data_values = decode_abi(data_abi_types, hex_data)
         for abi, value in zip(self.data, data_values):
             decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 

@@ -3,8 +3,7 @@ from eth_typing import HexStr
 
 from ape.exceptions import ProviderError, ProviderNotConnectedError
 from ape.types import LogFilter
-
-EXPECTED_CHAIN_ID = 131277322940537
+from ape_test.providers import CHAIN_ID
 
 
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
@@ -19,7 +18,7 @@ def test_get_block(eth_tester_provider, block_id):
 
 def test_chain_id(eth_tester_provider):
     chain_id = eth_tester_provider.chain_id
-    assert chain_id == EXPECTED_CHAIN_ID
+    assert chain_id == CHAIN_ID
 
 
 def test_chain_id_is_cached(eth_tester_provider):
@@ -29,7 +28,7 @@ def test_chain_id_is_cached(eth_tester_provider):
     web3 = eth_tester_provider._web3
     eth_tester_provider._web3 = None
     chain_id = eth_tester_provider.chain_id
-    assert chain_id == EXPECTED_CHAIN_ID
+    assert chain_id == CHAIN_ID
     eth_tester_provider._web3 = web3  # Undo
 
 

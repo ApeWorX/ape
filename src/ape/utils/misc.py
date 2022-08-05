@@ -1,8 +1,9 @@
+import asyncio
 import json
 import sys
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Coroutine, Dict, List, Mapping, Optional
 
 import requests
 import yaml
@@ -256,14 +257,22 @@ def to_int(value) -> int:
     raise ValueError(f"cannot convert {repr(value)} to int")
 
 
+def run_until_complete(item: Any) -> Any:
+    if not isinstance(item, Coroutine):
+        return item
+
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(item)
+
+
 __all__ = [
     "cached_property",
-    "expand_environment_variables",
     "extract_nested_value",
     "gas_estimation_error_message",
     "get_package_version",
     "load_config",
     "raises_not_implemented",
+    "run_until_complete",
     "singledispatchmethod",
     "stream_response",
     "USER_AGENT",

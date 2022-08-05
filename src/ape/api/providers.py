@@ -48,6 +48,7 @@ from ape.utils import (
     cached_property,
     gas_estimation_error_message,
     raises_not_implemented,
+    run_until_complete,
     spawn,
 )
 
@@ -627,7 +628,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def is_connected(self) -> bool:
-        return self._web3 is not None and self._web3.isConnected()
+        if self._web3 is None:
+            return False
+
+        return run_until_complete(self._web3.isConnected())
 
     def update_settings(self, new_settings: dict):
         self.disconnect()
@@ -703,9 +707,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         try:
-            block_id = kwargs.pop("block_identifier", None)
+            block_id = kwargs.pop("block_identifier", "latest")
             state = kwargs.pop("state_override", None)
-            return self.web3.eth.call(txn.dict(), block_identifier=block_id, state_override=state)
+            return self.web3.eth.call(txn.dict(), block_id, state)  # type: ignore
+
         except ValueError as err:
             raise self.get_virtual_machine_error(err) from err
 
@@ -781,13 +786,7 @@ class Web3Provider(ProviderAPI, ABC):
         if not raw:
             return [vars(d) for d in self.web3.eth.get_logs(filter_params)]
 
-        response = self.web3.provider.make_request(RPCEndpoint("eth_getLogs"), [filter_params])
-        if "error" not in response:
-            return response["result"]
-
-        error = response["error"]
-        message = error["message"] if isinstance(error, dict) and "message" in error else str(error)
-        raise ValueError(message)
+        return self._make_request("eth_getLogs", [filter_params])
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
@@ -808,6 +807,22 @@ class Web3Provider(ProviderAPI, ABC):
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self._try_track_receipt(receipt)
         return receipt
+
+    def _make_request(self, endpoint: str, parameters: List) -> Any:
+        coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+        result = run_until_complete(coroutine)
+
+        if "error" in result:
+            error = result["error"]
+            message = (
+                error["message"] if isinstance(error, dict) and "message" in error else str(error)
+            )
+            raise ProviderError(message)
+
+        elif "result" in result:
+            return result.get("result", {})
+
+        return result
 
 
 class UpstreamProvider(ProviderAPI):
