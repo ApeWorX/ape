@@ -707,7 +707,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         try:
-            block_id = kwargs.pop("block_identifier", "latest")
+            block_id = kwargs.pop("block_identifier", None)
             state = kwargs.pop("state_override", None)
             return self.web3.eth.call(txn.dict(), block_id, state)  # type: ignore
 

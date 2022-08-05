@@ -95,6 +95,7 @@ setup(
         "backports.cached_property ; python_version<'3.8'",
         "click>=8.1.0,<9",
         "ijson>=3.1.4,<4",
+        "importlib-metadata",
         "IPython>=7.31.1,<8",
         "pandas>=1.3.0,<2.0",
         "pluggy>=0.13.1,<1.0",
