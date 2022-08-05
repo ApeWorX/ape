@@ -113,6 +113,9 @@ def test_my_method(project, accounts):
     contract.my_method(sender=other_contract)
 ```
 
+It has the same interface as the [TestAccountManager](../methoddocs/managers.html#ape.managers.accounts.TestAccountManager),
+(same as doing `accounts.test_accounts` in a script or the console).
+
 ### chain fixture
 
 Use the chain fixture to access the connected provider or adjust blockchain settings.
@@ -127,7 +130,7 @@ def test_in_future(chain):
     assert "Something else"
 ```
 
-It has the same interface as the [ChainManager](../methoddocs/managers.html#ape.managers.chain.ChainManager)
+It has the same interface as the [ChainManager](../methoddocs/managers.html#ape.managers.chain.ChainManager).
 
 ### networks fixture
 
@@ -142,7 +145,7 @@ def test_multi_chain(networks):
         assert "Something else"
 ```
 
-It has the same interface as the [NetworkManager](../methoddocs/managers.html#ape.managers.networks.NetworkManager)
+It has the same interface as the [NetworkManager](../methoddocs/managers.html#ape.managers.networks.NetworkManager).
 
 ### project fixture
 
@@ -163,7 +166,7 @@ def my_contract(project, owner):
     return owner.deploy(project.MyContract)
 ```
 
-It has the same interface as the [ProjectManager](../methoddocs/managers.html#module-ape.managers.project.manager)
+It has the same interface as the [ProjectManager](../methoddocs/managers.html#module-ape.managers.project.manager).
 
 ## Ape testing commands
 
