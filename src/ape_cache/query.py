@@ -213,7 +213,7 @@ class CacheQueryProvider(QueryAPI):
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
             #       query from provider.
-            logger.debug(err)
+            logger.error(err)
             return None
 
     @estimate_query.register
@@ -233,7 +233,7 @@ class CacheQueryProvider(QueryAPI):
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
             #       query from provider.
-            logger.debug(err)
+            logger.error(err)
             return None
 
     @estimate_query.register
@@ -252,7 +252,7 @@ class CacheQueryProvider(QueryAPI):
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
             #       query from provider.
-            logger.debug(err)
+            logger.error(err)
             return None
 
     @singledispatchmethod
@@ -325,7 +325,7 @@ class CacheQueryProvider(QueryAPI):
                             return
 
                     except sqlalchemy.exc.OperationalError as err:
-                        logger.info(err)
+                        logger.error(err)
                         df.to_sql(self.table(query), conn, if_exists="append", index=False)
                         return
 
@@ -334,4 +334,4 @@ class CacheQueryProvider(QueryAPI):
         except Exception as err:
             # Note: If any error, skip the data from the cache and continue to
             #       query from provider.
-            logger.info(err)
+            logger.error(err)
