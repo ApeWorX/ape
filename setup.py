@@ -96,9 +96,6 @@ setup(
         "click>=8.1.0,<9",
         "ijson>=3.1.4,<4",
         "IPython>=7.31.1,<8",
-        "hexbytes>=0.2.2,<1.0.0",
-        "importlib-metadata",
-        "packaging>=20.9,<21.0",
         "pandas>=1.3.0,<2.0",
         "pluggy>=0.13.1,<1.0",
         "pydantic>=1.9.0,<2.0",
@@ -123,7 +120,6 @@ setup(
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=3.0.1,<4",
         "eth-account>=0.6.1,<0.7",
-        "eth-rlp>=0.3.0,<0.4",
         "eth-utils>=2.0.0,<3",
         "hexbytes>=0.2.2,<1",
         "py-geth>=3.8.0,<4",
