@@ -136,8 +136,13 @@ def gas_estimation_error_message(tx_error: Exception) -> str:
         str: An error message explaining that the gas failed and that the transaction
         will likely revert.
     """
+    txn_error_text = str(tx_error)
+    if txn_error_text.endswith("."):
+        # Strip period from initial error so it looks better.
+        txn_error_text = txn_error_text[:-1]
+
     return (
-        f"Gas estimation failed: '{tx_error}'. This transaction will likely revert. "
+        f"Gas estimation failed: '{txn_error_text}'. This transaction will likely revert. "
         "If you wish to broadcast, you must set the gas limit manually."
     )
 

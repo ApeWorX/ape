@@ -21,10 +21,11 @@ skip_non_compilable_projects = skip_projects(
 
 @skip_projects(
     [
-        "unregistered-contracts",
-        "multiple-interfaces",
         "geth",
+        "multiple-interfaces",
         "only-dependencies",
+        "test",
+        "unregistered-contracts",
         "with-dependencies",
         "with-contracts",
     ]

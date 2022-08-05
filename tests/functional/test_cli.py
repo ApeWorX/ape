@@ -1,3 +1,5 @@
+import shutil
+
 import click
 import pytest
 
@@ -5,6 +7,52 @@ from ape.cli import get_user_selected_account, network_option
 from ape.exceptions import AccountsError
 
 OUTPUT_FORMAT = "__TEST__{}__"
+
+
+@pytest.fixture
+def keyfile_swap_paths(config):
+    return config.DATA_FOLDER / "accounts", config.DATA_FOLDER.parent / "temp_accounts"
+
+
+@pytest.fixture
+def no_keyfile_accounts(keyfile_swap_paths):
+    src_path, dest_path = keyfile_swap_paths
+    if dest_path.is_dir():
+        shutil.rmtree(dest_path)
+
+    if not src_path.is_dir() or not [x for x in src_path.iterdir()]:
+        # No keyfile accounts already
+        yield
+
+    else:
+        shutil.copytree(src_path, dest_path)
+        shutil.rmtree(src_path)
+        yield
+        shutil.copytree(dest_path, src_path)
+        shutil.rmtree(dest_path)
+
+
+@pytest.fixture
+def one_keyfile_account(keyfile_swap_paths, keyfile_account):
+    src_path, dest_path = keyfile_swap_paths
+    existing_keyfiles = [x for x in src_path.iterdir() if x.is_file()]
+    if existing_keyfiles == [keyfile_account.keyfile_path]:
+        # Already only has the 1 account
+        yield keyfile_account
+
+    else:
+        if dest_path.exists():
+            dest_path.unlink() if dest_path.is_file() else shutil.rmtree(dest_path)
+
+        dest_path.mkdir()
+        for keyfile in [x for x in existing_keyfiles if x != keyfile_account.keyfile_path]:
+            shutil.copy(keyfile, dest_path / keyfile.name)
+            keyfile.unlink()
+
+        yield keyfile_account
+
+        for file in dest_path.iterdir():
+            shutil.copy(file, src_path / file.name)
 
 
 @pytest.fixture
@@ -17,7 +65,7 @@ def network_cmd():
     return cmd
 
 
-def test_get_user_selected_account_no_accounts_found():
+def test_get_user_selected_account_no_accounts_found(no_keyfile_accounts):
     with pytest.raises(AccountsError) as err:
         get_user_selected_account()
 
@@ -50,11 +98,11 @@ def test_get_user_selected_account_custom_prompt(runner, keyfile_account, second
     assert prompt in output
 
 
-def test_get_user_selected_account_specify_type(runner, keyfile_account):
+def test_get_user_selected_account_specify_type(runner, one_keyfile_account):
     with runner.isolation():
-        account = get_user_selected_account(account_type=type(keyfile_account))
+        account = get_user_selected_account(account_type=type(one_keyfile_account))
 
-    assert account == keyfile_account
+    assert account == one_keyfile_account
 
 
 def test_get_user_selected_account_unknown_type(runner, keyfile_account):

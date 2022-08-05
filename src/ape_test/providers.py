@@ -1,3 +1,6 @@
+import re
+from typing import Optional
+
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
@@ -6,42 +9,75 @@ from web3.middleware import simple_cache_middleware
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
-from ape.exceptions import ContractLogicError, OutOfGasError, TransactionError, VirtualMachineError
+from ape.exceptions import (
+    ContractLogicError,
+    OutOfGasError,
+    ProviderNotConnectedError,
+    TransactionError,
+    VirtualMachineError,
+)
 from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
 
-    _tester: PyEVMBackend
+    _evm_backend: Optional[PyEVMBackend] = None
+    _CANNOT_AFFORD_GAS_PATTERN = re.compile(
+        r"Sender b'[\\*|\w]*' cannot afford txn gas (\d+) with account balance (\d+)"
+    )
+    _INVALID_NONCE_PATTERN = re.compile(r"Invalid transaction nonce: Expected (\d+), but got (\d+)")
 
-    def __init__(self, **data) -> None:
-        super().__init__(**data)
-        self._tester = PyEVMBackend.from_mnemonic(
+    @property
+    def evm_backend(self) -> PyEVMBackend:
+        if self._evm_backend is None:
+            raise ProviderNotConnectedError()
+
+        return self._evm_backend
+
+    def connect(self):
+        if self._web3 is not None:
+            return
+
+        self._evm_backend = PyEVMBackend.from_mnemonic(
             mnemonic=self.config["mnemonic"],
             num_accounts=self.config["number_of_accounts"],
         )
-
-    def connect(self):
-        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._tester))
+        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._evm_backend))
         self._web3.middleware_onion.add(simple_cache_middleware)
 
     def disconnect(self):
         self.cached_chain_id = None
         self._web3 = None
+        self._evm_backend = None
 
     def update_settings(self, new_settings: dict):
         pass
 
     def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
+        block_id = kwargs.pop("block_identifier", None)
+        estimate_gas = self.web3.eth.estimate_gas
+
         try:
-            block_id = kwargs.pop("block_identifier", None)
-            return self.web3.eth.estimate_gas(txn.dict(), block_identifier=block_id)  # type: ignore
-        except ValidationError as err:
-            message = gas_estimation_error_message(err)
-            raise TransactionError(base_err=err, message=message) from err
-        except TransactionFailed as err:
-            raise self.get_virtual_machine_error(err) from err
+            return estimate_gas(txn.dict(), block_identifier=block_id)  # type: ignore
+        except (ValidationError, TransactionFailed) as err:
+            ape_err = self.get_virtual_machine_error(err, sender=txn.sender)
+            gas_match = self._INVALID_NONCE_PATTERN.match(str(ape_err))
+            if gas_match:
+                # Sometimes, EthTester is confused about the sender nonce
+                # during gas estimation. Retry using the "expected" gas
+                # and then set it back.
+                expected_nonce, actual_nonce = gas_match.groups()
+                txn.nonce = int(expected_nonce)
+                value = estimate_gas(txn.dict(), block_identifier=block_id)  # type: ignore
+                txn.nonce = int(actual_nonce)
+                return value
+
+            elif isinstance(ape_err, ContractLogicError):
+                raise ape_err from err
+            else:
+                message = gas_estimation_error_message(ape_err)
+                raise TransactionError(base_err=ape_err, message=message) from ape_err
 
     @property
     def chain_id(self) -> int:
@@ -77,15 +113,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:
-            raise self.get_virtual_machine_error(err) from err
+            raise self.get_virtual_machine_error(err, sender=txn.sender) from err
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
-        except ValidationError as err:
-            raise VirtualMachineError(base_err=err) from err
-        except TransactionFailed as err:
-            raise self.get_virtual_machine_error(err) from err
+        except (ValidationError, TransactionFailed) as err:
+            raise self.get_virtual_machine_error(err, sender=txn.sender) from err
 
         receipt = self.get_transaction(
             txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
@@ -97,21 +131,38 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return receipt
 
     def snapshot(self) -> SnapshotID:
-        return self._tester.take_snapshot()
+        return self.evm_backend.take_snapshot()
 
     def revert(self, snapshot_id: SnapshotID):
         if snapshot_id:
             current_hash = self.get_block("latest").hash
             if current_hash != snapshot_id:
-                return self._tester.revert_to_snapshot(snapshot_id)
+                return self.evm_backend.revert_to_snapshot(snapshot_id)
 
     def set_timestamp(self, new_timestamp: int):
-        self._tester.time_travel(new_timestamp)
+        self.evm_backend.time_travel(new_timestamp)
 
     def mine(self, num_blocks: int = 1):
-        self._tester.mine_blocks(num_blocks)
+        self.evm_backend.mine_blocks(num_blocks)
 
-    def get_virtual_machine_error(self, web3_err: TransactionFailed) -> VirtualMachineError:
-        err_message = str(web3_err).split("execution reverted: ")[-1] or None
-        err_message = None if err_message == "b''" else err_message
-        return ContractLogicError(revert_message=err_message)
+    def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
+        if isinstance(exception, ValidationError):
+            match = self._CANNOT_AFFORD_GAS_PATTERN.match(str(exception))
+            if match:
+                txn_gas, bal = match.groups()
+                sender = kwargs["sender"]
+                new_message = (
+                    f"Sender '{sender}' cannot afford txn gas {txn_gas} with account balance {bal}."
+                )
+                return VirtualMachineError(message=new_message)
+
+            else:
+                return VirtualMachineError(base_err=exception)
+
+        elif isinstance(exception, TransactionFailed):
+            err_message = str(exception).split("execution reverted: ")[-1] or None
+            err_message = None if err_message == "b''" else err_message
+            return ContractLogicError(revert_message=err_message)
+
+        else:
+            return VirtualMachineError(base_err=exception)
