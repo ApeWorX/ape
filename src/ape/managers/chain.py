@@ -713,7 +713,7 @@ class ContractCache(BaseManager):
             return []
 
         if isinstance(deployments[0], str):
-            # Handle previous schemao of list of addresses instead of list of dicts.
+            # Handle previous schema of list of addresses instead of list of dicts.
             logger.debug("Migrating 'deployments_map.json'.")
             contract_addresses = list(deployments)
             self._cache_deployment_list_to_disk(
