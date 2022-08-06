@@ -25,13 +25,13 @@ class CacheQueryProvider(QueryAPI):
     @property
     def database_file(self) -> Optional[Path]:
         if not self.network_manager.active_provider:
-            raise QueryEngineError("Not connected to a network")
+            return None
 
         ecosystem_name = self.provider.network.ecosystem.name
         network_name = self.provider.network.name
         if network_name == LOCAL_NETWORK_NAME:
             # Note: no need to cache local network, no use for data
-            raise QueryEngineError("Cannot cache local network")
+            return None
 
         if "-fork" in network_name:
             # Note: send query to pull from upstream
@@ -43,7 +43,8 @@ class CacheQueryProvider(QueryAPI):
 
     @property
     def sqlite_db(self):
-        return f"sqlite:///{self.database_file}"
+        if self.database_file:
+            return f"sqlite:///{self.database_file}"
 
     def init_db(self):
         if self.database_file.is_file():
