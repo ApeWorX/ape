@@ -1,5 +1,6 @@
 import click
 import pandas as pd
+from sqlalchemy import create_engine  # type: ignore
 
 from ape.cli import NetworkBoundCommand, network_option
 from ape.logging import logger
@@ -30,8 +31,12 @@ def init(network):
 @network_option()
 @click.argument("sql")
 def query(sql, network):
-    with get_engine().engine.connect() as conn:
-        click.echo(pd.DataFrame(conn.execute(sql)))
+    if get_engine().database_file.is_file():
+        with create_engine(get_engine().sqlite_db, pool_pre_ping=True).connect() as conn:
+            click.echo(pd.DataFrame(conn.execute(sql)))
+
+    else:
+        click.echo("Database not initialized")
 
 
 @cli.command(cls=NetworkBoundCommand, short_help="Purges entire database")

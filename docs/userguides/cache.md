@@ -22,7 +22,7 @@ ape cache init --network ethereum:mainnet:infura
 
 This creates a SQLite database file in the hidden ape folder.
 
-## Get data from the provider.
+## Get data from the provider
 
 Use `ape console`:
 
@@ -33,11 +33,8 @@ ape console --network ethereum:mainnet:infura
 Run a few queries:
 
 ```python
-chain.blocks.query("*", stop_block=20)
-```
-
-```python
-chain.blocks[-2].transactions
+In [1]: chain.blocks.query("*", stop_block=20)
+In [2]: chain.blocks[-2].transactions
 ```
 
 If you have a contract that you would like to get events from and you have made transactions:
@@ -48,7 +45,9 @@ contract_instance.FooHappened.query("*", start_block=-1)
 
 where `contract_instance` is the return of owner.deploy(Contract)
 
-## Exit the IPython interpreter
+See [this guide](../userguides/contracts.html) for more information how to get a contract instance.
+
+Exit the IPython interpreter.
 
 To get the `blocks` table data from the SQLite db.
 ```bash
@@ -62,7 +61,7 @@ Returns:
 2   b'\xb4\x95\xa1\xd7\xe6f1R\xae\x92p\x8d\xa4\x84...                0       2  b'\x88\xe9mE7\xbe\xa4\xd9\xc0]\x12T\x99\x07\xb...   544  1438270017       5000         0     None  17163096064       51514445824
 ```
 
-To get `transactions` or `contract_enents`:
+To get `transactions` or `contract_events`:
 ```bash
 ape cache query --network ethereum:mainnet:infura "SELECT * FROM transactions"
 ```

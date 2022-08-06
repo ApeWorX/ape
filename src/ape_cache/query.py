@@ -3,8 +3,8 @@ from typing import Any, List, Optional, Union
 
 import pandas as pd
 import sqlalchemy.exc
-from sqlalchemy import create_engine  # type: ignore
-from sqlalchemy.sql import text  # type: ignore
+from sqlalchemy import create_engine
+from sqlalchemy.sql import text
 
 from ape.api import QueryAPI, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -42,14 +42,14 @@ class CacheQueryProvider(QueryAPI):
         return self.config_manager.DATA_FOLDER / ecosystem_name / f"{network_name}.db"
 
     @property
-    def engine(self):
-        return create_engine(f"sqlite:///{self.database_file}", pool_pre_ping=True)
+    def sqlite_db(self):
+        return f"sqlite:///{self.database_file}"
 
     def init_db(self):
         if self.database_file.is_file():
             raise QueryEngineError("Database has already been initialized")
 
-        models.Base.metadata.create_all(bind=self.engine)
+        models.Base.metadata.create_all(bind=create_engine(self.sqlite_db, pool_pre_ping=True))
 
     def purge_db(self):
         if not self.database_file.is_file():
@@ -60,26 +60,31 @@ class CacheQueryProvider(QueryAPI):
 
     def _block_query(
         self, query_stmt: str, query: Union[BlockQuery, ContractEventQuery]
-    ) -> Union[int, pd.DataFrame]:
-        with self.engine.connect() as conn:
-            if "COUNT" in query_stmt:
-                q = conn.execute(
-                    text(query_stmt),
-                    start_block=query.start_block,
-                    stop_block=query.stop_block,
-                    step=query.step,
-                )
-                return q.rowcount
-            elif "SELECT :" in query_stmt:
-                q = conn.execute(
-                    text(query_stmt),
-                    columns=",".join(query.columns),
-                    start_block=query.start_block,
-                    stop_block=query.stop_block,
-                    step=query.step,
-                )
-                return pd.DataFrame(columns=query.columns, data=q.fetchall())
-        raise Exception("SELECT statement improperly set.")
+    ) -> Optional[Union[int, pd.DataFrame]]:
+        if self.database_file and self.database_file.is_file():
+            with create_engine(self.sqlite_db, pool_pre_ping=True).connect() as conn:
+                if "COUNT" in query_stmt:
+                    q = conn.execute(
+                        text(query_stmt),
+                        start_block=query.start_block,
+                        stop_block=query.stop_block,
+                        step=query.step,
+                    )
+                    return q.rowcount
+
+                elif "SELECT :" in query_stmt:
+                    q = conn.execute(
+                        text(query_stmt),
+                        columns=",".join(query.columns),
+                        start_block=query.start_block,
+                        stop_block=query.stop_block,
+                        step=query.step,
+                    )
+                    return pd.DataFrame(columns=query.columns, data=q.fetchall())
+
+            raise Exception("SELECT statement improperly set.")
+
+        return None
 
     @singledispatchmethod
     def table(self, query: QueryType):
@@ -140,7 +145,7 @@ class CacheQueryProvider(QueryAPI):
             FROM blocks
             WHERE blocks.number >= :start_block
             AND blocks.number <= :stop_block
-            AND blocks.number mod :step = 0
+            AND blocks.number % :step = 0
         """
 
     @estimate_query_stmt.register
@@ -148,7 +153,7 @@ class CacheQueryProvider(QueryAPI):
         return """
             SELECT COUNT(*)
             FROM transactions
-            WHERE transactions.block_id = :block_id
+            WHERE transactions.block_hash = :block_id
         """
 
     @estimate_query_stmt.register
@@ -158,7 +163,7 @@ class CacheQueryProvider(QueryAPI):
             FROM contract_events
             WHERE contract_events.block_number >= :start_block
             AND contract_events.block_number <= :stop_block
-            AND contract_events.block_number mod :step = 0
+            AND contract_events.block_number % :step = 0
         """
 
     @singledispatchmethod
@@ -172,7 +177,7 @@ class CacheQueryProvider(QueryAPI):
             FROM blocks
             WHERE blocks.number >= :start_block
             AND blocks.number <= :stop_block
-            AND blocks.number mod :step = 0
+            AND blocks.number % :step = 0
         """
 
     @perform_query_stmt.register
@@ -180,7 +185,7 @@ class CacheQueryProvider(QueryAPI):
         return """
             SELECT :columns
             FROM transactions
-            WHERE transactions.block_id = :block_id
+            WHERE transactions.block_hash = :block_id
         """
 
     @perform_query_stmt.register
@@ -190,7 +195,7 @@ class CacheQueryProvider(QueryAPI):
             FROM contract_events
             WHERE contract_events.block_number >= :start_block
             AND contract_events.block_number <= :stop_block
-            AND contract_events.block_number mod :step = 0
+            AND contract_events.block_number % :step = 0
         """
 
     @singledispatchmethod
@@ -218,23 +223,26 @@ class CacheQueryProvider(QueryAPI):
 
     @estimate_query.register
     def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> Optional[int]:
-        try:
-            with self.engine.connect() as conn:
-                q = conn.execute(
-                    text(self.estimate_query_stmt(query)),
-                    block_id=query.block_id,
-                )
-                if q.rowcount > 0:
-                    # NOTE: Assume 200 msec to get data from database
-                    return 200
-                # Can't handle this query
+        if self.database_file and self.database_file.is_file():
+            try:
+                with create_engine(self.sqlite_db, pool_pre_ping=True).connect() as conn:
+                    q = conn.execute(
+                        text(self.estimate_query_stmt(query)),
+                        block_id=query.block_id,
+                    )
+                    if q.rowcount > 0:
+                        # NOTE: Assume 200 msec to get data from database
+                        return 200
+                    # Can't handle this query
+                    return None
+
+            except Exception as err:
+                # Note: If any error, skip the data from the cache and continue to
+                #       query from provider.
+                logger.error(err)
                 return None
 
-        except Exception as err:
-            # Note: If any error, skip the data from the cache and continue to
-            #       query from provider.
-            logger.error(err)
-            return None
+        return None
 
     @estimate_query.register
     def estimate_contract_events_query(self, query: ContractEventQuery) -> Optional[int]:
@@ -256,25 +264,28 @@ class CacheQueryProvider(QueryAPI):
             return None
 
     @singledispatchmethod
-    def perform_query(self, query: QueryType) -> pd.DataFrame:  # type: ignore
+    def perform_query(self, query: QueryType) -> Optional[pd.DataFrame]:  # type: ignore
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
     @perform_query.register
-    def perform_block_query(self, query: BlockQuery) -> pd.DataFrame:
+    def perform_block_query(self, query: BlockQuery) -> Optional[pd.DataFrame]:
         return self._block_query(self.perform_query_stmt(query), query)  # type: ignore
 
     @perform_query.register
-    def perform_transaction_query(self, query: BlockTransactionQuery) -> pd.DataFrame:
-        with self.engine.connect() as conn:
-            q = conn.execute(
-                text(self.perform_query_stmt(query)),
-                columns=",".join(query.columns),
-                start_block=query.block_id,
-            )
-            return pd.DataFrame(columns=query.columns, data=q.fetchall())
+    def perform_transaction_query(self, query: BlockTransactionQuery) -> Optional[pd.DataFrame]:
+        if self.database_file and self.database_file.is_file():
+            with create_engine(self.sqlite_db, pool_pre_ping=True).connect() as conn:
+                q = conn.execute(
+                    text(self.perform_query_stmt(query)),
+                    columns=",".join(query.columns),
+                    start_block=query.block_id,
+                )
+                return pd.DataFrame(columns=query.columns, data=q.fetchall())
+
+        return None
 
     @perform_query.register
-    def perform_contract_events_query(self, query: ContractEventQuery) -> pd.DataFrame:
+    def perform_contract_events_query(self, query: ContractEventQuery) -> Optional[pd.DataFrame]:
         return self._block_query(self.perform_query_stmt(query), query)  # type: ignore
 
     @singledispatchmethod
@@ -307,31 +318,32 @@ class CacheQueryProvider(QueryAPI):
         )
 
     def update_cache(self, query: QueryType, result: List[Any]) -> None:
-        df = self.get_dataframe(query, result)
+        if self.database_file and self.database_file.is_file():
+            df = self.get_dataframe(query, result)
 
-        try:
-            with self.engine.connect() as conn:
-                for idx, row in df.iterrows():
-                    try:
-                        v = conn.execute(
-                            text(self.cache_query(query)),
-                            column=self.column(query),
-                            val=str(row[self.column(query)]),
-                        )
-                        if [i for i in v]:
-                            df = df[df[self.column(query)] != row[self.column(query)]]
+            try:
+                with create_engine(self.sqlite_db, pool_pre_ping=True).connect() as conn:
+                    for idx, row in df.iterrows():
+                        try:
+                            v = conn.execute(
+                                text(self.cache_query(query)),
+                                column=self.column(query),
+                                val=str(row[self.column(query)]),
+                            )
+                            if [i for i in v]:
+                                df = df[df[self.column(query)] != row[self.column(query)]]
 
-                        if df.empty:
+                            if df.empty:
+                                return
+
+                        except sqlalchemy.exc.OperationalError as err:
+                            logger.error(err)
+                            df.to_sql(self.table(query), conn, if_exists="append", index=False)
                             return
 
-                    except sqlalchemy.exc.OperationalError as err:
-                        logger.error(err)
-                        df.to_sql(self.table(query), conn, if_exists="append", index=False)
-                        return
+                    df.to_sql(self.table(query), conn, if_exists="append", index=False)
 
-                df.to_sql(self.table(query), conn, if_exists="append", index=False)
-
-        except Exception as err:
-            # Note: If any error, skip the data from the cache and continue to
-            #       query from provider.
-            logger.error(err)
+            except Exception as err:
+                # Note: If any error, skip the data from the cache and continue to
+                #       query from provider.
+                logger.error(err)
