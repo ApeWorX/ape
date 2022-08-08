@@ -33,7 +33,7 @@ def test_parse_type(s):
     #   - (int[],)
     #   - (int, int,)
     #   - (int, int)
-    #   - (int, int, int,)
+    #   - (int, int, int)
     #   - (int, int, int,)
     #   - ((int, int), int)
     #   - ((int, int[],), int)
