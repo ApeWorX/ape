@@ -258,6 +258,17 @@ def to_int(value) -> int:
 
 
 def run_until_complete(item: Any) -> Any:
+    """
+    Completes the given coroutine and returns its value.
+
+    Args:
+        item (Any): A return value from a potentially async method.
+
+    Returns:
+        (Any): The value that results in awaiting the coroutine.
+          Else, ``item`` if ``item`` is not a coroutine.
+    """
+
     if not isinstance(item, Coroutine):
         return item
 

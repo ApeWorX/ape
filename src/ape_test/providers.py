@@ -45,8 +45,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             mnemonic=self.config["mnemonic"],
             num_accounts=self.config["number_of_accounts"],
         )
-        provider = EthereumTesterProvider(ethereum_tester=self._evm_backend)
-        self._web3 = Web3(provider)
+        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._evm_backend))
         self._web3.middleware_onion.add(simple_cache_middleware)
 
     def disconnect(self):
@@ -112,7 +111,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         try:
             block_id = kwargs.pop("block_identifier", None)
             state = kwargs.pop("state_override", None)
-            return self.web3.eth.call(txn.dict(), block_id, state)  # type: ignore
+            call_kwargs = {"block_identifier": block_id, "state_override": state}
+            return self.web3.eth.call(txn.dict(), **call_kwargs)  # type: ignore
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:
