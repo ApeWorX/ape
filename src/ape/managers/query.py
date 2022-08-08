@@ -1,7 +1,8 @@
-from typing import Any, Dict, Iterator, List, Optional
+from itertools import tee
+from typing import Dict, Iterator, Optional
 
 from ape.api import QueryAPI, QueryType
-from ape.api.query import BlockQuery, BlockTransactionQuery, ContractEventQuery
+from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
 from ape.plugins import clean_plugin_name
@@ -97,25 +98,29 @@ class QueryManager(ManagerAccessMixin):
 
         return engines
 
-    def query(self, query: QueryType, engine_to_use: Optional[str] = None) -> List[Any]:
+    def query(
+        self,
+        query: QueryType,
+        engine_to_use: Optional[str] = None,
+    ) -> Iterator[BaseInterfaceModel]:
         """
         Args:
             query (``QueryType``): The type of query to execute
             engine_to_use (Optional[str]): Short-circuit selection logic using
-              a specific engine. Defaults to None.
+              a specific engine. Defaults to choosing based on selection logic.
 
         Raises: :class:`~ape.exceptions.QueryEngineError`: When given an
             invalid or inaccessible ``engine_to_use`` value.
 
         Returns:
-            Iterator[QueryAPI]
+            Iterator[BaseInterfaceModel]
         """
 
         if engine_to_use:
             if engine_to_use not in self.engines:
                 raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")
 
-            engine = self.engines[engine_to_use]
+            selected_engine = self.engines[engine_to_use]
 
         else:
             # Get heuristics from all the query engines to perform this query
@@ -127,16 +132,18 @@ class QueryManager(ManagerAccessMixin):
             try:
                 # Find the "best" engine to perform the query
                 # NOTE: Sorted by fastest time heuristic
-                engine, _ = min(valid_estimates, key=lambda qe: qe[1])  # type: ignore
+                selected_engine, _ = min(valid_estimates, key=lambda qe: qe[1])  # type: ignore
+
             except ValueError as e:
                 raise QueryEngineError("No query engines are available.") from e
 
         # Go fetch the result from the engine
-        result = engine.perform_query(query)
-        data = [val for val in result]
+        result = selected_engine.perform_query(query)
 
         # Update any caches
         for engine in self.engines.values():
-            engine.update_cache(query, data)
+            if not isinstance(engine, selected_engine.__class__):
+                result, cache_data = tee(result)
+                engine.update_cache(query, cache_data)
 
-        return data
+        return result
