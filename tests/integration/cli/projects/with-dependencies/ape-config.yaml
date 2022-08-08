@@ -2,16 +2,16 @@ dependencies:
   - name: default
     local: ./default
 
-  - name: renamed_contracts_folder
+  - name: renamed-contracts-folder
     local: ./renamed_contracts_folder
     contracts_folder: sources
 
-  - name: renamed_complex_contracts_folder
+  - name: renamed-complex-contracts-folder
     local: ./renamed_complex_contracts_folder
     contracts_folder: contracts/src/v0.1
 
-  - name: containing_sub_dependencies
+  - name: containing-sub-dependencies
     local: ./containing_sub_dependencies
 
-  - name: renamed_contracts_folder_specified_in_config
+  - name: renamed-contracts-folder-specified-in-config
     local: ./renamed_contracts_folder_specified_in_config
