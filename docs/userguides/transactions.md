@@ -21,7 +21,7 @@ def deploy():
     return account.deploy(project.MyContract)
 ```
 
-To get the receipt of a `deploy` transaction, use the `.receipt` property on the contract instance:
+To get the receipt of a `deploy` transaction, use the [ContractInstance.receipt](../methoddocs/contracts.html#ape.contracts.base.ContractInstance.receipt) property:
 
 ```python
 from ape import accounts, project
