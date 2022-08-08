@@ -10,16 +10,16 @@ IDENT = r"(\w+(\[\])?)"
 # e.g. (int,) or (int, int) or (int, int,) etc.
 TUPLE = rf"(\({IDENT},(\s*{IDENT},?)*\))"
 
-# An optionally nested tuple.
+# Adding optional nesting to the tuple pattern.
 # e.g. (int,) or (int, int) or ((int,), int) etc.
-NESTED_TUPLE = rf"(\(({IDENT}|{TUPLE}),(\s*{IDENT}|{TUPLE},?)*\))"
+TUPLE = rf"(\(({IDENT}|{TUPLE}),(\s*({IDENT}|{TUPLE}),?)*\))"
 
 # The full type declaration pattern which matches:
 # - type identifier
 # - array declaration
 # - tuples of type/array
 # - tuples of type/array or tuples
-TYPE_DECL = rf"^({IDENT}|{TUPLE}|{NESTED_TUPLE})$"
+TYPE_DECL = rf"^({IDENT}|{TUPLE})$"
 
 
 @pytest.mark.fuzzing
