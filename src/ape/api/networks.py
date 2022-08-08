@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import mkdtemp
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
-from eth_account import Account as EthAccount  # type: ignore
+from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,

@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Iterator, Optional
 
 import click
-from eth_account import Account as EthAccount  # type: ignore
+from eth_account import Account as EthAccount
 from eth_utils import to_bytes
 from hexbytes import HexBytes
 
