@@ -19,7 +19,7 @@ from ape.exceptions import (
 from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
 
-CHAIN_ID = API_ENDPOINTS["eth"]["chainId"]()
+CHAIN_ID = int(API_ENDPOINTS["eth"]["chainId"](), 16)
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
@@ -88,8 +88,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         elif hasattr(self.web3, "eth"):
             chain_id = self.web3.eth.chain_id
         else:
-            default_value = CHAIN_ID
-            chain_id = int(default_value, 16)
+            chain_id = CHAIN_ID
 
         self.cached_chain_id = chain_id
         return chain_id
