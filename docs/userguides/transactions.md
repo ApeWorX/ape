@@ -21,6 +21,19 @@ def deploy():
     return account.deploy(project.MyContract)
 ```
 
+To get the receipt of a `deploy` transaction, use the `.receipt` property on the contract instance:
+
+```python
+from ape import accounts, project
+
+dev = accounts.load("dev")
+contract = project.MyContract.deploy(sender=dev)
+
+# The receipt is available on the contract instance and has the expected sender.
+receipt = contract.receipt
+assert receipt.sender == dev
+```
+
 ### Deployment from Ape Console
 
 Deploying from [ape console](./console.html) allows you to interact with a contract in real time. You can also use the `--network` flag to connect a live network. 

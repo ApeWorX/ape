@@ -201,8 +201,8 @@ def test_contract_caches_default_contract_type_when_used(solidity_contract_insta
     contract_type = solidity_contract_instance.contract_type
 
     # Delete contract from local cache if it's there
-    if address in chain.contracts._local_contracts:
-        del chain.contracts._local_contracts[address]
+    if address in chain.contracts._local_contract_types:
+        del chain.contracts._local_contract_types[address]
 
     # Delete cache file if it exists
     cache_file = chain.contracts._contract_types_cache / f"{address}.json"
@@ -244,12 +244,11 @@ def test_instance_at_when_given_contract_type(chain, contract_instance):
 
 
 def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
-    with pytest.raises(TypeError) as err:
-        chain.contracts.instance_at(
-            str(contract_instance.address), contract_type=contract_instance.contract_type.name
-        )
-
-    assert str(err.value) == "Expected type 'ContractType' for argument 'contract_type'."
+    expected_match = "Expected type 'ContractType' for argument 'contract_type'."
+    with pytest.raises(TypeError, match=expected_match):
+        address = str(contract_instance.address)
+        bad_contract_type = contract_instance.contract_type.name
+        chain.contracts.instance_at(address, contract_type=bad_contract_type)
 
 
 def test_deployments_mapping_cache_location(chain):
@@ -262,38 +261,10 @@ def test_deployments_mapping_cache_location(chain):
     assert split_mapping_location[-2] == "ethereum"
 
 
-def test_cache_deployment_mapping_to_disk(
-    chain, owner, remove_disk_writes_deployments, contract_0, contract_1
-):
-    # Arrange
-    deployed_contract_0 = owner.deploy(contract_0)
-    deployed_contract_1 = owner.deploy(contract_1)
-    address_0 = deployed_contract_0.address
-    address_1 = deployed_contract_1.address
-    contract_type_0 = contract_0.contract_type
-    contract_type_1 = contract_1.contract_type
-    expected_contract_mapping = {
-        "ethereum": {
-            "local": {
-                "ApeContract0": [{"address": address_0}],
-                "ApeContract1": [{"address": address_1}],
-            }
-        }
-    }
-
-    # Act
-    chain.contracts._cache_deployment_mapping_to_disk(address_0, contract_type_0)
-    chain.contracts._cache_deployment_mapping_to_disk(address_1, contract_type_1)
-    contracts_mapping = chain.contracts._load_deployments_cache()
-
-    # Assert
-    assert contracts_mapping == expected_contract_mapping
-
-
 def test_get_deployments_local(chain, owner, contract_0, contract_1):
     # Arrange
     chain.contracts._local_deployments_mapping = {}
-    chain.contracts._local_contracts = {}
+    chain.contracts._local_contract_types = {}
     starting_contracts_list_0 = chain.contracts.get_deployments(contract_0)
     starting_contracts_list_1 = chain.contracts.get_deployments(contract_1)
     deployed_contract_0 = owner.deploy(contract_0)
@@ -320,20 +291,16 @@ def test_get_deployments_live(
 ):
     deployed_contract_0 = owner.deploy(contract_0, required_confirmations=0)
     deployed_contract_1 = owner.deploy(contract_1, required_confirmations=0)
-    deployments_mapping = chain.contracts._load_deployments_cache()
-    rinkeby_map = deployments_mapping["ethereum"]["rinkeby"]
 
     # Act
     my_contracts_list_0 = chain.contracts.get_deployments(contract_0)
     my_contracts_list_1 = chain.contracts.get_deployments(contract_1)
 
     # Assert
-    address_from_mapping_0 = rinkeby_map["ApeContract0"][-1]["address"]
     address_from_api_0 = my_contracts_list_0[-1].address
-    assert address_from_mapping_0 == address_from_api_0 == deployed_contract_0.address
-    address_from_mapping_1 = rinkeby_map["ApeContract1"][-1]["address"]
+    assert address_from_api_0 == deployed_contract_0.address
     address_from_api_1 = my_contracts_list_1[-1].address
-    assert address_from_mapping_1 == address_from_api_1 == deployed_contract_1.address
+    assert address_from_api_1 == deployed_contract_1.address
 
 
 def test_get_deployments_live_migration(
@@ -358,10 +325,8 @@ def test_get_multiple_deployments_live(
     owner.deploy(contract_1, required_confirmations=0)
     final_deployed_contract_0 = owner.deploy(contract_0, required_confirmations=0)
     final_deployed_contract_1 = owner.deploy(contract_1, required_confirmations=0)
-    deployments_mapping = chain.contracts._load_deployments_cache()
     contracts_list_0 = chain.contracts.get_deployments(contract_0)
     contracts_list_1 = chain.contracts.get_deployments(contract_1)
-    rinkeby_map = deployments_mapping["ethereum"]["rinkeby"]
     contract_type_map = {
         "ApeContract0": (initial_deployed_contract_0, final_deployed_contract_0),
         "ApeContract1": (initial_deployed_contract_1, final_deployed_contract_1),
@@ -371,10 +336,9 @@ def test_get_multiple_deployments_live(
     assert len(contracts_list_1) == len(starting_contracts_list_1) + 3
 
     for ct_name, ls in zip(("ApeContract0", "ApeContract1"), (contracts_list_0, contracts_list_1)):
-        contract_list = rinkeby_map[ct_name]
         initial_ct, final_ct = contract_type_map[ct_name]
-        assert contract_list[0]["address"] == ls[0].address == initial_ct.address
-        assert contract_list[-1]["address"] == ls[-1].address == final_ct.address
+        assert ls[len(ls) - 3].address == initial_ct.address
+        assert ls[-1].address == final_ct.address
 
 
 def test_contract_cache_mapping_updated_on_many_deployments(owner, chain, contract_0, contract_1):

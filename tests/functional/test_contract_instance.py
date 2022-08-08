@@ -16,7 +16,9 @@ MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
 def test_init_at_unknown_address(networks_connected_to_tester):
     _ = networks_connected_to_tester  # Need fixture or else get ProviderNotConnectedError
-    with pytest.raises(ChainError):
+    with pytest.raises(
+        ChainError, match=f"Failed to get contract type for address '{TEST_ADDRESS}'."
+    ):
         Contract(TEST_ADDRESS)
 
 
@@ -286,3 +288,10 @@ def test_call_transact(vyper_contract_instance, owner):
     receipt = vyper_contract_instance.myNumber.transact(sender=owner)
     assert receipt.sender == owner
     assert receipt.status == TransactionStatusEnum.NO_ERROR
+
+
+def test_receipt(contract_instance, owner):
+    receipt = contract_instance.receipt
+    assert receipt.txn_hash == contract_instance.txn_hash
+    assert receipt.contract_address == contract_instance.address
+    assert receipt.sender == owner
