@@ -19,7 +19,7 @@ from ape.exceptions import (
 from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
 
-CHAIN_ID = int(API_ENDPOINTS["eth"]["chainId"](), 16)
+CHAIN_ID = API_ENDPOINTS["eth"]["chainId"]()
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
