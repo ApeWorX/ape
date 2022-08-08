@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import mkdtemp
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
-from eth_account import Account as EthAccount  # type: ignore
+from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
@@ -557,9 +557,8 @@ class NetworkAPI(BaseInterfaceModel):
 
         data_folder = mkdtemp()
         request_header = cls.config_manager.REQUEST_HEADER
-        ethereum = ethereum_class(
-            data_folder=data_folder, request_header=request_header
-        )  # type: ignore
+        class_kwargs = {"data_folder": data_folder, "request_header": request_header}
+        ethereum = ethereum_class(**class_kwargs)  # type: ignore
         return cls(
             name="adhoc",
             ecosystem=ethereum,

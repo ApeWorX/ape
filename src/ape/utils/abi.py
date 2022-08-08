@@ -2,7 +2,7 @@ import re
 from dataclasses import make_dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from eth_abi import decode_abi, decode_single, grammar
+from eth_abi import decode, decode_single, grammar
 from eth_utils import decode_hex, to_checksum_address
 from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, EventABI, MethodABI
@@ -270,7 +270,7 @@ class LogInputABICollection:
             )
 
         data_abi_types = [abi.canonical_type for abi in self.data]
-        data_values = decode_abi(data_abi_types, decode_hex(data))
+        data_values = decode(data_abi_types, decode_hex(data))
         for abi, value in zip(self.data, data_values):
             decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 

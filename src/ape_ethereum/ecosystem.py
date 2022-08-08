@@ -2,8 +2,7 @@ import re
 from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
-from eth_abi import decode_abi as abi_decode
-from eth_abi import encode_abi as abi_encode
+from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, decode_hex, encode_hex, keccak, to_bytes, to_checksum_address
@@ -291,16 +290,15 @@ class Ethereum(EcosystemAPI):
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
         if abi.inputs:
             input_types = [i.canonical_type for i in abi.inputs]
-            return abi_encode(input_types, args)
+            return encode(input_types, args)
 
-        else:
-            return HexBytes(b"")
+        return HexBytes(b"")
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
 
         try:
-            vm_return_values = abi_decode(output_types, raw_data)
+            vm_return_values = decode(output_types, raw_data)
         except InsufficientDataBytes as err:
             raise DecodingError() from err
 

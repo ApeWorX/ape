@@ -1,6 +1,6 @@
 from typing import Iterator, List, Optional
 
-from eth_account import Account as EthAccount  # type: ignore
+from eth_account import Account as EthAccount
 from eth_account.messages import SignableMessage
 from eth_utils import to_bytes
 
