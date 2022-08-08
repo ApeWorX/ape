@@ -30,7 +30,6 @@ class TransactionAPI(BaseInterfaceModel):
     receiver: Optional[str] = Field(None, alias="to")
     sender: Optional[str] = Field(None, alias="from")
     gas_limit: Optional[int] = Field(None, alias="gas")
-    gas_price: Optional[int] = Field(None, alias="gasPrice")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
     data: bytes = b""

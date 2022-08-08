@@ -680,6 +680,7 @@ class Web3Provider(ProviderAPI, ABC):
     def get_block(self, block_id: BlockID) -> BlockAPI:
         if isinstance(block_id, str) and block_id.isnumeric():
             block_id = int(block_id)
+
         block_data = dict(self.web3.eth.get_block(block_id))
         return self.network.ecosystem.decode_block(block_data)
 
