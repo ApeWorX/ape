@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from ape.api.query import validate_and_expand_columns
+from ape_test.providers import CHAIN_ID
 
 
 def test_basic_query(chain, eth_tester_provider):
@@ -48,7 +49,7 @@ def test_block_transaction_query(chain, eth_tester_provider, sender, receiver):
     query = chain.blocks[-1].transactions
     assert len(query) == 1
     assert query[0].value == 100
-    assert query[0].chain_id == 61
+    assert query[0].chain_id == CHAIN_ID
 
 
 def test_transaction_contract_event_query(contract_instance, owner, eth_tester_provider):

@@ -26,17 +26,22 @@ from ape.utils.misc import (
     ZERO_ADDRESS,
     add_padding_to_strings,
     cached_property,
-    expand_environment_variables,
     extract_nested_value,
     gas_estimation_error_message,
     get_package_version,
     load_config,
     raises_not_implemented,
+    run_until_complete,
     singledispatchmethod,
     stream_response,
     to_int,
 )
-from ape.utils.os import get_all_files_in_directory, get_relative_path, use_temp_sys_path
+from ape.utils.os import (
+    expand_environment_variables,
+    get_all_files_in_directory,
+    get_relative_path,
+    use_temp_sys_path,
+)
 from ape.utils.process import JoinableQueue, spawn
 from ape.utils.testing import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
@@ -80,6 +85,7 @@ __all__ = [
     "parse_type",
     "raises_not_implemented",
     "returns_array",
+    "run_until_complete",
     "singledispatchmethod",
     "spawn",
     "stream_response",

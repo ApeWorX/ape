@@ -238,7 +238,7 @@ class Receipt(ReceiptAPI):
 
         # ds-note data field uses either (uint256,bytes) or (bytes) encoding
         # instead of guessing, assume the payload begins right after the selector
-        data = decode_hex(log["data"])
+        data = decode_hex(log["data"]) if isinstance(log["data"], str) else log["data"]
         input_types = [i.canonical_type for i in method_abi.inputs]
         start_index = data.index(selector) + 4
         values = decode(input_types, data[start_index:])
