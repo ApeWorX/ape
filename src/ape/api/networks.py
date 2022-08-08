@@ -557,9 +557,8 @@ class NetworkAPI(BaseInterfaceModel):
 
         data_folder = mkdtemp()
         request_header = cls.config_manager.REQUEST_HEADER
-        ethereum = ethereum_class(
-            data_folder=data_folder, request_header=request_header
-        )  # type: ignore
+        init_kwargs = {"data_folder": data_folder, "request_header": request_header}
+        ethereum = ethereum_class(**init_kwargs)  # type: ignore
         return cls(
             name="adhoc",
             ecosystem=ethereum,

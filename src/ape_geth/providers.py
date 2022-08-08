@@ -185,7 +185,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
         provider = HTTPProvider(self.uri, request_kwargs={"timeout": 30 * 60})
         self._web3 = Web3(provider)
 
-        if not self._web3.isConnected():
+        if not self.is_connected:
             if self.network.name != LOCAL_NETWORK_NAME:
                 raise ProviderError(f"No node found on '{self._clean_uri}'.")
 
