@@ -781,7 +781,7 @@ class ContractCache(BaseManager):
         network_map = ecosystem_map.get(self._data_network_name, {})
         deployments = network_map.get(contract_name, [])
 
-        # Handle previous schema of a list of addresses instead of a list of dicts
+        # TODO: Remove migration code >= 0.6.0
         if deployments and isinstance(deployments[0], str):
             deployments = [{"address": a} for a in deployments]
 
@@ -819,9 +819,6 @@ class ContractCache(BaseManager):
         self._deployments_mapping_cache.parent.mkdir(exist_ok=True, parents=True)
         with self._deployments_mapping_cache.open("w") as fp:
             json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
-
-    def _migrate_deployments_list(self, deployments_list: List[str]) -> List[Dict]:
-        return [{"address": a} for a in deployments_list]
 
 
 class ChainManager(BaseManager):
