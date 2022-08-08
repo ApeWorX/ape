@@ -16,6 +16,8 @@ import ape
 from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError
+from ape.logging import LogLevel
+from ape.logging import logger as _logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType, ContractLog
 
@@ -374,3 +376,16 @@ def remove_disk_writes_deployments(chain):
 
     if chain.contracts._deployments_mapping_cache.exists():
         chain.contracts._deployments_mapping_cache.unlink()
+
+
+@pytest.fixture
+def logger():
+    return _logger
+
+
+@pytest.fixture
+def use_debug(logger):
+    initial_level = logger.level
+    logger.set_level(LogLevel.DEBUG)
+    yield
+    logger.set_level(initial_level)
