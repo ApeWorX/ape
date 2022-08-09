@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, BigInteger, Column, ForeignKey, Integer, String  # type: ignore
+from sqlalchemy import JSON, BigInteger, Column, ForeignKey, Integer, Numeric, String
 
 from .base import Base
 
@@ -15,8 +15,8 @@ class Blocks(Base):
     gas_limit = Column(Integer, nullable=False)
     gas_used = Column(Integer, nullable=False)
     base_fee = Column(Integer)
-    difficulty = Column(Integer, nullable=False)
-    total_difficulty = Column(Integer, nullable=False)
+    difficulty = Column(Numeric(scale=0), nullable=False)
+    total_difficulty = Column(Numeric(scale=0), nullable=False)
 
 
 class Transactions(Base):
