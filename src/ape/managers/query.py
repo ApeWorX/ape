@@ -5,6 +5,7 @@ from ape.api import QueryAPI, QueryType
 from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
+from ape.logging import logger
 from ape.plugins import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
@@ -144,6 +145,9 @@ class QueryManager(ManagerAccessMixin):
         for engine in self.engines.values():
             if not isinstance(engine, selected_engine.__class__):
                 result, cache_data = tee(result)
-                engine.update_cache(query, cache_data)
+                try:
+                    engine.update_cache(query, cache_data)
+                except QueryEngineError as err:
+                    logger.error(err)
 
         return result

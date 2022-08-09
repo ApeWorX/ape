@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine import CursorResult  # type: ignore
-from sqlalchemy.sql import text
+from sqlalchemy.sql import insert, text
 from sqlalchemy.sql.expression import TextClause
 
 from ape.api import QueryAPI, QueryType
@@ -15,6 +15,7 @@ from ape.logging import logger
 from ape.utils import singledispatchmethod  # type: ignore
 
 from . import models
+from .models import Blocks, ContractEvents, Transactions
 
 
 class CacheQueryProvider(QueryAPI):
@@ -116,7 +117,7 @@ class CacheQueryProvider(QueryAPI):
             """
     SELECT COUNT(*)
     FROM transactions
-    WHERE transactions.block_hash = :block_id
+    WHERE transactions.block_hash = :block_hash
         """
         ).bindparams(block_hash=query.block_id)
 
@@ -138,7 +139,9 @@ class CacheQueryProvider(QueryAPI):
 
     @compute_estimate.register
     def compute_estimate_block_query(
-        self, result: CursorResult, query: BlockQuery
+        self,
+        query: BlockQuery,
+        result: CursorResult,
     ) -> Optional[int]:
         if result.rowcount == (query.stop_block - query.start_block) // query.step:
             # NOTE: Assume 200 msec to get data from database
@@ -151,8 +154,8 @@ class CacheQueryProvider(QueryAPI):
     @compute_estimate.register
     def compute_estimate_block_transaction_query(
         self,
-        result: CursorResult,
         query: BlockTransactionQuery,
+        result: CursorResult,
     ) -> Optional[int]:
         if result.rowcount > 0:
             # NOTE: Assume 200 msec to get data from database
@@ -164,8 +167,8 @@ class CacheQueryProvider(QueryAPI):
     @compute_estimate.register
     def compute_estimate_contract_events_query(
         self,
-        result: CursorResult,
         query: ContractEventQuery,
+        result: CursorResult,
     ) -> Optional[int]:
         if result.rowcount == (query.stop_block - query.start_block) // query.step:
             # NOTE: Assume 200 msec to get data from database
@@ -176,13 +179,17 @@ class CacheQueryProvider(QueryAPI):
         return None
 
     def estimate_query(self, query: QueryType) -> Optional[int]:
-        with self.database_connection as conn:
-            result = conn.execute(self.estimate_query_clause(query))
+        try:
+            with self.database_connection as conn:
+                result = conn.execute(self.estimate_query_clause(query))
 
-            if not result:
-                return None
+                if not result:
+                    return None
 
-            return self.compute_estimate(result, query)
+                return self.compute_estimate(result, query)
+        except QueryEngineError as err:
+            logger.error(f"Cannot perform query: {err}")
+            return None
 
     # Fetch data
     @singledispatchmethod
@@ -250,22 +257,56 @@ class CacheQueryProvider(QueryAPI):
 
     @cache_update_clause.register
     def cache_update_block_clause(self, query: BlockQuery) -> Optional[TextClause]:
-        return text("INSERT INTO blocks")
+        return insert(Blocks)
 
     @cache_update_clause.register
     def cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Optional[TextClause]:
-        return text("INSERT INTO transactions")
+        return insert(Transactions)
 
     @cache_update_clause.register
     def cache_update_events_clause(self, query: ContractEventQuery) -> Optional[TextClause]:
-        return text("INSERT INTO contract_events")
+        return insert(ContractEvents)
+
+    @singledispatchmethod
+    def get_cache_data(
+        self, query: QueryType, result: Iterator[BaseInterfaceModel]
+    ) -> Optional[List[Dict[str, Any]]]:
+        raise QueryEngineError("Cannot unpack this QueryType")
+
+    @get_cache_data.register
+    def get_block_cache_data(
+        self, query: BlockQuery, result: Iterator[BaseInterfaceModel]
+    ) -> Optional[List[Dict[str, Any]]]:
+        return [m.dict(by_alias=False) for m in result]
+
+    @get_cache_data.register
+    def get_block_txns_data(
+        self, query: BlockTransactionQuery, result: Iterator[BaseInterfaceModel]
+    ) -> Optional[List[Dict[str, Any]]]:
+        new_result = []
+        for val in [m.dict(by_alias=False) for m in result]:
+            new_dict = {
+                k: v
+                for k, v in val.items()
+                if k in [c.key for c in Transactions.__table__.columns]  # type: ignore
+            }
+            new_dict["block_hash"] = query.block_id
+            new_result.append(new_dict)
+        return new_result
+
+    @get_cache_data.register
+    def get_cache_events_data(
+        self, query: ContractEventQuery, result: Iterator[BaseInterfaceModel]
+    ) -> Optional[List[Dict[str, Any]]]:
+        return [m.dict(by_alias=False) for m in result]
 
     def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):
         clause = self.cache_update_clause(query)
-        if clause:
+        if str(clause):
             logger.debug(f"Caching query: {query}")
             with self.database_connection as conn:
                 conn.execute(
-                    clause.on_conflict_do_nothing(),  # type: ignore
-                    [m.dict() for m in result],
+                    clause.values(self.get_cache_data(query, result)).prefix_with(  # type: ignore
+                        "OR IGNORE"
+                    )
                 )

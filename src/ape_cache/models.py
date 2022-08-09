@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String  # type: ignore
+from sqlalchemy import JSON, BigInteger, Column, ForeignKey, Integer, String  # type: ignore
 
 from .base import Base
 
@@ -11,7 +11,7 @@ class Blocks(Base):
     number = Column(Integer, nullable=False, index=True)
     parent_hash = Column(String, nullable=False)
     size = Column(Integer, nullable=False)
-    timestamp = Column(DateTime, index=True)
+    timestamp = Column(BigInteger, index=True)
     gas_limit = Column(Integer, nullable=False)
     gas_used = Column(Integer, nullable=False)
     base_fee = Column(Integer)
