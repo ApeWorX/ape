@@ -206,3 +206,7 @@ def test_parse_network_choice_multiple_contexts(switch_chain_id):
             # Second context should already know about connected providers
             assert len(first_context.connected_providers) == expected_next_count
             assert len(second_context.connected_providers) == expected_next_count
+
+
+def test_block_times(ethereum):
+    assert ethereum.rinkeby.block_time == 15

@@ -634,6 +634,7 @@ class NetworkAPI(BaseInterfaceModel):
               mainnet:
                 block_time: 15
         """
+
         return self._network_config.get("block_time", 0)
 
     @property
