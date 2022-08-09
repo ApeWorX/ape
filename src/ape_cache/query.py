@@ -252,19 +252,19 @@ class CacheQueryProvider(QueryAPI):
             return pd.DataFrame(columns=query.columns, data=result.fetchall())
 
     @singledispatchmethod
-    def cache_update_clause(self, query: QueryType) -> Optional[Insert]:
+    def cache_update_clause(self, query: QueryType) -> Optional[Any]:
         pass  # Can't cache this query
 
     @cache_update_clause.register
-    def cache_update_block_clause(self, query: BlockQuery) -> Optional[Insert]:
+    def cache_update_block_clause(self, query: BlockQuery) -> Optional[Any]:
         return insert(Blocks)
 
     @cache_update_clause.register
-    def cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Optional[Insert]:
+    def cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Optional[Any]:
         return insert(Transactions)
 
     @cache_update_clause.register
-    def cache_update_events_clause(self, query: ContractEventQuery) -> Optional[Insert]:
+    def cache_update_events_clause(self, query: ContractEventQuery) -> Optional[Any]:
         return insert(ContractEvents)
 
     @singledispatchmethod
