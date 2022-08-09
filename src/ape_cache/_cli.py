@@ -1,7 +1,7 @@
 import click
 import pandas as pd
-from sqlalchemy import create_engine  # type: ignore
 
+from ape import networks
 from ape.cli import NetworkBoundCommand, network_option
 from ape.logging import logger
 from ape.utils import ManagerAccessMixin
@@ -18,29 +18,36 @@ def cli():
     """
 
 
-@cli.command(cls=NetworkBoundCommand, short_help="Initialize a new cache database")
+@cli.command(short_help="Initialize a new cache database")
 @network_option()
 def init(network):
-    get_engine().init_db()
-    logger.info("Caching database initialized.")
+    provider = networks.get_provider_from_choice(network)
+    ecosystem_name = provider.network.ecosystem.name
+    network_name = provider.network.name
+
+    get_engine().init_database(ecosystem_name, network_name)
+    logger.info(f"Caching database initialized for {ecosystem_name}:{network_name}.")
 
 
 @cli.command(
-    cls=NetworkBoundCommand, short_help="Call and print SQL statement to the cache database"
+    cls=NetworkBoundCommand,
+    short_help="Call and print SQL statement to the cache database",
 )
 @network_option()
 @click.argument("sql")
 def query(sql, network):
-    if get_engine().database_file.is_file():
-        with create_engine(get_engine().sqlite_db, pool_pre_ping=True).connect() as conn:
-            click.echo(pd.DataFrame(conn.execute(sql)))
-
-    else:
-        click.echo("Database not initialized")
+    with get_engine().database_connection as conn:
+        results = conn.execute(sql).fetchall()
+        if results:
+            click.echo(pd.DataFrame(results))
 
 
-@cli.command(cls=NetworkBoundCommand, short_help="Purges entire database")
+@cli.command(short_help="Purges entire database")
 @network_option()
 def purge(network):
-    get_engine().purge_db()
-    logger.info("Caching database purged.")
+    provider = networks.get_provider_from_choice(network)
+    ecosystem_name = provider.network.ecosystem.name
+    network_name = provider.network.name
+
+    get_engine().purge_database(ecosystem_name, network_name)
+    logger.info(f"Caching database purged for {ecosystem_name}:{network_name}.")
