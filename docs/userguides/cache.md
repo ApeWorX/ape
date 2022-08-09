@@ -53,7 +53,9 @@ To get the `blocks` table data from the SQLite db.
 ```bash
 ape cache query --network ethereum:mainnet:infura "SELECT * FROM blocks"
 ```
+
 Returns:
+
 ```bash
                                                  hash num_transactions  number                                        parent_hash  size   timestamp  gas_limit  gas_used base_fee   difficulty  total_difficulty
 0   b'\xd4\xe5g@\xf8v\xae\xf8\xc0\x10\xb8j@\xd5\xf...                0       0  b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00...   540           0       5000         0     None  17179869184       17179869184
@@ -62,6 +64,7 @@ Returns:
 ```
 
 To get `transactions` or `contract_events`:
+
 ```bash
 ape cache query --network ethereum:mainnet:infura "SELECT * FROM transactions"
 ```

@@ -27,7 +27,7 @@ class CacheQueryProvider(QueryAPI):
     # Database management
     def get_database_file(self, ecosystem_name: str, network_name: str) -> Path:
         """
-        Let's us figured out what the file *will be*, mostly used for database management
+        Allows us to figure out what the file *will be*, mostly used for database management.
         """
 
         if network_name == LOCAL_NETWORK_NAME:
@@ -49,8 +49,7 @@ class CacheQueryProvider(QueryAPI):
             raise QueryEngineError("Database has already been initialized")
 
         # NOTE: Make sure database folder location has been created
-        database_file.parent.parent.mkdir(exist_ok=True)
-        database_file.parent.mkdir(exist_ok=True)
+        database_file.parent.mkdir(exist_ok=True, parents=True)
 
         models.Base.metadata.create_all(  # type: ignore
             bind=create_engine(self.get_sqlite_uri(database_file), pool_pre_ping=True)
@@ -89,7 +88,6 @@ class CacheQueryProvider(QueryAPI):
             logger.debug(f"Exception when querying:\n{e}")
             return None
 
-        # TODO: Are there any other errors to handle?
         except Exception as e:
             logger.warning(f"Unhandled exception when querying:\n{e}")
             return None

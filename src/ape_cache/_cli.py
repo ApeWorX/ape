@@ -14,7 +14,7 @@ def get_engine():
 @click.group(short_help="Query from caching database")
 def cli():
     """
-    Command-line helper for managing query caching database.
+    Manage query caching database.
     """
 
 
@@ -34,10 +34,10 @@ def init(network):
     short_help="Call and print SQL statement to the cache database",
 )
 @network_option()
-@click.argument("sql")
-def query(sql, network):
+@click.argument("query_str")
+def query(query_str, network):
     with get_engine().database_connection as conn:
-        results = conn.execute(sql).fetchall()
+        results = conn.execute(query_str).fetchall()
         if results:
             click.echo(pd.DataFrame(results))
 

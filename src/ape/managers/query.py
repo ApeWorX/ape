@@ -148,6 +148,6 @@ class QueryManager(ManagerAccessMixin):
                 try:
                     engine.update_cache(query, cache_data)
                 except QueryEngineError as err:
-                    logger.error(err)
+                    logger.error(str(err))
 
         return result
