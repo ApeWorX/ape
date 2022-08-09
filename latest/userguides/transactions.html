@@ -150,7 +150,19 @@ as we care about the contract instance. That is why the return value from
 
 <span class="k">def</span> <span class="nf">deploy</span><span class="p">():</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MyAccount&quot;</span><span class="p">)</span>
+    <span class="c1"># Assume you have a contract named `MyContract` in your project&#39;s contracts folder.</span>
     <span class="k">return</span> <span class="n">account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To get the receipt of a <code class="docutils literal notranslate"><span class="pre">deploy</span></code> transaction, use the <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractInstance.receipt">ContractInstance.receipt</a> property:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+
+<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+
+<span class="c1"># The receipt is available on the contract instance and has the expected sender.</span>
+<span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">receipt</span>
+<span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="n">dev</span>
 </pre></div>
 </div>
 <section id="deployment-from-ape-console">
