@@ -108,7 +108,7 @@ class QueryManager(ManagerAccessMixin):
         Args:
             query (``QueryType``): The type of query to execute
             engine_to_use (Optional[str]): Short-circuit selection logic using
-              a specific engine. Defaults to choosing based on selection logic.
+              a specific engine. Defaults is set by performance-based selection logic.
 
         Raises: :class:`~ape.exceptions.QueryEngineError`: When given an
             invalid or inaccessible ``engine_to_use`` value.

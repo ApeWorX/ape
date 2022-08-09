@@ -6,9 +6,9 @@ Use the cache plugin to store provider data in an sqlite database.
 ape cache init --network <your-choice-of-network>
 ```
 
-You will need to set-up your network connection that you want to work off of.
+You will need to set-up your network connection.
 
-For example, if you want to work off of the infura provider, you have to install the infura plugin.
+For example, if you want to work with an Infura provider, you need to install the Infura plugin.
 
 ```bash
 ape plugins install infura
@@ -37,7 +37,8 @@ In [1]: chain.blocks.query("*", stop_block=20)
 In [2]: chain.blocks[-2].transactions
 ```
 
-If you have a contract that you would like to get events from and you have made transactions:
+On a deployed contract, you can query events:
+- Below, FooHappened is the event from your contract instance that you want to query from.
 
 ```python
 contract_instance.FooHappened.query("*", start_block=-1)
