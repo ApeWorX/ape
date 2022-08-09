@@ -273,7 +273,7 @@ class LogInputABICollection:
         data_values = decode(data_abi_types, hex_data)
 
         for abi, value in zip(self.data, data_values):
-            decoded[abi.name] = value
+            decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 
         return decoded
 
