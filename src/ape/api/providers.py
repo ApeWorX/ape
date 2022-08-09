@@ -830,7 +830,11 @@ class Web3Provider(ProviderAPI, ABC):
             raise self.get_virtual_machine_error(err) from err
 
     def get_receipt(
-        self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
+        self,
+        txn_hash: str,
+        required_confirmations: int = 0,
+        timeout: Optional[int] = None,
+        raise_on_fail: bool = True,
     ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
@@ -874,7 +878,8 @@ class Web3Provider(ProviderAPI, ABC):
                 **receipt_data,
             }
         )
-        return receipt.await_confirmations()
+
+        return receipt.await_confirmations(raise_on_fail=raise_on_fail)
 
     def get_transactions_by_block(self, block_id: BlockID) -> Iterator:
         if isinstance(block_id, str):
@@ -934,10 +939,18 @@ class Web3Provider(ProviderAPI, ABC):
             else self.network.required_confirmations
         )
 
-        receipt = self.get_receipt(txn_hash.hex(), required_confirmations=required_confirmations)
-        receipt.raise_for_status()
+        receipt = self.get_receipt(
+            txn_hash.hex(),
+            required_confirmations=required_confirmations,
+            raise_on_fail=txn._raise_on_fail,
+        )
+
+        if txn._raise_on_fail:
+            receipt.raise_for_status()
+
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self._try_track_receipt(receipt)
+
         return receipt
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:

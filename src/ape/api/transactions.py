@@ -41,6 +41,9 @@ class TransactionAPI(BaseInterfaceModel):
     # If left as None, will get set to the network's default required confirmations.
     required_confirmations: Optional[int] = Field(None, exclude=True)
 
+    # If true, will cause a TransactionError to be raised if the transaction fails.
+    _raise_on_fail: bool = False
+
     signature: Optional[TransactionSignature] = Field(exclude=True)
 
     class Config:
@@ -249,19 +252,19 @@ class ReceiptAPI(BaseInterfaceModel):
         :class:`~api.providers.TransactionStatusEnum`.
         """
 
-    def await_confirmations(self) -> "ReceiptAPI":
+    def await_confirmations(self, raise_on_fail: bool = False) -> "ReceiptAPI":
         """
         Wait for a transaction to be considered confirmed.
+
+        Args:
+            raise_on_fail (bool): If true, causes a TransactionError to be
+                                  raised if the transaction has failed.
 
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
-
-        try:
+        if raise_on_fail:
             self.raise_for_status()
-        except TransactionError:
-            # Skip waiting for confirmations when the transaction has failed.
-            return self
 
         iterations_timeout = 20
         iteration = 0

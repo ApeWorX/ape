@@ -1,7 +1,7 @@
 import pytest
 
 from ape.api import ReceiptAPI
-from ape.exceptions import APINotImplementedError, OutOfGasError
+from ape.exceptions import APINotImplementedError, OutOfGasError, TransactionError
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
@@ -121,10 +121,20 @@ def test_decode_logs_unspecified_abi_gets_all_logs(owner, contract_instance):
 def test_get_failed_receipt(owner, vyper_contract_instance, eth_tester_provider):
     # Setting to '5' always fails.
     transaction = vyper_contract_instance.setNumber.as_transaction(
-        5, sender=owner, gas_limit=100000
+        5, sender=owner, gas_limit=100000, _raise_on_fail=False
     )
     receipt = owner.call(transaction)
     assert receipt.failed
+
+
+def test_get_failed_receipt_raise(owner, vyper_contract_instance, eth_tester_provider):
+    # Setting to '5' always fails.
+    transaction = vyper_contract_instance.setNumber.as_transaction(
+        5, sender=owner, gas_limit=100000, _raise_on_fail=True
+    )
+
+    with pytest.raises(TransactionError):
+        owner.call(transaction)
 
 
 def test_receipt_raise_for_status_out_of_gas_error(mocker, ethereum):
@@ -152,5 +162,6 @@ def test_receipt_raise_for_status_out_of_gas_error(mocker, ethereum):
         block_number=0,
         transaction=txn,
     )
+
     with pytest.raises(OutOfGasError):
         receipt.raise_for_status()
