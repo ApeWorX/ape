@@ -152,7 +152,7 @@ def vyper_contract_container(vyper_contract_type) -> ContractContainer:
 def vyper_contract_instance(
     owner, vyper_contract_container, networks_connected_to_tester
 ) -> ContractInstance:
-    return owner.deploy(vyper_contract_container)
+    return owner.deploy(vyper_contract_container, required_confirmations=0)
 
 
 @pytest.fixture(params=("solidity", "vyper"))
@@ -207,10 +207,10 @@ def project_with_contract(config):
 
 @pytest.fixture
 def clean_contracts_cache(chain):
-    original_cached_contracts = chain.contracts._local_contracts
-    chain.contracts._local_contracts = {}
+    original_cached_contracts = chain.contracts._local_contract_types
+    chain.contracts._local_contract_types = {}
     yield
-    chain.contracts._local_contracts = original_cached_contracts
+    chain.contracts._local_contract_types = original_cached_contracts
 
 
 @pytest.fixture
@@ -245,7 +245,7 @@ def mainnet_contract(chain):
             / f"{address}.json"
         )
         contract = ContractType.parse_file(path)
-        chain.contracts._local_contracts[address] = contract
+        chain.contracts._local_contract_types[address] = contract
         return contract
 
     return contract_getter
