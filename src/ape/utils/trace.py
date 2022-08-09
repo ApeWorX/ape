@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union
 
-from eth_abi import decode_abi
+from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_utils import humanize_hash, is_hex_address
 from ethpm_types.abi import MethodABI
@@ -218,7 +218,7 @@ class CallTraceParser:
         input_types = [i.canonical_type for i in method.inputs]  # type: ignore
 
         try:
-            raw_input_values = decode_abi(input_types, raw_data)
+            raw_input_values = decode(input_types, raw_data)
             input_values = [
                 self.decode_value(
                     self._ecosystem.decode_primitive_value(v, parse_type(t)),

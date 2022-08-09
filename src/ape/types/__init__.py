@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional, Union
 
-from eth_abi.abi import encode_single
-from eth_abi.packed import encode_single_packed
+from eth_abi.abi import encode
+from eth_abi.packed import encode_packed
 from eth_typing import ChecksumAddress as AddressType
 from eth_typing import HexStr
 from eth_utils import encode_hex, keccak
@@ -110,10 +110,11 @@ class LogFilter(BaseModel):
             if isinstance(value, (list, tuple)):
                 return [encode_topic_value(abi_type, v) for v in value]
             elif is_dynamic_sized_type(abi_type):
-                return encode_hex(keccak(encode_single_packed(str(abi_type)), value))
+                return encode_hex(keccak(encode_packed([str(abi_type)], [value])))
             elif abi_type == "address":
                 value = convert(value, AddressType)
-            return encode_hex(encode_single(abi_type, value))
+
+            return encode_hex(encode([abi_type], [value]))
 
         for topic in abi_inputs.topics:
             if topic.name in search_topics:
