@@ -1,14 +1,15 @@
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Iterator, Optional
 
 import pandas as pd
-import sqlalchemy.exc
 from sqlalchemy import create_engine
+from sqlalchemy.engine import CursorResult  # type: ignore
 from sqlalchemy.sql import text
+from sqlalchemy.sql.expression import TextClause
 
 from ape.api import QueryAPI, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.api.query import BlockQuery, BlockTransactionQuery, ContractEventQuery
+from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.utils import singledispatchmethod  # type: ignore
@@ -22,329 +23,249 @@ class CacheQueryProvider(QueryAPI):
     Allows for the query of blockchain data using connected provider
     """
 
+    # Database management
+    def get_database_file(self, ecosystem_name: str, network_name: str) -> Path:
+        """
+        Let's us figured out what the file *will be*, mostly used for database management
+        """
+
+        if network_name == LOCAL_NETWORK_NAME:
+            # NOTE: no need to cache local network, no use for data
+            raise QueryEngineError("Cannot cache local data")
+
+        if "-fork" in network_name:
+            # NOTE: send query to pull from upstream
+            network_name = network_name.replace("-fork", "")
+
+        return self.config_manager.DATA_FOLDER / ecosystem_name / network_name / "cache.db"
+
+    def get_sqlite_uri(self, database_file: Path) -> str:
+        return f"sqlite:///{database_file}"
+
+    def init_database(self, ecosystem_name: str, network_name: str):
+        database_file = self.get_database_file(ecosystem_name, network_name)
+        if database_file.is_file():
+            raise QueryEngineError("Database has already been initialized")
+
+        # NOTE: Make sure database folder location has been created
+        database_file.parent.parent.mkdir(exist_ok=True)
+        database_file.parent.mkdir(exist_ok=True)
+
+        models.Base.metadata.create_all(  # type: ignore
+            bind=create_engine(self.get_sqlite_uri(database_file), pool_pre_ping=True)
+        )
+
+    def purge_database(self, ecosystem_name: str, network_name: str):
+        database_file = self.get_database_file(ecosystem_name, network_name)
+        if not database_file.is_file():
+            raise QueryEngineError("Database must be initialized")
+
+        database_file.unlink()
+
+    # Operations
     @property
-    def database_file(self) -> Optional[Path]:
+    def database_connection(self):
+        """
+        Gets the currently active network's database, for actual usage
+        NOTE: Makes the database if it doesn't actually exist
+        """
+
         if not self.network_manager.active_provider:
-            return None
+            raise QueryEngineError("Not connected to a provider")
 
         ecosystem_name = self.provider.network.ecosystem.name
         network_name = self.provider.network.name
-        if network_name == LOCAL_NETWORK_NAME:
-            # Note: no need to cache local network, no use for data
+
+        database_file = self.get_database_file(ecosystem_name, network_name)
+        if not database_file.is_file():
+            raise QueryEngineError("Database has not been initialized")
+
+        try:
+            sqlite_uri = self.get_sqlite_uri(database_file)
+            return create_engine(sqlite_uri, pool_pre_ping=True).connect()
+
+        except QueryEngineError as e:
+            logger.debug(f"Exception when querying:\n{e}")
             return None
 
-        if "-fork" in network_name:
-            # Note: send query to pull from upstream
-            network_name = network_name.replace("-fork", "")
+        # TODO: Are there any other errors to handle?
+        except Exception as e:
+            logger.warning(f"Unhandled exception when querying:\n{e}")
+            return None
 
-        (self.config_manager.DATA_FOLDER / ecosystem_name).mkdir(exist_ok=True)
-
-        return self.config_manager.DATA_FOLDER / ecosystem_name / f"{network_name}.db"
-
-    @property
-    def sqlite_db(self):
-        if self.database_file:
-            return f"sqlite:///{self.database_file}"
-
-    def init_db(self):
-        if self.database_file.is_file():
-            raise QueryEngineError("Database has already been initialized")
-
-        models.Base.metadata.create_all(bind=create_engine(self.sqlite_db, pool_pre_ping=True))
-
-    def purge_db(self):
-        if not self.database_file.is_file():
-            # Add check here to show we have a file that exists
-            raise QueryEngineError("Database must be initialized")
-
-        self.database_file.unlink()
-
-    def _block_query(
-        self, query_stmt: str, query: Union[BlockQuery, ContractEventQuery]
-    ) -> Optional[Union[int, pd.DataFrame]]:
-        if self.database_file and self.database_file.is_file():
-            with create_engine(self.sqlite_db, pool_pre_ping=True).connect() as conn:
-                if "COUNT" in query_stmt:
-                    q = conn.execute(
-                        text(query_stmt),
-                        start_block=query.start_block,
-                        stop_block=query.stop_block,
-                        step=query.step,
-                    )
-                    return q.rowcount
-
-                elif "SELECT :" in query_stmt:
-                    q = conn.execute(
-                        text(query_stmt),
-                        columns=",".join(query.columns),
-                        start_block=query.start_block,
-                        stop_block=query.stop_block,
-                        step=query.step,
-                    )
-                    return pd.DataFrame(columns=query.columns, data=q.fetchall())
-
-            raise Exception("SELECT statement improperly set.")
-
-        return None
-
+    # Estimate query
     @singledispatchmethod
-    def table(self, query: QueryType):
+    def estimate_query_clause(self, query: QueryType) -> TextClause:
         raise QueryEngineError("Not a compatible QueryType")
 
-    @table.register
-    def block_table(self, query: BlockQuery) -> str:
-        return "blocks"
+    @estimate_query_clause.register
+    def block_estimate_query_clause(self, query: BlockQuery) -> TextClause:
+        return text(
+            """
+    SELECT COUNT(*)
+    FROM blocks
+    WHERE blocks.number >= :start_block
+    AND blocks.number <= :stop_block
+    AND blocks.number % :step = 0
+        """
+        ).bindparams(start_block=query.start_block, stop_block=query.stop_block, step=query.step)
 
-    @table.register
-    def transactions_table(self, query: BlockTransactionQuery) -> str:
-        return "transactions"
+    @estimate_query_clause.register
+    def transaction_estimate_query_clause(self, query: BlockTransactionQuery) -> TextClause:
+        return text(
+            """
+    SELECT COUNT(*)
+    FROM transactions
+    WHERE transactions.block_hash = :block_id
+        """
+        ).bindparams(block_hash=query.block_id)
 
-    @table.register
-    def contract_events_table(self, query: ContractEventQuery) -> str:
-        return "contract_events"
+    @estimate_query_clause.register
+    def contract_events_estimate_query_clause(self, query: ContractEventQuery) -> TextClause:
+        return text(
+            """
+    SELECT COUNT(*)
+    FROM contract_events
+    WHERE contract_events.block_number >= :start_block
+    AND contract_events.block_number <= :stop_block
+    AND contract_events.block_number % :step = 0
+        """
+        ).bindparams(start_block=query.start_block, stop_block=query.stop_block, step=query.step)
 
     @singledispatchmethod
-    def column(self, query: QueryType) -> str:
-        raise QueryEngineError("Not a compatible QueryType")
-
-    @column.register
-    def block_column(self, query: BlockQuery) -> str:
-        return "number"
-
-    @column.register
-    def block_transaction_column(self, query: BlockTransactionQuery) -> str:
-        return "block_hash"
-
-    @column.register
-    def contract_event_column(self, query: ContractEventQuery) -> str:
-        return "block_number"
-
-    @singledispatchmethod
-    def cache_query(self, query: QueryType) -> str:
-        raise QueryEngineError("Not a compatible QueryType")
-
-    @cache_query.register
-    def block_cache_query(self, query: BlockQuery) -> str:
-        return "SELECT * FROM blocks WHERE number = :val"
-
-    @cache_query.register
-    def block_transaction_cache_query(self, query: BlockTransactionQuery) -> str:
-        return "SELECT * FROM transactions WHERE block_hash = :val"
-
-    @cache_query.register
-    def contract_event_cache_query(self, query: ContractEventQuery) -> str:
-        return "SELECT * FROM contract_events WHERE block_number = :val"
-
-    @singledispatchmethod
-    def estimate_query_stmt(self, query: QueryType) -> str:
-        raise QueryEngineError("Not a compatible QueryType")
-
-    @estimate_query_stmt.register
-    def block_estimate_stmt(self, query: BlockQuery) -> str:
-        return """
-            SELECT COUNT(*)
-            FROM blocks
-            WHERE blocks.number >= :start_block
-            AND blocks.number <= :stop_block
-            AND blocks.number % :step = 0
-        """
-
-    @estimate_query_stmt.register
-    def transaction_estimate_stmt(self, query: BlockTransactionQuery) -> str:
-        return """
-            SELECT COUNT(*)
-            FROM transactions
-            WHERE transactions.block_hash = :block_id
-        """
-
-    @estimate_query_stmt.register
-    def contract_events_estimate_stmt(self, query: ContractEventQuery) -> str:
-        return """
-            SELECT COUNT(*)
-            FROM contract_events
-            WHERE contract_events.block_number >= :start_block
-            AND contract_events.block_number <= :stop_block
-            AND contract_events.block_number % :step = 0
-        """
-
-    @singledispatchmethod
-    def perform_query_stmt(self, query: QueryType) -> str:
-        raise QueryEngineError("Not a compatible QueryType")
-
-    @perform_query_stmt.register
-    def perform_block_stmt(self, query: BlockQuery) -> str:
-        return """
-            SELECT :columns
-            FROM blocks
-            WHERE blocks.number >= :start_block
-            AND blocks.number <= :stop_block
-            AND blocks.number % :step = 0
-        """
-
-    @perform_query_stmt.register
-    def perform_transaction_stmt(self, query: BlockTransactionQuery) -> str:
-        return """
-            SELECT :columns
-            FROM transactions
-            WHERE transactions.block_hash = :block_id
-        """
-
-    @perform_query_stmt.register
-    def perform_contract_event_stmt(self, query: ContractEventQuery) -> str:
-        return """
-            SELECT :columns
-            FROM contract_events
-            WHERE contract_events.block_number >= :start_block
-            AND contract_events.block_number <= :stop_block
-            AND contract_events.block_number % :step = 0
-        """
-
-    @singledispatchmethod
-    def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
+    def compute_estimate(self, result: CursorResult, query: QueryType) -> Optional[int]:
         return None  # can't handle this query
 
-    @estimate_query.register
-    def estimate_block_query(self, query: BlockQuery) -> Optional[int]:
-        try:
-            if (
-                self._block_query(self.estimate_query_stmt(query), query)
-                == (query.stop_block - query.start_block) // query.step
-            ):
-                # NOTE: Assume 200 msec to get data from database
-                return 200
-            # Can't handle this query
-            # TODO: Allow partial queries
-            return None
+    @compute_estimate.register
+    def compute_estimate_block_query(
+        self, result: CursorResult, query: BlockQuery
+    ) -> Optional[int]:
+        if result.rowcount == (query.stop_block - query.start_block) // query.step:
+            # NOTE: Assume 200 msec to get data from database
+            return 200
 
-        except Exception as err:
-            # Note: If any error, skip the data from the cache and continue to
-            #       query from provider.
-            logger.error(err)
-            return None
+        # Can't handle this query
+        # TODO: Allow partial queries
+        return None
 
-    @estimate_query.register
-    def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> Optional[int]:
-        if self.database_file and self.database_file.is_file():
-            try:
-                with create_engine(self.sqlite_db, pool_pre_ping=True).connect() as conn:
-                    q = conn.execute(
-                        text(self.estimate_query_stmt(query)),
-                        block_id=query.block_id,
-                    )
-                    if q.rowcount > 0:
-                        # NOTE: Assume 200 msec to get data from database
-                        return 200
-                    # Can't handle this query
-                    return None
+    @compute_estimate.register
+    def compute_estimate_block_transaction_query(
+        self,
+        result: CursorResult,
+        query: BlockTransactionQuery,
+    ) -> Optional[int]:
+        if result.rowcount > 0:
+            # NOTE: Assume 200 msec to get data from database
+            return 200
 
-            except Exception as err:
-                # Note: If any error, skip the data from the cache and continue to
-                #       query from provider.
-                logger.error(err)
+        # Can't handle this query
+        return None
+
+    @compute_estimate.register
+    def compute_estimate_contract_events_query(
+        self,
+        result: CursorResult,
+        query: ContractEventQuery,
+    ) -> Optional[int]:
+        if result.rowcount == (query.stop_block - query.start_block) // query.step:
+            # NOTE: Assume 200 msec to get data from database
+            return 200
+
+        # Can't handle this query
+        # TODO: Allow partial queries
+        return None
+
+    def estimate_query(self, query: QueryType) -> Optional[int]:
+        with self.database_connection as conn:
+            result = conn.execute(self.estimate_query_clause(query))
+
+            if not result:
                 return None
 
-        return None
+            return self.compute_estimate(result, query)
 
-    @estimate_query.register
-    def estimate_contract_events_query(self, query: ContractEventQuery) -> Optional[int]:
-        try:
-            if (
-                self._block_query(self.estimate_query_stmt(query), query)
-                == (query.stop_block - query.start_block) // query.step
-            ):
-                # NOTE: Assume 200 msec to get data from database
-                return 200
-            # Can't handle this query
-            # TODO: Allow partial queries
-            return None
+    # Fetch data
+    @singledispatchmethod
+    def perform_query_clause(self, query: QueryType) -> TextClause:
+        raise QueryEngineError("Not a compatible QueryType")
 
-        except Exception as err:
-            # Note: If any error, skip the data from the cache and continue to
-            #       query from provider.
-            logger.error(err)
-            return None
+    @perform_query_clause.register
+    def perform_block_clause(self, query: BlockQuery) -> TextClause:
+        return text(
+            """
+    SELECT :columns
+    FROM blocks
+    WHERE blocks.number >= :start_block
+    AND blocks.number <= :stop_block
+    AND blocks.number % :step = 0
+        """
+        ).bindparams(
+            columns=",".join(query.columns),
+            start_block=query.start_block,
+            stop_block=query.stop_block,
+            step=query.step,
+        )
+
+    @perform_query_clause.register
+    def perform_transaction_clause(self, query: BlockTransactionQuery) -> TextClause:
+        return text(
+            """
+    SELECT :columns
+    FROM transactions
+    WHERE transactions.block_hash = :block_id
+        """
+        ).bindparams(columns=",".join(query.columns), block_id=query.block_id)
+
+    @perform_query_clause.register
+    def perform_contract_event_clause(self, query: ContractEventQuery) -> TextClause:
+        return text(
+            """
+    SELECT :columns
+    FROM contract_events
+    WHERE contract_events.block_number >= :start_block
+    AND contract_events.block_number <= :stop_block
+    AND contract_events.block_number % :step = 0
+        """
+        ).bindparams(
+            columns=",".join(query.columns),
+            start_block=query.start_block,
+            stop_block=query.stop_block,
+            step=query.step,
+        )
+
+    def perform_query(self, query: QueryType) -> pd.DataFrame:
+        with self.database_connection as conn:
+            result = conn.execute(self.perform_query_clause(query))
+
+            if not result:
+                # NOTE: Should be unreachable if estimated correctly
+                raise QueryEngineError(f"Could not perform query:\n{query}")
+
+            # TODO: Fix this, should return an iterator
+            return pd.DataFrame(columns=query.columns, data=result.fetchall())
 
     @singledispatchmethod
-    def perform_query(self, query: QueryType) -> Optional[pd.DataFrame]:  # type: ignore
-        raise QueryEngineError(f"Cannot handle '{type(query)}'.")
+    def cache_update_clause(self, query: QueryType) -> Optional[TextClause]:
+        pass  # Can't cache this query
 
-    @perform_query.register
-    def perform_block_query(self, query: BlockQuery) -> Optional[pd.DataFrame]:
-        return self._block_query(self.perform_query_stmt(query), query)  # type: ignore
+    @cache_update_clause.register
+    def cache_update_block_clause(self, query: BlockQuery) -> Optional[TextClause]:
+        return text("INSERT INTO blocks")
 
-    @perform_query.register
-    def perform_transaction_query(self, query: BlockTransactionQuery) -> Optional[pd.DataFrame]:
-        if self.database_file and self.database_file.is_file():
-            with create_engine(self.sqlite_db, pool_pre_ping=True).connect() as conn:
-                q = conn.execute(
-                    text(self.perform_query_stmt(query)),
-                    columns=",".join(query.columns),
-                    start_block=query.block_id,
+    @cache_update_clause.register
+    def cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Optional[TextClause]:
+        return text("INSERT INTO transactions")
+
+    @cache_update_clause.register
+    def cache_update_events_clause(self, query: ContractEventQuery) -> Optional[TextClause]:
+        return text("INSERT INTO contract_events")
+
+    def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):
+        clause = self.cache_update_clause(query)
+        if clause:
+            logger.debug(f"Caching query: {query}")
+            with self.database_connection as conn:
+                conn.execute(
+                    clause.on_conflict_do_nothing(),  # type: ignore
+                    [m.dict() for m in result],
                 )
-                return pd.DataFrame(columns=query.columns, data=q.fetchall())
-
-        return None
-
-    @perform_query.register
-    def perform_contract_events_query(self, query: ContractEventQuery) -> Optional[pd.DataFrame]:
-        return self._block_query(self.perform_query_stmt(query), query)  # type: ignore
-
-    @singledispatchmethod
-    def get_dataframe(self, query: QueryType, result: List[Any]):
-        pass
-
-    @get_dataframe.register
-    def get_block_dataframe(self, query: BlockQuery, result: List[Any]):
-        return pd.DataFrame(
-            columns=query.columns,
-            data=[val for val in map(lambda val: val.dict(by_alias=False), result)],
-        )
-
-    @get_dataframe.register
-    def get_transaction_dataframe(self, query: BlockTransactionQuery, result: List[Any]):
-        df = pd.DataFrame(
-            columns=["receiver", "nonce", "sender"],
-            data=[(val.receiver, val.nonce, val.sender) for val in result],
-        )
-        df["block_hash"] = query.block_id
-        if query.columns != ["*"]:
-            df = df[[query.columns]]
-        return df
-
-    @get_dataframe.register
-    def get_contract_event_dataframe(self, query: ContractEventQuery, result: List[Any]):
-        return pd.DataFrame(
-            columns=query.columns,
-            data=[val for val in map(lambda val: val.dict(by_alias=False), result)],
-        )
-
-    def update_cache(self, query: QueryType, result: List[Any]) -> None:
-        if self.database_file and self.database_file.is_file():
-            df = self.get_dataframe(query, result)
-
-            try:
-                with create_engine(self.sqlite_db, pool_pre_ping=True).connect() as conn:
-                    for idx, row in df.iterrows():
-                        try:
-                            v = conn.execute(
-                                text(self.cache_query(query)),
-                                column=self.column(query),
-                                val=str(row[self.column(query)]),
-                            )
-                            if [i for i in v]:
-                                df = df[df[self.column(query)] != row[self.column(query)]]
-
-                            if df.empty:
-                                return
-
-                        except sqlalchemy.exc.OperationalError as err:
-                            logger.error(err)
-                            df.to_sql(self.table(query), conn, if_exists="append", index=False)
-                            return
-
-                    df.to_sql(self.table(query), conn, if_exists="append", index=False)
-
-            except Exception as err:
-                # Note: If any error, skip the data from the cache and continue to
-                #       query from provider.
-                logger.error(err)
