@@ -44,7 +44,7 @@ def full_contracts_cache(chain):
     for contract_type_file in mainnet_contracts_dir.iterdir():
         address = contract_type_file.stem
         contract_type = ContractType.parse_raw(contract_type_file.read_text())
-        chain.contracts._local_contracts[address] = contract_type
+        chain.contracts._local_contract_types[address] = contract_type
 
 
 @pytest.fixture(scope="module")
