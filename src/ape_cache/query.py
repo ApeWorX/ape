@@ -5,7 +5,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine import CursorResult  # type: ignore
 from sqlalchemy.sql import insert, text
-from sqlalchemy.sql.expression import TextClause
+from sqlalchemy.sql.expression import Insert, TextClause
 
 from ape.api import QueryAPI, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -252,19 +252,19 @@ class CacheQueryProvider(QueryAPI):
             return pd.DataFrame(columns=query.columns, data=result.fetchall())
 
     @singledispatchmethod
-    def cache_update_clause(self, query: QueryType) -> Optional[Any]:
+    def cache_update_clause(self, query: QueryType) -> Optional[Insert]:
         pass  # Can't cache this query
 
     @cache_update_clause.register
-    def cache_update_block_clause(self, query: BlockQuery) -> Optional[Any]:
+    def cache_update_block_clause(self, query: BlockQuery) -> Optional[Insert]:
         return insert(Blocks)
 
     @cache_update_clause.register
-    def cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Optional[Any]:
+    def cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Optional[Insert]:
         return insert(Transactions)
 
     @cache_update_clause.register
-    def cache_update_events_clause(self, query: ContractEventQuery) -> Optional[Any]:
+    def cache_update_events_clause(self, query: ContractEventQuery) -> Optional[Insert]:
         return insert(ContractEvents)
 
     @singledispatchmethod
