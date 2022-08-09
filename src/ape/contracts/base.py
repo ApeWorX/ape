@@ -589,7 +589,8 @@ class ContractInstance(BaseAddress):
         address = receipt.contract_address
         if not address:
             raise ContractError(
-                "Receipt missing 'contract_address' field. Was this from a deploy transaction?"
+                "Receipt missing 'contract_address' field. "
+                "Was this from a deploy transaction (e.g. `project.MyContract.deploy()`)?"
             )
 
         instance = cls(

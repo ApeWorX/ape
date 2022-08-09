@@ -5,7 +5,8 @@ from eth_utils import is_checksum_address
 from hexbytes import HexBytes
 
 from ape import Contract
-from ape.exceptions import ChainError
+from ape.contracts import ContractInstance
+from ape.exceptions import ChainError, ContractError
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
@@ -295,3 +296,13 @@ def test_receipt(contract_instance, owner):
     assert receipt.txn_hash == contract_instance.txn_hash
     assert receipt.contract_address == contract_instance.address
     assert receipt.sender == owner
+
+
+def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
+    receipt = contract_instance.setNumber(123, sender=owner)
+    expected_err = (
+        "Receipt missing 'contract_address' field. "
+        "Was this from a deploy transaction (e.g. `project.MyContract.deploy()`)?"
+    )
+    with pytest.raises(ContractError, match=expected_err):
+        ContractInstance.from_receipt(receipt, contract_instance.contract_type)
