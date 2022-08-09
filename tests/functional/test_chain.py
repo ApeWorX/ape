@@ -92,10 +92,8 @@ def test_snapshot_and_restore_unknown_snapshot_id(chain):
 
 def test_snapshot_and_restore_no_snapshots(chain):
     chain._snapshots = []  # Ensure empty (gets set in test setup)
-    with pytest.raises(ChainError) as err:
+    with pytest.raises(ChainError, match="There are no snapshots to revert to."):
         chain.restore()
-
-    assert "There are no snapshots to revert to." in str(err.value)
 
 
 def test_account_history(sender, receiver, chain):
@@ -188,12 +186,44 @@ def test_set_pending_timestamp_with_deltatime(chain):
 
 
 def test_set_pending_timestamp_failure(chain):
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(
+        ValueError, match="Cannot give both `timestamp` and `deltatime` arguments together."
+    ):
         chain.mine(
             timestamp=int(datetime.now().timestamp() + timedelta(seconds=10).seconds),
             deltatime=10,
         )
-    assert str(err.value) == "Cannot give both `timestamp` and `deltatime` arguments together."
+
+
+def test_cache_deployment_live_network(
+    chain,
+    vyper_contract_instance,
+    vyper_contract_container,
+    remove_disk_writes_deployments,
+    dummy_live_network,
+):
+    # Arrange - Ensure the contract is not cached anywhere
+    address = vyper_contract_instance.address
+    contract_name = vyper_contract_instance.contract_type.name
+    deployments = chain.contracts._deployments
+    contract_types = chain.contracts._local_contract_types
+    chain.contracts._local_contract_types = {
+        a: ct for a, ct in contract_types.items() if a != address
+    }
+    chain.contracts._deployments = {n: d for n, d in deployments.items() if n != contract_name}
+
+    # Act
+    chain.contracts.cache_deployment(vyper_contract_instance)
+
+    # Assert
+    actual_deployments = chain.contracts.get_deployments(vyper_contract_container)
+    actual_contract_type = chain.contracts._get_contract_type_from_disk(address)
+    expected = vyper_contract_instance.contract_type
+    assert len(actual_deployments) == 1
+    assert actual_deployments[0].address == address
+    assert actual_deployments[0].txn_hash == vyper_contract_instance.txn_hash
+    assert chain.contracts.get(address) == expected
+    assert actual_contract_type == expected
 
 
 def test_contract_caches_default_contract_type_when_used(solidity_contract_instance, chain, config):

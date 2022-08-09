@@ -152,7 +152,7 @@ def vyper_contract_container(vyper_contract_type) -> ContractContainer:
 def vyper_contract_instance(
     owner, vyper_contract_container, networks_connected_to_tester
 ) -> ContractInstance:
-    return owner.deploy(vyper_contract_container)
+    return owner.deploy(vyper_contract_container, required_confirmations=0)
 
 
 @pytest.fixture(params=("solidity", "vyper"))
