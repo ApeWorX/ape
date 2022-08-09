@@ -2,7 +2,7 @@ import re
 from dataclasses import make_dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from eth_abi import decode, decode_single, grammar
+from eth_abi import decode, grammar
 from eth_utils import decode_hex, to_checksum_address
 from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, EventABI, EventABIType, MethodABI
@@ -265,15 +265,15 @@ class LogInputABICollection:
             # reference types as indexed arguments are written as a hash
             # https://docs.soliditylang.org/en/v0.8.15/contracts.html#events
             abi_type = "bytes32" if is_dynamic_sized_type(abi.type) else abi.canonical_type
-            decoded[abi.name] = self.decode_value(
-                abi_type, decode_single(abi_type, decode_hex(topic_value))
-            )
+            value = decode([abi_type], decode_hex(topic_value))[0]
+            decoded[abi.name] = self.decode_value(abi_type, value)
 
         data_abi_types = [abi.canonical_type for abi in self.data]
         hex_data = decode_hex(data) if isinstance(data, str) else data
         data_values = decode(data_abi_types, hex_data)
+
         for abi, value in zip(self.data, data_values):
-            decoded[abi.name] = self.decode_value(abi.canonical_type, value)
+            decoded[abi.name] = value
 
         return decoded
 
