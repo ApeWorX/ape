@@ -5,7 +5,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine import CursorResult  # type: ignore
 from sqlalchemy.sql import insert, text
-from sqlalchemy.sql.expression import Insert, TextClause
+from sqlalchemy.sql.expression import TextClause
 
 from ape.api import QueryAPI, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
