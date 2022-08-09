@@ -581,7 +581,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     @property
     def _network_config(self) -> Dict:
-        return self.config.dict().get(self.name, {})
+        return self.config.get(self.name, {})
 
     @property
     def chain_id(self) -> int:
