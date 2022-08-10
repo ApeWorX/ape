@@ -321,13 +321,13 @@ class CacheQueryProvider(QueryAPI):
         clause = self.cache_update_clause(query)
         if str(clause):
             logger.debug(f"Caching query: {query}")
-            try:
-                with self.database_connection as conn:
+            with self.database_connection as conn:
+                try:
                     conn.execute(
                         clause.values(  # type: ignore
                             self.get_cache_data(query, result)
                         ).prefix_with("OR IGNORE")
                     )
 
-            except QueryEngineError as err:
-                logger.warning(f"Database not initiated to be able to cache: {err}")
+                except QueryEngineError as err:
+                    logger.warning(f"Database corruption: {err}")
