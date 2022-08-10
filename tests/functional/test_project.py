@@ -80,6 +80,9 @@ def test_extract_manifest(dependency_config, project_manager):
     manifest = project_manager.extract_manifest()
     assert type(manifest) == PackageManifest
     assert type(manifest.compilers) == list
+    assert manifest.meta == project_manager.meta
+    assert manifest.compilers == project_manager.compiler_data
+    assert manifest.deployments == project_manager.package_deployments
 
 
 def test_meta(temp_config, project_manager):
