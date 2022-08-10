@@ -20,8 +20,8 @@ from .models import Blocks, ContractEvents, Transactions
 
 class CacheQueryProvider(QueryAPI):
     """
-    Default implementation of the ape.api.query.QueryAPI
-    Allows for the query of blockchain data using connected provider
+    Default implementation of the :class:`~ape.api.query.QueryAPI`.
+    Allows for the query of blockchain data using a connected provider.
     """
 
     # Database management
