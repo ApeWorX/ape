@@ -7,7 +7,7 @@ class Blocks(Base):
     __tablename__ = "blocks"  # type: ignore
 
     hash = Column(String, primary_key=True, nullable=False)
-    num_transactions = Column(String, nullable=False)
+    num_transactions = Column(Integer, nullable=False)
     number = Column(Integer, nullable=False, index=True)
     parent_hash = Column(String, nullable=False)
     size = Column(Integer, nullable=False)
