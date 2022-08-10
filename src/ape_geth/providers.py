@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Iterator, Optional, Union
+from typing import Dict, Iterator, Optional, Union
 
 import ijson  # type: ignore
 import requests
@@ -24,7 +24,6 @@ from web3.exceptions import ExtraDataLengthError
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
-from web3.types import RPCEndpoint
 from yarl import URL
 
 from ape.api import PluginConfig, UpstreamProvider, Web3Provider
