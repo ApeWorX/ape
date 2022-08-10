@@ -4,6 +4,7 @@ from typing import Dict
 
 import pytest
 import yaml
+from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types.manifest import PackageManifest
 
 from ape.managers.project import BrownieProject
@@ -101,3 +102,24 @@ def test_brownie_project_configure(config, base_projects_directory):
     assert mapped_config_data["dependencies"][0]["version"] == "3.1.0"
 
     expected_config_file.unlink()
+
+
+def test_track_deployment(
+    project_manager, vyper_contract_instance, dummy_live_network, eth_tester_provider
+):
+    build_folder = project_manager._project._cache_folder / "deployments"
+    expected_location = build_folder / f"{vyper_contract_instance.address}.json"
+    expected_block = eth_tester_provider.get_block(
+        vyper_contract_instance.receipt.block_number
+    ).hash.hex()
+    if expected_location.is_file():
+        expected_location.unlink()
+
+    project_manager.track_deployment(vyper_contract_instance)
+
+    actual = EthPMContractInstance.parse_raw(expected_location.read_text())
+    assert actual.address == vyper_contract_instance.address
+    assert actual.block == expected_block
+    assert actual.contract_type == vyper_contract_instance.contract_type.name
+    assert actual.transaction == vyper_contract_instance.txn_hash
+    assert actual.runtime_bytecode == vyper_contract_instance.contract_type.runtime_bytecode

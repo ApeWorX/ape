@@ -14,6 +14,7 @@ from hexbytes import HexBytes
 
 import ape
 from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError
 from ape.logging import LogLevel
@@ -389,3 +390,10 @@ def use_debug(logger):
     logger.set_level(LogLevel.DEBUG)
     yield
     logger.set_level(initial_level)
+
+
+@pytest.fixture
+def dummy_live_network(chain):
+    chain.provider.network.name = "rinkeby"
+    yield
+    chain.provider.network.name = LOCAL_NETWORK_NAME

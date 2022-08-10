@@ -2,10 +2,13 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Type, Union
 
-from ethpm_types import Compiler, ContractType, PackageManifest, PackageMeta
+from ethpm_types import Compiler
+from ethpm_types import ContractInstance as EthPMContractInstance
+from ethpm_types import ContractType, PackageManifest, PackageMeta
 
 from ape.api import DependencyAPI, ProjectAPI
-from ape.contracts import ContractContainer, ContractNamespace
+from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
 from ape.exceptions import ProjectError
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
@@ -437,6 +440,49 @@ class ProjectManager(BaseManager):
 
         self._cached_dependencies[self.path.name] = dependencies
         return dependencies
+
+    def track_deployment(self, contract: ContractInstance):
+        """
+        Indicate that a contract deployment should be included in the package manifest
+        upon publication.
+
+        **NOTE**: Deployments are automatically tracked for contracts. However, only
+        deployments passed to this method are included in the final, publishable manifest.
+
+        Args:
+            contract (:class:`~ape.contracts.base.ContractInstance`): The contract
+              to track as a deployment of the project.
+        """
+
+        network = self.provider.network.name
+        if network == LOCAL_NETWORK_NAME or network.endswith("-fork"):
+            raise ProjectError("Can only publish deployments on a live network.")
+
+        contract_name = contract.contract_type.name
+        receipt = contract.receipt
+        if not receipt:
+            raise ProjectError(f"Contract '{contract_name}' transaction receipt is unknown.")
+
+        block_number = receipt.block_number
+        block_hash_bytes = self.provider.get_block(block_number).hash
+        if not block_hash_bytes:
+            # Mostly for mypy, not sure this can ever happen.
+            raise ProjectError(
+                f"Block hash containing transaction for '{contract_name}' "
+                f"at block_number={block_number} is unknown."
+            )
+
+        artifact = EthPMContractInstance(
+            address=contract.address,
+            block=block_hash_bytes.hex(),
+            contractType=contract_name,
+            transaction=contract.txn_hash,
+            runtimeBytecode=contract.contract_type.runtime_bytecode,
+        )
+        deployments_folder = self._project._cache_folder / "deployments"
+        deployments_folder.mkdir(exist_ok=True)
+        destination = deployments_folder / f"{contract.address}.json"
+        destination.write_text(artifact.json())
 
     def _get_contract(self, name: str) -> Optional[ContractContainer]:
         if name in self.contracts:

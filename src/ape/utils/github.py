@@ -42,7 +42,7 @@ class GithubClient:
     @cached_property
     def available_plugins(self) -> Set[str]:
         """
-        The available ``ape`` plugins, found from looking at the ``ApeWorx`` Github organization.
+        The available ``ape`` plugins, found from looking at the ``ApeWorX`` Github organization.
 
         Returns:
             Set[str]: The plugin names as ``'ape_plugin_name'`` (module-like).
