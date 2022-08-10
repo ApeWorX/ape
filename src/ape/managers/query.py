@@ -117,7 +117,6 @@ class QueryManager(ManagerAccessMixin):
             Iterator[BaseInterfaceModel]
         """
 
-        breakpoint()
         if engine_to_use:
             if engine_to_use not in self.engines:
                 raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")
