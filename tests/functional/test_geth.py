@@ -40,6 +40,16 @@ def create_geth(network, web3):
     return provider
 
 
+@pytest.fixture
+def eth_tester_provider_geth(eth_tester_provider, networks):
+    """Geth using eth-tester provider"""
+    provider = create_geth(eth_tester_provider.network, eth_tester_provider.web3)
+    init_provider = networks.active_provider
+    networks.active_provider = provider
+    yield provider
+    networks.active_provider = init_provider
+
+
 def test_send_when_web3_error_raises_transaction_error(geth_provider, mock_web3, mock_transaction):
     web3_error_data = {
         "code": -32000,
@@ -113,17 +123,9 @@ def test_repr_connected(mock_web3, geth_provider):
     assert repr(geth_provider) == "<geth chain_id=123>"
 
 
-def test_get_logs_when_connected_to_geth(
-    networks, vyper_contract_instance, eth_tester_provider, owner
-):
-    provider = create_geth(eth_tester_provider.network, eth_tester_provider.web3)
-    init_provider = networks.active_provider
-    networks.active_provider = provider
-
+def test_get_logs_when_connected_to_geth(vyper_contract_instance, eth_tester_provider_geth, owner):
     vyper_contract_instance.setNumber(123, sender=owner)
-    actual = vyper_contract_instance.NumberChange[0]
+    actual = vyper_contract_instance.NumberChange[-1]
     assert actual.event_name == "NumberChange"
     assert actual.contract_address == "0xF7F78379391C5dF2Db5B66616d18fF92edB82022"
     assert actual.event_arguments["newNum"] == 123
-
-    networks.active_provider = init_provider
