@@ -239,15 +239,19 @@ class CacheQueryProvider(QueryAPI):
         )
 
     def perform_query(self, query: QueryType) -> pd.DataFrame:
-        with self.database_connection as conn:
-            result = conn.execute(self.perform_query_clause(query))
+        try:
+            with self.database_connection as conn:
+                result = conn.execute(self.perform_query_clause(query))
 
-            if not result:
-                # NOTE: Should be unreachable if estimated correctly
-                raise QueryEngineError(f"Could not perform query:\n{query}")
+                if not result:
+                    # NOTE: Should be unreachable if estimated correctly
+                    raise QueryEngineError(f"Could not perform query:\n{query}")
 
-            # TODO: Fix this, should return an iterator
-            return pd.DataFrame(columns=query.columns, data=result.fetchall())
+                # TODO: Fix this, should return an iterator
+                return pd.DataFrame(columns=query.columns, data=result.fetchall())
+
+        except QueryEngineError as err:
+            logger.error(f"Database not initiated: {str(err)}")
 
     @singledispatchmethod
     def cache_update_clause(self, query: QueryType) -> Optional[Insert]:
@@ -302,9 +306,13 @@ class CacheQueryProvider(QueryAPI):
         clause = self.cache_update_clause(query)
         if str(clause):
             logger.debug(f"Caching query: {query}")
-            with self.database_connection as conn:
-                conn.execute(
-                    clause.values(self.get_cache_data(query, result)).prefix_with(  # type: ignore
-                        "OR IGNORE"
+            try:
+                with self.database_connection as conn:
+                    conn.execute(
+                        clause.values(self.get_cache_data(query, result)).prefix_with(  # type: ignore
+                            "OR IGNORE"
+                        )
                     )
-                )
+
+            except QueryEngineError as err:
+                logger.error(f"Database not initiated: {err}")
