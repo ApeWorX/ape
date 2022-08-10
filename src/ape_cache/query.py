@@ -66,8 +66,8 @@ class CacheQueryProvider(QueryAPI):
     @property
     def database_connection(self):
         """
-        Gets the currently active network's database, for actual usage
-        NOTE: Makes the database if it doesn't actually exist
+        Returns a connection for the currently active network.
+        NOTE: Creates a database if it doesn't exist.
         """
 
         if not self.network_manager.active_provider:
@@ -95,7 +95,7 @@ class CacheQueryProvider(QueryAPI):
     # Estimate query
     @singledispatchmethod
     def estimate_query_clause(self, query: QueryType) -> TextClause:
-        raise QueryEngineError("Not a compatible QueryType")
+        raise QueryEngineError("Not a compatible QueryType.")
 
     @estimate_query_clause.register
     def block_estimate_query_clause(self, query: BlockQuery) -> TextClause:
@@ -186,7 +186,7 @@ class CacheQueryProvider(QueryAPI):
 
                 return self.compute_estimate(result, query)
         except QueryEngineError as err:
-            logger.error(f"Cannot perform query: {err}")
+            logger.warning(f"Cannot perform query on cache database: {err}")
             return None
 
     # Fetch data
@@ -315,4 +315,4 @@ class CacheQueryProvider(QueryAPI):
                     )
 
             except QueryEngineError as err:
-                logger.error(f"Database not initiated: {err}")
+                logger.warning(f"Database not initiated to be able to cache: {err}")
