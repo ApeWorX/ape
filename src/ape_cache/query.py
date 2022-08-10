@@ -323,6 +323,7 @@ class CacheQueryProvider(QueryAPI):
             logger.debug(f"Caching query: {query}")
             with self.database_connection as conn:
                 try:
+                    breakpoint()
                     conn.execute(
                         clause.values(  # type: ignore
                             self.get_cache_data(query, result)
