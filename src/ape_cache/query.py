@@ -278,7 +278,12 @@ class CacheQueryProvider(QueryAPI):
     def get_cache_data(
         self, query: QueryType, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
-        raise QueryEngineError("Cannot unpack this QueryType")
+        raise QueryEngineError(
+            """
+            Not a compatible QueryType. For more details see our docs
+            https://docs.apeworx.io/ape/stable/methoddocs/exceptions.html#ape.exceptions.QueryEngineError
+            """
+        )
 
     @get_cache_data.register
     def get_block_cache_data(
