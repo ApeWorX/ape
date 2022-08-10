@@ -192,7 +192,12 @@ class CacheQueryProvider(QueryAPI):
     # Fetch data
     @singledispatchmethod
     def perform_query_clause(self, query: QueryType) -> TextClause:
-        raise QueryEngineError("Not a compatible QueryType")
+        raise QueryEngineError(
+            """
+            Not a compatible QueryType. For more details see our docs
+            https://docs.apeworx.io/ape/stable/methoddocs/exceptions.html#ape.exceptions.QueryEngineError
+            """
+        )
 
     @perform_query_clause.register
     def perform_block_clause(self, query: BlockQuery) -> TextClause:
