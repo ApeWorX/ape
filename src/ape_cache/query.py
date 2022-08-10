@@ -238,7 +238,7 @@ class CacheQueryProvider(QueryAPI):
             step=query.step,
         )
 
-    def perform_query(self, query: QueryType) -> pd.DataFrame:
+    def perform_query(self, query: QueryType) -> Optional[pd.DataFrame]:  # type: ignore
         try:
             with self.database_connection as conn:
                 result = conn.execute(self.perform_query_clause(query))
@@ -309,9 +309,9 @@ class CacheQueryProvider(QueryAPI):
             try:
                 with self.database_connection as conn:
                     conn.execute(
-                        clause.values(self.get_cache_data(query, result)).prefix_with(  # type: ignore
-                            "OR IGNORE"
-                        )
+                        clause.values(  # type: ignore
+                            self.get_cache_data(query, result)
+                        ).prefix_with("OR IGNORE")
                     )
 
             except QueryEngineError as err:
