@@ -31,9 +31,10 @@ The following configuration changes the default ecosystem, network, and provider
 
 ```yaml
 default_ecosystem: <ecosystem-name>
-fantom:
+
+<ecosystem-name>:
   default_network: <network-name>
-  testnet:
+  <network-name>:
     default_provider: <provider-name>
 ```
 
