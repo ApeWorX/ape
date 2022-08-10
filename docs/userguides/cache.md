@@ -17,7 +17,7 @@ ape plugins install infura
 Then, to connect to the mainnet:
 
 ```bash
-ape cache init --network ethereum:mainnet:infura
+ape cache init --network ethereum:mainnet
 ```
 
 This creates a SQLite database file in the hidden ape folder.
@@ -50,7 +50,7 @@ See [this guide](../userguides/contracts.html) for more information how to get a
 
 Exit the IPython interpreter.
 
-To get the `blocks` table data from the SQLite db.
+You can query the cache database directly, for debugging purposes. For example, to get the `blocks` table data from the SQLite db we can do the following:
 ```bash
 ape cache query --network ethereum:mainnet:infura "SELECT * FROM blocks"
 ```
