@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Iterator, Optional, Union
+from typing import Dict, Iterator, Optional, Union
 
 import ijson  # type: ignore
 import requests
@@ -24,7 +24,6 @@ from web3.exceptions import ExtraDataLengthError
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
-from web3.types import RPCEndpoint
 from yarl import URL
 
 from ape.api import PluginConfig, UpstreamProvider, Web3Provider
@@ -296,18 +295,11 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
     def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
         def _get_call_tree_from_parity():
-            response = self._make_request("trace_transaction", [txn_hash])
-            if "error" in response:
-                raise ProviderError(
-                    response["error"].get("message", f"Failed to get trace for '{txn_hash}'.")
-                )
-
-            raw_trace_list = response.get("result", [])
-
-            if not raw_trace_list:
+            result = self._make_request("trace_transaction", [txn_hash])
+            if not result:
                 raise ProviderError(f"Failed to get trace for '{txn_hash}'.")
 
-            traces = ParityTraceList.parse_obj(raw_trace_list)
+            traces = ParityTraceList.parse_obj(result)
             return get_calltree_from_parity_trace(traces)
 
         if "erigon" in self.client_version.lower():
@@ -319,6 +311,3 @@ class GethProvider(Web3Provider, UpstreamProvider):
         except ValueError:
             frames = self.get_transaction_trace(txn_hash)
             return get_calltree_from_geth_trace(frames, **root_node_kwargs)
-
-    def _make_request(self, rpc: str, args: list) -> Any:
-        return self.web3.provider.make_request(RPCEndpoint(rpc), args)

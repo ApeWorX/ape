@@ -339,7 +339,9 @@ class ContractEvent(ManagerAccessMixin):
 
     @property
     def log_filter(self):
-        return LogFilter(addresses=[self.contract], events=[self.abi])
+        return LogFilter.from_event(
+            event=self.abi, addresses=[self.contract.address], start_block=0
+        )
 
     @singledispatchmethod
     def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
