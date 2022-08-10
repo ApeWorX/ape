@@ -127,5 +127,5 @@ def test_get_logs_when_connected_to_geth(vyper_contract_instance, eth_tester_pro
     vyper_contract_instance.setNumber(123, sender=owner)
     actual = vyper_contract_instance.NumberChange[-1]
     assert actual.event_name == "NumberChange"
-    assert actual.contract_address == "0xF7F78379391C5dF2Db5B66616d18fF92edB82022"
+    assert actual.contract_address == vyper_contract_instance.address
     assert actual.event_arguments["newNum"] == 123
