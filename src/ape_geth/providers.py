@@ -319,6 +319,3 @@ class GethProvider(Web3Provider, UpstreamProvider):
         except ValueError:
             frames = self.get_transaction_trace(txn_hash)
             return get_calltree_from_geth_trace(frames, **root_node_kwargs)
-
-    def _make_request(self, rpc: str, args: list) -> Any:
-        return self.web3.provider.make_request(RPCEndpoint(rpc), args)
