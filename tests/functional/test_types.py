@@ -76,6 +76,16 @@ def test_contract_log_serialization_with_hex_strings_and_non_checksum_addresses(
     assert obj.transaction_index == TXN_INDEX
 
 
+def test_contract_log_str(log):
+    obj = ContractLog.parse_obj(log.dict())
+    assert str(obj) == "MyEvent foo=0 bar=1"
+
+
+def test_contract_log_repr(log):
+    obj = ContractLog.parse_obj(log.dict())
+    assert repr(obj) == "<MyEvent foo=0 bar=1>"
+
+
 def test_contract_log_access(log):
     assert "foo" in log
     assert "bar" in log

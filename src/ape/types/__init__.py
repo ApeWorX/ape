@@ -193,6 +193,9 @@ class ContractLog(BaseModel):
         args = " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
         return f"{self.event_name} {args}"
 
+    def __repr__(self) -> str:
+        return f"<{str(self)}>"
+
     def __getattr__(self, item: str) -> Any:
         """
         Access properties from the log via ``.`` access.
