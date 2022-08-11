@@ -1,6 +1,6 @@
 import sys
 import time
-from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
+from typing import Any, IO, TYPE_CHECKING, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
@@ -27,6 +27,7 @@ class TransactionAPI(BaseInterfaceModel):
     """
 
     chain_id: int = Field(0, alias="chainId")
+    hash: Any = Field(None, alias="txn_hash")
     receiver: Optional[AddressType] = Field(None, alias="to")
     sender: Optional[AddressType] = Field(None, alias="from")
     gas_limit: Optional[int] = Field(None, alias="gas")
