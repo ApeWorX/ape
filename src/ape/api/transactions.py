@@ -254,8 +254,8 @@ class ReceiptAPI(BaseInterfaceModel):
         Wait for a transaction to be considered confirmed.
 
         Args:
-            raise_on_fail (bool): If true, causes a TransactionError to be
-                                  raised if the transaction has failed.
+            raise_on_fail (bool): If ``True``, causes a :class:`~ape.exceptions.TransactionError`
+              to be raised if the transaction has failed.
 
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
