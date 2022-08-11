@@ -639,6 +639,24 @@ class Web3Provider(ProviderAPI, ABC):
         self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
+        """
+        Estimate the cost of gas for a transaction.
+
+        Args:
+            txn (:class:`~ape.api.transactions.TransactionAPI`):
+                The transaction to estimate the gas for.
+            kwargs:
+                * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
+                  to use when estimating the transaction. Useful for
+                  checking a past estimation cost of a transaction.
+                * ``state_overrides`` (Dict): Modify the state of the blockchain
+                  prior to estimation.
+
+        Returns:
+            int: The estimated cost of gas to execute the transaction
+            reported in the fee-currency's smallest unit, e.g. Wei.
+        """
+
         txn_dict = txn.dict()
         try:
             block_id = kwargs.pop("block_identifier", None)
@@ -685,6 +703,19 @@ class Web3Provider(ProviderAPI, ABC):
         return self.network.ecosystem.decode_block(block_data)
 
     def get_nonce(self, address: str, **kwargs) -> int:
+        """
+        Get the number of times an account has transacted.
+
+        Args:
+            address (str): The address of the account.
+            kwargs:
+                * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
+                  for checking a previous account nonce.
+
+        Returns:
+            int
+        """
+
         block_id = kwargs.pop("block_identifier", None)
         return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
@@ -695,6 +726,20 @@ class Web3Provider(ProviderAPI, ABC):
         return self.web3.eth.get_code(address)
 
     def get_storage_at(self, address: str, slot: int, **kwargs) -> bytes:
+        """
+        Gets the raw value of a storage slot of a contract.
+
+        Args:
+            address (str): The address of the contract.
+            slot (int): Storage slot to read the value of.
+            kwargs:
+                * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
+                  for checking previous contract storage values.
+
+        Returns:
+            bytes: The value of the storage slot.
+        """
+
         block_id = kwargs.pop("block_identifier", None)
         try:
             return self.web3.eth.get_storage_at(
@@ -707,6 +752,23 @@ class Web3Provider(ProviderAPI, ABC):
             raise  # Raise original error
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
+        """
+        Execute a new transaction call immediately without creating a
+        transaction on the block chain.
+
+        Args:
+            txn: :class:`~ape.api.transactions.TransactionAPI`
+            kwargs:
+                * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
+                  to use to send a call at a historical point of a contract.
+                  checking a past estimation cost of a transaction.
+                * ``state_overrides`` (Dict): Modify the state of the blockchain
+                  prior to sending the call, for testing purposes.
+
+        Returns:
+            str: The result of the transaction call.
+        """
+
         try:
             block_id = kwargs.pop("block_identifier", None)
             state = kwargs.pop("state_override", None)
@@ -718,6 +780,21 @@ class Web3Provider(ProviderAPI, ABC):
     def get_transaction(
         self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
     ) -> ReceiptAPI:
+        """
+        Get the information about a transaction from a transaction hash.
+
+        Args:
+            txn_hash (str): The hash of the transaction to retrieve.
+            required_confirmations (int): The amount of block confirmations
+              to wait before returning the receipt.
+            timeout (Optional[int]): The amount of time to wait for a receipt
+              before timing out.
+
+        Returns:
+            :class:`~api.providers.ReceiptAPI`:
+            The receipt of the transaction with the given hash.
+        """
+
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
 
