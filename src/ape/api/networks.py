@@ -574,9 +574,11 @@ class NetworkAPI(BaseInterfaceModel):
         try:
             chain_id = self.chain_id
         except ProviderNotConnectedError:
+            # Only happens on local networks
             chain_id = None
 
-        content = f"{self.name} chain_id={self.chain_id}" if chain_id is not None else self.name
+        network_key = f"{self.ecosystem.name}:{self.name}"
+        content = f"{network_key} chain_id={self.chain_id}" if chain_id is not None else network_key
         return f"<{content}>"
 
     @property
