@@ -12,7 +12,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
-from ape.utils import singledispatchmethod  # type: ignore
+from ape.utils import singledispatchmethod
 
 from . import models
 from .models import Blocks, ContractEvents, Transactions
