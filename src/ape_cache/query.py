@@ -198,10 +198,9 @@ class CacheQueryProvider(QueryAPI):
     @singledispatchmethod
     def perform_query_clause(self, query: QueryType) -> TextClause:
         raise QueryEngineError(
-            """
-            Not a compatible QueryType. For more details see our docs
-            https://docs.apeworx.io/ape/stable/methoddocs/exceptions.html#ape.exceptions.QueryEngineError
-            """
+            "Not a compatible QueryType. For more details see our docs "
+            "https://docs.apeworx.io/ape/stable/methoddocs/"
+            "exceptions.html#ape.exceptions.QueryEngineError"
         )
 
     @perform_query_clause.register
