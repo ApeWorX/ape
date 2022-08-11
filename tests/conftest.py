@@ -128,8 +128,8 @@ def networks_disconnected(networks):
 
 
 @pytest.fixture(scope="session")
-def ethereum(networks_connected_to_tester):
-    return networks_connected_to_tester.ethereum
+def ethereum(networks):
+    return networks.ethereum
 
 
 @pytest.fixture(scope="session")
