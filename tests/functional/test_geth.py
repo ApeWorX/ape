@@ -113,9 +113,14 @@ def test_get_call_tree_erigon(mock_web3, geth_provider, trace_response):
     )
 
 
-def test_repr_disconnected(networks):
+def test_repr_on_local_network_and_disconnected(networks):
     geth = networks.get_provider_from_choice("ethereum:local:geth")
     assert repr(geth) == "<geth>"
+
+
+def test_repr_on_live_network_and_disconnected(networks):
+    geth = networks.get_provider_from_choice("ethereum:rinkeby:geth")
+    assert repr(geth) == "<geth chain_id=4>"
 
 
 def test_repr_connected(mock_web3, geth_provider):
