@@ -189,12 +189,15 @@ class ContractLog(BaseModel):
 
         return convert(value, AddressType)
 
+    @property
+    def _event_args_str(self) -> str:
+        return " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
+
     def __str__(self) -> str:
-        args = " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
-        return f"{self.event_name} {args}"
+        return f"{self.event_name}({self._event_args_str})"
 
     def __repr__(self) -> str:
-        return f"<{str(self)}>"
+        return f"<{self.event_name} {self._event_args_str}>"
 
     def __getattr__(self, item: str) -> Any:
         """
