@@ -1,8 +1,6 @@
 from sqlalchemy import JSON, BigInteger, Column, ForeignKey, Integer, LargeBinary, Numeric
 from sqlalchemy.types import String, TypeDecorator
 
-from ape.api.address import Address, BaseAddress
-
 from .base import Base
 
 
@@ -18,23 +16,6 @@ class HexByteString(TypeDecorator):
 
     def process_result_value(self, value, dialect):
         return bytes.fromhex(value) if value else None
-
-
-class AddressString(TypeDecorator):
-    """
-    Convert Python :class:`~ape.types.BaseAddress` string to
-    string with hexadecimal digits and back for storage.
-    """
-
-    impl = String
-
-    def process_bind_param(self, value, dialect):
-        if not isinstance(value, BaseAddress):
-            raise TypeError("AddressString columns support only bytes values.")
-        return value.address
-
-    def process_result_value(self, value, dialect):
-        return Address(value) if value else None
 
 
 class Blocks(Base):
@@ -57,15 +38,15 @@ class Transactions(Base):
     __tablename__ = "transactions"  # type: ignore
 
     hash = Column(HexByteString, primary_key=True, index=True)
-    sender = Column(AddressString, nullable=False)
-    receiver = Column(AddressString, nullable=True)
+    sender = Column(HexByteString, nullable=True)
+    receiver = Column(HexByteString, nullable=True)
     gas_limit = Column(Integer, nullable=False)
     block_hash = Column(HexByteString, ForeignKey("blocks.hash", ondelete="CASCADE"))
     nonce = Column(Integer, nullable=False)
     value = Column(Integer)
     data = Column(LargeBinary, nullable=True)
     type = Column(Integer)
-    signature = Column(HexByteString, nullable=False)
+    signature = Column(HexByteString)
 
 
 class ContractEvents(Base):
@@ -73,7 +54,7 @@ class ContractEvents(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     event_name = Column(HexByteString, nullable=False, index=True)
-    contract_address = Column(AddressString, nullable=False, index=True)
+    contract_address = Column(HexByteString, nullable=False, index=True)
     event_arguments = Column(JSON, index=True)
     transaction_hash = Column(HexByteString, nullable=False, index=True)
     block_number = Column(Integer, nullable=False, index=True)

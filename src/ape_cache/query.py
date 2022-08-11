@@ -307,6 +307,7 @@ class CacheQueryProvider(QueryAPI):
                 for k, v in val.items()
                 if k in [c.key for c in Transactions.__table__.columns]  # type: ignore
             }
+            new_dict["signature"] = new_dict["signature"].encode_rsv()
             new_dict["block_hash"] = query.block_id
             new_result.append(new_dict)
         return new_result
