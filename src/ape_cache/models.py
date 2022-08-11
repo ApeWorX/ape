@@ -45,7 +45,7 @@ class Transactions(Base):
     nonce = Column(Integer, nullable=False)
     value = Column(Integer)
     data = Column(LargeBinary, nullable=True)
-    type = Column(Integer)
+    type = Column(String)
     signature = Column(HexByteString)
 
 

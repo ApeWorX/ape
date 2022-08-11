@@ -309,6 +309,9 @@ class CacheQueryProvider(QueryAPI):
             }
             new_dict["signature"] = new_dict["signature"].encode_rsv()
             new_dict["block_hash"] = query.block_id
+            new_dict["sender"] = new_dict["sender"].encode()
+            if "receiver" in new_dict:
+                new_dict["receiver"] = new_dict["receiver"].encode()
             new_result.append(new_dict)
         return new_result
 
