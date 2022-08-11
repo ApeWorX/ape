@@ -1,6 +1,6 @@
 import sys
 import time
-from typing import Any, IO, TYPE_CHECKING, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI

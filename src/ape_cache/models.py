@@ -1,8 +1,8 @@
-from sqlalchemy import JSON, LargeBinary, BigInteger, Column, ForeignKey, Integer, Numeric
-
+from sqlalchemy import JSON, BigInteger, Column, ForeignKey, Integer, LargeBinary, Numeric
 from sqlalchemy.types import String, TypeDecorator
 
-from ape.api.address import BaseAddress, Address
+from ape.api.address import Address, BaseAddress
+
 from .base import Base
 
 
