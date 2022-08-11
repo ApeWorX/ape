@@ -2,11 +2,16 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Type, Union
 
-from ethpm_types import Compiler, ContractType, PackageManifest, PackageMeta
+from ethpm_types import Compiler
+from ethpm_types import ContractInstance as EthPMContractInstance
+from ethpm_types import ContractType, PackageManifest, PackageMeta
+from ethpm_types.contract_type import BIP122_URI
 
 from ape.api import DependencyAPI, ProjectAPI
-from ape.contracts import ContractContainer, ContractNamespace
+from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
 from ape.exceptions import ProjectError
+from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
 
@@ -106,15 +111,6 @@ class ProjectManager(BaseManager):
 
         return self.path / "interfaces"
 
-    def extract_manifest(self) -> PackageManifest:
-        """
-        Extracts a package manifest from the project
-
-        Returns:
-            ethpm_types.manifest.PackageManifest
-        """
-        return self._project.create_manifest()
-
     @property
     def scripts_folder(self) -> Path:
         """
@@ -158,6 +154,42 @@ class ProjectManager(BaseManager):
         return compilers
 
     @property
+    def meta(self) -> PackageMeta:
+        """
+        Metadata about the active project as per EIP
+        https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
+        Use when publishing your package manifest.
+        """
+
+        return self.config_manager.meta  # type: ignore
+
+    @property
+    def tracked_deployments(self) -> Dict[BIP122_URI, Dict[str, EthPMContractInstance]]:
+        """
+        Deployments that have been explicitly tracked via
+        :meth:`~ape.managers.project.manager.ProjectManager.track_deployment`.
+        These deployments will be included in the final package manifest upon publication
+        of this package.
+        """
+
+        deployments: Dict[BIP122_URI, Dict[str, EthPMContractInstance]] = {}
+        if not self._package_deployments_folder.is_dir():
+            return deployments
+
+        for ecosystem_path in [x for x in self._package_deployments_folder.iterdir() if x.is_dir()]:
+            ecosystem_deployments = {}
+            for deploymenth_path in [x for x in ecosystem_path.iterdir() if x.suffix == ".json"]:
+                ethpm_instance = EthPMContractInstance.parse_raw(deploymenth_path.read_text())
+                ecosystem_deployments[deploymenth_path.stem] = ethpm_instance
+
+            if ecosystem_deployments:
+                bip122_chain_id = ecosystem_path.name
+                uri = BIP122_URI(f"blockchain://{bip122_chain_id}/block/{ethpm_instance.block}")
+                deployments[uri] = ecosystem_deployments
+
+        return deployments
+
+    @property
     def project_types(self) -> List[Type[ProjectAPI]]:
         """
         The available :class:`~ape.api.project.ProjectAPI` types available,
@@ -180,7 +212,26 @@ class ProjectManager(BaseManager):
                 self.path, self.contracts_folder
             )
 
-        return self._cached_projects[self.path.name]
+        project = self._cached_projects[self.path.name]
+        project.path = self.path
+        return project
+
+    def extract_manifest(self) -> PackageManifest:
+        """
+        Extracts a package manifest from the project
+
+        Returns:
+            ethpm_types.manifest.PackageManifest
+        """
+        manifest = self._project.create_manifest()
+        manifest.meta = self.meta
+        manifest.compilers = self.compiler_data
+        manifest.deployments = self.tracked_deployments
+        return manifest
+
+    @property
+    def _package_deployments_folder(self) -> Path:
+        return self._project._cache_folder / "deployments"
 
     def get_project(
         self,
@@ -438,20 +489,66 @@ class ProjectManager(BaseManager):
         self._cached_dependencies[self.path.name] = dependencies
         return dependencies
 
+    def track_deployment(self, contract: ContractInstance):
+        """
+        Indicate that a contract deployment should be included in the package manifest
+        upon publication.
+
+        **NOTE**: Deployments are automatically tracked for contracts. However, only
+        deployments passed to this method are included in the final, publishable manifest.
+
+        Args:
+            contract (:class:`~ape.contracts.base.ContractInstance`): The contract
+              to track as a deployment of the project.
+        """
+
+        network = self.provider.network.name
+        if network == LOCAL_NETWORK_NAME or network.endswith("-fork"):
+            raise ProjectError("Can only publish deployments on a live network.")
+
+        contract_name = contract.contract_type.name
+        receipt = contract.receipt
+        if not receipt:
+            raise ProjectError(f"Contract '{contract_name}' transaction receipt is unknown.")
+
+        block_number = receipt.block_number
+        block_hash_bytes = self.provider.get_block(block_number).hash
+        if not block_hash_bytes:
+            # Mostly for mypy, not sure this can ever happen.
+            raise ProjectError(
+                f"Block hash containing transaction for '{contract_name}' "
+                f"at block_number={block_number} is unknown."
+            )
+
+        block_hash = block_hash_bytes.hex()
+        artifact = EthPMContractInstance(
+            address=contract.address,
+            block=block_hash,
+            contractType=contract_name,
+            transaction=contract.txn_hash,
+            runtimeBytecode=contract.contract_type.runtime_bytecode,
+        )
+
+        block_0_hash = self.provider.get_block(0).hash
+        if not block_0_hash:
+            raise ProjectError("Chain missing hash for block 0 (required for BIP-122 chain ID).")
+
+        bip122_chain_id = block_0_hash.hex()
+        deployments_folder = self._package_deployments_folder / bip122_chain_id
+        deployments_folder.mkdir(exist_ok=True, parents=True)
+        destination = deployments_folder / f"{contract_name}.json"
+
+        if destination.exists():
+            logger.warning("Deployment already tracked. Re-tracking.")
+            destination.unlink()
+
+        destination.write_text(artifact.json())
+
     def _get_contract(self, name: str) -> Optional[ContractContainer]:
         if name in self.contracts:
             return self.chain_manager.contracts.get_container(self.contracts[name])
 
         return None
-
-    @property
-    def meta(self) -> PackageMeta:
-        """
-        Metadata about the active project as per EIP
-        https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
-        Use when publishing your package manifest.
-        """
-        return self.config_manager.meta  # type: ignore
 
     # def publish_manifest(self):
     #     manifest = self.manifest.dict()
