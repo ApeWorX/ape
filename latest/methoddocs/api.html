@@ -2075,7 +2075,17 @@ See <a class="reference external" href="https://chainlist.org/">ChainList</a> fo
 <dd><p>Estimate the cost of gas for a transaction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to estimate the gas for.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to estimate the gas for.</p></li>
+<li><p><strong>kwargs</strong> – <ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
+to use when estimating the transaction. Useful for
+checking a past estimation cost of a transaction.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">state_overrides</span></code> (Dict): Modify the state of the blockchain
+prior to estimation.</p></li>
+</ul>
+</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The estimated cost of gas to execute the transaction
@@ -2167,10 +2177,42 @@ topic filters. Defaults to getting all events.</p>
 <dd><p>Get the number of times an account has transacted.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<em>str</em>) – The address of the account.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<em>str</em>) – The address of the account.</p></li>
+<li><p><strong>kwargs</strong> – <ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
+for checking a previous account nonce.</p></li>
+</ul>
+</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.providers.Web3Provider.get_storage_at">
+<span class="sig-name descname"><span class="pre">get_storage_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_storage_at" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the raw value of a storage slot of a contract.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<em>str</em>) – The address of the contract.</p></li>
+<li><p><strong>slot</strong> (<em>int</em>) – Storage slot to read the value of.</p></li>
+<li><p><strong>kwargs</strong> – <ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
+for checking previous contract storage values.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The value of the storage slot.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bytes</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2181,7 +2223,13 @@ topic filters. Defaults to getting all events.</p>
 <dd><p>Get the information about a transaction from a transaction hash.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>txn_hash</strong> (<em>str</em>) – The hash of the transaction to retrieve.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>txn_hash</strong> (<em>str</em>) – The hash of the transaction to retrieve.</p></li>
+<li><p><strong>required_confirmations</strong> (<em>int</em>) – The amount of block confirmations
+to wait before returning the receipt.</p></li>
+<li><p><strong>timeout</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The amount of time to wait for a receipt
+before timing out.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The receipt of the transaction with the given hash.</p>
@@ -2234,7 +2282,17 @@ topic filters. Defaults to getting all events.</p>
 transaction on the block chain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>txn</strong> – <a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>txn</strong> – <a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p></li>
+<li><p><strong>kwargs</strong> – <ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
+to use to send a call at a historical point of a contract.
+checking a past estimation cost of a transaction.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">state_overrides</span></code> (Dict): Modify the state of the blockchain
+prior to sending the call, for testing purposes.</p></li>
+</ul>
+</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The result of the transaction call.</p>
