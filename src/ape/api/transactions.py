@@ -11,7 +11,7 @@ from tqdm import tqdm  # type: ignore
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import ContractLog, TransactionSignature
+from ape.types import AddressType, ContractLog, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -27,8 +27,8 @@ class TransactionAPI(BaseInterfaceModel):
     """
 
     chain_id: int = Field(0, alias="chainId")
-    receiver: Optional[str] = Field(None, alias="to")
-    sender: Optional[str] = Field(None, alias="from")
+    receiver: Optional[AddressType] = Field(None, alias="to")
+    sender: Optional[AddressType] = Field(None, alias="from")
     gas_limit: Optional[int] = Field(None, alias="gas")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
@@ -40,7 +40,7 @@ class TransactionAPI(BaseInterfaceModel):
     # If left as None, will get set to the network's default required confirmations.
     required_confirmations: Optional[int] = Field(None, exclude=True)
 
-    signature: Optional[TransactionSignature] = Field(exclude=True)
+    signature: Optional[TransactionSignature]
 
     class Config:
         allow_population_by_field_name = True
