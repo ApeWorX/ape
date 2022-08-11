@@ -3,18 +3,10 @@
 Use the cache plugin to store provider data in an sqlite database.
 
 ```bash
-ape cache init --network <your-choice-of-network>
+ape cache init --network <ecosystem-name>:<network-name>
 ```
 
-You will need to set-up your network connection.
-
-For example, if you want to work with an Infura provider, you need to install the Infura plugin.
-
-```bash
-ape plugins install infura
-```
-
-Then, to connect to the mainnet:
+If you want to set up your network connection for caching use [this guide](./network.html)
 
 ```bash
 ape cache init --network ethereum:mainnet
