@@ -41,9 +41,6 @@ class TransactionAPI(BaseInterfaceModel):
     # If left as None, will get set to the network's default required confirmations.
     required_confirmations: Optional[int] = Field(None, exclude=True)
 
-    # If true, will cause a TransactionError to be raised if the transaction fails.
-    _raise_on_fail: bool = False
-
     signature: Optional[TransactionSignature] = Field(exclude=True)
 
     class Config:

@@ -331,12 +331,18 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+    def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = False) -> ReceiptAPI:
         """
         Send a transaction to the network.
 
+        Raises:
+            :class:`~ape.exceptions.TransactionError`: When the transaction fails
+              if ``raise_on_fail`` is ``True``.
+
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to send.
+            raise_on_fail (bool): ``True`` will cause failed transactions to raise
+              `~ape.exceptions.TransactionError`.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
@@ -834,7 +840,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_hash: str,
         required_confirmations: int = 0,
         timeout: Optional[int] = None,
-        raise_on_fail: bool = True,
+        raise_on_fail: bool = False,
     ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
@@ -927,7 +933,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self._make_request("eth_getLogs", [filter_params])
 
-    def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+    def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = False) -> ReceiptAPI:
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValueError as err:
@@ -942,10 +948,10 @@ class Web3Provider(ProviderAPI, ABC):
         receipt = self.get_receipt(
             txn_hash.hex(),
             required_confirmations=required_confirmations,
-            raise_on_fail=txn._raise_on_fail,
+            raise_on_fail=raise_on_fail,
         )
 
-        if txn._raise_on_fail:
+        if raise_on_fail:
             receipt.raise_for_status()
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")

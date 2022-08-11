@@ -124,7 +124,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         except TransactionFailed as err:
             raise self.get_virtual_machine_error(err, sender=txn.sender) from err
 
-    def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+    def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = False) -> ReceiptAPI:
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except (ValidationError, TransactionFailed) as err:
@@ -133,10 +133,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         receipt = self.get_receipt(
             txn_hash.hex(),
             required_confirmations=txn.required_confirmations or 0,
-            raise_on_fail=txn._raise_on_fail,
+            raise_on_fail=raise_on_fail,
         )
 
-        if txn._raise_on_fail:
+        if raise_on_fail:
             receipt.raise_for_status()
 
         if txn.gas_limit is not None and receipt.ran_out_of_gas:
