@@ -119,6 +119,14 @@ def networks_connected_to_tester():
         yield ape.networks
 
 
+@pytest.fixture
+def networks_disconnected(networks):
+    provider = networks.active_provider
+    networks.active_provider = None
+    yield networks
+    networks.active_provider = provider
+
+
 @pytest.fixture(scope="session")
 def ethereum(networks):
     return networks.ethereum

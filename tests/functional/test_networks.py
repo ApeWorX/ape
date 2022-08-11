@@ -114,7 +114,7 @@ def test_get_network_choices_filter_network(networks):
 def test_get_network_choices_filter_provider(networks):
     actual = {c for c in networks.get_network_choices(provider_filter="test")}
     expected = {"::test", ":local", "ethereum:local", "ethereum:local:test", "ethereum"}
-    assert actual == expected
+    assert all(e in actual for e in expected)
 
 
 def test_get_provider_when_no_default(network_with_no_providers):
@@ -135,15 +135,22 @@ def test_get_provider_when_not_found(networks):
     assert "'test' is not a valid provider for network 'rinkeby-fork'" in str(err.value)
 
 
-def test_repr(networks_connected_to_tester):
+def test_repr_connected_to_local(networks_connected_to_tester):
     actual = repr(networks_connected_to_tester)
     expected = f"<NetworkManager active_provider=<test chain_id={CHAIN_ID}>>"
     assert actual == expected
 
     # Check individual network
     actual = repr(networks_connected_to_tester.provider.network)
-    expected = f"<local chain_id={CHAIN_ID}>"
+    expected = f"<ethereum:local chain_id={CHAIN_ID}>"
     assert actual == expected
+
+
+def test_repr_disconnected(networks_disconnected):
+    assert repr(networks_disconnected) == "<NetworkManager>"
+    assert repr(networks_disconnected.ethereum) == "<ethereum>"
+    assert repr(networks_disconnected.ethereum.local) == "<ethereum:local>"
+    assert repr(networks_disconnected.ethereum.rinkeby) == "<ethereum:rinkeby chain_id=4>"
 
 
 def test_get_provider_from_choice_adhoc_provider(networks_connected_to_tester):

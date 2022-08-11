@@ -6,7 +6,6 @@ import pytest
 from hexbytes import HexBytes
 
 import ape
-from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractInstance
 from ape.exceptions import APINotImplementedError, ChainError, ConversionError
 
@@ -14,13 +13,6 @@ from ape.exceptions import APINotImplementedError, ChainError, ConversionError
 @pytest.fixture(scope="module", autouse=True)
 def connection(networks_connected_to_tester):
     yield
-
-
-@pytest.fixture
-def dummy_live_network(chain):
-    chain.provider.network.name = "rinkeby"
-    yield
-    chain.provider.network.name = LOCAL_NETWORK_NAME
 
 
 @pytest.fixture
