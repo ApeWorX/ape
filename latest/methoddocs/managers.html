@@ -1822,6 +1822,30 @@ in the project. <code class="docutils literal notranslate"><span class="pre">Fal
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.manager.ProjectManager.track_deployment">
+<span class="sig-name descname"><span class="pre">track_deployment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ape.contracts.base.ContractInstance</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.manager.ProjectManager.track_deployment" title="Permalink to this definition"></a></dt>
+<dd><p>Indicate that a contract deployment should be included in the package manifest
+upon publication.</p>
+<p><strong>NOTE</strong>: Deployments are automatically tracked for contracts. However, only
+deployments passed to this method are included in the final, publishable manifest.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>contract</strong> (<a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></a>) – The contract
+to track as a deployment of the project.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.project.manager.ProjectManager.tracked_deployments">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tracked_deployments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.contract_type.BIP122_URI</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ethpm_types.contract_type.ContractInstance</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.project.manager.ProjectManager.tracked_deployments" title="Permalink to this definition"></a></dt>
+<dd><p>Deployments that have been explicitly tracked via
+<a class="reference internal" href="#ape.managers.project.manager.ProjectManager.track_deployment" title="ape.managers.project.manager.ProjectManager.track_deployment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">track_deployment()</span></code></a>.
+These deployments will be included in the final package manifest upon publication
+of this package.</p>
+</dd></dl>
+
 </dd></dl>
 
 <span class="target" id="module-ape.managers.project.dependency"></span><dl class="py class">
