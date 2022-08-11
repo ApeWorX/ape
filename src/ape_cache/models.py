@@ -22,7 +22,7 @@ class HexByteString(TypeDecorator):
 
 class AddressString(TypeDecorator):
     """
-    Convert Python :class:`~ape.types.AddressType` string to
+    Convert Python :class:`~ape.types.BaseAddress` string to
     string with hexadecimal digits and back for storage.
     """
 
