@@ -82,7 +82,7 @@ def test_extract_manifest(dependency_config, project_manager):
     assert type(manifest.compilers) == list
     assert manifest.meta == project_manager.meta
     assert manifest.compilers == project_manager.compiler_data
-    assert manifest.deployments == project_manager.package_deployments
+    assert manifest.deployments == project_manager.tracked_deployments
 
 
 def test_meta(temp_config, project_manager):
@@ -159,12 +159,12 @@ def test_track_deployment(
     expected_name = contract.contract_type.name
     expected_code = contract.contract_type.runtime_bytecode
     actual_from_file = EthPMContractInstance.parse_raw(deployment_path.read_text())
-    actual_from_class = project_manager.package_deployments[expected_uri][name]
+    actual_from_class = project_manager.tracked_deployments[expected_uri][name]
     assert actual_from_file.address == actual_from_class.address == address
     assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
     assert actual_from_file.transaction == actual_from_class.transaction == receipt.txn_hash
     assert actual_from_file.runtime_bytecode == actual_from_class.runtime_bytecode == expected_code
-    assert len(project_manager.package_deployments) == 1
+    assert len(project_manager.tracked_deployments) == 1
 
 
 def test_track_deployment_from_previously_deployed_contract(
@@ -188,12 +188,12 @@ def test_track_deployment_from_previously_deployed_contract(
     expected_name = contract.contract_type.name
     expected_code = contract.contract_type.runtime_bytecode
     actual_from_file = EthPMContractInstance.parse_raw(path.read_text())
-    actual_from_class = project_manager.package_deployments[expected_uri][name]
+    actual_from_class = project_manager.tracked_deployments[expected_uri][name]
     assert actual_from_file.address == actual_from_class.address == address
     assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
     assert actual_from_file.transaction == actual_from_class.transaction == receipt.txn_hash
     assert actual_from_file.runtime_bytecode == actual_from_class.runtime_bytecode == expected_code
-    assert len(project_manager.package_deployments) == 1
+    assert len(project_manager.tracked_deployments) == 1
 
 
 def test_track_deployment_from_unknown_contract_missing_txn_hash(

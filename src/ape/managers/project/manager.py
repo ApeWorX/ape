@@ -164,7 +164,14 @@ class ProjectManager(BaseManager):
         return self.config_manager.meta  # type: ignore
 
     @property
-    def package_deployments(self) -> Dict[BIP122_URI, Dict[str, EthPMContractInstance]]:
+    def tracked_deployments(self) -> Dict[BIP122_URI, Dict[str, EthPMContractInstance]]:
+        """
+        Deployments that have been explicitly tracked via
+        :meth:`~ape.managers.project.manager.ProjectManager.track_deployment`.
+        These deployments will be included in the final package manifest upon publication
+        of this package.
+        """
+
         deployments: Dict[BIP122_URI, Dict[str, EthPMContractInstance]] = {}
         if not self._package_deployments_folder.is_dir():
             return deployments
@@ -219,7 +226,7 @@ class ProjectManager(BaseManager):
         manifest = self._project.create_manifest()
         manifest.meta = self.meta
         manifest.compilers = self.compiler_data
-        manifest.deployments = self.package_deployments
+        manifest.deployments = self.tracked_deployments
         return manifest
 
     @property
