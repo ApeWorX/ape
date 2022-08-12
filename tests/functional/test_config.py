@@ -3,6 +3,7 @@ from typing import Dict
 
 import pytest
 
+from ape.api import PluginConfig
 from ape.exceptions import NetworkError
 from ape.managers.config import DeploymentConfigCollection
 from ape_ethereum.ecosystem import NetworkConfig
@@ -83,3 +84,16 @@ def test_config_access():
         == getattr(config, "default-provider")
         == "geth"
     )
+
+
+def test_plugin_config_updates_when_default_is_empty_dict():
+    class SubConfig(PluginConfig):
+        foo: int = 0
+        bar: int = 1
+
+    class MyConfig(PluginConfig):
+        sub: Dict[str, Dict[str, SubConfig]] = {}
+
+    overrides = {"sub": {"baz": {"test": {"foo": 5}}}}
+    actual = MyConfig.from_overrides(overrides)
+    assert actual.sub == {"baz": {"test": SubConfig(foo=5, bar=1)}}
