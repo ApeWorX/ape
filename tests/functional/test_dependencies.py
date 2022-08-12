@@ -57,6 +57,6 @@ def test_dependency_with_non_version_version_id(recwarn, dependency_manager):
     dependency = dependency_manager.decode_dependency(dependency_config)
     _ = dependency.cached_manifest
 
-    # Tests against bug where we tried creating version objects ot of branch names
+    # Tests against bug where we tried creating version objects out of branch names,
     # thus causing warnings to show in `ape test` runs.
     assert DeprecationWarning not in [w.category for w in recwarn.list]
