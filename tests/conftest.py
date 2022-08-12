@@ -74,6 +74,11 @@ def project_manager():
 
 
 @pytest.fixture(scope="session")
+def dependency_manager(project_manager):
+    return project_manager.dependency_manager
+
+
+@pytest.fixture(scope="session")
 def keyparams():
     # NOTE: password is 'a'
     return {
