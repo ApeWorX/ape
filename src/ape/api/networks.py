@@ -67,6 +67,9 @@ class EcosystemAPI(BaseInterfaceModel):
 
     _default_network: str = LOCAL_NETWORK_NAME
 
+    def __repr__(self) -> str:
+        return f"<{self.name}>"
+
     @classmethod
     @abstractmethod
     def decode_address(cls, raw_address: RawAddress) -> AddressType:
@@ -568,7 +571,15 @@ class NetworkAPI(BaseInterfaceModel):
         )
 
     def __repr__(self) -> str:
-        return f"<{self.name} chain_id={self.chain_id}>"
+        try:
+            chain_id = self.chain_id
+        except ProviderNotConnectedError:
+            # Only happens on local networks
+            chain_id = None
+
+        network_key = f"{self.ecosystem.name}:{self.name}"
+        content = f"{network_key} chain_id={self.chain_id}" if chain_id is not None else network_key
+        return f"<{content}>"
 
     @property
     def config(self) -> PluginConfig:
@@ -592,15 +603,7 @@ class NetworkAPI(BaseInterfaceModel):
         :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
         """
 
-        provider = self.ecosystem.network_manager.active_provider
-
-        if not provider:
-            message = (
-                "Cannot determine 'chain_id', please make sure you are connected to a provider."
-            )
-            raise NetworkError(message)
-
-        return provider.chain_id
+        return self.provider.chain_id
 
     @property
     def network_id(self) -> int:
