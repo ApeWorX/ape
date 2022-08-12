@@ -588,7 +588,7 @@ class TestProviderAPI(ProviderAPI):
 class Web3Provider(ProviderAPI, ABC):
     """
     A base provider mixin class that uses the
-    [web3.py](https://web3py.readthedocs.io/en/stable/) python package.
+    `web3.py <https://web3py.readthedocs.io/en/stable/>`__ python package.
     """
 
     _web3: Optional[Web3] = None
@@ -596,6 +596,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def web3(self) -> Web3:
+        """
+        Access to the ``web3`` object as if you did ``Web3(HTTPProvder(uri))``.
+        """
+
         if not self._web3:
             raise ProviderNotConnectedError()
 
