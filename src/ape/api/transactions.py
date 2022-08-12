@@ -27,7 +27,6 @@ class TransactionAPI(BaseInterfaceModel):
     """
 
     chain_id: int = Field(0, alias="chainId")
-    hash: Any = Field(None, alias="txn_hash")
     receiver: Optional[str] = Field(None, alias="to")
     sender: Optional[str] = Field(None, alias="from")
     gas_limit: Optional[int] = Field(None, alias="gas")
@@ -41,7 +40,7 @@ class TransactionAPI(BaseInterfaceModel):
     # If left as None, will get set to the network's default required confirmations.
     required_confirmations: Optional[int] = Field(None, exclude=True)
 
-    signature: Optional[TransactionSignature] = Field(...)
+    signature: Optional[TransactionSignature] = Field(exclude=True)
 
     class Config:
         allow_population_by_field_name = True
