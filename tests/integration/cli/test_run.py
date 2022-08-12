@@ -44,7 +44,8 @@ def test_run_when_script_errors(ape_cli, runner, project):
 
 @skip_projects_except(["script"])
 def test_run_interactive(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["run", "--interactive"], input="exit\n")
+    scripts = [s for s in project.scripts_folder.glob("*.py") if s.name.startswith("error")]
+    result = runner.invoke(ape_cli, ["run", "--interactive", scripts[0].stem], input="exit\n")
     assert result.exit_code == 0, result.output
 
 
