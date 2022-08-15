@@ -92,7 +92,7 @@ def get_package_version(obj: Any) -> str:
         pkg_name = dists[0].metadata["Name"]
 
         if num_packages != 1:
-            # Warn that there are more than 1 packages with this name,
+            # Warn that there are more than 1 package with this name,
             # which can lead to odd behaviors.
             found_paths = [str(d._path) for d in dists if hasattr(d, "_path")]
             found_paths_str = ",\n\t".join(found_paths)
