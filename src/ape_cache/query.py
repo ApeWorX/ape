@@ -312,6 +312,8 @@ class CacheQueryProvider(QueryAPI):
             new_dict["sender"] = new_dict["sender"].encode()
             if "receiver" in new_dict:
                 new_dict["receiver"] = new_dict["receiver"].encode()
+            else:
+                continue
 
             new_result.append(new_dict)
         return new_result

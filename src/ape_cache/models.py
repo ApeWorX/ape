@@ -37,7 +37,7 @@ class Blocks(Base):
 class Transactions(Base):
     __tablename__ = "transactions"  # type: ignore
 
-    txn_hash = Column(HexByteString, primary_key=True)
+    txn_hash = Column(HexByteString, primary_key=True, nullable=False)
     sender = Column(HexByteString, nullable=True)
     receiver = Column(HexByteString, nullable=True)
     gas_limit = Column(Numeric(scale=0), nullable=True)
