@@ -37,16 +37,16 @@ class Blocks(Base):
 class Transactions(Base):
     __tablename__ = "transactions"  # type: ignore
 
-    hash = Column(HexByteString, primary_key=True, index=True)
+    txn_hash = Column(HexByteString, primary_key=True)
     sender = Column(HexByteString, nullable=True)
     receiver = Column(HexByteString, nullable=True)
-    gas_limit = Column(Integer, nullable=False)
+    gas_limit = Column(Numeric(scale=0), nullable=True)
     block_hash = Column(HexByteString, ForeignKey("blocks.hash", ondelete="CASCADE"))
-    nonce = Column(Integer, nullable=False)
-    value = Column(Integer)
+    nonce = Column(Integer, nullable=True)
+    value = Column(Numeric(scale=0), nullable=True)
     data = Column(LargeBinary, nullable=True)
-    type = Column(String)
-    signature = Column(HexByteString)
+    type = Column(String, nullable=True)
+    signature = Column(HexByteString, nullable=True)
 
 
 class ContractEvents(Base):

@@ -300,17 +300,19 @@ class CacheQueryProvider(QueryAPI):
         self, query: BlockTransactionQuery, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
         new_result = []
-        for val in [m.dict(by_alias=False) for m in result]:
+        for val in [m for m in result]:
             new_dict = {
                 k: v
-                for k, v in val.items()
+                for k, v in val.dict(by_alias=False).items()
                 if k in [c.key for c in Transactions.__table__.columns]  # type: ignore
             }
-            new_dict["signature"] = new_dict["signature"].encode_rsv()
+            new_dict["txn_hash"] = val.txn_hash
+            new_dict["signature"] = val.signature.encode_rsv()
             new_dict["block_hash"] = query.block_id
             new_dict["sender"] = new_dict["sender"].encode()
             if "receiver" in new_dict:
                 new_dict["receiver"] = new_dict["receiver"].encode()
+
             new_result.append(new_dict)
         return new_result
 
@@ -326,6 +328,7 @@ class CacheQueryProvider(QueryAPI):
             logger.debug(f"Caching query: {query}")
             with self.database_connection as conn:
                 try:
+                    breakpoint()
                     conn.execute(
                         clause.values(  # type: ignore
                             self.get_cache_data(query, result)
