@@ -472,22 +472,25 @@ class ProviderContextManager:
         self.pop_provider()
 
     def push_provider(self):
-        if not self.provider.is_connected:
+        must_connect = not self.provider.is_connected
+        if must_connect:
             self.provider.connect()
 
-        provider_object_id = self.get_provider_id(self.provider)
-        self.provider_stack.append(provider_object_id)
+        provider_id = self.get_provider_id(self.provider)
+        self.provider_stack.append(provider_id)
 
-        if provider_object_id in self.connected_providers:
-            # Already connected and known
-            connected_provider = self.connected_providers[provider_object_id]
-            self.network_manager.active_provider = connected_provider
+        if provider_id in self.connected_providers:
+            # Using already connected instance
+            if must_connect:
+                # Disconnect if had to connect to check chain ID
+                self.provider.disconnect()
 
+            self.provider = self.connected_providers[provider_id]
         else:
-            # Already connected and unknown
-            self.connected_providers[provider_object_id] = self.provider
-            self.network_manager.active_provider = self.provider
+            # Adding provider for the first time. Retain connection.
+            self.connected_providers[provider_id] = self.provider
 
+        self.network_manager.active_provider = self.provider
         return self.provider
 
     def pop_provider(self):
@@ -523,7 +526,11 @@ class ProviderContextManager:
     @classmethod
     def get_provider_id(cls, provider: "ProviderAPI") -> Optional[str]:
         try:
-            return f"{provider.name}-{provider.chain_id}"
+            return (
+                f"{provider.network.ecosystem.name}:"
+                f"{provider.network.name}:{provider.name}-"
+                f"{provider.chain_id}"
+            )
         except ProviderNotConnectedError:
             return None
 
