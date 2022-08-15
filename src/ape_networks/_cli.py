@@ -14,7 +14,7 @@ def _filter_option(name: str, options):
     return click.option(
         f"--{name}",
         f"{name}_filter",
-        multiple=Tree,
+        multiple=True,
         help=f"Filter the results by {name}",
         type=click.Choice(options),
     )
@@ -36,7 +36,7 @@ def cli():
 def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_filter):
     if output_format == OutputFormat.TREE:
         default_suffix = "[dim default]  (default)"
-        ecosystems = cli_ctx.network_manager.network_data["ecosystems"]
+        ecosystems = networks.network_data["ecosystems"]
 
         def make_sub_tree(data: Dict, create_tree: Callable) -> Tree:
             name = f"[bold green]{data['name']}"
