@@ -1,10 +1,9 @@
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
-import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine import CursorResult  # type: ignore
-from sqlalchemy.sql import insert, text, select, column
+from sqlalchemy.sql import column, insert, select, text
 from sqlalchemy.sql.expression import Insert, TextClause
 
 from ape.api import QueryAPI, QueryType
@@ -205,10 +204,12 @@ class CacheQueryProvider(QueryAPI):
 
     @perform_query_clause.register
     def perform_block_clause(self, query: BlockQuery) -> TextClause:
-        return select([column(c) for c in query.columns]).where(
-            Blocks.number >= query.start_block).where(
-            Blocks.number <= query.stop_block).where(
-            Blocks.number % query.step == 0)
+        return (
+            select([column(c) for c in query.columns])
+            .where(Blocks.number >= query.start_block)
+            .where(Blocks.number <= query.stop_block)
+            .where(Blocks.number % query.step == 0)
+        )
 
     @perform_query_clause.register
     def perform_transaction_clause(self, query: BlockTransactionQuery) -> TextClause:
@@ -218,10 +219,11 @@ class CacheQueryProvider(QueryAPI):
 
     @perform_query_clause.register
     def perform_contract_event_clause(self, query: ContractEventQuery) -> TextClause:
-        return select([column(c) for c in query.columns]).where(
-            ContractEvents.block_number >= query.start_block).where(
-            ContractEvents.block_number <= query.stop_block).where(
-            ContractEvents.block_number % query.step == 0
+        return (
+            select([column(c) for c in query.columns])
+            .where(ContractEvents.block_number >= query.start_block)
+            .where(ContractEvents.block_number <= query.stop_block)
+            .where(ContractEvents.block_number % query.step == 0)
         )
 
     @singledispatchmethod
@@ -285,21 +287,21 @@ class CacheQueryProvider(QueryAPI):
         table_columns = [c.key for c in Transactions.__table__.columns]  # type: ignore
         for val in [m for m in result]:
             new_dict = {k: v for k, v in val.dict(by_alias=False).items() if k in table_columns}
-            for column in table_columns:
-                if column == "txn_hash":
+            for col in table_columns:
+                if col == "txn_hash":
                     new_dict["txn_hash"] = val.txn_hash  # type: ignore
-                elif column == "sender":
+                elif col == "sender":
                     new_dict["sender"] = new_dict["sender"].encode()
-                elif column == "receiver" and "receiver" in new_dict:
+                elif col == "receiver" and "receiver" in new_dict:
                     new_dict["receiver"] = new_dict["receiver"].encode()
-                elif column == "receiver" and "receiver" not in new_dict:
+                elif col == "receiver" and "receiver" not in new_dict:
                     new_dict["receiver"] = bytes()
-                elif column == "block_hash":
+                elif col == "block_hash":
                     new_dict["block_hash"] = query.block_id
-                elif column == "signature":
+                elif col == "signature":
                     new_dict["signature"] = val.signature.encode_rsv()  # type: ignore
-                elif column not in new_dict:
-                    new_dict[column] = None
+                elif col not in new_dict:
+                    new_dict[col] = None
             new_result.append(new_dict)
         return new_result
 

@@ -150,7 +150,9 @@ class BlockContainer(BaseManager):
         # TODO: fetch the block fields from EcosystemAPI
         columns = validate_and_expand_columns(columns, list(self.head.__fields__))  # type: ignore
         breakpoint()
-        blocks = map(lambda val: val.dict(by_alias=False) if "__dict__" in dir(val) else val, blocks)
+        blocks = map(
+            lambda val: val.dict(by_alias=False) if "__dict__" in dir(val) else val, blocks
+        )
         return pd.DataFrame(columns=columns, data=blocks)
 
     def range(
