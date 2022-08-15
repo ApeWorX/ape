@@ -137,7 +137,7 @@ class CacheQueryProvider(QueryAPI):
         ).bindparams(start_block=query.start_block, stop_block=query.stop_block, step=query.step)
 
     @singledispatchmethod
-    def compute_estimate(self, result: CursorResult, query: QueryType) -> Optional[int]:
+    def compute_estimate(self, query: QueryType, result: CursorResult) -> Optional[int]:
         return None  # can't handle this query
 
     @compute_estimate.register
@@ -189,7 +189,7 @@ class CacheQueryProvider(QueryAPI):
                 if not result:
                     return None
 
-                return self.compute_estimate(result, query)
+                return self.compute_estimate(query, result)
         except QueryEngineError as err:
             logger.warning(f"Cannot perform query on cache database: {err}")
             return None
