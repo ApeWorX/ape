@@ -341,7 +341,7 @@ class Ethereum(EcosystemAPI):
             return HexBytes(value)
 
         elif isinstance(output_type, str) and is_array(output_type):
-            sub_type = output_type.split("[")[0]
+            sub_type = "[".join(output_type.split("[")[:-1])
             return tuple([self.decode_primitive_value(v, sub_type) for v in value])
 
         elif isinstance(output_type, tuple):
