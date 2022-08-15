@@ -28,13 +28,14 @@ class DefaultQueryProvider(QueryAPI):
 
     @estimate_query.register
     def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> int:
-
-        return 100
+        block = self.provider.get_block(query.block_id)
+        # NOTE: Very loose estimate of 100ms per transaction in block for this query.
+        return len(block.transactions) * 100
 
     @estimate_query.register
     def estimate_contract_events_query(self, query: ContractEventQuery) -> int:
         # NOTE: Very loose estimate of 100ms per block for this query.
-        return 100
+        return (query.stop_block - query.start_block) * 100
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
