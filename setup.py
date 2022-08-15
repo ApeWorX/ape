@@ -23,11 +23,11 @@ extras_require = {
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
         "types-pkg-resources",  # NOTE: Needed due to mypy typeshed
+        "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy typeshed
         "flake8>=4.0.1,<5.0",  # Style linter
         "flake8-breakpoint>=1.1.0,<2.0.0",  # detect breakpoints left in code
         "flake8-print>=4.0.0,<5.0.0",  # detect print statements left in code
         "isort>=5.10.1,<6.0",  # Import sorting linter
-        "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy types
     ],
     "doc": [
         "myst-parser>=0.17.0,<0.18",  # Tools for parsing markdown files in the docs
@@ -99,7 +99,7 @@ setup(
         "ipython>=7.31.1,<8",
         "packaging>=20.9,<21",
         "pandas>=1.3.0,<2",
-        "pluggy>=0.13.1,<1",
+        "pluggy>=1.0.0,<2",
         "pydantic>=1.9.0,<2",
         "pygit2>=1.7.2,<2",
         "PyGithub>=1.54,<2",
