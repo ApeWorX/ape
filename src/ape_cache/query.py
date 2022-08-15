@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
@@ -300,21 +301,28 @@ class CacheQueryProvider(QueryAPI):
         self, query: BlockTransactionQuery, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
         new_result = []
+        table_columns = [c.key for c in Transactions.__table__.columns]
         for val in [m for m in result]:
             new_dict = {
                 k: v
                 for k, v in val.dict(by_alias=False).items()
-                if k in [c.key for c in Transactions.__table__.columns]  # type: ignore
+                if k in table_columns  # type: ignore
             }
-            new_dict["txn_hash"] = val.txn_hash  # type: ignore
-            new_dict["signature"] = val.signature.encode_rsv()  # type: ignore
-            new_dict["block_hash"] = query.block_id
-            new_dict["sender"] = new_dict["sender"].encode()
-            if "receiver" in new_dict:
-                new_dict["receiver"] = new_dict["receiver"].encode()
-            else:
-                continue
-
+            for column in table_columns:
+                if column == "txn_hash":
+                    new_dict["txn_hash"] = val.txn_hash  # type: ignore
+                elif column == "sender":
+                    new_dict["sender"] = new_dict["sender"].encode()
+                elif column == "receiver" and "receiver" in new_dict:
+                    new_dict["receiver"] = new_dict["receiver"].encode()
+                elif column == "receiver" and "receiver" not in new_dict:
+                    new_dict["receiver"] = bytes()
+                elif column == "block_hash":
+                    new_dict["block_hash"] = query.block_id
+                elif column == "signature":
+                    new_dict["signature"] = val.signature.encode_rsv()  # type: ignore
+                elif column not in new_dict:
+                    new_dict[column] = None
             new_result.append(new_dict)
         return new_result
 
