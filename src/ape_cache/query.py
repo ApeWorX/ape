@@ -146,7 +146,7 @@ class CacheQueryProvider(QueryAPI):
         query: BlockQuery,
         result: CursorResult,
     ) -> Optional[int]:
-        if result.rowcount == (query.stop_block - query.start_block) // query.step:
+        if result.first()[0] == (1 + query.stop_block - query.start_block) // query.step:
             # NOTE: Assume 200 msec to get data from database
             return 200
 
@@ -160,7 +160,7 @@ class CacheQueryProvider(QueryAPI):
         query: BlockTransactionQuery,
         result: CursorResult,
     ) -> Optional[int]:
-        if result.rowcount > 0:
+        if result.first()[0] > 0:
             # NOTE: Assume 200 msec to get data from database
             return 200
 
@@ -173,7 +173,7 @@ class CacheQueryProvider(QueryAPI):
         query: ContractEventQuery,
         result: CursorResult,
     ) -> Optional[int]:
-        if result.rowcount == (query.stop_block - query.start_block) // query.step:
+        if result.first()[0] == (query.stop_block - query.start_block) // query.step:
             # NOTE: Assume 200 msec to get data from database
             return 200
 
