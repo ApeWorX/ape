@@ -100,7 +100,6 @@ class ApeCLI(click.MultiCommand):
             try:
                 return self.commands[name]()
             except Exception as err:
-                raise
                 logger.warn_from_exception(
                     err, f"Unable to load CLI endpoint for plugin 'ape_{name}'"
                 )
