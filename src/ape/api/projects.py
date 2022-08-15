@@ -146,8 +146,11 @@ class ProjectAPI(BaseInterfaceModel):
                 version = versions[0]
                 filtered_paths = [p for p in source_paths if p.suffix == ext]
                 version_map = {version: filtered_paths}
+            
+            settings = compiler.get_compiler_settings(source_paths,contracts_folder)
 
             for version, paths in version_map.items():
+                settings = compiler.get_compiler_settings(paths,contracts_folder)
                 source_ids = [str(get_relative_path(p, contracts_folder)) for p in paths]
                 filtered_contract_types = [
                     ct for ct in contract_types.values() if ct.source_id in source_ids
@@ -157,7 +160,7 @@ class ProjectAPI(BaseInterfaceModel):
                     Compiler(
                         name=compiler.name,
                         version=str(version),
-                        settings={},
+                        settings=settings,
                         contractTypes=contract_type_names,
                     )
                 )
