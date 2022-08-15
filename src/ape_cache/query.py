@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterator, List, Optional
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine import CursorResult  # type: ignore
-from sqlalchemy.sql import insert, text
+from sqlalchemy.sql import insert, text, select, column
 from sqlalchemy.sql.expression import Insert, TextClause
 
 from ape.api import QueryAPI, QueryType
@@ -205,49 +205,27 @@ class CacheQueryProvider(QueryAPI):
 
     @perform_query_clause.register
     def perform_block_clause(self, query: BlockQuery) -> TextClause:
-        return text(
-            """
-    SELECT :columns
-    FROM blocks
-    WHERE blocks.number >= :start_block
-    AND blocks.number <= :stop_block
-    AND blocks.number % :step = 0
-        """
-        ).bindparams(
-            columns=",".join(query.columns),
-            start_block=query.start_block,
-            stop_block=query.stop_block,
-            step=query.step,
-        )
+        return select([column(c) for c in query.columns]).where(
+            Blocks.number >= query.start_block).where(
+            Blocks.number <= query.stop_block).where(
+            Blocks.number % query.step == 0)
 
     @perform_query_clause.register
     def perform_transaction_clause(self, query: BlockTransactionQuery) -> TextClause:
-        return text(
-            """
-    SELECT :columns
-    FROM transactions
-    WHERE transactions.block_hash = :block_id
-        """
-        ).bindparams(columns=",".join(query.columns), block_id=query.block_id)
+        return select([column(c) for c in query.columns]).where(
+            Transactions.block_hash == query.block_id
+        )
 
     @perform_query_clause.register
     def perform_contract_event_clause(self, query: ContractEventQuery) -> TextClause:
-        return text(
-            """
-    SELECT :columns
-    FROM contract_events
-    WHERE contract_events.block_number >= :start_block
-    AND contract_events.block_number <= :stop_block
-    AND contract_events.block_number % :step = 0
-        """
-        ).bindparams(
-            columns=",".join(query.columns),
-            start_block=query.start_block,
-            stop_block=query.stop_block,
-            step=query.step,
+        return select([column(c) for c in query.columns]).where(
+            ContractEvents.block_number >= query.start_block).where(
+            ContractEvents.block_number <= query.stop_block).where(
+            ContractEvents.block_number % query.step == 0
         )
 
-    def perform_query(self, query: QueryType) -> Optional[pd.DataFrame]:  # type: ignore
+    @singledispatchmethod
+    def perform_query(self, query: QueryType) -> Optional[List]:  # type: ignore
         try:
             with self.database_connection as conn:
                 result = conn.execute(self.perform_query_clause(query))
@@ -256,8 +234,12 @@ class CacheQueryProvider(QueryAPI):
                     # NOTE: Should be unreachable if estimated correctly
                     raise QueryEngineError(f"Could not perform query:\n{query}")
 
-                # TODO: Fix this, should return an iterator
-                return pd.DataFrame(columns=query.columns, data=result.fetchall())
+                breakpoint()
+                for row in result:
+                    yield {key: value for (key, value) in row.items()}
+                # return [QueryType({key: value for (key, value) in row.items()} for row in result)]
+                # for row in result:
+                #     yield {key: value for (key, value) in row.items()}
 
         except QueryEngineError as err:
             logger.error(f"Database not initiated: {str(err)}")

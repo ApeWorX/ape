@@ -46,7 +46,7 @@ class DefaultQueryProvider(QueryAPI):
         return map(
             self.provider.get_block,
             # NOTE: the range stop block is a non-inclusive stop.
-            #       Where as the query method is an inclusive stop.
+            #       Where the query method is an inclusive stop.
             range(query.start_block, query.stop_block + 1, query.step),
         )
 
