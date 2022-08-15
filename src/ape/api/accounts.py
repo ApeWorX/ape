@@ -77,7 +77,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         self,
         txn: TransactionAPI,
         send_everything: bool = False,
-        raise_on_fail: bool = False,
+        raise_on_fail: bool = True,
     ) -> ReceiptAPI:
         """
         Make a transaction call.
@@ -437,7 +437,7 @@ class ImpersonatedAccount(AccountAPI):
         self,
         txn: TransactionAPI,
         send_everything: bool = False,
-        raise_on_fail: bool = False,
+        raise_on_fail: bool = True,
     ) -> ReceiptAPI:
         txn = self.prepare_transaction(txn)
         return self.provider.send_transaction(txn, raise_on_fail=raise_on_fail)

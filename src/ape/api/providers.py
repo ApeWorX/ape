@@ -331,7 +331,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = False) -> ReceiptAPI:
+    def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = True) -> ReceiptAPI:
         """
         Send a transaction to the network.
 
@@ -840,7 +840,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_hash: str,
         required_confirmations: int = 0,
         timeout: Optional[int] = None,
-        raise_on_fail: bool = False,
+        raise_on_fail: bool = True,
     ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
@@ -933,7 +933,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self._make_request("eth_getLogs", [filter_params])
 
-    def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = False) -> ReceiptAPI:
+    def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = True) -> ReceiptAPI:
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValueError as err:

@@ -124,7 +124,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         except TransactionFailed as err:
             raise self.get_virtual_machine_error(err, sender=txn.sender) from err
 
-    def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = False) -> ReceiptAPI:
+    def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = True) -> ReceiptAPI:
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except (ValidationError, TransactionFailed) as err:
