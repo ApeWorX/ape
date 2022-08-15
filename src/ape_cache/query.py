@@ -302,11 +302,7 @@ class CacheQueryProvider(QueryAPI):
         new_result = []
         table_columns = [c.key for c in Transactions.__table__.columns]  # type: ignore
         for val in [m for m in result]:
-            new_dict = {
-                k: v
-                for k, v in val.dict(by_alias=False).items()
-                if k in table_columns
-            }
+            new_dict = {k: v for k, v in val.dict(by_alias=False).items() if k in table_columns}
             for column in table_columns:
                 if column == "txn_hash":
                     new_dict["txn_hash"] = val.txn_hash  # type: ignore
