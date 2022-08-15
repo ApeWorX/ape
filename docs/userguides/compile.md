@@ -36,4 +36,4 @@ This is useful if you are unable or unwilling to install a compiler.
 
 If your project includes Solidity (`.sol`) or Vyper (`.vy`) files, you will have to install additional compilers.
 To include additional compilers in your project, you can add the plugins to the `plugins` list in your `ape-config.yaml` or install them using the CLI.
-For information on how to configure plugins in your project, follow [this guide](./installing_plugins.md).
+For information on how to configure plugins in your project, follow [this guide](./installing_plugins.html).
