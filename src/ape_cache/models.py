@@ -29,7 +29,7 @@ class Blocks(Base):
     timestamp = Column(BigInteger, index=True)
     gas_limit = Column(Integer, nullable=False)
     gas_used = Column(Integer, nullable=False)
-    base_fee = Column(Integer)
+    base_fee = Column(BigInteger, nullable=False)
     difficulty = Column(Numeric(scale=0), nullable=False)
     total_difficulty = Column(Numeric(scale=0), nullable=False)
 

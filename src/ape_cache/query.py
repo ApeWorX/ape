@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
+from hexbytes import HexBytes
 from sqlalchemy import create_engine
 from sqlalchemy.engine import CursorResult  # type: ignore
 from sqlalchemy.sql import column, insert, select, text
@@ -12,6 +13,7 @@ from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery,
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.utils import singledispatchmethod
+from ape_ethereum.ecosystem import Block
 
 from . import models
 from .models import Blocks, ContractEvents, Transactions
@@ -184,11 +186,11 @@ class CacheQueryProvider(QueryAPI):
         try:
             with self.database_connection as conn:
                 result = conn.execute(self.estimate_query_clause(query))
-
                 if not result:
                     return None
 
                 return self.compute_estimate(query, result)
+
         except QueryEngineError as err:
             logger.warning(f"Cannot perform query on cache database: {err}")
             return None
@@ -226,8 +228,7 @@ class CacheQueryProvider(QueryAPI):
             .where(ContractEvents.block_number % query.step == 0)
         )
 
-    @singledispatchmethod
-    def perform_query(self, query: QueryType) -> Optional[List]:  # type: ignore
+    def perform_query(self, query: QueryType) -> Optional[Iterator]:  # type: ignore
         try:
             with self.database_connection as conn:
                 result = conn.execute(self.perform_query_clause(query))
@@ -236,12 +237,15 @@ class CacheQueryProvider(QueryAPI):
                     # NOTE: Should be unreachable if estimated correctly
                     raise QueryEngineError(f"Could not perform query:\n{query}")
 
-                breakpoint()
                 for row in result:
-                    yield {key: value for (key, value) in row.items()}
-                # return [QueryType({key: value for (key, value) in row.items()} for row in result)]
-                # for row in result:
-                #     yield {key: value for (key, value) in row.items()}
+                    row_dict = {key: value for (key, value) in row.items()}
+                    row_dict["hash"] = HexBytes(row_dict["hash"])
+                    row_dict["parentHash"] = HexBytes(row_dict.pop("parent_hash"))
+                    row_dict["gasLimit"] = row_dict.pop("gas_limit")
+                    row_dict["gasUsed"] = row_dict.pop("gas_used")
+                    row_dict["baseFeePerGas"] = row_dict.pop("base_fee")
+                    row_dict["totalDifficulty"] = row_dict.pop("total_difficulty")
+                    yield Block(**row_dict)
 
         except QueryEngineError as err:
             logger.error(f"Database not initiated: {str(err)}")
