@@ -29,8 +29,7 @@ class DefaultQueryProvider(QueryAPI):
     @estimate_query.register
     def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> int:
         # NOTE: Very loose estimate of 1000ms per block for this query.
-        block = self.provider.get_block(query.block_id)
-        return block.num_transactions * 100
+        return self.provider.get_block(query.block_id).num_transactions * 100
 
     @estimate_query.register
     def estimate_contract_events_query(self, query: ContractEventQuery) -> int:
