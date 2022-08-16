@@ -277,3 +277,8 @@ def test_custom_num_of_test_accts_config(test_accounts, temp_config):
 
     with temp_config(test_config):
         assert len(test_accounts) == CUSTOM_NUMBER_OF_TEST_ACCOUNTS
+
+
+def test_test_accounts_repr(test_accounts):
+    actual = repr(test_accounts)
+    assert all(a.address in actual for a in test_accounts)
