@@ -342,7 +342,7 @@ class Ethereum(EcosystemAPI):
 
         elif isinstance(output_type, str) and is_array(output_type):
             sub_type = "[".join(output_type.split("[")[:-1])
-            return tuple([self.decode_primitive_value(v, sub_type) for v in value])
+            return [self.decode_primitive_value(v, sub_type) for v in value]
 
         elif isinstance(output_type, tuple):
             return tuple([self.decode_primitive_value(v, t) for v, t in zip(value, output_type)])
