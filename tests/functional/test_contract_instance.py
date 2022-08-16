@@ -285,7 +285,7 @@ def test_get_nested_array_mixed_dynamic(contract_instance, owner):
 
 def test_get_nested_address_array(contract_instance, sender):
     actual = contract_instance.getNestedAddressArray()
-    # assert len(actual) == 2
+    assert len(actual) == 2
     assert len(actual[0]) == 3
     assert len(actual[1]) == 3
     assert actual[0] == [sender, sender, sender]
