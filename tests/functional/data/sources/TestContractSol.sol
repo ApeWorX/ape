@@ -49,6 +49,10 @@ contract TestContractSol {
         uint256 bar;
     }
 
+    
+    uint256[][3] dynArray;
+    uint256[][3][][5] mixedArray;
+
     modifier onlyOwner() {
         require(msg.sender == owner, "!authorized");
         _;
@@ -56,6 +60,14 @@ contract TestContractSol {
 
     constructor() {
         owner = msg.sender;
+
+        dynArray[0] = [uint(0)];
+        dynArray[1] = [uint(0), 1];
+        dynArray[2] = [uint(0), 1, 2];
+
+        mixedArray[0].push(dynArray);
+        mixedArray[1].push(dynArray);
+        mixedArray[1].push(dynArray);
     }
 
     function fooAndBar() public {
@@ -168,5 +180,32 @@ contract TestContractSol {
         addresses[0] = msg.sender;
         int128[20] memory data;
         return (addresses, data);
+    }
+
+    function getNestedArrayFixedFixed() public view returns(uint256[2][3] memory) {
+        uint[2][3] memory arr = [[uint(1),2], [uint(3), 4], [uint(5), 6]];
+        return arr;
+    }
+
+    function getNestedArrayDynamicFixed() public view returns(uint256[2][] memory) {
+        uint[2][] memory arr = new uint[2][](3);
+        arr[0] = [uint(1), 2];
+        arr[1] = [uint(3), 4];
+        arr[2] = [uint(5), 6];
+        return arr;
+    }
+
+    function getNestedArrayFixedDynamic() public view returns(uint256[][3] memory) {
+        return dynArray;
+    }
+
+    function getNestedArrayMixedDynamic() public view returns(uint256[][3][][5] memory) {
+        return mixedArray;
+    }
+
+    function getNestedAddressArray() public view returns(address[3][] memory) {
+        address[3][] memory arr = new address[3][](2);
+        arr[0] = [msg.sender, msg.sender, msg.sender];
+        return arr;
     }
 }
