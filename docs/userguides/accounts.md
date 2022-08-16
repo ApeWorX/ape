@@ -44,7 +44,7 @@ Learn more about test accounts from the [testing guide](./testing.html#accounts-
 
 When using live networks, you need to get your accounts into Ape.
 Ape ships with a keyfile accounts plugin to assist with this.
-All the available CLI commands for the accounts plugin can be found [here](../commands/accounts.html).
+All the available CLI commands for this accounts plugin can be found [here](../commands/accounts.html).
 
 For example, you can [generate](../commands/accounts.html#accounts-generate) an account:
 
