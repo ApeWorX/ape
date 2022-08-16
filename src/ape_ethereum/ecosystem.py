@@ -117,9 +117,9 @@ class Block(BlockAPI):
 
     gas_limit: int = Field(alias="gasLimit")
     gas_used: int = Field(alias="gasUsed")
-    base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
-    difficulty: Optional[int] = None
-    total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
+    base_fee: int = Field(0, alias="baseFeePerGas")
+    difficulty: int = 0
+    total_difficulty: int = Field(0, alias="totalDifficulty")
 
 
 class Ethereum(EcosystemAPI):

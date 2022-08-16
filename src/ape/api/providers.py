@@ -58,9 +58,11 @@ class BlockAPI(BaseInterfaceModel):
     An abstract class representing a block and its attributes.
     """
 
+    # NOTE: All fields in this class (and it's subclasses) must not be `Optional`
+
     num_transactions: int = 0
     hash: Optional[Any] = None  # NOTE: pending block does not have a hash
-    number: Optional[int] = None
+    number: Optional[int] = None  # NOTE: pending block does not have a number
     parent_hash: Any = Field(
         EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
