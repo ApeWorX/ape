@@ -256,20 +256,24 @@ def test_get_tuple_of_address_array(contract_instance):
     assert all(x == ZERO_ADDRESS for x in actual[0][1:])
     assert actual[1] == [0] * 20
 
-def test_get_nested_array_fixed_fixed(solidity_contract_instance):
-    actual = solidity_contract_instance.getNestedArrayFixedFixed()
-    assert actual == [[1,2], [3, 4], [5, 6]]
 
-def test_get_nested_array_dynamic_fixed(solidity_contract_instance, owner):
-    actual = solidity_contract_instance.getNestedArrayDynamicFixed()
-    assert actual == [[1,2], [3, 4], [5, 6]]
+def test_get_nested_array_fixed_fixed(contract_instance):
+    actual = contract_instance.getNestedArrayFixedFixed()
+    assert actual == [[1, 2], [3, 4], [5, 6]]
 
-def test_get_nested_array_fixed_dynamic(solidity_contract_instance, owner):
-    actual = solidity_contract_instance.getNestedArrayFixedDynamic()
+
+def test_get_nested_array_dynamic_fixed(contract_instance, owner):
+    actual = contract_instance.getNestedArrayDynamicFixed()
+    assert actual == [[1, 2], [3, 4], [5, 6]]
+
+
+def test_get_nested_array_fixed_dynamic(contract_instance, owner):
+    actual = contract_instance.getNestedArrayFixedDynamic()
     assert actual == [[0], [0, 1], [0, 1, 2]]
 
-def test_get_nested_array_mixed_dynamic(solidity_contract_instance, owner):
-    actual = solidity_contract_instance.getNestedArrayMixedDynamic()
+
+def test_get_nested_array_mixed_dynamic(contract_instance, owner):
+    actual = contract_instance.getNestedArrayMixedDynamic()
     assert len(actual) == 5
     assert len(actual[0]) == 1
     assert len(actual[1]) == 2
@@ -278,13 +282,15 @@ def test_get_nested_array_mixed_dynamic(solidity_contract_instance, owner):
     assert actual[1][1] == [[0], [0, 1], [0, 1, 2]]
     assert actual[2] == actual[3] == actual[4] == []
 
-def test_get_nested_address_array(solidity_contract_instance, sender):
-    actual = solidity_contract_instance.getNestedAddressArray()
-    assert len(actual) == 2
+
+def test_get_nested_address_array(contract_instance, sender):
+    actual = contract_instance.getNestedAddressArray()
+    # assert len(actual) == 2
     assert len(actual[0]) == 3
     assert len(actual[1]) == 3
     assert actual[0] == [sender, sender, sender]
     assert actual[1] == [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]
+
 
 def test_call_transaction(contract_instance, owner, chain):
     # Transaction never submitted because using `call`.

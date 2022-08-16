@@ -7,6 +7,8 @@ contract TestContractSol {
     uint256 public prevNumber;
     address public theAddress;
     mapping(address => uint256) public balances;
+    uint256[][3] dynArray;
+    uint256[][3][][5] mixedArray;
 
     event NumberChange(
         bytes32 b,
@@ -48,10 +50,6 @@ contract TestContractSol {
         MyStruct[2] arr;
         uint256 bar;
     }
-
-    
-    uint256[][3] dynArray;
-    uint256[][3][][5] mixedArray;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "!authorized");

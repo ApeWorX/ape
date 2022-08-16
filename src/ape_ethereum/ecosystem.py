@@ -330,7 +330,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_primitive_value(
         self, value: Any, output_type: Union[str, Tuple, List]
-    ) -> Union[str, HexBytes, Tuple]:
+    ) -> Union[str, HexBytes, Tuple, List]:
         if output_type == "address":
             try:
                 return self.decode_address(value)
