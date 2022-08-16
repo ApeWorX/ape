@@ -7,7 +7,7 @@ There are typically two types of accounts:
 2. Live network accounts
 
 Test accounts are useful for local network testing and debugging contracts.
-Live network accounts are your real accounts where you should take pre-caution when it comes to securing its private key.
+Live network accounts are for interacting with live blockchains and should be secured.
 
 To learn more about Ethereum accounts, see [the Ethereum documentation](https://ethereum.org/en/developers/docs/accounts/).
 
@@ -50,7 +50,6 @@ For example, you can generate an account:
 ape accounts generate <ALIAS>
 ```
 
-It will prompt you for a private key.
 It will prompt you for a passphrase.
 
 If you already have an account and you wish to import it into Ape (say, from Metamask), you can use the `import` command:
@@ -81,6 +80,8 @@ from eth_account.messages import encode_defunct
 
 account = accounts.load("<ALIAS>")
 account.set_autosign(True, passphrase="<PASSPHRASE>")
+
+# Now, you will not be prompted to sign messages or transactions
 message = encode_defunct(text="Hello Apes!")
 signature = account.sign_message(message)
 ```
