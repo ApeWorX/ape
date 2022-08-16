@@ -111,6 +111,7 @@ setup(
         "singledispatchmethod ; python_version<'3.8'",
         "tqdm>=4.62.3,<5.0",
         "typing-extensions ; python_version<'3.8'",
+        "traitlets>=5.3.0",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=3.0.1,<4",
         "eth-account>=0.6.1,<0.7",

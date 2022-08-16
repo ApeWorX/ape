@@ -1,5 +1,4 @@
 from pathlib import Path
-from tokenize import String
 from typing import Dict, List, Optional, Set
 
 from ethpm_types import ContractType
@@ -38,9 +37,9 @@ class CompilerAPI(BaseInterfaceModel):
 
     def get_compiler_settings(
         self, contract_filepaths: List[Path], base_path: Optional[Path]
-    ) -> String:
+    ) -> Dict[Version, Dict]:
         """
-        Retreive the json of compiler settings in manifest
+        Retrieve the json of compiler settings in manifest
 
         Args:
             all_paths (List[pathlib.Path]): The list of paths.
