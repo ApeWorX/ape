@@ -246,12 +246,18 @@ class CacheQueryProvider(QueryAPI):
 
                 for row in result:
                     row_dict = {key: value for (key, value) in row.items()}
-                    row_dict["hash"] = HexBytes(row_dict["hash"])
-                    row_dict["parentHash"] = HexBytes(row_dict.pop("parent_hash"))
-                    row_dict["gasLimit"] = row_dict.pop("gas_limit")
-                    row_dict["gasUsed"] = row_dict.pop("gas_used")
-                    row_dict["baseFeePerGas"] = row_dict.pop("base_fee")
-                    row_dict["totalDifficulty"] = row_dict.pop("total_difficulty")
+                    if "hash" in row_dict:
+                        row_dict["hash"] = HexBytes(row_dict["hash"])
+                    if "parent_hash" in row_dict:
+                        row_dict["parentHash"] = HexBytes(row_dict.pop("parent_hash"))
+                    if "gas_limit" in row_dict:
+                        row_dict["gasLimit"] = row_dict.pop("gas_limit")
+                    if "gas_used" in row_dict:
+                        row_dict["gasUsed"] = row_dict.pop("gas_used")
+                    if "base_fee" in row_dict:
+                        row_dict["baseFeePerGas"] = row_dict.pop("base_fee")
+                    if "total_difficulty" in row_dict:
+                        row_dict["totalDifficulty"] = row_dict.pop("total_difficulty")
                     yield Block(**row_dict)
 
         except QueryEngineError as err:
