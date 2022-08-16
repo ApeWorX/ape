@@ -233,8 +233,6 @@ def test_parse_network_choice_multiple_contexts(switch_chain_id):
         finally:
             provider.network.name = original_name
 
-        provider
-
 
 def test_block_times(ethereum):
     assert ethereum.rinkeby.block_time == 15
