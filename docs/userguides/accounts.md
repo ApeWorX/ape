@@ -1,6 +1,6 @@
 # Accounts
 
-Accounts in Ape come from [AccountAPI](methoddocs/api.html#ape.api.accounts.AccountAPI) implementations (e.g. from plugins).
+Accounts in Ape come from [AccountAPI](../methoddocs/api.html#ape.api.accounts.AccountAPI) implementations (e.g. from plugins).
 There are typically two types of accounts:
 
 1. Test accounts
@@ -14,7 +14,7 @@ To learn more about Ethereum accounts, see [the Ethereum documentation](https://
 ## Test Accounts
 
 Ape ships with pytest fixtures to assist in writing your tests.
-Pre-funded test accounts are accessible via the `accounts` fixture.
+Pre-funded test accounts are accessible via the [accounts fixture](./testing.html#accounts-fixture).
 
 ```python
 def test_my_contract_method(accounts):
@@ -46,7 +46,7 @@ When using live networks, you need to get your accounts into Ape.
 Ape ships with a keyfile accounts plugin to assist with this.
 All the available CLI commands for the accounts plugin can be found [here](../commands/accounts.html).
 
-For example, you can generate an account:
+For example, you can [generate](../commands/accounts.html#accounts-generate) an account:
 
 ```bash
 ape accounts generate <ALIAS>
@@ -54,7 +54,7 @@ ape accounts generate <ALIAS>
 
 It will prompt you for a passphrase.
 
-If you already have an account and you wish to import it into Ape (say, from Metamask), you can use the `import` command:
+If you already have an account and you wish to import it into Ape (say, from Metamask), you can use the [import command](../commands/accounts.html#accounts-import):
 
 ```bash
 ape accounts import <ALIAS>

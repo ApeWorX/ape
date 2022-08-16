@@ -12,6 +12,9 @@ The following is an example test:
 def test_add():
     assert 1 + 1 == 2
 ```
+
+**NOTE**: `pytest` assumes the *actual* value is on the left and the *expected* value is on the right.
+
 ## Test Pattern
 
 Tests are generally divisible into three parts:
