@@ -339,7 +339,9 @@ class ContractEvent(ManagerAccessMixin):
 
     @property
     def log_filter(self):
-        return LogFilter(addresses=[self.contract], events=[self.abi])
+        return LogFilter.from_event(
+            event=self.abi, addresses=[self.contract.address], start_block=0
+        )
 
     @singledispatchmethod
     def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
@@ -572,10 +574,51 @@ class ContractInstance(BaseAddress):
         contract = a.deploy(project.MyContract)  # The result of 'deploy()' is a ContractInstance
     """
 
-    def __init__(self, address: AddressType, contract_type: ContractType) -> None:
+    def __init__(
+        self,
+        address: Union[AddressType, str],
+        contract_type: ContractType,
+        txn_hash: Optional[str] = None,
+    ) -> None:
         super().__init__()
         self._address = address
         self.contract_type = contract_type
+        self.txn_hash = txn_hash
+        self._cached_receipt: Optional[ReceiptAPI] = None
+
+    @classmethod
+    def from_receipt(cls, receipt: ReceiptAPI, contract_type: ContractType) -> "ContractInstance":
+        address = receipt.contract_address
+        if not address:
+            raise ContractError(
+                "Receipt missing 'contract_address' field. "
+                "Was this from a deploy transaction (e.g. `project.MyContract.deploy()`)?"
+            )
+
+        instance = cls(
+            address=address,
+            contract_type=contract_type,
+            txn_hash=receipt.txn_hash,
+        )
+        instance._cached_receipt = receipt
+        return instance
+
+    @property
+    def receipt(self) -> Optional[ReceiptAPI]:
+        """
+        The receipt associated with deploying the contract instance,
+        if it is known and exists.
+        """
+
+        if not self._cached_receipt and self.txn_hash:
+            receipt = self.provider.get_transaction(self.txn_hash)
+            self._cached_receipt = receipt
+            return receipt
+
+        elif self._cached_receipt:
+            return self._cached_receipt
+
+        return None
 
     def __repr__(self) -> str:
         contract_name = self.contract_type.name or "Unnamed contract"
@@ -589,7 +632,8 @@ class ContractInstance(BaseAddress):
         Returns:
             ``AddressType``
         """
-        return self._address
+
+        return self.provider.network.ecosystem.decode_address(self._address)
 
     @cached_property
     def _view_methods_(self) -> Dict[str, ContractCallHandler]:
@@ -774,7 +818,7 @@ class ContractContainer(ManagerAccessMixin):
 
         return self.chain_manager.contracts.get_deployments(self)
 
-    def at(self, address: AddressType) -> ContractInstance:
+    def at(self, address: AddressType, txn_hash: Optional[str] = None) -> ContractInstance:
         """
         Get a contract at the given address.
 
@@ -789,12 +833,16 @@ class ContractContainer(ManagerAccessMixin):
               **NOTE**: Things will not work as expected if the contract is not actually
               deployed to this address or if the contract at the given address has
               a different ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.
+            txn_hash (str): The hash of the transaction that deployed the contract, if
+              available. Defaults to ``None``.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`
         """
 
-        return self.chain_manager.contracts.instance_at(address, self.contract_type)
+        return self.chain_manager.contracts.instance_at(
+            address, self.contract_type, txn_hash=txn_hash
+        )
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
@@ -826,16 +874,12 @@ class ContractContainer(ManagerAccessMixin):
         if not receipt.contract_address:
             raise ContractError(f"'{receipt.txn_hash}' did not create a contract.")
 
-        address = click.style(receipt.contract_address, bold=True)
+        styled_address = click.style(receipt.contract_address, bold=True)
         contract_name = self.contract_type.name or "<Unnamed Contract>"
-        logger.success(f"Contract '{contract_name}' deployed to: {address}")
-
-        contract_instance = ContractInstance(
-            address=receipt.contract_address,  # type: ignore
-            contract_type=self.contract_type,
-        )
-        self.chain_manager.contracts[contract_instance.address] = contract_instance.contract_type
-        return contract_instance
+        logger.success(f"Contract '{contract_name}' deployed to: {styled_address}")
+        instance = ContractInstance.from_receipt(receipt, self.contract_type)
+        self.chain_manager.contracts.cache_deployment(instance)
+        return instance
 
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:

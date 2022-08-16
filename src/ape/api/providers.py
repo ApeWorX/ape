@@ -48,6 +48,7 @@ from ape.utils import (
     cached_property,
     gas_estimation_error_message,
     raises_not_implemented,
+    run_until_complete,
     spawn,
 )
 
@@ -587,7 +588,7 @@ class TestProviderAPI(ProviderAPI):
 class Web3Provider(ProviderAPI, ABC):
     """
     A base provider mixin class that uses the
-    [web3.py](https://web3py.readthedocs.io/en/stable/) python package.
+    `web3.py <https://web3py.readthedocs.io/en/stable/>`__ python package.
     """
 
     _web3: Optional[Web3] = None
@@ -595,6 +596,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def web3(self) -> Web3:
+        """
+        Access to the ``web3`` object as if you did ``Web3(HTTPProvder(uri))``.
+        """
+
         if not self._web3:
             raise ProviderNotConnectedError()
 
@@ -627,7 +632,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def is_connected(self) -> bool:
-        return self._web3 is not None and self._web3.isConnected()
+        if self._web3 is None:
+            return False
+
+        return run_until_complete(self._web3.isConnected())
 
     def update_settings(self, new_settings: dict):
         self.disconnect()
@@ -635,6 +643,24 @@ class Web3Provider(ProviderAPI, ABC):
         self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
+        """
+        Estimate the cost of gas for a transaction.
+
+        Args:
+            txn (:class:`~ape.api.transactions.TransactionAPI`):
+                The transaction to estimate the gas for.
+            kwargs:
+                * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
+                  to use when estimating the transaction. Useful for
+                  checking a past estimation cost of a transaction.
+                * ``state_overrides`` (Dict): Modify the state of the blockchain
+                  prior to estimation.
+
+        Returns:
+            int: The estimated cost of gas to execute the transaction
+            reported in the fee-currency's smallest unit, e.g. Wei.
+        """
+
         txn_dict = txn.dict()
         try:
             block_id = kwargs.pop("block_identifier", None)
@@ -676,10 +702,24 @@ class Web3Provider(ProviderAPI, ABC):
     def get_block(self, block_id: BlockID) -> BlockAPI:
         if isinstance(block_id, str) and block_id.isnumeric():
             block_id = int(block_id)
+
         block_data = dict(self.web3.eth.get_block(block_id))
         return self.network.ecosystem.decode_block(block_data)
 
     def get_nonce(self, address: str, **kwargs) -> int:
+        """
+        Get the number of times an account has transacted.
+
+        Args:
+            address (str): The address of the account.
+            kwargs:
+                * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
+                  for checking a previous account nonce.
+
+        Returns:
+            int
+        """
+
         block_id = kwargs.pop("block_identifier", None)
         return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
@@ -690,6 +730,20 @@ class Web3Provider(ProviderAPI, ABC):
         return self.web3.eth.get_code(address)
 
     def get_storage_at(self, address: str, slot: int, **kwargs) -> bytes:
+        """
+        Gets the raw value of a storage slot of a contract.
+
+        Args:
+            address (str): The address of the contract.
+            slot (int): Storage slot to read the value of.
+            kwargs:
+                * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
+                  for checking previous contract storage values.
+
+        Returns:
+            bytes: The value of the storage slot.
+        """
+
         block_id = kwargs.pop("block_identifier", None)
         try:
             return self.web3.eth.get_storage_at(
@@ -702,16 +756,49 @@ class Web3Provider(ProviderAPI, ABC):
             raise  # Raise original error
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
+        """
+        Execute a new transaction call immediately without creating a
+        transaction on the block chain.
+
+        Args:
+            txn: :class:`~ape.api.transactions.TransactionAPI`
+            kwargs:
+                * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
+                  to use to send a call at a historical point of a contract.
+                  checking a past estimation cost of a transaction.
+                * ``state_overrides`` (Dict): Modify the state of the blockchain
+                  prior to sending the call, for testing purposes.
+
+        Returns:
+            str: The result of the transaction call.
+        """
+
         try:
             block_id = kwargs.pop("block_identifier", None)
             state = kwargs.pop("state_override", None)
-            return self.web3.eth.call(txn.dict(), block_identifier=block_id, state_override=state)
+            return self.web3.eth.call(txn.dict(), block_id, state)  # type: ignore
+
         except ValueError as err:
             raise self.get_virtual_machine_error(err) from err
 
     def get_transaction(
         self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
     ) -> ReceiptAPI:
+        """
+        Get the information about a transaction from a transaction hash.
+
+        Args:
+            txn_hash (str): The hash of the transaction to retrieve.
+            required_confirmations (int): The amount of block confirmations
+              to wait before returning the receipt.
+            timeout (Optional[int]): The amount of time to wait for a receipt
+              before timing out.
+
+        Returns:
+            :class:`~api.providers.ReceiptAPI`:
+            The receipt of the transaction with the given hash.
+        """
+
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
 
@@ -781,13 +868,7 @@ class Web3Provider(ProviderAPI, ABC):
         if not raw:
             return [vars(d) for d in self.web3.eth.get_logs(filter_params)]
 
-        response = self.web3.provider.make_request(RPCEndpoint("eth_getLogs"), [filter_params])
-        if "error" not in response:
-            return response["result"]
-
-        error = response["error"]
-        message = error["message"] if isinstance(error, dict) and "message" in error else str(error)
-        raise ValueError(message)
+        return self._make_request("eth_getLogs", [filter_params])
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
@@ -808,6 +889,22 @@ class Web3Provider(ProviderAPI, ABC):
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self._try_track_receipt(receipt)
         return receipt
+
+    def _make_request(self, endpoint: str, parameters: List) -> Any:
+        coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+        result = run_until_complete(coroutine)
+
+        if "error" in result:
+            error = result["error"]
+            message = (
+                error["message"] if isinstance(error, dict) and "message" in error else str(error)
+            )
+            raise ProviderError(message)
+
+        elif "result" in result:
+            return result.get("result", {})
+
+        return result
 
 
 class UpstreamProvider(ProviderAPI):

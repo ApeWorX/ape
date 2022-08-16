@@ -55,7 +55,7 @@ def main():
 or
 
 ```python
-from ape import project, chain, accounts
+from ape import project, accounts
 
 def main():
   account = accounts.test_accounts[0]

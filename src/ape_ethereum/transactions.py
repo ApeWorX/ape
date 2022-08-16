@@ -2,8 +2,8 @@ import sys
 from enum import Enum, IntEnum
 from typing import IO, Dict, Iterator, List, Optional, Union
 
-from eth_abi import decode_abi
-from eth_account import Account as EthAccount  # type: ignore
+from eth_abi import decode
+from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
@@ -170,7 +170,7 @@ class Receipt(ReceiptAPI):
             ):
                 suffix = default_message
             else:
-                decoded_result = decode_abi(("string",), call_tree.returndata[4:])
+                decoded_result = decode(("string",), call_tree.returndata[4:])
                 if len(decoded_result) == 1:
                     suffix = f'reverted with message: "{decoded_result[0]}"'
                 else:
@@ -238,10 +238,10 @@ class Receipt(ReceiptAPI):
 
         # ds-note data field uses either (uint256,bytes) or (bytes) encoding
         # instead of guessing, assume the payload begins right after the selector
-        data = decode_hex(log["data"])
+        data = decode_hex(log["data"]) if isinstance(log["data"], str) else log["data"]
         input_types = [i.canonical_type for i in method_abi.inputs]
         start_index = data.index(selector) + 4
-        values = decode_abi(input_types, data[start_index:])
+        values = decode(input_types, data[start_index:])
         address = self.provider.network.ecosystem.decode_address(log["address"])
 
         return ContractLog(

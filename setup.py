@@ -23,11 +23,11 @@ extras_require = {
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
         "types-pkg-resources",  # NOTE: Needed due to mypy typeshed
+        "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy typeshed
         "flake8>=4.0.1,<5.0",  # Style linter
         "flake8-breakpoint>=1.1.0,<2.0.0",  # detect breakpoints left in code
         "flake8-print>=4.0.0,<5.0.0",  # detect print statements left in code
         "isort>=5.10.1,<6.0",  # Import sorting linter
-        "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy types
     ],
     "doc": [
         "myst-parser>=0.17.0,<0.18",  # Tools for parsing markdown files in the docs
@@ -93,34 +93,35 @@ setup(
     include_package_data=True,
     install_requires=[
         "backports.cached_property ; python_version<'3.8'",
-        "click>=8.1.0",
-        "ethpm-types>=0.3.2,<0.4.0",
-        "eip712>=0.1.0,<0.2",
-        "evm-trace>=0.1.0.a6",
-        "hexbytes>=0.2.2,<1.0.0",
-        "packaging>=20.9,<21.0",
-        "pandas>=1.3.0,<2.0",
-        "pluggy>=0.13.1,<1.0",
-        "pydantic>=1.9.0,<2.0",
-        "PyGithub>=1.54,<2.0",
-        "pygit2>=1.7.2,<2.0",
-        "pyyaml>=0.2.5",
-        "py-geth>=3.6.0",
-        "requests>=2.28.1,<3.0",
+        "click>=8.1.3,<9",
+        "ijson>=3.1.4,<4",
         "importlib-metadata",
-        "singledispatchmethod ; python_version<'3.8'",
-        "IPython>=7.31.1",
+        "ipython>=7.31.1,<8",
+        "packaging>=20.9,<21",
+        "pandas>=1.3.0,<2",
+        "pluggy>=1.0.0,<2",
+        "pydantic>=1.9.0,<2",
+        "pygit2>=1.7.2,<2",
+        "PyGithub>=1.54,<2",
         "pytest>=6.0,<8.0",
+        "python-dateutil>=2.8.2,<3",
+        "pyyaml>=6.0,<7",
+        "requests>=2.28.1,<3",
         "rich>=10.14,<11",
+        "singledispatchmethod ; python_version<'3.8'",
         "tqdm>=4.62.3,<5.0",
         "typing-extensions ; python_version<'3.8'",
-        "python-dateutil>=2.8.2,<3.0",
-        "web3[tester]>=5.29.0,<6.0",
-        "eth-abi>=2.1.1,<3.0",
-        "eth-utils>=1.10.0,<2.0",
-        "eth-rlp>=0.2.1,<0.3",
-        "eth-account==0.5.7",
-        "ijson>=3.1.4",
+        # ** Dependencies maintained by Ethereum Foundation **
+        "eth-abi>=3.0.1,<4",
+        "eth-account>=0.6.1,<0.7",
+        "eth-utils>=2.0.0,<3",
+        "hexbytes>=0.2.2,<1",
+        "py-geth>=3.8.0,<4",
+        "web3[tester]==6.0.0b4",
+        # ** Dependencies maintained by Apeworx **
+        "eip712>=0.1.1,<0.2",
+        "ethpm-types>=0.3.2,<0.4",
+        "evm-trace>=0.1.0.a6",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

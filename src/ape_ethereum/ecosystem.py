@@ -2,8 +2,7 @@ import re
 from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
-from eth_abi import decode_abi as abi_decode
-from eth_abi import encode_abi as abi_encode
+from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, decode_hex, encode_hex, keccak, to_bytes, to_checksum_address
@@ -291,16 +290,15 @@ class Ethereum(EcosystemAPI):
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
         if abi.inputs:
             input_types = [i.canonical_type for i in abi.inputs]
-            return abi_encode(input_types, args)
+            return encode(input_types, args)
 
-        else:
-            return HexBytes(b"")
+        return HexBytes(b"")
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
 
         try:
-            vm_return_values = abi_decode(output_types, raw_data)
+            vm_return_values = decode(output_types, raw_data)
         except InsufficientDataBytes as err:
             raise DecodingError() from err
 
@@ -332,7 +330,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_primitive_value(
         self, value: Any, output_type: Union[str, Tuple, List]
-    ) -> Union[str, HexBytes, Tuple]:
+    ) -> Union[str, HexBytes, Tuple, List]:
         if output_type == "address":
             try:
                 return self.decode_address(value)
@@ -343,8 +341,8 @@ class Ethereum(EcosystemAPI):
             return HexBytes(value)
 
         elif isinstance(output_type, str) and is_array(output_type):
-            sub_type = output_type.split("[")[0]
-            return tuple([self.decode_primitive_value(v, sub_type) for v in value])
+            sub_type = "[".join(output_type.split("[")[:-1])
+            return [self.decode_primitive_value(v, sub_type) for v in value]
 
         elif isinstance(output_type, tuple):
             return tuple([self.decode_primitive_value(v, t) for v, t in zip(value, output_type)])

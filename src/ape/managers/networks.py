@@ -29,7 +29,10 @@ class NetworkManager(BaseManager):
     _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} active_provider={repr(self.active_provider)}>"
+        provider = self.active_provider
+        class_name = self.__class__.__name__
+        content = f"{class_name} active_provider={repr(provider)}" if provider else class_name
+        return f"<{content}>"
 
     @property
     def active_provider(self) -> Optional[ProviderAPI]:

@@ -1,13 +1,14 @@
+import asyncio
 import json
 import sys
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Coroutine, Dict, List, Mapping, Optional
 
 import requests
 import yaml
 from hexbytes import HexBytes
-from importlib_metadata import PackageNotFoundError, packages_distributions
+from importlib_metadata import PackageNotFoundError, distributions, packages_distributions
 from importlib_metadata import version as version_metadata
 from tqdm.auto import tqdm  # type: ignore
 
@@ -45,6 +46,23 @@ def get_distributions():
     return packages_distributions()
 
 
+@lru_cache(maxsize=None)
+def _get_distributions(pkg_name: str) -> List:
+    """
+    Get a mapping of top-level packages to their distributions.
+    """
+
+    distros = []
+    all_distros = distributions()
+    for dist in all_distros:
+        package_names = (dist.read_text("top_level.txt") or "").split()
+        for name in package_names:
+            if name == pkg_name:
+                distros.append(dist)
+
+    return distros
+
+
 def get_package_version(obj: Any) -> str:
     """
     Get the version of a single package.
@@ -64,16 +82,25 @@ def get_package_version(obj: Any) -> str:
         obj = obj.__name__
 
     # Reduce module string to base package
-    # NOTE: Assumed that string input is module name e.g. ``__name__``
+    # NOTE: Assumed that string input is module name e.g. `__name__`
     pkg_name = obj.split(".")[0]
 
     # NOTE: In case the distribution and package name differ
-    dists = get_distributions()
-    if pkg_name in dists:
-        # NOTE: Shouldn't really be more than 1, but never know
-        if len(dists[pkg_name]) != 1:
-            logger.warning(f"duplicate pkg_name '{pkg_name}'")
-        pkg_name = dists[pkg_name][0]
+    dists = _get_distributions(pkg_name)
+    if dists:
+        num_packages = len(dists)
+        pkg_name = dists[0].metadata["Name"]
+
+        if num_packages != 1:
+            # Warn that there are more than 1 package with this name,
+            # which can lead to odd behaviors.
+            found_paths = [str(d._path) for d in dists if hasattr(d, "_path")]
+            found_paths_str = ",\n\t".join(found_paths)
+            message = f"Found {num_packages} packages named '{pkg_name}'."
+            if found_paths:
+                message = f"{message}\nInstallation paths:\n\t{found_paths_str}"
+
+            logger.warning(message)
 
     try:
         return str(version_metadata(pkg_name))
@@ -256,14 +283,33 @@ def to_int(value) -> int:
     raise ValueError(f"cannot convert {repr(value)} to int")
 
 
+def run_until_complete(item: Any) -> Any:
+    """
+    Completes the given coroutine and returns its value.
+
+    Args:
+        item (Any): A return value from a potentially async method.
+
+    Returns:
+        (Any): The value that results in awaiting the coroutine.
+          Else, ``item`` if ``item`` is not a coroutine.
+    """
+
+    if not isinstance(item, Coroutine):
+        return item
+
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(item)
+
+
 __all__ = [
     "cached_property",
-    "expand_environment_variables",
     "extract_nested_value",
     "gas_estimation_error_message",
     "get_package_version",
     "load_config",
     "raises_not_implemented",
+    "run_until_complete",
     "singledispatchmethod",
     "stream_response",
     "USER_AGENT",

@@ -102,11 +102,16 @@ def test_transfer_using_type_0(sender, receiver):
 def test_deploy(owner, contract_container, chain, clean_contracts_cache):
     contract = owner.deploy(contract_container)
     assert contract.address
+    assert contract.txn_hash
+
+    # Deploy again to prove that we get the correct txn_hash below
+    owner.deploy(contract_container)
 
     # Verify can reload same contract from cache
     contract_from_cache = ape.Contract(contract.address)
     assert contract_from_cache.contract_type == contract.contract_type
     assert contract_from_cache.address == contract.address
+    assert contract_from_cache.txn_hash == contract.txn_hash
 
 
 def test_contract_calls(owner, contract_instance):

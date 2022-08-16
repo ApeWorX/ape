@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import mkdtemp
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
-from eth_account import Account as EthAccount  # type: ignore
+from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
@@ -66,6 +66,9 @@ class EcosystemAPI(BaseInterfaceModel):
     """A shareable HTTP header for network requests."""
 
     _default_network: str = LOCAL_NETWORK_NAME
+
+    def __repr__(self) -> str:
+        return f"<{self.name}>"
 
     @classmethod
     @abstractmethod
@@ -557,9 +560,8 @@ class NetworkAPI(BaseInterfaceModel):
 
         data_folder = mkdtemp()
         request_header = cls.config_manager.REQUEST_HEADER
-        ethereum = ethereum_class(
-            data_folder=data_folder, request_header=request_header
-        )  # type: ignore
+        init_kwargs = {"data_folder": data_folder, "request_header": request_header}
+        ethereum = ethereum_class(**init_kwargs)  # type: ignore
         return cls(
             name="adhoc",
             ecosystem=ethereum,
@@ -569,7 +571,15 @@ class NetworkAPI(BaseInterfaceModel):
         )
 
     def __repr__(self) -> str:
-        return f"<{self.name} chain_id={self.chain_id}>"
+        try:
+            chain_id = self.chain_id
+        except ProviderNotConnectedError:
+            # Only happens on local networks
+            chain_id = None
+
+        network_key = f"{self.ecosystem.name}:{self.name}"
+        content = f"{network_key} chain_id={self.chain_id}" if chain_id is not None else network_key
+        return f"<{content}>"
 
     @property
     def config(self) -> PluginConfig:
@@ -582,7 +592,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     @property
     def _network_config(self) -> Dict:
-        return self.config.dict().get(self.name, {})
+        return self.config.get(self.name, {})
 
     @property
     def chain_id(self) -> int:
@@ -593,15 +603,7 @@ class NetworkAPI(BaseInterfaceModel):
         :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
         """
 
-        provider = self.ecosystem.network_manager.active_provider
-
-        if not provider:
-            message = (
-                "Cannot determine 'chain_id', please make sure you are connected to a provider."
-            )
-            raise NetworkError(message)
-
-        return provider.chain_id
+        return self.provider.chain_id
 
     @property
     def network_id(self) -> int:
@@ -635,6 +637,7 @@ class NetworkAPI(BaseInterfaceModel):
               mainnet:
                 block_time: 15
         """
+
         return self._network_config.get("block_time", 0)
 
     @property

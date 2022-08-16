@@ -1,6 +1,7 @@
 import functools
 import importlib
 import pkgutil
+import re
 from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, Type, cast
 
 from ape.__modules__ import __modules__
@@ -125,15 +126,33 @@ class PluginManager:
     def __init__(self) -> None:
         # NOTE: This actually loads the plugins, and should only be done once
         for _, name, ispkg in pkgutil.iter_modules():
-            if name.startswith("ape_") and ispkg:
-                try:
-                    plugin_manager.register(importlib.import_module(name))
-                except Exception as err:
-                    if name in __modules__:
-                        # Don't except errors from first class plugins.
-                        raise
+            editable_key = "__editable___"
+            if name.startswith(f"{editable_key}ape_"):
+                # Handle strange editable install behavior
+                pattern = rf"{editable_key}(\w*)(_\d+_\d+_\d+a?\d*_dev\d+_[a-z|\d]{{8}}_finder)"
+                match = re.match(pattern, name)
+                if not match:
+                    continue
 
-                    logger.warn_from_exception(err, f"Error loading plugin package '{name}'.")
+                groups = match.groups()
+                if not groups:
+                    continue
+
+                name = groups[0]
+                ispkg = True
+
+            if not name.startswith("ape_") or not ispkg:
+                continue
+
+            try:
+                module = importlib.import_module(name)
+                plugin_manager.register(module)
+            except Exception as err:
+                if name in __modules__:
+                    # Always raise core plugin registration errors.
+                    raise
+
+                logger.warn_from_exception(err, f"Error loading plugin package '{name}'.")
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"

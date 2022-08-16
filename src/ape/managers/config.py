@@ -182,7 +182,7 @@ class ConfigManager(BaseInterfaceModel):
             user_override = user_config.pop(plugin_name, {})
             if config_class != ConfigDict:
                 # NOTE: Will raise if improperly provided keys
-                config = config_class(**user_override)  # type: ignore
+                config = config_class.from_overrides(user_override)  # type: ignore
             else:
                 # NOTE: Just use it directly as a dict if `ConfigDict` is passed
                 config = user_override
@@ -274,4 +274,6 @@ class ConfigManager(BaseInterfaceModel):
         self.PROJECT_FOLDER = initial_project_folder
         self.contracts_folder = initial_contracts_folder
         self.project_manager.path = initial_project_folder
-        os.chdir(initial_project_folder)
+
+        if initial_project_folder.is_dir():
+            os.chdir(initial_project_folder)

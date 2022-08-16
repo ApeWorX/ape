@@ -45,8 +45,7 @@ class SignatureError(AccountsError):
 
 class ContractError(ApeException):
     """
-    Raised when issues occur when interacting with a contract
-    (calls or transactions).
+    Raised when issues occur with contracts.
     """
 
 

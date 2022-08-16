@@ -14,6 +14,8 @@ from .base import BaseManager
 
 
 class TestAccountManager(list, ManagerAccessMixin):
+    __test__ = False
+
     @property
     def containers(self) -> Dict[str, TestAccountContainerAPI]:
         containers = {}

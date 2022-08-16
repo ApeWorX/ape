@@ -74,6 +74,11 @@ def project_manager():
 
 
 @pytest.fixture(scope="session")
+def dependency_manager(project_manager):
+    return project_manager.dependency_manager
+
+
+@pytest.fixture(scope="session")
 def keyparams():
     # NOTE: password is 'a'
     return {
@@ -119,9 +124,17 @@ def networks_connected_to_tester():
         yield ape.networks
 
 
+@pytest.fixture
+def networks_disconnected(networks):
+    provider = networks.active_provider
+    networks.active_provider = None
+    yield networks
+    networks.active_provider = provider
+
+
 @pytest.fixture(scope="session")
-def ethereum(networks_connected_to_tester):
-    return networks_connected_to_tester.ethereum
+def ethereum(networks):
+    return networks.ethereum
 
 
 @pytest.fixture(scope="session")

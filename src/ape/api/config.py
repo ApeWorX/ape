@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, BaseSettings
 
@@ -22,14 +22,34 @@ class PluginConfig(BaseSettings):
     a config API must register a subclass of this class.
     """
 
-    def __getitem__(self, attr_name: str) -> Any:
+    @classmethod
+    def from_overrides(cls, overrides: Dict) -> "PluginConfig":
+        default_values = cls().dict()
+
+        def update(root: Dict, value_map: Dict):
+            for key, val in value_map.items():
+                if key in root and isinstance(val, dict):
+                    root[key] = update(root[key], val)
+                else:
+                    root[key] = val
+
+            return root
+
+        return cls(**update(default_values, overrides))
+
+    def __getattr__(self, attr_name: str) -> Any:
         # allow hyphens in plugin config files
         attr_name = attr_name.replace("-", "_")
+        return super().__getattribute__(attr_name)
 
-        if not hasattr(self, attr_name):
-            raise AttributeError(f"{self.__class__.__name__} has no attr '{attr_name}'")
+    def __getitem__(self, item: str) -> Any:
+        return self.__dict__[item]
 
-        return getattr(self, attr_name)
+    def __contains__(self, key: str) -> bool:
+        return key in self.__dict__
+
+    def get(self, key: str, default: Optional[Any] = None) -> Any:
+        return self.__dict__.get(key, default)
 
 
 class GenericConfig(PluginConfig):

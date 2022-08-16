@@ -5,7 +5,8 @@ from eth_utils import is_checksum_address
 from hexbytes import HexBytes
 
 from ape import Contract
-from ape.exceptions import ChainError
+from ape.contracts import ContractInstance
+from ape.exceptions import ChainError, ContractError
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
@@ -16,7 +17,9 @@ MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
 def test_init_at_unknown_address(networks_connected_to_tester):
     _ = networks_connected_to_tester  # Need fixture or else get ProviderNotConnectedError
-    with pytest.raises(ChainError):
+    with pytest.raises(
+        ChainError, match=f"Failed to get contract type for address '{TEST_ADDRESS}'."
+    ):
         Contract(TEST_ADDRESS)
 
 
@@ -254,6 +257,41 @@ def test_get_tuple_of_address_array(contract_instance):
     assert actual[1] == [0] * 20
 
 
+def test_get_nested_array_fixed_fixed(contract_instance):
+    actual = contract_instance.getNestedArrayFixedFixed()
+    assert actual == [[1, 2], [3, 4], [5, 6]]
+
+
+def test_get_nested_array_dynamic_fixed(contract_instance, owner):
+    actual = contract_instance.getNestedArrayDynamicFixed()
+    assert actual == [[1, 2], [3, 4], [5, 6]]
+
+
+def test_get_nested_array_fixed_dynamic(contract_instance, owner):
+    actual = contract_instance.getNestedArrayFixedDynamic()
+    assert actual == [[0], [0, 1], [0, 1, 2]]
+
+
+def test_get_nested_array_mixed_dynamic(contract_instance, owner):
+    actual = contract_instance.getNestedArrayMixedDynamic()
+    assert len(actual) == 5
+    assert len(actual[0]) == 1
+    assert len(actual[1]) == 2
+    assert actual[0][0] == [[0], [0, 1], [0, 1, 2]]
+    assert actual[1][0] == [[0], [0, 1], [0, 1, 2]]
+    assert actual[1][1] == [[0], [0, 1], [0, 1, 2]]
+    assert actual[2] == actual[3] == actual[4] == []
+
+
+def test_get_nested_address_array(contract_instance, sender):
+    actual = contract_instance.getNestedAddressArray()
+    assert len(actual) == 2
+    assert len(actual[0]) == 3
+    assert len(actual[1]) == 3
+    assert actual[0] == [sender, sender, sender]
+    assert actual[1] == [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]
+
+
 def test_call_transaction(contract_instance, owner, chain):
     # Transaction never submitted because using `call`.
     init_block = chain.blocks[-1]
@@ -286,3 +324,20 @@ def test_call_transact(vyper_contract_instance, owner):
     receipt = vyper_contract_instance.myNumber.transact(sender=owner)
     assert receipt.sender == owner
     assert receipt.status == TransactionStatusEnum.NO_ERROR
+
+
+def test_receipt(contract_instance, owner):
+    receipt = contract_instance.receipt
+    assert receipt.txn_hash == contract_instance.txn_hash
+    assert receipt.contract_address == contract_instance.address
+    assert receipt.sender == owner
+
+
+def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
+    receipt = contract_instance.setNumber(123, sender=owner)
+    expected_err = (
+        "Receipt missing 'contract_address' field. "
+        "Was this from a deploy transaction (e.g. `project.MyContract.deploy()`)?"
+    )
+    with pytest.raises(ContractError, match=expected_err):
+        ContractInstance.from_receipt(receipt, contract_instance.contract_type)

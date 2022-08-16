@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
-from packaging import version as version_util
+from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
 
 from ape.exceptions import APINotImplementedError, ProjectError
@@ -234,10 +234,13 @@ class DependencyAPI(BaseInterfaceModel):
     @property
     def _target_manifest_cache_file(self) -> Path:
         version_id = self.version_id
-        if isinstance(
-            version_util.parse(version_id), version_util.Version
-        ) and not version_id.startswith("v"):
-            version_id = f"v{version_id}"
+
+        try:
+            _ = Version(version_id)  # Will raise if can't parse
+            if not version_id.startswith("v"):
+                version_id = f"v{version_id}"
+        except InvalidVersion:
+            pass
 
         name = self.name
         return self.config_manager.packages_folder / name / version_id / f"{name}.json"

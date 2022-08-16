@@ -14,8 +14,11 @@ from hexbytes import HexBytes
 
 import ape
 from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError
+from ape.logging import LogLevel
+from ape.logging import logger as _logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType, ContractLog
 
@@ -150,7 +153,7 @@ def vyper_contract_container(vyper_contract_type) -> ContractContainer:
 def vyper_contract_instance(
     owner, vyper_contract_container, networks_connected_to_tester
 ) -> ContractInstance:
-    return owner.deploy(vyper_contract_container)
+    return owner.deploy(vyper_contract_container, required_confirmations=0)
 
 
 @pytest.fixture(params=("solidity", "vyper"))
@@ -205,10 +208,10 @@ def project_with_contract(config):
 
 @pytest.fixture
 def clean_contracts_cache(chain):
-    original_cached_contracts = chain.contracts._local_contracts
-    chain.contracts._local_contracts = {}
+    original_cached_contracts = chain.contracts._local_contract_types
+    chain.contracts._local_contract_types = {}
     yield
-    chain.contracts._local_contracts = original_cached_contracts
+    chain.contracts._local_contract_types = original_cached_contracts
 
 
 @pytest.fixture
@@ -243,7 +246,7 @@ def mainnet_contract(chain):
             / f"{address}.json"
         )
         contract = ContractType.parse_file(path)
-        chain.contracts._local_contracts[address] = contract
+        chain.contracts._local_contract_types[address] = contract
         return contract
 
     return contract_getter
@@ -374,3 +377,23 @@ def remove_disk_writes_deployments(chain):
 
     if chain.contracts._deployments_mapping_cache.exists():
         chain.contracts._deployments_mapping_cache.unlink()
+
+
+@pytest.fixture
+def logger():
+    return _logger
+
+
+@pytest.fixture
+def use_debug(logger):
+    initial_level = logger.level
+    logger.set_level(LogLevel.DEBUG)
+    yield
+    logger.set_level(initial_level)
+
+
+@pytest.fixture
+def dummy_live_network(chain):
+    chain.provider.network.name = "rinkeby"
+    yield
+    chain.provider.network.name = LOCAL_NETWORK_NAME

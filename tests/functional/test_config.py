@@ -3,8 +3,10 @@ from typing import Dict
 
 import pytest
 
+from ape.api import PluginConfig
 from ape.exceptions import NetworkError
 from ape.managers.config import DeploymentConfigCollection
+from ape_ethereum.ecosystem import NetworkConfig
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 
@@ -43,6 +45,16 @@ def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "l
     }
 
 
+def test_ethereum_network_configs(config, temp_config):
+    eth_config = {"ethereum": {"rinkeby": {"default_provider": "test"}}}
+    with temp_config(eth_config):
+        actual = config.get_config("ethereum")
+        assert actual.rinkeby.default_provider == "test"
+
+        # Ensure that non-updated fields remain unaffected
+        assert actual.rinkeby.block_time == 15
+
+
 def test_default_provider_not_found(temp_config, networks):
     provider_name = "DOES_NOT_EXIST"
     network_name = "local"
@@ -61,3 +73,27 @@ def test_dependencies(dependency_config, config):
     assert config.dependencies[0].name == "testdependency"
     assert config.dependencies[0].contracts_folder == "source/v0.1"
     assert config.dependencies[0].local == str(PROJECT_WITH_LONG_CONTRACTS_FOLDER)
+
+
+def test_config_access():
+    config = NetworkConfig()
+    assert "default_provider" in config
+    assert (
+        config.default_provider
+        == config["default_provider"]
+        == getattr(config, "default-provider")
+        == "geth"
+    )
+
+
+def test_plugin_config_updates_when_default_is_empty_dict():
+    class SubConfig(PluginConfig):
+        foo: int = 0
+        bar: int = 1
+
+    class MyConfig(PluginConfig):
+        sub: Dict[str, Dict[str, SubConfig]] = {}
+
+    overrides = {"sub": {"baz": {"test": {"foo": 5}}}}
+    actual = MyConfig.from_overrides(overrides)
+    assert actual.sub == {"baz": {"test": SubConfig(foo=5, bar=1)}}
