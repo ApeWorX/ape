@@ -113,10 +113,10 @@ class CompilerManager(BaseManager):
     def get_compiler_settings(self, contract_filepaths: List[Path], base_path: Optional[Path]):
         settings = dict()
         for compiler in self.registered_compilers:
-            breakpoint()
-            settings[compiler] = self.registered_compilers[compiler].get_compiler_settings(contract_filepaths,base_path=base_path)
+            settings[compiler] = self.registered_compilers[compiler].get_compiler_settings(
+                contract_filepaths, base_path=base_path
+            )
         return settings
-
 
     def get_imports(
         self, contract_filepaths: List[Path], base_path: Optional[Path]

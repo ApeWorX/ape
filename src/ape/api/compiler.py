@@ -36,7 +36,8 @@ class CompilerAPI(BaseInterfaceModel):
             Set[str]: A set of available compiler versions.
         """
 
-    def get_compiler_settings(self, contract_filepaths: List[Path], base_path: Optional[Path]
+    def get_compiler_settings(
+        self, contract_filepaths: List[Path], base_path: Optional[Path]
     ) -> String:
         """
         Retreive the json of compiler settings in manifest

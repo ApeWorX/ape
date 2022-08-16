@@ -146,8 +146,8 @@ class ProjectAPI(BaseInterfaceModel):
                 version = versions[0]
                 filtered_paths = [p for p in source_paths if p.suffix == ext]
                 version_map = {version: filtered_paths}
-            
-            settings = compiler.get_compiler_settings(source_paths,contracts_folder)
+
+            settings = compiler.get_compiler_settings(source_paths, contracts_folder)
 
             for version, paths in version_map.items():
                 version_settings = settings[version]
