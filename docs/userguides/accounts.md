@@ -38,6 +38,9 @@ test:
   number_of_accounts: 5
 ```
 
+**WARN**: NEVER put a seed phrase with real funds here.
+The accounts generated from this seed are solely for testing and debugging purposes.
+
 Learn more about test accounts from the [testing guide](./testing.html#accounts-fixture).
 
 ## Live Network Accounts
@@ -74,7 +77,8 @@ account = accounts.load("<ALIAS>")
 ## Automation
 
 If you use your keyfile accounts in automation, such as CI/CD, you may need to programmatically unlock them and enable autosign.
-**WARNING**: Do not do this unless it is absolutely unnecessary and you are working in a secure environment with low-risk accounts.
+**WARNING**: We don't recommend using this approach but it is possible due to sometimes being needed.
+Ensure you are using a secure environment and are aware of what you are doing.
 
 ```python
 from ape import accounts
