@@ -124,7 +124,7 @@ def test_get_failed_receipt(owner, vyper_contract_instance, eth_tester_provider)
     assert receipt.failed
 
 
-def test_get_failed_receipt_raise(owner, vyper_contract_instance, eth_tester_provider):
+def test_contract_method_raise_on_fail(owner, vyper_contract_instance, eth_tester_provider):
     # Setting to '5' always fails.
     with pytest.raises(TransactionError):
         vyper_contract_instance.setNumber(5, sender=owner, gas_limit=100000, raise_on_fail=True)
