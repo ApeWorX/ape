@@ -8,6 +8,7 @@ class HexByteString(TypeDecorator):
     """Convert Python bytestring to string with hexadecimal digits and back for storage."""
 
     impl = String
+    cache_ok = True
 
     def process_bind_param(self, value, dialect):
         if not isinstance(value, bytes):

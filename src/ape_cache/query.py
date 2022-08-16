@@ -2,18 +2,18 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
 from hexbytes import HexBytes
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.engine import CursorResult  # type: ignore
-from sqlalchemy.sql import column, insert, select, text
+from sqlalchemy.sql import column, insert, select
 from sqlalchemy.sql.expression import Insert, TextClause
 
-from ape.api import QueryAPI, QueryType, TransactionAPI
+from ape.api import QueryAPI, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
-from ape.utils import singledispatchmethod
 from ape.types import ContractLog
+from ape.utils import singledispatchmethod
 from ape_ethereum.ecosystem import Block
 
 from . import models
@@ -106,37 +106,31 @@ class CacheQueryProvider(QueryAPI):
 
     @estimate_query_clause.register
     def block_estimate_query_clause(self, query: BlockQuery) -> TextClause:
-        return text(
-            """
-    SELECT COUNT(*)
-    FROM blocks
-    WHERE blocks.number >= :start_block
-    AND blocks.number <= :stop_block
-    AND blocks.number % :step = 0
-        """
-        ).bindparams(start_block=query.start_block, stop_block=query.stop_block, step=query.step)
+        return (
+            select([func.count()])
+            .select_from(Blocks)
+            .where(Blocks.number >= query.start_block)
+            .where(Blocks.number <= query.stop_block)
+            .where(Blocks.number % query.step == 0)
+        )
 
     @estimate_query_clause.register
     def transaction_estimate_query_clause(self, query: BlockTransactionQuery) -> TextClause:
-        return text(
-            """
-    SELECT COUNT(*)
-    FROM transactions
-    WHERE transactions.block_hash = :block_hash
-        """
-        ).bindparams(block_hash=query.block_id)
+        return (
+            select([func.count()])
+            .select_from(Transactions)
+            .where(Transactions.block_hash == query.block_id)
+        )
 
     @estimate_query_clause.register
     def contract_events_estimate_query_clause(self, query: ContractEventQuery) -> TextClause:
-        return text(
-            """
-    SELECT COUNT(*)
-    FROM contract_events
-    WHERE contract_events.block_number >= :start_block
-    AND contract_events.block_number <= :stop_block
-    AND contract_events.block_number % :step = 0
-        """
-        ).bindparams(start_block=query.start_block, stop_block=query.stop_block, step=query.step)
+        return (
+            select([func.count()])
+            .select_from(ContractEvents)
+            .where(ContractEvents.block_number >= query.start_block)
+            .where(ContractEvents.block_number <= query.stop_block)
+            .where(ContractEvents.block_number % query.step == 0)
+        )
 
     @singledispatchmethod
     def compute_estimate(self, query: QueryType, result: CursorResult) -> Optional[int]:
@@ -148,7 +142,7 @@ class CacheQueryProvider(QueryAPI):
         query: BlockQuery,
         result: CursorResult,
     ) -> Optional[int]:
-        if result.first()[0] == (1 + query.stop_block - query.start_block) // query.step:
+        if result.scalar() == (1 + query.stop_block - query.start_block) // query.step:
             # NOTE: Assume 200 msec to get data from database
             return 200
 
@@ -162,7 +156,7 @@ class CacheQueryProvider(QueryAPI):
         query: BlockTransactionQuery,
         result: CursorResult,
     ) -> Optional[int]:
-        if result.first()[0] > 0:
+        if result.scalar() > 0:
             # NOTE: Assume 200 msec to get data from database
             return 200
 
@@ -175,7 +169,7 @@ class CacheQueryProvider(QueryAPI):
         query: ContractEventQuery,
         result: CursorResult,
     ) -> Optional[int]:
-        if result.first()[0] == (query.stop_block - query.start_block) // query.step:
+        if result.scalar() == (query.stop_block - query.start_block) // query.step:
             # NOTE: Assume 200 msec to get data from database
             return 200
 
@@ -196,9 +190,11 @@ class CacheQueryProvider(QueryAPI):
             logger.warning(f"Cannot perform query on cache database: {err}")
             return None
 
-    # Fetch data
     @singledispatchmethod
     def perform_query_clause(self, query: QueryType) -> TextClause:
+        """
+        Fetch data from the SQL database.
+        """
         raise QueryEngineError(
             "Not a compatible QueryType. For more details see our docs "
             "https://docs.apeworx.io/ape/stable/methoddocs/"
@@ -216,9 +212,10 @@ class CacheQueryProvider(QueryAPI):
 
     @perform_query_clause.register
     def perform_transaction_clause(self, query: BlockTransactionQuery) -> TextClause:
-        return select([column(c) for c in query.columns]).where(
-            Transactions.block_hash == query.block_id
-        )
+        cols = query.columns
+        if "*" in query.columns:
+            cols = [c.key for c in Transactions.__table__.columns]  # type: ignore
+        return select([column(c) for c in cols]).where(Transactions.block_hash == query.block_id)
 
     @perform_query_clause.register
     def perform_contract_event_clause(self, query: ContractEventQuery) -> TextClause:
@@ -231,7 +228,11 @@ class CacheQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> Optional[Iterator]:  # type: ignore
-        pass
+        raise QueryEngineError(
+            "Not a compatible QueryType. For more details see our docs "
+            "https://docs.apeworx.io/ape/stable/methoddocs/"
+            "exceptions.html#ape.exceptions.QueryEngineError"
+        )
 
     @perform_query.register
     def perform_block_query(self, query: BlockQuery):
@@ -267,8 +268,7 @@ class CacheQueryProvider(QueryAPI):
                     raise QueryEngineError(f"Could not perform query:\n{query}")
 
                 for row in result:
-                    row_dict = {key: value for (key, value) in row.items()}
-                    yield TransactionAPI(**row_dict)
+                    yield {key: value for (key, value) in row.items()}
 
         except QueryEngineError as err:
             logger.error(f"Database not initiated: {str(err)}")

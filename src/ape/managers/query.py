@@ -1,7 +1,7 @@
 from itertools import tee
 from typing import Dict, Iterator, Optional
 
-from ape.api import QueryAPI, QueryType
+from ape.api import QueryAPI, QueryType, TransactionAPI
 from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
@@ -28,9 +28,8 @@ class DefaultQueryProvider(QueryAPI):
 
     @estimate_query.register
     def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> int:
-        block = self.provider.get_block(query.block_id)
-        # NOTE: Very loose estimate of 100ms per transaction in block for this query.
-        return len(block.transactions) * 100
+        # NOTE: Very loose estimate of 1000ms per block for this query.
+        return 1000
 
     @estimate_query.register
     def estimate_contract_events_query(self, query: ContractEventQuery) -> int:
@@ -51,7 +50,9 @@ class DefaultQueryProvider(QueryAPI):
         )
 
     @perform_query.register
-    def perform_block_transaction_query(self, query: BlockTransactionQuery) -> Iterator:
+    def perform_block_transaction_query(
+        self, query: BlockTransactionQuery
+    ) -> Iterator[TransactionAPI]:
         return self.provider.get_transactions_by_block(query.block_id)
 
     @perform_query.register
