@@ -91,6 +91,8 @@ def network_option(
     ecosystem: Optional[Union[List[str], str]] = None,
     network: Optional[Union[List[str], str]] = None,
     provider: Optional[Union[List[str], str]] = None,
+    required: bool = False,
+    **kwargs,
 ):
     """
     A ``click.option`` for specifying a network.
@@ -98,16 +100,19 @@ def network_option(
     Args:
         default (Optional[str]): Optionally, change which network to
           use as the default. Defaults to how ``ape`` normally
-          selects a default network.
+          selects a default network unless ``required=True``, then defaults to ``None``.
         ecosystem (Optional[Union[List[str], str]]): Filter the options by ecosystem.
           Defaults to getting all ecosystems.
         network (Optional[Union[List[str], str]]): Filter the options by network.
           Defaults to getting all networks in ecosystems.
         provider (Optional[Union[List[str], str]]): Filter the options by provider.
           Defaults to getting all providers in networks.
+        required (bool): Whether the option is required. Defaults to ``False``.
+          When set to ``True``, the default value is ``None``.
+        kwargs: Additional overrides to ``click.option``.
     """
 
-    if not default:
+    if default is None and not required:
         if ecosystem:
             default = ecosystem[0] if isinstance(ecosystem, (list, tuple)) else ecosystem
         else:
@@ -122,6 +127,8 @@ def network_option(
         help="Override the default network and provider. (see `ape networks list` for options)",
         show_default=True,
         show_choices=False,
+        required=required,
+        **kwargs,
     )
 
 
