@@ -90,7 +90,7 @@ signature = account.sign_message(message)
 
 ## Hardware Wallets
 
-Because of the plugin system in Ape, we are able to support hardware wallet accounts.
+Because of the plugin system in Ape, we are able to support other types of accounts including hardware wallet accounts.
 Check out these plugins:
 
 * [ape-ledger](https://github.com/ApeWorX/ape-ledger)
