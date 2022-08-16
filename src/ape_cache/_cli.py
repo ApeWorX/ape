@@ -26,7 +26,7 @@ def init(network):
     network_name = provider.network.name
 
     get_engine().init_database(ecosystem_name, network_name)
-    logger.info(f"Caching database initialized for {ecosystem_name}:{network_name}.")
+    logger.success(f"Caching database initialized for {ecosystem_name}:{network_name}.")
 
 
 @cli.command(
@@ -50,4 +50,4 @@ def purge(network):
     network_name = provider.network.name
 
     get_engine().purge_database(ecosystem_name, network_name)
-    logger.info(f"Caching database purged for {ecosystem_name}:{network_name}.")
+    logger.success(f"Caching database purged for {ecosystem_name}:{network_name}.")
