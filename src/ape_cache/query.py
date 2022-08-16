@@ -156,7 +156,7 @@ class CacheQueryProvider(QueryAPI):
         query: BlockTransactionQuery,
         result: CursorResult,
     ) -> Optional[int]:
-        if result.scalar() > 0:
+        if result.scalar() > 0:  # type: ignore
             # NOTE: Assume 200 msec to get data from database
             return 200
 
