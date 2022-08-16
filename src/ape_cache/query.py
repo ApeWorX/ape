@@ -7,12 +7,13 @@ from sqlalchemy.engine import CursorResult  # type: ignore
 from sqlalchemy.sql import column, insert, select, text
 from sqlalchemy.sql.expression import Insert, TextClause
 
-from ape.api import QueryAPI, QueryType
+from ape.api import QueryAPI, QueryType, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.utils import singledispatchmethod
+from ape.types import ContractLog
 from ape_ethereum.ecosystem import Block
 
 from . import models
@@ -228,7 +229,12 @@ class CacheQueryProvider(QueryAPI):
             .where(ContractEvents.block_number % query.step == 0)
         )
 
+    @singledispatchmethod
     def perform_query(self, query: QueryType) -> Optional[Iterator]:  # type: ignore
+        pass
+
+    @perform_query.register
+    def perform_block_query(self, query: BlockQuery):
         try:
             with self.database_connection as conn:
                 result = conn.execute(self.perform_query_clause(query))
@@ -246,6 +252,40 @@ class CacheQueryProvider(QueryAPI):
                     row_dict["baseFeePerGas"] = row_dict.pop("base_fee")
                     row_dict["totalDifficulty"] = row_dict.pop("total_difficulty")
                     yield Block(**row_dict)
+
+        except QueryEngineError as err:
+            logger.error(f"Database not initiated: {str(err)}")
+
+    @perform_query.register
+    def perform_transaction_query(self, query: BlockTransactionQuery):
+        try:
+            with self.database_connection as conn:
+                result = conn.execute(self.perform_query_clause(query))
+
+                if not result:
+                    # NOTE: Should be unreachable if estimated correctly
+                    raise QueryEngineError(f"Could not perform query:\n{query}")
+
+                for row in result:
+                    row_dict = {key: value for (key, value) in row.items()}
+                    yield TransactionAPI(**row_dict)
+
+        except QueryEngineError as err:
+            logger.error(f"Database not initiated: {str(err)}")
+
+    @perform_query.register
+    def perform_contract_events_query(self, query: ContractEventQuery):
+        try:
+            with self.database_connection as conn:
+                result = conn.execute(self.perform_query_clause(query))
+
+                if not result:
+                    # NOTE: Should be unreachable if estimated correctly
+                    raise QueryEngineError(f"Could not perform query:\n{query}")
+
+                for row in result:
+                    row_dict = {key: value for (key, value) in row.items()}
+                    yield ContractLog(**row_dict)
 
         except QueryEngineError as err:
             logger.error(f"Database not initiated: {str(err)}")
