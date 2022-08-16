@@ -148,3 +148,14 @@ def test_network_option_adhoc(runner, network_cmd, network_input):
     result = runner.invoke(network_cmd, ["--network", network_input])
     assert result.exit_code == 0, result.output
     assert OUTPUT_FORMAT.format(network_input) in result.output
+
+
+def test_network_option_make_required(runner):
+    @click.command()
+    @network_option(required=True)
+    def cmd(network):
+        click.echo(OUTPUT_FORMAT.format(network))
+
+    result = runner.invoke(cmd, [])
+    assert result.exit_code == 2
+    assert "Error: Missing option '--network'." in result.output
