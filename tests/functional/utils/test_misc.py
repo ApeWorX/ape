@@ -1,7 +1,13 @@
 import pytest
+from packaging.version import Version
 
 from ape.exceptions import APINotImplementedError
-from ape.utils.misc import add_padding_to_strings, extract_nested_value, raises_not_implemented
+from ape.utils.misc import (
+    add_padding_to_strings,
+    extract_nested_value,
+    get_package_version,
+    raises_not_implemented,
+)
 
 
 def test_extract_nested_value():
@@ -34,3 +40,9 @@ def test_raises_not_implemented():
         "method not supported."
     )
     assert isinstance(err.value, NotImplementedError)
+
+
+def test_get_package_version():
+    version = get_package_version("ape")
+    # Fails if invalid version
+    assert Version(version)
