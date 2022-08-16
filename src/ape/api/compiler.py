@@ -36,7 +36,6 @@ class CompilerAPI(BaseInterfaceModel):
             Set[str]: A set of available compiler versions.
         """
 
-    @abstractmethod
     def get_compiler_settings(self, contract_filepaths: List[Path], base_path: Optional[Path]
     ) -> String:
         """
@@ -46,7 +45,7 @@ class CompilerAPI(BaseInterfaceModel):
             all_paths (List[pathlib.Path]): The list of paths.
 
         Returns:
-            str: A json string of the current compiler settings.
+            Dict[Version, Dict]: A dict of the current compiler settings.
         """
 
     @abstractmethod
