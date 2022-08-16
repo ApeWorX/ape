@@ -11,9 +11,14 @@ class HexByteString(TypeDecorator):
     cache_ok = True
 
     def process_bind_param(self, value, dialect):
-        if not isinstance(value, bytes):
-            raise TypeError("HexByteString columns support only bytes values.")
-        return value.hex()
+        if isinstance(value, bytes):
+            return value.hex()
+
+        elif isinstance(value, str):
+            return bytes.fromhex(value.replace("0x", "").lower()).hex()
+
+        else:
+            raise TypeError(f"HexByteString columns support only bytes values: {value}")
 
     def process_result_value(self, value, dialect):
         return bytes.fromhex(value) if value else None
@@ -54,7 +59,7 @@ class ContractEvents(Base):
     __tablename__ = "contract_events"  # type: ignore
 
     id = Column(Integer, primary_key=True, index=True)
-    event_name = Column(HexByteString, nullable=False, index=True)
+    event_name = Column(String, nullable=False, index=True)
     contract_address = Column(HexByteString, nullable=False, index=True)
     event_arguments = Column(JSON, index=True)
     transaction_hash = Column(HexByteString, nullable=False, index=True)
