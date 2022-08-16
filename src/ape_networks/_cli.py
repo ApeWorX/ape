@@ -14,7 +14,7 @@ def _filter_option(name: str, options):
     return click.option(
         f"--{name}",
         f"{name}_filter",
-        multiple=Tree,
+        multiple=True,
         help=f"Filter the results by {name}",
         type=click.Choice(options),
     )
