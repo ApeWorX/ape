@@ -38,6 +38,8 @@ test:
   number_of_accounts: 5
 ```
 
+Learn more about test accounts from the [testing guide](./testing.html#accounts-fixture).
+
 ## Live Network Accounts
 
 When using live networks, you need to get your accounts into Ape.
