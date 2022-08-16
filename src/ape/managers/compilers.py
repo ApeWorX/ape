@@ -111,12 +111,12 @@ class CompilerManager(BaseManager):
         return contract_types_dict  # type: ignore
 
     def get_compiler_settings(self, contract_filepaths: List[Path], base_path: Optional[Path]):
-        settings = dict()
-        for compiler in self.registered_compilers:
-            settings[compiler] = self.registered_compilers[compiler].get_compiler_settings(
+        return {
+            compiler: self.registered_compilers[compiler].get_compiler_settings(
                 contract_filepaths, base_path=base_path
             )
-        return settings
+            for compiler in self.registered_compilers
+        }
 
     def get_imports(
         self, contract_filepaths: List[Path], base_path: Optional[Path]
