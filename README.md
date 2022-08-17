@@ -260,3 +260,4 @@ c.viewThis()  # Make Web3 calls
 c.doThat(sender=a)  # Make Web3 transactions
 assert c.MyEvent[-1].caller == a  # Search through Web3 events
 ```
+
