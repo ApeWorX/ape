@@ -1,8 +1,5 @@
-from contextlib import contextmanager
-
 import pytest
 
-from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import NetworkError
 from ape_test.providers import CHAIN_ID
 
@@ -18,28 +15,24 @@ class NewChainID:
 chain_id_factory = NewChainID()
 
 
-@pytest.fixture(scope="module")
-def get_context(networks_connected_to_tester):
+@pytest.fixture
+def get_provider_with_unused_chain_id(networks_connected_to_tester):
+    networks = networks_connected_to_tester
+
     def fn():
-        return networks_connected_to_tester.parse_network_choice("ethereum:local:test")
+        new_provider = networks.provider.copy()
+        new_provider.cached_chain_id = chain_id_factory()
+        context = networks.parse_network_choice("ethereum:local:test")
+        context.provider = new_provider
+        return context
 
     return fn
 
 
-@contextmanager
-def _switch_chain_id(networks):
-    new_chain_id = chain_id_factory()
-    context = networks.parse_network_choice("ethereum:local:test")
-    provider_id = f"ethereum:{LOCAL_NETWORK_NAME}:{context.provider.name}-{new_chain_id}"
-    context.provider.cached_chain_id = new_chain_id
-    with context:
-        yield provider_id, context
-
-
 @pytest.fixture(scope="module")
-def switch_chain_id(networks_connected_to_tester):
+def get_context(networks_connected_to_tester):
     def fn():
-        return _switch_chain_id(networks_connected_to_tester)
+        return networks_connected_to_tester.parse_network_choice("ethereum:local:test")
 
     return fn
 
@@ -189,11 +182,10 @@ def test_parse_network_choice_same_provider(chain, networks_connected_to_tester,
         assert provider._web3 is not None
 
 
-def test_parse_network_choice_new_chain_id(
-    switch_chain_id, get_context, networks_connected_to_tester
-):
+def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, get_context):
     start_count = len(get_context().connected_providers)
-    with switch_chain_id() as (_, context):
+    context = get_provider_with_unused_chain_id()
+    with context:
         count = len(context.connected_providers)
 
         # Creates new provider since it has a new chain ID
@@ -203,33 +195,16 @@ def test_parse_network_choice_new_chain_id(
         assert provider._web3 is not None
 
 
-def test_parse_network_choice_multiple_contexts(networks, switch_chain_id):
-    with switch_chain_id() as (first_provider_id, first_context):
+def test_parse_network_choice_multiple_contexts(get_provider_with_unused_chain_id):
+    first_context = get_provider_with_unused_chain_id()
+    with first_context:
         start_count = len(first_context.connected_providers)
         expected_next_count = start_count + 1
-        assert first_provider_id in first_context.connected_providers
-
-        # Changing the chain ID adds a new context
-        with switch_chain_id() as (second_provider_id, second_context):
+        second_context = get_provider_with_unused_chain_id()
+        with second_context:
             # Second context should already know about connected providers
             assert len(first_context.connected_providers) == expected_next_count
             assert len(second_context.connected_providers) == expected_next_count
-            assert second_provider_id in first_context.connected_providers
-
-        # Should still be connected after leaving context
-        assert second_provider_id in first_context.connected_providers
-        expected_next_count += 1
-
-        original_name = first_context.provider.network.name
-        try:
-            # Changing the network name adds a new context
-            second_context.provider.network.name = "TEMP"
-            second_context.push_provider()
-            assert len(first_context.connected_providers) == expected_next_count
-            assert len(second_context.connected_providers) == expected_next_count
-
-        finally:
-            first_context.provider.network.name = original_name
 
 
 def test_block_times(ethereum):
