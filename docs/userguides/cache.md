@@ -1,5 +1,5 @@
 # Cache
-
+#### Note: This is in Beta release. This functionality is in constant development and many features are in planning stages.
 Use the cache plugin to store provider data in an sqlite database.
 
 ```bash
