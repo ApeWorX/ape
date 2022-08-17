@@ -5,7 +5,9 @@ from .base import Base
 
 
 class HexByteString(TypeDecorator):
-    """Convert Python bytestring to string with hexadecimal digits and back for storage."""
+    """
+    Convert Python bytestring to string with hexadecimal digits and back for storage.
+    """
 
     impl = String
     cache_ok = True
