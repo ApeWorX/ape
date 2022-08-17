@@ -1,4 +1,4 @@
-# @version 0.3.3
+# @version 0.3.6
 
 event NumberChange:
     b: bytes32
@@ -38,10 +38,18 @@ myNumber: public(uint256)
 prevNumber: public(uint256)
 theAddress: public(address)
 balances: public(HashMap[address, uint256])
+dynArray: public(DynArray[uint256, 1024][3])
+mixedArray: public(DynArray[DynArray[uint256, 1024][3], 1024][5])
 
 @external
 def __init__():
     self.owner = msg.sender
+    self.dynArray[0] = [0]
+    self.dynArray[1] = [0, 1]
+    self.dynArray[2] = [0, 1, 2]
+    self.mixedArray[0].append(self.dynArray)
+    self.mixedArray[1].append(self.dynArray)
+    self.mixedArray[1].append(self.dynArray)
 
 @external
 def fooAndBar():
@@ -152,18 +160,15 @@ def getArrayWithBiggerSize() -> uint256[20]:
 def getTupleOfArrays() -> (uint256[20], uint256[20]):
     return (empty(uint256[20]), empty(uint256[20]))
 
-
 @pure
 @external
 def getMultipleValues() -> (uint256, uint256):
     return (123, 321)
 
-
 @pure
 @external
 def getUnnamedTuple() -> (uint256, uint256):
     return (0, 0)
-
 
 @view
 @external
@@ -171,3 +176,28 @@ def getTupleOfAddressArray() -> (address[20], uint128[20]):
     addresses: address[20] = empty(address[20])
     addresses[0] = msg.sender
     return (addresses, empty(uint128[20]))
+
+@view
+@external
+def getNestedArrayFixedFixed() -> uint256[2][3]:
+    return [[1, 2], [3, 4], [5, 6]]
+
+@view
+@external
+def getNestedArrayDynamicFixed() -> DynArray[uint256[2], 1024]:
+    return [[1, 2], [3, 4], [5, 6]]
+
+@view
+@external
+def getNestedArrayFixedDynamic() -> DynArray[uint256, 1024][3]:
+    return self.dynArray
+
+@view
+@external
+def getNestedArrayMixedDynamic() -> DynArray[DynArray[uint256, 1024][3], 1024][5]:
+    return self.mixedArray
+
+@view
+@external
+def getNestedAddressArray() -> DynArray[address[3], 1024]:
+    return [[msg.sender, msg.sender, msg.sender], [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]]

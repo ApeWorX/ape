@@ -6,6 +6,7 @@
    :maxdepth: 1
 
    userguides/quickstart
+   userguides/accounts
    userguides/installing_plugins
    userguides/projects
    userguides/compile

@@ -16,6 +16,10 @@ from .base import BaseManager
 class TestAccountManager(list, ManagerAccessMixin):
     __test__ = False
 
+    def __repr__(self) -> str:
+        accounts_str = ", ".join([a.address for a in self.accounts])
+        return f"[{accounts_str}]"
+
     @property
     def containers(self) -> Dict[str, TestAccountContainerAPI]:
         containers = {}

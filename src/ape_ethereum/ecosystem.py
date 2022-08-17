@@ -330,7 +330,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_primitive_value(
         self, value: Any, output_type: Union[str, Tuple, List]
-    ) -> Union[str, HexBytes, Tuple]:
+    ) -> Union[str, HexBytes, Tuple, List]:
         if output_type == "address":
             try:
                 return self.decode_address(value)
@@ -341,8 +341,8 @@ class Ethereum(EcosystemAPI):
             return HexBytes(value)
 
         elif isinstance(output_type, str) and is_array(output_type):
-            sub_type = output_type.split("[")[0]
-            return tuple([self.decode_primitive_value(v, sub_type) for v in value])
+            sub_type = "[".join(output_type.split("[")[:-1])
+            return [self.decode_primitive_value(v, sub_type) for v in value]
 
         elif isinstance(output_type, tuple):
             return tuple([self.decode_primitive_value(v, t) for v, t in zip(value, output_type)])

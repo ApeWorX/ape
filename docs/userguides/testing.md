@@ -4,14 +4,17 @@ Testing an ape project is important and easy.
 
 ## Test Structure
 
-Tests must be located in a project's `tests/` directory. Each **test file** must start with `test_` and have the `.py`
-extension, such as `test_my_contract.py`. Each **test method** within the file must also start with `test_`. The following
-is an example test:
+Tests must be located in a project's `tests/` directory. Each **test file** must start with `test_` and have the `.py` extension, such as `test_my_contract.py`.
+Each **test method** within the file must also start with `test_`.
+The following is an example test:
 
 ```python
 def test_add():
     assert 1 + 1 == 2
 ```
+
+**NOTE**: `pytest` assumes the *actual* value is on the left and the *expected* value is on the right.
+
 ## Test Pattern
 
 Tests are generally divisible into three parts:
@@ -20,10 +23,11 @@ Tests are generally divisible into three parts:
 2. Invocation
 3. Assertion
 
-In the example above, we created a fixture that deploys our smart-contract. This is an example of a 'setup' phase.
-Next, we need to call a method on our contract. Let's assume there is an `authorized_method()` that requires the
-owner of the contract to make the transaction. If the sender of the transaction is not the owner, the transaction
-will fail to complete and will revert.
+In the example above, we created a fixture that deploys our smart-contract.
+This is an example of a 'setup' phase.
+Next, we need to call a method on our contract.
+Let's assume there is an `authorized_method()` that requires the owner of the contract to make the transaction.
+If the sender of the transaction is not the owner, the transaction will fail to complete and will revert.
 
 This is an example of how that test may look:
 
@@ -57,9 +61,9 @@ with fixtures you will likely want to use:
 
 ### accounts fixture
 
-You have access to test accounts. These accounts are automatically funded, and you can use them to transact in your
-tests. Access each [test account](../methoddocs/api.html?highlight=testaccount#ape.api.accounts.TestAccountAPI) by
-index from the `accounts` fixture:
+You have access to test accounts.
+These accounts are automatically funded, and you can use them to transact in your tests.
+Access each [test account](../methoddocs/api.html?highlight=testaccount#ape.api.accounts.TestAccountAPI) by index from the `accounts` fixture:
 
 ```python
 def test_my_method(accounts):
@@ -71,7 +75,6 @@ For code readability and sustainability, create your own fixtures using the `acc
 
 ```python
 import pytest
-
 
 @pytest.fixture
 def owner(accounts):
@@ -87,8 +90,7 @@ def test_my_method(owner, receiver):
     ...
 ```
 
-You can configure your accounts by changing the `mnemonic` or `number_of_accounts` settings in the `test` section of
-your `ape-config.yaml` file:
+You can configure your accounts by changing the `mnemonic` or `number_of_accounts` settings in the `test` section of your `ape-config.yaml` file:
 
 ```yaml
 test:
@@ -113,8 +115,7 @@ def test_my_method(project, accounts):
     contract.my_method(sender=other_contract)
 ```
 
-It has the same interface as the [TestAccountManager](../methoddocs/managers.html#ape.managers.accounts.TestAccountManager),
-(same as doing `accounts.test_accounts` in a script or the console).
+It has the same interface as the [TestAccountManager](../methoddocs/managers.html#ape.managers.accounts.TestAccountManager), (same as doing `accounts.test_accounts` in a script or the console).
 
 ### chain fixture
 
@@ -188,8 +189,7 @@ ape test test_my_contract -I -s
 
 ## Test Providers
 
-Out-of-the-box, your tests run using the `eth-tester` provider, which comes bundled with ape. If you have `geth`
-installed, you can use the `ape-geth` plugin that also comes with ape.
+Out-of-the-box, your tests run using the `eth-tester` provider, which comes bundled with ape. If you have `geth` installed, you can use the `ape-geth` plugin that also comes with ape.
 
 ```bash
 ape test --network ethereum:local:geth
@@ -197,9 +197,7 @@ ape test --network ethereum:local:geth
 
 Each testing plugin should work the same way. You will have access to the same test accounts.
 
-Another option for testing providers is the [ape-hardhat plugin](https://github.com/ApeWorX/ape-hardhat), which does
-not come with `ape` but can be installed by including it in the `plugins` list in your `ape-config.yaml` file or
-manually installing it using the command:
+Another option for testing providers is the [ape-hardhat plugin](https://github.com/ApeWorX/ape-hardhat), which does not come with `ape` but can be installed by including it in the `plugins` list in your `ape-config.yaml` file or manually installing it using the command:
 
 ```bash
 ape plugins install hardhat
