@@ -39,7 +39,8 @@ class CompilerAPI(BaseInterfaceModel):
         self, contract_filepaths: List[Path], base_path: Optional[Path]
     ) -> Dict[Version, Dict]:
         """
-        Retrieve the json of compiler settings in manifest
+        Get a mapping of the settings that would be used to compile each of the sources
+        by the compiler version number.
 
         Args:
             all_paths (List[pathlib.Path]): The list of paths.
