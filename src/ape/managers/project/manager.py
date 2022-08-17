@@ -10,10 +10,11 @@ from ethpm_types.contract_type import BIP122_URI
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
-from ape.exceptions import ProjectError
+from ape.exceptions import APINotImplementedError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
+from ape.utils import get_relative_path
 
 
 class ProjectManager(BaseManager):
@@ -143,15 +144,46 @@ class ProjectManager(BaseManager):
             List[``Compiler``]
         """
 
-        compilers = []
+        compiler_list: List[Compiler] = []
+        contracts_folder = self.config_manager.contracts_folder
+        for ext, compiler in self.compiler_manager.registered_compilers.items():
+            sources = [x for x in self.source_paths if x.suffix == ext]
+            if not sources:
+                continue
 
-        for extension, compiler in self.compiler_manager.registered_compilers.items():
-            for version in compiler.get_versions(
-                [p for p in self.source_paths if p.suffix == extension]
-            ):
-                compilers.append(Compiler(compiler.name, version))  # type: ignore
+            try:
+                version_map = compiler.get_version_map(sources, contracts_folder)
+            except APINotImplementedError:
+                versions = list(compiler.get_versions(sources))
+                if len(versions) == 0:
+                    # Skipping compilers that don't use versions
+                    # These are unlikely to be part of the published manifest
+                    continue
+                elif len(versions) > 1:
+                    raise (ProjectError(f"Unable to create version map for '{ext}'."))
 
-        return compilers
+                version = versions[0]
+                filtered_paths = [p for p in self.source_paths if p.suffix == ext]
+                version_map = {version: filtered_paths}
+
+            settings = compiler.get_compiler_settings(self.source_paths, contracts_folder)
+
+            for version, paths in version_map.items():
+                version_settings = settings.get(version, {}) if version and settings else {}
+                source_ids = [str(get_relative_path(p, contracts_folder)) for p in paths]
+                filtered_contract_types = [
+                    ct for ct in self.contracts.values() if ct.source_id in source_ids
+                ]
+                contract_type_names = [ct.name for ct in filtered_contract_types]
+                compiler_list.append(
+                    Compiler(
+                        name=compiler.name,
+                        version=str(version),
+                        settings=version_settings,
+                        contractTypes=contract_type_names,
+                    )
+                )
+        return compiler_list
 
     @property
     def meta(self) -> PackageMeta:
@@ -178,9 +210,9 @@ class ProjectManager(BaseManager):
 
         for ecosystem_path in [x for x in self._package_deployments_folder.iterdir() if x.is_dir()]:
             ecosystem_deployments = {}
-            for deploymenth_path in [x for x in ecosystem_path.iterdir() if x.suffix == ".json"]:
-                ethpm_instance = EthPMContractInstance.parse_raw(deploymenth_path.read_text())
-                ecosystem_deployments[deploymenth_path.stem] = ethpm_instance
+            for deployment_path in [x for x in ecosystem_path.iterdir() if x.suffix == ".json"]:
+                ethpm_instance = EthPMContractInstance.parse_raw(deployment_path.read_text())
+                ecosystem_deployments[deployment_path.stem] = ethpm_instance
 
             if ecosystem_deployments:
                 bip122_chain_id = ecosystem_path.name
