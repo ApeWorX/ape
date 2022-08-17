@@ -149,7 +149,7 @@ class ProjectManager(BaseManager):
             for version in compiler.get_versions(
                 [p for p in self.source_paths if p.suffix == extension]
             ):
-                compilers.append(Compiler(compiler.name, version))  # type: ignore
+                compilers.append(Compiler(name=compiler.name, version=version))  # type: ignore
 
         return compilers
 
