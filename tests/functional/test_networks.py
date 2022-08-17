@@ -31,14 +31,9 @@ def _switch_chain_id(networks):
     new_chain_id = chain_id_factory()
     context = networks.parse_network_choice("ethereum:local:test")
     provider_id = f"ethereum:{LOCAL_NETWORK_NAME}:{context.provider.name}-{new_chain_id}"
-    original_chain_id = context.provider.cached_chain_id
     context.provider.cached_chain_id = new_chain_id
     with context:
-        yield context
-
-    context.provider.cached_chain_id = original_chain_id
-    if provider_id in context.connected_providers:
-        del context.connected_providers[provider_id]
+        yield provider_id, context
 
 
 @pytest.fixture(scope="module")
@@ -198,7 +193,7 @@ def test_parse_network_choice_new_chain_id(
     switch_chain_id, get_context, networks_connected_to_tester
 ):
     start_count = len(get_context().connected_providers)
-    with switch_chain_id() as context:
+    with switch_chain_id() as (_, context):
         count = len(context.connected_providers)
 
         # Creates new provider since it has a new chain ID
@@ -208,30 +203,33 @@ def test_parse_network_choice_new_chain_id(
         assert provider._web3 is not None
 
 
-def test_parse_network_choice_multiple_contexts(switch_chain_id):
-    with switch_chain_id() as first_context:
+def test_parse_network_choice_multiple_contexts(networks, switch_chain_id):
+    with switch_chain_id() as (first_provider_id, first_context):
         start_count = len(first_context.connected_providers)
         expected_next_count = start_count + 1
-        provider = first_context.provider
+        assert first_provider_id in first_context.connected_providers
 
         # Changing the chain ID adds a new context
-        with switch_chain_id() as second_context:
+        with switch_chain_id() as (second_provider_id, second_context):
             # Second context should already know about connected providers
             assert len(first_context.connected_providers) == expected_next_count
             assert len(second_context.connected_providers) == expected_next_count
+            assert second_provider_id in first_context.connected_providers
 
+        # Should still be connected after leaving context
+        assert second_provider_id in first_context.connected_providers
+        expected_next_count += 1
+
+        original_name = first_context.provider.network.name
         try:
-            original_name = provider.network.name
-
             # Changing the network name adds a new context
-            provider.network.name = "TEMP"
-            with switch_chain_id() as third_context:
-                assert len(first_context.connected_providers) == expected_next_count
-                assert len(second_context.connected_providers) == expected_next_count
-                assert len(third_context.connected_providers) == expected_next_count
+            second_context.provider.network.name = "TEMP"
+            second_context.push_provider()
+            assert len(first_context.connected_providers) == expected_next_count
+            assert len(second_context.connected_providers) == expected_next_count
 
         finally:
-            provider.network.name = original_name
+            first_context.provider.network.name = original_name
 
 
 def test_block_times(ethereum):

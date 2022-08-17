@@ -465,6 +465,10 @@ class ProviderContextManager:
         self.provider = provider
         self.network_manager = network_manager
 
+    @property
+    def empty(self) -> bool:
+        return not self.connected_providers or not self.provider_stack
+
     def __enter__(self, *args, **kwargs):
         return self.push_provider()
 
@@ -494,7 +498,7 @@ class ProviderContextManager:
         return self.provider
 
     def pop_provider(self):
-        if not self.connected_providers or not self.provider_stack:
+        if self.empty:
             return
 
         # Clear last provider
@@ -514,7 +518,7 @@ class ProviderContextManager:
             self.network_manager.active_provider = previous_provider
 
     def disconnect_all(self):
-        if not self.connected_providers or not self.provider_stack:
+        if self.empty:
             return
 
         for provider in self.connected_providers.values():
