@@ -21,6 +21,14 @@ def cli():
 @cli.command(short_help="Initialize a new cache database")
 @network_option()
 def init(network):
+    """
+    Initializes an SQLite database and creates a file to store data
+    from the provider.
+
+    Note that ape cannot store local data in this database. You have to
+    give an ecosystem name and a network name to initialize the database.
+    """
+
     provider = networks.get_provider_from_choice(network)
     ecosystem_name = provider.network.ecosystem.name
     network_name = provider.network.name
@@ -36,6 +44,16 @@ def init(network):
 @network_option()
 @click.argument("query_str")
 def query(query_str, network):
+    """
+    Allows for a query of the database from an SQL statement.
+
+    Note that without an SQL statement, this method will not retunr
+    any data from the caching database.
+
+    Also note that an ecosystem name and a network name are required
+    to make the correct connection to the database.
+    """
+
     with get_engine().database_connection as conn:
         results = conn.execute(query_str).fetchall()
         if results:
@@ -45,6 +63,14 @@ def query(query_str, network):
 @cli.command(short_help="Purges entire database")
 @network_option()
 def purge(network):
+    """
+    Purges the instance of the database that you want to remove
+    data from.
+
+    Note that an ecosystem name and network name are required to
+    purge the database of choice.
+    """
+
     provider = networks.get_provider_from_choice(network)
     ecosystem_name = provider.network.ecosystem.name
     network_name = provider.network.name
