@@ -61,6 +61,7 @@
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
@@ -142,13 +143,14 @@
 <p>Testing an ape project is important and easy.</p>
 <section id="test-structure">
 <h2>Test Structure<a class="headerlink" href="#test-structure" title="Permalink to this headline"></a></h2>
-<p>Tests must be located in a project’s <code class="docutils literal notranslate"><span class="pre">tests/</span></code> directory. Each <strong>test file</strong> must start with <code class="docutils literal notranslate"><span class="pre">test_</span></code> and have the <code class="docutils literal notranslate"><span class="pre">.py</span></code>
-extension, such as <code class="docutils literal notranslate"><span class="pre">test_my_contract.py</span></code>. Each <strong>test method</strong> within the file must also start with <code class="docutils literal notranslate"><span class="pre">test_</span></code>. The following
-is an example test:</p>
+<p>Tests must be located in a project’s <code class="docutils literal notranslate"><span class="pre">tests/</span></code> directory. Each <strong>test file</strong> must start with <code class="docutils literal notranslate"><span class="pre">test_</span></code> and have the <code class="docutils literal notranslate"><span class="pre">.py</span></code> extension, such as <code class="docutils literal notranslate"><span class="pre">test_my_contract.py</span></code>.
+Each <strong>test method</strong> within the file must also start with <code class="docutils literal notranslate"><span class="pre">test_</span></code>.
+The following is an example test:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_add</span><span class="p">():</span>
     <span class="k">assert</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span>
 </pre></div>
 </div>
+<p><strong>NOTE</strong>: <code class="docutils literal notranslate"><span class="pre">pytest</span></code> assumes the <em>actual</em> value is on the left and the <em>expected</em> value is on the right.</p>
 </section>
 <section id="test-pattern">
 <h2>Test Pattern<a class="headerlink" href="#test-pattern" title="Permalink to this headline"></a></h2>
@@ -158,10 +160,11 @@ is an example test:</p>
 <li><p>Invocation</p></li>
 <li><p>Assertion</p></li>
 </ol>
-<p>In the example above, we created a fixture that deploys our smart-contract. This is an example of a ‘setup’ phase.
-Next, we need to call a method on our contract. Let’s assume there is an <code class="docutils literal notranslate"><span class="pre">authorized_method()</span></code> that requires the
-owner of the contract to make the transaction. If the sender of the transaction is not the owner, the transaction
-will fail to complete and will revert.</p>
+<p>In the example above, we created a fixture that deploys our smart-contract.
+This is an example of a ‘setup’ phase.
+Next, we need to call a method on our contract.
+Let’s assume there is an <code class="docutils literal notranslate"><span class="pre">authorized_method()</span></code> that requires the owner of the contract to make the transaction.
+If the sender of the transaction is not the owner, the transaction will fail to complete and will revert.</p>
 <p>This is an example of how that test may look:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
     <span class="n">my_contract</span><span class="o">.</span><span class="n">set_owner</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
@@ -188,9 +191,9 @@ into each test method as test-time. To learn more about <a class="reference exte
 with fixtures you will likely want to use:</p>
 <section id="accounts-fixture">
 <h3>accounts fixture<a class="headerlink" href="#accounts-fixture" title="Permalink to this headline"></a></h3>
-<p>You have access to test accounts. These accounts are automatically funded, and you can use them to transact in your
-tests. Access each <a class="reference external" href="../methoddocs/api.html?highlight=testaccount#ape.api.accounts.TestAccountAPI">test account</a> by
-index from the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
+<p>You have access to test accounts.
+These accounts are automatically funded, and you can use them to transact in your tests.
+Access each <a class="reference external" href="../methoddocs/api.html?highlight=testaccount#ape.api.accounts.TestAccountAPI">test account</a> by index from the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
     <span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">receiver</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -198,7 +201,6 @@ index from the <code class="docutils literal notranslate"><span class="pre">acco
 </div>
 <p>For code readability and sustainability, create your own fixtures using the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
-
 
 <span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
@@ -214,8 +216,7 @@ index from the <code class="docutils literal notranslate"><span class="pre">acco
     <span class="o">...</span>
 </pre></div>
 </div>
-<p>You can configure your accounts by changing the <code class="docutils literal notranslate"><span class="pre">mnemonic</span></code> or <code class="docutils literal notranslate"><span class="pre">number_of_accounts</span></code> settings in the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of
-your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<p>You can configure your accounts by changing the <code class="docutils literal notranslate"><span class="pre">mnemonic</span></code> or <code class="docutils literal notranslate"><span class="pre">number_of_accounts</span></code> settings in the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span><span class="w"></span>
 <span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
@@ -234,8 +235,7 @@ your <code class="docutils literal notranslate"><span class="pre">ape-config.yam
     <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">other_contract</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.TestAccountManager">TestAccountManager</a>,
-(same as doing <code class="docutils literal notranslate"><span class="pre">accounts.test_accounts</span></code> in a script or the console).</p>
+<p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.TestAccountManager">TestAccountManager</a>, (same as doing <code class="docutils literal notranslate"><span class="pre">accounts.test_accounts</span></code> in a script or the console).</p>
 </section>
 <section id="chain-fixture">
 <h3>chain fixture<a class="headerlink" href="#chain-fixture" title="Permalink to this headline"></a></h3>
@@ -299,15 +299,12 @@ your <code class="docutils literal notranslate"><span class="pre">ape-config.yam
 </section>
 <section id="test-providers">
 <h2>Test Providers<a class="headerlink" href="#test-providers" title="Permalink to this headline"></a></h2>
-<p>Out-of-the-box, your tests run using the <code class="docutils literal notranslate"><span class="pre">eth-tester</span></code> provider, which comes bundled with ape. If you have <code class="docutils literal notranslate"><span class="pre">geth</span></code>
-installed, you can use the <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> plugin that also comes with ape.</p>
+<p>Out-of-the-box, your tests run using the <code class="docutils literal notranslate"><span class="pre">eth-tester</span></code> provider, which comes bundled with ape. If you have <code class="docutils literal notranslate"><span class="pre">geth</span></code> installed, you can use the <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> plugin that also comes with ape.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --network ethereum:local:geth
 </pre></div>
 </div>
 <p>Each testing plugin should work the same way. You will have access to the same test accounts.</p>
-<p>Another option for testing providers is the <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat plugin</a>, which does
-not come with <code class="docutils literal notranslate"><span class="pre">ape</span></code> but can be installed by including it in the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file or
-manually installing it using the command:</p>
+<p>Another option for testing providers is the <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat plugin</a>, which does not come with <code class="docutils literal notranslate"><span class="pre">ape</span></code> but can be installed by including it in the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file or manually installing it using the command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install hardhat
 </pre></div>
 </div>
