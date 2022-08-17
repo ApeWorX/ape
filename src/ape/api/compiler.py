@@ -46,7 +46,7 @@ class CompilerAPI(BaseInterfaceModel):
             all_paths (List[pathlib.Path]): The list of paths.
 
         Returns:
-            Dict[Version, Dict]: A dict of the current compiler settings.
+            Dict[Version, Dict]: A dict of compiler settings by compiler version.
         """
 
     @abstractmethod
