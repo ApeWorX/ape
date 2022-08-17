@@ -47,7 +47,7 @@ def query(query_str, network):
     """
     Allows for a query of the database from an SQL statement.
 
-    Note that without an SQL statement, this method will not retunr
+    Note that without an SQL statement, this method will not return
     any data from the caching database.
 
     Also note that an ecosystem name and a network name are required
@@ -64,8 +64,11 @@ def query(query_str, network):
 @network_option()
 def purge(network):
     """
-    Purges the instance of the database that you want to remove
-    data from.
+    Purges data from the selected database instance.
+
+    Note that this is a destructive purge, and will remove the database file from disk.
+    If you want to store data in the caching system, you will have to
+    re-initiate the database following a purge.
 
     Note that an ecosystem name and network name are required to
     purge the database of choice.
