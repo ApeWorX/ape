@@ -1,13 +1,13 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional
 
-from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
+from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
 
-from ape.exceptions import APINotImplementedError, ProjectError
+from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
@@ -113,55 +113,10 @@ class ProjectAPI(BaseInterfaceModel):
         if version:
             manifest.version = version
 
-        manifest.compilers = cls._create_compilers_list(source_paths, contract_types)
         manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
 
         return manifest
-
-    @classmethod
-    def _create_compilers_list(
-        cls,
-        source_paths: List[Path],
-        contract_types: Dict[str, ContractType],
-    ):
-        compiler_list: List[Compiler] = []
-        contracts_folder = cls.config_manager.contracts_folder
-        for ext, compiler in cls.compiler_manager.registered_compilers.items():
-            sources = [x for x in source_paths if x.suffix == ext]
-            if not sources:
-                continue
-
-            try:
-                version_map = compiler.get_version_map(sources, contracts_folder)
-            except APINotImplementedError:
-                versions = list(compiler.get_versions(sources))
-                if len(versions) == 0:
-                    # Skipping compilers that don't use versions
-                    # These are unlikely to be part of the published manifest
-                    continue
-                elif len(versions) > 1:
-                    raise (ProjectError(f"Unable to create version map for '{ext}'."))
-
-                version = versions[0]
-                filtered_paths = [p for p in source_paths if p.suffix == ext]
-                version_map = {version: filtered_paths}
-
-            for version, paths in version_map.items():
-                source_ids = [str(get_relative_path(p, contracts_folder)) for p in paths]
-                filtered_contract_types = [
-                    ct for ct in contract_types.values() if ct.source_id in source_ids
-                ]
-                contract_type_names = [ct.name for ct in filtered_contract_types]
-                compiler_list.append(
-                    Compiler(
-                        name=compiler.name,
-                        version=str(version),
-                        settings={},
-                        contractTypes=contract_type_names,
-                    )
-                )
-        return compiler_list
 
     @classmethod
     def _create_source_dict(
