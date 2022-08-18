@@ -260,6 +260,9 @@ class CacheQueryProvider(QueryAPI):
 
         except QueryEngineError as err:
             logger.warning(f"Cannot perform query on cache database: {err}")
+            # Note: The reason we return None instead of failing is that we want
+            #       a failure of the query to bypass the query logic so that the
+            #       estimation phase does not fail in `QueryManager`.
             return None
 
     @singledispatchmethod
@@ -308,7 +311,7 @@ class CacheQueryProvider(QueryAPI):
         )
 
     @singledispatchmethod
-    def perform_query(self, query: QueryType) -> Optional[Iterator]:  # type: ignore
+    def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
         """
         Performs the requested query from cache.
 
@@ -318,10 +321,11 @@ class CacheQueryProvider(QueryAPI):
 
         Raises:
             :class:`~ape.exceptions.QueryEngineError`: When given an
-                incompatible QueryType
+                incompatible QueryType, or encounters some sort of error
+                in the database or estimation logic.
 
         Returns:
-            Optional[Iterator]
+            Iterator
         """
 
         raise QueryEngineError(
@@ -331,55 +335,40 @@ class CacheQueryProvider(QueryAPI):
         )
 
     @perform_query.register
-    def _perform_block_query(self, query: BlockQuery) -> Optional[Iterator[BlockAPI]]:
-        try:
-            with self.database_connection as conn:
-                result = conn.execute(self._perform_query_clause(query))
+    def _perform_block_query(self, query: BlockQuery) -> Iterator[BlockAPI]:
+        with self.database_connection as conn:
+            result = conn.execute(self._perform_query_clause(query))
 
-                if not result:
-                    # NOTE: Should be unreachable if estimated correctly
-                    raise QueryEngineError(f"Could not perform query:\n{query}")
+            if not result:
+                # NOTE: Should be unreachable if estimated correctly
+                raise QueryEngineError(f"Could not perform query:\n{query}")
 
-                for row in result:
-                    yield self.provider.network.ecosystem.decode_block(dict(row.items()))
-
-        except QueryEngineError as err:
-            logger.error(f"Database not initiated: {str(err)}")
+            yield from map(
+                lambda row: self.provider.network.ecosystem.decode_block(dict(row.items())), result
+            )
 
     @perform_query.register
-    def _perform_transaction_query(self, query: BlockTransactionQuery) -> Optional[Iterator[Dict]]:
-        try:
-            with self.database_connection as conn:
-                result = conn.execute(self._perform_query_clause(query))
+    def _perform_transaction_query(self, query: BlockTransactionQuery) -> Iterator[Dict]:
+        with self.database_connection as conn:
+            result = conn.execute(self._perform_query_clause(query))
 
-                if not result:
-                    # NOTE: Should be unreachable if estimated correctly
-                    raise QueryEngineError(f"Could not perform query:\n{query}")
+            if not result:
+                # NOTE: Should be unreachable if estimated correctly
+                raise QueryEngineError(f"Could not perform query:\n{query}")
 
-                for row in result:
-                    yield dict(row.items())
-
-        except QueryEngineError as err:
-            logger.error(f"Database not initiated: {str(err)}")
+            for row in result:
+                yield dict(row.items())
 
     @perform_query.register
-    def _perform_contract_events_query(
-        self, query: ContractEventQuery
-    ) -> Optional[Iterator[ContractLog]]:
-        try:
-            with self.database_connection as conn:
-                result = conn.execute(self._perform_query_clause(query))
+    def _perform_contract_events_query(self, query: ContractEventQuery) -> Iterator[ContractLog]:
+        with self.database_connection as conn:
+            result = conn.execute(self._perform_query_clause(query))
 
-                if not result:
-                    # NOTE: Should be unreachable if estimated correctly
-                    raise QueryEngineError(f"Could not perform query:\n{query}")
+            if not result:
+                # NOTE: Should be unreachable if estimated correctly
+                raise QueryEngineError(f"Could not perform query:\n{query}")
 
-                for row in result:
-                    row_dict = {key: value for (key, value) in row.items()}
-                    yield ContractLog(**row_dict)
-
-        except QueryEngineError as err:
-            logger.error(f"Database not initiated: {str(err)}")
+            yield from map(lambda row: ContractLog.parse_obj(dict(row.items())), result)
 
     @singledispatchmethod
     def _cache_update_clause(self, query: QueryType) -> Optional[Insert]:
