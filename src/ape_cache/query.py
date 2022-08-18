@@ -2,11 +2,11 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
 from sqlalchemy import create_engine, func
-from sqlalchemy.engine import Connection, CursorResult  # type: ignore
+from sqlalchemy.engine import CursorResult  # type: ignore
 from sqlalchemy.sql import column, insert, select
 from sqlalchemy.sql.expression import Insert, Select
 
-from ape.api import QueryAPI, QueryType, BlockAPI
+from ape.api import BlockAPI, QueryAPI, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
@@ -101,7 +101,7 @@ class CacheQueryProvider(QueryAPI):
         database_file.unlink()
 
     @property
-    def database_connection(self) -> Optional[Connection]:
+    def database_connection(self):
         """
         Returns a connection for the currently active network.
         NOTE: Creates a database if it doesn't exist.
@@ -118,8 +118,7 @@ class CacheQueryProvider(QueryAPI):
             raise QueryEngineError("Not connected to a provider")
 
         database_file = self._get_database_file(
-            self.provider.network.ecosystem.name,
-            self.provider.network.name
+            self.provider.network.ecosystem.name, self.provider.network.name
         )
 
         if not database_file.is_file():
@@ -297,10 +296,7 @@ class CacheQueryProvider(QueryAPI):
 
     @_perform_query_clause.register
     def _perform_transaction_clause(self, query: BlockTransactionQuery) -> Select:
-        return (
-            select([Transactions])
-            .where(Transactions.block_hash == query.block_id)
-        )
+        return select([Transactions]).where(Transactions.block_hash == query.block_id)
 
     @_perform_query_clause.register
     def _perform_contract_event_clause(self, query: ContractEventQuery) -> Select:
