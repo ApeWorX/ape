@@ -1,20 +1,18 @@
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
-from hexbytes import HexBytes
 from sqlalchemy import create_engine, func
-from sqlalchemy.engine import CursorResult  # type: ignore
+from sqlalchemy.engine import Connection, CursorResult  # type: ignore
 from sqlalchemy.sql import column, insert, select
-from sqlalchemy.sql.expression import Insert, TextClause
+from sqlalchemy.sql.expression import Insert, Select
 
-from ape.api import QueryAPI, QueryType
+from ape.api import QueryAPI, QueryType, BlockAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.types import ContractLog
 from ape.utils import singledispatchmethod
-from ape_ethereum.ecosystem import Block
 
 from . import models
 from .models import Blocks, ContractEvents, Transactions
@@ -26,10 +24,16 @@ class CacheQueryProvider(QueryAPI):
     Allows for the query of blockchain data using a connected provider.
     """
 
-    # Database management
-    def get_database_file(self, ecosystem_name: str, network_name: str) -> Path:
+    def _get_database_file(self, ecosystem_name: str, network_name: str) -> Path:
         """
         Allows us to figure out what the file *will be*, mostly used for database management.
+
+        Args:
+            ecosystem_name (str): Name of the ecosystem to store data for (ex: ethereum)
+            network_name (str): name of the network to store data for (ex: mainnet)
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: If a local network is provided.
         """
 
         if network_name == LOCAL_NETWORK_NAME:
@@ -42,11 +46,32 @@ class CacheQueryProvider(QueryAPI):
 
         return self.config_manager.DATA_FOLDER / ecosystem_name / network_name / "cache.db"
 
-    def get_sqlite_uri(self, database_file: Path) -> str:
+    def _get_sqlite_uri(self, database_file: Path) -> str:
+        """
+        Gets a string for the sqlite db URI.
+
+        Args:
+            database_file (`pathlib.Path`): A path to the database file.
+
+        Returns:
+            str
+        """
+
         return f"sqlite:///{database_file}"
 
     def init_database(self, ecosystem_name: str, network_name: str):
-        database_file = self.get_database_file(ecosystem_name, network_name)
+        """
+        Initialize the SQLite database for caching of provider data.
+
+        Args:
+            ecosystem_name (str): Name of the ecosystem to store data for (ex: ethereum)
+            network_name (str): name of the network to store data for (ex: mainnet)
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When the database has not been initialized
+        """
+
+        database_file = self._get_database_file(ecosystem_name, network_name)
         if database_file.is_file():
             raise QueryEngineError("Database has already been initialized")
 
@@ -54,36 +79,54 @@ class CacheQueryProvider(QueryAPI):
         database_file.parent.mkdir(exist_ok=True, parents=True)
 
         models.Base.metadata.create_all(  # type: ignore
-            bind=create_engine(self.get_sqlite_uri(database_file), pool_pre_ping=True)
+            bind=create_engine(self._get_sqlite_uri(database_file), pool_pre_ping=True)
         )
 
     def purge_database(self, ecosystem_name: str, network_name: str):
-        database_file = self.get_database_file(ecosystem_name, network_name)
+        """
+        Removes the SQLite database file from disk.
+
+        Args:
+            ecosystem_name (str): Name of the ecosystem to store data for (ex: ethereum)
+            network_name (str): name of the network to store data for (ex: mainnet)
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When the database has not been initialized
+        """
+
+        database_file = self._get_database_file(ecosystem_name, network_name)
         if not database_file.is_file():
             raise QueryEngineError("Database must be initialized")
 
         database_file.unlink()
 
-    # Operations
     @property
-    def database_connection(self):
+    def _database_connection(self) -> Optional[Connection]:
         """
         Returns a connection for the currently active network.
         NOTE: Creates a database if it doesn't exist.
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: If you are not connected to a provider,
+                or if the database has not been initialized.
+
+        Returns:
+            Optional[`sqlalchemy.engine.Connection`]
         """
 
         if not self.network_manager.active_provider:
             raise QueryEngineError("Not connected to a provider")
 
-        ecosystem_name = self.provider.network.ecosystem.name
-        network_name = self.provider.network.name
+        database_file = self._get_database_file(
+            self.provider.network.ecosystem.name,
+            self.provider.network.name
+        )
 
-        database_file = self.get_database_file(ecosystem_name, network_name)
         if not database_file.is_file():
             raise QueryEngineError("Database has not been initialized")
 
         try:
-            sqlite_uri = self.get_sqlite_uri(database_file)
+            sqlite_uri = self._get_sqlite_uri(database_file)
             return create_engine(sqlite_uri, pool_pre_ping=True).connect()
 
         except QueryEngineError as e:
@@ -94,9 +137,23 @@ class CacheQueryProvider(QueryAPI):
             logger.warning(f"Unhandled exception when querying:\n{e}")
             return None
 
-    # Estimate query
     @singledispatchmethod
-    def estimate_query_clause(self, query: QueryType) -> TextClause:
+    def _estimate_query_clause(self, query: QueryType) -> Select:
+        """
+        A singledispatchmethod that returns a select statement.
+
+        Args:
+            query (QueryType): Choice of query type to perform a
+                check of the number of rows that match the clause.
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When given an
+                incompatible QueryType.
+
+        Returns:
+            `sqlalchemy.sql.expression.Select`
+        """
+
         raise QueryEngineError(
             """
             Not a compatible QueryType. For more details see our docs
@@ -104,8 +161,8 @@ class CacheQueryProvider(QueryAPI):
             """
         )
 
-    @estimate_query_clause.register
-    def block_estimate_query_clause(self, query: BlockQuery) -> TextClause:
+    @_estimate_query_clause.register
+    def _block_estimate_query_clause(self, query: BlockQuery) -> Select:
         return (
             select([func.count()])
             .select_from(Blocks)
@@ -114,16 +171,16 @@ class CacheQueryProvider(QueryAPI):
             .where(Blocks.number % query.step == 0)
         )
 
-    @estimate_query_clause.register
-    def transaction_estimate_query_clause(self, query: BlockTransactionQuery) -> TextClause:
+    @_estimate_query_clause.register
+    def _transaction_estimate_query_clause(self, query: BlockTransactionQuery) -> Select:
         return (
             select([func.count()])
             .select_from(Transactions)
             .where(Transactions.block_hash == query.block_id)
         )
 
-    @estimate_query_clause.register
-    def contract_events_estimate_query_clause(self, query: ContractEventQuery) -> TextClause:
+    @_estimate_query_clause.register
+    def _contract_events_estimate_query_clause(self, query: ContractEventQuery) -> Select:
         return (
             select([func.count()])
             .select_from(ContractEvents)
@@ -133,11 +190,16 @@ class CacheQueryProvider(QueryAPI):
         )
 
     @singledispatchmethod
-    def compute_estimate(self, query: QueryType, result: CursorResult) -> Optional[int]:
+    def _compute_estimate(self, query: QueryType, result: CursorResult) -> Optional[int]:
+        """
+        A singledispatchemethod that computes the time a query
+        will take to perform from the caching database
+        """
+
         return None  # can't handle this query
 
-    @compute_estimate.register
-    def compute_estimate_block_query(
+    @_compute_estimate.register
+    def _compute_estimate_block_query(
         self,
         query: BlockQuery,
         result: CursorResult,
@@ -150,8 +212,8 @@ class CacheQueryProvider(QueryAPI):
         # TODO: Allow partial queries
         return None
 
-    @compute_estimate.register
-    def compute_estimate_block_transaction_query(
+    @_compute_estimate.register
+    def _compute_estimate_block_transaction_query(
         self,
         query: BlockTransactionQuery,
         result: CursorResult,
@@ -163,8 +225,8 @@ class CacheQueryProvider(QueryAPI):
         # Can't handle this query
         return None
 
-    @compute_estimate.register
-    def compute_estimate_contract_events_query(
+    @_compute_estimate.register
+    def _compute_estimate_contract_events_query(
         self,
         query: ContractEventQuery,
         result: CursorResult,
@@ -178,31 +240,54 @@ class CacheQueryProvider(QueryAPI):
         return None
 
     def estimate_query(self, query: QueryType) -> Optional[int]:
+        """
+        Method called by the client to return a query time estimate.
+
+        Args:
+            query (QueryType): Choice of query type to perform a
+                check of the number of rows that match the clause.
+
+        Returns:
+            Optional[int]
+        """
+
         try:
-            with self.database_connection as conn:
-                result = conn.execute(self.estimate_query_clause(query))
+            with self._database_connection as conn:
+                result = conn.execute(self._estimate_query_clause(query))
                 if not result:
                     return None
 
-                return self.compute_estimate(query, result)
+                return self._compute_estimate(query, result)
 
         except QueryEngineError as err:
             logger.warning(f"Cannot perform query on cache database: {err}")
             return None
 
     @singledispatchmethod
-    def perform_query_clause(self, query: QueryType) -> TextClause:
+    def _perform_query_clause(self, query: QueryType) -> Select:
         """
-        Fetch data from the SQL database.
+        Create the SQLAlchemy select statement to perform the query.
+
+        Args:
+            query (QueryType): Choice of query type to perform a
+                check of the number of rows that match the clause.
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When given an
+                incompatible QueryType
+
+        Returns:
+            `sqlalchemy.sql.expression.TextClause`
         """
+
         raise QueryEngineError(
             "Not a compatible QueryType. For more details see our docs "
             "https://docs.apeworx.io/ape/stable/methoddocs/"
             "exceptions.html#ape.exceptions.QueryEngineError"
         )
 
-    @perform_query_clause.register
-    def perform_block_clause(self, query: BlockQuery) -> TextClause:
+    @_perform_query_clause.register
+    def _perform_block_clause(self, query: BlockQuery) -> Select:
         return (
             select([column(c) for c in query.columns])
             .where(Blocks.number >= query.start_block)
@@ -210,15 +295,15 @@ class CacheQueryProvider(QueryAPI):
             .where(Blocks.number % query.step == 0)
         )
 
-    @perform_query_clause.register
-    def perform_transaction_clause(self, query: BlockTransactionQuery) -> TextClause:
-        cols = query.columns
-        if "*" in query.columns:
-            cols = [c.key for c in Transactions.__table__.columns]  # type: ignore
-        return select([column(c) for c in cols]).where(Transactions.block_hash == query.block_id)
+    @_perform_query_clause.register
+    def _perform_transaction_clause(self, query: BlockTransactionQuery) -> Select:
+        return (
+            select([Transactions])
+            .where(Transactions.block_hash == query.block_id)
+        )
 
-    @perform_query_clause.register
-    def perform_contract_event_clause(self, query: ContractEventQuery) -> TextClause:
+    @_perform_query_clause.register
+    def _perform_contract_event_clause(self, query: ContractEventQuery) -> Select:
         return (
             select([column(c) for c in query.columns])
             .where(ContractEvents.block_number >= query.start_block)
@@ -228,6 +313,21 @@ class CacheQueryProvider(QueryAPI):
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> Optional[Iterator]:  # type: ignore
+        """
+        Performs the requested query from cache.
+
+        Args:
+            query (QueryType): Choice of query type to perform a
+                check of the number of rows that match the clause.
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When given an
+                incompatible QueryType
+
+        Returns:
+            Optional[Iterator]
+        """
+
         raise QueryEngineError(
             "Not a compatible QueryType. For more details see our docs "
             "https://docs.apeworx.io/ape/stable/methoddocs/"
@@ -235,55 +335,44 @@ class CacheQueryProvider(QueryAPI):
         )
 
     @perform_query.register
-    def perform_block_query(self, query: BlockQuery):
+    def _perform_block_query(self, query: BlockQuery) -> Optional[Iterator[BlockAPI]]:
         try:
-            with self.database_connection as conn:
-                result = conn.execute(self.perform_query_clause(query))
+            with self._database_connection as conn:
+                result = conn.execute(self._perform_query_clause(query))
 
                 if not result:
                     # NOTE: Should be unreachable if estimated correctly
                     raise QueryEngineError(f"Could not perform query:\n{query}")
 
                 for row in result:
-                    row_dict = {key: value for (key, value) in row.items()}
-                    if "hash" in row_dict:
-                        row_dict["hash"] = HexBytes(row_dict["hash"])
-                    if "parent_hash" in row_dict:
-                        row_dict["parentHash"] = HexBytes(row_dict.pop("parent_hash"))
-                    if "gas_limit" in row_dict:
-                        row_dict["gasLimit"] = row_dict.pop("gas_limit")
-                    if "gas_used" in row_dict:
-                        row_dict["gasUsed"] = row_dict.pop("gas_used")
-                    if "base_fee" in row_dict:
-                        row_dict["baseFeePerGas"] = row_dict.pop("base_fee")
-                    if "total_difficulty" in row_dict:
-                        row_dict["totalDifficulty"] = row_dict.pop("total_difficulty")
-                    yield Block(**row_dict)
+                    yield self.provider.network.ecosystem.decode_block(dict(row.items()))
 
         except QueryEngineError as err:
             logger.error(f"Database not initiated: {str(err)}")
 
     @perform_query.register
-    def perform_transaction_query(self, query: BlockTransactionQuery):
+    def _perform_transaction_query(self, query: BlockTransactionQuery) -> Optional[Iterator[Dict]]:
         try:
-            with self.database_connection as conn:
-                result = conn.execute(self.perform_query_clause(query))
+            with self._database_connection as conn:
+                result = conn.execute(self._perform_query_clause(query))
 
                 if not result:
                     # NOTE: Should be unreachable if estimated correctly
                     raise QueryEngineError(f"Could not perform query:\n{query}")
 
                 for row in result:
-                    yield {key: value for (key, value) in row.items()}
+                    yield dict(row.items())
 
         except QueryEngineError as err:
             logger.error(f"Database not initiated: {str(err)}")
 
     @perform_query.register
-    def perform_contract_events_query(self, query: ContractEventQuery):
+    def _perform_contract_events_query(
+        self, query: ContractEventQuery
+    ) -> Optional[Iterator[ContractLog]]:
         try:
-            with self.database_connection as conn:
-                result = conn.execute(self.perform_query_clause(query))
+            with self._database_connection as conn:
+                result = conn.execute(self._perform_query_clause(query))
 
                 if not result:
                     # NOTE: Should be unreachable if estimated correctly
@@ -297,23 +386,33 @@ class CacheQueryProvider(QueryAPI):
             logger.error(f"Database not initiated: {str(err)}")
 
     @singledispatchmethod
-    def cache_update_clause(self, query: QueryType) -> Optional[Insert]:
+    def _cache_update_clause(self, query: QueryType) -> Optional[Insert]:
+        """
+        Update cache database Insert statement.
+
+        Args:
+            query (QueryType): Choice of query type to perform a
+                check of the number of rows that match the clause.
+
+        Returns:
+            Optional[`sqlalchemy.sql.Expression.Insert`]
+        """
         pass  # Can't cache this query
 
-    @cache_update_clause.register
-    def cache_update_block_clause(self, query: BlockQuery) -> Optional[Insert]:
+    @_cache_update_clause.register
+    def _cache_update_block_clause(self, query: BlockQuery) -> Optional[Insert]:
         return insert(Blocks)  # type: ignore
 
-    @cache_update_clause.register
-    def cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Optional[Insert]:
+    @_cache_update_clause.register
+    def _cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Optional[Insert]:
         return insert(Transactions)  # type: ignore
 
-    @cache_update_clause.register
-    def cache_update_events_clause(self, query: ContractEventQuery) -> Optional[Insert]:
+    @_cache_update_clause.register
+    def _cache_update_events_clause(self, query: ContractEventQuery) -> Optional[Insert]:
         return insert(ContractEvents)  # type: ignore
 
     @singledispatchmethod
-    def get_cache_data(
+    def _get_cache_data(
         self, query: QueryType, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
         raise QueryEngineError(
@@ -323,14 +422,14 @@ class CacheQueryProvider(QueryAPI):
             """
         )
 
-    @get_cache_data.register
-    def get_block_cache_data(
+    @_get_cache_data.register
+    def _get_block_cache_data(
         self, query: BlockQuery, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
         return [m.dict(by_alias=False) for m in result]
 
-    @get_cache_data.register
-    def get_block_txns_data(
+    @_get_cache_data.register
+    def _get_block_txns_data(
         self, query: BlockTransactionQuery, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
         new_result = []
@@ -355,21 +454,21 @@ class CacheQueryProvider(QueryAPI):
             new_result.append(new_dict)
         return new_result
 
-    @get_cache_data.register
-    def get_cache_events_data(
+    @_get_cache_data.register
+    def _get_cache_events_data(
         self, query: ContractEventQuery, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
         return [m.dict(by_alias=False) for m in result]
 
     def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):
-        clause = self.cache_update_clause(query)
+        clause = self._cache_update_clause(query)
         if str(clause):
             logger.debug(f"Caching query: {query}")
-            with self.database_connection as conn:
+            with self._database_connection as conn:
                 try:
                     conn.execute(
                         clause.values(  # type: ignore
-                            self.get_cache_data(query, result)
+                            self._get_cache_data(query, result)
                         ).prefix_with("OR IGNORE")
                     )
 
