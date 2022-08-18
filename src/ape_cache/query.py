@@ -101,7 +101,7 @@ class CacheQueryProvider(QueryAPI):
         database_file.unlink()
 
     @property
-    def _database_connection(self) -> Optional[Connection]:
+    def database_connection(self) -> Optional[Connection]:
         """
         Returns a connection for the currently active network.
         NOTE: Creates a database if it doesn't exist.
@@ -252,7 +252,7 @@ class CacheQueryProvider(QueryAPI):
         """
 
         try:
-            with self._database_connection as conn:
+            with self.database_connection as conn:
                 result = conn.execute(self._estimate_query_clause(query))
                 if not result:
                     return None
@@ -337,7 +337,7 @@ class CacheQueryProvider(QueryAPI):
     @perform_query.register
     def _perform_block_query(self, query: BlockQuery) -> Optional[Iterator[BlockAPI]]:
         try:
-            with self._database_connection as conn:
+            with self.database_connection as conn:
                 result = conn.execute(self._perform_query_clause(query))
 
                 if not result:
@@ -353,7 +353,7 @@ class CacheQueryProvider(QueryAPI):
     @perform_query.register
     def _perform_transaction_query(self, query: BlockTransactionQuery) -> Optional[Iterator[Dict]]:
         try:
-            with self._database_connection as conn:
+            with self.database_connection as conn:
                 result = conn.execute(self._perform_query_clause(query))
 
                 if not result:
@@ -371,7 +371,7 @@ class CacheQueryProvider(QueryAPI):
         self, query: ContractEventQuery
     ) -> Optional[Iterator[ContractLog]]:
         try:
-            with self._database_connection as conn:
+            with self.database_connection as conn:
                 result = conn.execute(self._perform_query_clause(query))
 
                 if not result:
@@ -464,7 +464,7 @@ class CacheQueryProvider(QueryAPI):
         clause = self._cache_update_clause(query)
         if str(clause):
             logger.debug(f"Caching query: {query}")
-            with self._database_connection as conn:
+            with self.database_connection as conn:
                 try:
                     conn.execute(
                         clause.values(  # type: ignore
