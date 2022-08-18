@@ -117,9 +117,9 @@ class Block(BlockAPI):
 
     gas_limit: int = Field(alias="gasLimit")
     gas_used: int = Field(alias="gasUsed")
-    base_fee: Optional[int] = Field(None, alias="baseFeePerGas")
-    difficulty: Optional[int] = None
-    total_difficulty: Optional[int] = Field(None, alias="totalDifficulty")
+    base_fee: int = Field(0, alias="baseFeePerGas")
+    difficulty: int = 0
+    total_difficulty: int = Field(0, alias="totalDifficulty")
 
 
 class Ethereum(EcosystemAPI):
@@ -272,19 +272,21 @@ class Ethereum(EcosystemAPI):
         return receipt
 
     def decode_block(self, data: Dict) -> BlockAPI:
+        data["hash"] = HexBytes(data["hash"])
         if "gas_limit" in data:
             data["gasLimit"] = data.pop("gas_limit")
         if "gas_used" in data:
             data["gasUsed"] = data.pop("gas_used")
         if "parent_hash" in data:
-            data["parentHash"] = data.pop("parent_hash")
+            data["parentHash"] = HexBytes(data.pop("parent_hash"))
         if "transaction_ids" in data:
             data["transactions"] = data.pop("transaction_ids")
         if "total_difficulty" in data:
             data["totalDifficulty"] = data.pop("total_difficulty")
         if "base_fee" in data:
             data["baseFee"] = data.pop("base_fee")
-        data["num_transactions"] = len(data["transactions"])
+        if "transactions" in data:
+            data["num_transactions"] = len(data["transactions"])
         return Block.parse_obj(data)
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:

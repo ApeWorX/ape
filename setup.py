@@ -24,10 +24,12 @@ extras_require = {
         "types-requests",  # NOTE: Needed due to mypy typeshed
         "types-pkg-resources",  # NOTE: Needed due to mypy typeshed
         "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy typeshed
+        "types-SQLAlchemy>=1.4.49",
         "flake8>=4.0.1,<5.0",  # Style linter
         "flake8-breakpoint>=1.1.0,<2.0.0",  # detect breakpoints left in code
         "flake8-print>=4.0.0,<5.0.0",  # detect print statements left in code
         "isort>=5.10.1,<6.0",  # Import sorting linter
+        "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy types
     ],
     "doc": [
         "myst-parser>=0.17.0,<0.18",  # Tools for parsing markdown files in the docs
@@ -103,6 +105,7 @@ setup(
         "pydantic>=1.9.2,<2",
         "pygit2>=1.7.2,<2",
         "PyGithub>=1.54,<2",
+        "SQLAlchemy>=1.4.35",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
         "pyyaml>=6.0,<7",
@@ -129,6 +132,7 @@ setup(
         "pytest11": ["ape_test=ape.pytest.plugin"],
         "ape_cli_subcommands": [
             "ape_accounts=ape_accounts._cli:cli",
+            "ape_cache=ape_cache._cli:cli",
             "ape_compile=ape_compile._cli:cli",
             "ape_console=ape_console._cli:cli",
             "ape_plugins=ape_plugins._cli:cli",
