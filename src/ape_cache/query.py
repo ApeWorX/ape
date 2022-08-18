@@ -337,7 +337,7 @@ class CacheQueryProvider(QueryAPI):
             yield from map(lambda row: ContractLog.parse_obj(dict(row.items())), result)
 
     @singledispatchmethod
-    def _cache_update_clause(self, query: QueryType) -> Optional[Insert]:
+    def _cache_update_clause(self, query: QueryType) -> Insert:
         """
         Update cache database Insert statement.
 
@@ -345,21 +345,31 @@ class CacheQueryProvider(QueryAPI):
             query (QueryType): Choice of query type to perform a
                 check of the number of rows that match the clause.
 
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When given an
+                incompatible QueryType, or encounters some sort of error
+                in the database or estimation logic.
+
         Returns:
-            Optional[`sqlalchemy.sql.Expression.Insert`]
+            `sqlalchemy.sql.Expression.Insert`
         """
-        pass  # Can't cache this query
+        # Can't cache this query
+        raise QueryEngineError(
+            "Not a compatible QueryType. For more details see our docs "
+            "https://docs.apeworx.io/ape/stable/methoddocs/"
+            "exceptions.html#ape.exceptions.QueryEngineError"
+        )
 
     @_cache_update_clause.register
-    def _cache_update_block_clause(self, query: BlockQuery) -> Optional[Insert]:
+    def _cache_update_block_clause(self, query: BlockQuery) -> Insert:
         return insert(Blocks)  # type: ignore
 
     @_cache_update_clause.register
-    def _cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Optional[Insert]:
+    def _cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Insert:
         return insert(Transactions)  # type: ignore
 
     @_cache_update_clause.register
-    def _cache_update_events_clause(self, query: ContractEventQuery) -> Optional[Insert]:
+    def _cache_update_events_clause(self, query: ContractEventQuery) -> Insert:
         return insert(ContractEvents)  # type: ignore
 
     @singledispatchmethod
@@ -412,8 +422,13 @@ class CacheQueryProvider(QueryAPI):
         return [m.dict(by_alias=False) for m in result]
 
     def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):
-        clause = self._cache_update_clause(query)
-        if str(clause):
+        try:
+            clause = self._cache_update_clause(query)
+        except QueryEngineError:
+            # Cannot handle query type
+            return
+
+        if self.database_connection is not None:
             logger.debug(f"Caching query: {query}")
             with self.database_connection as conn:
                 try:
