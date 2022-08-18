@@ -23,7 +23,7 @@ class HexByteString(TypeDecorator):
             raise TypeError(f"HexByteString columns support only bytes values: {value}")
 
     def process_result_value(self, value, dialect):
-        return bytes.fromhex(value) if value else None
+        return bytes.fromhex(value.replace("0x", "")) if value else None
 
 
 class Blocks(Base):
