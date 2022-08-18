@@ -224,9 +224,11 @@ class CacheQueryProvider(QueryAPI):
         query: BlockTransactionQuery,
         result: CursorResult,
     ) -> Optional[int]:
-        if result.scalar() > 0:  # type: ignore
-            # NOTE: Assume 200 msec to get data from database
-            return 200
+        # TODO: Update `transactions` table schema so this query functions properly
+        # Uncomment below after https://github.com/ApeWorX/ape/issues/994
+        # if result.scalar() > 0:  # type: ignore
+        #    # NOTE: Assume 200 msec to get data from database
+        #    return 200
 
         # Can't handle this query
         return None
@@ -377,9 +379,11 @@ class CacheQueryProvider(QueryAPI):
     def _cache_update_block_clause(self, query: BlockQuery) -> Insert:
         return insert(Blocks)  # type: ignore
 
-    @_cache_update_clause.register
-    def _cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Insert:
-        return insert(Transactions)  # type: ignore
+    # TODO: Update `transactions` table schema so we can use `EcosystemAPI.decode_receipt`
+    # Uncomment below after https://github.com/ApeWorX/ape/issues/994
+    # @_cache_update_clause.register
+    # def _cache_update_block_txns_clause(self, query: BlockTransactionQuery) -> Insert:
+    #    return insert(Transactions)  # type: ignore
 
     @_cache_update_clause.register
     def _cache_update_events_clause(self, query: ContractEventQuery) -> Insert:
