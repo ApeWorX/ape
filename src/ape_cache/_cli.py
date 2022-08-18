@@ -19,7 +19,7 @@ def cli():
 
 
 @cli.command(short_help="Initialize a new cache database")
-@network_option()
+@network_option(required=True)
 def init(network):
     """
     Initializes an SQLite database and creates a file to store data
@@ -61,7 +61,7 @@ def query(query_str, network):
 
 
 @cli.command(short_help="Purges entire database")
-@network_option()
+@network_option(required=True)
 def purge(network):
     """
     Purges data from the selected database instance.
