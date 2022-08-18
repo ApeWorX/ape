@@ -129,7 +129,7 @@ class PluginManager:
             editable_key = "__editable___"
             if name.startswith(f"{editable_key}ape_"):
                 # Handle strange editable install behavior
-                pattern = rf"{editable_key}(\w*)(_\d+_\d+_\d+a?\d*_dev\d+_[a-z|\d]{{8}}_finder)"
+                pattern = rf"{editable_key}(\w*)(_\d+_\d+_\d+a?\d*_dev\d+_\w*_finder)"
                 match = re.match(pattern, name)
                 if not match:
                     continue
