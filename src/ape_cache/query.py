@@ -24,6 +24,9 @@ class CacheQueryProvider(QueryAPI):
     Allows for the query of blockchain data using a connected provider.
     """
 
+    # Class var for tracking if we detect a scenario where the cache db isn't working
+    database_bypass = False
+
     def _get_database_file(self, ecosystem_name: str, network_name: str) -> Path:
         """
         Allows us to figure out what the file *will be*, mostly used for database management.
@@ -122,7 +125,10 @@ class CacheQueryProvider(QueryAPI):
         )
 
         if not database_file.is_file():
-            raise QueryEngineError("Database has not been initialized")
+            # NOTE: Raising `info` here hints user that they can initialize the cache db
+            logger.info("Cache database has not been initialized")
+            self.database_bypass = True
+            return None
 
         try:
             sqlite_uri = self._get_sqlite_uri(database_file)
@@ -134,6 +140,7 @@ class CacheQueryProvider(QueryAPI):
 
         except Exception as e:
             logger.warning(f"Unhandled exception when querying:\n{e}")
+            self.database_bypass = True
             return None
 
     @singledispatchmethod
@@ -250,6 +257,12 @@ class CacheQueryProvider(QueryAPI):
             Optional[int]
         """
 
+        # NOTE: Because of Python shortcircuiting, the first time `database_connection` is missing
+        #       this will lock the class var `database_bypass` in place for the rest of the session
+        if self.database_bypass or self.database_connection is None:
+            # No database, or some other issue
+            return None
+
         try:
             with self.database_connection as conn:
                 result = conn.execute(self._estimate_query_clause(query))
@@ -259,7 +272,7 @@ class CacheQueryProvider(QueryAPI):
                 return self._compute_estimate(query, result)
 
         except QueryEngineError as err:
-            logger.warning(f"Cannot perform query on cache database: {err}")
+            logger.debug(f"Bypassing cache database: {err}")
             # Note: The reason we return None instead of failing is that we want
             #       a failure of the query to bypass the query logic so that the
             #       estimation phase does not fail in `QueryManager`.
@@ -428,7 +441,9 @@ class CacheQueryProvider(QueryAPI):
             # Cannot handle query type
             return
 
-        if self.database_connection is not None:
+        # NOTE: Because of Python shortcircuiting, the first time `database_connection` is missing
+        #       this will lock the class var `database_bypass` in place for the rest of the session
+        if not self.database_bypass and self.database_connection is not None:
             logger.debug(f"Caching query: {query}")
             with self.database_connection as conn:
                 try:
