@@ -1,6 +1,8 @@
+import subprocess
 from distutils.dir_util import copy_tree
 from importlib import import_module
 from pathlib import Path
+from typing import List, Optional
 
 import pytest
 
@@ -122,3 +124,45 @@ def clean_cache(project):
 
     if cache_file.exists():
         cache_file.unlink()
+
+
+class ApeSubprocessRunner:
+    """
+    Same CLI commands are better tested using a python subprocess,
+    such as `ape test` commands because duplicate pytest main methods
+    do not run well together.
+    """
+
+    def __init__(self, root_cmd: Optional[List[str]] = None):
+        root_cmd = root_cmd or []
+        self.root_cmd = ["ape", *root_cmd]
+
+    def invoke(self, subcommand: Optional[List[str]] = None):
+        subcommand = subcommand or []
+        completed_process = subprocess.run(
+            [*self.root_cmd, *subcommand], capture_output=True, text=True
+        )
+        return SubprocessResult(completed_process)
+
+
+class SubprocessResult:
+    def __init__(self, completed_process: subprocess.CompletedProcess):
+        self._completed_process = completed_process
+
+    @property
+    def exit_code(self) -> int:
+        return self._completed_process.returncode
+
+    @property
+    def output(self) -> str:
+        return self._completed_process.stdout
+
+
+@pytest.fixture(scope="session")
+def subprocess_runner_cls():
+    return ApeSubprocessRunner
+
+
+@pytest.fixture(scope="session")
+def subprocess_runner(subprocess_runner_cls):
+    return subprocess_runner_cls()
