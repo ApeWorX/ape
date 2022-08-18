@@ -130,7 +130,8 @@ class ApeSubprocessRunner:
     """
     Same CLI commands are better tested using a python subprocess,
     such as `ape test` commands because duplicate pytest main methods
-    do not run well together.
+    do not run well together, or `ape plugins` commands, which may
+    modify installed plugins.
     """
 
     def __init__(self, root_cmd: Optional[List[str]] = None):
