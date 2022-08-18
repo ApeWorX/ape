@@ -14,7 +14,7 @@ def get_engine():
 @click.group(short_help="Query from caching database")
 def cli():
     """
-    Manage query caching database.
+    Manage query caching database (beta).
     """
 
 

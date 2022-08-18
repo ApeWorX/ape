@@ -106,7 +106,6 @@ setup(
         "pygit2>=1.7.2,<2",
         "PyGithub>=1.54,<2",
         "SQLAlchemy>=1.4.35",
-        "IPython>=7.31.1",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
         "pyyaml>=6.0,<7",

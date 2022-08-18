@@ -1,6 +1,6 @@
 # Cache
-#### Note: This is in Beta release. This functionality is in constant development and many features are in planning stages.
-Use the cache plugin to store provider data in an sqlite database.
+** Note: This is in Beta release. This functionality is in constant development and many features are in planning stages.
+Use the cache plugin to store provider data in a sqlite database.**
 
 ```bash
 ape cache init --network <ecosystem-name>:<network-name>
