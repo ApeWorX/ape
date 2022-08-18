@@ -266,51 +266,6 @@ class CacheQueryProvider(QueryAPI):
             return None
 
     @singledispatchmethod
-    def _perform_query_clause(self, query: QueryType) -> Select:
-        """
-        Create the SQLAlchemy select statement to perform the query.
-
-        Args:
-            query (QueryType): Choice of query type to perform a
-                check of the number of rows that match the clause.
-
-        Raises:
-            :class:`~ape.exceptions.QueryEngineError`: When given an
-                incompatible QueryType
-
-        Returns:
-            `sqlalchemy.sql.expression.TextClause`
-        """
-
-        raise QueryEngineError(
-            "Not a compatible QueryType. For more details see our docs "
-            "https://docs.apeworx.io/ape/stable/methoddocs/"
-            "exceptions.html#ape.exceptions.QueryEngineError"
-        )
-
-    @_perform_query_clause.register
-    def _perform_block_clause(self, query: BlockQuery) -> Select:
-        return (
-            select([column(c) for c in query.columns])
-            .where(Blocks.number >= query.start_block)
-            .where(Blocks.number <= query.stop_block)
-            .where(Blocks.number % query.step == 0)
-        )
-
-    @_perform_query_clause.register
-    def _perform_transaction_clause(self, query: BlockTransactionQuery) -> Select:
-        return select([Transactions]).where(Transactions.block_hash == query.block_id)
-
-    @_perform_query_clause.register
-    def _perform_contract_event_clause(self, query: ContractEventQuery) -> Select:
-        return (
-            select([column(c) for c in query.columns])
-            .where(ContractEvents.block_number >= query.start_block)
-            .where(ContractEvents.block_number <= query.stop_block)
-            .where(ContractEvents.block_number % query.step == 0)
-        )
-
-    @singledispatchmethod
     def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
         """
         Performs the requested query from cache.
@@ -337,7 +292,12 @@ class CacheQueryProvider(QueryAPI):
     @perform_query.register
     def _perform_block_query(self, query: BlockQuery) -> Iterator[BlockAPI]:
         with self.database_connection as conn:
-            result = conn.execute(self._perform_query_clause(query))
+            result = conn.execute(
+                select([column(c) for c in query.columns])
+                .where(Blocks.number >= query.start_block)
+                .where(Blocks.number <= query.stop_block)
+                .where(Blocks.number % query.step == 0)
+            )
 
             if not result:
                 # NOTE: Should be unreachable if estimated correctly
@@ -350,7 +310,9 @@ class CacheQueryProvider(QueryAPI):
     @perform_query.register
     def _perform_transaction_query(self, query: BlockTransactionQuery) -> Iterator[Dict]:
         with self.database_connection as conn:
-            result = conn.execute(self._perform_query_clause(query))
+            result = conn.execute(
+                select([Transactions]).where(Transactions.block_hash == query.block_id)
+            )
 
             if not result:
                 # NOTE: Should be unreachable if estimated correctly
@@ -361,7 +323,12 @@ class CacheQueryProvider(QueryAPI):
     @perform_query.register
     def _perform_contract_events_query(self, query: ContractEventQuery) -> Iterator[ContractLog]:
         with self.database_connection as conn:
-            result = conn.execute(self._perform_query_clause(query))
+            result = conn.execute(
+                select([column(c) for c in query.columns])
+                .where(ContractEvents.block_number >= query.start_block)
+                .where(ContractEvents.block_number <= query.stop_block)
+                .where(ContractEvents.block_number % query.step == 0)
+            )
 
             if not result:
                 # NOTE: Should be unreachable if estimated correctly
