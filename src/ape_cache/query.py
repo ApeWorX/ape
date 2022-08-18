@@ -356,8 +356,7 @@ class CacheQueryProvider(QueryAPI):
                 # NOTE: Should be unreachable if estimated correctly
                 raise QueryEngineError(f"Could not perform query:\n{query}")
 
-            for row in result:
-                yield dict(row.items())
+            yield from map(lambda row: dict(row.items()), result)
 
     @perform_query.register
     def _perform_contract_events_query(self, query: ContractEventQuery) -> Iterator[ContractLog]:
