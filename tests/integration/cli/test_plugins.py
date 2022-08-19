@@ -2,7 +2,7 @@ from typing import List, Optional
 
 import pytest
 
-from tests.integration.cli.utils import skip_projects_except
+from tests.integration.cli.utils import run_once
 
 TEST_PLUGIN_NAME = "tokens"
 
@@ -95,7 +95,7 @@ def plugins_xfail():
         f = pytest.mark.xfail(
             strict=False, reason="Github rate limiting issues or plugin install issues"
         )(f)
-        f = skip_projects_except(["test"])(f)
+        f = run_once(f)
         return f
 
     return wrapper

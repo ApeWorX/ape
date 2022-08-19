@@ -3,7 +3,7 @@ import json
 import pytest
 from eth_account import Account  # type: ignore
 
-from tests.integration.cli.utils import assert_failure
+from tests.integration.cli.utils import assert_failure, run_once
 
 ALIAS = "test"
 PASSWORD = "a"
@@ -38,6 +38,7 @@ def temp_account():
     return Account.from_key(bytes.fromhex(PRIVATE_KEY))
 
 
+@run_once
 def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
     assert not temp_keyfile_path.exists()
     # Add account from private keys
@@ -48,6 +49,7 @@ def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
     assert temp_keyfile_path.exists()
 
 
+@run_once
 def test_import_alias_already_in_use(ape_cli, runner, temp_account):
     def invoke_import():
         return runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
@@ -58,6 +60,7 @@ def test_import_alias_already_in_use(ape_cli, runner, temp_account):
     assert_failure(result, f"Account with alias '{ALIAS}' already in use")
 
 
+@run_once
 def test_import_account_instantiation_failure(mocker, ape_cli, runner, temp_account):
     eth_account_from_key_patch = mocker.patch("ape_accounts._cli.EthAccount.from_key")
     eth_account_from_key_patch.side_effect = Exception("Can't instantiate this account!")
@@ -65,6 +68,7 @@ def test_import_account_instantiation_failure(mocker, ape_cli, runner, temp_acco
     assert_failure(result, "Key can't be imported: Can't instantiate this account!")
 
 
+@run_once
 def test_generate(ape_cli, runner, temp_keyfile_path):
     assert not temp_keyfile_path.exists()
     # Generate new private key
@@ -74,6 +78,7 @@ def test_generate(ape_cli, runner, temp_keyfile_path):
     assert temp_keyfile_path.exists()
 
 
+@run_once
 def test_generate_alias_already_in_use(ape_cli, runner, temp_account):
     def invoke_generate():
         return runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
@@ -84,6 +89,7 @@ def test_generate_alias_already_in_use(ape_cli, runner, temp_account):
     assert_failure(result, f"Account with alias '{ALIAS}' already in use")
 
 
+@run_once
 def test_list(ape_cli, runner, temp_keyfile):
     # Check availability
     assert temp_keyfile.exists()
@@ -95,6 +101,7 @@ def test_list(ape_cli, runner, temp_keyfile):
     assert expected_address in result.output
 
 
+@run_once
 def test_list_all(ape_cli, runner, temp_keyfile):
     # Check availability
     assert temp_keyfile.exists()
@@ -102,6 +109,7 @@ def test_list_all(ape_cli, runner, temp_keyfile):
     assert ALIAS in result.output
 
 
+@run_once
 def test_change_password(ape_cli, runner, temp_keyfile):
     assert temp_keyfile.exists()
     # Delete Account (`N` for "Leave unlocked?")
@@ -114,6 +122,7 @@ def test_change_password(ape_cli, runner, temp_keyfile):
     assert result.exit_code == 0, result.output
 
 
+@run_once
 def test_delete(ape_cli, runner, temp_keyfile):
     assert temp_keyfile.exists()
     # Delete Account

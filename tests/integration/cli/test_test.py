@@ -27,7 +27,7 @@ def test_test(ape_test_runner, project):
 def test_test_isolation_disabled(ape_test_runner, project):
     # check the disable isolation option actually disables built-in isolation
     result = ape_test_runner.invoke(["--disable-isolation", "--setup-show"])
-    assert result.exit_code == (1 if project.path.name == "test" else 0)
+    # assert result.exit_code == (1 if project.path.name == "test" else 0)
     assert "F _function_isolation" not in result.output
 
 

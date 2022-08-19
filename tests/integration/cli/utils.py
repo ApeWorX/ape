@@ -116,3 +116,10 @@ def skip_projects_except(names: List[str]):
         return f
 
     return decorator
+
+
+run_once = skip_projects_except(["test"])
+"""
+For times when the CLI integration test is unlikely to be
+affected by project structure.
+"""
