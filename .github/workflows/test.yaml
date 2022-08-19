@@ -5,6 +5,10 @@ name: Test
 jobs:
     linting:
         runs-on: ubuntu-latest
+        if: |
+            github.event_name != "pull_request"
+            || github.event.pull_request.head.repo.full_name
+            == github.event.pull_request.base.repo.full_name
 
         steps:
         - uses: actions/checkout@v2
@@ -30,6 +34,10 @@ jobs:
 
     type-check:
         runs-on: ubuntu-latest
+        if: |
+            github.event_name != "pull_request"
+            || github.event.pull_request.head.repo.full_name
+            == github.event.pull_request.base.repo.full_name
 
         steps:
         - uses: actions/checkout@v2
@@ -49,6 +57,10 @@ jobs:
 
     functional:
         runs-on: ${{ matrix.os }}
+        if: |
+            github.event_name != "pull_request"
+            || github.event.pull_request.head.repo.full_name
+            == github.event.pull_request.base.repo.full_name
 
         strategy:
             matrix:
@@ -78,6 +90,10 @@ jobs:
 
     fuzzing:
         runs-on: ubuntu-latest
+        if: |
+            github.event_name != "pull_request"
+            || github.event.pull_request.head.repo.full_name
+            == github.event.pull_request.base.repo.full_name
 
         strategy:
             fail-fast: true
