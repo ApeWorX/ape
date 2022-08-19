@@ -99,3 +99,40 @@ def test_decode_logs(ethereum, vyper_contract_instance):
 def test_decode_logs_empty_list(ethereum, event_abi):
     actual = [x for x in ethereum.decode_logs([], event_abi)]
     assert actual == []
+
+
+def test_decode_block_when_hash_is_none(ethereum):
+    # When using some providers, such as hardhat, the hash of the pending block is None
+    block_data_with_none_hash = {
+        "number": None,
+        "hash": None,
+        "parentHash": HexBytes(
+            "0xcb94e150c06faee9ab2bf12a40b0937ac9eab1879c733ebe3249aafbba2f80b1"
+        ),
+        "nonce": None,
+        "mixHash": None,
+        "sha3Uncles": HexBytes(
+            "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+        ),
+        "logsBloom": None,
+        "transactionsRoot": HexBytes(
+            "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+        ),
+        "stateRoot": HexBytes("0x8728474146565003152f9cee496de043fd68566dabdb06116a0d5bfc63e1a5a9"),
+        "receiptsRoot": HexBytes(
+            "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+        ),
+        "miner": "0xC014BA5EC014ba5ec014Ba5EC014ba5Ec014bA5E",
+        "difficulty": 131072,
+        "totalDifficulty": 131073,
+        "extraData": HexBytes("0x"),
+        "size": 513,
+        "gasLimit": 30000000,
+        "gasUsed": 0,
+        "timestamp": 1660932629,
+        "transactions": [],
+        "uncles": [],
+        "baseFeePerGas": 0,
+    }
+    actual = ethereum.decode_block(block_data_with_none_hash)
+    assert actual.hash is None
