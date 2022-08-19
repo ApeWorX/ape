@@ -272,7 +272,7 @@ class Ethereum(EcosystemAPI):
         return receipt
 
     def decode_block(self, data: Dict) -> BlockAPI:
-        data["hash"] = HexBytes(data["hash"])
+        data["hash"] = HexBytes(data["hash"]) if data.get("hash") else None
         if "gas_limit" in data:
             data["gasLimit"] = data.pop("gas_limit")
         if "gas_used" in data:
