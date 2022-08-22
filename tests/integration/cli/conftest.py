@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from distutils.dir_util import copy_tree
 from importlib import import_module
 from pathlib import Path
@@ -135,8 +136,8 @@ class ApeSubprocessRunner:
     """
 
     def __init__(self, root_cmd: Optional[List[str]] = None):
-        root_cmd = root_cmd or []
-        self.root_cmd = ["ape", *root_cmd]
+        ape_path = Path(sys.executable).parent / "ape"
+        self.root_cmd = [str(ape_path), *(root_cmd or [])]
 
     def invoke(self, subcommand: Optional[List[str]] = None):
         subcommand = subcommand or []
