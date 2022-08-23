@@ -54,6 +54,32 @@ def test_ethereum_network_configs(config, temp_config):
         assert actual.rinkeby.block_time == 15
 
 
+def test_network_gas_limit_default(config):
+    eth_config = config.get_config("ethereum")
+
+    assert eth_config.rinkeby.gas_limit == "auto"
+    assert eth_config.local.gas_limit == "auto"
+
+
+def test_network_gas_limit_config(config, temp_config):
+    eth_config = {
+        "ethereum": {
+            "rinkeby": {
+                "default_provider": "test",
+                "gas_limit": 1234,
+            }
+        }
+    }
+
+    with temp_config(eth_config):
+        actual = config.get_config("ethereum")
+
+        assert actual.rinkeby.gas_limit == "1234"
+
+        # Local configuration is unaffected
+        assert actual.local.gas_limit == "auto"
+
+
 def test_dependencies(dependency_config, config):
     assert len(config.dependencies) == 1
     assert config.dependencies[0].name == "testdependency"

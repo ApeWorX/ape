@@ -235,3 +235,11 @@ def test_ecosystems_when_default_provider_not_exists(temp_config, caplog, networ
         f"Failed setting default provider: "
         f"Provider '{bad_provider}' not found in network 'kovan'."
     )
+
+
+def test_gas_limits(ethereum, temp_config, config):
+    """
+    Test the default gas limit configurations for local and live networks.
+    """
+    assert ethereum.rinkeby.gas_limit == "auto"
+    assert ethereum.local.gas_limit == "auto"

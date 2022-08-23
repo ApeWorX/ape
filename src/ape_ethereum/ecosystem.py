@@ -76,6 +76,14 @@ class NetworkConfig(PluginConfig):
     block_time: int = 0
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
 
+    gas_limit: Union[str, int] = "auto"
+    """
+    The gas limit override to use for the network. If set to ``"auto"``, ape will
+    estimate gas limits based on the transaction. If set to ``"max"`` the gas limit
+    will be set to the maximum block gas limit for the network. Otherwise an ``int``
+    can be used to specify an explicit gas limit amount.
+    """
+
 
 class EthereumConfig(PluginConfig):
     mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore

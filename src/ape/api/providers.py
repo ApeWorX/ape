@@ -662,8 +662,17 @@ class Web3Provider(ProviderAPI, ABC):
 
         Returns:
             int: The estimated cost of gas to execute the transaction
-            reported in the fee-currency's smallest unit, e.g. Wei.
+            reported in the fee-currency's smallest unit, e.g. Wei. If the
+            provider's network has been configured with a gas limit override, it
+            will be returned. If the gas limit configuration is "max" this will
+            return the block maximum gas limit.
         """
+        if isinstance(self.network.gas_limit, int):
+            return self.network.gas_limit
+
+        if self.network.gas_limit == "max":
+            block = self.web3.eth.get_block("latest")
+            return block["gasLimit"]
 
         txn_dict = txn.dict()
         try:

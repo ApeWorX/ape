@@ -606,6 +606,18 @@ class NetworkAPI(BaseInterfaceModel):
     def _network_config(self) -> Dict:
         return self.config.get(self.name, {})
 
+    @cached_property
+    def gas_limit(self) -> Union[str, int]:
+        value = self._network_config.get("gas_limit", "auto")
+
+        if value.isdigit():
+            return int(value)
+
+        if value not in ("auto", "max"):
+            raise ValueError(f"Invalid gas_limit configuration '{value}'")
+
+        return value
+
     @property
     def chain_id(self) -> int:
         """

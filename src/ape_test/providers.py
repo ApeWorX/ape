@@ -57,6 +57,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         pass
 
     def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
+        if isinstance(self.network.gas_limit, int):
+            return self.network.gas_limit
+
+        if self.network.gas_limit == "max":
+            block = self.web3.eth.get_block("latest")
+            return block["gasLimit"]
+
         block_id = kwargs.pop("block_identifier", None)
         estimate_gas = self.web3.eth.estimate_gas
 
