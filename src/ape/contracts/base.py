@@ -3,6 +3,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
 import pandas as pd
+from eth_typing import HexAddress, HexStr
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
@@ -860,7 +861,7 @@ class ContractContainer(ManagerAccessMixin):
 
         return constructor.serialize_transaction(*args, **kwargs)
 
-    def deploy(self, *args, **kwargs) -> ContractInstance:
+    def deploy(self, publish: bool = False, *args, **kwargs) -> ContractInstance:
         txn = self(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
@@ -879,6 +880,11 @@ class ContractContainer(ManagerAccessMixin):
         logger.success(f"Contract '{contract_name}' deployed to: {styled_address}")
         instance = ContractInstance.from_receipt(receipt, self.contract_type)
         self.chain_manager.contracts.cache_deployment(instance)
+
+        if publish:
+            address = AddressType(HexAddress(HexStr(receipt.contract_address)))
+            self.provider.network.publish_contract(address)
+
         return instance
 
 

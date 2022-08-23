@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Unio
 import click
 from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
+from eth_typing import HexAddress, HexStr
 
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
@@ -152,7 +153,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         else:
             return self.call(txn, send_everything=True)
 
-    def deploy(self, contract: "ContractContainer", *args, **kwargs) -> "ContractInstance":
+    def deploy(
+        self, contract: "ContractContainer", publish: bool = False, *args, **kwargs
+    ) -> "ContractInstance":
         """
         Create a smart contract on the blockchain. The smart contract must compile before
         deploying and a provider must be active.
@@ -180,6 +183,11 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         logger.success(f"Contract '{contract_name}' deployed to: {styled_address}")
         instance = ContractInstance.from_receipt(receipt, contract_type)
         self.chain_manager.contracts.cache_deployment(instance)
+
+        if publish:
+            address = AddressType(HexAddress(HexStr(receipt.contract_address)))
+            self.provider.network.publish_contract(address)
+
         return instance
 
     def check_signature(

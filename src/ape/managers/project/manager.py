@@ -6,6 +6,7 @@ from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta
 from ethpm_types.contract_type import BIP122_URI
+from semantic_version import Version
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -152,7 +153,9 @@ class ProjectManager(BaseManager):
                 continue
 
             try:
-                version_map = compiler.get_version_map(sources, contracts_folder)
+                version_map = compiler.get_version_map(
+                    sources, contracts_folder, with_commit_hash=True
+                )
             except APINotImplementedError:
                 versions = list(compiler.get_versions(sources))
                 if len(versions) == 0:
@@ -167,9 +170,11 @@ class ProjectManager(BaseManager):
                 version_map = {version: filtered_paths}
 
             settings = compiler.get_compiler_settings(self.source_paths, contracts_folder)
-
             for version, paths in version_map.items():
-                version_settings = settings.get(version, {}) if version and settings else {}
+                version_without_hash = Version(str(version).split("+")[0].strip())
+                version_settings = (
+                    settings.get(version_without_hash, {}) if version and settings else {}
+                )
                 source_ids = [str(get_relative_path(p, contracts_folder)) for p in paths]
                 filtered_contract_types = [
                     ct for ct in self.contracts.values() if ct.source_id in source_ids

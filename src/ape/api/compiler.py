@@ -24,12 +24,14 @@ class CompilerAPI(BaseInterfaceModel):
         ...
 
     @abstractmethod
-    def get_versions(self, all_paths: List[Path]) -> Set[str]:
+    def get_versions(self, all_paths: List[Path], with_commit_hash: bool = False) -> Set[str]:
         """
         Retrieve the set of available compiler versions for this plugin to compile ``all_paths``.
 
         Args:
             all_paths (List[pathlib.Path]): The list of paths.
+            with_commit_hash (bool): Set to ``True`` to include commit hashes
+              on the versions, if possible. Defaults to ``False``.
 
         Returns:
             Set[str]: A set of available compiler versions.
@@ -85,9 +87,25 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_version_map(
-        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
+        self,
+        contract_filepaths: List[Path],
+        base_path: Optional[Path] = None,
+        with_commit_hash: bool = False,
     ) -> Dict[Version, Set[Path]]:
-        pass
+        """
+        Get a map of versions to source paths.
+
+        Args:
+            contract_filepaths (List[Path]): Input source paths. Defaults to all source paths
+              per compiler.
+            base_path (Path): The base path of sources. Defaults to the project's
+              ``contracts_folder``.
+            with_commit_hash (bool): Set to ``True`` to include commit hashes on versions,
+              if possible. Defaults to ``False``.
+
+        Returns:
+            Dict[Version, Set[Path]]
+        """
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.name}>"
