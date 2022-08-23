@@ -186,6 +186,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         if publish:
             address = AddressType(HexAddress(HexStr(receipt.contract_address)))
+            self.project_manager.track_deployment(instance)
             self.provider.network.publish_contract(address)
 
         return instance
