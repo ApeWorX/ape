@@ -154,7 +154,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             return self.call(txn, send_everything=True)
 
     def deploy(
-        self, contract: "ContractContainer", publish: bool = False, *args, **kwargs
+        self, contract: "ContractContainer", *args, publish: bool = False, **kwargs
     ) -> "ContractInstance":
         """
         Create a smart contract on the blockchain. The smart contract must compile before

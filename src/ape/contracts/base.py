@@ -861,7 +861,7 @@ class ContractContainer(ManagerAccessMixin):
 
         return constructor.serialize_transaction(*args, **kwargs)
 
-    def deploy(self, publish: bool = False, *args, **kwargs) -> ContractInstance:
+    def deploy(self, *args, publish: bool = False, **kwargs) -> ContractInstance:
         txn = self(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
