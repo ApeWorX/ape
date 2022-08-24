@@ -6,7 +6,7 @@ from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta
 from ethpm_types.contract_type import BIP122_URI
-from semantic_version import Version
+from semantic_version import Version  # type: ignore
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
