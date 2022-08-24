@@ -128,11 +128,10 @@ class CompilerManager(BaseManager):
         """
         imports_dict: Dict[str, List[str]] = {}
 
-        for _, compiler in self.registered_compilers.items():
+        for ext, compiler in self.registered_compilers.items():
             try:
-                imports = compiler.get_imports(
-                    contract_filepaths=contract_filepaths, base_path=base_path
-                )
+                sources = [p for p in contract_filepaths if p.suffix == ext]
+                imports = compiler.get_imports(contract_filepaths=sources, base_path=base_path)
             except NotImplementedError:
                 imports = None
 
