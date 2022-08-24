@@ -575,7 +575,7 @@ class ProjectManager(BaseManager):
         destination = deployments_folder / f"{contract_name}.json"
 
         if destination.exists():
-            logger.warning("Deployment already tracked. Re-tracking.")
+            logger.debug("Deployment already tracked. Re-tracking.")
             destination.unlink()
 
         destination.write_text(artifact.json())
