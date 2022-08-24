@@ -153,9 +153,7 @@ class ProjectManager(BaseManager):
                 continue
 
             try:
-                version_map = compiler.get_version_map(
-                    sources, contracts_folder, with_commit_hash=True
-                )
+                version_map = compiler.get_version_map(sources, contracts_folder)
             except APINotImplementedError:
                 versions = list(compiler.get_versions(sources))
                 if len(versions) == 0:
