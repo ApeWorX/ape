@@ -147,7 +147,11 @@ class PluginManager:
     def __init__(self) -> None:
         # NOTE: This actually loads the plugins, and should only be done once
         for _, name, ispkg in pkgutil.iter_modules():
-            name = _get_name_from_install(name)
+            new_name = _get_name_from_install(name)
+            if new_name != name:
+                # Was an editable install
+                name = new_name
+                ispkg = True
 
             if not name.startswith("ape_") or not ispkg:
                 continue
