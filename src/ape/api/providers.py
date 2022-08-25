@@ -673,6 +673,7 @@ class Web3Provider(ProviderAPI, ABC):
         if self.network.gas_limit == "max":
             block = self.web3.eth.get_block("latest")
             return block["gasLimit"]
+        # else: Handle "auto" gas limit via estimation
 
         txn_dict = txn.dict()
         try:
