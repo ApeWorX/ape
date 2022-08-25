@@ -182,3 +182,8 @@ def test_track_deployment_from_unknown_contract_given_txn_hash(
     assert actual.contract_type == contract.contract_type.name
     assert actual.transaction == txn_hash
     assert actual.runtime_bytecode == contract.contract_type.runtime_bytecode
+
+
+def test_compiler_data(project):
+    # See ape-solidity / ape-vyper for better tests
+    assert not project.compiler_data
