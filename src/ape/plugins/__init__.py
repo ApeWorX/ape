@@ -16,9 +16,9 @@ from .pluggy_patch import PluginType, hookimpl, plugin_manager
 from .project import DependencyPlugin, ProjectPlugin
 from .query import QueryPlugin
 
-EDITABLE_KEY = "__editable___"
-EDITABLE_INSTALL_PATTERN = re.compile(
-    rf"{EDITABLE_KEY}(\w*)(_\d+_\d+_\d+a?\d*[_dev\d+_]?\w*_finder)"
+_EDITABLE_KEY = "__editable___"
+_EDITABLE_INSTALL_PATTERN = re.compile(
+    rf"{_EDITABLE_KEY}(\w*)(_\d+_\d+_\d+a?\d*[_dev\d+_]?\w*_finder)"
 )
 
 
@@ -126,11 +126,11 @@ def valid_impl(api_class: Any) -> bool:
 
 
 def _get_name_from_install(name: str):
-    if not name.startswith(f"{EDITABLE_KEY}ape_"):
+    if not name.startswith(f"{_EDITABLE_KEY}ape_"):
         return name
 
     # Handle strange editable install behavior
-    match = re.match(EDITABLE_INSTALL_PATTERN, name)
+    match = re.match(_EDITABLE_INSTALL_PATTERN, name)
     if not match:
         return name
 
