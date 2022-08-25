@@ -14,6 +14,7 @@ from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape.exceptions import (
+    ConfigError,
     NetworkError,
     NetworkNotFoundError,
     ProviderNotConnectedError,
@@ -614,7 +615,7 @@ class NetworkAPI(BaseInterfaceModel):
             return int(value)
 
         if value not in ("auto", "max"):
-            raise ValueError(f"Invalid gas_limit configuration '{value}'")
+            raise ConfigError(f"Invalid gas_limit configuration '{value}'")
 
         return value
 
