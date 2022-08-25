@@ -125,7 +125,7 @@ def valid_impl(api_class: Any) -> bool:
     return len(api_class.__abstractmethods__) == 0
 
 
-def get_name_from_install(name: str):
+def _get_name_from_install(name: str):
     if not name.startswith(f"{EDITABLE_KEY}ape_"):
         return name
 
@@ -147,7 +147,7 @@ class PluginManager:
     def __init__(self) -> None:
         # NOTE: This actually loads the plugins, and should only be done once
         for _, name, ispkg in pkgutil.iter_modules():
-            name = get_name_from_install(name)
+            name = _get_name_from_install(name)
 
             if not name.startswith("ape_") or not ispkg:
                 continue

@@ -1,6 +1,6 @@
 import pytest
 
-from ape.plugins import get_name_from_install
+from ape.plugins import _get_name_from_install
 
 EXPECTED_PLUGIN_NAME = "plugin_name"
 
@@ -15,5 +15,5 @@ EXPECTED_PLUGIN_NAME = "plugin_name"
 )
 def test_get_name_from_install_editable_examples(name):
     editable_name = f"__editable___ape_{name}_finder"
-    actual = get_name_from_install(editable_name)
+    actual = _get_name_from_install(editable_name)
     assert actual == f"ape_{EXPECTED_PLUGIN_NAME}"
