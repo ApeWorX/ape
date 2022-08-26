@@ -8,7 +8,7 @@ from rich import print as rich_print
 
 from ape.contracts import ContractContainer
 from ape.utils.trace import CallTraceParser
-from ape_ethereum.transactions import Receipt
+from ape_ethereum.transactions import BaseTransaction, Receipt
 from tests.functional.data.python import (
     LOCAL_CALL_TREE_DICT,
     MAINNET_CALL_TREE_DICT,
@@ -54,6 +54,8 @@ def local_receipt(local_contracts, owner):
 
 @pytest.fixture(scope="module")
 def mainnet_receipt():
+    txn = BaseTransaction.parse_obj(MAINNET_RECEIPT_DICT["raw_transaction"])
+    MAINNET_RECEIPT_DICT["raw_transaction"] = txn
     return Receipt.parse_obj(MAINNET_RECEIPT_DICT)
 
 

@@ -252,22 +252,31 @@ class Ethereum(EcosystemAPI):
         if isinstance(input_data, str):
             input_data = bytes(HexBytes(input_data))
 
+        transaction = BaseTransaction(
+            chain_id=data.get("chain_id") or data.get("chainId") or 0,
+            receiver=data.get("to") or data.get("receiver") or "",
+            sender=data.get("sender") or data.get("from"),
+            gas_limit=data.get("gas_limit") or data.get("gas"),
+            nonce=data["nonce"] if "nonce" in data and data["nonce"] != "" else None,
+            value=data.get("value", 0),
+            data=data.get("data") or data.get("input", b""),
+            type=data.get("type"),
+            max_fee=data.get("max_fee"),
+            max_priority_fee=data.get("max_priority_fee"),
+            required_confirmations=data.get("required_confirmations", 0),
+            signature=data.get("signature"),
+        )
+
         receipt = Receipt(  # type: ignore
             block_number=data.get("block_number") or data.get("blockNumber"),
             contract_address=data.get("contractAddress"),
-            data=data.get("data") or data.get("input", b""),
             gas_limit=data.get("gas") or data.get("gasLimit"),
             gas_price=data.get("gas_price") or data.get("gasPrice"),
             gas_used=data.get("gas_used") or data.get("gasUsed"),
             logs=data.get("logs", []),
-            nonce=data["nonce"] if "nonce" in data and data["nonce"] != "" else None,
-            provider=data.get("provider"),
-            receiver=data.get("to") or data.get("receiver") or "",
-            required_confirmations=data.get("required_confirmations", 0),
-            sender=data.get("sender") or data.get("from"),
             status=status,
             txn_hash=txn_hash,
-            value=data.get("value", 0),
+            raw_transaction=transaction,
         )
         return receipt
 
