@@ -2,7 +2,7 @@ import pytest
 
 from ape.api import ReceiptAPI
 from ape.exceptions import OutOfGasError
-from ape_ethereum.transactions import Receipt, TransactionStatusEnum, BaseTransaction
+from ape_ethereum.transactions import BaseTransaction, Receipt, TransactionStatusEnum
 
 
 @pytest.fixture
