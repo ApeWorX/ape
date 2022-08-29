@@ -1,7 +1,7 @@
+import logging
 import time
 
 import pandas as pd
-import pytest
 
 from ape.api.query import validate_and_expand_columns
 from ape.utils import BaseInterfaceModel
@@ -61,21 +61,27 @@ def test_transaction_contract_event_query(contract_instance, owner, eth_tester_p
     assert df_events.event_name[0] == "FooHappened"
 
 
-class TestModel(BaseInterfaceModel):
+class Model(BaseInterfaceModel):
     number: int
     timestamp: int
 
 
 def test_column_expansion():
-    columns = validate_and_expand_columns(["*"], TestModel)
-    assert columns == list(TestModel.__fields__)
+    columns = validate_and_expand_columns(["*"], Model)
+    assert columns == list(Model.__fields__)
 
 
-def test_column_validation(eth_tester_provider):
-    with pytest.raises(ValueError, match="Unrecognized field 'numbr'"):
-        validate_and_expand_columns(["numbr"], TestModel)
+def test_column_validation(eth_tester_provider, caplog):
+    with caplog.at_level(logging.WARNING):
+        validate_and_expand_columns(["numbr"], Model)
 
-    with pytest.raises(
-        ValueError, match=r"Duplicate fields in \['number', 'timestamp', 'number'\]"
-    ):
-        validate_and_expand_columns(["number", "timestamp", "number"], TestModel)
+    assert len(caplog.records) == 1
+    assert "Unrecognized field(s) 'numbr'" in caplog.records[0].msg
+    caplog.clear()
+
+    with caplog.at_level(logging.WARNING):
+        validate_and_expand_columns(["number", "timestamp", "number"], Model)
+
+    assert len(caplog.records) == 1
+    assert "Duplicate fields in ['number', 'timestamp', 'number']" in caplog.records[0].msg
+    caplog.clear()

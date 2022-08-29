@@ -3,6 +3,7 @@ from typing import Any, Dict, Iterator, List, Optional, Type, Union
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
 
+from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
@@ -24,11 +25,11 @@ def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceMod
     else:
         deduped_columns = set(columns)
         if len(deduped_columns) != len(columns):
-            raise ValueError(f"Duplicate fields in {columns}")
+            logger.warning(f"Duplicate fields in {columns}")
 
         all_columns = set(Model.__fields__)
         # NOTE: Iterate down the series of subclasses of `Model` (e.g. Block and BlockAPI)
-        #       and get all of the computed properties of each class (These are all valid columns)
+        #       and get all of the public property methods of each class (which are valid columns)
         all_columns.update(
             {
                 field
@@ -40,10 +41,15 @@ def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceMod
             }
         )
 
-        for c in deduped_columns - all_columns:
-            raise ValueError(f"Unrecognized field '{c}', must be one of {all_columns}")
+        if len(deduped_columns - all_columns) > 0:
+            unrecognized = "', '".join(deduped_columns - all_columns)
+            logger.warning(f"Unrecognized field(s) '{unrecognized}', must be one of {all_columns}")
 
-    return columns
+        selected_fields = all_columns.intersection(deduped_columns)
+        if len(selected_fields) > 0:
+            return list(selected_fields)
+
+    raise ValueError(f"No valid fields in '{columns}'.")
 
 
 def extract_fields(item, columns):
