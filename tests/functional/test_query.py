@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from ape.api.query import validate_and_expand_columns
+from ape.utils import BaseInterfaceModel
 from ape_test.providers import CHAIN_ID
 
 
@@ -60,31 +61,21 @@ def test_transaction_contract_event_query(contract_instance, owner, eth_tester_p
     assert df_events.event_name[0] == "FooHappened"
 
 
+class TestModel(BaseInterfaceModel):
+    number: int
+    timestamp: int
+
+
 def test_column_expansion():
-    all_fields = [
-        "chain_id",
-        "receiver",
-        "sender",
-        "gas_limit",
-        "nonce",
-        "value",
-        "data",
-        "type",
-        "max_fee",
-        "max_priority_fee",
-        "required_confirmations",
-        "signature",
-    ]
-    columns = validate_and_expand_columns(["*"], all_fields)
-    assert columns == all_fields
+    columns = validate_and_expand_columns(["*"], TestModel)
+    assert columns == list(TestModel.__fields__)
 
 
 def test_column_validation(eth_tester_provider):
-    all_fields = ["number", "timestamp"]
     with pytest.raises(ValueError, match="Unrecognized field 'numbr'"):
-        validate_and_expand_columns(["numbr"], all_fields)
+        validate_and_expand_columns(["numbr"], TestModel)
 
     with pytest.raises(
         ValueError, match=r"Duplicate fields in \['number', 'timestamp', 'number'\]"
     ):
-        validate_and_expand_columns(["number", "timestamp", "number"], all_fields)
+        validate_and_expand_columns(["number", "timestamp", "number"], TestModel)
