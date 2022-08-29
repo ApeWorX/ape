@@ -276,7 +276,7 @@ class Ethereum(EcosystemAPI):
             logs=data.get("logs", []),
             status=status,
             txn_hash=txn_hash,
-            raw_transaction=transaction,
+            transaction=transaction,
         )
         return receipt
 

@@ -151,7 +151,7 @@ class ReceiptAPI(BaseInterfaceModel):
     logs: List[dict] = []
     status: int
     txn_hash: str
-    raw_transaction: TransactionAPI
+    transaction: TransactionAPI
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
@@ -246,24 +246,24 @@ class ReceiptAPI(BaseInterfaceModel):
             return self
 
         # Wait for nonce from provider to increment.
-        sender_nonce = self.provider.get_nonce(self.raw_transaction.sender)
+        sender_nonce = self.provider.get_nonce(self.transaction.sender)
         iterations_timeout = 20
         iteration = 0
 
-        while sender_nonce == self.raw_transaction.nonce:  # type: ignore
+        while sender_nonce == self.transaction.nonce:  # type: ignore
             time.sleep(1)
-            sender_nonce = self.provider.get_nonce(self.raw_transaction.sender)
+            sender_nonce = self.provider.get_nonce(self.transaction.sender)
             iteration += 1
             if iteration == iterations_timeout:
                 raise TransactionError(message="Timeout waiting for sender's nonce to increase.")
 
-        if self.raw_transaction.required_confirmations == 0:
+        if self.transaction.required_confirmations == 0:
             # The transaction might not yet be confirmed but
             # the user is aware of this. Or, this is a development environment.
             return self
 
         confirmations_occurred = self._confirmations_occurred
-        if confirmations_occurred >= self.raw_transaction.required_confirmations:
+        if confirmations_occurred >= self.transaction.required_confirmations:
             return self
 
         # If we get here, that means the transaction has been recently submitted.
@@ -275,12 +275,12 @@ class ReceiptAPI(BaseInterfaceModel):
 
         logger.info(log_message)
 
-        with ConfirmationsProgressBar(self.raw_transaction.required_confirmations) as progress_bar:
-            while confirmations_occurred < self.raw_transaction.required_confirmations:
+        with ConfirmationsProgressBar(self.transaction.required_confirmations) as progress_bar:
+            while confirmations_occurred < self.transaction.required_confirmations:
                 confirmations_occurred = self._confirmations_occurred
                 progress_bar.confs = confirmations_occurred
 
-                if confirmations_occurred == self.raw_transaction.required_confirmations:
+                if confirmations_occurred == self.transaction.required_confirmations:
                     break
 
                 time_to_sleep = int(self._block_time / 2)

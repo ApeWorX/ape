@@ -84,7 +84,7 @@ def test_transfer_with_prompts(runner, receiver, keyfile_account):
     # "y\na\ny": yes sign, password, yes keep unlocked
     with runner.isolation("y\na\ny"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
-        assert receipt.raw_transaction.receiver == receiver
+        assert receipt.transaction.receiver == receiver
 
     # "n": don't sign
     with runner.isolation(input="n\n"):
@@ -155,7 +155,7 @@ def test_send_transaction_without_enough_funds(sender, receiver):
 def test_send_transaction_sets_defaults(sender, receiver):
     receipt = sender.transfer(receiver, "1 GWEI", gas_limit=None, required_confirmations=None)
     assert receipt.gas_limit > 0
-    assert receipt.raw_transaction.required_confirmations == 0
+    assert receipt.transaction.required_confirmations == 0
 
 
 def test_accounts_splice_access(test_accounts):
@@ -248,7 +248,7 @@ def test_unlock_with_passphrase_and_sign_transaction(runner, keyfile_account, re
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
     with runner.isolation(input="y\n"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
-        assert receipt.raw_transaction.receiver == receiver
+        assert receipt.transaction.receiver == receiver
 
 
 def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiver):
@@ -259,7 +259,7 @@ def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiv
     # yes, sign the transaction
     with runner.isolation(input="y\n"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
-        assert receipt.raw_transaction.receiver == receiver
+        assert receipt.transaction.receiver == receiver
 
 
 def test_custom_num_of_test_accts_config(test_accounts, temp_config):

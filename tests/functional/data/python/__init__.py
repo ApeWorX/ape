@@ -3151,7 +3151,7 @@ MAINNET_RECEIPT_DICT = local_receipt_data = {
     "status": TransactionStatusEnum.NO_ERROR,
     "txn_hash": "0x0537316f37627655b7fe5e50e23f71cd835b377d1cde4226443c94723d036e32",
     "value": 20160000000000000,
-    "raw_transaction": {
+    "transaction": {
         "receiver": "0xF14f0648435CF34f8bC800d4E71FF0Ba15bC52dD",
         "sender": "0x5668EAd1eDB8E2a4d724C8fb9cB5fFEabEB422dc",
         "gas_limit": 1402309,

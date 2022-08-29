@@ -96,8 +96,8 @@ def test_account_history(sender, receiver, chain):
     assert len(transactions_from_cache) == length_at_start + 1
 
     txn = transactions_from_cache[-1]
-    assert txn.raw_transaction.sender == receipt.raw_transaction.sender == sender
-    assert txn.raw_transaction.receiver == receipt.raw_transaction.receiver == receiver
+    assert txn.transaction.sender == receipt.transaction.sender == sender
+    assert txn.transaction.receiver == receipt.transaction.receiver == receiver
 
 
 def test_iterate_blocks(chain_that_mined_5):

@@ -282,7 +282,7 @@ class CallTraceParser:
         if address == ZERO_ADDRESS:
             return "ZERO_ADDRESS"
 
-        elif address == self._receipt.raw_transaction.sender:
+        elif address == self._receipt.transaction.sender:
             return "tx.origin"
 
         # Use name of known contract if possible.

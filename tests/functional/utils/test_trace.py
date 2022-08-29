@@ -54,8 +54,8 @@ def local_receipt(local_contracts, owner):
 
 @pytest.fixture(scope="module")
 def mainnet_receipt():
-    txn = BaseTransaction.parse_obj(MAINNET_RECEIPT_DICT["raw_transaction"])
-    MAINNET_RECEIPT_DICT["raw_transaction"] = txn
+    txn = BaseTransaction.parse_obj(MAINNET_RECEIPT_DICT["transaction"])
+    MAINNET_RECEIPT_DICT["transaction"] = txn
     return Receipt.parse_obj(MAINNET_RECEIPT_DICT)
 
 

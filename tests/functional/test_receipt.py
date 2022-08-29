@@ -145,7 +145,7 @@ def test_receipt_raise_for_status_out_of_gas_error(mocker):
         status=TransactionStatusEnum.FAILING,
         gas_price=0,
         block_number=0,
-        raw_transaction=txn,
+        transaction=txn,
     )
     with pytest.raises(OutOfGasError):
         receipt.raise_for_status()

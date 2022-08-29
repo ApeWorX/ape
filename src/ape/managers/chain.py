@@ -393,7 +393,7 @@ class AccountHistory(BaseManager):
               **NOTE**: The receipt is accessible in the list returned from
               :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
-        address = self._convert(txn_receipt.raw_transaction.sender, AddressType)
+        address = self._convert(txn_receipt.transaction.sender, AddressType)
         if address not in self._map:
             self._map[address] = [txn_receipt]
             return
