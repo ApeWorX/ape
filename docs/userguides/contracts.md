@@ -23,7 +23,7 @@ contract = project.MyContract.deploy(sender=dev)
 
 ## From Project Contract Address
 
-You can also use the [at() method](../methoddocs/contracts.html#ape.contracts.base.ContractContainer.at) method from the same top-level project manager when you know the address of an already-deployed contract:
+You can also use the [at() method](../methoddocs/contracts.html#ape.contracts.base.ContractContainer.at) from the same top-level project manager when you know the address of an already-deployed contract:
 
 ```python
 from ape import project
