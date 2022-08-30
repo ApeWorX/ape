@@ -3,6 +3,7 @@ import shutil
 import pytest
 import yaml
 from ethpm_types import ContractInstance as EthPMContractInstance
+from ethpm_types import ContractType, Source
 from ethpm_types.manifest import PackageManifest
 
 from ape import Contract
@@ -11,13 +12,18 @@ from ape.managers.project import BrownieProject
 
 
 @pytest.fixture
+def ape_project(project_manager):
+    return project_manager._project
+
+
+@pytest.fixture
 def bip122_chain_id(eth_tester_provider):
     return eth_tester_provider.get_block(0).hash.hex()
 
 
 @pytest.fixture
-def base_deployments_path(project_manager, bip122_chain_id):
-    return project_manager._project._cache_folder / "deployments" / bip122_chain_id
+def base_deployments_path(ape_project, bip122_chain_id):
+    return ape_project._cache_folder / "deployments" / bip122_chain_id
 
 
 @pytest.fixture
@@ -40,6 +46,60 @@ def clean_deployments(base_deployments_path):
     yield
 
 
+@pytest.fixture
+def existing_manifest(ape_project):
+    return ape_project.create_manifest()
+
+
+@pytest.fixture
+def contract_type_0(vyper_contract_type):
+    return _make_new_contract(vyper_contract_type, "NewContract_0")
+
+
+@pytest.fixture
+def contract_type_1(vyper_contract_type):
+    return _make_new_contract(vyper_contract_type, "NewContract_1")
+
+
+@pytest.fixture
+def contracts_folder(project_manager):
+    path = project_manager.contracts_folder
+    path.mkdir(exist_ok=True, parents=True)
+    return path
+
+
+@pytest.fixture
+def existing_source_path(vyper_contract_type, contract_type_0, contracts_folder):
+    source_path = contracts_folder / "NewContract_0.json"
+    source_path.touch()
+    source_path.write_text(contract_type_0.json())
+    yield source_path
+    if source_path.is_file():
+        source_path.unlink()
+
+
+@pytest.fixture
+def manifest_with_non_existent_sources(
+    existing_manifest, existing_source_path, contract_type_0, contract_type_1
+):
+    manifest = existing_manifest.copy()
+    manifest.contract_types["NewContract_0"] = contract_type_0
+    manifest.contract_types["NewContract_1"] = contract_type_1
+    # Previous refs shouldn't interfere (bugfix related)
+    manifest.sources["NewContract_0.json"] = Source(
+        content=contract_type_0.json(), references=["NewContract_1.json"]
+    )
+    manifest.sources["NewContract_1.json"] = Source(content=contract_type_1.json())
+    return manifest
+
+
+def _make_new_contract(existing_contract: ContractType, name: str):
+    source_text = existing_contract.json()
+    source_text = source_text.replace(f"{existing_contract.name}.vy", f"{name}.json")
+    source_text = source_text.replace(existing_contract.name, name)
+    return ContractType.parse_raw(source_text)
+
+
 def test_extract_manifest(dependency_config, project_manager):
     # NOTE: Only setting dependency_config to ensure existence of project.
     manifest = project_manager.extract_manifest()
@@ -48,6 +108,28 @@ def test_extract_manifest(dependency_config, project_manager):
     assert manifest.meta == project_manager.meta
     assert manifest.compilers == project_manager.compiler_data
     assert manifest.deployments == project_manager.tracked_deployments
+
+
+def test_create_manifest_when_file_changed_with_cached_references_that_no_longer_exist(
+    ape_project, manifest_with_non_existent_sources, existing_source_path
+):
+    # This test is for the condition when you have a cached manifest containing references
+    # from a source file however those references no longer exist and the source file has changes.
+    cache_location = ape_project._cache_folder / "__local__.json"
+    if cache_location.is_file():
+        cache_location.unlink()
+
+    cache_location.touch()
+    cache_location.write_text(manifest_with_non_existent_sources.json())
+
+    # Change content
+    source_text = existing_source_path.read_text()
+    existing_source_path.unlink()
+    source_text = source_text.replace("uint256[20]", "uint256[25]")
+    existing_source_path.write_text(source_text)
+
+    manifest = ape_project.create_manifest()
+    assert manifest
 
 
 def test_meta(temp_config, project_manager):

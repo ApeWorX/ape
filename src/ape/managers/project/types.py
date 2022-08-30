@@ -95,8 +95,7 @@ class BaseProject(ProjectAPI):
             cached_contract_types = manifest.contract_types or {}
             cached_source_reference_paths = {
                 source_id: [
-                    self.contracts_folder.joinpath(Path(s))
-                    for s in getattr(source, "references", []) or []
+                    self.contracts_folder.joinpath(Path(s)) for s in source.references or []
                 ]
                 for source_id, source in cached_sources.items()
             }
@@ -115,6 +114,8 @@ class BaseProject(ProjectAPI):
                 for name, contract_type in cached_contract_types.items()
                 if contract_type.source_id not in deleted_source_ids
             }
+            # TODO:
+            # cached_source_reference_paths = {p for p in }
 
             def does_need_compiling(source_path: Path) -> bool:
                 source_id = str(get_relative_path(source_path, self.contracts_folder))
@@ -144,7 +145,9 @@ class BaseProject(ProjectAPI):
             # NOTE: Recompile all dependent sources for a changed source
             while paths_to_compile:
                 source_id = str(get_relative_path(paths_to_compile.pop(), self.contracts_folder))
-                ref_paths = cached_source_reference_paths.get(source_id, [])
+                ref_paths = [
+                    s for s in cached_source_reference_paths.get(source_id, []) if s.is_file()
+                ]
                 referenced_paths.extend(ref_paths)
                 paths_to_compile.update(ref_paths)
 
