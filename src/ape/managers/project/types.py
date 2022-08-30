@@ -114,8 +114,6 @@ class BaseProject(ProjectAPI):
                 for name, contract_type in cached_contract_types.items()
                 if contract_type.source_id not in deleted_source_ids
             }
-            # TODO:
-            # cached_source_reference_paths = {p for p in }
 
             def does_need_compiling(source_path: Path) -> bool:
                 source_id = str(get_relative_path(source_path, self.contracts_folder))
