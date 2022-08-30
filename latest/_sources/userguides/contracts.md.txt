@@ -7,6 +7,11 @@ The other way is to initialize an already-deployed contract using its address.
 
 ## From Deploy
 
+Deploy contracts from your project using the `project` root-level object.
+The names of your contracts are properties on the `project` object (e.g. `project.MyContract`) and their types are [ContractContainer](../methoddocs/contracts.html#ape.contracts.base.ContractContainer).
+
+**NOTE**: To avoid naming collisions with other properties on the `project` object, you can also use the [get_contract()](../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract) method to retrieve contract containers.
+
 When you deploy contracts, you get back a `ContractInstance`:
 
 ```python
@@ -16,7 +21,17 @@ dev = accounts.load("dev")
 contract = project.MyContract.deploy(sender=dev)
 ```
 
-## From Contract
+## From Project Contract Address
+
+You can also use the [at() method](../methoddocs/contracts.html#ape.contracts.base.ContractContainer.at) from the same top-level project manager when you know the address of an already-deployed contract:
+
+```python
+from ape import project
+
+contract = project.MyContract.at("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
+```
+
+## From Any Address
 
 If you already know the address of a contract, you can create instances of it using the `Contract` top-level factory:
 
