@@ -248,24 +248,11 @@ class Ethereum(EcosystemAPI):
         if txn_hash:
             txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
 
-        input_data = data.get("data") or data.get("input", b"")
-        if isinstance(input_data, str):
-            input_data = bytes(HexBytes(input_data))
-
-        transaction = BaseTransaction(
-            chain_id=data.get("chain_id") or data.get("chainId") or 0,
-            receiver=data.get("to") or data.get("receiver") or "",
-            sender=data.get("sender") or data.get("from"),
-            gas_limit=data.get("gas_limit") or data.get("gas"),
-            nonce=data["nonce"] if "nonce" in data and data["nonce"] != "" else None,
-            value=data.get("value", 0),
-            data=data.get("data") or data.get("input", b""),
-            type=data.get("type"),
-            max_fee=data.get("max_fee"),
-            max_priority_fee=data.get("max_priority_fee"),
-            required_confirmations=data.get("required_confirmations", 0),
-            signature=data.get("signature"),
-        )
+        if isinstance(data.get("data") or data.get("input", b""), str):
+            if data.get("data"):
+                data["data"] = bytes(HexBytes(data.get("data")))
+            elif data.get("input", b""):
+                data["input"] = bytes(HexBytes(data.get("input", b"")))
 
         receipt = Receipt(  # type: ignore
             block_number=data.get("block_number") or data.get("blockNumber"),
@@ -276,7 +263,7 @@ class Ethereum(EcosystemAPI):
             logs=data.get("logs", []),
             status=status,
             txn_hash=txn_hash,
-            transaction=transaction,
+            transaction=self.create_transaction(**data),
         )
         return receipt
 
