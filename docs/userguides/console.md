@@ -21,6 +21,7 @@ Your console comes with pre-initialized root ape objects in your namespace.
 | `project`  | [ProjectManager](../methoddocs/managers.html?highlight=project#module-ape.managers.project.manager)        | 
 | `query`    | [QueryManager](../methoddocs/managers.html?highlight=query#module-ape.managers.query)                      |
 | `convert`  | [convert](../methoddocs/managers.html?highlight=query#ape.managers.converters.AddressAPIConverter.convert) |
+| `ape`      | [ape](../methoddocs/ape.html)                                                                              |
 
 You can access them as if they are already initialized:
 
