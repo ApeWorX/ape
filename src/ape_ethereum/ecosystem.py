@@ -250,7 +250,7 @@ class Ethereum(EcosystemAPI):
 
         if isinstance(data.get("data") or data.get("input", b""), str):
             if data.get("data"):
-                data["data"] = bytes(HexBytes(data.get("data")))
+                data["data"] = bytes(HexBytes(data.get("data")))  # type: ignore
             elif data.get("input", b""):
                 data["input"] = bytes(HexBytes(data.get("input", b"")))
 
