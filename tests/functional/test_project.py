@@ -96,7 +96,7 @@ def manifest_with_non_existent_sources(
 def _make_new_contract(existing_contract: ContractType, name: str):
     source_text = existing_contract.json()
     source_text = source_text.replace(f"{existing_contract.name}.vy", f"{name}.json")
-    source_text = source_text.replace(existing_contract.name, name)
+    source_text = source_text.replace(existing_contract.name or "", name)
     return ContractType.parse_raw(source_text)
 
 
