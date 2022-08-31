@@ -1,5 +1,6 @@
 from typing import List
 
+from ape.exceptions import ConversionError
 from ape.types import AddressType
 from ape.utils import BaseInterface, abstractmethod
 
@@ -25,7 +26,11 @@ class BaseAddress(BaseInterface):
         """
 
         convert = self.conversion_manager.convert
-        return convert(self, AddressType) == convert(other, AddressType)
+
+        try:
+            return convert(self, AddressType) == convert(other, AddressType)
+        except ConversionError:
+            return False
 
     def __dir__(self) -> List[str]:
         """

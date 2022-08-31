@@ -282,3 +282,8 @@ def test_custom_num_of_test_accts_config(test_accounts, temp_config):
 def test_test_accounts_repr(test_accounts):
     actual = repr(test_accounts)
     assert all(a.address in actual for a in test_accounts)
+
+
+def test_account_comparison_to_non_account(receiver):
+    # Before, would through a ConversionError. Expected to be False
+    assert receiver != "foo"
