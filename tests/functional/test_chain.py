@@ -281,8 +281,16 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
     expected_contract_type = ContractType(contractName="foo", sourceId="foo.bar")
     new_address = "0x4a986a6dCA6dbf99bC3d17F8D71aFb0d60e740f8"
     expected_fail_message = "LOOK_FOR_THIS_FAIL_MESSAGE"
+    existing_fn = chain.contracts.get
+
+    def fn(addr, default=None):
+        if addr == new_address:
+            raise ValueError(expected_fail_message)
+
+        return existing_fn(addr, default=default)
+
     chain.contracts.get = mocker.MagicMock()
-    chain.contracts.get.side_effect = ValueError(expected_fail_message)
+    chain.contracts.get.side_effect = fn
 
     actual = chain.contracts.instance_at(new_address, contract_type=expected_contract_type)
     assert actual.contract_type == expected_contract_type
