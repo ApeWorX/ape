@@ -122,6 +122,7 @@ class ConfigManager(BaseInterfaceModel):
 
     @property
     def _plugin_configs(self) -> Dict[str, PluginConfig]:
+        default_contracts_folder = self.PROJECT_FOLDER / "contracts"
         project_name = self.PROJECT_FOLDER.stem
         if project_name in self._cached_configs:
             cache = self._cached_configs[project_name]
@@ -131,7 +132,7 @@ class ConfigManager(BaseInterfaceModel):
             self.meta = PackageMeta.parse_obj(cache.get("meta", {}))
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
-            self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
+            self.contracts_folder = cache.get("contracts_folder") or default_contracts_folder
             return cache
 
         # First, load top-level configs. Then, load all the plugin configs.
@@ -167,7 +168,7 @@ class ConfigManager(BaseInterfaceModel):
         contracts_folder = (
             Path(user_config.pop("contracts_folder")).expanduser().resolve()
             if "contracts_folder" in user_config
-            else self.PROJECT_FOLDER / "contracts"
+            else default_contracts_folder
         )
         self.contracts_folder = configs["contracts_folder"] = contracts_folder
 

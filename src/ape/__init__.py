@@ -13,6 +13,7 @@ config = _ManagerAccessMixin.config_manager
 """
 The active configs for the current project. See :class:`ape.managers.config.ConfigManager`.
 """
+config.load()
 
 # Main types we export for the user
 compilers = _ManagerAccessMixin.compiler_manager
