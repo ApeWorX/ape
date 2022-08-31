@@ -300,7 +300,6 @@ class ReceiptAPI(BaseInterfaceModel):
         """
         Obtain the final return value of the call. Requires tracing to function,
         since this is not available from the receipt object.
-        
         Returns:
             Any: The return value (ABI Decoded) of the call
         """
