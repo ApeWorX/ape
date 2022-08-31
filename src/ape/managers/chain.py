@@ -708,8 +708,7 @@ class ContractCache(BaseManager):
         address = self.provider.network.ecosystem.decode_address(address)
 
         try:
-            # Always attempt to get an existing contract type so that
-            # the caches update.
+            # Always attempt to get an existing contract type to update caches
             contract_type = self.get(address, default=contract_type)
         except Exception as err:
             if contract_type:

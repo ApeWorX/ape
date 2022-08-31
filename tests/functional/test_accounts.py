@@ -285,5 +285,5 @@ def test_test_accounts_repr(test_accounts):
 
 
 def test_account_comparison_to_non_account(receiver):
-    # Before, would through a ConversionError. Expected to be False
+    # Before, would get a ConversionError.
     assert receiver != "foo"

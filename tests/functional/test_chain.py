@@ -275,7 +275,7 @@ def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
 
 
 def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain, caplog):
-    # The manager always attempt retrieval so that default contact types can
+    # The manager always attempts retrieval so that default contact types can
     # get cached. However, sometimes an explorer plugin may fail. If given a contract-type
     # in that situation, we can use it and not fail and log the error instead.
     expected_contract_type = ContractType(contractName="foo", sourceId="foo.bar")
