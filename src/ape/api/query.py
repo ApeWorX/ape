@@ -1,10 +1,11 @@
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Type, Union
 
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
 
+from ape.logging import logger
 from ape.types import AddressType
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
 
 QueryType = Union[
     "BlockQuery",
@@ -15,19 +16,44 @@ QueryType = Union[
 ]
 
 
-def validate_and_expand_columns(columns: List[str], all_columns: List[str]) -> List[str]:
+def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceModel]) -> List[str]:
     if len(columns) == 1 and columns[0] == "*":
-        return all_columns
+        # NOTE: By default, only pull explicit fields
+        #       (because they are cheap to pull, but properties might not be)
+        return list(Model.__fields__)
 
     else:
-        if len(set(columns)) != len(columns):
-            raise ValueError(f"Duplicate fields in {columns}")
+        deduped_columns = set(columns)
+        if len(deduped_columns) != len(columns):
+            logger.warning(f"Duplicate fields in {columns}")
 
-        for d in columns:
-            if d not in all_columns:
-                raise ValueError(f"Unrecognized field '{d}', must be one of {all_columns}")
+        all_columns = set(Model.__fields__)
+        # NOTE: Iterate down the series of subclasses of `Model` (e.g. Block and BlockAPI)
+        #       and get all of the public property methods of each class (which are valid columns)
+        all_columns.update(
+            {
+                field
+                for cls in Model.__mro__
+                if issubclass(cls, BaseInterfaceModel) and cls != BaseInterfaceModel
+                for field in vars(cls)
+                if not field.startswith("_")
+                and isinstance(vars(cls)[field], (property, cached_property))
+            }
+        )
 
-    return columns
+        if len(deduped_columns - all_columns) > 0:
+            unrecognized = "', '".join(deduped_columns - all_columns)
+            logger.warning(f"Unrecognized field(s) '{unrecognized}', must be one of {all_columns}")
+
+        selected_fields = all_columns.intersection(deduped_columns)
+        if len(selected_fields) > 0:
+            return list(selected_fields)
+
+    raise ValueError(f"No valid fields in {columns}.")
+
+
+def extract_fields(item, columns):
+    return [getattr(item, col) for col in columns]
 
 
 class _BaseQuery(BaseModel):
