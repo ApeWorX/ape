@@ -9,6 +9,7 @@ from hexbytes import HexBytes
 import ape
 from ape.contracts import ContractInstance
 from ape.exceptions import APINotImplementedError, ChainError, ConversionError
+from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -98,6 +99,45 @@ def test_account_history(sender, receiver, chain):
     txn = transactions_from_cache[-1]
     assert txn.sender == receipt.sender == sender
     assert txn.receiver == receipt.receiver == receiver
+
+
+def test_account_history_caches_sender_over_address_key(
+    mocker, chain, eth_tester_provider, sender, vyper_contract_container, ethereum
+):
+    # When getting receipts from the explorer for contracts, it includes transactions
+    # made to the contract. This test shows we cache by sender and not address key.
+    contract = sender.deploy(vyper_contract_container)
+    network = ethereum.local
+    known_receipt = Receipt(
+        block_number=10,
+        gas_price=11,
+        gas_used=12,
+        gas_limit=13,
+        status=TransactionStatusEnum.NO_ERROR.value,
+        receiver=contract.address,
+        txn_hash="0x98d2aee8617897b5983314de1d6ff44d1f014b09575b47a88267971beac97b2b",
+        sender=sender.address,
+        value=10000000000000000000000,
+    )
+
+    # The receipt is already known and cached by the sender.
+    chain.account_history.append(known_receipt)
+
+    # We ask for receipts from the contract, but it returns ones sent to the contract.
+    def get_txns_patch(address):
+        if address == contract.address:
+            yield from [known_receipt]
+
+    mock_explorer = mocker.MagicMock()
+    mock_explorer.get_account_transactions.side_effect = get_txns_patch
+    network.__dict__["explorer"] = mock_explorer
+    eth_tester_provider.network = network
+
+    # Previously, this would error because the receipt was cached with the wrong sender
+    actual = [t for t in chain.account_history[contract.address]]
+
+    # Actual is 0 because the receipt was cached under the sender.
+    assert len(actual) == 0
 
 
 def test_iterate_blocks(chain_that_mined_5):
