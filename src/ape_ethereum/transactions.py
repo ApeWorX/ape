@@ -178,7 +178,7 @@ class Receipt(ReceiptAPI):
 
             console.print(f"[bold red]{suffix}[/]")
 
-        console.print(f"txn.origin=[{TraceStyles.CONTRACTS}]{self.transaction.sender}[/]")
+        console.print(f"txn.origin=[{TraceStyles.CONTRACTS}]{self.sender}[/]")
         console.print(root)
 
     def decode_logs(
