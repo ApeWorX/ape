@@ -19,13 +19,27 @@ def test_deploy(
 
 def test_deploy_and_publish_local_network(owner, contract_container):
     with pytest.raises(ProjectError, match="Can only publish deployments on a live network"):
-        contract_container.deploy(sender=owner)
+        contract_container.deploy(sender=owner, publish=True)
 
 
 def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, dummy_live_network):
     expected_message = "Unable to publish contract - no explorer plugin installed."
     with pytest.raises(NetworkError, match=expected_message):
-        contract_container.deploy(sender=owner, required_confirmations=0)
+        contract_container.deploy(sender=owner, publish=True, required_confirmations=0)
+
+
+def test_deploy_and_publish(mocker, owner, contract_container, dummy_live_network):
+    mock_explorer = mocker.MagicMock()
+    dummy_live_network.__dict__["explorer"] = mock_explorer
+    contract = contract_container.deploy(sender=owner, publish=True, required_confirmations=0)
+    mock_explorer.publish_contract.assert_called_once_with(contract.address)
+
+
+def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_network):
+    mock_explorer = mocker.MagicMock()
+    dummy_live_network.__dict__["explorer"] = mock_explorer
+    contract_container.deploy(sender=owner, publish=False, required_confirmations=0)
+    assert not mock_explorer.call_count
 
 
 def test_deployment_property(chain, owner, project_with_contract, eth_tester_provider):

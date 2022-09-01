@@ -132,6 +132,20 @@ def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, 
         owner.deploy(contract_container, publish=True, required_confirmations=0)
 
 
+def test_deploy_and_publish(mocker, owner, contract_container, dummy_live_network):
+    mock_explorer = mocker.MagicMock()
+    dummy_live_network.__dict__["explorer"] = mock_explorer
+    contract = owner.deploy(contract_container, publish=True, required_confirmations=0)
+    mock_explorer.publish_contract.assert_called_once_with(contract.address)
+
+
+def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_network):
+    mock_explorer = mocker.MagicMock()
+    dummy_live_network.__dict__["explorer"] = mock_explorer
+    owner.deploy(contract_container, publish=True, required_confirmations=0)
+    assert not mock_explorer.call_count
+
+
 def test_contract_calls(owner, contract_instance):
     contract_instance.setNumber(2, sender=owner)
     assert contract_instance.myNumber() == 2
