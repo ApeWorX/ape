@@ -312,6 +312,8 @@ class ReceiptAPI(BaseInterfaceModel):
             method_abi = contract_type.mutable_methods[selector]
         elif selector in contract_type.view_methods:
             method_abi = contract_type.view_methods[selector]
+        else:
+            raise ContractError(f"Selector '{selector}' not found in {contract_type.name}")
 
         output = self.provider.network.ecosystem.decode_returndata(method_abi, call_tree.returndata)
         if isinstance(output, tuple) and len(output) < 2:
