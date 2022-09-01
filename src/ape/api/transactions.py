@@ -156,7 +156,7 @@ class ReceiptAPI(BaseInterfaceModel):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
-    def __getattr__(self, item: str) -> Optional[Any]:
+    def __getattr__(self, item: str) -> Any:
         return getattr(self.transaction, item)
 
     def __post_init__(self):
