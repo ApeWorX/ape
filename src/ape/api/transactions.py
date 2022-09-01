@@ -151,13 +151,20 @@ class ReceiptAPI(BaseInterfaceModel):
     logs: List[dict] = []
     status: int
     txn_hash: str
-    transaction: TransactionAPI
+    transaction: TransactionAPI | dict
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
     def __getattr__(self, item: str) -> Optional[Any]:
         return getattr(self.transaction, item)
+
+    def __post_init__(self):
+        if isinstance(self.transaction, dict):
+            self.transaction = self.create_transaction(self.transaction)
+
+    def create_transaction(self) -> TransactionAPI:
+        return TransactionAPI.parse_obj(self.transaction)
 
     @property
     def failed(self) -> bool:
