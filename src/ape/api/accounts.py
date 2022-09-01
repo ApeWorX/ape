@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Unio
 import click
 from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
-from eth_typing import HexAddress, HexStr
 
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
@@ -174,7 +173,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         txn.sender = self.address
         receipt = self.call(txn)
 
-        if not receipt.contract_address:
+        address = receipt.contract_address
+        if not address:
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
         contract_type = contract.contract_type
@@ -185,7 +185,6 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         self.chain_manager.contracts.cache_deployment(instance)
 
         if publish:
-            address = AddressType(HexAddress(HexStr(receipt.contract_address)))
             self.project_manager.track_deployment(instance)
             self.provider.network.publish_contract(address)
 

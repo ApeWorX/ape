@@ -3,7 +3,6 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
 import pandas as pd
-from eth_typing import HexAddress, HexStr
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
@@ -872,7 +871,8 @@ class ContractContainer(ManagerAccessMixin):
             txn = self.provider.prepare_transaction(txn)
             receipt = self.provider.send_transaction(txn)
 
-        if not receipt.contract_address:
+        address = receipt.contract_address
+        if not address:
             raise ContractError(f"'{receipt.txn_hash}' did not create a contract.")
 
         styled_address = click.style(receipt.contract_address, bold=True)
@@ -882,7 +882,6 @@ class ContractContainer(ManagerAccessMixin):
         self.chain_manager.contracts.cache_deployment(instance)
 
         if publish:
-            address = AddressType(HexAddress(HexStr(receipt.contract_address)))
             self.project_manager.track_deployment(instance)
             self.provider.network.publish_contract(address)
 

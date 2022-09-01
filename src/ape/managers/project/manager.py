@@ -6,7 +6,6 @@ from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta
 from ethpm_types.contract_type import BIP122_URI
-from semantic_version import Version  # type: ignore
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -164,15 +163,11 @@ class ProjectManager(BaseManager):
                     raise (ProjectError(f"Unable to create version map for '{ext}'."))
 
                 version = versions[0]
-                filtered_paths = [p for p in self.source_paths if p.suffix == ext]
-                version_map = {version: filtered_paths}
+                version_map = {version: sources}
 
-            settings = compiler.get_compiler_settings(self.source_paths, contracts_folder)
+            settings = compiler.get_compiler_settings(sources, base_path=contracts_folder)
             for version, paths in version_map.items():
-                version_without_hash = Version(str(version).split("+")[0].strip())
-                version_settings = (
-                    settings.get(version_without_hash, {}) if version and settings else {}
-                )
+                version_settings = settings.get(version, {}) if version and settings else {}
                 source_ids = [str(get_relative_path(p, contracts_folder)) for p in paths]
                 filtered_contract_types = [
                     ct for ct in self.contracts.values() if ct.source_id in source_ids

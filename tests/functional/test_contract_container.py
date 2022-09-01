@@ -1,4 +1,7 @@
+import pytest
+
 from ape import Contract
+from ape.exceptions import NetworkError, ProjectError
 
 
 def test_deploy(
@@ -12,6 +15,17 @@ def test_deploy(
     assert contract_from_cache.contract_type == contract.contract_type
     assert contract_from_cache.address == contract.address
     assert contract_from_cache.txn_hash == contract.txn_hash
+
+
+def test_deploy_and_publish_local_network(owner, contract_container):
+    with pytest.raises(ProjectError, match="Can only publish deployments on a live network"):
+        contract_container.deploy(sender=owner)
+
+
+def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, dummy_live_network):
+    expected_message = "Unable to publish contract - no explorer plugin installed."
+    with pytest.raises(NetworkError, match=expected_message):
+        contract_container.deploy(sender=owner, required_confirmations=0)
 
 
 def test_deployment_property(chain, owner, project_with_contract, eth_tester_provider):

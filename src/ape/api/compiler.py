@@ -36,7 +36,7 @@ class CompilerAPI(BaseInterfaceModel):
         """
 
     def get_compiler_settings(
-        self, contract_filepaths: List[Path], base_path: Optional[Path]
+        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
     ) -> Dict[Version, Dict]:
         """
         Get a mapping of the settings that would be used to compile each of the sources
