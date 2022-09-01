@@ -1,6 +1,7 @@
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from pathlib import Path
 from typing import Callable, Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
 
@@ -10,7 +11,7 @@ from ethpm_types import ContractType
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
-from ape.api.query import BlockQuery, validate_and_expand_columns
+from ape.api.query import BlockQuery, extract_fields, validate_and_expand_columns
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ConversionError, UnknownSnapshotError
 from ape.logging import logger
@@ -139,17 +140,15 @@ class BlockContainer(BaseManager):
             )
 
         query = BlockQuery(
-            columns=list(self.head.__fields__),
+            columns=columns,
             start_block=start_block,
             stop_block=stop_block,
             step=step,
         )
 
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
-        # NOTE: Allow any columns from ecosystem's BlockAPI class
-        # TODO: fetch the block fields from EcosystemAPI
-        columns = validate_and_expand_columns(columns, list(self.head.__fields__))  # type: ignore
-        blocks = map(lambda val: val.dict(by_alias=False), blocks)  # type: ignore
+        columns = validate_and_expand_columns(columns, self.head.__class__)  # type: ignore
+        blocks = map(partial(extract_fields, columns=columns), blocks)
         return pd.DataFrame(columns=columns, data=blocks)
 
     def range(
@@ -356,7 +355,11 @@ class AccountHistory(BaseManager):
             [r for r in explorer.get_account_transactions(address_key)] if explorer else []
         )
         for receipt in explorer_receipts:
-            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(address_key, [])]:
+
+            # NOTE: Cache the receipt by its sender and not by the address sent to the explorer API
+            #  because explorers return various receipts when given contract addresses.
+            sender: AddressType = receipt.sender  # type: ignore
+            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(sender, [])]:
                 self.append(receipt)
 
         return self._map.get(address_key, [])
