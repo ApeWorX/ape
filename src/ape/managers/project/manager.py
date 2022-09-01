@@ -207,14 +207,13 @@ class ProjectManager(BaseManager):
             return deployments
 
         for ecosystem_path in [x for x in self._package_deployments_folder.iterdir() if x.is_dir()]:
-            ecosystem_deployments = {}
             for deployment_path in [x for x in ecosystem_path.iterdir() if x.suffix == ".json"]:
                 ethpm_instance = EthPMContractInstance.parse_raw(deployment_path.read_text())
                 if not ethpm_instance:
                     continue
 
                 uri = BIP122_URI(f"blockchain://{ecosystem_path.name}/block/{ethpm_instance.block}")
-                ecosystem_deployments[uri] = {deployment_path.stem: ethpm_instance}
+                deployments[uri] = {deployment_path.stem: ethpm_instance}
 
         return deployments
 
