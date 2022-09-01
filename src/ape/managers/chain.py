@@ -356,7 +356,10 @@ class AccountHistory(BaseManager):
             [r for r in explorer.get_account_transactions(address_key)] if explorer else []
         )
         for receipt in explorer_receipts:
-            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(address_key, [])]:
+
+            # NOTE: Cache the receipt by its sender and not by the address sent to the explorer API
+            #  because explorers return various receipts when given contract addresses.
+            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(receipt.sender, [])]:
                 self.append(receipt)
 
         return self._map.get(address_key, [])
