@@ -309,9 +309,13 @@ class ReceiptAPI(BaseInterfaceModel):
         if not contract_type:
             raise ContractError("Cannot find contract type to decode with. Is it published?")
 
-        method_abi = contract_type.mutable_methods[call_tree.calldata]
-        output = self.provider.network.ecosystem.decode_returndata(method_abi, call_tree.returndata)
+        selector = call_tree.calldata
+        if selector in contract_type.mutable_methods:
+            method_abi = contract_type.mutable_methods[selector]
+        elif selector in contract_type.view_methods:
+            method_abi = contract_type.view_methods[selector]
 
+        output = self.provider.network.ecosystem.decode_returndata(method_abi, call_tree.returndata)
         if isinstance(output, tuple) and len(output) < 2:
             # NOTE: Two special cases
             output = output[0] if len(output) == 1 else None
