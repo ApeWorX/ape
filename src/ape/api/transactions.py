@@ -1,6 +1,6 @@
 import sys
 import time
-from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
@@ -9,7 +9,7 @@ from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
-from ape.exceptions import TransactionError
+from ape.exceptions import ContractError, TransactionError
 from ape.logging import logger
 from ape.types import ContractLog, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
@@ -294,6 +294,33 @@ class ReceiptAPI(BaseInterfaceModel):
                 time.sleep(time_to_sleep)
 
         return self
+
+    @property
+    def return_value(self) -> Any:
+        """
+        Obtain the final return value of the call. Requires tracing to function,
+        since this is not available from the receipt object.
+        """
+        call_tree = self.provider.get_call_tree(self.txn_hash)
+
+        contract_type = self.chain_manager.contracts.get(call_tree.address)
+        if not contract_type:
+            raise ContractError("Cannot find contract type to decode with. Is it published?")
+
+        selector = call_tree.calldata
+        if selector in contract_type.mutable_methods:
+            method_abi = contract_type.mutable_methods[selector]
+        elif selector in contract_type.view_methods:
+            method_abi = contract_type.view_methods[selector]
+        else:
+            raise ContractError(f"Selector '{selector}' not found in {contract_type.name}")
+
+        output = self.provider.network.ecosystem.decode_returndata(method_abi, call_tree.returndata)
+        if isinstance(output, tuple) and len(output) < 2:
+            # NOTE: Two special cases
+            output = output[0] if len(output) == 1 else None
+
+        return output
 
     @raises_not_implemented
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):

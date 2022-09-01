@@ -83,6 +83,18 @@ class HexAddressConverter(ConverterAPI):
         return to_checksum_address(value)
 
 
+class BytesAddressConverter(ConverterAPI):
+    """
+    A converter that converts a raw bytes address to an ``AddressType``.
+    """
+
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, bytes) and len(value) == 20
+
+    def convert(self, value: bytes) -> AddressType:
+        return to_checksum_address(value)
+
+
 class ListTupleConverter(ConverterAPI):
     """
     A converter that converts all items in a tuple or list recursively.
@@ -180,7 +192,7 @@ class ConversionManager(BaseManager):
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
         converters: Dict[Type, List[ConverterAPI]] = {
-            AddressType: [AddressAPIConverter(), HexAddressConverter()],
+            AddressType: [AddressAPIConverter(), BytesAddressConverter(), HexAddressConverter()],
             bytes: [HexConverter()],
             int: [TimestampConverter()],
             Decimal: [],

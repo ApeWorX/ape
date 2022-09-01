@@ -816,7 +816,7 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise ProviderError(f"Transaction '{txn_hash}' not found.") from err
 
-        txn = self.web3.eth.get_transaction(txn_hash)  # type: ignore
+        txn = dict(self.web3.eth.get_transaction(txn_hash))  # type: ignore
         receipt = self.network.ecosystem.decode_receipt(
             {
                 "provider": self,
