@@ -107,8 +107,7 @@ def test_account_history_handles_contract_genesis(
     # the word 'GENESIS' and the hash has 'GENESIS' prefixed in front.
     # This test makes sure we can handle such receipt.
     contract = sender.deploy(vyper_contract_container)
-    mock_network = mocker.MagicMock()
-    mock_explorer = mocker.MagicMock()
+    network = ethereum.local
     genesis_receipt = Receipt(
         block_number=0,
         gas_price=0,
@@ -125,11 +124,11 @@ def test_account_history_handles_contract_genesis(
         if address == contract.address:
             yield from [genesis_receipt]
 
+    mock_explorer = mocker.MagicMock()
     mock_explorer.get_account_transactions.side_effect = get_txns_patch
-    mock_network.explorer = mock_explorer
-    mock_network.ecosystem = ethereum
-    eth_tester_provider.network = mock_network
+    network.__dict__["explorer"] = mock_explorer
 
+    eth_tester_provider.network = network
     actual = [t for t in chain.account_history[contract.address]]
 
     assert len(actual) == 1
