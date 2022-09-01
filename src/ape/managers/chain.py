@@ -2,7 +2,7 @@ import json
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Callable, Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
+from typing import Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import pandas as pd
 from ethpm_types import ContractType
@@ -16,7 +16,6 @@ from ape.exceptions import ChainError, ConversionError, UnknownSnapshotError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, SnapshotID
-from ape.utils import cached_property
 
 
 class BlockContainer(BaseManager):
@@ -333,11 +332,6 @@ class AccountHistory(BaseManager):
 
     _map: Dict[AddressType, List[ReceiptAPI]] = {}
 
-    @cached_property
-    def _convert(self) -> Callable:
-
-        return self.conversion_manager.convert
-
     def __getitem__(self, address: Union[BaseAddress, AddressType, str]) -> List[ReceiptAPI]:
         """
         Get the list of transactions from the active session for the given address.
@@ -350,13 +344,16 @@ class AccountHistory(BaseManager):
             are no recorded transactions, returns an empty list.
         """
 
-        address_key: AddressType = self._convert(address, AddressType)
+        address_key: AddressType = self.conversion_manager.convert(address, AddressType)
         explorer = self.provider.network.explorer
         explorer_receipts = (
             [r for r in explorer.get_account_transactions(address_key)] if explorer else []
         )
         for receipt in explorer_receipts:
             if receipt.txn_hash not in [r.txn_hash for r in self._map.get(address_key, [])]:
+                if receipt.sender.upper() == "GENESIS":
+                    receipt.sender = address_key
+
                 self.append(receipt)
 
         return self._map.get(address_key, [])
@@ -393,7 +390,13 @@ class AccountHistory(BaseManager):
               **NOTE**: The receipt is accessible in the list returned from
               :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
-        address = self._convert(txn_receipt.sender, AddressType)
+
+        if txn_receipt.sender.upper() == "GENESIS":
+            # Cache genesis transactions as contract address
+            address = txn_receipt.receiver
+        else:
+            address = self.conversion_manager.convert(txn_receipt.sender, AddressType)
+
         if address not in self._map:
             self._map[address] = [txn_receipt]
             return
