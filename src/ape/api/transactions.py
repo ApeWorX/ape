@@ -269,10 +269,7 @@ class ReceiptAPI(BaseInterfaceModel):
             return self
 
         confirmations_occurred = self._confirmations_occurred
-        if (
-            self.required_confirmations
-            and confirmations_occurred >= self.required_confirmations
-        ):
+        if self.required_confirmations and confirmations_occurred >= self.required_confirmations:
             return self
 
         # If we get here, that means the transaction has been recently submitted.
