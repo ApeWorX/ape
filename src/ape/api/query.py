@@ -49,7 +49,7 @@ def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceMod
         if len(selected_fields) > 0:
             return list(selected_fields)
 
-    raise ValueError(f"No valid fields in '{columns}'.")
+    raise ValueError(f"No valid fields in {columns}.")
 
 
 def extract_fields(item, columns):
