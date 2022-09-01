@@ -1,6 +1,6 @@
 import sys
 import time
-from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
@@ -151,7 +151,7 @@ class ReceiptAPI(BaseInterfaceModel):
     logs: List[dict] = []
     status: int
     txn_hash: str
-    transaction: TransactionAPI | dict
+    transaction: Union[TransactionAPI, Dict]
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
