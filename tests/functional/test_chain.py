@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from queue import Queue
 
 import pytest
+from ethpm_types import ContractType
 from hexbytes import HexBytes
 
 import ape
@@ -271,6 +272,29 @@ def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
         address = str(contract_instance.address)
         bad_contract_type = contract_instance.contract_type.name
         chain.contracts.instance_at(address, contract_type=bad_contract_type)
+
+
+def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain, caplog):
+    # The manager always attempts retrieval so that default contact types can
+    # get cached. However, sometimes an explorer plugin may fail. If given a contract-type
+    # in that situation, we can use it and not fail and log the error instead.
+    expected_contract_type = ContractType(contractName="foo", sourceId="foo.bar")
+    new_address = "0x4a986a6dCA6dbf99bC3d17F8D71aFb0d60e740f8"
+    expected_fail_message = "LOOK_FOR_THIS_FAIL_MESSAGE"
+    existing_fn = chain.contracts.get
+
+    def fn(addr, default=None):
+        if addr == new_address:
+            raise ValueError(expected_fail_message)
+
+        return existing_fn(addr, default=default)
+
+    chain.contracts.get = mocker.MagicMock()
+    chain.contracts.get.side_effect = fn
+
+    actual = chain.contracts.instance_at(new_address, contract_type=expected_contract_type)
+    assert actual.contract_type == expected_contract_type
+    assert caplog.records[-1].message == expected_fail_message
 
 
 def test_deployments_mapping_cache_location(chain):
