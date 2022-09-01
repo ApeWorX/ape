@@ -359,7 +359,8 @@ class AccountHistory(BaseManager):
 
             # NOTE: Cache the receipt by its sender and not by the address sent to the explorer API
             #  because explorers return various receipts when given contract addresses.
-            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(receipt.sender, [])]:
+            sender: AddressType = receipt.sender  # type: ignore
+            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(sender, [])]:
                 self.append(receipt)
 
         return self._map.get(address_key, [])
