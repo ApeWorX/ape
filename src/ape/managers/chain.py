@@ -698,30 +698,38 @@ class ContractCache(BaseManager):
             :class:`~ape.contracts.base.ContractInstance`
         """
 
-        if contract_type and not isinstance(contract_type, ContractType):
-            raise TypeError("Expected type 'ContractType' for argument 'contract_type'.")
         try:
+            # Handles ENS domain names
             address = self.conversion_manager.convert(address, AddressType)
         except ConversionError:
             address = address
 
         address = self.provider.network.ecosystem.decode_address(address)
-        contract_type = self.get(address, default=contract_type)
-        if not txn_hash and contract_type:
+
+        try:
+            # Always attempt to get an existing contract type to update caches
+            contract_type = self.get(address, default=contract_type)
+        except Exception as err:
+            if contract_type:
+                # If a default contract type was provided, don't error and use it.
+                logger.error(str(err))
+            else:
+                raise  # Current exception
+
+        if not contract_type:
+            raise ChainError(f"Failed to get contract type for address '{address}'.")
+        elif not isinstance(contract_type, ContractType):
+            raise TypeError(
+                f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
+            )
+
+        if not txn_hash:
             # Check for txn_hash in deployments.
             deployments = self._deployments.get(contract_type.name) or []
             for deployment in deployments:
                 if deployment["address"] == address:
                     txn_hash = deployment.get("transaction_hash")
                     break
-
-        if not contract_type:
-            raise ChainError(f"Failed to get contract type for address '{address}'.")
-
-        elif not isinstance(contract_type, ContractType):
-            raise TypeError(
-                f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
-            )
 
         return ContractInstance(address, contract_type, txn_hash=txn_hash)
 
