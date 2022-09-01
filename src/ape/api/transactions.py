@@ -1,6 +1,6 @@
 import sys
 import time
-from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
@@ -156,8 +156,8 @@ class ReceiptAPI(BaseInterfaceModel):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
-    def __getattr__(self, item):
-        return getattr(self.transaction, item, None)
+    def __getattr__(self, item: str) -> Optional[Any]:
+        return getattr(self.transaction, item)
 
     @property
     def failed(self) -> bool:
