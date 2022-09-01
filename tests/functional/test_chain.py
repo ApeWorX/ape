@@ -8,6 +8,7 @@ from hexbytes import HexBytes
 import ape
 from ape.contracts import ContractInstance
 from ape.exceptions import APINotImplementedError, ChainError, ConversionError
+from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -97,6 +98,42 @@ def test_account_history(sender, receiver, chain):
     txn = transactions_from_cache[-1]
     assert txn.sender == receipt.sender == sender
     assert txn.receiver == receipt.receiver == receiver
+
+
+def test_account_history_handles_contract_genesis(
+    mocker, chain, eth_tester_provider, sender, vyper_contract_container, ethereum
+):
+    # The genesis receipt of a contract is a special receipt where the sender is
+    # the word 'GENESIS' and the hash has 'GENESIS' prefixed in front.
+    # This test makes sure we can handle such receipt.
+    contract = sender.deploy(vyper_contract_container)
+    mock_network = mocker.MagicMock()
+    mock_explorer = mocker.MagicMock()
+    genesis_receipt = Receipt(
+        block_number=0,
+        gas_price=0,
+        gas_used=0,
+        gas_limit=0,
+        status=TransactionStatusEnum.NO_ERROR.value,
+        receiver="0xddbd2b932c763ba5b1b7ae3b362eac3e8d40121a",
+        txn_hash="GENESIS_ddbd2b932c763ba5b1b7ae3b362eac3e8d40121a",
+        sender="GENESIS",
+        value=10000000000000000000000,
+    )
+
+    def get_txns_patch(address):
+        if address == contract.address:
+            yield from [genesis_receipt]
+
+    mock_explorer.get_account_transactions.side_effect = get_txns_patch
+    mock_network.explorer = mock_explorer
+    mock_network.ecosystem = ethereum
+    eth_tester_provider.network = mock_network
+
+    actual = [t for t in chain.account_history[contract.address]]
+
+    assert len(actual) == 1
+    assert actual[0] == genesis_receipt
 
 
 def test_iterate_blocks(chain_that_mined_5):

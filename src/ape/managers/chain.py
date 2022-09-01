@@ -349,6 +349,7 @@ class AccountHistory(BaseManager):
         explorer_receipts = (
             [r for r in explorer.get_account_transactions(address_key)] if explorer else []
         )
+
         for receipt in explorer_receipts:
             if receipt.txn_hash not in [r.txn_hash for r in self._map.get(address_key, [])]:
                 if receipt.sender.upper() == "GENESIS":
@@ -391,12 +392,7 @@ class AccountHistory(BaseManager):
               :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
 
-        if txn_receipt.sender.upper() == "GENESIS":
-            # Cache genesis transactions as contract address
-            address = txn_receipt.receiver
-        else:
-            address = self.conversion_manager.convert(txn_receipt.sender, AddressType)
-
+        address = self.conversion_manager.convert(txn_receipt.sender, AddressType)
         if address not in self._map:
             self._map[address] = [txn_receipt]
             return
