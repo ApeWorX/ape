@@ -37,7 +37,11 @@ RUN pip install --upgrade pip \
       template \
       tokens \
       trezor \
-      vyper
+      vyper \
+# https://github.com/ApeWorX/ape/issues/894
+    && pip install eth-rlp==0.3.0 \
+# Ensure works or fail build
+    && ape --version
 
 USER harambe
 ENTRYPOINT ["ape"]
