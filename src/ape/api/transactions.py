@@ -152,7 +152,7 @@ class ReceiptAPI(BaseInterfaceModel):
     logs: List[dict] = []
     status: int
     txn_hash: str
-    transaction: Optional[TransactionAPI]
+    transaction: TransactionAPI
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
