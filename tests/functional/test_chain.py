@@ -10,7 +10,6 @@ import ape
 from ape.contracts import ContractInstance
 from ape.exceptions import APINotImplementedError, ChainError, ConversionError
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
-from ape.api.transactions import TransactionAPI
 
 
 @pytest.fixture(scope="module", autouse=True)

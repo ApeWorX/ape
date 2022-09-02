@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, decode_hex, encode_hex, keccak, to_bytes, to_checksum_address
+from eth_utils import add_0x_prefix, encode_hex, keccak, to_bytes, to_checksum_address
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field
