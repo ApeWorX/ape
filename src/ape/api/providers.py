@@ -816,7 +816,7 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise ProviderError(f"Transaction '{txn_hash}' not found.") from err
 
-        txn = self.web3.eth.get_transaction(txn_hash)  # type: ignore
+        txn = dict(self.web3.eth.get_transaction(txn_hash))  # type: ignore
         receipt = self.network.ecosystem.decode_receipt(
             {
                 "provider": self,
@@ -1054,7 +1054,7 @@ class SubprocessProvider(ProviderAPI):
         for line in self.stdout_queue:
             output = line.decode("utf8").strip()
             logger.debug(output)
-            self._stdout_logger.info(output)
+            self._stdout_logger.debug(output)
 
             if self.stdout_queue is not None:
                 self.stdout_queue.task_done()
@@ -1064,7 +1064,7 @@ class SubprocessProvider(ProviderAPI):
     def consume_stderr_queue(self):
         for line in self.stderr_queue:
             logger.debug(line.decode("utf8").strip())
-            self._stdout_logger.info(line)
+            self._stdout_logger.debug(line)
 
             if self.stderr_queue is not None:
                 self.stderr_queue.task_done()

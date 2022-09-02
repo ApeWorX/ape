@@ -1,6 +1,7 @@
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from pathlib import Path
 from typing import Callable, Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
 
@@ -10,7 +11,7 @@ from ethpm_types import ContractType
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
-from ape.api.query import BlockQuery, validate_and_expand_columns
+from ape.api.query import BlockQuery, extract_fields, validate_and_expand_columns
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ConversionError, UnknownSnapshotError
 from ape.logging import logger
@@ -139,17 +140,15 @@ class BlockContainer(BaseManager):
             )
 
         query = BlockQuery(
-            columns=list(self.head.__fields__),
+            columns=columns,
             start_block=start_block,
             stop_block=stop_block,
             step=step,
         )
 
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
-        # NOTE: Allow any columns from ecosystem's BlockAPI class
-        # TODO: fetch the block fields from EcosystemAPI
-        columns = validate_and_expand_columns(columns, list(self.head.__fields__))  # type: ignore
-        blocks = map(lambda val: val.dict(by_alias=False), blocks)  # type: ignore
+        columns = validate_and_expand_columns(columns, self.head.__class__)  # type: ignore
+        blocks = map(partial(extract_fields, columns=columns), blocks)
         return pd.DataFrame(columns=columns, data=blocks)
 
     def range(
@@ -356,7 +355,11 @@ class AccountHistory(BaseManager):
             [r for r in explorer.get_account_transactions(address_key)] if explorer else []
         )
         for receipt in explorer_receipts:
-            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(address_key, [])]:
+
+            # NOTE: Cache the receipt by its sender and not by the address sent to the explorer API
+            #  because explorers return various receipts when given contract addresses.
+            sender: AddressType = receipt.sender  # type: ignore
+            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(sender, [])]:
                 self.append(receipt)
 
         return self._map.get(address_key, [])
@@ -699,30 +702,38 @@ class ContractCache(BaseManager):
             :class:`~ape.contracts.base.ContractInstance`
         """
 
-        if contract_type and not isinstance(contract_type, ContractType):
-            raise TypeError("Expected type 'ContractType' for argument 'contract_type'.")
         try:
+            # Handles ENS domain names
             address = self.conversion_manager.convert(address, AddressType)
         except ConversionError:
             address = address
 
         address = self.provider.network.ecosystem.decode_address(address)
-        contract_type = self.get(address, default=contract_type)
-        if not txn_hash and contract_type:
+
+        try:
+            # Always attempt to get an existing contract type to update caches
+            contract_type = self.get(address, default=contract_type)
+        except Exception as err:
+            if contract_type:
+                # If a default contract type was provided, don't error and use it.
+                logger.error(str(err))
+            else:
+                raise  # Current exception
+
+        if not contract_type:
+            raise ChainError(f"Failed to get contract type for address '{address}'.")
+        elif not isinstance(contract_type, ContractType):
+            raise TypeError(
+                f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
+            )
+
+        if not txn_hash:
             # Check for txn_hash in deployments.
             deployments = self._deployments.get(contract_type.name) or []
             for deployment in deployments:
                 if deployment["address"] == address:
                     txn_hash = deployment.get("transaction_hash")
                     break
-
-        if not contract_type:
-            raise ChainError(f"Failed to get contract type for address '{address}'.")
-
-        elif not isinstance(contract_type, ContractType):
-            raise TypeError(
-                f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
-            )
 
         return ContractInstance(address, contract_type, txn_hash=txn_hash)
 

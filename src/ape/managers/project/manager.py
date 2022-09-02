@@ -163,10 +163,9 @@ class ProjectManager(BaseManager):
                     raise (ProjectError(f"Unable to create version map for '{ext}'."))
 
                 version = versions[0]
-                filtered_paths = [p for p in self.source_paths if p.suffix == ext]
-                version_map = {version: filtered_paths}
+                version_map = {version: sources}
 
-            settings = compiler.get_compiler_settings(self.source_paths, contracts_folder)
+            settings = compiler.get_compiler_settings(sources, contracts_folder)
 
             for version, paths in version_map.items():
                 version_settings = settings.get(version, {}) if version and settings else {}
