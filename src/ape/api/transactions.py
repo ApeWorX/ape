@@ -1,10 +1,11 @@
 import sys
 import time
-from typing import IO, TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
+from pydantic import validator
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
@@ -151,7 +152,7 @@ class ReceiptAPI(BaseInterfaceModel):
     logs: List[dict] = []
     status: int
     txn_hash: str
-    transaction: Union[TransactionAPI, Dict]
+    transaction: TransactionAPI
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
@@ -159,12 +160,13 @@ class ReceiptAPI(BaseInterfaceModel):
     def __getattr__(self, item: str) -> Any:
         return getattr(self.transaction, item)
 
-    def __post_init__(self):
-        if isinstance(self.transaction, dict):
-            self.transaction = self.create_transaction(self.transaction)
+    @validator("transaction", pre=True)
+    def confirm_transaction(cls, value):
 
-    def create_transaction(self) -> TransactionAPI:
-        return TransactionAPI.parse_obj(self.transaction)
+        if isinstance(value, dict):
+            return TransactionAPI.parse_obj(value)
+
+        return value
 
     @property
     def failed(self) -> bool:
