@@ -255,7 +255,7 @@ class Ethereum(EcosystemAPI):
         receipt = Receipt(  # type: ignore
             block_number=data.get("block_number") or data.get("blockNumber"),
             contract_address=data.get("contractAddress"),
-            data=data.get("data") or data.get("input", b""),
+            data=data.get("data") or HexBytes(data.get("input", b"")),
             gas_limit=data.get("gas") or data.get("gasLimit"),
             gas_price=data.get("gas_price") or data.get("gasPrice"),
             gas_used=data.get("gas_used") or data.get("gasUsed"),

@@ -1,3 +1,4 @@
+from functools import partial
 from itertools import islice
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
@@ -9,7 +10,7 @@ from hexbytes import HexBytes
 
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
-from ape.api.query import ContractEventQuery
+from ape.api.query import ContractEventQuery, extract_fields
 from ape.exceptions import ArgumentsLengthError, ChainError, ContractError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
@@ -443,9 +444,8 @@ class ContractEvent(ManagerAccessMixin):
         contract_events = self.query_manager.query(
             contract_event_query, engine_to_use=engine_to_use
         )
-        return pd.DataFrame(
-            columns=contract_event_query.columns, data=[val.dict() for val in contract_events]
-        )
+        data = map(partial(extract_fields, columns=columns), contract_events)
+        return pd.DataFrame(columns=columns, data=data)
 
     def range(
         self,
