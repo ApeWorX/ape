@@ -10,6 +10,7 @@ import ape
 from ape.contracts import ContractInstance
 from ape.exceptions import APINotImplementedError, ChainError, ConversionError
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
+from ape.api.transactions import TransactionAPI
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -108,16 +109,17 @@ def test_account_history_caches_sender_over_address_key(
     # made to the contract. This test shows we cache by sender and not address key.
     contract = sender.deploy(vyper_contract_container)
     network = ethereum.local
+    txn = ethereum.create_transaction(
+        receiver=contract.address, sender=sender.address, value=10000000000000000000000
+    )
     known_receipt = Receipt(
         block_number=10,
         gas_price=11,
         gas_used=12,
         gas_limit=13,
         status=TransactionStatusEnum.NO_ERROR.value,
-        receiver=contract.address,
         txn_hash="0x98d2aee8617897b5983314de1d6ff44d1f014b09575b47a88267971beac97b2b",
-        sender=sender.address,
-        value=10000000000000000000000,
+        transaction=txn,
     )
 
     # The receipt is already known and cached by the sender.

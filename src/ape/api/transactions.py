@@ -152,7 +152,7 @@ class ReceiptAPI(BaseInterfaceModel):
     logs: List[dict] = []
     status: int
     txn_hash: str
-    transaction: TransactionAPI
+    transaction: Optional[TransactionAPI]
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
@@ -162,9 +162,8 @@ class ReceiptAPI(BaseInterfaceModel):
 
     @validator("transaction", pre=True)
     def confirm_transaction(cls, value):
-
         if isinstance(value, dict):
-            return TransactionAPI.parse_obj(value)
+            value = TransactionAPI.parse_obj(value)
 
         return value
 
