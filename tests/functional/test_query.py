@@ -1,9 +1,11 @@
+import logging
 import time
 
 import pandas as pd
 import pytest
 
 from ape.api.query import validate_and_expand_columns
+from ape.utils import BaseInterfaceModel
 from ape_test.providers import CHAIN_ID
 
 
@@ -60,31 +62,32 @@ def test_transaction_contract_event_query(contract_instance, owner, eth_tester_p
     assert df_events.event_name[0] == "FooHappened"
 
 
+class Model(BaseInterfaceModel):
+    number: int
+    timestamp: int
+
+
 def test_column_expansion():
-    all_fields = [
-        "chain_id",
-        "receiver",
-        "sender",
-        "gas_limit",
-        "nonce",
-        "value",
-        "data",
-        "type",
-        "max_fee",
-        "max_priority_fee",
-        "required_confirmations",
-        "signature",
-    ]
-    columns = validate_and_expand_columns(["*"], all_fields)
-    assert columns == all_fields
+    columns = validate_and_expand_columns(["*"], Model)
+    assert columns == list(Model.__fields__)
 
 
-def test_column_validation(eth_tester_provider):
-    all_fields = ["number", "timestamp"]
-    with pytest.raises(ValueError, match="Unrecognized field 'numbr'"):
-        validate_and_expand_columns(["numbr"], all_fields)
+def test_column_validation(eth_tester_provider, caplog):
+    with pytest.raises(ValueError) as exc_info:
+        validate_and_expand_columns(["numbr"], Model)
+    assert exc_info.value.args[0] == "No valid fields in ['numbr']."
+    caplog.clear()
 
-    with pytest.raises(
-        ValueError, match=r"Duplicate fields in \['number', 'timestamp', 'number'\]"
-    ):
-        validate_and_expand_columns(["number", "timestamp", "number"], all_fields)
+    with caplog.at_level(logging.WARNING):
+        validate_and_expand_columns(["numbr", "timestamp"], Model)
+
+    assert len(caplog.records) == 1
+    assert "Unrecognized field(s) 'numbr'" in caplog.records[0].msg
+    caplog.clear()
+
+    with caplog.at_level(logging.WARNING):
+        validate_and_expand_columns(["number", "timestamp", "number"], Model)
+
+    assert len(caplog.records) == 1
+    assert "Duplicate fields in ['number', 'timestamp', 'number']" in caplog.records[0].msg
+    caplog.clear()

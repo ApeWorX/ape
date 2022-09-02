@@ -1,15 +1,16 @@
 import sys
 import time
-from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from evm_trace import TraceFrame
+from pydantic import validator
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
-from ape.exceptions import TransactionError
+from ape.exceptions import ContractError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
@@ -147,21 +148,24 @@ class ReceiptAPI(BaseInterfaceModel):
 
     contract_address: Optional[AddressType] = None
     block_number: int
-    data: bytes = b""
-    gas_limit: int
-    gas_price: int
     gas_used: int
     logs: List[dict] = []
-    nonce: Optional[int] = None
-    receiver: str
-    required_confirmations: int = 0
-    sender: str
     status: int
     txn_hash: str
-    value: int = 0
+    transaction: TransactionAPI
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
+
+    def __getattr__(self, item: str) -> Any:
+        return getattr(self.transaction, item)
+
+    @validator("transaction", pre=True)
+    def confirm_transaction(cls, value):
+        if isinstance(value, dict):
+            value = TransactionAPI.parse_obj(value)
+
+        return value
 
     @property
     def failed(self) -> bool:
@@ -184,7 +188,7 @@ class ReceiptAPI(BaseInterfaceModel):
     @abstractmethod
     def ran_out_of_gas(self) -> bool:
         """
-        Check if a transaction has ran out of gas and failed.
+        Check if a transaction ran out of gas and failed.
 
         Returns:
             bool:  ``True`` when the transaction failed and used the
@@ -252,17 +256,20 @@ class ReceiptAPI(BaseInterfaceModel):
             # Skip waiting for confirmations when the transaction has failed.
             return self
 
-        # Wait for nonce from provider to increment.
-        sender_nonce = self.provider.get_nonce(self.sender)
         iterations_timeout = 20
         iteration = 0
-
-        while sender_nonce == self.nonce:  # type: ignore
-            time.sleep(1)
+        # Wait for nonce from provider to increment.
+        if self.sender:
             sender_nonce = self.provider.get_nonce(self.sender)
-            iteration += 1
-            if iteration == iterations_timeout:
-                raise TransactionError(message="Timeout waiting for sender's nonce to increase.")
+
+            while sender_nonce == self.nonce:  # type: ignore
+                time.sleep(1)
+                sender_nonce = self.provider.get_nonce(self.sender)
+                iteration += 1
+                if iteration == iterations_timeout:
+                    raise TransactionError(
+                        message="Timeout waiting for sender's nonce to increase."
+                    )
 
         if self.required_confirmations == 0:
             # The transaction might not yet be confirmed but
@@ -270,7 +277,7 @@ class ReceiptAPI(BaseInterfaceModel):
             return self
 
         confirmations_occurred = self._confirmations_occurred
-        if confirmations_occurred >= self.required_confirmations:
+        if self.required_confirmations and confirmations_occurred >= self.required_confirmations:
             return self
 
         # If we get here, that means the transaction has been recently submitted.
@@ -282,18 +289,46 @@ class ReceiptAPI(BaseInterfaceModel):
 
         logger.info(log_message)
 
-        with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
-            while confirmations_occurred < self.required_confirmations:
-                confirmations_occurred = self._confirmations_occurred
-                progress_bar.confs = confirmations_occurred
+        if self.required_confirmations:
+            with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
+                while confirmations_occurred < self.required_confirmations:
+                    confirmations_occurred = self._confirmations_occurred
+                    progress_bar.confs = confirmations_occurred
 
-                if confirmations_occurred == self.required_confirmations:
-                    break
+                    if confirmations_occurred == self.required_confirmations:
+                        break
 
-                time_to_sleep = int(self._block_time / 2)
-                time.sleep(time_to_sleep)
+                    time_to_sleep = int(self._block_time / 2)
+                    time.sleep(time_to_sleep)
 
         return self
+
+    @property
+    def return_value(self) -> Any:
+        """
+        Obtain the final return value of the call. Requires tracing to function,
+        since this is not available from the receipt object.
+        """
+        call_tree = self.provider.get_call_tree(self.txn_hash)
+
+        contract_type = self.chain_manager.contracts.get(call_tree.address)
+        if not contract_type:
+            raise ContractError("Cannot find contract type to decode with. Is it published?")
+
+        selector = call_tree.calldata
+        if selector in contract_type.mutable_methods:
+            method_abi = contract_type.mutable_methods[selector]
+        elif selector in contract_type.view_methods:
+            method_abi = contract_type.view_methods[selector]
+        else:
+            raise ContractError(f"Selector '{selector}' not found in {contract_type.name}")
+
+        output = self.provider.network.ecosystem.decode_returndata(method_abi, call_tree.returndata)
+        if isinstance(output, tuple) and len(output) < 2:
+            # NOTE: Two special cases
+            output = output[0] if len(output) == 1 else None
+
+        return output
 
     @raises_not_implemented
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
