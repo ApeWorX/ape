@@ -97,8 +97,8 @@ def test_account_history(sender, receiver, chain):
     assert len(transactions_from_cache) == length_at_start + 1
 
     txn = transactions_from_cache[-1]
-    assert txn.sender == receipt.sender == sender
-    assert txn.receiver == receipt.receiver == receiver
+    assert txn.transaction.sender == receipt.transaction.sender == sender
+    assert txn.transaction.receiver == receipt.transaction.receiver == receiver
 
 
 def test_account_history_caches_sender_over_address_key(
@@ -108,16 +108,17 @@ def test_account_history_caches_sender_over_address_key(
     # made to the contract. This test shows we cache by sender and not address key.
     contract = sender.deploy(vyper_contract_container)
     network = ethereum.local
+    txn = ethereum.create_transaction(
+        receiver=contract.address, sender=sender.address, value=10000000000000000000000
+    )
     known_receipt = Receipt(
         block_number=10,
         gas_price=11,
         gas_used=12,
         gas_limit=13,
         status=TransactionStatusEnum.NO_ERROR.value,
-        receiver=contract.address,
         txn_hash="0x98d2aee8617897b5983314de1d6ff44d1f014b09575b47a88267971beac97b2b",
-        sender=sender.address,
-        value=10000000000000000000000,
+        transaction=txn,
     )
 
     # The receipt is already known and cached by the sender.
