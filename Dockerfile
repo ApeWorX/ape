@@ -1,6 +1,5 @@
 #---------------------------------------------------------------------------------------------
-# Copyright (c) ApeWorX. All rights reserved.
-# Licensed under the Apache License. See LICENSE in the project root for license information.
+# See LICENSE in the project root for license information.
 #---------------------------------------------------------------------------------------------
 
 ARG PYTHON_VERSION="3.9"
@@ -11,8 +10,8 @@ RUN apt-get update && apt-get upgrade --yes && apt-get install git
 # See http://label-schema.org for metadata schema
 # TODO: Add `build-date` and `version`
 LABEL maintainer="ApeWorX" \
+      org.label-schema.schema-version="2.0" \
       org.label-schema.name="ape" \
-      org.label-schema.license="Apache" \
       org.label-schema.description="Ape Ethereum Framework." \
       org.label-schema.url="https://docs.apeworx.io/ape/stable/" \
       org.label-schema.usage="https://docs.apeworx.io/ape/stable/userguides/quickstart.html#via-docker" \
