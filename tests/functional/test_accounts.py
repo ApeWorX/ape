@@ -4,7 +4,14 @@ from eth_account.messages import encode_defunct
 
 import ape
 from ape import convert
-from ape.exceptions import AccountsError, ContractLogicError, SignatureError, TransactionError
+from ape.exceptions import (
+    AccountsError,
+    ContractLogicError,
+    NetworkError,
+    ProjectError,
+    SignatureError,
+    TransactionError,
+)
 
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
 
@@ -84,7 +91,7 @@ def test_transfer_with_prompts(runner, receiver, keyfile_account):
     # "y\na\ny": yes sign, password, yes keep unlocked
     with runner.isolation("y\na\ny"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
-        assert receipt.receiver == receiver
+        assert receipt.transaction.receiver == receiver
 
     # "n": don't sign
     with runner.isolation(input="n\n"):
@@ -112,6 +119,32 @@ def test_deploy(owner, contract_container, chain, clean_contracts_cache):
     assert contract_from_cache.contract_type == contract.contract_type
     assert contract_from_cache.address == contract.address
     assert contract_from_cache.txn_hash == contract.txn_hash
+
+
+def test_deploy_and_publish_local_network(owner, contract_container):
+    with pytest.raises(ProjectError, match="Can only publish deployments on a live network"):
+        owner.deploy(contract_container, publish=True)
+
+
+def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, dummy_live_network):
+    dummy_live_network.__dict__["explorer"] = None
+    expected_message = "Unable to publish contract - no explorer plugin installed."
+    with pytest.raises(NetworkError, match=expected_message):
+        owner.deploy(contract_container, publish=True, required_confirmations=0)
+
+
+def test_deploy_and_publish(mocker, owner, contract_container, dummy_live_network):
+    mock_explorer = mocker.MagicMock()
+    dummy_live_network.__dict__["explorer"] = mock_explorer
+    contract = owner.deploy(contract_container, publish=True, required_confirmations=0)
+    mock_explorer.publish_contract.assert_called_once_with(contract.address)
+
+
+def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_network):
+    mock_explorer = mocker.MagicMock()
+    dummy_live_network.__dict__["explorer"] = mock_explorer
+    owner.deploy(contract_container, publish=True, required_confirmations=0)
+    assert not mock_explorer.call_count
 
 
 def test_contract_calls(owner, contract_instance):
@@ -155,7 +188,7 @@ def test_send_transaction_without_enough_funds(sender, receiver):
 def test_send_transaction_sets_defaults(sender, receiver):
     receipt = sender.transfer(receiver, "1 GWEI", gas_limit=None, required_confirmations=None)
     assert receipt.gas_limit > 0
-    assert receipt.required_confirmations == 0
+    assert receipt.transaction.required_confirmations == 0
 
 
 def test_accounts_splice_access(test_accounts):
@@ -248,7 +281,7 @@ def test_unlock_with_passphrase_and_sign_transaction(runner, keyfile_account, re
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
     with runner.isolation(input="y\n"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
-        assert receipt.receiver == receiver
+        assert receipt.transaction.receiver == receiver
 
 
 def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiver):
@@ -259,7 +292,7 @@ def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiv
     # yes, sign the transaction
     with runner.isolation(input="y\n"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
-        assert receipt.receiver == receiver
+        assert receipt.transaction.receiver == receiver
 
 
 def test_custom_num_of_test_accts_config(test_accounts, temp_config):

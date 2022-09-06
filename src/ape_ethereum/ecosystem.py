@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, decode_hex, encode_hex, keccak, to_bytes, to_checksum_address
+from eth_utils import add_0x_prefix, encode_hex, keccak, to_bytes, to_checksum_address
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field
@@ -248,26 +248,22 @@ class Ethereum(EcosystemAPI):
         if txn_hash:
             txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
 
-        input_data = data.get("data") or data.get("input", b"")
-        if isinstance(input_data, str):
-            input_data = bytes(HexBytes(input_data))
+        if data.get("data") and isinstance(data.get("data"), str):
+            data["data"] = bytes(HexBytes(data.get("data")))  # type: ignore
+
+        elif data.get("input", b"") and isinstance(data.get("input", b""), str):
+            data["input"] = bytes(HexBytes(data.get("input", b"")))
 
         receipt = Receipt(  # type: ignore
             block_number=data.get("block_number") or data.get("blockNumber"),
             contract_address=data.get("contractAddress"),
-            data=data.get("data") or HexBytes(data.get("input", b"")),
             gas_limit=data.get("gas") or data.get("gasLimit"),
             gas_price=data.get("gas_price") or data.get("gasPrice"),
             gas_used=data.get("gas_used") or data.get("gasUsed"),
             logs=data.get("logs", []),
-            nonce=data["nonce"] if "nonce" in data and data["nonce"] != "" else None,
-            provider=data.get("provider"),
-            receiver=data.get("to") or data.get("receiver") or "",
-            required_confirmations=data.get("required_confirmations", 0),
-            sender=data.get("sender") or data.get("from"),
             status=status,
             txn_hash=txn_hash,
-            value=data.get("value", 0),
+            transaction=self.create_transaction(**data),
         )
         return receipt
 
@@ -435,7 +431,7 @@ class Ethereum(EcosystemAPI):
             kwargs["chainId"] = int(kwargs["chainId"], 16)
 
         if "input" in kwargs:
-            kwargs["data"] = decode_hex(kwargs.pop("input"))
+            kwargs["data"] = kwargs.pop("input")
 
         if all(field in kwargs for field in ("v", "r", "s")):
             kwargs["signature"] = TransactionSignature(  # type: ignore
