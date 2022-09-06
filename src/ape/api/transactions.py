@@ -12,7 +12,7 @@ from tqdm import tqdm  # type: ignore
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import ContractError, TransactionError
 from ape.logging import logger
-from ape.types import ContractLog, TransactionSignature
+from ape.types import AddressType, ContractLog, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -146,7 +146,7 @@ class ReceiptAPI(BaseInterfaceModel):
     a :class:`ape.contracts.base.ContractInstance`.
     """
 
-    contract_address: Optional[str] = None
+    contract_address: Optional[AddressType] = None
     block_number: int
     gas_used: int
     logs: List[dict] = []
