@@ -143,12 +143,11 @@ class ProviderAPI(BaseInterfaceModel):
         Disconnect from a provider, such as tear-down a process or quit an HTTP session.
         """
 
-    @property
+    @abstractmethod
     def is_connected(self) -> bool:
         """
         ``True`` if currently connected to the provider. ``False`` otherwise.
         """
-        return self.chain_id is not None
 
     @abstractmethod
     def update_settings(self, new_settings: dict):
