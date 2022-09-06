@@ -27,7 +27,9 @@
       var PROJECT = "ape";
   </script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="accounts" href="../commands/accounts.html" />
+    <link rel="prev" title="Scripting" href="scripts.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -57,7 +59,7 @@
         </div>
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
@@ -72,6 +74,12 @@
 <li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Publishing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#compilation">Compilation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tracking-deployments">Tracking Deployments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#publishing-to-explorer">Publishing to Explorer</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -157,12 +165,30 @@ Example:</p>
 </div>
 <p>For more information on accessing contract instances, follow <a class="reference external" href="./contracts.html">this guide</a>.</p>
 </section>
+<section id="publishing-to-explorer">
+<h2>Publishing to Explorer<a class="headerlink" href="#publishing-to-explorer" title="Permalink to this headline"></a></h2>
+<p>If you want to publish your contracts to an explorer, you can use the <a class="reference external" href="../methoddocs/api.html#ape.explorers.ExplorerAPI.publish_contract">publish_contract</a> on the <code class="docutils literal notranslate"><span class="pre">ExplorerAPI</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+
+<span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">explorer</span><span class="o">.</span><span class="n">publish_contract</span><span class="p">(</span><span class="s2">&quot;0x123...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you want to automatically publish the source code upon deployment, you can use the <code class="docutils literal notranslate"><span class="pre">publish=</span></code> kwarg on the deploy methods:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+
+<span class="n">accounts</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">,</span> <span class="n">publish</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scripts.html" class="btn btn-neutral float-left" title="Scripting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../commands/accounts.html" class="btn btn-neutral float-right" title="accounts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
