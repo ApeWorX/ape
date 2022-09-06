@@ -403,7 +403,8 @@ class AccountHistory(BaseManager):
             return
 
         if txn_receipt.txn_hash in [r.txn_hash for r in self._map[address]]:
-            raise ChainError(f"Transaction '{txn_receipt.txn_hash}' already known.")
+            logger.warning(f"Transaction '{txn_receipt.txn_hash}' already known.")
+            return
 
         self._map[address].append(txn_receipt)
 
