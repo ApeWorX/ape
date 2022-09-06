@@ -522,10 +522,8 @@ class ContractEvent(ManagerAccessMixin):
 
         Usage example::
 
-            from ape import chain
-
-            for new_block in chain.blocks.poll_blocks():
-                print(f"New block found: number={new_block.number}")
+            for new_log in contract.MyEvent.poll_logs():
+                print(f"New event log found: block_number={new_log.block_number}")
 
         Args:
             start_block (Optional[int]): The block number to start with. Defaults to the pending
