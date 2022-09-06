@@ -885,9 +885,7 @@ class Web3Provider(ProviderAPI, ABC):
             else self.network.required_confirmations
         )
 
-        receipt = self.get_transaction(
-            txn_hash.hex(), required_confirmations=required_confirmations
-        )
+        receipt = self.get_receipt(txn_hash.hex(), required_confirmations=required_confirmations)
         receipt.raise_for_status()
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self._try_track_receipt(receipt)
