@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import pytest
 
@@ -20,21 +20,30 @@ class ListResult:
     INSTALLED_KEY = "Installed Plugins:"
     AVAILABLE_KEY = "Available Plugins:"
 
-    def __init__(self, output):
-        self._output = output
+    def __init__(self, lines: List[str]):
+        self._lines = lines
 
-    @property
-    def _lines(self) -> List[str]:
-        return self._output.split("\n")
+    @classmethod
+    def parse_output(cls, output: str) -> "ListResult":
+        lines = [x.strip() for x in output.split("\n") if x.strip()]
+
+        # Any line that may start the output
+        start_lines = (
+            "No plugins installed. Use '--all' to see available plugins.",
+            cls.CORE_KEY,
+            cls.INSTALLED_KEY,
+        )
+        start_index = _get_next_index(lines, start_lines)
+        return ListResult(lines[start_index:])
 
     @property
     def core_plugins(self) -> PluginsList:
         # These tests currently always assume an installed plugins
-        if self.INSTALLED_KEY not in self._lines:
+        if self.CORE_KEY not in self._lines:
             return PluginsList(self.CORE_KEY, [])
 
-        installed_index = self._lines.index(self.INSTALLED_KEY)
-        plugins = _clean(self._lines[1:installed_index])
+        end_index = self._get_next_index((self.INSTALLED_KEY, self.AVAILABLE_KEY), default=1)
+        plugins = _clean(self._lines[1:end_index])
         return PluginsList(self.CORE_KEY, plugins)
 
     @property
@@ -60,6 +69,17 @@ class ListResult:
         plugins = _clean(self._lines[start:])
         return PluginsList(self.AVAILABLE_KEY, plugins)
 
+    def _get_next_index(self, start_options: Tuple[str, ...], default: int = 0) -> int:
+        return _get_next_index(self._lines, start_options=start_options, default=default)
+
+
+def _get_next_index(lines: List[str], start_options: Tuple[str, ...], default: int = 0) -> int:
+    for index, line in enumerate(lines):
+        if line in start_options:
+            return index
+
+    return default
+
 
 def _clean(lines):
     return [x for x in [x.strip() for x in lines if x]]
@@ -79,7 +99,7 @@ def ape_plugins_runner(subprocess_runner_cls):
             arguments = arguments or []
             result = self.invoke(["list", *arguments])
             assert result.exit_code == 0
-            return ListResult(result.output)
+            return ListResult.parse_output(result.output)
 
     return PluginSubprocessRunner()
 
@@ -106,10 +126,12 @@ def installed_plugin(ape_plugins_runner):
     plugin_installed = TEST_PLUGIN_NAME in ape_plugins_runner.invoke_list().installed_plugins
     did_install = False
     if not plugin_installed:
-        ape_plugins_runner.invoke(["install", TEST_PLUGIN_NAME])
-        plugins_list_output = ape_plugins_runner.invoke_list().installed_plugins
+        install_result = ape_plugins_runner.invoke(["install", TEST_PLUGIN_NAME])
+        list_result = ape_plugins_runner.invoke_list()
+        plugins_list_output = list_result.installed_plugins
         did_install = TEST_PLUGIN_NAME in plugins_list_output
-        assert did_install, "Failed to install plugin necessary for tests"
+        msg = f"Failed to install plugin necessary for tests: {install_result.output}"
+        assert did_install, msg
 
     yield
 

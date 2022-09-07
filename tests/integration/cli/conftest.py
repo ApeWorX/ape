@@ -141,9 +141,8 @@ class ApeSubprocessRunner:
 
     def invoke(self, subcommand: Optional[List[str]] = None):
         subcommand = subcommand or []
-        completed_process = subprocess.run(
-            [*self.root_cmd, *subcommand], capture_output=True, text=True
-        )
+        cmd_ls = [*self.root_cmd, *subcommand]
+        completed_process = subprocess.run(cmd_ls, capture_output=True, text=True)
         return SubprocessResult(completed_process)
 
 
