@@ -6,6 +6,7 @@ from ape.cli.arguments import (
 from ape.cli.choices import (
     AccountAliasPromptChoice,
     Alias,
+    NetworkChoice,
     OutputFormat,
     PromptChoice,
     get_user_selected_account,
@@ -38,6 +39,7 @@ __all__ = [
     "incompatible_with",
     "network_option",
     "NetworkBoundCommand",
+    "NetworkChoice",
     "non_existing_alias_argument",
     "output_format_choice",
     "output_format_option",
