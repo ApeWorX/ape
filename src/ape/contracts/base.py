@@ -574,7 +574,7 @@ class ContractInstance(BaseAddress):
 
     def __init__(
         self,
-        address: Union[AddressType, str],
+        address: AddressType,
         contract_type: ContractType,
         txn_hash: Optional[str] = None,
     ) -> None:
@@ -631,7 +631,7 @@ class ContractInstance(BaseAddress):
             ``AddressType``
         """
 
-        return self.provider.network.ecosystem.decode_address(self._address)
+        return self._address
 
     @cached_property
     def _view_methods_(self) -> Dict[str, ContractCallHandler]:

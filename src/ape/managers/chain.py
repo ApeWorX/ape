@@ -680,7 +680,7 @@ class ContractCache(BaseManager):
 
     def instance_at(
         self,
-        address: Union[str, "AddressType"],
+        address: AddressType,
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
     ) -> ContractInstance:
@@ -709,8 +709,6 @@ class ContractCache(BaseManager):
             address = self.conversion_manager.convert(address, AddressType)
         except ConversionError:
             address = address
-
-        address = self.provider.network.ecosystem.decode_address(address)
 
         try:
             # Always attempt to get an existing contract type to update caches
