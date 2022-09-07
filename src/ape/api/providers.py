@@ -400,9 +400,9 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     def __repr__(self) -> str:
-        try:
+        if self.is_connected():
             chain_id = self.chain_id
-        except ProviderNotConnectedError:
+        else:
             chain_id = None
 
         return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"

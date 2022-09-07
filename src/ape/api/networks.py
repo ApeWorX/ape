@@ -13,12 +13,7 @@ from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
-from ape.exceptions import (
-    NetworkError,
-    NetworkNotFoundError,
-    ProviderNotConnectedError,
-    SignatureError,
-)
+from ape.exceptions import NetworkError, NetworkNotFoundError, SignatureError
 from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -529,14 +524,14 @@ class ProviderContextManager:
 
     @classmethod
     def get_provider_id(cls, provider: "ProviderAPI") -> Optional[str]:
-        try:
-            return (
-                f"{provider.network.ecosystem.name}:"
-                f"{provider.network.name}:{provider.name}-"
-                f"{provider.chain_id}"
-            )
-        except ProviderNotConnectedError:
+        if not provider.is_connected():
             return None
+
+        return (
+            f"{provider.network.ecosystem.name}:"
+            f"{provider.network.name}:{provider.name}-"
+            f"{provider.chain_id}"
+        )
 
 
 class NetworkAPI(BaseInterfaceModel):
@@ -582,10 +577,9 @@ class NetworkAPI(BaseInterfaceModel):
         )
 
     def __repr__(self) -> str:
-        try:
+        if self.provider.is_connected():
             chain_id = self.chain_id
-        except ProviderNotConnectedError:
-            # Only happens on local networks
+        else:
             chain_id = None
 
         network_key = f"{self.ecosystem.name}:{self.name}"
