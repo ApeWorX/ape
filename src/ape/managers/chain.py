@@ -704,11 +704,8 @@ class ContractCache(BaseManager):
             :class:`~ape.contracts.base.ContractInstance`
         """
 
-        try:
-            # Handles ENS domain names
+        if not self.conversion_manager.is_type(address, AddressType):
             address = self.conversion_manager.convert(address, AddressType)
-        except ConversionError:
-            address = address
 
         try:
             # Always attempt to get an existing contract type to update caches
