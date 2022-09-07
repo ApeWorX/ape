@@ -3,6 +3,7 @@ from typing import Iterator, List
 import pytest
 
 from ape.api import TestAccountAPI
+from ape.exceptions import ProviderNotConnectedError
 from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
@@ -55,29 +56,28 @@ class PytestApeFixtures(ManagerAccessMixin):
         Isolation logic used to implement isolation fixtures for each pytest scope.
         """
         snapshot_id = None
-        if self.provider.is_connected():
-            try:
-                snapshot_id = self.chain_manager.snapshot()
-            except NotImplementedError:
-                if not self._warned_for_unimplemented_snapshot:
-                    logger.warning(
-                        "The connected provider does not support snapshotting. "
-                        "Tests will not be completely isolated."
-                    )
-                    self._warned_for_unimplemented_snapshot = True
-        else:
+        try:
+            snapshot_id = self.chain_manager.snapshot()
+        except ProviderNotConnectedError:
             logger.warning("Provider became disconnected mid-test.")
+
+        except NotImplementedError:
+            if not self._warned_for_unimplemented_snapshot:
+                logger.warning(
+                    "The connected provider does not support snapshotting. "
+                    "Tests will not be completely isolated."
+                )
+                self._warned_for_unimplemented_snapshot = True
 
         yield
 
         if (
             snapshot_id is not None
             and snapshot_id in self.chain_manager._snapshots
-            and self.provider.is_connected()
         ):
-            if self.provider.is_connected():
+            try:
                 self.chain_manager.restore(snapshot_id)
-            else:
+            except ProviderNotConnectedError:
                 logger.warning("Provider became disconnected mid-test.")
 
     # isolation fixtures

@@ -131,6 +131,13 @@ class ProviderAPI(BaseInterfaceModel):
     How many parallel threads to use when fetching logs.
     """
 
+    @property
+    @abstractmethod
+    def is_connected(self) -> bool:
+        """
+        ``True`` if currently connected to the provider. ``False`` otherwise.
+        """
+
     @abstractmethod
     def connect(self):
         """
@@ -141,12 +148,6 @@ class ProviderAPI(BaseInterfaceModel):
     def disconnect(self):
         """
         Disconnect from a provider, such as tear-down a process or quit an HTTP session.
-        """
-
-    @abstractmethod
-    def is_connected(self) -> bool:
-        """
-        ``True`` if currently connected to the provider. ``False`` otherwise.
         """
 
     @abstractmethod
@@ -400,9 +401,10 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     def __repr__(self) -> str:
-        if self.is_connected():
+        try:
             chain_id = self.chain_id
-        else:
+        except Exception as err:
+            logger.error(str(err))
             chain_id = None
 
         return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
