@@ -13,7 +13,12 @@ from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
-from ape.exceptions import NetworkError, NetworkNotFoundError, SignatureError, ProviderNotConnectedError
+from ape.exceptions import (
+    NetworkError,
+    NetworkNotFoundError,
+    ProviderNotConnectedError,
+    SignatureError,
+)
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import (

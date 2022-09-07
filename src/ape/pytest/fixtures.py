@@ -71,10 +71,7 @@ class PytestApeFixtures(ManagerAccessMixin):
 
         yield
 
-        if (
-            snapshot_id is not None
-            and snapshot_id in self.chain_manager._snapshots
-        ):
+        if snapshot_id is not None and snapshot_id in self.chain_manager._snapshots:
             try:
                 self.chain_manager.restore(snapshot_id)
             except ProviderNotConnectedError:
