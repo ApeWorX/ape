@@ -106,9 +106,7 @@ def ape_plugins_runner(subprocess_runner_cls):
 
 def plugins_xfail():
     """
-    Currently, there are two reasons we know these tests will fail.
-
-    1. GitHub rate limiting issues
+    Expects failures because of GitHib rate limiting
     """
 
     def wrapper(f):
