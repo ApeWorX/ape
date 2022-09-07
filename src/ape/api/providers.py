@@ -296,7 +296,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_transaction(self, txn_hash: str) -> ReceiptAPI:
+    def get_receipt(self, txn_hash: str) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
 
@@ -783,7 +783,7 @@ class Web3Provider(ProviderAPI, ABC):
         except ValueError as err:
             raise self.get_virtual_machine_error(err) from err
 
-    def get_transaction(
+    def get_receipt(
         self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
     ) -> ReceiptAPI:
         """
@@ -884,9 +884,7 @@ class Web3Provider(ProviderAPI, ABC):
             else self.network.required_confirmations
         )
 
-        receipt = self.get_transaction(
-            txn_hash.hex(), required_confirmations=required_confirmations
-        )
+        receipt = self.get_receipt(txn_hash.hex(), required_confirmations=required_confirmations)
         receipt.raise_for_status()
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self._try_track_receipt(receipt)

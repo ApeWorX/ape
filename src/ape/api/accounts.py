@@ -152,7 +152,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         else:
             return self.call(txn, send_everything=True)
 
-    def deploy(self, contract: "ContractContainer", *args, **kwargs) -> "ContractInstance":
+    def deploy(
+        self, contract: "ContractContainer", *args, publish: bool = False, **kwargs
+    ) -> "ContractInstance":
         """
         Create a smart contract on the blockchain. The smart contract must compile before
         deploying and a provider must be active.
@@ -171,7 +173,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         txn.sender = self.address
         receipt = self.call(txn)
 
-        if not receipt.contract_address:
+        address = receipt.contract_address
+        if not address:
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
         contract_type = contract.contract_type
@@ -180,6 +183,11 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         logger.success(f"Contract '{contract_name}' deployed to: {styled_address}")
         instance = ContractInstance.from_receipt(receipt, contract_type)
         self.chain_manager.contracts.cache_deployment(instance)
+
+        if publish:
+            self.project_manager.track_deployment(instance)
+            self.provider.network.publish_contract(address)
+
         return instance
 
     def check_signature(

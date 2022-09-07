@@ -14,6 +14,7 @@ from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape.exceptions import NetworkError, NetworkNotFoundError, SignatureError
+from ape.logging import logger
 from ape.types import AddressType, ContractLog, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -852,6 +853,22 @@ class NetworkAPI(BaseInterfaceModel):
             return self.use_provider(self.default_provider, provider_settings=provider_settings)
 
         raise NetworkError(f"No providers for network '{self.name}'.")
+
+    def publish_contract(self, address: AddressType):
+        """
+        A convenience method to publish a contract to the explorer.
+
+        Raises:
+            :class:`~ape.exceptions.NetworkError`: When there is no explorer for this network.
+
+        Args:
+            address (``AddressType``): The address of the contract.
+        """
+        if not self.explorer:
+            raise NetworkError("Unable to publish contract - no explorer plugin installed.")
+
+        logger.info(f"Publishing and verifying contract using '{self.explorer.name}'.")
+        self.explorer.publish_contract(address)
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
