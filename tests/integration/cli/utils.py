@@ -50,6 +50,10 @@ class ProjectSkipper:
         skipped for the given project using the ``skip_project`` or
         ``skip_project_except`` decorators.
         """
+        if project not in self.projects:
+            # Not a project-based integration test
+            return False
+
         result = test in self.projects[project].get(module, [])
         return result
 
