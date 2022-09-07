@@ -681,15 +681,15 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def chain_id(self) -> int:
-        if self.network.name not in (
+        if hasattr(self.web3, "eth"):
+            return self.web3.eth.chain_id
+
+        elif self.network.name not in (
             "adhoc",
             LOCAL_NETWORK_NAME,
         ) and not self.network.name.endswith("-fork"):
             # If using a live network, the chain ID is hardcoded.
             return self.network.chain_id
-
-        elif hasattr(self.web3, "eth"):
-            return self.web3.eth.chain_id
 
         else:
             raise ProviderNotConnectedError()
