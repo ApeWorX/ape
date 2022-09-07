@@ -692,6 +692,7 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             if hasattr(self.web3, "eth"):
                 return self.web3.eth.chain_id
+
         except ProviderNotConnectedError:
             if default_chain_id:
                 return default_chain_id

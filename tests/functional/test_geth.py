@@ -150,8 +150,7 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, eth_tester_p
     mock_network.chain_id = 999999999  # Shouldn't use hardcoded network
     orig_network = eth_tester_provider_geth.network
     eth_tester_provider_geth.network = mock_network
-    eth_tester_provider_geth.network.name = "rinkeby"
 
-    # Even though we say the network is Geth, we still use the connected chain ID
+    # Still use the connected chain ID instead network's
     assert eth_tester_provider_geth.chain_id == 131277322940537
     eth_tester_provider_geth.network = orig_network
