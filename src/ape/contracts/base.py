@@ -609,7 +609,7 @@ class ContractInstance(BaseAddress):
         """
 
         if not self._cached_receipt and self.txn_hash:
-            receipt = self.provider.get_transaction(self.txn_hash)
+            receipt = self.provider.get_receipt(self.txn_hash)
             self._cached_receipt = receipt
             return receipt
 
@@ -858,7 +858,7 @@ class ContractContainer(ManagerAccessMixin):
 
         return constructor.serialize_transaction(*args, **kwargs)
 
-    def deploy(self, *args, **kwargs) -> ContractInstance:
+    def deploy(self, *args, publish: bool = False, **kwargs) -> ContractInstance:
         txn = self(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
@@ -869,7 +869,8 @@ class ContractContainer(ManagerAccessMixin):
             txn = self.provider.prepare_transaction(txn)
             receipt = self.provider.send_transaction(txn)
 
-        if not receipt.contract_address:
+        address = receipt.contract_address
+        if not address:
             raise ContractError(f"'{receipt.txn_hash}' did not create a contract.")
 
         styled_address = click.style(receipt.contract_address, bold=True)
@@ -877,6 +878,11 @@ class ContractContainer(ManagerAccessMixin):
         logger.success(f"Contract '{contract_name}' deployed to: {styled_address}")
         instance = ContractInstance.from_receipt(receipt, self.contract_type)
         self.chain_manager.contracts.cache_deployment(instance)
+
+        if publish:
+            self.project_manager.track_deployment(instance)
+            self.provider.network.publish_contract(address)
+
         return instance
 
 

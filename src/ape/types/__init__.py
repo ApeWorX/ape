@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
@@ -20,7 +20,6 @@ from hexbytes import HexBytes
 from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
-from ape._compat import Literal
 from ape.utils.misc import to_int
 
 from .signatures import MessageSignature, SignableMessage, TransactionSignature

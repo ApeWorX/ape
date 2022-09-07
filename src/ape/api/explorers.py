@@ -66,3 +66,12 @@ class ExplorerAPI(BaseInterfaceModel):
         Returns:
             Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
         """
+
+    @abstractmethod
+    def publish_contract(self, address: AddressType):
+        """
+        Publish a contract to the explorer.
+
+        Args:
+            address (``AddressType``): The address of the deployed contract.
+        """
