@@ -1,6 +1,3 @@
-from ape.api.networks import LOCAL_NETWORK_NAME
-from ape_geth.providers import DEFAULT_SETTINGS
-
 from .utils import skip_projects_except
 
 _DEFAULT_NETWORKS_TREE = """
