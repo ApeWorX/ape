@@ -202,12 +202,6 @@ class ConfigError(ApeException):
     """
 
 
-class AddressError(ApeException):
-    """
-    Raised when a problem occurs regarding an address.
-    """
-
-
 class ChainError(ApeException):
     """
     Raised when problems occur in the :class:`~ape.managers.chain.ChainManager`.

@@ -18,8 +18,8 @@
    userguides/console
    userguides/contracts
    userguides/testing
-   userguides/scripts   
-   
+   userguides/scripts
+   userguides/publishing
 ```
 
 ```{eval-rst}

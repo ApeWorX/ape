@@ -113,6 +113,7 @@ def console(project=None, verbose=None, extra_locals=None):
             faulthandler.enable()  # NOTE: In case we segfault
 
     namespace = {component: getattr(ape, component) for component in ape.__all__}
+    namespace["ape"] = ape
 
     if extra_locals:
         namespace.update(extra_locals)

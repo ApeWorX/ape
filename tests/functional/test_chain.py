@@ -3,11 +3,13 @@ from datetime import datetime, timedelta
 from queue import Queue
 
 import pytest
+from ethpm_types import ContractType
 from hexbytes import HexBytes
 
 import ape
 from ape.contracts import ContractInstance
 from ape.exceptions import APINotImplementedError, ChainError, ConversionError
+from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -95,8 +97,48 @@ def test_account_history(sender, receiver, chain):
     assert len(transactions_from_cache) == length_at_start + 1
 
     txn = transactions_from_cache[-1]
-    assert txn.sender == receipt.sender == sender
-    assert txn.receiver == receipt.receiver == receiver
+    assert txn.transaction.sender == receipt.transaction.sender == sender
+    assert txn.transaction.receiver == receipt.transaction.receiver == receiver
+
+
+def test_account_history_caches_sender_over_address_key(
+    mocker, chain, eth_tester_provider, sender, vyper_contract_container, ethereum
+):
+    # When getting receipts from the explorer for contracts, it includes transactions
+    # made to the contract. This test shows we cache by sender and not address key.
+    contract = sender.deploy(vyper_contract_container)
+    network = ethereum.local
+    txn = ethereum.create_transaction(
+        receiver=contract.address, sender=sender.address, value=10000000000000000000000
+    )
+    known_receipt = Receipt(
+        block_number=10,
+        gas_price=11,
+        gas_used=12,
+        gas_limit=13,
+        status=TransactionStatusEnum.NO_ERROR.value,
+        txn_hash="0x98d2aee8617897b5983314de1d6ff44d1f014b09575b47a88267971beac97b2b",
+        transaction=txn,
+    )
+
+    # The receipt is already known and cached by the sender.
+    chain.account_history.append(known_receipt)
+
+    # We ask for receipts from the contract, but it returns ones sent to the contract.
+    def get_txns_patch(address):
+        if address == contract.address:
+            yield from [known_receipt]
+
+    mock_explorer = mocker.MagicMock()
+    mock_explorer.get_account_transactions.side_effect = get_txns_patch
+    network.__dict__["explorer"] = mock_explorer
+    eth_tester_provider.network = network
+
+    # Previously, this would error because the receipt was cached with the wrong sender
+    actual = [t for t in chain.account_history[contract.address]]
+
+    # Actual is 0 because the receipt was cached under the sender.
+    assert len(actual) == 0
 
 
 def test_iterate_blocks(chain_that_mined_5):
@@ -271,6 +313,29 @@ def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
         address = str(contract_instance.address)
         bad_contract_type = contract_instance.contract_type.name
         chain.contracts.instance_at(address, contract_type=bad_contract_type)
+
+
+def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain, caplog):
+    # The manager always attempts retrieval so that default contact types can
+    # get cached. However, sometimes an explorer plugin may fail. If given a contract-type
+    # in that situation, we can use it and not fail and log the error instead.
+    expected_contract_type = ContractType(contractName="foo", sourceId="foo.bar")
+    new_address = "0x4a986a6dCA6dbf99bC3d17F8D71aFb0d60e740f8"
+    expected_fail_message = "LOOK_FOR_THIS_FAIL_MESSAGE"
+    existing_fn = chain.contracts.get
+
+    def fn(addr, default=None):
+        if addr == new_address:
+            raise ValueError(expected_fail_message)
+
+        return existing_fn(addr, default=default)
+
+    chain.contracts.get = mocker.MagicMock()
+    chain.contracts.get.side_effect = fn
+
+    actual = chain.contracts.instance_at(new_address, contract_type=expected_contract_type)
+    assert actual.contract_type == expected_contract_type
+    assert caplog.records[-1].message == expected_fail_message
 
 
 def test_deployments_mapping_cache_location(chain):

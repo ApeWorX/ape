@@ -111,7 +111,7 @@ class CompilerManager(BaseManager):
         return contract_types_dict  # type: ignore
 
     def get_imports(
-        self, contract_filepaths: List[Path], base_path: Optional[Path]
+        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
     ) -> Dict[str, List[str]]:
         """
         Combine import dicts from all compilers, where the key is a contract's source_id
@@ -127,12 +127,12 @@ class CompilerManager(BaseManager):
             Dict[str, List[str]]: A dictionary like ``{source_id: [import_source_id, ...], ...}``
         """
         imports_dict: Dict[str, List[str]] = {}
+        base_path = base_path or self.project_manager.contracts_folder
 
-        for _, compiler in self.registered_compilers.items():
+        for ext, compiler in self.registered_compilers.items():
             try:
-                imports = compiler.get_imports(
-                    contract_filepaths=contract_filepaths, base_path=base_path
-                )
+                sources = [p for p in contract_filepaths if p.suffix == ext]
+                imports = compiler.get_imports(contract_filepaths=sources, base_path=base_path)
             except NotImplementedError:
                 imports = None
 

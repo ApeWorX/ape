@@ -16,6 +16,11 @@ from .pluggy_patch import PluginType, hookimpl, plugin_manager
 from .project import DependencyPlugin, ProjectPlugin
 from .query import QueryPlugin
 
+_EDITABLE_KEY = "__editable___"
+_EDITABLE_INSTALL_PATTERN = re.compile(
+    rf"{_EDITABLE_KEY}(\w*)(_\d+_\d+_\d+a?\d*[_dev\d+_]?\w*_finder)"
+)
+
 
 class PluginError(Exception):
     pass
@@ -120,25 +125,32 @@ def valid_impl(api_class: Any) -> bool:
     return len(api_class.__abstractmethods__) == 0
 
 
+def _get_name_from_install(name: str):
+    if not name.startswith(f"{_EDITABLE_KEY}ape_"):
+        return name
+
+    # Handle strange editable install behavior
+    match = re.match(_EDITABLE_INSTALL_PATTERN, name)
+    if not match:
+        return name
+
+    groups = match.groups()
+    if not groups:
+        return name
+
+    return groups[0]
+
+
 class PluginManager:
     _unimplemented_plugins: List[str] = []
 
     def __init__(self) -> None:
         # NOTE: This actually loads the plugins, and should only be done once
         for _, name, ispkg in pkgutil.iter_modules():
-            editable_key = "__editable___"
-            if name.startswith(f"{editable_key}ape_"):
-                # Handle strange editable install behavior
-                pattern = rf"{editable_key}(\w*)(_\d+_\d+_\d+a?\d*_dev\d+_\w*_finder)"
-                match = re.match(pattern, name)
-                if not match:
-                    continue
-
-                groups = match.groups()
-                if not groups:
-                    continue
-
-                name = groups[0]
+            new_name = _get_name_from_install(name)
+            if new_name != name:
+                # Was an editable install
+                name = new_name
                 ispkg = True
 
             if not name.startswith("ape_") or not ispkg:

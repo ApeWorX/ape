@@ -163,11 +163,9 @@ class ProjectManager(BaseManager):
                     raise (ProjectError(f"Unable to create version map for '{ext}'."))
 
                 version = versions[0]
-                filtered_paths = [p for p in self.source_paths if p.suffix == ext]
-                version_map = {version: filtered_paths}
+                version_map = {version: sources}
 
-            settings = compiler.get_compiler_settings(self.source_paths, contracts_folder)
-
+            settings = compiler.get_compiler_settings(sources, base_path=contracts_folder)
             for version, paths in version_map.items():
                 version_settings = settings.get(version, {}) if version and settings else {}
                 source_ids = [str(get_relative_path(p, contracts_folder)) for p in paths]
@@ -209,15 +207,13 @@ class ProjectManager(BaseManager):
             return deployments
 
         for ecosystem_path in [x for x in self._package_deployments_folder.iterdir() if x.is_dir()]:
-            ecosystem_deployments = {}
             for deployment_path in [x for x in ecosystem_path.iterdir() if x.suffix == ".json"]:
                 ethpm_instance = EthPMContractInstance.parse_raw(deployment_path.read_text())
-                ecosystem_deployments[deployment_path.stem] = ethpm_instance
+                if not ethpm_instance:
+                    continue
 
-            if ecosystem_deployments:
-                bip122_chain_id = ecosystem_path.name
-                uri = BIP122_URI(f"blockchain://{bip122_chain_id}/block/{ethpm_instance.block}")
-                deployments[uri] = ecosystem_deployments
+                uri = BIP122_URI(f"blockchain://{ecosystem_path.name}/block/{ethpm_instance.block}")
+                deployments[uri] = {deployment_path.stem: ethpm_instance}
 
         return deployments
 
@@ -571,7 +567,7 @@ class ProjectManager(BaseManager):
         destination = deployments_folder / f"{contract_name}.json"
 
         if destination.exists():
-            logger.warning("Deployment already tracked. Re-tracking.")
+            logger.debug("Deployment already tracked. Re-tracking.")
             destination.unlink()
 
         destination.write_text(artifact.json())

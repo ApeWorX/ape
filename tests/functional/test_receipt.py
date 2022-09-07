@@ -122,19 +122,30 @@ def test_get_failed_receipt(owner, vyper_contract_instance, eth_tester_provider)
     assert receipt.failed
 
 
-def test_receipt_raise_for_status_out_of_gas_error(mocker):
+def test_receipt_raise_for_status_out_of_gas_error(mocker, ethereum):
     gas_limit = 100000
+    txn = ethereum.create_transaction(
+        chain_id=0,
+        receiver="",
+        sender="",
+        gas_limit=gas_limit,
+        nonce=0,
+        value=0,
+        data=b"",
+        type=0,
+        max_fee=None,
+        max_priority_fee=None,
+        required_confirmations=None,
+    )
     receipt = Receipt(
         provider=mocker.MagicMock(),
         txn_hash="",
-        gas_used=gas_limit,
         gas_limit=gas_limit,
+        gas_used=gas_limit,
         status=TransactionStatusEnum.FAILING,
         gas_price=0,
         block_number=0,
-        sender="",
-        receiver="",
-        nonce=0,
+        transaction=txn,
     )
     with pytest.raises(OutOfGasError):
         receipt.raise_for_status()

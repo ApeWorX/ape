@@ -1,3 +1,4 @@
+from functools import partial
 from itertools import islice
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
@@ -9,7 +10,7 @@ from hexbytes import HexBytes
 
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
-from ape.api.query import ContractEventQuery
+from ape.api.query import ContractEventQuery, extract_fields
 from ape.exceptions import ArgumentsLengthError, ChainError, ContractError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
@@ -443,9 +444,8 @@ class ContractEvent(ManagerAccessMixin):
         contract_events = self.query_manager.query(
             contract_event_query, engine_to_use=engine_to_use
         )
-        return pd.DataFrame(
-            columns=contract_event_query.columns, data=[val.dict() for val in contract_events]
-        )
+        data = map(partial(extract_fields, columns=columns), contract_events)
+        return pd.DataFrame(columns=columns, data=data)
 
     def range(
         self,
@@ -522,10 +522,8 @@ class ContractEvent(ManagerAccessMixin):
 
         Usage example::
 
-            from ape import chain
-
-            for new_block in chain.blocks.poll_blocks():
-                print(f"New block found: number={new_block.number}")
+            for new_log in contract.MyEvent.poll_logs():
+                print(f"New event log found: block_number={new_log.block_number}")
 
         Args:
             start_block (Optional[int]): The block number to start with. Defaults to the pending
@@ -611,7 +609,7 @@ class ContractInstance(BaseAddress):
         """
 
         if not self._cached_receipt and self.txn_hash:
-            receipt = self.provider.get_transaction(self.txn_hash)
+            receipt = self.provider.get_receipt(self.txn_hash)
             self._cached_receipt = receipt
             return receipt
 
@@ -860,7 +858,7 @@ class ContractContainer(ManagerAccessMixin):
 
         return constructor.serialize_transaction(*args, **kwargs)
 
-    def deploy(self, *args, **kwargs) -> ContractInstance:
+    def deploy(self, *args, publish: bool = False, **kwargs) -> ContractInstance:
         txn = self(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
@@ -871,7 +869,8 @@ class ContractContainer(ManagerAccessMixin):
             txn = self.provider.prepare_transaction(txn)
             receipt = self.provider.send_transaction(txn)
 
-        if not receipt.contract_address:
+        address = receipt.contract_address
+        if not address:
             raise ContractError(f"'{receipt.txn_hash}' did not create a contract.")
 
         styled_address = click.style(receipt.contract_address, bold=True)
@@ -879,6 +878,11 @@ class ContractContainer(ManagerAccessMixin):
         logger.success(f"Contract '{contract_name}' deployed to: {styled_address}")
         instance = ContractInstance.from_receipt(receipt, self.contract_type)
         self.chain_manager.contracts.cache_deployment(instance)
+
+        if publish:
+            self.project_manager.track_deployment(instance)
+            self.provider.network.publish_contract(address)
+
         return instance
 
 
