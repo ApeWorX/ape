@@ -62,7 +62,7 @@ ape-hardhat
 other-non-ape-plugin-dependency
 ```
 
-Then, point the command at the file to install them
+Then, point the `install` command at the file to install them:
 
 ```bash
 ape plugins install requirements.txt
