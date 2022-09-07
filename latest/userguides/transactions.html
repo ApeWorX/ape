@@ -331,7 +331,7 @@ ContractA.methodWithoutArguments<span class="o">()</span> -&gt; 0x00..7a9c <span
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
 
 <span class="n">txn_hash</span> <span class="o">=</span> <span class="s2">&quot;0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d&quot;</span>
-<span class="n">receipt</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_transaction</span><span class="p">(</span><span class="n">txn_hash</span><span class="p">)</span>
+<span class="n">receipt</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="n">txn_hash</span><span class="p">)</span>
 <span class="n">receipt</span><span class="o">.</span><span class="n">show_trace</span><span class="p">()</span>
 </pre></div>
 </div>
