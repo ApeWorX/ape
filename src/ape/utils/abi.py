@@ -248,8 +248,8 @@ def is_dynamic_sized_type(abi_type: Union[ABIType, str]) -> bool:
 class LogInputABICollection:
     def __init__(self, abi: EventABI):
         self.abi = abi
-        self.topics = [i for i in abi.inputs if i.indexed]
-        self.data: List[EventABIType] = [i for i in abi.inputs if not i.indexed]
+        self.topic_abi_types = [i for i in abi.inputs if i.indexed]
+        self.data_abi_types: List[EventABIType] = [i for i in abi.inputs if not i.indexed]
 
         names = [i.name for i in abi.inputs]
         if len(set(names)) < len(names):
@@ -261,18 +261,18 @@ class LogInputABICollection:
 
     def decode(self, topics: List[str], data: str) -> Dict:
         decoded = {}
-        for abi, topic_value in zip(self.topics, topics[1:]):
+        for abi, topic_value in zip(self.topic_abi_types, topics[1:]):
             # reference types as indexed arguments are written as a hash
             # https://docs.soliditylang.org/en/v0.8.15/contracts.html#events
             abi_type = "bytes32" if is_dynamic_sized_type(abi.type) else abi.canonical_type
             value = decode([abi_type], decode_hex(topic_value))[0]
             decoded[abi.name] = self.decode_value(abi_type, value)
 
-        data_abi_types = [abi.canonical_type for abi in self.data]
+        data_abi_types = [abi.canonical_type for abi in self.data_abi_types]
         hex_data = decode_hex(data) if isinstance(data, str) else data
         data_values = decode(data_abi_types, hex_data)
 
-        for abi, value in zip(self.data, data_values):
+        for abi, value in zip(self.data_abi_types, data_values):
             decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 
         return decoded
