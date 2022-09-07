@@ -15,7 +15,6 @@ from typing import Any, Dict, Iterator, List, Optional
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
-from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
@@ -51,6 +50,7 @@ from ape.utils import (
     run_until_complete,
     spawn,
 )
+from ape.utils.trace import CallTree, TraceFrame
 
 
 class BlockAPI(BaseInterfaceModel):
@@ -439,7 +439,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_call_tree(self, txn_hash: str) -> CallTreeNode:
+    def get_call_tree(self, txn_hash: str) -> CallTree:
         """
         Create a tree structure of calls for a transaction.
 
@@ -447,7 +447,7 @@ class ProviderAPI(BaseInterfaceModel):
             txn_hash (str): The hash of a transaction to trace.
 
         Returns:
-            CallTreeNode: Transaction execution call-tree objects.
+            CallTree: Transaction execution call-tree objects.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:

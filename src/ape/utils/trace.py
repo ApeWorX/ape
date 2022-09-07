@@ -1,15 +1,30 @@
 import json
 import re
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Protocol,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_utils import humanize_hash, is_hex_address
 from ethpm_types.abi import MethodABI
-from evm_trace import CallTreeNode, CallType
+from evm_trace import CallTreeNode as EvmCallTreeNode
+from evm_trace import CallType
 from evm_trace.display import DisplayableCallTreeNode
 from hexbytes import HexBytes
+from pydantic import BaseModel
 from rich.tree import Tree
 
 from ape.exceptions import ContractError, DecodingError
@@ -24,6 +39,25 @@ if TYPE_CHECKING:
 _DEFAULT_TRACE_GAS_PATTERN = re.compile(r"\[\d* gas]")
 _DEFAULT_WRAP_THRESHOLD = 50
 _DEFAULT_INDENT = 2
+
+
+class SupportsCallTree(Protocol):
+    address: Any
+    calls: Iterable
+    calldata: Any
+    returndata: Any
+    failed: bool
+    call_type: Any
+    gas_cost: int
+    value: int
+    gas_limit: int
+
+    def get_display_nodes(self) -> Iterator[Any]:
+        ...
+
+
+CallTree = TypeVar("CallTree", EvmCallTreeNode, SupportsCallTree)
+TraceFrame = TypeVar("TraceFrame", bound=BaseModel)
 
 
 class TraceStyles:
@@ -88,14 +122,13 @@ class CallTraceParser:
     def _ecosystem(self) -> "EcosystemAPI":
         return self._receipt.provider.network.ecosystem
 
-    def parse_as_tree(self, call: CallTreeNode) -> Tree:
+    def parse_as_tree(self, call: CallTree) -> Tree:
         """
         Create ``rich.Tree`` containing the nodes in a call trace
         for display purposes.
 
         Args:
-            call (``CallTreeNode``): A node object from the ``evm-trace``
-              library.
+            call (``CallTree``): A call tree object.
 
         Returns:
             ``rich.Tree``: A rich tree from the ``rich`` library.
@@ -182,13 +215,13 @@ class CallTraceParser:
                     }
                     call_signature += f" {json.dumps(extra_info, indent=self._indent)}"
             elif contract_name is not None:
-                call_signature = next(call.display_nodes).title  # type: ignore
+                call_signature = next(call.get_display_nodes()).title  # type: ignore
                 call_signature = call_signature.replace(address, contract_name)
                 call_signature = _dim_default_gas(call_signature)
         else:
             next_node: Optional[DisplayableCallTreeNode] = None
             try:
-                next_node = next(call.display_nodes)
+                next_node = next(call.get_display_nodes())
             except StopIteration:
                 pass
 
