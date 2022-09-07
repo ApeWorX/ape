@@ -134,3 +134,24 @@ def test_get_logs_when_connected_to_geth(vyper_contract_instance, eth_tester_pro
     assert actual.event_name == "NumberChange"
     assert actual.contract_address == vyper_contract_instance.address
     assert actual.event_arguments["newNum"] == 123
+
+
+def test_chain_id_when_connected(eth_tester_provider_geth):
+    assert eth_tester_provider_geth.chain_id == 131277322940537
+
+
+def test_chain_id_live_network_not_connected(networks):
+    geth = networks.get_provider_from_choice("ethereum:rinkeby:geth")
+    assert geth.chain_id == 4
+
+
+def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, eth_tester_provider_geth):
+    mock_network = mocker.MagicMock()
+    mock_network.chain_id = 999999999  # Shouldn't use hardcoded network
+    orig_network = eth_tester_provider_geth.network
+    eth_tester_provider_geth.network = mock_network
+    eth_tester_provider_geth.network.name = "rinkeby"
+
+    # Even though we say the network is Geth, we still use the connected chain ID
+    assert eth_tester_provider_geth.chain_id == 131277322940537
+    eth_tester_provider_geth.network = orig_network

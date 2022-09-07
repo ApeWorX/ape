@@ -681,18 +681,27 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def chain_id(self) -> int:
-        if hasattr(self.web3, "eth"):
-            return self.web3.eth.chain_id
-
-        elif self.network.name not in (
+        default_chain_id = None
+        if self.network.name not in (
             "adhoc",
             LOCAL_NETWORK_NAME,
         ) and not self.network.name.endswith("-fork"):
             # If using a live network, the chain ID is hardcoded.
-            return self.network.chain_id
+            default_chain_id = self.network.chain_id
 
-        else:
-            raise ProviderNotConnectedError()
+        try:
+            if hasattr(self.web3, "eth"):
+                return self.web3.eth.chain_id
+        except ProviderNotConnectedError:
+            if default_chain_id:
+                return default_chain_id
+
+            raise  # Original error
+
+        if default_chain_id:
+            return default_chain_id
+
+        raise ProviderNotConnectedError()
 
     @property
     def gas_price(self) -> int:
