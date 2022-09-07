@@ -294,10 +294,9 @@ def test_instance_at(chain, contract_instance):
 
 def test_instance_at_unknown_hex_str(chain, contract_instance):
     # Fails when decoding Ethereum address and NOT conversion error.
-    with pytest.raises(ValueError):
-        chain.contracts.instance_at(
-            "0x1402b10CA274cD76C441e16C844223F79D3566De12bb12b0aebFE41aDFAe302"
-        )
+    hex_str = "0x1402b10CA274cD76C441e16C844223F79D3566De12bb12b0aebFE41aDFAe302"
+    with pytest.raises(ValueError, match=f"Unknown address value '{hex_str}'."):
+        chain.contracts.instance_at(hex_str)
 
 
 def test_instance_at_when_given_contract_type(chain, contract_instance):
