@@ -116,14 +116,14 @@ class LogFilter(BaseModel):
 
             return encode_hex(encode([abi_type], [value]))
 
-        for topic in abi_inputs.topic_abis:
+        for topic in abi_inputs.topic_abi_types:
             if topic.name in search_topics:
                 encoded_value = encode_topic_value(topic.type, search_topics[topic.name])
                 topic_filter.append(encoded_value)
             else:
                 topic_filter.append(None)
 
-        topic_names = [i.name for i in abi_inputs.topic_abis if i.name]
+        topic_names = [i.name for i in abi_inputs.topic_abi_types if i.name]
         invalid_topics = set(search_topics) - set(topic_names)
         if invalid_topics:
             raise ValueError(
