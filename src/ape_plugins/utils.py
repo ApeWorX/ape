@@ -1,12 +1,13 @@
 import subprocess
 import sys
-from typing import Dict, List, Optional
+from typing import List, Optional
+
+from pydantic import ValidationError, root_validator
 
 from ape.__modules__ import __modules__
-from ape.exceptions import ConfigError
 from ape.logging import CliLogger
 from ape.plugins import clean_plugin_name
-from ape.utils import get_package_version, github_client
+from ape.utils import BaseInterfaceModel, cached_property, get_package_version, github_client
 
 # Plugins maintained OSS by ApeWorX (and trusted)
 CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
@@ -32,65 +33,101 @@ def _pip_freeze_plugins() -> List[str]:
     return new_lines
 
 
-class ApePlugin:
-    def __init__(self, name: str):
-        parts = name.split("==")
-        self.name = clean_plugin_name(parts[0])  # 'plugin-name'
-        self.requested_version = parts[-1] if len(parts) == 2 else None
-        self.package_name = f"ape-{self.name}"  # 'ape-plugin-name'
-        self.module_name = f"ape_{self.name.replace('-', '_')}"  # 'ape_plugin_name'
-        self.current_version = get_package_version(self.package_name)
+class PluginInstallRequest(BaseInterfaceModel):
+    name: str
+    """The name of the plugin, such as ``trezor``."""
 
-    def __str__(self):
-        return self.name if not self.requested_version else f"{self.name}=={self.requested_version}"
+    version: Optional[str] = None
+    """The version requested, if there is one."""
 
-    @classmethod
-    def from_dict(cls, data: Dict) -> "ApePlugin":
-        if "name" not in data:
-            expected_format = (
-                "plugins:\n  - name: <plugin-name>\n    version: <plugin-version>  # optional"
-            )
-            raise ConfigError(
-                f"Config item mis-configured. Expected format:\n\n{expected_format}\n"
-            )
+    @root_validator(pre=True)
+    def validate_name(cls, values):
+        if "name" not in values:
+            raise ValidationError("'name' required.")
 
-        name = data.pop("name")
-        if "version" in data:
-            version = data.pop("version")
-            name = f"{name}=={version}"
+        name = values["name"]
+        if "==" in name:
+            parts = name.split("==")
+            name = parts[0]
+            version = parts[1]
+        else:
+            version = values.get("version")
 
-        if data:
-            keys_str = ", ".join(data.keys())
-            raise ConfigError(f"Unknown keys for plugins entry '{name}': '{keys_str}'.")
+        return {"name": clean_plugin_name(name), "version": version}
 
-        return ApePlugin(name)
+    @cached_property
+    def package_name(self) -> str:
+        """
+        Like 'ape-plugin'; the name of the package on PyPI.
+        """
+
+        return f"ape-{self.name}"
+
+    @cached_property
+    def module_name(self) -> str:
+        """
+        Like 'ape_plugin' or the name you use when importing.
+        """
+
+        return f"ape_{self.name.replace('-', '_')}"
+
+    @cached_property
+    def current_version(self) -> Optional[str]:
+        """
+        The version currently installed if there is one.
+        """
+
+        return get_package_version(self.package_name)
 
     @property
     def install_str(self) -> str:
-        pip_str = str(self.package_name)
-        if self.requested_version:
-            pip_str = f"{pip_str}=={self.requested_version}"
+        """
+        The strings you pass to ``pip`` to make the install request,
+        such as ``ape-trezor==0.4.0``.
+        """
 
-        return pip_str
+        return f"{self.package_name}=={self.version}" if self.version else self.package_name
 
     @property
     def can_install(self) -> bool:
+        """
+        ``True`` if the plugin is available and the requested version differs
+        from the installed one.  **NOTE**: Is always ``True`` when the plugin
+        is not installed.
+        """
+
         requesting_different_version = (
-            self.requested_version is not None and self.requested_version != self.current_version
+            self.version is not None and self.version != self.current_version
         )
         return not self.is_installed or requesting_different_version
 
     @property
-    def is_part_of_core(self) -> bool:
+    def in_core(self) -> bool:
+        """
+        ``True`` if the plugin is part of the set of core plugins that
+        ship with Ape.
+        """
+
         return self.module_name.strip() in CORE_PLUGINS
 
     @property
     def is_installed(self) -> bool:
+        """
+        ``True`` if the plugin is installed in the current Python environment.
+        """
+
         ape_packages = [r.split("==")[0] for r in _pip_freeze_plugins()]
         return self.package_name in ape_packages
 
     @property
     def pip_freeze_version(self) -> Optional[str]:
+        """
+        The version from ``pip freeze`` output.
+        This is useful because when updating a plugin, it is not available
+        until the next Python session but you can use the property to
+        verify the update.
+        """
+
         for package in _pip_freeze_plugins():
             parts = package.split("==")
             if len(parts) != 2:
@@ -105,11 +142,22 @@ class ApePlugin:
 
     @property
     def is_available(self) -> bool:
+        """
+        Whether the plugin is maintained by the ApeWorX organization.
+        """
+
         return self.module_name in github_client.available_plugins
+
+    def __str__(self):
+        """
+        A string like ``trezor==0.4.0``.
+        """
+
+        return self.name if not self.version else f"{self.name}=={self.version}"
 
 
 class ModifyPluginResultHandler:
-    def __init__(self, logger: CliLogger, plugin: ApePlugin):
+    def __init__(self, logger: CliLogger, plugin: PluginInstallRequest):
         self._logger = logger
         self._plugin = plugin
 
@@ -132,9 +180,9 @@ class ModifyPluginResultHandler:
 
         pip_freeze_version = self._plugin.pip_freeze_version
         if version_before == pip_freeze_version or not pip_freeze_version:
-            if self._plugin.requested_version:
+            if self._plugin.version:
                 self._logger.info(
-                    f"'{self._plugin.name}' already has version '{self._plugin.requested_version}'."
+                    f"'{self._plugin.name}' already has version '{self._plugin.version}'."
                 )
             else:
                 self._logger.info(f"'{self._plugin.name}' already up to date.")

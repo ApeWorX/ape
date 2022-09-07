@@ -3,6 +3,8 @@
 #---------------------------------------------------------------------------------------------
 
 ARG PYTHON_VERSION="3.9"
+ARG PLUGINS_FILE="./recommended-plugins.txt"
+
 FROM python:${PYTHON_VERSION}
 
 RUN apt-get update && apt-get upgrade --yes && apt-get install git
@@ -24,19 +26,7 @@ COPY . .
 
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir . \
-    && ape plugins install \
-      alchemy \
-      ens \
-      etherscan \
-      foundry \
-      hardhat \
-      infura \
-      ledger \
-      solidity \
-      template \
-      tokens \
-      trezor \
-      vyper \
+    && ape plugins install "recommended-plugins.txt" \
 # Fix RLP installation issue
     && pip uninstall rlp --yes \
     && pip install rlp==3.0.0 \

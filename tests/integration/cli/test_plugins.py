@@ -29,7 +29,7 @@ def installed_plugin(runner, ape_cli):
     #  Everything we try so far does not affect in-session site packages
 
     plugins_installed = TEST_PLUGIN_NAME in runner.invoke(ape_cli, ["plugins", "list"]).output
-    assert TEST_PLUGIN_NAME in plugins_installed, "Must have plugin pre-installed to run test."
+    assert plugins_installed, "Must have plugin pre-installed to run test."
 
 
 @plugins_xfail()
@@ -67,3 +67,33 @@ def test_upgrade(ape_cli, runner, installed_plugin):
 def test_upgrade_failure(ape_cli, runner):
     result = runner.invoke(ape_cli, ["plugins", "install", "NOT_EXISTS", "--upgrade"])
     assert result.exit_code == 1
+
+
+@plugins_xfail()
+def test_install_from_config_file(ape_cli, runner, temp_config, caplog):
+    plugins_config = {"plugins": [{"name": TEST_PLUGIN_NAME}]}
+    with temp_config(plugins_config):
+        result = runner.invoke(ape_cli, ["plugins", "install", "."], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
+
+    assert TEST_PLUGIN_NAME in caplog.records[-1].message
+
+
+@plugins_xfail()
+def test_install_from_requirements_file(ape_cli, runner, temp_config, caplog, project):
+    temp_req_file = project.path / "temp-plugin-requirements.txt"
+
+    if temp_req_file.is_file():
+        temp_req_file.unlink()
+
+    temp_req_file.touch()
+    temp_req_file.write_text(f"ape-{TEST_PLUGIN_NAME}\n")
+
+    try:
+        result = runner.invoke(
+            ape_cli, ["plugins", "install", str(temp_req_file)], catch_exceptions=False
+        )
+        assert result.exit_code == 0, result.output
+        assert TEST_PLUGIN_NAME in caplog.records[-1].message
+    finally:
+        temp_req_file.unlink()
