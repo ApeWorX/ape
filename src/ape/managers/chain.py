@@ -396,13 +396,15 @@ class AccountHistory(BaseManager):
               **NOTE**: The receipt is accessible in the list returned from
               :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
+
         address = self._convert(txn_receipt.sender, AddressType)
         if address not in self._map:
             self._map[address] = [txn_receipt]
             return
 
         if txn_receipt.txn_hash in [r.txn_hash for r in self._map[address]]:
-            raise ChainError(f"Transaction '{txn_receipt.txn_hash}' already known.")
+            logger.warning(f"Transaction '{txn_receipt.txn_hash}' already known.")
+            return
 
         self._map[address].append(txn_receipt)
 

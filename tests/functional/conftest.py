@@ -395,5 +395,5 @@ def use_debug(logger):
 @pytest.fixture
 def dummy_live_network(chain):
     chain.provider.network.name = "rinkeby"
-    yield
+    yield chain.provider.network
     chain.provider.network.name = LOCAL_NETWORK_NAME

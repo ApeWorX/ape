@@ -36,7 +36,7 @@ class CompilerAPI(BaseInterfaceModel):
         """
 
     def get_compiler_settings(
-        self, contract_filepaths: List[Path], base_path: Optional[Path]
+        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
     ) -> Dict[Version, Dict]:
         """
         Get a mapping of the settings that would be used to compile each of the sources
@@ -85,9 +85,22 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_version_map(
-        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
+        self,
+        contract_filepaths: List[Path],
+        base_path: Optional[Path] = None,
     ) -> Dict[Version, Set[Path]]:
-        pass
+        """
+        Get a map of versions to source paths.
+
+        Args:
+            contract_filepaths (List[Path]): Input source paths. Defaults to all source paths
+              per compiler.
+            base_path (Path): The base path of sources. Defaults to the project's
+              ``contracts_folder``.
+
+        Returns:
+            Dict[Version, Set[Path]]
+        """
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.name}>"

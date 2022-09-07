@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
@@ -20,7 +20,6 @@ from hexbytes import HexBytes
 from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
-from ape._compat import Literal
 from ape.utils.misc import to_int
 
 from .signatures import MessageSignature, SignableMessage, TransactionSignature
@@ -116,14 +115,14 @@ class LogFilter(BaseModel):
 
             return encode_hex(encode([abi_type], [value]))
 
-        for topic in abi_inputs.topics:
+        for topic in abi_inputs.topic_abi_types:
             if topic.name in search_topics:
                 encoded_value = encode_topic_value(topic.type, search_topics[topic.name])
                 topic_filter.append(encoded_value)
             else:
                 topic_filter.append(None)
 
-        topic_names = [i.name for i in abi_inputs.topics if i.name]
+        topic_names = [i.name for i in abi_inputs.topic_abi_types if i.name]
         invalid_topics = set(search_topics) - set(topic_names)
         if invalid_topics:
             raise ValueError(
