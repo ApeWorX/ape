@@ -175,3 +175,11 @@ def temp_config(config):
             config._cached_configs = {}
 
     return func
+
+
+@pytest.fixture
+def empty_data_folder():
+    current_data_folder = ape.config.DATA_FOLDER
+    ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
+    yield
+    ape.config.DATA_FOLDER = current_data_folder

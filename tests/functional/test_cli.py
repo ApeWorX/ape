@@ -15,24 +15,6 @@ def keyfile_swap_paths(config):
 
 
 @pytest.fixture
-def no_keyfile_accounts(keyfile_swap_paths):
-    src_path, dest_path = keyfile_swap_paths
-    if dest_path.is_dir():
-        shutil.rmtree(dest_path)
-
-    if not src_path.is_dir() or not [x for x in src_path.iterdir()]:
-        # No keyfile accounts already
-        yield
-
-    else:
-        shutil.copytree(src_path, dest_path)
-        shutil.rmtree(src_path)
-        yield
-        shutil.copytree(dest_path, src_path)
-        shutil.rmtree(dest_path)
-
-
-@pytest.fixture
 def one_keyfile_account(keyfile_swap_paths, keyfile_account):
     src_path, dest_path = keyfile_swap_paths
     existing_keyfiles = [x for x in src_path.iterdir() if x.is_file()]
@@ -65,11 +47,25 @@ def network_cmd():
     return cmd
 
 
-def test_get_user_selected_account_no_accounts_found(no_keyfile_accounts):
-    with pytest.raises(AccountsError) as err:
-        get_user_selected_account()
+@pytest.fixture
+def no_accounts(accounts, empty_data_folder):
+    if "containers" in accounts.__dict__:
+        del accounts.__dict__["containers"]
 
-    assert "No accounts found." in str(err.value)
+    installed_account_types = {str(type(a)) for a in accounts}
+    if installed_account_types:
+        accounts_str = ", ".join(installed_account_types)
+        pytest.fail(f"Unable to side-step install of account type(s): {accounts_str}")
+
+    yield
+
+    if "containers" in accounts.__dict__:
+        del accounts.__dict__["containers"]
+
+
+def test_get_user_selected_account_no_accounts_found(no_accounts):
+    with pytest.raises(AccountsError, match="No accounts found."):
+        assert not get_user_selected_account()
 
 
 def test_get_user_selected_account_one_account(runner, keyfile_account):
