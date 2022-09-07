@@ -87,7 +87,7 @@ def project_dir_map(config):
     return project_map
 
 
-@pytest.fixture(params=project_names)
+@pytest.fixture(autouse=True, params=project_names)
 def project(request, config, project_dir_map):
     project_dir = project_dir_map[request.param]
     with config.using_project(project_dir) as project:
