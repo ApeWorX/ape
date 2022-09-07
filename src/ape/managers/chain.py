@@ -710,7 +710,7 @@ class ContractCache(BaseManager):
             try:
                 contract_address = self.conversion_manager.convert(address, AddressType)
             except ConversionError as err:
-                raise ValueError(f"Unknown address value '{contract_address}'.") from err
+                raise ValueError(f"Unknown address value '{address}'.") from err
 
         try:
             # Always attempt to get an existing contract type to update caches
