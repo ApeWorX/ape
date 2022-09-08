@@ -123,7 +123,7 @@ setup(
         # ** Dependencies maintained by Apeworx **
         "eip712>=0.1.1,<0.2",
         "ethpm-types>=0.3.2,<0.4",
-        "evm-trace>=0.1.0.a6",
+        "evm-trace==0.1.0.a8",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
