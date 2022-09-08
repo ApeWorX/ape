@@ -705,7 +705,7 @@ class ContractCache(BaseManager):
         """
 
         if self.conversion_manager.is_type(address, AddressType):
-            contract_address: AddressType = address  # type: ignore
+            contract_address = cast(AddressType, address)
         else:
             try:
                 contract_address = self.conversion_manager.convert(address, AddressType)
