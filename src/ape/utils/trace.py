@@ -6,7 +6,6 @@ from typing import (
     Any,
     Dict,
     Iterable,
-    Iterator,
     List,
     Optional,
     Protocol,
@@ -212,7 +211,6 @@ class CallTraceParser:
                     }
                     call_signature += f" {json.dumps(extra_info, indent=self._indent)}"
             elif contract_name is not None:
-
                 call_signature = next(TreeRepresentation.make_tree(call)).title
                 call_signature = call_signature.replace(address, contract_name)
                 call_signature = _dim_default_gas(call_signature)
@@ -220,7 +218,7 @@ class CallTraceParser:
             next_node: Optional[TreeRepresentation] = None
             try:
                 # Use default representation
-                next_node =  next(TreeRepresentation.make_tree(call))
+                next_node = next(TreeRepresentation.make_tree(call))
             except StopIteration:
                 pass
 
