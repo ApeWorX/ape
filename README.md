@@ -5,16 +5,14 @@
 In the latest release, Ape requires:
 
 - Linux or macOS
-- Python 3.7.2 or later
+- Python 3.8 or later
 
 **Windows**:
 
 1.  Install Windows Subsystem Linux
     [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install)
 2.  Choose Ubuntu 20.04 OR Any other Linux Distribution with Python
-    3.7.2 or later
-
-Please make sure you are using Python 3.7.2 or later.
+    3.8 or later
 
 Check your python command by entering
 

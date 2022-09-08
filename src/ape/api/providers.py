@@ -131,6 +131,13 @@ class ProviderAPI(BaseInterfaceModel):
     How many parallel threads to use when fetching logs.
     """
 
+    @property
+    @abstractmethod
+    def is_connected(self) -> bool:
+        """
+        ``True`` if currently connected to the provider. ``False`` otherwise.
+        """
+
     @abstractmethod
     def connect(self):
         """
@@ -142,13 +149,6 @@ class ProviderAPI(BaseInterfaceModel):
         """
         Disconnect from a provider, such as tear-down a process or quit an HTTP session.
         """
-
-    @property
-    def is_connected(self) -> bool:
-        """
-        ``True`` if currently connected to the provider. ``False`` otherwise.
-        """
-        return self.chain_id is not None
 
     @abstractmethod
     def update_settings(self, new_settings: dict):
@@ -206,12 +206,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_nonce(self, address: str) -> int:
+    def get_nonce(self, address: AddressType) -> int:
         """
         Get the number of times an account has transacted.
 
         Args:
-            address (str): The address of the account.
+            address (``AddressType``): The address of the account.
 
         Returns:
             int
@@ -297,7 +297,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_transaction(self, txn_hash: str) -> ReceiptAPI:
+    def get_receipt(self, txn_hash: str) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
 
@@ -403,7 +403,8 @@ class ProviderAPI(BaseInterfaceModel):
     def __repr__(self) -> str:
         try:
             chain_id = self.chain_id
-        except ProviderNotConnectedError:
+        except Exception as err:
+            logger.error(str(err))
             chain_id = None
 
         return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
@@ -784,7 +785,7 @@ class Web3Provider(ProviderAPI, ABC):
         except ValueError as err:
             raise self.get_virtual_machine_error(err) from err
 
-    def get_transaction(
+    def get_receipt(
         self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
     ) -> ReceiptAPI:
         """
@@ -885,9 +886,7 @@ class Web3Provider(ProviderAPI, ABC):
             else self.network.required_confirmations
         )
 
-        receipt = self.get_transaction(
-            txn_hash.hex(), required_confirmations=required_confirmations
-        )
+        receipt = self.get_receipt(txn_hash.hex(), required_confirmations=required_confirmations)
         receipt.raise_for_status()
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self._try_track_receipt(receipt)

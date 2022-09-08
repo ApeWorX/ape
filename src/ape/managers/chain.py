@@ -403,7 +403,8 @@ class AccountHistory(BaseManager):
             return
 
         if txn_receipt.txn_hash in [r.txn_hash for r in self._map[address]]:
-            raise ChainError(f"Transaction '{txn_receipt.txn_hash}' already known.")
+            logger.warning(f"Transaction '{txn_receipt.txn_hash}' already known.")
+            return
 
         self._map[address].append(txn_receipt)
 
@@ -679,7 +680,7 @@ class ContractCache(BaseManager):
 
     def instance_at(
         self,
-        address: Union[str, "AddressType"],
+        address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
     ) -> ContractInstance:
@@ -703,17 +704,17 @@ class ContractCache(BaseManager):
             :class:`~ape.contracts.base.ContractInstance`
         """
 
-        try:
-            # Handles ENS domain names
-            address = self.conversion_manager.convert(address, AddressType)
-        except ConversionError:
-            address = address
-
-        address = self.provider.network.ecosystem.decode_address(address)
+        if self.conversion_manager.is_type(address, AddressType):
+            contract_address = cast(AddressType, address)
+        else:
+            try:
+                contract_address = self.conversion_manager.convert(address, AddressType)
+            except ConversionError as err:
+                raise ValueError(f"Unknown address value '{address}'.") from err
 
         try:
             # Always attempt to get an existing contract type to update caches
-            contract_type = self.get(address, default=contract_type)
+            contract_type = self.get(contract_address, default=contract_type)
         except Exception as err:
             if contract_type:
                 # If a default contract type was provided, don't error and use it.
@@ -722,7 +723,7 @@ class ContractCache(BaseManager):
                 raise  # Current exception
 
         if not contract_type:
-            raise ChainError(f"Failed to get contract type for address '{address}'.")
+            raise ChainError(f"Failed to get contract type for address '{contract_address}'.")
         elif not isinstance(contract_type, ContractType):
             raise TypeError(
                 f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
@@ -732,11 +733,11 @@ class ContractCache(BaseManager):
             # Check for txn_hash in deployments.
             deployments = self._deployments.get(contract_type.name) or []
             for deployment in deployments:
-                if deployment["address"] == address:
+                if deployment["address"] == contract_address:
                     txn_hash = deployment.get("transaction_hash")
                     break
 
-        return ContractInstance(address, contract_type, txn_hash=txn_hash)
+        return ContractInstance(contract_address, contract_type, txn_hash=txn_hash)
 
     def get_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
         """

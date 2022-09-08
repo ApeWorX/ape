@@ -87,7 +87,7 @@ def ape_cli_context():
 
 
 def network_option(
-    default: Optional[str] = None,
+    default: Optional[str] = "auto",
     ecosystem: Optional[Union[List[str], str]] = None,
     network: Optional[Union[List[str], str]] = None,
     provider: Optional[Union[List[str], str]] = None,
@@ -112,11 +112,16 @@ def network_option(
         kwargs: Additional overrides to ``click.option``.
     """
 
-    if default is None and not required:
+    auto = default == "auto"
+
+    if auto and not required:
         if ecosystem:
             default = ecosystem[0] if isinstance(ecosystem, (list, tuple)) else ecosystem
         else:
             default = networks.default_ecosystem.name
+
+    elif auto:
+        default = None
 
     return click.option(
         "--network",

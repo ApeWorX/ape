@@ -574,7 +574,7 @@ class ContractInstance(BaseAddress):
 
     def __init__(
         self,
-        address: Union[AddressType, str],
+        address: AddressType,
         contract_type: ContractType,
         txn_hash: Optional[str] = None,
     ) -> None:
@@ -609,7 +609,7 @@ class ContractInstance(BaseAddress):
         """
 
         if not self._cached_receipt and self.txn_hash:
-            receipt = self.provider.get_transaction(self.txn_hash)
+            receipt = self.provider.get_receipt(self.txn_hash)
             self._cached_receipt = receipt
             return receipt
 
@@ -631,7 +631,7 @@ class ContractInstance(BaseAddress):
             ``AddressType``
         """
 
-        return self.provider.network.ecosystem.decode_address(self._address)
+        return self._address
 
     @cached_property
     def _view_methods_(self) -> Dict[str, ContractCallHandler]:

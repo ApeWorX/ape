@@ -159,3 +159,13 @@ def test_network_option_make_required(runner):
     result = runner.invoke(cmd, [])
     assert result.exit_code == 2
     assert "Error: Missing option '--network'." in result.output
+
+
+def test_network_option_can_be_none(runner):
+    @click.command()
+    @network_option(default=None)
+    def cmd(network):
+        click.echo(f"Value is '{network}'")
+
+    result = runner.invoke(cmd, [])
+    assert "Value is 'None'" in result.output

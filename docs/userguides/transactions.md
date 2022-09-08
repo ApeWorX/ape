@@ -227,7 +227,7 @@ Additionally, you can view the traces of other transactions on your network.
 from ape import networks
 
 txn_hash = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
-receipt = networks.provider.get_transaction(txn_hash)
+receipt = networks.provider.get_receipt(txn_hash)
 receipt.show_trace()
 ```
 

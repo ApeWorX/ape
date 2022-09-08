@@ -123,7 +123,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         except (ValidationError, TransactionFailed) as err:
             raise self.get_virtual_machine_error(err, sender=txn.sender) from err
 
-        receipt = self.get_transaction(
+        receipt = self.get_receipt(
             txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
         )
         if txn.gas_limit is not None and receipt.ran_out_of_gas:
