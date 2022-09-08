@@ -530,14 +530,14 @@ class ProviderContextManager:
 
     @classmethod
     def get_provider_id(cls, provider: "ProviderAPI") -> Optional[str]:
-        try:
-            return (
-                f"{provider.network.ecosystem.name}:"
-                f"{provider.network.name}:{provider.name}-"
-                f"{provider.chain_id}"
-            )
-        except ProviderNotConnectedError:
+        if not provider.is_connected:
             return None
+
+        return (
+            f"{provider.network.ecosystem.name}:"
+            f"{provider.network.name}:{provider.name}-"
+            f"{provider.chain_id}"
+        )
 
 
 class NetworkAPI(BaseInterfaceModel):

@@ -70,6 +70,7 @@ class ManagerAccessMixin:
         """
         if self.network_manager.active_provider is None:
             raise ProviderNotConnectedError()
+
         return self.network_manager.active_provider
 
 
