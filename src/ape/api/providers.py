@@ -206,12 +206,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_nonce(self, address: str) -> int:
+    def get_nonce(self, address: AddressType) -> int:
         """
         Get the number of times an account has transacted.
 
         Args:
-            address (str): The address of the account.
+            address (``AddressType``): The address of the account.
 
         Returns:
             int
