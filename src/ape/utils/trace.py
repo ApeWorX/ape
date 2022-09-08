@@ -22,7 +22,7 @@ from eth_utils import humanize_hash, is_hex_address
 from ethpm_types.abi import MethodABI
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import CallType
-from evm_trace.display import DisplayableCallTreeNode
+from evm_trace._display import TreeRepresentation
 from hexbytes import HexBytes
 from pydantic import BaseModel
 from rich.tree import Tree
@@ -41,7 +41,7 @@ _DEFAULT_WRAP_THRESHOLD = 50
 _DEFAULT_INDENT = 2
 
 
-class SupportsCallTree(Protocol):
+class TreeLike(Protocol):
     address: Any
     calls: Iterable
     calldata: Any
@@ -52,11 +52,8 @@ class SupportsCallTree(Protocol):
     value: int
     gas_limit: int
 
-    def get_display_nodes(self) -> Iterator[Any]:
-        ...
 
-
-CallTree = TypeVar("CallTree", EvmCallTreeNode, SupportsCallTree)
+CallTree = TypeVar("CallTree", EvmCallTreeNode, TreeLike)
 TraceFrame = TypeVar("TraceFrame", bound=BaseModel)
 
 
@@ -219,7 +216,7 @@ class CallTraceParser:
                 call_signature = call_signature.replace(address, contract_name)
                 call_signature = _dim_default_gas(call_signature)
         else:
-            next_node: Optional[DisplayableCallTreeNode] = None
+            next_node: Optional[TreeRepresentation] = None
             try:
                 next_node = next(call.get_display_nodes())
             except StopIteration:
