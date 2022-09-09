@@ -322,7 +322,7 @@ def test_estimate_gas_cost_call_account_as_input(contract_instance, eth_tester_p
 
 def test_call_transact(vyper_contract_instance, owner):
     receipt = vyper_contract_instance.myNumber.transact(sender=owner)
-    assert receipt.transaction.sender == owner
+    assert receipt.sender == owner
     assert receipt.status == TransactionStatusEnum.NO_ERROR
 
 
@@ -330,7 +330,7 @@ def test_receipt(contract_instance, owner):
     receipt = contract_instance.receipt
     assert receipt.txn_hash == contract_instance.txn_hash
     assert receipt.contract_address == contract_instance.address
-    assert receipt.transaction.sender == owner
+    assert receipt.sender == owner
 
 
 def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
