@@ -236,6 +236,10 @@ class ContractLog(BaseModel):
         return self.event_arguments.get(item, default)
 
 
+class ContractLogEventArguments(BaseModel):
+    pass
+
+
 __all__ = [
     "ABI",
     "AddressType",
