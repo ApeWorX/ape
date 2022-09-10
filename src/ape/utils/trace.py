@@ -142,9 +142,9 @@ class CallTraceParser:
                     contract_name = contract_type.name
 
             if selector in contract_type.mutable_methods:
-                method = contract_type.mutable_methods[selector]
+                method = contract_type.mutable_methods[selector]  # type: ignore
             elif selector in contract_type.view_methods:
-                method = contract_type.view_methods[selector]
+                method = contract_type.view_methods[selector]  # type: ignore
 
             if method:
                 raw_calldata = call.calldata[4:]
@@ -161,7 +161,7 @@ class CallTraceParser:
                 call_signature = str(
                     _MethodTraceSignature(
                         contract_name or address,
-                        method.name or f"<{selector}>",
+                        method.name or f"<{selector}>",  # type: ignore
                         arguments,
                         return_value,
                         call.call_type,
