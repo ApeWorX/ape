@@ -14,7 +14,7 @@ In the latest release, Ape requires:
 2.  Choose Ubuntu 20.04 OR Any other Linux Distribution with Python
     3.8 or later
 
-Check your python command by entering
+Check your python command by entering:
 
 ```bash
 python3 --version
@@ -34,18 +34,17 @@ Then install `ape` via
 pipx install eth-ape
 ```
 
-or install w/ ApeWorX-recommended plugins via
+To install Ape and a list of common, recommended plugins at the same time, do:
 
 ```bash
-pipx install eth-ape[recommended-plugins]
+pip install eth-ape'[recommended-plugins]'
 ```
 
 ### via `pip`
 
 **Suggestion**: Create a virtual environment using `virtualenv` or `venv.`
 
-You may skip this creating a virtual environment if you know you don\'t
-require one for your use case.
+You may skip this creating a virtual environment if you know you don\'t require one for your use case.
 
 - [virtualenv](https://pypi.org/project/virtualenv/)
 - [venv](https://docs.python.org/3/library/venv.html)
@@ -56,44 +55,43 @@ require one for your use case.
 
 * (MacOS Option) Install via homebrew [brew](https://formulae.brew.sh/formula/virtualenv)
 
-Create your virtual environment folder
+First, create your virtual environment folder:
 
 ```bash
-python3 -m venv /path/to/new/environment
+python3 -m venv <path/to/new/env>
+```
+
+Then, activate your virtual environment:
+
+```bash
 source <venv_folder>/bin/activate
 ```
 
-NOTE: the path to venv is not a real path.
-
 You should see `(name_of_venv) DESKTOP_NAME:~/path:$`.
+
 To deactivate the virtual environment, do:
 
 ```bash
 deactivate
 ```
 
-Now that your Python version is later than 3.7.2 and you have created a
-virtual environment let\'s install Ape!
-
-You can install the latest release via
-[pip](https://pypi.org/project/pip/):
+Now that you have Python installed in your virtual environment, we may install Ape:
+You can install the latest release via [pip](https://pypi.org/project/pip/):
 
 ```bash
 pip install -U pip
 pip install eth-ape
 ```
 
-or install w/ ApeWorX-recommended plugins via
+To install Ape and a list of common, recommended plugins at the same time, do:
 
 ```bash
-pip install eth-ape[recommended-plugins]
+pip install eth-ape'[recommended-plugins]'
 ```
 
 ### via `docker`
 
-Please visit our
-[Dockerhub](https://hub.docker.com/repository/docker/apeworx/ape) for
-more details on using Ape with Docker.
+Please visit our [Dockerhub](https://hub.docker.com/repository/docker/apeworx/ape) for more details on using Ape with Docker.
 
 ```bash
 docker run \
@@ -114,22 +112,24 @@ sudo rm -rf **\~/.vvm**
 
 ## Overview
 
-For more in-depth information about the project please look at the [projects](https://docs.apeworx.io/ape/stable/userguides/projects.html)
-It explains the purpose of each folder and how to use them effectively.
-
-Use `ape init` to initialize your ape project folders. Visit [userguide project](https://docs.apeworx.io/ape/stable/userguides/projects.html) for more information.
+To quickly get started using ape, generate a project using the `ape init` command:
 
 ```bash
 ape init
 ```
 
+For more in-depth information about smart-contract projects using the Ape framework, see the [projects guide](https://docs.apeworx.io/ape/stable/userguides/projects.html).
+There, you will learn about the project structure and each component of a project.
+
 ## Environment Variables:
 
-Environment Variables are used to help connect you to your files or ecosystems outside of ApeWorX.
+Some plugins require environment variables to connect to their external systems, such project IDs or API keys.
+Follow instructions from individual plugin documentations, such as:
 
-Please setup environment variables (where applicable) and follow the latest instructions from the 3rd party:
+* [ape-alchemy](https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#quick-usage)
+* [ape-infura](https://github.com/ApeWorX/ape-infura#readme)
 
-Example use case:
+Generally, set environment variables by doing the following:
 
 ```bash
 # Used by the `ape-infura` plugin
@@ -138,9 +138,7 @@ export WEB3_INFURA_PROJECT_ID=<YOUR_INFURA_PROJECT_ID>
 export WEB3_ALCHEMY_API_KEY=<YOUR_ALCHEMY_KEY>
 ```
 
-Visit [ape-alchemy](https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#quick-usage)
-
-Visit [ape-infura](https://github.com/ApeWorX/ape-infura#readme)
+Place these in environment files, such as your `.bashrc` or `.zshrc`.
 
 ## Ape Console
 
@@ -182,11 +180,9 @@ ape plugins install vyper
 ape plugins list -a
 ```
 
-**NOTE**: If a plugin does not originate from the 
-[ApeWorX GitHub organization](https://github.com/ApeWorX?q=ape&type=all), you will get a warning about installing 
-3rd-class plugins. Any plugin that is not an official plugin has the chance of not being trustworthy. Thus, you should 
-be mindful about which plugins you install. Additionally, plugins that come bundled with `ape` in the core installation 
-cannot be removed and are considered part of the `ape` core software.
+**NOTE**: If a plugin does not originate from the [ApeWorX GitHub organization](https://github.com/ApeWorX?q=ape&type=all), you will get a warning about installing 3rd-party plugins.
+Install 3rd party plugins at your own risk.
+Additionally, plugins that come bundled with `ape` in the core installation cannot be removed and are part of the `ape` core software.
 
 You can interact and compile contracts.
 Here is an example of a project with a contract you interact with: 
