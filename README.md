@@ -37,14 +37,14 @@ pipx install eth-ape
 To install Ape and a list of common, recommended plugins at the same time, do:
 
 ```bash
-pip install eth-ape'[recommended-plugins]'
+pipx install eth-ape'[recommended-plugins]'
 ```
 
 ### via `pip`
 
 **Suggestion**: Create a virtual environment using `virtualenv` or `venv.`
 
-You may skip this creating a virtual environment if you know you don\'t require one for your use case.
+You may skip creating a virtual environment if you know you don\'t require one for your use case.
 
 - [virtualenv](https://pypi.org/project/virtualenv/)
 - [venv](https://docs.python.org/3/library/venv.html)
@@ -75,7 +75,7 @@ To deactivate the virtual environment, do:
 deactivate
 ```
 
-Now that you have Python installed in your virtual environment, we may install Ape:
+Now that you have Python installed in your virtual environment, install the `eth-ape` Python package:
 You can install the latest release via [pip](https://pypi.org/project/pip/):
 
 ```bash
