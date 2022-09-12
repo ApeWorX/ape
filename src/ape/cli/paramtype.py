@@ -7,7 +7,6 @@ from click import Context, Parameter
 from ape.utils import get_all_files_in_directory
 
 
-
 class Path(click.Path):
     """
     This class exists to encourage the consistent usage
