@@ -1,5 +1,6 @@
-import pytest
 from unittest import mock
+
+import pytest
 from eth_typing import HexStr
 
 from ape.exceptions import ProviderError, ProviderNotConnectedError
