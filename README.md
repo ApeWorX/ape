@@ -110,17 +110,6 @@ sudo rm -rf **\~/.solcx**
 sudo rm -rf **\~/.vvm**
 ```
 
-## Overview
-
-To quickly get started using ape, generate a project using the `ape init` command:
-
-```bash
-ape init
-```
-
-For more in-depth information about smart-contract projects using the Ape framework, see the [projects guide](https://docs.apeworx.io/ape/stable/userguides/projects.html).
-There, you will learn about the project structure and each component of a project.
-
 ## Environment Variables:
 
 Some plugins require environment variables to connect to their external systems, such project IDs or API keys.
@@ -140,26 +129,29 @@ export WEB3_ALCHEMY_API_KEY=<YOUR_ALCHEMY_KEY>
 
 Place these in environment files, such as your `.bashrc` or `.zshrc`.
 
-## Ape Console
-
-Ape provides an IPython interactive console with useful pre-defined locals to interact with your project.
-To interact with a deployed contract in a local environment, start by opening the console:
-
-```bash
-ape console --network :mainnet-fork:hardhat
-```
-
-Visit [Ape Console](https://docs.apeworx.io/ape/stable/commands/console.html) to learn how to use Ape Console.
-
 ## Quick Usage
 
-Use `-h` to list all the commands.
+Use `-h` to list all the commands:
 
 ```bash
 ape -h
 ```
 
-You can import or generate accounts.
+### Projects
+
+When using Ape, you generally will work with a project.
+To quickly get started using ape, generate a project using the `ape init` command:
+
+```bash
+ape init
+```
+
+For more in-depth information about smart-contract projects using the Ape framework, see the [projects guide](https://docs.apeworx.io/ape/stable/userguides/projects.html).
+
+### Accounts
+
+In Ape, you will need accounts to make transactions.
+You can import or generate accounts using the core `accounts` plugin:
 
 ```bash
 ape accounts import acc0   # Will prompt for a private key
@@ -171,6 +163,10 @@ List all your accounts with the `list` command.
 ```bash
 ape accounts list
 ```
+
+Learn more about accounts in Ape by following the [accounts guide](https://docs.apeworx.io/ape/stable/userguides/accounts.html).
+
+### Plugins
 
 Add any plugins you may need, such as `vyper`.
 
@@ -184,13 +180,10 @@ ape plugins list -a
 Install 3rd party plugins at your own risk.
 Additionally, plugins that come bundled with `ape` in the core installation cannot be removed and are part of the `ape` core software.
 
-You can interact and compile contracts.
-Here is an example of a project with a contract you interact with: 
+Learn more about installing plugins from following [this guide](https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html).
+Learn more about developing your own plugins from [this guide](https://docs.apeworx.io/ape/stable/userguides/projects.html).
 
-```bash 
-git clone https://github.com/brownie-mix/vyper-token-mix.git
-cd vyper-token-mix/
-```
+### Compiling
 
 You can compile contracts within the `contracts/` directory of your project.
 The `--size` option will display you the size of the contract.
@@ -199,17 +192,33 @@ The `--size` option will display you the size of the contract.
 ape compile --size
 ```
 
+Learn more about compiling in Ape by following the [compile guide](https://docs.apeworx.io/ape/stable/userguides/compile.html).
+
+### Testing
+
+Use Ape to test your smart-contract projects.
 Provide the same arguments to `pytest` as you would to the `ape test` command.
+
+For example:
 
 ```bash
 ape test -k test_only_one_thing
 ```
 
-Connect an IPython session through your favorite provider.
+Visit the [testing guide](https://docs.apeworx.io/ape/stable/userguides/testing.html) to learn more about testing using Ape.
+
+### Console
+
+Ape provides an `IPython` interactive console with useful pre-defined locals to interact with your project.
+To interact with a deployed contract in a local environment, start by opening the console:
 
 ```bash
 ape console --network ethereum:mainnet:infura
 ```
+
+Visit [Ape Console](https://docs.apeworx.io/ape/stable/commands/console.html) to learn how to use Ape Console.
+
+### Scripts
 
 If you want to run specific files in a `scripts/` directory, you can do it using the `ape run` command.
 
@@ -217,6 +226,8 @@ If you want to run specific files in a `scripts/` directory, you can do it using
 # This command will run a file named deploy in the scripts/ directory
 $ ape run deploy
 ```
+
+Learn more about scripting using Ape by following the [scripting guide](https://docs.apeworx.io/ape/stable/userguides/scripts.html).
 
 ### Logging
 
@@ -226,7 +237,7 @@ To enable debug logging, run your command with the `--verbosity` flag using `DEB
 ape run --verbosity DEBUG
 ```
 
-You can use `ape` as a package outside of scripts for the `ape run` command as well.
+### Networks
 
 You can work with registered networks, providers, and blockchain ecosystems (like Ethereum):
 
@@ -236,21 +247,4 @@ with networks.ethereum.mainnet.use_provider("infura"):
     ...  # Work with the infura provider here
 ```
 
-You can work with test accounts, local accounts, and (WIP) popular hardware wallets:
-
-```python
-from ape import accounts
-a = accounts[0]  # Load by index
-a = accounts["example.eth"]  # or load by ENS/address
-a = accounts.load("alias") # or load by alias
-```
-
-You can also work with contract types:
-
-```python
-from ape import project
-c = a.deploy(project.MyContract, ...)
-c.viewThis()  # Make Web3 calls
-c.doThat(sender=a)  # Make Web3 transactions
-assert c.MyEvent[-1].caller == a  # Search through Web3 events
-```
+To learn more about networks in Ape, see [this guide](https://docs.apeworx.io/ape/stable/commands/networks.html). 
