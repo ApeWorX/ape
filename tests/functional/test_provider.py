@@ -1,4 +1,5 @@
 import pytest
+from unittest import mock
 from eth_typing import HexStr
 
 from ape.exceptions import ProviderError, ProviderNotConnectedError
@@ -14,6 +15,15 @@ def test_get_block(eth_tester_provider, block_id):
     assert latest_block.number == 0
     assert latest_block.base_fee == 1000000000
     assert latest_block.gas_used == 0
+
+
+@mock.patch("ape.api.networks.NetworkAPI.gas_limit", new_callable=mock.PropertyMock)
+def test_estimate_gas_with_max_value_from_block(gas_patch, eth_tester_provider, mock_transaction):
+    gas_patch.return_value = "max"
+    gas_cost = eth_tester_provider.estimate_gas_cost(mock_transaction)
+    latest_block = eth_tester_provider.get_block("latest")
+
+    assert gas_cost == latest_block.gas_limit
 
 
 def test_chain_id(eth_tester_provider):

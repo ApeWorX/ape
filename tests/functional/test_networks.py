@@ -237,7 +237,7 @@ def test_ecosystems_when_default_provider_not_exists(temp_config, caplog, networ
     )
 
 
-def test_gas_limits(ethereum, temp_config, config):
+def test_gas_limits(ethereum):
     """
     Test the default gas limit configurations for local and live networks.
     """
