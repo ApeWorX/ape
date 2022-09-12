@@ -17,7 +17,7 @@ from ethpm_types import (
 )
 from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, Field, root_validator, validator
 from web3.types import FilterParams
 
 from ape.utils.misc import to_int
@@ -152,50 +152,9 @@ class LogFilter(BaseModel):
         )
 
 
-class ContractLog(BaseModel):
-    """
-    An instance of a log from a contract.
-    """
+class EventArguments(BaseModel):
 
-    event_name: str
-    """The name of the event."""
-
-    contract_address: AddressType
-    """The contract responsible for emitting the log."""
-
-    event_arguments: Dict[str, Any]
-    """The arguments to the event, including both indexed and non-indexed data."""
-
-    transaction_hash: Any
-    """The hash of the transaction containing this log."""
-
-    block_number: int
-    """The number of the block containing the transaction that produced this log."""
-
-    block_hash: Any
-    """The hash of the block containing the transaction that produced this log."""
-
-    log_index: int
-    """The index of the log on the transaction."""
-
-    transaction_index: Optional[int] = None
-    """
-    The index of the transaction's position when the log was created.
-    Is `None` when from the pending block.
-    """
-
-    @validator("block_number", "log_index", "transaction_index", pre=True)
-    def validate_hex_ints(cls, value):
-        if not isinstance(value, int):
-            return to_int(value)
-
-        return value
-
-    @validator("contract_address", pre=True)
-    def validate_address(cls, value):
-        from ape import convert
-
-        return convert(value, AddressType)
+    event_arguments: Dict[str, Any] = Field(...)
 
     @property
     def _event_args_str(self) -> str:
@@ -236,8 +195,47 @@ class ContractLog(BaseModel):
         return self.event_arguments.get(item, default)
 
 
-class ContractLogEventArguments(BaseModel):
-    pass
+class ContractLog(EventArguments):
+    """
+    An instance of a log from a contract.
+    """
+
+    event_name: str
+    """The name of the event."""
+
+    contract_address: AddressType
+    """The contract responsible for emitting the log."""
+
+    transaction_hash: Any
+    """The hash of the transaction containing this log."""
+
+    block_number: int
+    """The number of the block containing the transaction that produced this log."""
+
+    block_hash: Any
+    """The hash of the block containing the transaction that produced this log."""
+
+    log_index: int
+    """The index of the log on the transaction."""
+
+    transaction_index: Optional[int] = None
+    """
+    The index of the transaction's position when the log was created.
+    Is `None` when from the pending block.
+    """
+
+    @validator("block_number", "log_index", "transaction_index", pre=True)
+    def validate_hex_ints(cls, value):
+        if not isinstance(value, int):
+            return to_int(value)
+
+        return value
+
+    @validator("contract_address", pre=True)
+    def validate_address(cls, value):
+        from ape import convert
+
+        return convert(value, AddressType)
 
 
 __all__ = [

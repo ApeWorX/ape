@@ -75,6 +75,7 @@ def test_transaction_acceptance_timeout(temp_config, config, networks):
 def test_decode_logs(ethereum, vyper_contract_instance):
     abi = vyper_contract_instance.NumberChange.abi
     result = [x for x in ethereum.decode_logs([LOG], abi)]
+    breakpoint()
     assert len(result) == 1
     assert result[0] == {
         "event_name": "NumberChange",
