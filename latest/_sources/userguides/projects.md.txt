@@ -21,7 +21,7 @@ See the [configuration guide](./config.html) for a more detailed explanation of 
 
 Your project may require plugins.
 To install plugins, use the `ape plugins install .` command.
-Learn more about configuring your project's required plugins by following [this guide](./installing_plugins.md).
+Learn more about configuring your project's required plugins by following [this guide](./installing_plugins.html).
 
 ## Compiling Contracts
 
