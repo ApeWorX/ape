@@ -6,8 +6,8 @@ from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import NetworkError
 
-from .base import BaseManager
 from ..logging import logger
+from .base import BaseManager
 
 
 class NetworkManager(BaseManager):

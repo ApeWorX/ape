@@ -209,3 +209,14 @@ def test_parse_network_choice_multiple_contexts(get_provider_with_unused_chain_i
 
 def test_block_times(ethereum):
     assert ethereum.rinkeby.block_time == 15
+
+
+def test_ecosystems_when_provider_not_exists(temp_config, caplog, ethereum, networks):
+    # If provider in config not exists, rest of ecosystems should still load
+    bad_provider = "NOT_EXISTS"
+    config = {"ethereum": {"kovan": {"default_provider": bad_provider}}}
+    with temp_config(config):
+        assert networks.ecosystems
+
+    err = caplog.records[-1].message
+    assert err == f"Provider '{bad_provider}' not found in network 'kovan'."
