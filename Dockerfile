@@ -34,3 +34,4 @@ RUN pip install --upgrade pip \
     && ape --version
 
 USER harambe
+ENTRYPOINT ["ape"]
