@@ -211,7 +211,21 @@ def test_block_times(ethereum):
     assert ethereum.rinkeby.block_time == 15
 
 
-def test_ecosystems_when_provider_not_exists(temp_config, caplog, ethereum, networks):
+def test_ecosystems_when_default_network_not_exists(temp_config, caplog, networks):
+    # If provider in config not exists, rest of ecosystems should still load
+    bad_network = "NOT_EXISTS"
+    config = {"ethereum": {"default_network": bad_network}}
+    with temp_config(config):
+        assert networks.ecosystems
+
+    err = caplog.records[-1].message
+    assert err == (
+        f"Failed setting default network: "
+        f"'{bad_network}' is not a valid network for ecosystem 'ethereum'."
+    )
+
+
+def test_ecosystems_when_default_provider_not_exists(temp_config, caplog, networks):
     # If provider in config not exists, rest of ecosystems should still load
     bad_provider = "NOT_EXISTS"
     config = {"ethereum": {"kovan": {"default_provider": bad_provider}}}

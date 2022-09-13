@@ -102,7 +102,11 @@ class NetworkManager(BaseManager):
             ecosystem_config = self.config_manager.get_config(plugin_name).dict()
             default_network = ecosystem_config.get("default_network", LOCAL_NETWORK_NAME)
 
-            ecosystem.set_default_network(default_network)
+            try:
+                ecosystem.set_default_network(default_network)
+            except NetworkError as err:
+                message = f"Failed setting default network: {err}"
+                logger.error(message)
 
             if ecosystem_config:
                 for network_name, network in ecosystem.networks.items():
