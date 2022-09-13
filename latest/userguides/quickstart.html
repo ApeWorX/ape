@@ -69,11 +69,17 @@
 <li class="toctree-l3"><a class="reference internal" href="#via-docker">via <code class="docutils literal notranslate"><span class="pre">docker</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#environment-variables">Environment Variables:</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ape-console">Ape Console</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#quick-usage">Quick Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#projects">Projects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#accounts">Accounts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plugins">Plugins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compiling">Compiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#console">Console</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts">Scripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#logging">Logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#networks">Networks</a></li>
 </ul>
 </li>
 </ul>
@@ -158,7 +164,7 @@
 <li><p>Choose Ubuntu 20.04 OR Any other Linux Distribution with Python
 3.8 or later</p></li>
 </ol>
-<p>Check your python command by entering</p>
+<p>Check your python command by entering:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 --version
 </pre></div>
 </div>
@@ -173,16 +179,15 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx install eth-ape
 </pre></div>
 </div>
-<p>or install w/ ApeWorX-recommended plugins via</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx install eth-ape<span class="o">[</span>recommended-plugins<span class="o">]</span>
+<p>To install Ape and a list of common, recommended plugins at the same time, do:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx install eth-ape<span class="s1">&#39;[recommended-plugins]&#39;</span>
 </pre></div>
 </div>
 </section>
 <section id="via-pip">
 <h3>via <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#via-pip" title="Permalink to this headline"></a></h3>
 <p><strong>Suggestion</strong>: Create a virtual environment using <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> or <code class="docutils literal notranslate"><span class="pre">venv.</span></code></p>
-<p>You may skip this creating a virtual environment if you know you don’t
-require one for your use case.</p>
+<p>You may skip creating a virtual environment if you know you don’t require one for your use case.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://pypi.org/project/virtualenv/">virtualenv</a></p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/venv.html">venv</a></p></li>
@@ -194,35 +199,33 @@ require one for your use case.</p>
 <ul class="simple">
 <li><p>(MacOS Option) Install via homebrew <a class="reference external" href="https://formulae.brew.sh/formula/virtualenv">brew</a></p></li>
 </ul>
-<p>Create your virtual environment folder</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 -m venv /path/to/new/environment
-<span class="nb">source</span> &lt;venv_folder&gt;/bin/activate
+<p>First, create your virtual environment folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 -m venv &lt;path/to/new/env&gt;
 </pre></div>
 </div>
-<p>NOTE: the path to venv is not a real path.</p>
-<p>You should see <code class="docutils literal notranslate"><span class="pre">(name_of_venv)</span> <span class="pre">DESKTOP_NAME:~/path:$</span></code>.
-To deactivate the virtual environment, do:</p>
+<p>Then, activate your virtual environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span> &lt;venv_folder&gt;/bin/activate
+</pre></div>
+</div>
+<p>You should see <code class="docutils literal notranslate"><span class="pre">(name_of_venv)</span> <span class="pre">DESKTOP_NAME:~/path:$</span></code>.</p>
+<p>To deactivate the virtual environment, do:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>deactivate
 </pre></div>
 </div>
-<p>Now that your Python version is later than 3.7.2 and you have created a
-virtual environment let’s install Ape!</p>
-<p>You can install the latest release via
-<a class="reference external" href="https://pypi.org/project/pip/">pip</a>:</p>
+<p>Now that you have Python installed in your virtual environment, install the <code class="docutils literal notranslate"><span class="pre">eth-ape</span></code> Python package:
+You can install the latest release via <a class="reference external" href="https://pypi.org/project/pip/">pip</a>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -U pip
 pip install eth-ape
 </pre></div>
 </div>
-<p>or install w/ ApeWorX-recommended plugins via</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install eth-ape<span class="o">[</span>recommended-plugins<span class="o">]</span>
+<p>To install Ape and a list of common, recommended plugins at the same time, do:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install eth-ape<span class="s1">&#39;[recommended-plugins]&#39;</span>
 </pre></div>
 </div>
 </section>
 <section id="via-docker">
 <h3>via <code class="docutils literal notranslate"><span class="pre">docker</span></code><a class="headerlink" href="#via-docker" title="Permalink to this headline"></a></h3>
-<p>Please visit our
-<a class="reference external" href="https://hub.docker.com/repository/docker/apeworx/ape">Dockerhub</a> for
-more details on using Ape with Docker.</p>
+<p>Please visit our <a class="reference external" href="https://hub.docker.com/repository/docker/apeworx/ape">Dockerhub</a> for more details on using Ape with Docker.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker run <span class="se">\</span>
 --volume <span class="nv">$HOME</span>/.ape:/root/.ape <span class="se">\</span>
 --volume <span class="nv">$HOME</span>/.vvm:/root/.vvm <span class="se">\</span>
@@ -239,45 +242,42 @@ sudo rm -rf **<span class="se">\~</span>/.vvm**
 </div>
 </section>
 </section>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
-<p>For more in-depth information about the project please look at the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/projects.html">projects</a>
-It explains the purpose of each folder and how to use them effectively.</p>
-<p>Use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">init</span></code> to initialize your ape project folders. Visit <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/projects.html">userguide project</a> for more information.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape init
-</pre></div>
-</div>
-</section>
 <section id="environment-variables">
 <h2>Environment Variables:<a class="headerlink" href="#environment-variables" title="Permalink to this headline"></a></h2>
-<p>Environment Variables are used to help connect you to your files or ecosystems outside of ApeWorX.</p>
-<p>Please setup environment variables (where applicable) and follow the latest instructions from the 3rd party:</p>
-<p>Example use case:</p>
+<p>Some plugins require environment variables to connect to their external systems, such project IDs or API keys.
+Follow instructions from individual plugin documentations, such as:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#quick-usage">ape-alchemy</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ApeWorX/ape-infura#readme">ape-infura</a></p></li>
+</ul>
+<p>Generally, set environment variables by doing the following:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Used by the `ape-infura` plugin</span>
 <span class="nb">export</span> <span class="nv">WEB3_INFURA_PROJECT_ID</span><span class="o">=</span>&lt;YOUR_INFURA_PROJECT_ID&gt;
 <span class="c1"># Used by the `ape-alchemy` plugin</span>
 <span class="nb">export</span> <span class="nv">WEB3_ALCHEMY_API_KEY</span><span class="o">=</span>&lt;YOUR_ALCHEMY_KEY&gt;
 </pre></div>
 </div>
-<p>Visit <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#quick-usage">ape-alchemy</a></p>
-<p>Visit <a class="reference external" href="https://github.com/ApeWorX/ape-infura#readme">ape-infura</a></p>
-</section>
-<section id="ape-console">
-<h2>Ape Console<a class="headerlink" href="#ape-console" title="Permalink to this headline"></a></h2>
-<p>Ape provides an IPython interactive console with useful pre-defined locals to interact with your project.
-To interact with a deployed contract in a local environment, start by opening the console:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape console --network :mainnet-fork:hardhat
-</pre></div>
-</div>
-<p>Visit <a class="reference external" href="https://docs.apeworx.io/ape/stable/commands/console.html">Ape Console</a> to learn how to use Ape Console.</p>
+<p>Place these in environment files, such as your <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code> or <code class="docutils literal notranslate"><span class="pre">.zshrc</span></code>.</p>
 </section>
 <section id="quick-usage">
 <h2>Quick Usage<a class="headerlink" href="#quick-usage" title="Permalink to this headline"></a></h2>
-<p>Use <code class="docutils literal notranslate"><span class="pre">-h</span></code> to list all the commands.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">-h</span></code> to list all the commands:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape -h
 </pre></div>
 </div>
-<p>You can import or generate accounts.</p>
+<section id="projects">
+<h3>Projects<a class="headerlink" href="#projects" title="Permalink to this headline"></a></h3>
+<p>When using Ape, you generally will work with a project.
+To quickly get started using ape, generate a project using the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">init</span></code> command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape init
+</pre></div>
+</div>
+<p>For more in-depth information about smart-contract projects using the Ape framework, see the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/projects.html">projects guide</a>.</p>
+</section>
+<section id="accounts">
+<h3>Accounts<a class="headerlink" href="#accounts" title="Permalink to this headline"></a></h3>
+<p>In Ape, you will need accounts to make transactions.
+You can import or generate accounts using the core <code class="docutils literal notranslate"><span class="pre">accounts</span></code> plugin:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts import acc0   <span class="c1"># Will prompt for a private key</span>
 ape accounts generate acc1
 </pre></div>
@@ -286,69 +286,75 @@ ape accounts generate acc1
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts list
 </pre></div>
 </div>
+<p>Learn more about accounts in Ape by following the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/accounts.html">accounts guide</a>.</p>
+</section>
+<section id="plugins">
+<h3>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline"></a></h3>
 <p>Add any plugins you may need, such as <code class="docutils literal notranslate"><span class="pre">vyper</span></code>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins list -a
 ape plugins install vyper
 ape plugins list -a
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: If a plugin does not originate from the
-<a class="reference external" href="https://github.com/ApeWorX?q=ape&amp;type=all">ApeWorX GitHub organization</a>, you will get a warning about installing
-3rd-class plugins. Any plugin that is not an official plugin has the chance of not being trustworthy. Thus, you should
-be mindful about which plugins you install. Additionally, plugins that come bundled with <code class="docutils literal notranslate"><span class="pre">ape</span></code> in the core installation
-cannot be removed and are considered part of the <code class="docutils literal notranslate"><span class="pre">ape</span></code> core software.</p>
-<p>You can interact and compile contracts.
-Here is an example of a project with a contract you interact with:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/brownie-mix/vyper-token-mix.git
-<span class="nb">cd</span> vyper-token-mix/
-</pre></div>
-</div>
+<p><strong>NOTE</strong>: If a plugin does not originate from the <a class="reference external" href="https://github.com/ApeWorX?q=ape&amp;type=all">ApeWorX GitHub organization</a>, you will get a warning about installing 3rd-party plugins.
+Install 3rd party plugins at your own risk.
+Additionally, plugins that come bundled with <code class="docutils literal notranslate"><span class="pre">ape</span></code> in the core installation cannot be removed and are part of the <code class="docutils literal notranslate"><span class="pre">ape</span></code> core software.</p>
+<p>Learn more about installing plugins from following <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html">this guide</a>.
+Learn more about developing your own plugins from <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/projects.html">this guide</a>.</p>
+</section>
+<section id="compiling">
+<h3>Compiling<a class="headerlink" href="#compiling" title="Permalink to this headline"></a></h3>
 <p>You can compile contracts within the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory of your project.
 The <code class="docutils literal notranslate"><span class="pre">--size</span></code> option will display you the size of the contract.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape compile --size
 </pre></div>
 </div>
-<p>Provide the same arguments to <code class="docutils literal notranslate"><span class="pre">pytest</span></code> as you would to the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> command.</p>
+<p>Learn more about compiling in Ape by following the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/compile.html">compile guide</a>.</p>
+</section>
+<section id="testing">
+<h3>Testing<a class="headerlink" href="#testing" title="Permalink to this headline"></a></h3>
+<p>Use Ape to test your smart-contract projects.
+Provide the same arguments to <code class="docutils literal notranslate"><span class="pre">pytest</span></code> as you would to the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> command.</p>
+<p>For example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> -k test_only_one_thing
 </pre></div>
 </div>
-<p>Connect an IPython session through your favorite provider.</p>
+<p>Visit the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/testing.html">testing guide</a> to learn more about testing using Ape.</p>
+</section>
+<section id="console">
+<h3>Console<a class="headerlink" href="#console" title="Permalink to this headline"></a></h3>
+<p>Ape provides an <code class="docutils literal notranslate"><span class="pre">IPython</span></code> interactive console with useful pre-defined locals to interact with your project.
+To interact with a deployed contract in a local environment, start by opening the console:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape console --network ethereum:mainnet:infura
 </pre></div>
 </div>
+<p>Visit <a class="reference external" href="https://docs.apeworx.io/ape/stable/commands/console.html">Ape Console</a> to learn how to use Ape Console.</p>
+</section>
+<section id="scripts">
+<h3>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline"></a></h3>
 <p>If you want to run specific files in a <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> directory, you can do it using the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> command.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># This command will run a file named deploy in the scripts/ directory</span>
 $ ape run deploy
 </pre></div>
 </div>
+<p>Learn more about scripting using Ape by following the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/scripts.html">scripting guide</a>.</p>
+</section>
 <section id="logging">
 <h3>Logging<a class="headerlink" href="#logging" title="Permalink to this headline"></a></h3>
 <p>To enable debug logging, run your command with the <code class="docutils literal notranslate"><span class="pre">--verbosity</span></code> flag using <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> as the value:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape run --verbosity DEBUG
 </pre></div>
 </div>
-<p>You can use <code class="docutils literal notranslate"><span class="pre">ape</span></code> as a package outside of scripts for the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> command as well.</p>
+</section>
+<section id="networks">
+<h3>Networks<a class="headerlink" href="#networks" title="Permalink to this headline"></a></h3>
 <p>You can work with registered networks, providers, and blockchain ecosystems (like Ethereum):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
 <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;infura&quot;</span><span class="p">):</span>
     <span class="o">...</span>  <span class="c1"># Work with the infura provider here</span>
 </pre></div>
 </div>
-<p>You can work with test accounts, local accounts, and (WIP) popular hardware wallets:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Load by index</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="s2">&quot;example.eth&quot;</span><span class="p">]</span>  <span class="c1"># or load by ENS/address</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;alias&quot;</span><span class="p">)</span> <span class="c1"># or load by alias</span>
-</pre></div>
-</div>
-<p>You can also work with contract types:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
-<span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
-<span class="n">c</span><span class="o">.</span><span class="n">viewThis</span><span class="p">()</span>  <span class="c1"># Make Web3 calls</span>
-<span class="n">c</span><span class="o">.</span><span class="n">doThat</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">a</span><span class="p">)</span>  <span class="c1"># Make Web3 transactions</span>
-<span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">MyEvent</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">caller</span> <span class="o">==</span> <span class="n">a</span>  <span class="c1"># Search through Web3 events</span>
-</pre></div>
-</div>
+<p>To learn more about networks in Ape, see <a class="reference external" href="https://docs.apeworx.io/ape/stable/commands/networks.html">this guide</a>.</p>
 </section>
 </section>
 </section>
