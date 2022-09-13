@@ -4,7 +4,6 @@ from typing import Dict
 import pytest
 
 from ape.api import PluginConfig
-from ape.exceptions import NetworkError
 from ape.managers.config import DeploymentConfigCollection
 from ape_ethereum.ecosystem import NetworkConfig
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
@@ -53,19 +52,6 @@ def test_ethereum_network_configs(config, temp_config):
 
         # Ensure that non-updated fields remain unaffected
         assert actual.rinkeby.block_time == 15
-
-
-def test_default_provider_not_found(temp_config, networks):
-    provider_name = "DOES_NOT_EXIST"
-    network_name = "local"
-    eth_config = {"ethereum": {network_name: {"default_provider": provider_name}}}
-
-    with temp_config(eth_config):
-        with pytest.raises(
-            NetworkError, match=f"Provider '{provider_name}' not found in network '{network_name}'."
-        ):
-            # Trigger re-loading the Ethereum config.
-            _ = networks.ecosystems
 
 
 def test_dependencies(dependency_config, config):
