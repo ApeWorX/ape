@@ -1,4 +1,4 @@
-from .utils import skip_projects_except
+from .utils import run_once, skip_projects_except
 
 _DEFAULT_NETWORKS_TREE = """
 ethereum  (default)
@@ -107,13 +107,13 @@ def assert_rich_text(actual: str, expected: str):
         assert expected_line in actual_lines
 
 
-@skip_projects_except(["test"])
+@run_once
 def test_list(ape_cli, runner):
     result = runner.invoke(ape_cli, ["networks", "list"])
     assert_rich_text(result.output, _DEFAULT_NETWORKS_TREE)
 
 
-@skip_projects_except(["test"])
+@run_once
 def test_list_yaml(ape_cli, runner):
     result = runner.invoke(ape_cli, ["networks", "list", "--format", "yaml"])
     expected_lines = _DEFAULT_NETWORKS_YAML.strip().split("\n")
@@ -137,13 +137,13 @@ def test_geth(ape_cli, runner, networks):
     # assert geth_provider.uri == DEFAULT_SETTINGS["uri"]
 
 
-@skip_projects_except(["test"])
+@run_once
 def test_filter_networks(ape_cli, runner, networks):
     result = runner.invoke(ape_cli, ["networks", "list", "--network", "rinkeby"])
     assert_rich_text(result.output, _RINKEBY_NETWORK_TREE_OUTPUT)
 
 
-@skip_projects_except(["test"])
+@run_once
 def test_filter_providers(ape_cli, runner, networks):
     result = runner.invoke(ape_cli, ["networks", "list", "--provider", "test"])
     assert_rich_text(result.output, _TEST_PROVIDER_TREE_OUTPUT)

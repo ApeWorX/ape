@@ -49,19 +49,12 @@ def plugins_argument():
             # User passed in a path to a file.
             file_path = Path(value[0]).expanduser().resolve()
 
-            if file_path.suffix == ".txt":
-                # Requirements file
-                plugins = [
-                    {"name": x} for x in file_path.read_text().split("\n") if x.startswith("ape-")
-                ]
+            # Config file
+            if file_path.name != CONFIG_FILE_NAME:
+                file_path = file_path / CONFIG_FILE_NAME
 
-            else:
-                # Config file
-                if file_path.name != CONFIG_FILE_NAME:
-                    file_path = file_path / CONFIG_FILE_NAME
-
-                config = load_config(file_path)
-                plugins = config.get("plugins") or []
+            config = load_config(file_path)
+            plugins = config.get("plugins") or []
 
             if not plugins:
                 ctx.obj.logger.warning(f"No plugins found at '{file_path}'.")

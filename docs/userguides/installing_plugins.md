@@ -49,25 +49,6 @@ To install plugins individually, run the following command:
 ape plugins install vyper solidity
 ```
 
-You can also install plugins from [requirements files](https://pip.pypa.io/en/latest/reference/requirements-file-format/).
-To do this, set-up your requirements file to include ape plugin package names (including `ape-` prefix):
-
-```txt
-# These will be installed from the ape command
-ape-trezor==0.5.1
-ape-infura
-ape-hardhat
-
-# These will NOT be installed from the ape command
-other-non-ape-plugin-dependency
-```
-
-Then, point the `install` command at the file to install them:
-
-```bash
-ape plugins install requirements.txt
-```
-
 ## Plugin Types
 
 There are many types of plugins available, including compilers, providers, networks, and CLI-based plugins.

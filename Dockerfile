@@ -26,7 +26,7 @@ COPY . .
 
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir . \
-    && ape plugins install "recommended-plugins.txt" \
+    && pip install -r recommended-plugins.txt \
 # Fix RLP installation issue
     && pip uninstall rlp --yes \
     && pip install rlp==3.0.0 \
