@@ -133,8 +133,8 @@ def test_geth(ape_cli, runner, networks):
 
     # Assert that URI still exists for local network
     # (was bug where one network's URI disappeared when setting different network's URI)
-    # geth_provider = networks.get_provider_from_choice(f"ethereum:{LOCAL_NETWORK_NAME}:geth")
-    # assert geth_provider.uri == DEFAULT_SETTINGS["uri"]
+    geth_provider = networks.get_provider_from_choice(f"ethereum:{LOCAL_NETWORK_NAME}:geth")
+    assert geth_provider.uri == DEFAULT_SETTINGS["uri"]
 
 
 @run_once
