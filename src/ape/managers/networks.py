@@ -7,6 +7,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import NetworkError
 
 from .base import BaseManager
+from ..logging import logger
 
 
 class NetworkManager(BaseManager):
@@ -115,7 +116,10 @@ class NetworkManager(BaseManager):
 
                     default_provider = network_config["default_provider"]
                     if default_provider:
-                        network.set_default_provider(default_provider)
+                        try:
+                            network.set_default_provider(default_provider)
+                        except NetworkError as err:
+                            logger.error(str(err))
 
             ecosystem_dict[plugin_name] = ecosystem
 
@@ -240,7 +244,6 @@ class NetworkManager(BaseManager):
             ecosystem_items = {n: e for n, e in ecosystem_items.items() if n in ecosystem_filter}
 
         for ecosystem_name, ecosystem in ecosystem_items.items():
-
             network_items = ecosystem.networks
             if network_filter:
                 network_items = {n: net for n, net in network_items.items() if n in network_filter}
