@@ -1,5 +1,4 @@
 from evm_trace import CallType
-from evm_trace.display import DisplayableCallTreeNode
 from hexbytes import HexBytes
 
 from ape_ethereum.transactions import TransactionStatusEnum
@@ -56,7 +55,6 @@ LOCAL_CALL_TREE_DICT = {
             "calls": [],
             "selfdestruct": False,
             "failed": False,
-            "display_cls": DisplayableCallTreeNode,
         },
         {
             "call_type": CallType.CALL,
@@ -84,7 +82,6 @@ LOCAL_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -100,12 +97,10 @@ LOCAL_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
             ],
             "selfdestruct": False,
             "failed": False,
-            "display_cls": DisplayableCallTreeNode,
         },
         {
             "call_type": CallType.CALL,
@@ -123,7 +118,6 @@ LOCAL_CALL_TREE_DICT = {
             "calls": [],
             "selfdestruct": False,
             "failed": False,
-            "display_cls": DisplayableCallTreeNode,
         },
         {
             "call_type": CallType.CALL,
@@ -153,7 +147,6 @@ LOCAL_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -169,7 +162,6 @@ LOCAL_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -183,7 +175,6 @@ LOCAL_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -197,12 +188,10 @@ LOCAL_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
             ],
             "selfdestruct": False,
             "failed": False,
-            "display_cls": DisplayableCallTreeNode,
         },
         {
             "call_type": CallType.STATICCALL,
@@ -220,7 +209,6 @@ LOCAL_CALL_TREE_DICT = {
             "calls": [],
             "selfdestruct": False,
             "failed": False,
-            "display_cls": DisplayableCallTreeNode,
         },
         {
             "call_type": CallType.STATICCALL,
@@ -238,7 +226,6 @@ LOCAL_CALL_TREE_DICT = {
             "calls": [],
             "selfdestruct": False,
             "failed": False,
-            "display_cls": DisplayableCallTreeNode,
         },
         {
             "call_type": CallType.CALL,
@@ -266,7 +253,6 @@ LOCAL_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -282,12 +268,10 @@ LOCAL_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
             ],
             "selfdestruct": False,
             "failed": False,
-            "display_cls": DisplayableCallTreeNode,
         },
         {
             "call_type": CallType.CALL,
@@ -315,7 +299,6 @@ LOCAL_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -331,17 +314,14 @@ LOCAL_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
             ],
             "selfdestruct": False,
             "failed": False,
-            "display_cls": DisplayableCallTreeNode,
         },
     ],
     "selfdestruct": False,
     "failed": False,
-    "display_cls": DisplayableCallTreeNode,
 }
 MAINNET_CALL_TREE_DICT = {
     "call_type": CallType.CALL,
@@ -383,7 +363,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -431,7 +410,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -451,7 +429,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -519,7 +496,6 @@ MAINNET_CALL_TREE_DICT = {
                                                             "calls": [],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         },
                                                         {
                                                             "call_type": CallType.STATICCALL,
@@ -537,22 +513,18 @@ MAINNET_CALL_TREE_DICT = {
                                                             "calls": [],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         },
                                                     ],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 }
                                             ],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -572,7 +544,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -640,22 +611,18 @@ MAINNET_CALL_TREE_DICT = {
                                                             "calls": [],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         }
                                                     ],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 }
                                             ],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -675,7 +642,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -743,22 +709,18 @@ MAINNET_CALL_TREE_DICT = {
                                                             "calls": [],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         }
                                                     ],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 }
                                             ],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -778,17 +740,14 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                             ],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         }
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -816,12 +775,10 @@ MAINNET_CALL_TREE_DICT = {
                             "calls": [],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         }
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -865,7 +822,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -885,17 +841,14 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                             ],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         }
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -913,7 +866,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -931,7 +883,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -963,12 +914,10 @@ MAINNET_CALL_TREE_DICT = {
                             "calls": [],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         }
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -984,7 +933,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -1032,7 +980,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -1052,7 +999,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -1120,7 +1066,6 @@ MAINNET_CALL_TREE_DICT = {
                                                             "calls": [],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         },
                                                         {
                                                             "call_type": CallType.STATICCALL,
@@ -1138,22 +1083,18 @@ MAINNET_CALL_TREE_DICT = {
                                                             "calls": [],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         },
                                                     ],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 }
                                             ],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -1173,7 +1114,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -1241,22 +1181,18 @@ MAINNET_CALL_TREE_DICT = {
                                                             "calls": [],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         }
                                                     ],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 }
                                             ],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -1276,7 +1212,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -1344,22 +1279,18 @@ MAINNET_CALL_TREE_DICT = {
                                                             "calls": [],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         }
                                                     ],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 }
                                             ],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -1379,17 +1310,14 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                             ],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         }
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -1417,12 +1345,10 @@ MAINNET_CALL_TREE_DICT = {
                             "calls": [],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         }
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -1450,12 +1376,10 @@ MAINNET_CALL_TREE_DICT = {
                             "calls": [],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         }
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -1473,7 +1397,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -1553,7 +1476,6 @@ MAINNET_CALL_TREE_DICT = {
                                                     "calls": [],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -1573,7 +1495,6 @@ MAINNET_CALL_TREE_DICT = {
                                                     "calls": [],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -1593,7 +1514,6 @@ MAINNET_CALL_TREE_DICT = {
                                                     "calls": [],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -1661,7 +1581,6 @@ MAINNET_CALL_TREE_DICT = {
                                                                             "calls": [],
                                                                             "selfdestruct": False,
                                                                             "failed": False,
-                                                                            "display_cls": DisplayableCallTreeNode,
                                                                         },
                                                                         {
                                                                             "call_type": CallType.STATICCALL,
@@ -1681,22 +1600,18 @@ MAINNET_CALL_TREE_DICT = {
                                                                             "calls": [],
                                                                             "selfdestruct": False,
                                                                             "failed": False,
-                                                                            "display_cls": DisplayableCallTreeNode,
                                                                         },
                                                                     ],
                                                                     "selfdestruct": False,
                                                                     "failed": False,
-                                                                    "display_cls": DisplayableCallTreeNode,
                                                                 }
                                                             ],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         }
                                                     ],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -1716,7 +1631,6 @@ MAINNET_CALL_TREE_DICT = {
                                                     "calls": [],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -1784,22 +1698,18 @@ MAINNET_CALL_TREE_DICT = {
                                                                             "calls": [],
                                                                             "selfdestruct": False,
                                                                             "failed": False,
-                                                                            "display_cls": DisplayableCallTreeNode,
                                                                         }
                                                                     ],
                                                                     "selfdestruct": False,
                                                                     "failed": False,
-                                                                    "display_cls": DisplayableCallTreeNode,
                                                                 }
                                                             ],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         }
                                                     ],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -1819,7 +1729,6 @@ MAINNET_CALL_TREE_DICT = {
                                                     "calls": [],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -1887,22 +1796,18 @@ MAINNET_CALL_TREE_DICT = {
                                                                             "calls": [],
                                                                             "selfdestruct": False,
                                                                             "failed": False,
-                                                                            "display_cls": DisplayableCallTreeNode,
                                                                         }
                                                                     ],
                                                                     "selfdestruct": False,
                                                                     "failed": False,
-                                                                    "display_cls": DisplayableCallTreeNode,
                                                                 }
                                                             ],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         }
                                                     ],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -1922,7 +1827,6 @@ MAINNET_CALL_TREE_DICT = {
                                                     "calls": [],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -1940,7 +1844,6 @@ MAINNET_CALL_TREE_DICT = {
                                                     "calls": [],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -1958,7 +1861,6 @@ MAINNET_CALL_TREE_DICT = {
                                                     "calls": [],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -2010,17 +1912,14 @@ MAINNET_CALL_TREE_DICT = {
                                                                     "calls": [],
                                                                     "selfdestruct": False,
                                                                     "failed": False,
-                                                                    "display_cls": DisplayableCallTreeNode,
                                                                 }
                                                             ],
                                                             "selfdestruct": False,
                                                             "failed": False,
-                                                            "display_cls": DisplayableCallTreeNode,
                                                         }
                                                     ],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.STATICCALL,
@@ -2040,7 +1939,6 @@ MAINNET_CALL_TREE_DICT = {
                                                     "calls": [],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                                 {
                                                     "call_type": CallType.CALL,
@@ -2060,17 +1958,14 @@ MAINNET_CALL_TREE_DICT = {
                                                     "calls": [],
                                                     "selfdestruct": False,
                                                     "failed": False,
-                                                    "display_cls": DisplayableCallTreeNode,
                                                 },
                                             ],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.STATICCALL,
@@ -2090,7 +1985,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.CALL,
@@ -2108,7 +2002,6 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.CALL,
@@ -2140,22 +2033,18 @@ MAINNET_CALL_TREE_DICT = {
                                             "calls": [],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                             ],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         }
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2171,7 +2060,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -2189,7 +2077,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2205,7 +2092,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -2223,7 +2109,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2239,7 +2124,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2255,7 +2139,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2271,7 +2154,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -2289,7 +2171,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -2307,7 +2188,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2367,12 +2247,10 @@ MAINNET_CALL_TREE_DICT = {
                                             "calls": [],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.CALL,
@@ -2406,12 +2284,10 @@ MAINNET_CALL_TREE_DICT = {
                                             "calls": [],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                                 {
                                     "call_type": CallType.CALL,
@@ -2443,17 +2319,14 @@ MAINNET_CALL_TREE_DICT = {
                                             "calls": [],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         }
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 },
                             ],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         },
                         {
                             "call_type": CallType.CALL,
@@ -2467,12 +2340,10 @@ MAINNET_CALL_TREE_DICT = {
                             "calls": [],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         },
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -2490,7 +2361,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2508,7 +2378,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2534,12 +2403,10 @@ MAINNET_CALL_TREE_DICT = {
                             "calls": [],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         }
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.STATICCALL,
@@ -2557,7 +2424,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2585,7 +2451,6 @@ MAINNET_CALL_TREE_DICT = {
                             "calls": [],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         },
                         {
                             "call_type": CallType.CALL,
@@ -2633,7 +2498,6 @@ MAINNET_CALL_TREE_DICT = {
                                             "calls": [],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         },
                                         {
                                             "call_type": CallType.STATICCALL,
@@ -2653,7 +2517,6 @@ MAINNET_CALL_TREE_DICT = {
                                             "calls": [],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         },
                                         {
                                             "call_type": CallType.STATICCALL,
@@ -2673,7 +2536,6 @@ MAINNET_CALL_TREE_DICT = {
                                             "calls": [],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         },
                                         {
                                             "call_type": CallType.CALL,
@@ -2693,17 +2555,14 @@ MAINNET_CALL_TREE_DICT = {
                                             "calls": [],
                                             "selfdestruct": False,
                                             "failed": False,
-                                            "display_cls": DisplayableCallTreeNode,
                                         },
                                     ],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 }
                             ],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         },
                         {
                             "call_type": CallType.CALL,
@@ -2733,17 +2592,14 @@ MAINNET_CALL_TREE_DICT = {
                                     "calls": [],
                                     "selfdestruct": False,
                                     "failed": False,
-                                    "display_cls": DisplayableCallTreeNode,
                                 }
                             ],
                             "selfdestruct": False,
                             "failed": False,
-                            "display_cls": DisplayableCallTreeNode,
                         },
                     ],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2757,7 +2613,6 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
                 {
                     "call_type": CallType.CALL,
@@ -2773,17 +2628,14 @@ MAINNET_CALL_TREE_DICT = {
                     "calls": [],
                     "selfdestruct": False,
                     "failed": False,
-                    "display_cls": DisplayableCallTreeNode,
                 },
             ],
             "selfdestruct": False,
             "failed": False,
-            "display_cls": DisplayableCallTreeNode,
         }
     ],
     "selfdestruct": False,
     "failed": False,
-    "display_cls": DisplayableCallTreeNode,
 }
 MAINNET_RECEIPT_DICT = local_receipt_data = {
     "block_number": 11279968,

@@ -8,7 +8,7 @@ from eth_abi.exceptions import InsufficientDataBytes
 from eth_utils import humanize_hash, is_hex_address
 from ethpm_types.abi import MethodABI
 from evm_trace import CallTreeNode, CallType
-from evm_trace.display import DisplayableCallTreeNode
+from evm_trace.display import TreeRepresentation
 from hexbytes import HexBytes
 from rich.tree import Tree
 
@@ -142,9 +142,9 @@ class CallTraceParser:
                     contract_name = contract_type.name
 
             if selector in contract_type.mutable_methods:
-                method = contract_type.mutable_methods[selector]
+                method = contract_type.mutable_methods[selector]  # type: ignore
             elif selector in contract_type.view_methods:
-                method = contract_type.view_methods[selector]
+                method = contract_type.view_methods[selector]  # type: ignore
 
             if method:
                 raw_calldata = call.calldata[4:]
@@ -161,7 +161,7 @@ class CallTraceParser:
                 call_signature = str(
                     _MethodTraceSignature(
                         contract_name or address,
-                        method.name or f"<{selector}>",
+                        method.name or f"<{selector}>",  # type: ignore
                         arguments,
                         return_value,
                         call.call_type,
@@ -182,13 +182,14 @@ class CallTraceParser:
                     }
                     call_signature += f" {json.dumps(extra_info, indent=self._indent)}"
             elif contract_name is not None:
-                call_signature = next(call.display_nodes).title  # type: ignore
+                call_signature = next(TreeRepresentation.make_tree(call)).title  # type: ignore
                 call_signature = call_signature.replace(address, contract_name)
                 call_signature = _dim_default_gas(call_signature)
         else:
-            next_node: Optional[DisplayableCallTreeNode] = None
+            next_node: Optional[TreeRepresentation] = None
             try:
-                next_node = next(call.display_nodes)
+                # Use default representation
+                next_node = next(TreeRepresentation.make_tree(call))
             except StopIteration:
                 pass
 
