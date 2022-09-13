@@ -212,7 +212,6 @@ def test_block_times(ethereum):
 
 
 def test_ecosystems_when_default_network_not_exists(temp_config, caplog, networks):
-    # If provider in config not exists, rest of ecosystems should still load
     bad_network = "NOT_EXISTS"
     config = {"ethereum": {"default_network": bad_network}}
     with temp_config(config):
@@ -226,7 +225,6 @@ def test_ecosystems_when_default_network_not_exists(temp_config, caplog, network
 
 
 def test_ecosystems_when_default_provider_not_exists(temp_config, caplog, networks):
-    # If provider in config not exists, rest of ecosystems should still load
     bad_provider = "NOT_EXISTS"
     config = {"ethereum": {"kovan": {"default_provider": bad_provider}}}
     with temp_config(config):
