@@ -6,7 +6,7 @@ from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import NetworkError
 
-from ..logging import logger
+from ape.logging import logger
 from .base import BaseManager
 
 
@@ -119,7 +119,8 @@ class NetworkManager(BaseManager):
                         try:
                             network.set_default_provider(default_provider)
                         except NetworkError as err:
-                            logger.error(str(err))
+                            message = f"Failed setting default provider: {err}"
+                            logger.error(message)
 
             ecosystem_dict[plugin_name] = ecosystem
 

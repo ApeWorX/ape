@@ -219,4 +219,7 @@ def test_ecosystems_when_provider_not_exists(temp_config, caplog, ethereum, netw
         assert networks.ecosystems
 
     err = caplog.records[-1].message
-    assert err == f"Provider '{bad_provider}' not found in network 'kovan'."
+    assert err == (
+        f"Failed setting default provider: "
+        f"Provider '{bad_provider}' not found in network 'kovan'."
+    )
