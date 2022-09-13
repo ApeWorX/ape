@@ -97,8 +97,8 @@ def test_account_history(sender, receiver, chain):
     assert len(transactions_from_cache) == length_at_start + 1
 
     txn = transactions_from_cache[-1]
-    assert txn.transaction.sender == receipt.transaction.sender == sender
-    assert txn.transaction.receiver == receipt.transaction.receiver == receiver
+    assert txn.sender == receipt.sender == sender
+    assert txn.receiver == receipt.receiver == receiver
 
 
 def test_account_history_caches_sender_over_address_key(
