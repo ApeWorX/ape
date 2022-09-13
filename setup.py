@@ -116,14 +116,15 @@ setup(
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=3.0.1,<4",
         "eth-account>=0.6.1,<0.7",
+        "eth-typing>=3.1,<4",
         "eth-utils>=2.0.0,<3",
-        "hexbytes>=0.2.2,<1",
+        "hexbytes>=0.2.3,<1",
         "py-geth>=3.8.0,<4",
         "web3[tester]==6.0.0b4",
         # ** Dependencies maintained by Apeworx **
-        "eip712>=0.1.1,<0.2",
-        "ethpm-types>=0.3.2,<0.4",
-        "evm-trace>=0.1.0.a6",
+        "eip712>=0.1.4,<0.2",
+        "ethpm-types>=0.3.7,<0.4",
+        "evm-trace==0.1.0a10",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

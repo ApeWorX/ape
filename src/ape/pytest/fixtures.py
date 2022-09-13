@@ -60,7 +60,6 @@ class PytestApeFixtures(ManagerAccessMixin):
             snapshot_id = self.chain_manager.snapshot()
         except ProviderNotConnectedError:
             logger.warning("Provider became disconnected mid-test.")
-            pass
 
         except NotImplementedError:
             if not self._warned_for_unimplemented_snapshot:
@@ -77,7 +76,6 @@ class PytestApeFixtures(ManagerAccessMixin):
                 self.chain_manager.restore(snapshot_id)
             except ProviderNotConnectedError:
                 logger.warning("Provider became disconnected mid-test.")
-                pass
 
     # isolation fixtures
     _session_isolation = pytest.fixture(_isolation, scope="session")

@@ -97,8 +97,8 @@ def test_account_history(sender, receiver, chain):
     assert len(transactions_from_cache) == length_at_start + 1
 
     txn = transactions_from_cache[-1]
-    assert txn.transaction.sender == receipt.transaction.sender == sender
-    assert txn.transaction.receiver == receipt.transaction.receiver == receiver
+    assert txn.sender == receipt.sender == sender
+    assert txn.receiver == receipt.receiver == receiver
 
 
 def test_account_history_caches_sender_over_address_key(
@@ -294,10 +294,9 @@ def test_instance_at(chain, contract_instance):
 
 def test_instance_at_unknown_hex_str(chain, contract_instance):
     # Fails when decoding Ethereum address and NOT conversion error.
-    with pytest.raises(ValueError):
-        chain.contracts.instance_at(
-            "0x1402b10CA274cD76C441e16C844223F79D3566De12bb12b0aebFE41aDFAe302"
-        )
+    hex_str = "0x1402b10CA274cD76C441e16C844223F79D3566De12bb12b0aebFE41aDFAe302"
+    with pytest.raises(ValueError, match=f"Unknown address value '{hex_str}'."):
+        chain.contracts.instance_at(hex_str)
 
 
 def test_instance_at_when_given_contract_type(chain, contract_instance):

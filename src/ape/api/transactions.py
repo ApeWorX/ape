@@ -28,8 +28,8 @@ class TransactionAPI(BaseInterfaceModel):
     """
 
     chain_id: int = Field(0, alias="chainId")
-    receiver: Optional[str] = Field(None, alias="to")
-    sender: Optional[str] = Field(None, alias="from")
+    receiver: Optional[AddressType] = Field(None, alias="to")
+    sender: Optional[AddressType] = Field(None, alias="from")
     gas_limit: Optional[int] = Field(None, alias="gas")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
