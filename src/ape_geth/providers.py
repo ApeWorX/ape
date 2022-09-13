@@ -216,13 +216,13 @@ class GethProvider(Web3Provider, UpstreamProvider):
                 self._geth.disconnect()
                 raise ConnectionError("Unable to connect to locally running geth.")
         elif "geth" in self.client_version.lower():
-            logger.info(f"Connecting to existing Geth node at '{self._clean_uri}'.")
+            self._log_connection("Geth")
         elif "erigon" in self.client_version.lower():
-            logger.info(f"Connecting to existing Erigon node at '{self._clean_uri}'.")
+            self._log_connection("Erigon")
             self.concurrency = 8
             self.block_page_size = 40_000
         elif "nethermind" in self.client_version.lower():
-            logger.info(f"Connecting to existing Nethermind node at '{self._clean_uri}'.")
+            self._log_connection("Nethermind")
             self.concurrency = 32
             self.block_page_size = 50_000
         else:
@@ -310,3 +310,6 @@ class GethProvider(Web3Provider, UpstreamProvider):
         except ValueError:
             frames = self.get_transaction_trace(txn_hash)
             return get_calltree_from_geth_trace(frames, **root_node_kwargs)
+
+    def _log_connection(self, client_name: str):
+        logger.info(f"Connecting to existing {client_name} node at '{self._clean_uri}'.")
