@@ -27,5 +27,5 @@ def networks():
         yield "ethereum", network_name, create_network_type(*network_params)
         yield "ethereum", f"{network_name}-fork", NetworkAPI
 
-    # NOTE: This works for development providers, as they get chain_id from themselves
+    # NOTE: This works for local providers, as they get chain_id from themselves
     yield "ethereum", LOCAL_NETWORK_NAME, NetworkAPI
