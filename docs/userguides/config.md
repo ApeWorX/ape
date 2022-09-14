@@ -132,7 +132,7 @@ ethereum:
     default_provider: hardhat
 ```
 
-Set gas limit for a given network:
+Set the gas limit for a given network:
 
 ```yaml
 ethereum:
