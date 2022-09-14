@@ -76,7 +76,7 @@ class NetworkConfig(PluginConfig):
     block_time: int = 0
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
 
-    gas_limit: Union[Literal["auto"], Literal["max"], int, str] = "auto"
+    gas_limit: Union[Literal["auto", "max"], int, str] = "auto"
     """
     The gas limit override to use for the network. If set to ``"auto"``, ape will
     estimate gas limits based on the transaction. If set to ``"max"`` the gas limit
@@ -88,10 +88,12 @@ class NetworkConfig(PluginConfig):
         smart_union = True
 
     @validator("gas_limit")
-    def validate_gas_limit(cls, value: Union[Literal["auto"], Literal["max"], int, str]):
+    def validate_gas_limit(
+        cls, value: Union[Literal["auto", "max"], int, str]
+    ) -> Union[Literal["auto", "max"], int]:
         if isinstance(value, str):
             if value.lower() in ("auto", "max"):
-                return value.lower()
+                return value.lower()  # type: ignore
 
             # Value could be an integer string
             if value.isdigit():

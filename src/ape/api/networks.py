@@ -14,7 +14,6 @@ from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape.exceptions import (
-    ConfigError,
     NetworkError,
     NetworkNotFoundError,
     ProviderNotConnectedError,
@@ -608,16 +607,8 @@ class NetworkAPI(BaseInterfaceModel):
         return self.config.get(self.name, {})
 
     @cached_property
-    def gas_limit(self) -> Union[Literal["auto"], Literal["max"], int]:
-        value = self._network_config.get("gas_limit", "auto")
-
-        if isinstance(value, int):
-            return value
-
-        if value not in ("auto", "max"):
-            raise ConfigError(f"Invalid gas_limit configuration '{value}'")
-
-        return value
+    def gas_limit(self) -> Union[Literal["auto", "max"], int]:
+        return self._network_config.get("gas_limit", "auto")
 
     @property
     def chain_id(self) -> int:
