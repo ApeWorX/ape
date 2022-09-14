@@ -60,7 +60,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         if isinstance(self.network.gas_limit, int):
             return self.network.gas_limit
 
-        if self.network.gas_limit == "max":
+        elif self.network.gas_limit == "max":
             block = self.web3.eth.get_block("latest")
             return block["gasLimit"]
 
