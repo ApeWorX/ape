@@ -1,7 +1,8 @@
 import json
 import re
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union, List
+from statistics import mean, median
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union
 
 from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
@@ -10,7 +11,7 @@ from ethpm_types import ContractType
 from ethpm_types.abi import MethodABI
 from evm_trace import CallTreeNode, CallType
 from evm_trace.display import TreeRepresentation
-from evm_trace.gas import merge_reports, get_gas_report
+from evm_trace.gas import get_gas_report, merge_reports
 from hexbytes import HexBytes
 from rich.table import Table
 from rich.tree import Tree
@@ -285,38 +286,32 @@ class CallTraceParser:
         return checksum_address
 
     def parse_as_gas_report(self, call: CallTreeNode) -> List[Table]:
-        def get_rich_gas_report(calltree):
-            address = self._receipt.provider.network.ecosystem.decode_address(calltree.address)
-            contract_type = self._receipt.chain_manager.contracts.get(address)
-            selector = calltree.calldata[:4]
+        report = self._get_rich_gas_report(call)
+        tables: List[Table] = []
 
-            if contract_type:
-                contract_id = self._get_contract_name(address, contract_type)
-                method_id = _get_method_abi(selector, contract_type)
-                if method_id:
-                    method_name = method_id.name
-                else:
-                    method_name = f"<{selector}>"
-            else:
-                contract_id = address
-                method_name = f"<{selector}>"
-
-            return {
-                contract_id: {method_name: [calltree.gas_cost] if calltree.gas_cost else []}
-            }
-
-        root = get_rich_gas_report(call)
-        reports = merge_reports(root, *map(get_rich_gas_report, call.calls))
-
-        for contract_id, method_calls in reports:
+        for contract_id, method_calls in report.items():
             title = f"{contract_id} Contract"
             table = Table(title=title)
             table.add_column("Method")
             table.add_column("Times called")
             table.add_column("Min.")
             table.add_column("Max.")
-            table.add_column("Avg.")
+            table.add_column("Mean")
             table.add_column("Median")
+
+            for method_call, gases in method_calls.items():
+                table.add_row(
+                    method_call,
+                    f"{len(gases)}",
+                    f"{min(gases)}",
+                    f"{max(gases)}",
+                    f"{mean(gases)}",
+                    f"{median(gases)}",
+                )
+
+            tables.append(table)
+
+        return tables
 
     def _get_contract_name(self, address: AddressType, contract_type: ContractType):
         contract_name = contract_type.name
@@ -332,6 +327,25 @@ class CallTraceParser:
             return contract.symbol() or contract_name
         except ContractError:
             return contract_type.name
+
+    def _get_rich_gas_report(self, calltree: CallTreeNode) -> Dict[str, Dict[str, List[int]]]:
+        address = self._receipt.provider.network.ecosystem.decode_address(calltree.address)
+        contract_type = self._receipt.chain_manager.contracts.get(address)
+        selector = calltree.calldata[:4]
+
+        if contract_type:
+            contract_name = self._get_contract_name(address, contract_type)
+            method_id = _get_method_abi(selector, contract_type)
+            if method_id:
+                method_name = method_id.name
+            else:
+                method_name = f"<{selector!r}>"
+        else:
+            contract_name = address
+            method_name = f"<{selector!r}>"
+
+        report = {contract_name: {method_name: [calltree.gas_cost] if calltree.gas_cost else []}}
+        return merge_reports(report, *map(self._get_rich_gas_report, calltree.calls))
 
 
 @dataclass()
@@ -476,5 +490,3 @@ def _get_method_abi(selector, contract_type) -> Optional[MethodABI]:
         return contract_type.view_methods[selector]
 
     return None
-
-
