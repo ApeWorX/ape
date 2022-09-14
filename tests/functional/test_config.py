@@ -61,8 +61,8 @@ def test_network_gas_limit_default(config):
     assert eth_config.local.gas_limit == "auto"
 
 
-@pytest.mark.parametrize("gas_limit", (1234, "1234"))
-def test_network_gas_limit_config(gas_limit, config, temp_config):
+@pytest.mark.parametrize("gas_limit", ("auto", "max"))
+def test_network_gas_limit_string_config(gas_limit, config, temp_config):
     eth_config = {
         "ethereum": {
             "rinkeby": {
@@ -75,10 +75,48 @@ def test_network_gas_limit_config(gas_limit, config, temp_config):
     with temp_config(eth_config):
         actual = config.get_config("ethereum")
 
-        assert actual.rinkeby.gas_limit == "1234"
+        assert actual.rinkeby.gas_limit == gas_limit
 
         # Local configuration is unaffected
         assert actual.local.gas_limit == "auto"
+
+
+@pytest.mark.parametrize("gas_limit", (1234, "1234", 0x4D2, "0x4D2"))
+def test_network_gas_limit_numeric_config(gas_limit, config, temp_config):
+    eth_config = {
+        "ethereum": {
+            "rinkeby": {
+                "default_provider": "test",
+                "gas_limit": gas_limit,
+            }
+        }
+    }
+
+    with temp_config(eth_config):
+        actual = config.get_config("ethereum")
+
+        assert actual.rinkeby.gas_limit == 1234
+
+        # Local configuration is unaffected
+        assert actual.local.gas_limit == "auto"
+
+
+def test_network_gas_limit_invalid_numeric_string(config, temp_config):
+    """
+    Test that using hex strings for
+    """
+    eth_config = {
+        "ethereum": {
+            "rinkeby": {
+                "default_provider": "test",
+                "gas_limit": "4D2",
+            }
+        }
+    }
+
+    with pytest.raises(ValueError, match="Invalid gas_limit, must be 'auto', 'max', or a number"):
+        with temp_config(eth_config):
+            pass
 
 
 def test_dependencies(dependency_config, config):

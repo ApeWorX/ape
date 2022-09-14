@@ -611,10 +611,10 @@ class NetworkAPI(BaseInterfaceModel):
     def gas_limit(self) -> Union[Literal["auto"], Literal["max"], int]:
         value = self._network_config.get("gas_limit", "auto")
 
-        if value.isdigit():
-            return int(value)
+        if isinstance(value, int):
+            return value
 
-        if value.lower() not in ("auto", "max"):
+        if value not in ("auto", "max"):
             raise ConfigError(f"Invalid gas_limit configuration '{value}'")
 
         return value
