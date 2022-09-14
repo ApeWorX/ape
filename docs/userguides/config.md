@@ -137,7 +137,7 @@ Set the gas limit for a given network:
 ```yaml
 ethereum:
   default_network: mainnet-fork
-  gas_limit: "max"
+  gas_limit: max
 ```
 
 You may use one of:
