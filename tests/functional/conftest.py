@@ -23,10 +23,10 @@ from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType, ContractLog
 
 
-def _get_raw_contract(name: str) -> Dict:
+def _get_raw_contract(name: str) -> str:
     here = Path(__file__).parent
     contracts_dir = here / "data" / "contracts" / "ethereum" / "local"
-    return json.loads((contracts_dir / f"{name}.json").read_text())
+    return (contracts_dir / f"{name}.json").read_text()
 
 
 ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
@@ -124,7 +124,7 @@ def _make_keyfile_account(base_path: Path, alias: str, params: Dict, funder):
 
 @pytest.fixture
 def solidity_contract_type() -> ContractType:
-    return ContractType.parse_obj(RAW_SOLIDITY_CONTRACT_TYPE)
+    return ContractType.parse_raw(RAW_SOLIDITY_CONTRACT_TYPE)
 
 
 @pytest.fixture
@@ -141,7 +141,7 @@ def solidity_contract_instance(
 
 @pytest.fixture
 def vyper_contract_type() -> ContractType:
-    return ContractType.parse_obj(RAW_VYPER_CONTRACT_TYPE)
+    return ContractType.parse_raw(RAW_VYPER_CONTRACT_TYPE)
 
 
 @pytest.fixture
@@ -170,7 +170,7 @@ def contract_instance(request, solidity_contract_instance, vyper_contract_instan
 
 @pytest.fixture
 def ds_note_test_contract(vyper_contract_type, owner, eth_tester_provider):
-    contract_type = ContractType.parse_obj(DS_NOTE_TEST_CONTRACT_TYPE)
+    contract_type = ContractType.parse_raw(DS_NOTE_TEST_CONTRACT_TYPE)
     contract_container = ContractContainer(contract_type=contract_type)
     return contract_container.deploy(sender=owner)
 
@@ -397,3 +397,9 @@ def dummy_live_network(chain):
     chain.provider.network.name = "rinkeby"
     yield chain.provider.network
     chain.provider.network.name = LOCAL_NETWORK_NAME
+
+
+@pytest.fixture
+def proxy_contract_container():
+    contract_type = ContractType.parse_raw(_get_raw_contract("proxy"))
+    return ContractContainer(contract_type)

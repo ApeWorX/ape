@@ -516,11 +516,55 @@ class ContractCache(BaseManager):
               to cache.
         """
 
+        proxy_info = self.provider.network.ecosystem.get_proxy_info(contract_instance.address)
+        if proxy_info:
+            self.cache_proxy_info(contract_instance.address, proxy_info)
+            return
+
         address = contract_instance.address
         contract_type = contract_instance.contract_type
         txn_hash = contract_instance.txn_hash
         self._cache_contract_type(address, contract_type)
         self._cache_deployment(address, contract_type, txn_hash)
+
+    def cache_proxy_info(self, address: AddressType, proxy_info: ProxyInfoAPI):
+        """
+        Cache proxy info for a particular address, useful for plugins adding already
+        deployed proxies. When you deploy a proxy locally, it will also call this method.
+
+        Args:
+            address (AddressType): The address of the proxy contract.
+            proxy_info (:class:`~ape.api.networks.ProxyInfo`): The proxy info class
+              to cache.
+        """
+
+        if self.get_proxy_info(address) and self._is_live_network:
+            return
+
+        self._local_proxies[address] = proxy_info
+
+        if self._is_live_network:
+            self._cache_proxy_info_to_disk(address, proxy_info)
+
+    def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfoAPI]:
+        """
+        Get proxy information about a contract using its address,
+        either from a local cache, a disk cache, or the provider.
+
+        Args:
+            address (AddressType): The address of the proxy contract.
+
+        Returns:
+            Optional[:class:`~ape.api.networks.ProxyInfoAPI`]
+        """
+
+        proxy_info = self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
+        if not proxy_info:
+            proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
+            if proxy_info and self._is_live_network:
+                self._cache_proxy_info_to_disk(address, proxy_info)
+
+        return proxy_info
 
     def _cache_contract_type(self, address: AddressType, contract_type: ContractType):
         self._local_contract_types[address] = contract_type

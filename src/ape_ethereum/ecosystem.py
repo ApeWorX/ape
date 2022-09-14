@@ -149,6 +149,7 @@ class Ethereum(EcosystemAPI):
         code = self.provider.get_code(address).hex()[2:]
         if not code:
             return None
+
         patterns = {
             ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
             ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
@@ -161,7 +162,9 @@ class Ethereum(EcosystemAPI):
                 target = self.conversion_manager.convert(match.group(1), AddressType)
                 return ProxyInfo(type=type, target=target)
 
-        str_to_slot = lambda text: int(keccak(text=text).hex(), 16)  # noqa: E731
+        def str_to_slot(text):
+            return int(keccak(text=text).hex(), 16)
+
         slots = {
             ProxyType.Standard: str_to_slot("eip1967.proxy.implementation") - 1,
             ProxyType.Beacon: str_to_slot("eip1967.proxy.beacon") - 1,
@@ -178,7 +181,6 @@ class Ethereum(EcosystemAPI):
                 continue
 
             target = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
-
             # read `target.implementation()`
             if type == ProxyType.Beacon:
                 abi = MethodABI(
