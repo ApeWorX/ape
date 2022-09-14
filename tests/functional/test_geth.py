@@ -4,7 +4,7 @@ import pytest
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import ContractLogicError, TransactionError
+from ape.exceptions import ContractLogicError, NetworkMismatchError, TransactionError
 from ape_geth import GethProvider
 from tests.functional.data.python import TRACE_RESPONSE
 
@@ -154,3 +154,19 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, eth_tester_p
     # Still use the connected chain ID instead network's
     assert eth_tester_provider_geth.chain_id == 131277322940537
     eth_tester_provider_geth.network = orig_network
+
+
+def test_connect_wrong_chain_id(mocker, ethereum, eth_tester_provider_geth):
+    eth_tester_provider_geth.network = ethereum.get_network("kovan")
+
+    # Ensure when reconnecting, it does not use HTTP
+    factory = mocker.patch("ape_geth.provider._create_web3")
+    factory.return_value = eth_tester_provider_geth._web3
+
+    expected_error_message = (
+        "Provider connected to chain ID '131277322940537', "
+        "which does not match network chain ID '42'. "
+        "Are you connected to 'kovan'?"
+    )
+    with pytest.raises(NetworkMismatchError, match=expected_error_message):
+        eth_tester_provider_geth.connect()
