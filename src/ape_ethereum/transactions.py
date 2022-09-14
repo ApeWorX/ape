@@ -14,6 +14,7 @@ from ethpm_types.abi import EventABI
 from evm_trace import CallTreeNode
 from evm_trace.gas import get_gas_report
 from pydantic import BaseModel, Field, root_validator, validator
+from rich import print as rich_print
 from rich.console import Console as RichConsole
 
 from ape.api import ReceiptAPI, TransactionAPI
@@ -187,7 +188,9 @@ class Receipt(ReceiptAPI):
         console.print(root)
 
     def show_gas_report(self):
-        print(get_gas_report(self.call_tree))
+        tree_factory = CallTraceParser(self)
+        table = tree_factory.parse_as_gas_report()
+        rich_print(table)
 
     def decode_logs(
         self,
