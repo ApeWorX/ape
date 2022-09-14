@@ -141,6 +141,7 @@ ethereum:
 ```
 
 You may use one of:
+
 - `"auto"` - gas limit is estimated for each transaction
 - `"max"` - the maximum block gas limit is used
 - A number or numeric string, base 10 or 16 (e.g. `1234`, `"1234"`, `0x1234`, `"0x1234"`)
