@@ -91,7 +91,7 @@ class NetworkConfig(PluginConfig):
     def validate_gas_limit(cls, value: Union[Literal["auto"], Literal["max"], int, str]):
         if isinstance(value, str):
             if value.lower() in ("auto", "max"):
-                return value
+                return value.lower()
 
             # Value could be an integer string
             if value.isdigit():
