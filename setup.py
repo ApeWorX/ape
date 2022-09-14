@@ -105,12 +105,12 @@ setup(
         "pydantic>=1.9.2,<2",
         "pygit2>=1.7.2,<2",
         "PyGithub>=1.54,<2",
-        "SQLAlchemy>=1.4.35",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
         "pyyaml>=6.0,<7",
         "requests>=2.28.1,<3",
         "rich>=10.14,<11",
+        "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
         # ** Dependencies maintained by Ethereum Foundation **

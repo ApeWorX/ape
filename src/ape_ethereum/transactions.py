@@ -11,6 +11,8 @@ from eth_account._utils.legacy_transactions import (
 from eth_utils import decode_hex, encode_hex, keccak, to_int
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
+from evm_trace import CallTreeNode
+from evm_trace.gas import get_gas_report
 from pydantic import BaseModel, Field, root_validator, validator
 from rich.console import Console as RichConsole
 
@@ -18,7 +20,7 @@ from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.types import ContractLog
-from ape.utils import CallTraceParser, TraceStyles
+from ape.utils import CallTraceParser, TraceStyles, cached_property
 
 
 class TransactionStatusEnum(IntEnum):
@@ -149,6 +151,10 @@ class Receipt(ReceiptAPI):
     def failed(self) -> bool:
         return self.status != TransactionStatusEnum.NO_ERROR
 
+    @cached_property
+    def call_tree(self) -> CallTreeNode:
+        return self.provider.get_call_tree(self.txn_hash)
+
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
             raise OutOfGasError()
@@ -158,19 +164,18 @@ class Receipt(ReceiptAPI):
 
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         tree_factory = CallTraceParser(self, verbose=verbose)
-        call_tree = self.provider.get_call_tree(self.txn_hash)
-        root = tree_factory.parse_as_tree(call_tree)
+        root = tree_factory.parse_as_tree(self.call_tree)
         console = RichConsole(file=file)
         console.print(f"Call trace for [bold blue]'{self.txn_hash}'[/]")
 
-        if call_tree.failed:
+        if self.call_tree.failed:
             default_message = "reverted without message"
-            if not call_tree.returndata.hex().startswith(
+            if not self.call_tree.returndata.hex().startswith(
                 "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
             ):
                 suffix = default_message
             else:
-                decoded_result = decode(("string",), call_tree.returndata[4:])
+                decoded_result = decode(("string",), self.call_tree.returndata[4:])
                 if len(decoded_result) == 1:
                     suffix = f'reverted with message: "{decoded_result[0]}"'
                 else:
@@ -180,6 +185,9 @@ class Receipt(ReceiptAPI):
 
         console.print(f"txn.origin=[{TraceStyles.CONTRACTS}]{self.sender}[/]")
         console.print(root)
+
+    def show_gas_report(self):
+        print(get_gas_report(self.call_tree))
 
     def decode_logs(
         self,

@@ -340,3 +340,9 @@ class ReceiptAPI(BaseInterfaceModel):
             verbose (bool): Set to ``True`` to include more information.
             file (IO[str]): The file to send output to. Defaults to stdout.
         """
+
+    @raises_not_implemented
+    def show_gas_report(self):
+        """
+        Display a gas report for the calls made in this transaction.
+        """
