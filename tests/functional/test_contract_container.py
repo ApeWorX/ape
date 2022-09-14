@@ -32,7 +32,8 @@ def test_deploy_and_publish_live_network_no_explorer(
         contract_container.deploy(sender=owner, publish=True, required_confirmations=0)
 
 
-def test_deploy_and_publish(mocker, owner, contract_container, dummy_live_network):
+def test_deploy_and_publish(mocker, owner, project, contract_container, dummy_live_network):
+    _ = project  # Ensure active project for `track_deployment` to work
     mock_explorer = mocker.MagicMock()
     dummy_live_network.__dict__["explorer"] = mock_explorer
     contract = contract_container.deploy(sender=owner, publish=True, required_confirmations=0)
