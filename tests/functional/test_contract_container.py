@@ -22,7 +22,10 @@ def test_deploy_and_publish_local_network(owner, contract_container):
         contract_container.deploy(sender=owner, publish=True)
 
 
-def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, dummy_live_network):
+def test_deploy_and_publish_live_network_no_explorer(
+    owner, project, contract_container, dummy_live_network
+):
+    _ = project  # Ensure active project for `track_deployment` to work
     dummy_live_network.__dict__["explorer"] = None
     expected_message = "Unable to publish contract - no explorer plugin installed."
     with pytest.raises(NetworkError, match=expected_message):

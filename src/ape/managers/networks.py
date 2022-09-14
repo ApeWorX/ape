@@ -5,6 +5,7 @@ import yaml
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import NetworkError
+from ape.logging import logger
 
 from .base import BaseManager
 
@@ -101,7 +102,11 @@ class NetworkManager(BaseManager):
             ecosystem_config = self.config_manager.get_config(plugin_name).dict()
             default_network = ecosystem_config.get("default_network", LOCAL_NETWORK_NAME)
 
-            ecosystem.set_default_network(default_network)
+            try:
+                ecosystem.set_default_network(default_network)
+            except NetworkError as err:
+                message = f"Failed setting default network: {err}"
+                logger.error(message)
 
             if ecosystem_config:
                 for network_name, network in ecosystem.networks.items():
@@ -115,7 +120,11 @@ class NetworkManager(BaseManager):
 
                     default_provider = network_config["default_provider"]
                     if default_provider:
-                        network.set_default_provider(default_provider)
+                        try:
+                            network.set_default_provider(default_provider)
+                        except NetworkError as err:
+                            message = f"Failed setting default provider: {err}"
+                            logger.error(message)
 
             ecosystem_dict[plugin_name] = ecosystem
 
@@ -240,7 +249,6 @@ class NetworkManager(BaseManager):
             ecosystem_items = {n: e for n, e in ecosystem_items.items() if n in ecosystem_filter}
 
         for ecosystem_name, ecosystem in ecosystem_items.items():
-
             network_items = ecosystem.networks
             if network_filter:
                 network_items = {n: net for n, net in network_items.items() if n in network_filter}

@@ -215,20 +215,19 @@ class GethProvider(Web3Provider, UpstreamProvider):
             if not self._web3.isConnected():
                 self._geth.disconnect()
                 raise ConnectionError("Unable to connect to locally running geth.")
+        elif "geth" in self.client_version.lower():
+            self._log_connection("Geth")
+        elif "erigon" in self.client_version.lower():
+            self._log_connection("Erigon")
+            self.concurrency = 8
+            self.block_page_size = 40_000
+        elif "nethermind" in self.client_version.lower():
+            self._log_connection("Nethermind")
+            self.concurrency = 32
+            self.block_page_size = 50_000
         else:
-            if "geth" in self.client_version.lower():
-                logger.info(f"Connecting to existing Geth node at '{self._clean_uri}'.")
-            elif "erigon" in self.client_version.lower():
-                logger.info(f"Connecting to existing Erigon node at '{self._clean_uri}'.")
-                self.concurrency = 8
-                self.block_page_size = 40_000
-            elif "nethermind" in self.client_version.lower():
-                logger.info(f"Connecting to existing Nethermind node at '{self._clean_uri}'.")
-                self.concurrency = 32
-                self.block_page_size = 50_000
-            else:
-                client_name = self.client_version.split("/")[0]
-                logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
+            client_name = self.client_version.split("/")[0]
+            logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
 
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
@@ -311,3 +310,6 @@ class GethProvider(Web3Provider, UpstreamProvider):
         except ValueError:
             frames = self.get_transaction_trace(txn_hash)
             return get_calltree_from_geth_trace(frames, **root_node_kwargs)
+
+    def _log_connection(self, client_name: str):
+        logger.info(f"Connecting to existing {client_name} node at '{self._clean_uri}'.")
