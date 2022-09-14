@@ -1,5 +1,5 @@
 import logging
-from typing import Dict
+from typing import Dict, Literal, Union
 
 import pytest
 
@@ -61,9 +61,8 @@ def test_network_gas_limit_default(config):
     assert eth_config.local.gas_limit == "auto"
 
 
-@pytest.mark.parametrize("gas_limit", ("auto", "max"))
-def test_network_gas_limit_string_config(gas_limit, config, temp_config):
-    eth_config = {
+def _rinkeby_with_gas_limit(gas_limit: Union[Literal["auto", "max"], int]) -> dict:
+    return {
         "ethereum": {
             "rinkeby": {
                 "default_provider": "test",
@@ -71,6 +70,11 @@ def test_network_gas_limit_string_config(gas_limit, config, temp_config):
             }
         }
     }
+
+
+@pytest.mark.parametrize("gas_limit", ("auto", "max"))
+def test_network_gas_limit_string_config(gas_limit, config, temp_config):
+    eth_config = _rinkeby_with_gas_limit(gas_limit)
 
     with temp_config(eth_config):
         actual = config.get_config("ethereum")
@@ -83,14 +87,7 @@ def test_network_gas_limit_string_config(gas_limit, config, temp_config):
 
 @pytest.mark.parametrize("gas_limit", (1234, "1234", 0x4D2, "0x4D2"))
 def test_network_gas_limit_numeric_config(gas_limit, config, temp_config):
-    eth_config = {
-        "ethereum": {
-            "rinkeby": {
-                "default_provider": "test",
-                "gas_limit": gas_limit,
-            }
-        }
-    }
+    eth_config = _rinkeby_with_gas_limit(gas_limit)
 
     with temp_config(eth_config):
         actual = config.get_config("ethereum")
@@ -103,16 +100,10 @@ def test_network_gas_limit_numeric_config(gas_limit, config, temp_config):
 
 def test_network_gas_limit_invalid_numeric_string(config, temp_config):
     """
-    Test that using hex strings for
+    Test that using hex strings for a network's gas_limit config must be
+    prefixed with '0x'
     """
-    eth_config = {
-        "ethereum": {
-            "rinkeby": {
-                "default_provider": "test",
-                "gas_limit": "4D2",
-            }
-        }
-    }
+    eth_config = _rinkeby_with_gas_limit("4D2")
 
     with pytest.raises(ValueError, match="Invalid gas_limit, must be 'auto', 'max', or a number"):
         with temp_config(eth_config):
