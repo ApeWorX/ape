@@ -308,5 +308,6 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
 
 def _create_web3(uri: str):
+    # Separated into helper method for testing purposes.
     provider = HTTPProvider(uri, request_kwargs={"timeout": 30 * 60})
     return Web3(provider)
