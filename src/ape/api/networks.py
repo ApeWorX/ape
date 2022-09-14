@@ -614,7 +614,7 @@ class NetworkAPI(BaseInterfaceModel):
         if value.isdigit():
             return int(value)
 
-        if value not in ("auto", "max"):
+        if value.lower() not in ("auto", "max"):
             raise ConfigError(f"Invalid gas_limit configuration '{value}'")
 
         return value
