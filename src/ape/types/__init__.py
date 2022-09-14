@@ -157,6 +157,14 @@ class EventArguments(BaseModel):
     event_arguments: Dict[str, Any] = Field(...)
 
     @property
+    def topics(self) -> Any:
+        return [i for i in self.event_arguments["inputs"] if i["indexed"]]
+
+    @property
+    def inputs(self) -> Any:
+        return [i for i in self.event_arguments["inputs"] if not i["indexed"]]
+
+    @property
     def _event_args_str(self) -> str:
         return " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
 
