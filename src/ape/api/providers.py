@@ -695,12 +695,12 @@ class Web3Provider(ProviderAPI, ABC):
                 return self.web3.eth.chain_id
 
         except ProviderNotConnectedError:
-            if default_chain_id:
+            if default_chain_id is not None:
                 return default_chain_id
 
             raise  # Original error
 
-        if default_chain_id:
+        if default_chain_id is not None:
             return default_chain_id
 
         raise ProviderNotConnectedError()
