@@ -189,8 +189,8 @@ class Receipt(ReceiptAPI):
 
     def show_gas_report(self):
         tree_factory = CallTraceParser(self)
-        table = tree_factory.parse_as_gas_report()
-        rich_print(table)
+        tables = tree_factory.parse_as_gas_report(self.call_tree)
+        rich_print(*tables)
 
     def decode_logs(
         self,
