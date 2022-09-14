@@ -61,12 +61,13 @@ def test_network_gas_limit_default(config):
     assert eth_config.local.gas_limit == "auto"
 
 
-def test_network_gas_limit_config(config, temp_config):
+@pytest.mark.parametrize("gas_limit", (1234, "1234"))
+def test_network_gas_limit_config(gas_limit, config, temp_config):
     eth_config = {
         "ethereum": {
             "rinkeby": {
                 "default_provider": "test",
-                "gas_limit": 1234,
+                "gas_limit": gas_limit,
             }
         }
     }
