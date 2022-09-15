@@ -787,6 +787,22 @@ to cache.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.cache_proxy_info">
+<span class="sig-name descname"><span class="pre">cache_proxy_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proxy_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><span class="pre">ape.api.networks.ProxyInfoAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.cache_proxy_info" title="Permalink to this definition"></a></dt>
+<dd><p>Cache proxy info for a particular address, useful for plugins adding already
+deployed proxies. When you deploy a proxy locally, it will also call this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<em>AddressType</em>) – The address of the proxy contract.</p></li>
+<li><p><strong>proxy_info</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ProxyInfo</span></code>) – The proxy info class
+to cache.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.ContractCache.get">
 <span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.get" title="Permalink to this definition"></a></dt>
 <dd><p>Get a contract type by address.
@@ -871,6 +887,21 @@ contract types.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Dict[AddressType, ContractType]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.get_proxy_info">
+<span class="sig-name descname"><span class="pre">get_proxy_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><span class="pre">ape.api.networks.ProxyInfoAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.get_proxy_info" title="Permalink to this definition"></a></dt>
+<dd><p>Get proxy information about a contract using its address,
+either from a local cache, a disk cache, or the provider.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>address</strong> (<em>AddressType</em>) – The address of the proxy contract.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Optional[<a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProxyInfoAPI</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
