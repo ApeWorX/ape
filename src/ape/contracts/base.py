@@ -6,6 +6,7 @@ import click
 import pandas as pd
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from pathlib import Path
 from hexbytes import HexBytes
 
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
@@ -841,6 +842,17 @@ class ContractContainer(ManagerAccessMixin):
         return self.chain_manager.contracts.instance_at(
             address, self.contract_type, txn_hash=txn_hash
         )
+
+    @cached_property
+    def source_path(self) -> Optional[Path]:
+        """
+        Returns the path to the local contract if determined that this container
+        belongs to the active project.
+        """
+        contract_name = self.contract_type.name
+        contract_type = self.project_manager._get_contract(contract_name)
+        if contract_type and self.contract_type:# == contract_type:
+            return self.project_manager.contracts_folder / self.contract_type.source_id
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
