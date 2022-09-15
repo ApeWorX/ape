@@ -181,8 +181,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
     def connect(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
-        provider = HTTPProvider(self.uri, request_kwargs={"timeout": 30 * 60})
-        self._web3 = Web3(provider)
+        self._web3 = _create_web3(self.uri)
 
         if not self.is_connected:
             if self.network.name != LOCAL_NETWORK_NAME:
@@ -256,14 +255,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
         if chain_id in (4, 5, 42) or is_likely_poa():
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
-        if (
-            self.network.name not in ("adhoc", LOCAL_NETWORK_NAME)
-            and self.network.chain_id != self.chain_id
-        ):
-            raise ProviderError(
-                "HTTP Connection does not match expected chain ID. "
-                f"Are you connected to '{self.network.name}'?"
-            )
+        self.network.verify_chain_id(chain_id)
 
     def disconnect(self):
         if self._geth is not None:
@@ -313,3 +305,9 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
     def _log_connection(self, client_name: str):
         logger.info(f"Connecting to existing {client_name} node at '{self._clean_uri}'.")
+
+
+def _create_web3(uri: str):
+    # Separated into helper method for testing purposes.
+    provider = HTTPProvider(uri, request_kwargs={"timeout": 30 * 60})
+    return Web3(provider)

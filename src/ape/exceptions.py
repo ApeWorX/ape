@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional
 from eth_utils import humanize_hash
 
 if TYPE_CHECKING:
+    from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
     from ape.types import SnapshotID
 
@@ -185,6 +186,19 @@ class ProviderError(ApeException):
     """
     Raised when a problem occurs when using providers.
     """
+
+
+class NetworkMismatchError(ProviderError):
+    """
+    Raised when connecting a provider to the wrong network.
+    """
+
+    def __init__(self, chain_id: int, network: "NetworkAPI"):
+        message = (
+            f"Provider connected to chain ID '{chain_id}', which does not match "
+            f"network chain ID '{network.chain_id}'. Are you connected to '{network.name}'?"
+        )
+        super().__init__(message)
 
 
 class ProviderNotConnectedError(ProviderError):

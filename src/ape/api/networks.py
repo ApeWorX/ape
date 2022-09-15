@@ -15,6 +15,7 @@ from pydantic import BaseModel
 
 from ape.exceptions import (
     NetworkError,
+    NetworkMismatchError,
     NetworkNotFoundError,
     ProviderNotConnectedError,
     SignatureError,
@@ -879,6 +880,21 @@ class NetworkAPI(BaseInterfaceModel):
 
         logger.info(f"Publishing and verifying contract using '{self.explorer.name}'.")
         self.explorer.publish_contract(address)
+
+    def verify_chain_id(self, chain_id: int):
+        """
+        Verify a chain ID for this network.
+
+        Args:
+            chain_id (int): The chain ID to verify.
+
+        Raises:
+            :class:`~ape.exceptions.NetworkMismatchError`: When the network is
+              not local or adhoc and has a different hardcoded chain ID than
+              the given one.
+        """
+        if self.name not in ("adhoc", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
+            raise NetworkMismatchError(chain_id, self)
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
