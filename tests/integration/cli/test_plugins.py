@@ -172,3 +172,13 @@ def test_upgrade(ape_plugins_runner, installed_plugin):
 def test_upgrade_failure(ape_plugins_runner):
     result = ape_plugins_runner.invoke(["install", "NOT_EXISTS", "--upgrade"])
     assert result.exit_code == 1
+
+
+@plugins_xfail()
+def test_install_from_config_file(ape_cli, runner, temp_config, caplog):
+    plugins_config = {"plugins": [{"name": TEST_PLUGIN_NAME}]}
+    with temp_config(plugins_config):
+        result = runner.invoke(ape_cli, ["plugins", "install", "."], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
+
+    assert TEST_PLUGIN_NAME in caplog.records[-1].message
