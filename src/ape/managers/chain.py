@@ -519,6 +519,10 @@ class ContractCache(BaseManager):
         proxy_info = self.provider.network.ecosystem.get_proxy_info(contract_instance.address)
         if proxy_info:
             self.cache_proxy_info(contract_instance.address, proxy_info)
+            contract_type = self.get(proxy_info.target)
+            if contract_type:
+                self._cache_contract_type(contract_instance.address, contract_type)
+
             return
 
         address = contract_instance.address
@@ -558,13 +562,7 @@ class ContractCache(BaseManager):
             Optional[:class:`~ape.api.networks.ProxyInfoAPI`]
         """
 
-        proxy_info = self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
-        if not proxy_info:
-            proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
-            if proxy_info and self._is_live_network:
-                self._cache_proxy_info_to_disk(address, proxy_info)
-
-        return proxy_info
+        return self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
 
     def _cache_contract_type(self, address: AddressType, contract_type: ContractType):
         self._local_contract_types[address] = contract_type

@@ -58,10 +58,14 @@ def test_deploy_proxy(
     owner, project, vyper_contract_instance, proxy_contract_container, chain, eth_tester_provider
 ):
     target = vyper_contract_instance.address
-    instance = proxy_contract_container.deploy(target, sender=owner)
-    assert instance.address not in chain.contracts._local_contract_types
-    assert instance.address in chain.contracts._local_proxies
+    proxy = proxy_contract_container.deploy(target, sender=owner)
+    assert proxy.address in chain.contracts._local_contract_types
+    assert proxy.address in chain.contracts._local_proxies
 
-    actual = chain.contracts._local_proxies[instance.address]
+    actual = chain.contracts._local_proxies[proxy.address]
     assert actual.target == target
     assert actual.type == ProxyType.Delegate
+
+    # Show we get the implementation contract type using the proxy address
+    implementation = chain.contracts.instance_at(proxy.address)
+    assert implementation.contract_type == vyper_contract_instance.contract_type
