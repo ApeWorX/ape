@@ -1,6 +1,6 @@
 import re
 from enum import IntEnum
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Literal, Optional, Tuple, Union
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
@@ -8,14 +8,14 @@ from eth_typing import HexStr
 from eth_utils import add_0x_prefix, encode_hex, keccak, to_bytes, to_checksum_address
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
-from pydantic import Field
+from pydantic import Field, validator
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
 from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, RawAddress, TransactionSignature
+from ape.types import AddressType, ContractLog, GasLimit, RawAddress, TransactionSignature
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -75,6 +75,35 @@ class NetworkConfig(PluginConfig):
 
     block_time: int = 0
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+
+    gas_limit: GasLimit = "auto"
+    """
+    The gas limit override to use for the network. If set to ``"auto"``, ape will
+    estimate gas limits based on the transaction. If set to ``"max"`` the gas limit
+    will be set to the maximum block gas limit for the network. Otherwise an ``int``
+    can be used to specify an explicit gas limit amount (either base 10 or 16).
+    """
+
+    class Config:
+        smart_union = True
+
+    @validator("gas_limit", pre=True)
+    def validate_gas_limit(cls, value: GasLimit) -> Union[Literal["auto", "max"], int]:
+        if isinstance(value, str):
+            if value.lower() in ("auto", "max"):
+                return value.lower()  # type: ignore
+
+            # Value could be an integer string
+            if value.isdigit():
+                return int(value)
+            # Enforce "0x" prefix on base 16 integer strings
+            elif value.lower().startswith("0x"):
+                return int(value, 16)
+            else:
+                raise ValueError("Invalid gas_limit, must be 'auto', 'max', or a number")
+
+        # Value is an integer literal
+        return value
 
 
 class EthereumConfig(PluginConfig):

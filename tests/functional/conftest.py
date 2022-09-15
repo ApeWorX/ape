@@ -1,14 +1,11 @@
 import json
-import tempfile
 import threading
 import time
-from contextlib import contextmanager
 from distutils.dir_util import copy_tree
 from pathlib import Path
 from typing import Dict, Optional
 
 import pytest
-import yaml
 from ethpm_types import ContractType
 from hexbytes import HexBytes
 
@@ -19,7 +16,6 @@ from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError
 from ape.logging import LogLevel
 from ape.logging import logger as _logger
-from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType, ContractLog
 
 
@@ -173,27 +169,6 @@ def ds_note_test_contract(vyper_contract_type, owner, eth_tester_provider):
     contract_type = ContractType.parse_raw(DS_NOTE_TEST_CONTRACT_TYPE)
     contract_container = ContractContainer(contract_type=contract_type)
     return contract_container.deploy(sender=owner)
-
-
-@pytest.fixture(scope="session")
-def temp_config(config):
-    @contextmanager
-    def func(data: Dict):
-        with tempfile.TemporaryDirectory() as temp_dir_str:
-            temp_dir = Path(temp_dir_str)
-            config._cached_configs = {}
-            config_file = temp_dir / CONFIG_FILE_NAME
-            config_file.touch()
-            config_file.write_text(yaml.dump(data))
-            config.load(force_reload=True)
-
-            with config.using_project(temp_dir):
-                yield
-
-            config_file.unlink()
-            config._cached_configs = {}
-
-    return func
 
 
 @pytest.fixture

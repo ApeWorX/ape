@@ -662,8 +662,18 @@ class Web3Provider(ProviderAPI, ABC):
 
         Returns:
             int: The estimated cost of gas to execute the transaction
-            reported in the fee-currency's smallest unit, e.g. Wei.
+            reported in the fee-currency's smallest unit, e.g. Wei. If the
+            provider's network has been configured with a gas limit override, it
+            will be returned. If the gas limit configuration is "max" this will
+            return the block maximum gas limit.
         """
+        if isinstance(self.network.gas_limit, int):
+            return self.network.gas_limit
+
+        if self.network.gas_limit == "max":
+            block = self.web3.eth.get_block("latest")
+            return block["gasLimit"]
+        # else: Handle "auto" gas limit via estimation
 
         txn_dict = txn.dict()
         try:
@@ -682,18 +692,28 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def chain_id(self) -> int:
+        default_chain_id = None
         if self.network.name not in (
             "adhoc",
             LOCAL_NETWORK_NAME,
         ) and not self.network.name.endswith("-fork"):
             # If using a live network, the chain ID is hardcoded.
-            return self.network.chain_id
+            default_chain_id = self.network.chain_id
 
-        elif hasattr(self.web3, "eth"):
-            return self.web3.eth.chain_id
+        try:
+            if hasattr(self.web3, "eth"):
+                return self.web3.eth.chain_id
 
-        else:
-            raise ProviderNotConnectedError()
+        except ProviderNotConnectedError:
+            if default_chain_id is not None:
+                return default_chain_id
+
+            raise  # Original error
+
+        if default_chain_id is not None:
+            return default_chain_id
+
+        raise ProviderNotConnectedError()
 
     @property
     def gas_price(self) -> int:

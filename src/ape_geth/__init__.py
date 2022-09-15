@@ -1,6 +1,6 @@
 from ape import plugins
 
-from .providers import GethNetworkConfig, GethProvider, NetworkConfig
+from .provider import GethNetworkConfig, GethProvider, NetworkConfig
 
 
 @plugins.register(plugins.Config)
