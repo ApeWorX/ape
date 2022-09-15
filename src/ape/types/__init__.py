@@ -46,6 +46,15 @@ A raw data-type representation of an address.
 """
 
 
+GasLimit = Union[Literal["auto", "max"], int, str]
+"""
+A value you can give to Ape for handling gas-limit calculations.
+``"auto"`` refers to automatically figuring out the gas,
+``"max"`` refers to using the maximum block gas limit,
+and otherwise you can provide a numeric value.
+"""
+
+
 TopicFilter = List[Union[Optional[HexStr], List[Optional[HexStr]]]]
 
 
