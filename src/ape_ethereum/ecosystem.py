@@ -87,7 +87,7 @@ class NetworkConfig(PluginConfig):
     class Config:
         smart_union = True
 
-    @validator("gas_limit")
+    @validator("gas_limit", pre=True)
     def validate_gas_limit(cls, value: GasLimit) -> Union[Literal["auto", "max"], int]:
         if isinstance(value, str):
             if value.lower() in ("auto", "max"):
