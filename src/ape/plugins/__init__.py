@@ -52,7 +52,7 @@ plugin_manager.hook = cast(AllPluginHooks, plugin_manager.hook)
 
 
 def clean_plugin_name(name: str) -> str:
-    return name.replace("ape_", "").replace("_", "-")
+    return name.replace("_", "-").replace("ape-", "")
 
 
 def get_hooks(plugin_type):
