@@ -1,7 +1,7 @@
 from functools import partial
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Literal, Optional, Tuple, Type, Union
 
 from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
@@ -606,6 +606,10 @@ class NetworkAPI(BaseInterfaceModel):
     @property
     def _network_config(self) -> Dict:
         return self.config.get(self.name, {})
+
+    @cached_property
+    def gas_limit(self) -> Union[Literal["auto", "max"], int]:
+        return self._network_config.get("gas_limit", "auto")
 
     @property
     def chain_id(self) -> int:
