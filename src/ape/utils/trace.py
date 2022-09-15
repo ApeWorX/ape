@@ -290,7 +290,7 @@ class CallTraceParser:
         tables: List[Table] = []
 
         for contract_id, method_calls in report.items():
-            title = f"{contract_id} Contract"
+            title = f"{contract_id} Gas"
             table = Table(title=title)
             table.add_column("Method")
             table.add_column("Times called")
@@ -306,7 +306,7 @@ class CallTraceParser:
                     f"{min(gases)}",
                     f"{max(gases)}",
                     f"{mean(gases)}",
-                    f"{median(gases)}",
+                    f"{round(median(gases))}",
                 )
 
             tables.append(table)
@@ -339,10 +339,10 @@ class CallTraceParser:
             if method_id:
                 method_name = method_id.name
             else:
-                method_name = f"<{selector!r}>"
+                method_name = f"<{selector.hex()}>"
         else:
             contract_name = address
-            method_name = f"<{selector!r}>"
+            method_name = f"<{selector.hex()}>"
 
         report = {contract_name: {method_name: [calltree.gas_cost] if calltree.gas_cost else []}}
         return merge_reports(report, *map(self._get_rich_gas_report, calltree.calls))
