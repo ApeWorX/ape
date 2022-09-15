@@ -1,7 +1,7 @@
 from functools import partial
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Literal, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
@@ -21,7 +21,7 @@ from ape.exceptions import (
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, RawAddress
+from ape.types import AddressType, ContractLog, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
@@ -608,7 +608,7 @@ class NetworkAPI(BaseInterfaceModel):
         return self.config.get(self.name, {})
 
     @cached_property
-    def gas_limit(self) -> Union[Literal["auto", "max"], int]:
+    def gas_limit(self) -> GasLimit:
         return self._network_config.get("gas_limit", "auto")
 
     @property
