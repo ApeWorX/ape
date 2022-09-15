@@ -850,8 +850,11 @@ class ContractContainer(ManagerAccessMixin):
         belongs to the active project.
         """
         contract_name = self.contract_type.name
-        contract_type = self.project_manager._get_contract(contract_name)
-        if contract_type and self.contract_type:  # == contract_type:
+        contract_container = self.project_manager._get_contract(contract_name)
+        if (
+            contract_container.contract_type.runtime_bytecode.bytecode
+            == self.contract_type.runtime_bytecode.bytecode
+        ):
             return self.project_manager.contracts_folder / self.contract_type.source_id
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
