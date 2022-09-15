@@ -1,10 +1,11 @@
 import logging
-from typing import Dict, Literal, Union
+from typing import Dict
 
 import pytest
 
 from ape.api import PluginConfig
 from ape.managers.config import DeploymentConfigCollection
+from ape.types import GasLimit
 from ape_ethereum.ecosystem import NetworkConfig
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
@@ -61,7 +62,7 @@ def test_network_gas_limit_default(config):
     assert eth_config.local.gas_limit == "auto"
 
 
-def _rinkeby_with_gas_limit(gas_limit: Union[Literal["auto", "max"], int]) -> dict:
+def _rinkeby_with_gas_limit(gas_limit: GasLimit) -> dict:
     return {
         "ethereum": {
             "rinkeby": {

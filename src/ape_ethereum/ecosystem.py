@@ -1,6 +1,6 @@
 import re
 from enum import IntEnum
-from typing import Any, Dict, Iterator, List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
@@ -88,7 +88,7 @@ class NetworkConfig(PluginConfig):
         smart_union = True
 
     @validator("gas_limit", pre=True)
-    def validate_gas_limit(cls, value: GasLimit) -> Union[Literal["auto", "max"], int]:
+    def validate_gas_limit(cls, value: GasLimit) -> GasLimit:
         if isinstance(value, str):
             if value.lower() in ("auto", "max"):
                 return value.lower()  # type: ignore
