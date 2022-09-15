@@ -2151,7 +2151,10 @@ prior to estimation.</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The estimated cost of gas to execute the transaction
-reported in the fee-currency’s smallest unit, e.g. Wei.</p>
+reported in the fee-currency’s smallest unit, e.g. Wei. If the
+provider’s network has been configured with a gas limit override, it
+will be returned. If the gas limit configuration is “max” this will
+return the block maximum gas limit.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>int</p>

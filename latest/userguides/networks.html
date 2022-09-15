@@ -164,6 +164,19 @@ The following configuration changes the default ecosystem, network, and provider
 <span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;provider-name&gt;</span><span class="w"></span>
 </pre></div>
 </div>
+<p>You may also configure a specific gas limit for a given network:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;network-name&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;max&quot;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>You may use one of:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> - gas limit is estimated for each transaction</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code> - the maximum block gas limit is used</p></li>
+<li><p>A number or numeric string, base 10 or 16 (e.g. <code class="docutils literal notranslate"><span class="pre">1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;1234&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">0x1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;0x1234&quot;</span></code>)</p></li>
+</ul>
 </section>
 <section id="local-network">
 <h2>Local Network<a class="headerlink" href="#local-network" title="Permalink to this headline"></a></h2>
