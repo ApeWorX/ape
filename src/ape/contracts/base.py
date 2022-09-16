@@ -854,9 +854,17 @@ class ContractContainer(ManagerAccessMixin):
         if self.project_manager._get_contract(contract_name):
             contract_container = self.project_manager._get_contract(contract_name)
         if (
-            contract_container.contract_type.runtime_bytecode.bytecode
-            == self.contract_type.runtime_bytecode.bytecode
-        ) and (self.contract_type.source_id):
+            (
+                contract_container
+                and contract_container.contract_type.runtime_bytecode
+                and self.contract_type.runtime_bytecode
+            )
+            and (self.contract_type.source_id)
+            and (
+                contract_container.contract_type.runtime_bytecode.bytecode
+                == self.contract_type.runtime_bytecode.bytecode
+            )
+        ):
             return self.project_manager.contracts_folder / self.contract_type.source_id
         else:
             return None
