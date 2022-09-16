@@ -73,5 +73,4 @@ def test_source_path(contract_container):
         contract_container.project_manager.contracts_folder
         / contract_container.contract_type.source_id
     )
-
-    assert contract_container.source_path == path
+    assert not contract_container.source_path

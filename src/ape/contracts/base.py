@@ -853,6 +853,8 @@ class ContractContainer(ManagerAccessMixin):
             contract_name = self.contract_type.name
         if self.project_manager._get_contract(contract_name):
             contract_container = self.project_manager._get_contract(contract_name)
+        else:
+            return None
         if (
             (
                 contract_container
