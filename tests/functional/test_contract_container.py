@@ -69,8 +69,11 @@ def test_deploy_proxy(
 
 
 def test_source_path(contract_container):
-    path = (
-        contract_container.project_manager.contracts_folder
-        / contract_container.contract_type.source_id
-    )
-    assert not contract_container.source_path
+    if contract_container.source_path:
+        path = (
+            contract_container.project_manager.contracts_folder
+            / contract_container.contract_type.source_id
+        )
+        assert contract_container.source_path == path
+    else:
+        assert not contract_container.source_path
