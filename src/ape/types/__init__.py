@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from eth_abi.abi import encode
@@ -7,8 +8,7 @@ from eth_typing import HexStr
 from eth_utils import encode_hex, keccak
 from ethpm_types import (
     ABI,
-    Bytecode,
-    Checksum,
+    Bytecode, Checksum,
     Compiler,
     ContractType,
     PackageManifest,
@@ -156,13 +156,12 @@ class EventArguments(BaseModel):
 
     event_arguments: Dict[str, Any] = Field(...)
 
-    @property
-    def topics(self) -> Any:
-        return [i for i in self.event_arguments["inputs"] if i["indexed"]]
-
-    @property
-    def inputs(self) -> Any:
-        return [i for i in self.event_arguments["inputs"] if not i["indexed"]]
+    @cached_property
+    def topics(self):
+        topics = dict()
+        for key in enumerate(self.event_arguments):
+            topics[key[0]] = {key[1]: self.event_arguments[key[1]]}
+        return topics
 
     @property
     def _event_args_str(self) -> str:
@@ -201,6 +200,14 @@ class EventArguments(BaseModel):
 
     def get(self, item: str, default: Optional[Any] = None) -> Any:
         return self.event_arguments.get(item, default)
+
+    class Config:
+        # NOTE: Due to https://github.com/samuelcolvin/pydantic/issues/1241 we have
+        # to add this cached property workaround in order to avoid this error:
+
+        #    TypeError: cannot pickle '_thread.RLock' object
+
+        keep_untouched = (cached_property,)
 
 
 class ContractLog(EventArguments):
