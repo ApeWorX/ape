@@ -849,13 +849,17 @@ class ContractContainer(ManagerAccessMixin):
         Returns the path to the local contract if determined that this container
         belongs to the active project.
         """
-        contract_name = self.contract_type.name
-        contract_container = self.project_manager._get_contract(contract_name)
+        if self.contract_type.name:
+            contract_name = self.contract_type.name
+        if self.project_manager._get_contract(contract_name):
+            contract_container = self.project_manager._get_contract(contract_name)
         if (
             contract_container.contract_type.runtime_bytecode.bytecode
             == self.contract_type.runtime_bytecode.bytecode
-        ):
+        ) and (self.contract_type.source_id):
             return self.project_manager.contracts_folder / self.contract_type.source_id
+        else:
+            return None
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
