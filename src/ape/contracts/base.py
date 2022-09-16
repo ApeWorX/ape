@@ -849,11 +849,9 @@ class ContractContainer(ManagerAccessMixin):
         Returns the path to the local contract if determined that this container
         belongs to the active project.
         """
-        if self.contract_type.name:
-            contract_name = self.contract_type.name
-        if self.project_manager._get_contract(contract_name):
-            contract_container = self.project_manager._get_contract(contract_name)
-        else:
+        contract_name = self.contract_type.name
+        contract_container = self.project_manager._get_contract(str(contract_name))
+        if not contract_name or contract_container:
             return None
         if (
             (
@@ -861,7 +859,7 @@ class ContractContainer(ManagerAccessMixin):
                 and contract_container.contract_type.runtime_bytecode
                 and self.contract_type.runtime_bytecode
             )
-            and (self.contract_type.source_id)
+            and self.contract_type.source_id
             and (
                 contract_container.contract_type.runtime_bytecode.bytecode
                 == self.contract_type.runtime_bytecode.bytecode
