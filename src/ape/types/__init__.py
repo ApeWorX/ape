@@ -8,7 +8,8 @@ from eth_typing import HexStr
 from eth_utils import encode_hex, keccak
 from ethpm_types import (
     ABI,
-    Bytecode, Checksum,
+    Bytecode,
+    Checksum,
     Compiler,
     ContractType,
     PackageManifest,
