@@ -9,13 +9,20 @@ from ape_test.providers import CHAIN_ID
 
 
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
-def test_get_block(eth_tester_provider, block_id):
-    latest_block = eth_tester_provider.get_block(block_id)
+def test_get_block(eth_tester_provider, block_id, vyper_contract_instance, owner):
+    block = eth_tester_provider.get_block(block_id)
 
     # Each parameter is the same as requesting the first block.
-    assert latest_block.number == 0
-    assert latest_block.base_fee == 1000000000
-    assert latest_block.gas_used == 0
+    assert block.number == 0
+    assert block.base_fee == 1000000000
+    assert block.gas_used == 0
+
+
+def test_get_block_transaction(vyper_contract_instance, owner, eth_tester_provider):
+    # Ensure a transaction in latest block
+    receipt = vyper_contract_instance.setNumber(900, sender=owner)
+    block = eth_tester_provider.get_block(receipt.block_number)
+    assert block.transactions[-1].txn_hash == receipt.txn_hash
 
 
 def test_estimate_gas_with_max_value_from_block(mocker, eth_tester_provider):
