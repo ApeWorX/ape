@@ -11,7 +11,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
@@ -92,7 +92,7 @@ class BlockAPI(BaseInterfaceModel):
     @cached_property
     def transactions(self) -> List[TransactionAPI]:
         query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-        return list(self.query_manager.query(query))  # type: ignore
+        return cast(List[TransactionAPI], list(self.query_manager.query(query)))
 
 
 class ProviderAPI(BaseInterfaceModel):
