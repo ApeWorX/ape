@@ -22,7 +22,7 @@ def test_get_block_transaction(vyper_contract_instance, owner, eth_tester_provid
     # Ensure a transaction in latest block
     receipt = vyper_contract_instance.setNumber(900, sender=owner)
     block = eth_tester_provider.get_block(receipt.block_number)
-    assert block.transactions[-1].txn_hash == receipt.txn_hash
+    assert block.transactions[-1].txn_hash.hex() == receipt.txn_hash
 
 
 def test_estimate_gas_with_max_value_from_block(mocker, eth_tester_provider):

@@ -479,7 +479,7 @@ class Ethereum(EcosystemAPI):
         if "max_fee_per_gas" in kwargs:
             kwargs["max_fee"] = kwargs.pop("max_fee_per_gas")
 
-        return txn_class(**kwargs)  # type: ignore
+        return txn_class(**kwargs)
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         abi_inputs = {
