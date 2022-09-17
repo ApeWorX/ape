@@ -86,7 +86,8 @@ class BlockAPI(BaseInterfaceModel):
     def validate_hexbytes(cls, value):
         # NOTE: pydantic treats these values as bytes and throws an error
         if value and not isinstance(value, HexBytes):
-            raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
+            raise ValueError(f"Hash `{value}` is not a valid Hexbytes.")
+
         return value
 
     @cached_property
