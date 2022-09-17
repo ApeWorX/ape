@@ -72,14 +72,8 @@ class BlockAPI(BaseInterfaceModel):
 
     @root_validator(pre=True)
     def convert_parent_hash(cls, data):
-        if "parent_hash" in data:
-            parent_hash = data["parent_hash"]
-        elif "parentHash" in data:
-            parent_hash = data["parentHash"]
-        else:
-            parent_hash = EMPTY_BYTES32
-
-        data["parentHash"] = parent_hash or EMPTY_BYTES32
+        parent_hash = data.get("parent_hash", data.get("parentHash")) or EMPTY_BYTES32
+        data["parentHash"] = parent_hash
         return data
 
     @validator("hash", "parent_hash", pre=True)
