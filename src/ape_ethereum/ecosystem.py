@@ -311,9 +311,12 @@ class Ethereum(EcosystemAPI):
         if "total_difficulty" in data:
             data["totalDifficulty"] = data.pop("total_difficulty")
         if "base_fee" in data:
-            data["baseFee"] = data.pop("base_fee")
+            data["baseFeePerGas"] = data.pop("base_fee")
+        elif "baseFee" in data:
+            data["baseFeePerGas"] = data.pop("baseFee")
         if "transactions" in data:
             data["num_transactions"] = len(data["transactions"])
+
         return Block.parse_obj(data)
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:

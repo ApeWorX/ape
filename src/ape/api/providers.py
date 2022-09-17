@@ -850,8 +850,8 @@ class Web3Provider(ProviderAPI, ABC):
             if block_id.isnumeric():
                 block_id = add_0x_prefix(block_id)
 
-        block = self.web3.eth.get_block(block_id, full_transactions=True)
-        for transaction in block.get("transactions"):  # type: ignore
+        block = cast(Dict, self.web3.eth.get_block(block_id, full_transactions=True))
+        for transaction in block.get("transactions", []):
             yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
 
     def block_ranges(self, start=0, stop=None, page=None):
