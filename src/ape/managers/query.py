@@ -12,13 +12,12 @@ from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 class DefaultQueryProvider(QueryAPI):
     """
-    Default implementation of the ape.api.query.QueryAPI
-    Allows for the query of blockchain data using connected provider
+    Default implementation of the :class:`~ape.api.query.QueryAPI`.
+    Allows for the query of blockchain data using connected provider.
     """
 
     @singledispatchmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
-
         return None  # can't handle this query
 
     @estimate_query.register
