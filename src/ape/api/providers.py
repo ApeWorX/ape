@@ -852,7 +852,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         block = cast(Dict, self.web3.eth.get_block(block_id, full_transactions=True))
         for transaction in block.get("transactions", []):
-            yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
+            yield self.network.ecosystem.create_transaction(**transaction)
 
     def block_ranges(self, start=0, stop=None, page=None):
         if stop is None:
