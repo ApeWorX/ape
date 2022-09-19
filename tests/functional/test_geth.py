@@ -4,7 +4,7 @@ import pytest
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import ContractLogicError, TransactionError
+from ape.exceptions import ContractLogicError, NetworkMismatchError, TransactionError
 from ape_geth import GethProvider
 from tests.functional.data.python import TRACE_RESPONSE
 
@@ -134,3 +134,39 @@ def test_get_logs_when_connected_to_geth(vyper_contract_instance, eth_tester_pro
     assert actual.event_name == "NumberChange"
     assert actual.contract_address == vyper_contract_instance.address
     assert actual.event_arguments["newNum"] == 123
+
+
+def test_chain_id_when_connected(eth_tester_provider_geth):
+    assert eth_tester_provider_geth.chain_id == 131277322940537
+
+
+def test_chain_id_live_network_not_connected(networks):
+    geth = networks.get_provider_from_choice("ethereum:rinkeby:geth")
+    assert geth.chain_id == 4
+
+
+def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, eth_tester_provider_geth):
+    mock_network = mocker.MagicMock()
+    mock_network.chain_id = 999999999  # Shouldn't use hardcoded network
+    orig_network = eth_tester_provider_geth.network
+    eth_tester_provider_geth.network = mock_network
+
+    # Still use the connected chain ID instead network's
+    assert eth_tester_provider_geth.chain_id == 131277322940537
+    eth_tester_provider_geth.network = orig_network
+
+
+def test_connect_wrong_chain_id(mocker, ethereum, eth_tester_provider_geth):
+    eth_tester_provider_geth.network = ethereum.get_network("kovan")
+
+    # Ensure when reconnecting, it does not use HTTP
+    factory = mocker.patch("ape_geth.provider._create_web3")
+    factory.return_value = eth_tester_provider_geth._web3
+
+    expected_error_message = (
+        "Provider connected to chain ID '131277322940537', "
+        "which does not match network chain ID '42'. "
+        "Are you connected to 'kovan'?"
+    )
+    with pytest.raises(NetworkMismatchError, match=expected_error_message):
+        eth_tester_provider_geth.connect()

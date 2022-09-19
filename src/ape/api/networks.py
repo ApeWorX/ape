@@ -15,12 +15,13 @@ from pydantic import BaseModel
 
 from ape.exceptions import (
     NetworkError,
+    NetworkMismatchError,
     NetworkNotFoundError,
     ProviderNotConnectedError,
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, RawAddress
+from ape.types import AddressType, ContractLog, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
@@ -606,6 +607,10 @@ class NetworkAPI(BaseInterfaceModel):
     def _network_config(self) -> Dict:
         return self.config.get(self.name, {})
 
+    @cached_property
+    def gas_limit(self) -> GasLimit:
+        return self._network_config.get("gas_limit", "auto")
+
     @property
     def chain_id(self) -> int:
         """
@@ -875,6 +880,21 @@ class NetworkAPI(BaseInterfaceModel):
 
         logger.info(f"Publishing and verifying contract using '{self.explorer.name}'.")
         self.explorer.publish_contract(address)
+
+    def verify_chain_id(self, chain_id: int):
+        """
+        Verify a chain ID for this network.
+
+        Args:
+            chain_id (int): The chain ID to verify.
+
+        Raises:
+            :class:`~ape.exceptions.NetworkMismatchError`: When the network is
+              not local or adhoc and has a different hardcoded chain ID than
+              the given one.
+        """
+        if self.name not in ("adhoc", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
+            raise NetworkMismatchError(chain_id, self)
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:

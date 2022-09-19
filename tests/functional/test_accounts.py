@@ -12,6 +12,7 @@ from ape.exceptions import (
     SignatureError,
     TransactionError,
 )
+from ape_ethereum.ecosystem import ProxyType
 
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
 
@@ -145,6 +146,23 @@ def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_ne
     dummy_live_network.__dict__["explorer"] = mock_explorer
     owner.deploy(contract_container, publish=True, required_confirmations=0)
     assert not mock_explorer.call_count
+
+
+def test_deploy_proxy(
+    owner, project, vyper_contract_instance, proxy_contract_container, chain, eth_tester_provider
+):
+    target = vyper_contract_instance.address
+    proxy = owner.deploy(proxy_contract_container, target)
+    assert proxy.address in chain.contracts._local_contract_types
+    assert proxy.address in chain.contracts._local_proxies
+
+    actual = chain.contracts._local_proxies[proxy.address]
+    assert actual.target == target
+    assert actual.type == ProxyType.Delegate
+
+    # Show we get the implementation contract type using the proxy address
+    implementation = chain.contracts.instance_at(proxy.address)
+    assert implementation.contract_type == vyper_contract_instance.contract_type
 
 
 def test_contract_calls(owner, contract_instance):

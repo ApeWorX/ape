@@ -46,6 +46,13 @@ class TransactionAPI(BaseInterfaceModel):
     class Config:
         allow_population_by_field_name = True
 
+    @validator("data", pre=True)
+    def validate_data(cls, value):
+        if isinstance(value, str):
+            return HexBytes(value)
+
+        return value
+
     @property
     def total_transfer_value(self) -> int:
         """

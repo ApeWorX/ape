@@ -8,14 +8,14 @@ from eth_typing import HexStr
 from eth_utils import add_0x_prefix, encode_hex, keccak, to_bytes, to_checksum_address
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
-from pydantic import Field
+from pydantic import Field, validator
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
 from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, RawAddress, TransactionSignature
+from ape.types import AddressType, ContractLog, GasLimit, RawAddress, TransactionSignature
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -75,6 +75,35 @@ class NetworkConfig(PluginConfig):
 
     block_time: int = 0
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+
+    gas_limit: GasLimit = "auto"
+    """
+    The gas limit override to use for the network. If set to ``"auto"``, ape will
+    estimate gas limits based on the transaction. If set to ``"max"`` the gas limit
+    will be set to the maximum block gas limit for the network. Otherwise an ``int``
+    can be used to specify an explicit gas limit amount (either base 10 or 16).
+    """
+
+    class Config:
+        smart_union = True
+
+    @validator("gas_limit", pre=True)
+    def validate_gas_limit(cls, value: GasLimit) -> GasLimit:
+        if isinstance(value, str):
+            if value.lower() in ("auto", "max"):
+                return value.lower()  # type: ignore
+
+            # Value could be an integer string
+            if value.isdigit():
+                return int(value)
+            # Enforce "0x" prefix on base 16 integer strings
+            elif value.lower().startswith("0x"):
+                return int(value, 16)
+            else:
+                raise ValueError("Invalid gas_limit, must be 'auto', 'max', or a number")
+
+        # Value is an integer literal
+        return value
 
 
 class EthereumConfig(PluginConfig):
@@ -149,6 +178,7 @@ class Ethereum(EcosystemAPI):
         code = self.provider.get_code(address).hex()[2:]
         if not code:
             return None
+
         patterns = {
             ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
             ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
@@ -161,7 +191,9 @@ class Ethereum(EcosystemAPI):
                 target = self.conversion_manager.convert(match.group(1), AddressType)
                 return ProxyInfo(type=type, target=target)
 
-        str_to_slot = lambda text: int(keccak(text=text).hex(), 16)  # noqa: E731
+        def str_to_slot(text):
+            return int(keccak(text=text).hex(), 16)
+
         slots = {
             ProxyType.Standard: str_to_slot("eip1967.proxy.implementation") - 1,
             ProxyType.Beacon: str_to_slot("eip1967.proxy.beacon") - 1,
@@ -178,7 +210,6 @@ class Ethereum(EcosystemAPI):
                 continue
 
             target = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
-
             # read `target.implementation()`
             if type == ProxyType.Beacon:
                 abi = MethodABI(
@@ -280,9 +311,12 @@ class Ethereum(EcosystemAPI):
         if "total_difficulty" in data:
             data["totalDifficulty"] = data.pop("total_difficulty")
         if "base_fee" in data:
-            data["baseFee"] = data.pop("base_fee")
+            data["baseFeePerGas"] = data.pop("base_fee")
+        elif "baseFee" in data:
+            data["baseFeePerGas"] = data.pop("baseFee")
         if "transactions" in data:
             data["num_transactions"] = len(data["transactions"])
+
         return Block.parse_obj(data)
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
@@ -440,7 +474,12 @@ class Ethereum(EcosystemAPI):
                 s=bytes(kwargs["s"]),
             )
 
-        return txn_class(**kwargs)  # type: ignore
+        if "max_priority_fee_per_gas" in kwargs:
+            kwargs["max_priority_fee"] = kwargs.pop("max_priority_fee_per_gas")
+        if "max_fee_per_gas" in kwargs:
+            kwargs["max_fee"] = kwargs.pop("max_fee_per_gas")
+
+        return txn_class(**kwargs)
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         abi_inputs = {

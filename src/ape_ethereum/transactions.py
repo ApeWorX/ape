@@ -72,7 +72,8 @@ class BaseTransaction(TransactionAPI):
 
     @property
     def txn_hash(self):
-        return HexBytes(keccak(self.serialize_transaction()))
+        txn_bytes = self.serialize_transaction()
+        return HexBytes(keccak(txn_bytes))
 
 
 class StaticFeeTransaction(BaseTransaction):

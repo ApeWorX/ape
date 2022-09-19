@@ -18,7 +18,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=22.3.0,<23.0",  # auto-formatter and linter
+        "black>=22.6.0,<23.0",  # auto-formatter and linter
         "mypy>=0.971,<1.0",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
@@ -52,20 +52,7 @@ extras_require = {
     # NOTE: These are extras that someone can install to get up and running quickly w/ ape
     #       They should be kept up to date with what works and what doesn't out of the box
     #       Usage example: `pipx install eth-ape[recommended-plugins]`
-    "recommended-plugins": [
-        "ape-alchemy",  # Alchemy public network provider
-        "ape-ens",  # ENS converter
-        "ape-etherscan",  # Etherscan explorer plugin
-        "ape-foundry",  # Foundry local and fork network EVM provider
-        "ape-hardhat",  # Hardhat local and fork network EVM provider
-        "ape-infura",  # Infura public network provider
-        "ape-ledger",  # Ledger Nano S/X hardware wallet
-        "ape-solidity",  # Solidity compiler support
-        "ape-template",  # Cookiecutter template support
-        "ape-tokens",  # Tokenlists converter
-        "ape-trezor",  # Trezor Model T/One hardware wallet
-        "ape-vyper",  # Vyper compiler support
-    ],
+    "recommended-plugins": (here / "recommended-plugins.txt").read_text().split("\n"),
 }
 
 # NOTE: `pip install -e .[dev]` to install package
