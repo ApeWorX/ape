@@ -135,6 +135,7 @@ class EthereumConfig(PluginConfig):
     local: NetworkConfig = NetworkConfig(
         default_provider="test",
         transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+        gas_limit="max",
     )  # type: ignore
     default_network: str = LOCAL_NETWORK_NAME
 

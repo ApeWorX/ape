@@ -59,7 +59,7 @@ def test_network_gas_limit_default(config):
     eth_config = config.get_config("ethereum")
 
     assert eth_config.rinkeby.gas_limit == "auto"
-    assert eth_config.local.gas_limit == "auto"
+    assert eth_config.local.gas_limit == "max"
 
 
 def _rinkeby_with_gas_limit(gas_limit: GasLimit) -> dict:
@@ -83,7 +83,7 @@ def test_network_gas_limit_string_config(gas_limit, config, temp_config):
         assert actual.rinkeby.gas_limit == gas_limit
 
         # Local configuration is unaffected
-        assert actual.local.gas_limit == "auto"
+        assert actual.local.gas_limit == "max"
 
 
 @pytest.mark.parametrize("gas_limit", (1234, "1234", 0x4D2, "0x4D2"))
@@ -96,7 +96,7 @@ def test_network_gas_limit_numeric_config(gas_limit, config, temp_config):
         assert actual.rinkeby.gas_limit == 1234
 
         # Local configuration is unaffected
-        assert actual.local.gas_limit == "auto"
+        assert actual.local.gas_limit == "max"
 
 
 def test_network_gas_limit_invalid_numeric_string(config, temp_config):
