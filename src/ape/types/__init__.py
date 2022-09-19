@@ -155,60 +155,24 @@ class LogFilter(BaseModel):
 
 class EventArguments(BaseModel):
 
-    event_arguments: Dict[str, Any] = Field(...)
-
-    @cached_property
-    def topics(self):
-        topics = dict()
-        for key in enumerate(self.event_arguments):
-            topics[key[0]] = {key[1]: self.event_arguments[key[1]]}
-        return topics
+    data: Optional[Dict[str, Any]]
+    topics: List[Any]
 
     @property
-    def _event_args_str(self) -> str:
-        return " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
+    def topic_0(self) -> str:
+        return self.topics[0]
 
-    def __str__(self) -> str:
-        return f"{self.event_name}({self._event_args_str})"
+    @property
+    def topic_1(self) -> str:
+        return self.topics[1]
 
-    def __repr__(self) -> str:
-        return f"<{self.event_name} {self._event_args_str}>"
+    @property
+    def topic_2(self) -> str:
+        return self.topics[2]
 
-    def __getattr__(self, item: str) -> Any:
-        """
-        Access properties from the log via ``.`` access.
-
-        Args:
-            item (str): The name of the property.
-        """
-
-        try:
-            normal_attribute = self.__getattribute__(item)
-            return normal_attribute
-        except AttributeError:
-            pass
-
-        if item not in self.event_arguments:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
-
-        return self.event_arguments[item]
-
-    def __contains__(self, item: str) -> bool:
-        return item in self.event_arguments
-
-    def __getitem__(self, item: str) -> Any:
-        return self.event_arguments[item]
-
-    def get(self, item: str, default: Optional[Any] = None) -> Any:
-        return self.event_arguments.get(item, default)
-
-    class Config:
-        # NOTE: Due to https://github.com/samuelcolvin/pydantic/issues/1241 we have
-        # to add this cached property workaround in order to avoid this error:
-
-        #    TypeError: cannot pickle '_thread.RLock' object
-
-        keep_untouched = (cached_property,)
+    @property
+    def topic_3(self) -> str:
+        return self.topics[3]
 
 
 class ContractLog(EventArguments):

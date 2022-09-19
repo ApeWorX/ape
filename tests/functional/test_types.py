@@ -15,7 +15,8 @@ RAW_LOG = {
     "block_hash": BLOCK_HASH,
     "block_number": BLOCK_NUMBER,
     "contract_address": ZERO_ADDRESS,
-    "event_arguments": {"foo": 0, "bar": 1},
+    "data": b"",
+    "topics": {"foo": 0, "bar": 1},
     "log_index": LOG_INDEX,
     "event_name": EVENT_NAME,
     "transaction_hash": TXN_HASH,
@@ -78,6 +79,7 @@ def test_contract_log_serialization_with_hex_strings_and_non_checksum_addresses(
 
 def test_contract_log_str(log):
     obj = ContractLog.parse_obj(log.dict())
+    breakpoint()
     assert str(obj) == "MyEvent(foo=0 bar=1)"
 
 
