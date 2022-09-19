@@ -76,7 +76,7 @@ def test_decode_logs(ethereum, vyper_contract_instance):
     abi = vyper_contract_instance.NumberChange.abi
     result = [x for x in ethereum.decode_logs([LOG], abi)]
     assert len(result) == 1
-    assert result[0] == {
+    assert result[0].dict() == {
         "data": "0xabffd4675206dab5d04a6b0d62c975049665d1f512f29f303908abdd20bc08a10000000000000000"
         "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         "000000000000000000006000000000000000000000000000000000000000000000000000000000000000074479"

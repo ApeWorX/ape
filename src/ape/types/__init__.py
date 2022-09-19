@@ -156,7 +156,7 @@ class LogFilter(BaseModel):
 class EventArguments(BaseModel):
 
     data: Optional[Any] = Field(default=None)
-    topics: Optional[Any] = Field(default=[])
+    topics: Optional[List] = Field(default=[])
 
     @property
     def topic_0(self) -> Optional[str]:

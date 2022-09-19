@@ -100,8 +100,8 @@ def test_contract_log_access(log):
 
 def test_topics_and_data(log):
     assert log.data == b""
-    assert log.topic_0 == '0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd'
-    assert log.topic_1 == '0x0000000000000000000000000000000000000000000000000000000000000000'
+    assert log.topic_0 == "0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd"
+    assert log.topic_1 == "0x0000000000000000000000000000000000000000000000000000000000000000"
     assert log.topic_2 is None
     assert log.topic_3 is None
 
