@@ -12,7 +12,6 @@ from eth_utils import decode_hex, encode_hex, keccak, to_int
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from evm_trace import CallTreeNode
-from evm_trace.gas import get_gas_report
 from pydantic import BaseModel, Field, root_validator, validator
 from rich import print as rich_print
 from rich.console import Console as RichConsole

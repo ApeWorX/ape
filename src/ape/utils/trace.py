@@ -11,7 +11,7 @@ from ethpm_types import ContractType
 from ethpm_types.abi import MethodABI
 from evm_trace import CallTreeNode, CallType
 from evm_trace.display import TreeRepresentation
-from evm_trace.gas import get_gas_report, merge_reports
+from evm_trace.gas import merge_reports
 from hexbytes import HexBytes
 from rich.table import Table
 from rich.tree import Tree
