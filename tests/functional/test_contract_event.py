@@ -16,7 +16,7 @@ from ape.types import ContractLog
 @pytest.fixture
 def assert_log_values(owner, chain):
     def _assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):
-        assert isinstance(log.b, HexBytes)
+        assert isinstance(log.data, HexBytes)
         expected_previous_number = number - 1 if previous_number is None else previous_number
         assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
         assert log.newNum == number, "Event param 'newNum' has unexpected value"

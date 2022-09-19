@@ -509,6 +509,7 @@ class Ethereum(EcosystemAPI):
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],
                 contract_address=self.decode_address(log["address"]),
+                event_arguments=event_arguments,
                 data=log["data"],
                 topics=topics,
                 event_name=abi.event_name,

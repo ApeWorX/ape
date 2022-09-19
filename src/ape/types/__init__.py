@@ -155,24 +155,32 @@ class LogFilter(BaseModel):
 
 class EventArguments(BaseModel):
 
-    data: Optional[Dict[str, Any]]
-    topics: List[Any]
+    data: Optional[Any] = Field(default=None)
+    topics: Optional[Any] = Field(default=[])
 
     @property
-    def topic_0(self) -> str:
-        return self.topics[0]
+    def topic_0(self) -> Optional[str]:
+        if self.topics:
+            return self.topics[0]
+        return None
 
     @property
-    def topic_1(self) -> str:
-        return self.topics[1]
+    def topic_1(self) -> Optional[str]:
+        if self.topics and len(self.topics) > 1:
+            return self.topics[1]
+        return None
 
     @property
-    def topic_2(self) -> str:
-        return self.topics[2]
+    def topic_2(self) -> Optional[str]:
+        if self.topics and len(self.topics) > 2:
+            return self.topics[2]
+        return None
 
     @property
-    def topic_3(self) -> str:
-        return self.topics[3]
+    def topic_3(self) -> Optional[str]:
+        if self.topics and len(self.topics) > 3:
+            return self.topics[3]
+        return None
 
 
 class ContractLog(EventArguments):
@@ -185,6 +193,9 @@ class ContractLog(EventArguments):
 
     contract_address: AddressType
     """The contract responsible for emitting the log."""
+
+    event_arguments: Dict[str, Any]
+    """The arguments to the event, including both indexed and non-indexed data."""
 
     transaction_hash: Any
     """The hash of the transaction containing this log."""
@@ -216,6 +227,43 @@ class ContractLog(EventArguments):
         from ape import convert
 
         return convert(value, AddressType)
+
+    @cached_property
+    def _event_args_str(self) -> str:
+        return " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
+
+    def __str__(self) -> str:
+        return f"{self.event_name}({self._event_args_str})"
+
+    def __repr__(self) -> str:
+        return f"<{self.event_name} {self._event_args_str}>"
+
+    def __getattr__(self, item: str) -> Any:
+        """
+        Access properties from the log via ``.`` access.
+        Args:
+            item (str): The name of the property.
+        """
+
+        try:
+            normal_attribute = self.__getattribute__(item)
+            return normal_attribute
+        except AttributeError:
+            pass
+
+        if item not in self.event_arguments:
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
+
+        return self.event_arguments[item]
+
+    def __contains__(self, item: str) -> bool:
+        return item in self.event_arguments
+
+    def __getitem__(self, item: str) -> Any:
+        return self.event_arguments[item]
+
+    def get(self, item: str, default: Optional[Any] = None) -> Any:
+        return self.event_arguments.get(item, default)
 
 
 __all__ = [

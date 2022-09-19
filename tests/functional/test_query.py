@@ -57,7 +57,6 @@ def test_block_transaction_query(chain, eth_tester_provider, sender, receiver):
 def test_transaction_contract_event_query(contract_instance, owner, eth_tester_provider):
     contract_instance.fooAndBar(sender=owner)
     time.sleep(0.1)
-    breakpoint()
     df_events = contract_instance.FooHappened.query("*", start_block=-1)
     assert isinstance(df_events, pd.DataFrame)
     assert df_events.event_name[0] == "FooHappened"
