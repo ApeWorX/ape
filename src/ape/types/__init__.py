@@ -241,6 +241,7 @@ class ContractLog(BaseModel):
     def __getattr__(self, item: str) -> Any:
         """
         Access properties from the log via ``.`` access.
+
         Args:
             item (str): The name of the property.
         """
