@@ -158,61 +158,65 @@ class ContractLog(BaseModel):
     An instance of a log from a contract.
     """
 
-    """The name of the event."""
     event_name: str
+    """The name of the event."""
 
-    """The contract responsible for emitting the log."""
     contract_address: AddressType
+    """The contract responsible for emitting the log."""
 
-    """The arguments to the event, including both indexed and non-indexed data."""
     event_arguments: Dict[str, Any]
+    """The arguments to the event, including both indexed and non-indexed data."""
 
-    """The hash of the transaction containing this log."""
     transaction_hash: Any
+    """The hash of the transaction containing this log."""
 
-    """The number of the block containing the transaction that produced this log."""
     block_number: int
+    """The number of the block containing the transaction that produced this log."""
 
-    """The hash of the block containing the transaction that produced this log."""
     block_hash: Any
+    """The hash of the block containing the transaction that produced this log."""
 
-    """The index of the log on the transaction."""
     log_index: int
+    """The index of the log on the transaction."""
 
+    transaction_index: Optional[int] = None
     """
     The index of the transaction's position when the log was created.
     Is `None` when from the pending block.
     """
-    transaction_index: Optional[int] = None
 
-    """The data hash of the event."""
     data: Any = Field(default=None)
+    """The data hash of the event."""
 
-    """The hashed topics of the event."""
     topics: List = Field(default=[])
+    """The hashed topics of the event."""
 
     @cached_property
     def topic_0(self) -> Optional[str]:
         if self.topics:
             return self.topics[0]
+
         return None
 
     @cached_property
     def topic_1(self) -> Optional[str]:
         if self.topics and len(self.topics) > 1:
             return self.topics[1]
+
         return None
 
     @cached_property
     def topic_2(self) -> Optional[str]:
         if self.topics and len(self.topics) > 2:
             return self.topics[2]
+
         return None
 
     @cached_property
     def topic_3(self) -> Optional[str]:
         if self.topics and len(self.topics) > 3:
             return self.topics[3]
+
         return None
 
     @validator("block_number", "log_index", "transaction_index", pre=True)
