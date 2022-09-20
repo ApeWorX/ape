@@ -392,7 +392,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def query(
         self,
-        *columns: List[str],
+        *columns: str,
         start_block: int = 0,
         stop_block: Optional[int] = None,
         step: int = 1,
@@ -402,7 +402,7 @@ class ContractEvent(ManagerAccessMixin):
         Iterate through blocks for log events
 
         Args:
-            columns (List[str]): columns in the DataFrame to return
+            *columns (str): columns in the ``DataFrame`` to return.
             start_block (int): The first block, by number, to include in the
               query. Defaults to 0.
             stop_block (Optional[int]): The last block, by number, to include
@@ -415,6 +415,7 @@ class ContractEvent(ManagerAccessMixin):
         Returns:
             pd.DataFrame
         """
+        column_list = list(columns)
 
         if start_block < 0:
             start_block = self.chain_manager.blocks.height + start_block
@@ -431,11 +432,12 @@ class ContractEvent(ManagerAccessMixin):
                 f"the chain length ({self.chain_manager.blocks.height})."
             )
 
-        if columns[0] == "*":
-            columns = list(ContractLog.__fields__)  # type: ignore
+        if column_list[0] == "*":
+            column_list = list(ContractLog.__fields__)
+            column_list.append("event_name")
 
         contract_event_query = ContractEventQuery(
-            columns=columns,
+            columns=column_list,
             contract=self.contract.address,
             event=self.abi,
             start_block=start_block,
@@ -445,8 +447,8 @@ class ContractEvent(ManagerAccessMixin):
         contract_events = self.query_manager.query(
             contract_event_query, engine_to_use=engine_to_use
         )
-        data = map(partial(extract_fields, columns=columns), contract_events)
-        return pd.DataFrame(columns=columns, data=data)
+        data = map(partial(extract_fields, columns=column_list), contract_events)
+        return pd.DataFrame(columns=column_list, data=data)
 
     def range(
         self,

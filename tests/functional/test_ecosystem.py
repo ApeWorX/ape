@@ -76,33 +76,38 @@ def test_decode_logs(ethereum, vyper_contract_instance):
     abi = vyper_contract_instance.NumberChange.abi
     result = [x for x in ethereum.decode_logs([LOG], abi)]
     assert len(result) == 1
-    assert result[0].dict() == {
-        "data": "0xabffd4675206dab5d04a6b0d62c975049665d1f512f29f303908abdd20bc08a10000000000000000"
+    actual = result[0]
+
+    assert actual.data == (
+        "0xabffd4675206dab5d04a6b0d62c975049665d1f512f29f303908abdd20bc08a10000000000000000"
         "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         "000000000000000000006000000000000000000000000000000000000000000000000000000000000000074479"
-        "6e616d696300000000000000000000000000000000000000000000000000",
-        "topics": [
-            "0xa84473122c11e32cd505595f246a28418b8ecd6cf819f4e3915363fad1b8f968",
-            "0x0000000000000000000000000000000000000000000000000000000000000006",
-            "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d",
-        ],
-        "event_name": "NumberChange",
-        "contract_address": "0x274b028b03A250cA03644E6c578D81f019eE1323",
-        "event_arguments": {
-            "newNum": 6,
-            "dynIndexed": HexBytes(
-                "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d"
-            ),
-            "b": HexBytes("0xabffd4675206dab5d04a6b0d62c975049665d1f512f29f303908abdd20bc08a1"),
-            "prevNum": 0,
-            "dynData": "Dynamic",
-        },
-        "transaction_hash": "0x74dd040dfa06f0af9af8ca95d7aae409978400151c746f55ecce19e7356cfc5a",
-        "block_number": 11093676,
-        "block_hash": "0x2c99950b07accf3e442512a3352a11e6fed37b2331de5f71b7743b357d96e4e8",
-        "log_index": 0,
-        "transaction_index": 0,
+        "6e616d696300000000000000000000000000000000000000000000000000"
+    )
+    assert actual.topics == [
+        "0xa84473122c11e32cd505595f246a28418b8ecd6cf819f4e3915363fad1b8f968",
+        "0x0000000000000000000000000000000000000000000000000000000000000006",
+        "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d",
+    ]
+    assert actual.event_name == "NumberChange"
+    assert (
+        actual.transaction_hash
+        == "0x74dd040dfa06f0af9af8ca95d7aae409978400151c746f55ecce19e7356cfc5a"
+    )
+    assert actual.event_arguments == {
+        "newNum": 6,
+        "dynIndexed": HexBytes(
+            "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d"
+        ),
+        "b": HexBytes("0xabffd4675206dab5d04a6b0d62c975049665d1f512f29f303908abdd20bc08a1"),
+        "prevNum": 0,
+        "dynData": "Dynamic",
     }
+    assert actual.block_number == 11093676
+    assert actual.block_hash == "0x2c99950b07accf3e442512a3352a11e6fed37b2331de5f71b7743b357d96e4e8"
+    assert actual.log_index == 0
+    assert actual.transaction_index == 0
+    assert actual.abi == abi
 
 
 def test_decode_logs_empty_list(ethereum, event_abi):

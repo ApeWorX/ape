@@ -2,6 +2,7 @@ from functools import cached_property
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from eth_abi.abi import encode
+from eth_abi.exceptions import InsufficientDataBytes
 from eth_abi.packed import encode_packed
 from eth_typing import ChecksumAddress as AddressType
 from eth_typing import HexStr
@@ -21,9 +22,10 @@ from hexbytes import HexBytes
 from pydantic import BaseModel, Field, root_validator, validator
 from web3.types import FilterParams
 
+from ape.logging import logger
+from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
+from ape.utils import LogInputABICollection
 from ape.utils.misc import to_int
-
-from .signatures import MessageSignature, SignableMessage, TransactionSignature
 
 BlockID = Union[int, HexStr, HexBytes, Literal["earliest", "latest", "pending"]]
 """
@@ -158,14 +160,10 @@ class ContractLog(BaseModel):
     An instance of a log from a contract.
     """
 
-    event_name: str
-    """The name of the event."""
+    abi: EventABI = Field(repr=False)
 
     contract_address: AddressType
     """The contract responsible for emitting the log."""
-
-    event_arguments: Dict[str, Any]
-    """The arguments to the event, including both indexed and non-indexed data."""
 
     transaction_hash: Any
     """The hash of the transaction containing this log."""
@@ -190,6 +188,20 @@ class ContractLog(BaseModel):
 
     topics: List = Field(default=[])
     """The hashed topics of the event."""
+
+    @property
+    def event_name(self) -> str:
+        return self.abi.name
+
+    @cached_property
+    def event_arguments(self) -> Dict[str, Any]:
+        """The arguments to the event, including both indexed and non-indexed data."""
+        abis = LogInputABICollection(abi=self.abi)
+        try:
+            return abis.decode(self.topics, self.data)
+        except InsufficientDataBytes:
+            logger.debug("failed to decode log data for %s", self.json(), exc_info=True)
+            return {}
 
     @cached_property
     def topic_0(self) -> Optional[str]:
@@ -237,10 +249,16 @@ class ContractLog(BaseModel):
         return " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
 
     def __str__(self) -> str:
-        return f"{self.event_name}({self._event_args_str})"
+        event_args_str = self._event_args_str.strip()
+        return f"{self.event_name}({event_args_str})"
 
     def __repr__(self) -> str:
-        return f"<{self.event_name} {self._event_args_str}>"
+        representation = f"<{self.event_name}"
+        event_args_str = self._event_args_str.strip()
+        if event_args_str:
+            representation = f"{representation} {event_args_str}"
+
+        return f"{representation}>"
 
     def __getattr__(self, item: str) -> Any:
         """

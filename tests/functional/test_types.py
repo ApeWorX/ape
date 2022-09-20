@@ -1,6 +1,6 @@
 import pytest
 from eth_utils import to_hex
-from ethpm_types.abi import EventABI
+from ethpm_types.abi import ABIType, EventABI
 
 from ape.types import ContractLog, LogFilter
 from ape.utils import ZERO_ADDRESS
@@ -12,17 +12,24 @@ EVENT_NAME = "MyEvent"
 LOG_INDEX = 7
 TXN_INDEX = 2
 RAW_LOG = {
+    "abi": EventABI(
+        type="event",
+        name=EVENT_NAME,
+        inputs=[
+            ABIType(name="foo", type="uint256", indexed=True),
+            ABIType(name="bar", type="uint256", indexed=True),
+        ],
+    ),
     "block_hash": BLOCK_HASH,
     "block_number": BLOCK_NUMBER,
     "contract_address": ZERO_ADDRESS,
-    "event_arguments": {"foo": 0, "bar": 1},
     "data": b"",
     "topics": [
         "0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd",
         "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
     ],
     "log_index": LOG_INDEX,
-    "event_name": EVENT_NAME,
     "transaction_hash": TXN_HASH,
     "transaction_index": TXN_INDEX,
 }
@@ -61,6 +68,8 @@ def test_contract_log_serialization(log):
     assert obj.log_index == 7
     assert obj.transaction_hash == TXN_HASH
     assert obj.transaction_index == TXN_INDEX
+    assert obj.event_arguments["foo"] == 0
+    assert obj.event_arguments["bar"] == 1
 
 
 def test_contract_log_serialization_with_hex_strings_and_non_checksum_addresses(log):
@@ -102,7 +111,7 @@ def test_topics_and_data(log):
     assert log.data == b""
     assert log.topic_0 == "0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd"
     assert log.topic_1 == "0x0000000000000000000000000000000000000000000000000000000000000000"
-    assert log.topic_2 is None
+    assert log.topic_2 == "0x0000000000000000000000000000000000000000000000000000000000000001"
     assert log.topic_3 is None
 
 

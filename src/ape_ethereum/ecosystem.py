@@ -14,7 +14,6 @@ from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, Transactio
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
 from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
-from ape.logging import logger
 from ape.types import AddressType, ContractLog, GasLimit, RawAddress, TransactionSignature
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -485,34 +484,28 @@ class Ethereum(EcosystemAPI):
         abi_inputs = {
             encode_hex(keccak(text=abi.selector)): LogInputABICollection(abi=abi) for abi in events
         }
-
         for log in logs:
             if log.get("anonymous"):
                 raise NotImplementedError(
                     "decoding anonymous logs is not supported with this method"
                 )
             topics = log["topics"]
+
             # web3.py converts topics to hexbytes, data is always a hexstr
             if isinstance(log["topics"][0], bytes):
-                topics = [encode_hex(t) for t in log["topics"]]
+                topics = [encode_hex(t) for t in topics]
             try:
-                abi = abi_inputs[topics[0]]
+                abi = abi_inputs[topics[0]].abi
             except KeyError:
                 continue
 
-            try:
-                event_arguments = abi.decode(topics, log["data"])
-            except InsufficientDataBytes:
-                logger.debug("failed to decode log data for %s", log, exc_info=True)
-                continue
             yield ContractLog(
+                abi=abi,
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],
                 contract_address=self.decode_address(log["address"]),
-                event_arguments=event_arguments,
                 data=log["data"],
                 topics=topics,
-                event_name=abi.event_name,
                 log_index=log["logIndex"],
                 transaction_hash=log["transactionHash"],
                 transaction_index=log["transactionIndex"],

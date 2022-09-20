@@ -222,10 +222,11 @@ class Receipt(ReceiptAPI):
                     selector = encode_hex(log["topics"][0])
                     event_abi = selectors[contract_address][selector]
                 except KeyError:
-                    # Likely a library log
-                    library_log = self._decode_ds_note(log)
-                    if library_log:
-                        yield library_log
+                    # Try decoding a DS-Note log
+                    ds_note = self._decode_ds_note(log)
+                    if ds_note:
+                        yield ds_note
+
                 else:
                     yield from self.provider.network.ecosystem.decode_logs([log], event_abi)
 
@@ -236,6 +237,7 @@ class Receipt(ReceiptAPI):
             # non-zero bytes found after selector
             return None
 
+        log["topics"] = log["topics"][1:]
         contract_type = self.chain_manager.contracts.get(log["address"])
         if contract_type is None:
             # contract type for {log['address']} not found
@@ -247,22 +249,27 @@ class Receipt(ReceiptAPI):
             #  selector {selector.hex()} not found in {log['address']}
             return None
 
-        # ds-note data field uses either (uint256,bytes) or (bytes) encoding
-        # instead of guessing, assume the payload begins right after the selector
+        # ds-note data field uses either (uint256,bytes) or (bytes) encoding.
+        # Instead of guessing, assume the payload begins right after the selector
         data = decode_hex(log["data"]) if isinstance(log["data"], str) else log["data"]
         input_types = [i.canonical_type for i in method_abi.inputs]
         start_index = data.index(selector) + 4
-        values = decode(input_types, data[start_index:])
-        address = self.provider.network.ecosystem.decode_address(log["address"])
+        data = data[start_index:]
+        values = decode(input_types, data)
 
+        abi = EventABI(
+            type="event",
+            name=method_abi.name,
+            inputs=method_abi.inputs,
+        )
+        address = self.provider.network.ecosystem.decode_address(log["address"])
         return ContractLog(
+            abi=abi,
             block_hash=log["blockHash"],
             block_number=log["blockNumber"],
             contract_address=address,
-            event_arguments={i.name: value for i, value in zip(method_abi.inputs, values)},
-            data=log["data"],
-            topics=method_abi.inputs,
-            event_name=method_abi.name,
+            data=data,
+            topics=values[:4],
             log_index=log["logIndex"],
             transaction_hash=log["transactionHash"],
             transaction_index=log["transactionIndex"],
