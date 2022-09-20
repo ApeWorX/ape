@@ -96,7 +96,7 @@ setup(
         "python-dateutil>=2.8.2,<3",
         "pyyaml>=6.0,<7",
         "requests>=2.28.1,<3",
-        "rich>=10.14,<11",
+        "rich>=12.5.1,<13",
         "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
@@ -108,7 +108,7 @@ setup(
         "hexbytes>=0.2.3,<1",
         "py-geth>=3.8.0,<4",
         "web3[tester]==6.0.0b4",
-        # ** Dependencies maintained by Apeworx **
+        # ** Dependencies maintained by ApeWorX **
         "eip712>=0.1.4,<0.2",
         "ethpm-types>=0.3.7,<0.4",
         "evm-trace==0.1.0a10",
