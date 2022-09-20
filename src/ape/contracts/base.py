@@ -209,7 +209,7 @@ class ContractTransaction(ManagerAccessMixin):
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
-        raise_on_fail = kwargs.pop("raise_on_fail", False)
+        raise_on_fail = kwargs.pop("raise_on_fail", True)
 
         txn = self.serialize_transaction(*args, **kwargs)
 
