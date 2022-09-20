@@ -603,6 +603,9 @@ class ContractCache(BaseManager):
             Dict[AddressType, ContractType]: A mapping of addresses to their respective
             contract types.
         """
+        if not addresses:
+            logger.warning("No addresses provided.")
+            return {}
 
         def get_contract_type(address: AddressType):
             address = self.conversion_manager.convert(address, AddressType)
@@ -614,10 +617,22 @@ class ContractCache(BaseManager):
             else:
                 return address, contract_type
 
-        addresses = [self.conversion_manager.convert(a, AddressType) for a in addresses]
+        converted_addresses: List[AddressType] = []
+        for address in converted_addresses:
+            if not self.conversion_manager.is_type(address, AddressType):
+                converted_address = self.conversion_manager.convert(address, AddressType)
+                converted_addresses.append(converted_address)
+            else:
+                converted_addresses.append(address)
+
         contract_types = {}
-        num_threads = concurrency if concurrency is not None else min(len(addresses), 4)
-        with ThreadPoolExecutor(num_threads) as pool:
+        default_max_threads = 4
+        max_threads = (
+            concurrency
+            if concurrency is not None
+            else min(len(addresses), default_max_threads) or default_max_threads
+        )
+        with ThreadPoolExecutor(max_workers=max_threads) as pool:
             for address, contract_type in pool.map(get_contract_type, addresses):
                 if contract_type is None:
                     continue
