@@ -68,14 +68,14 @@ def test_deploy_proxy(
     assert implementation.contract_type == vyper_contract_instance.contract_type
 
 
-def test_source_path_contract_container(contract_container):
-    if contract_container.contract_type:
-        path = (
-            contract_container.project_manager.contracts_folder
-            / contract_container.contract_type.source_id
-        )
-        assert contract_container.source_path == path
+def test_source_path_in_project(project_with_contract):
+    path = (
+        project_with_contract.contracts_folder
+        / project_with_contract.contracts["ApeContract0"].source_id
+    )
+    assert path
+    assert project_with_contract.get_contract("ApeContract0").source_path == path
 
 
-def test_source_path_without_contract_container(contract_container):
+def test_source_path_out_of_project(contract_container):
     assert not contract_container.source_path
