@@ -71,10 +71,10 @@ def test_deploy_proxy(
 def test_source_path_in_project(project_with_contract):
     path = (
         project_with_contract.contracts_folder
-        / project_with_contract.contracts["ApeContract0"].source_id
+        / project_with_contract.contracts["Contract"].source_id
     )
     assert path
-    assert project_with_contract.get_contract("ApeContract0").source_path == path
+    assert project_with_contract.get_contract("Contract").source_path == path
 
 
 def test_source_path_out_of_project(contract_container):
