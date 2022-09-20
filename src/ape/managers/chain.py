@@ -616,8 +616,13 @@ class ContractCache(BaseManager):
 
         addresses = [self.conversion_manager.convert(a, AddressType) for a in addresses]
         contract_types = {}
-        num_threads = concurrency if concurrency is not None else min(len(addresses), 4)
-        with ThreadPoolExecutor(num_threads) as pool:
+        default_max_threads = 4
+        max_threads = (
+            concurrency
+            if concurrency is not None
+            else min(len(addresses), default_max_threads) or default_max_threads
+        )
+        with ThreadPoolExecutor(max_workers=max_threads) as pool:
             for address, contract_type in pool.map(get_contract_type, addresses):
                 if contract_type is None:
                     continue
