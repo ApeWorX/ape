@@ -133,7 +133,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         receipt = self.get_receipt(
             txn_hash.hex(),
             required_confirmations=txn.required_confirmations or 0,
-            raise_on_fail=raise_on_fail,
         )
 
         if raise_on_fail:

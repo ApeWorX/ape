@@ -249,7 +249,7 @@ class ReceiptAPI(BaseInterfaceModel):
         :class:`~api.providers.TransactionStatusEnum`.
         """
 
-    def await_confirmations(self, raise_on_fail: bool = True) -> "ReceiptAPI":
+    def await_confirmations(self, raise_on_fail: bool = False) -> "ReceiptAPI":
         """
         Wait for a transaction to be considered confirmed.
 

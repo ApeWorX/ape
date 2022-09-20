@@ -3,7 +3,12 @@ from unittest import mock
 import pytest
 from eth_typing import HexStr
 
-from ape.exceptions import BlockNotFoundError, ProviderNotConnectedError, TransactionNotFoundError
+from ape.exceptions import (
+    BlockNotFoundError,
+    ProviderNotConnectedError,
+    TransactionError,
+    TransactionNotFoundError,
+)
 from ape.types import LogFilter
 from ape_test.providers import CHAIN_ID
 
@@ -77,6 +82,45 @@ def test_get_receipt_exists_with_timeout(eth_tester_provider, vyper_contract_ins
     receipt_from_provider = eth_tester_provider.get_receipt(receipt_from_invoke.txn_hash, timeout=0)
     assert receipt_from_provider.txn_hash == receipt_from_invoke.txn_hash
     assert receipt_from_provider.receiver == vyper_contract_instance.address
+
+
+def test_get_receipt_without_raising(eth_tester_provider, vyper_contract_instance, owner):
+    # The Contract raises empty revert when setting number to 5.
+    receipt_from_invoke = vyper_contract_instance.setNumber(
+        5,
+        sender=owner,
+        gas_limit=100000,
+        raise_on_fail=False,
+    )
+
+    # Defaults to raise_on_fail=False
+    receipt_from_provider = eth_tester_provider.get_receipt(
+        receipt_from_invoke.txn_hash,
+        timeout=0,
+    )
+
+    assert receipt_from_provider.txn_hash == receipt_from_invoke.txn_hash
+    assert receipt_from_invoke.failed
+    assert receipt_from_provider.failed
+
+
+def test_get_receipt_with_raising(eth_tester_provider, vyper_contract_instance, owner):
+    # The Contract raises empty revert when setting number to 5.
+    receipt_from_invoke = vyper_contract_instance.setNumber(
+        5,
+        sender=owner,
+        gas_limit=100000,
+        raise_on_fail=False,
+    )
+
+    assert receipt_from_invoke.failed
+
+    with pytest.raises(TransactionError):
+        eth_tester_provider.get_receipt(
+            receipt_from_invoke.txn_hash,
+            timeout=0,
+            raise_on_fail=True,
+        )
 
 
 def test_get_contracts_logs_all_logs(chain, contract_instance, owner, eth_tester_provider):

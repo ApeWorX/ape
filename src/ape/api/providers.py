@@ -840,7 +840,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_hash: str,
         required_confirmations: int = 0,
         timeout: Optional[int] = None,
-        raise_on_fail: bool = True,
+        raise_on_fail: bool = False,
     ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
@@ -851,6 +851,8 @@ class Web3Provider(ProviderAPI, ABC):
               to wait before returning the receipt.
             timeout (Optional[int]): The amount of time to wait for a receipt
               before timing out.
+            raise_on_fail (bool): Whether an exception should be raised if the
+              transaction failed.
 
         Raises:
             :class:`~ape.exceptions.TransactionNotFoundError`: Likely the exception raised
@@ -948,7 +950,6 @@ class Web3Provider(ProviderAPI, ABC):
         receipt = self.get_receipt(
             txn_hash.hex(),
             required_confirmations=required_confirmations,
-            raise_on_fail=raise_on_fail,
         )
 
         if raise_on_fail:
