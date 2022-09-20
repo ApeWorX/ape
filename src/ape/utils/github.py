@@ -133,50 +133,6 @@ class GithubClient:
         repo = self.get_repo(repo_path)
         branch = branch or repo.default_branch
         logger.info(f"Cloning branch '{branch}' from '{repo.name}'.")
-
-        class GitRemoteCallbacks(pygit2.RemoteCallbacks):
-            percentage_pattern = re.compile(
-                r"[1-9]{1,2}% \([1-9]*/[1-9]*\)"
-            )  # e.g. '75% (324/432)'
-            total_objects: int = 0
-            current_objects_cloned: int = 0
-            _progress_bar = None
-
-            def sideband_progress(self, string: str):
-                # Parse a line like 'Compressing objects:   0% (1/432)'
-                string = string.lower()
-                expected_prefix = "compressing objects:"
-                if expected_prefix not in string:
-                    return
-
-                progress_str = string.split(expected_prefix)[-1].strip()
-
-                if not self.percentage_pattern.match(progress_str):
-                    return None
-
-                progress_parts = progress_str.split(" ")
-                fraction_str = progress_parts[1].lstrip("(").rstrip(")")
-                fraction = fraction_str.split("/")
-                if not fraction:
-                    return
-
-                total_objects = fraction[1]
-                if not str(total_objects).isnumeric():
-                    return
-
-                GitRemoteCallbacks.total_objects = int(total_objects)
-                previous_value = GitRemoteCallbacks.current_objects_cloned
-                new_value = int(fraction[0])
-                GitRemoteCallbacks.current_objects_cloned = new_value
-
-                if GitRemoteCallbacks.total_objects and not GitRemoteCallbacks._progress_bar:
-                    GitRemoteCallbacks._progress_bar = tqdm(range(GitRemoteCallbacks.total_objects))
-
-                difference = new_value - previous_value
-                if difference > 0:
-                    GitRemoteCallbacks._progress_bar.update(difference)  # type: ignore
-                    GitRemoteCallbacks._progress_bar.refresh()  # type: ignore
-
         url = repo.git_url.replace("git://", "https://")
         clone = pygit2.clone_repository(
             url, str(target_path), checkout_branch=branch, callbacks=GitRemoteCallbacks()
@@ -215,6 +171,48 @@ class GithubClient:
             package_path = temp_path / downloaded_packages[0]
             for source_file in package_path.iterdir():
                 shutil.move(str(source_file), str(target_path))
+
+
+class GitRemoteCallbacks(pygit2.RemoteCallbacks):
+    percentage_pattern = re.compile(r"\d{1,3}% \(\d*/\d*\)(, done)?")  # e.g. '75% (324/432)'
+    total_objects: int = 0
+    current_objects_cloned: int = 0
+    _progress_bar = None
+
+    def sideband_progress(self, string: str):
+        # Parse a line like 'Compressing objects:   0% (1/432)'
+        string = string.lower()
+        expected_prefix = "compressing objects:"
+        if expected_prefix not in string:
+            return
+
+        progress_str = string.split(expected_prefix)[-1].strip()
+
+        if not self.percentage_pattern.match(progress_str):
+            return None
+
+        progress_parts = progress_str.split(" ")[:2]
+        fraction_str = progress_parts[1].lstrip("(").rstrip("),.")
+        fraction = fraction_str.split("/")
+        if not fraction:
+            return
+
+        total_objects = fraction[1]
+        if not str(total_objects).isnumeric():
+            return
+
+        GitRemoteCallbacks.total_objects = int(total_objects)
+        previous_value = GitRemoteCallbacks.current_objects_cloned
+        new_value = int(fraction[0])
+        GitRemoteCallbacks.current_objects_cloned = new_value
+
+        if GitRemoteCallbacks.total_objects and not GitRemoteCallbacks._progress_bar:
+            GitRemoteCallbacks._progress_bar = tqdm(range(GitRemoteCallbacks.total_objects))
+
+        difference = new_value - previous_value
+        if difference > 0:
+            GitRemoteCallbacks._progress_bar.update(difference)  # type: ignore
+            GitRemoteCallbacks._progress_bar.refresh()  # type: ignore
 
 
 github_client = GithubClient()

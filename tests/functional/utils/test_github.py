@@ -3,7 +3,7 @@ import tempfile
 import pytest
 from github import UnknownObjectException
 
-from ape.utils.github import GithubClient
+from ape.utils.github import GithubClient, GitRemoteCallbacks
 
 
 @pytest.fixture
@@ -30,11 +30,25 @@ def github_client_with_mocks(mock_client, mock_repo):
 
 
 class TestGithubClient:
-    def test_clone_repo(self):
+    def test_clone_repo(self, mocker):
         # NOTE: this test actually clones the repo.
         client = GithubClient()
+        git_patch = mocker.patch("ape.utils.github.pygit2.clone_repository")
         with tempfile.TemporaryDirectory() as temp_dir:
             client.clone_repo("dapphub/ds-test", temp_dir, branch="master")
+
+        call_args = git_patch.call_args[0]
+        call_kwargs = git_patch.call_args[1]
+        assert call_args[0] == "https://github.com/dapphub/ds-test.git"
+        assert call_args[1]
+        assert call_kwargs["checkout_branch"] == "master"
+
+        # Test callbacks
+        callbacks = call_kwargs["callbacks"]
+        progress_str = "remote: Compressing objects: 95% (62/65)."
+        callbacks.sideband_progress(progress_str)
+        assert GitRemoteCallbacks.total_objects == 65
+        assert GitRemoteCallbacks.current_objects_cloned == 62
 
     def test_get_release(self, github_client_with_mocks, mock_repo):
         github_client_with_mocks.get_release("test/path", "0.1.0")
