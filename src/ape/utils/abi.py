@@ -5,7 +5,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from eth_abi import decode, grammar
 from eth_utils import decode_hex, to_checksum_address
 from ethpm_types import HexBytes
-from ethpm_types.abi import ABIType, EventABI, EventABIType, MethodABI
+from ethpm_types.abi import ABIType, EventABI, MethodABI
+from pydantic import validator
+
+from ape.utils.basemodel import BaseModel
+from ape.utils.misc import cached_property
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 
@@ -245,15 +249,27 @@ def is_dynamic_sized_type(abi_type: Union[ABIType, str]) -> bool:
     return parsed.is_dynamic
 
 
-class LogInputABICollection:
-    def __init__(self, abi: EventABI):
-        self.abi = abi
-        self.topic_abi_types = [i for i in abi.inputs if i.indexed]
-        self.data_abi_types: List[EventABIType] = [i for i in abi.inputs if not i.indexed]
+class LogInputABICollection(BaseModel):
+    abi: EventABI
 
-        names = [i.name for i in abi.inputs]
+    class Config:
+        keep_untouched = (cached_property,)
+
+    @cached_property
+    def topic_abi_types(self) -> List[ABIType]:
+        return [i for i in self.abi.inputs if i.indexed]
+
+    @cached_property
+    def data_abi_types(self) -> List[ABIType]:
+        return [i for i in self.abi.inputs if not i.indexed]
+
+    @validator("abi", pre=True)
+    def validate_names(cls, value):
+        names = [i.name for i in value.inputs]
         if len(set(names)) < len(names):
-            raise ValueError("duplicate names found in log input", abi)
+            raise ValueError(f"Duplicate names found in log input {value}.")
+
+        return value
 
     @property
     def event_name(self):

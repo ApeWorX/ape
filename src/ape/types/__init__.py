@@ -113,7 +113,7 @@ class LogFilter(BaseModel):
 
         search_topics = search_topics or {}
         topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event.selector))]
-        abi_inputs = LogInputABICollection(event)
+        abi_inputs = LogInputABICollection(abi=event)
 
         def encode_topic_value(abi_type, value):
             if isinstance(value, (list, tuple)):
