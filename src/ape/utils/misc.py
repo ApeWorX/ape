@@ -1,7 +1,7 @@
 import asyncio
 import json
 import sys
-from functools import lru_cache
+from functools import cached_property, lru_cache, singledispatchmethod
 from pathlib import Path
 from typing import Any, Coroutine, Dict, List, Mapping, Optional
 
@@ -15,16 +15,6 @@ from tqdm.auto import tqdm  # type: ignore
 from ape.exceptions import APINotImplementedError
 from ape.logging import logger
 from ape.utils.os import expand_environment_variables
-
-try:
-    from functools import cached_property  # type: ignore
-except ImportError:
-    from backports.cached_property import cached_property  # type: ignore
-try:
-    from functools import singledispatchmethod  # type: ignore
-except ImportError:
-    from singledispatchmethod import singledispatchmethod  # type: ignore
-
 
 EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"

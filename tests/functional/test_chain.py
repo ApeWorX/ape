@@ -493,6 +493,13 @@ def test_contracts_get_multiple(vyper_contract_instance, solidity_contract_insta
     )
 
 
+def test_contracts_get_multiple_no_addresses(chain, caplog):
+    contract_map = chain.contracts.get_multiple([])
+    assert not contract_map
+    assert caplog.records[-1].levelname == "WARNING"
+    assert "No addresses provided." in caplog.records[-1].message
+
+
 def test_contracts_get_all_include_non_contract_address(vyper_contract_instance, chain, owner):
     actual = chain.contracts.get_multiple((vyper_contract_instance.address, owner.address))
     assert len(actual) == 1

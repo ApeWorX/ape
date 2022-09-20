@@ -46,6 +46,13 @@ class TransactionAPI(BaseInterfaceModel):
     class Config:
         allow_population_by_field_name = True
 
+    @validator("data", pre=True)
+    def validate_data(cls, value):
+        if isinstance(value, str):
+            return HexBytes(value)
+
+        return value
+
     @property
     def total_transfer_value(self) -> int:
         """
@@ -339,4 +346,10 @@ class ReceiptAPI(BaseInterfaceModel):
         Args:
             verbose (bool): Set to ``True`` to include more information.
             file (IO[str]): The file to send output to. Defaults to stdout.
+        """
+
+    @raises_not_implemented
+    def show_gas_report(self, file: IO[str] = sys.stdout):
+        """
+        Display a gas report for the calls made in this transaction.
         """

@@ -311,9 +311,12 @@ class Ethereum(EcosystemAPI):
         if "total_difficulty" in data:
             data["totalDifficulty"] = data.pop("total_difficulty")
         if "base_fee" in data:
-            data["baseFee"] = data.pop("base_fee")
+            data["baseFeePerGas"] = data.pop("base_fee")
+        elif "baseFee" in data:
+            data["baseFeePerGas"] = data.pop("baseFee")
         if "transactions" in data:
             data["num_transactions"] = len(data["transactions"])
+
         return Block.parse_obj(data)
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
@@ -471,7 +474,12 @@ class Ethereum(EcosystemAPI):
                 s=bytes(kwargs["s"]),
             )
 
-        return txn_class(**kwargs)  # type: ignore
+        if "max_priority_fee_per_gas" in kwargs:
+            kwargs["max_priority_fee"] = kwargs.pop("max_priority_fee_per_gas")
+        if "max_fee_per_gas" in kwargs:
+            kwargs["max_fee"] = kwargs.pop("max_fee_per_gas")
+
+        return txn_class(**kwargs)
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         abi_inputs = {

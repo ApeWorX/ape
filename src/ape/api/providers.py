@@ -11,7 +11,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix
@@ -72,27 +72,22 @@ class BlockAPI(BaseInterfaceModel):
 
     @root_validator(pre=True)
     def convert_parent_hash(cls, data):
-        if "parent_hash" in data:
-            parent_hash = data["parent_hash"]
-        elif "parentHash" in data:
-            parent_hash = data["parentHash"]
-        else:
-            parent_hash = EMPTY_BYTES32
-
-        data["parentHash"] = parent_hash or EMPTY_BYTES32
+        parent_hash = data.get("parent_hash", data.get("parentHash")) or EMPTY_BYTES32
+        data["parentHash"] = parent_hash
         return data
 
     @validator("hash", "parent_hash", pre=True)
     def validate_hexbytes(cls, value):
         # NOTE: pydantic treats these values as bytes and throws an error
         if value and not isinstance(value, HexBytes):
-            raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
+            raise ValueError(f"Hash `{value}` is not a valid Hexbytes.")
+
         return value
 
     @cached_property
     def transactions(self) -> List[TransactionAPI]:
         query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-        return list(self.query_manager.query(query))  # type: ignore
+        return cast(List[TransactionAPI], list(self.query_manager.query(query)))
 
 
 class ProviderAPI(BaseInterfaceModel):
@@ -855,9 +850,9 @@ class Web3Provider(ProviderAPI, ABC):
             if block_id.isnumeric():
                 block_id = add_0x_prefix(block_id)
 
-        block = self.web3.eth.get_block(block_id, full_transactions=True)
-        for transaction in block.get("transactions"):  # type: ignore
-            yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
+        block = cast(Dict, self.web3.eth.get_block(block_id, full_transactions=True))
+        for transaction in block.get("transactions", []):
+            yield self.network.ecosystem.create_transaction(**transaction)
 
     def block_ranges(self, start=0, stop=None, page=None):
         if stop is None:
