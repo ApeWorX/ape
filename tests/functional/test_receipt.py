@@ -1,7 +1,7 @@
 import pytest
 
 from ape.api import ReceiptAPI
-from ape.exceptions import OutOfGasError
+from ape.exceptions import APINotImplementedError, OutOfGasError
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
@@ -11,10 +11,15 @@ def invoke_receipt(vyper_contract_instance, owner):
 
 
 def test_show_trace(invoke_receipt):
-    # For better tests, see a provider plugin that supports this RPC,
-    # such as ape-hardhat.
-    with pytest.raises(NotImplementedError):
+    # See trace-supported provider plugin tests for better tests (e.g. ape-hardhat)
+    with pytest.raises(APINotImplementedError):
         invoke_receipt.show_trace()
+
+
+def test_show_gas_report(invoke_receipt):
+    # See trace-supported provider plugin tests for better tests (e.g. ape-hardhat)
+    with pytest.raises(APINotImplementedError):
+        invoke_receipt.show_gas_report()
 
 
 def test_decode_logs_specify_abi(invoke_receipt, vyper_contract_instance):
