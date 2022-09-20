@@ -191,25 +191,25 @@ class ContractLog(BaseModel):
     """The hashed topics of the event."""
     topics: List = Field(default=[])
 
-    @property
+    @cached_property
     def topic_0(self) -> Optional[str]:
         if self.topics:
             return self.topics[0]
         return None
 
-    @property
+    @cached_property
     def topic_1(self) -> Optional[str]:
         if self.topics and len(self.topics) > 1:
             return self.topics[1]
         return None
 
-    @property
+    @cached_property
     def topic_2(self) -> Optional[str]:
         if self.topics and len(self.topics) > 2:
             return self.topics[2]
         return None
 
-    @property
+    @cached_property
     def topic_3(self) -> Optional[str]:
         if self.topics and len(self.topics) > 3:
             return self.topics[3]
