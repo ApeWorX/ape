@@ -852,7 +852,7 @@ class Web3Provider(ProviderAPI, ABC):
             timeout (Optional[int]): The amount of time to wait for a receipt
               before timing out.
             raise_on_fail (bool): Whether an exception should be raised if the
-              transaction failed.
+              transaction failed. Defaults to ``False``.
 
         Raises:
             :class:`~ape.exceptions.TransactionNotFoundError`: Likely the exception raised
