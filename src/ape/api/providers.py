@@ -342,7 +342,7 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to send.
             raise_on_fail (bool): ``True`` will cause failed transactions to raise
-              `~ape.exceptions.TransactionError`.
+              `~ape.exceptions.TransactionError`.  Defaults to ``True``.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
