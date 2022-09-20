@@ -231,6 +231,34 @@ receipt = networks.provider.get_receipt(txn_hash)
 receipt.show_trace()
 ```
 
+## Gas Reports
+
+To view the gas report of a transaction receipt, use the [`ReceiptAPI.show_gas_report()`](../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report) method:
+
+```python
+from ape import networks
+
+txn_hash = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
+receipt = networks.provider.get_receipt(txn_hash)
+receipt.show_gas_report()
+```
+
+It will output tables of contracts and methods with gas usages that look like this:
+
+```bash
+                           DAI Gas
+┏━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━━┓
+┃ Method    ┃ Times called ┃ Min.  ┃ Max.  ┃ Mean  ┃ Median ┃
+┡━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━━┩
+│ balanceOf │ 4            │ 1302  │ 1302  │ 1302  │ 1302   │
+│ transfer  │ 5            │ 6974  │ 30374 │ 20174 │ 26174  │
+│ allowance │ 1            │ 1377  │ 1377  │ 1377  │ 1377   │
+│ approve   │ 1            │ 22414 │ 22414 │ 22414 │ 22414  │
+│ burn      │ 1            │ 11946 │ 11946 │ 11946 │ 11946  │
+│ mint      │ 1            │ 25845 │ 25845 │ 25845 │ 25845  │
+└───────────┴──────────────┴───────┴───────┴───────┴────────┘
+```
+
 ## Estimate Gas Cost
 
 To estimate the gas cost on a transaction or call without sending it, use the `estimate_gas_cost()` method from the contract's transaction / call handler:

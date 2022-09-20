@@ -79,6 +79,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#transaction-logs">Transaction Logs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#transaction-acceptance-timeout">Transaction Acceptance Timeout</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#traces">Traces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gas-reports">Gas Reports</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#estimate-gas-cost">Estimate Gas Cost</a></li>
 </ul>
 </li>
@@ -333,6 +334,31 @@ ContractA.methodWithoutArguments<span class="o">()</span> -&gt; 0x00..7a9c <span
 <span class="n">txn_hash</span> <span class="o">=</span> <span class="s2">&quot;0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d&quot;</span>
 <span class="n">receipt</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="n">txn_hash</span><span class="p">)</span>
 <span class="n">receipt</span><span class="o">.</span><span class="n">show_trace</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="gas-reports">
+<h2>Gas Reports<a class="headerlink" href="#gas-reports" title="Permalink to this headline"></a></h2>
+<p>To view the gas report of a transaction receipt, use the <a class="reference external" href="../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.show_gas_report()</span></code></a> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+
+<span class="n">txn_hash</span> <span class="o">=</span> <span class="s2">&quot;0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d&quot;</span>
+<span class="n">receipt</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="n">txn_hash</span><span class="p">)</span>
+<span class="n">receipt</span><span class="o">.</span><span class="n">show_gas_report</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>It will output tables of contracts and methods with gas usages that look like this:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>                           DAI Gas
+┏━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━━┓
+┃ Method    ┃ Times called ┃ Min.  ┃ Max.  ┃ Mean  ┃ Median ┃
+┡━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━━┩
+│ balanceOf │ <span class="m">4</span>            │ <span class="m">1302</span>  │ <span class="m">1302</span>  │ <span class="m">1302</span>  │ <span class="m">1302</span>   │
+│ transfer  │ <span class="m">5</span>            │ <span class="m">6974</span>  │ <span class="m">30374</span> │ <span class="m">20174</span> │ <span class="m">26174</span>  │
+│ allowance │ <span class="m">1</span>            │ <span class="m">1377</span>  │ <span class="m">1377</span>  │ <span class="m">1377</span>  │ <span class="m">1377</span>   │
+│ approve   │ <span class="m">1</span>            │ <span class="m">22414</span> │ <span class="m">22414</span> │ <span class="m">22414</span> │ <span class="m">22414</span>  │
+│ burn      │ <span class="m">1</span>            │ <span class="m">11946</span> │ <span class="m">11946</span> │ <span class="m">11946</span> │ <span class="m">11946</span>  │
+│ mint      │ <span class="m">1</span>            │ <span class="m">25845</span> │ <span class="m">25845</span> │ <span class="m">25845</span> │ <span class="m">25845</span>  │
+└───────────┴──────────────┴───────┴───────┴───────┴────────┘
 </pre></div>
 </div>
 </section>
