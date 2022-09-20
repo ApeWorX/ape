@@ -187,10 +187,10 @@ class Receipt(ReceiptAPI):
         console.print(f"txn.origin=[{TraceStyles.CONTRACTS}]{self.sender}[/]")
         console.print(root)
 
-    def show_gas_report(self):
+    def show_gas_report(self, file: IO[str] = sys.stdout):
         tree_factory = CallTraceParser(self)
         tables = tree_factory.parse_as_gas_report(self.call_tree)
-        rich_print(*tables)
+        rich_print(*tables, file=file)
 
     def decode_logs(
         self,

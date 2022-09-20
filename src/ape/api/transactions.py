@@ -349,7 +349,7 @@ class ReceiptAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def show_gas_report(self):
+    def show_gas_report(self, file: IO[str] = sys.stdout):
         """
         Display a gas report for the calls made in this transaction.
         """
