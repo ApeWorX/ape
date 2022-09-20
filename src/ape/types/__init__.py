@@ -153,10 +153,43 @@ class LogFilter(BaseModel):
         )
 
 
-class EventArguments(BaseModel):
+class ContractLog(BaseModel):
+    """
+    An instance of a log from a contract.
+    """
 
-    data: Optional[Any] = Field(default=None)
-    topics: Optional[List] = Field(default=[])
+    """The name of the event."""
+    event_name: str
+
+    """The contract responsible for emitting the log."""
+    contract_address: AddressType
+
+    """The arguments to the event, including both indexed and non-indexed data."""
+    event_arguments: Dict[str, Any]
+
+    """The hash of the transaction containing this log."""
+    transaction_hash: Any
+
+    """The number of the block containing the transaction that produced this log."""
+    block_number: int
+
+    """The hash of the block containing the transaction that produced this log."""
+    block_hash: Any
+
+    """The index of the log on the transaction."""
+    log_index: int
+
+    """
+    The index of the transaction's position when the log was created.
+    Is `None` when from the pending block.
+    """
+    transaction_index: Optional[int] = None
+
+    """The data hash of the event."""
+    data: Any = Field(default=None)
+
+    """The hashed topics of the event."""
+    topics: List = Field(default=[])
 
     @property
     def topic_0(self) -> Optional[str]:
@@ -181,39 +214,6 @@ class EventArguments(BaseModel):
         if self.topics and len(self.topics) > 3:
             return self.topics[3]
         return None
-
-
-class ContractLog(EventArguments):
-    """
-    An instance of a log from a contract.
-    """
-
-    event_name: str
-    """The name of the event."""
-
-    contract_address: AddressType
-    """The contract responsible for emitting the log."""
-
-    event_arguments: Dict[str, Any]
-    """The arguments to the event, including both indexed and non-indexed data."""
-
-    transaction_hash: Any
-    """The hash of the transaction containing this log."""
-
-    block_number: int
-    """The number of the block containing the transaction that produced this log."""
-
-    block_hash: Any
-    """The hash of the block containing the transaction that produced this log."""
-
-    log_index: int
-    """The index of the log on the transaction."""
-
-    transaction_index: Optional[int] = None
-    """
-    The index of the transaction's position when the log was created.
-    Is `None` when from the pending block.
-    """
 
     @validator("block_number", "log_index", "transaction_index", pre=True)
     def validate_hex_ints(cls, value):
