@@ -233,7 +233,7 @@ receipt.show_trace()
 
 ## Gas Reports
 
-To view the gas report of a transaction receipt, use the  [`ReceiptAPI.show_gas_report()`](../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report) method:
+To view the gas report of a transaction receipt, use the [`ReceiptAPI.show_gas_report()`](../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report) method:
 
 ```python
 from ape import networks
