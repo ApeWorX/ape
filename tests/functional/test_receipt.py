@@ -1,7 +1,7 @@
 import pytest
 
 from ape.api import ReceiptAPI
-from ape.exceptions import OutOfGasError, APINotImplementedError
+from ape.exceptions import APINotImplementedError, OutOfGasError
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
