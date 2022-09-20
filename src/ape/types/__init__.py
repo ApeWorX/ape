@@ -266,6 +266,9 @@ class ContractLog(BaseModel):
     def get(self, item: str, default: Optional[Any] = None) -> Any:
         return self.event_arguments.get(item, default)
 
+    class Config:
+        keep_untouched = (cached_property,)
+
 
 __all__ = [
     "ABI",
