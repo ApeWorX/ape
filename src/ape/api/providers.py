@@ -250,7 +250,14 @@ class ProviderAPI(BaseInterfaceModel):
             NotImplementedError: When the provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ typed transactions.
         """
-        raise NotImplementedError("priority_fee is not implemented by this provider")
+        raise APINotImplementedError("priority_fee is not implemented by this provider")
+
+    @property
+    def supports_tracing(self) -> bool:
+        """
+        ``True`` when the provider can provide transaction traces.
+        """
+        return False
 
     @property
     def base_fee(self) -> int:
@@ -635,6 +642,17 @@ class Web3Provider(ProviderAPI, ABC):
             return False
 
         return run_until_complete(self._web3.isConnected())
+
+    @cached_property
+    def supports_tracing(self) -> bool:
+        try:
+            self.get_call_tree(None)
+        except APINotImplementedError:
+            return False
+        except Exception:
+            return True
+
+        return True
 
     def update_settings(self, new_settings: dict):
         self.disconnect()
