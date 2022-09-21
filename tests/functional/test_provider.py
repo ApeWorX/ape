@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 from eth_typing import HexStr
 
-from ape.exceptions import ProviderError, ProviderNotConnectedError
+from ape.exceptions import BlockNotFoundError, ProviderNotConnectedError, TransactionNotFoundError
 from ape.types import LogFilter
 from ape_test.providers import CHAIN_ID
 
@@ -16,6 +16,13 @@ def test_get_block(eth_tester_provider, block_id, vyper_contract_instance, owner
     assert block.number == 0
     assert block.base_fee == 1000000000
     assert block.gas_used == 0
+
+
+def test_get_block_not_found(eth_tester_provider):
+    latest_block = eth_tester_provider.get_block("latest")
+    block_id = latest_block.number + 1000
+    with pytest.raises(BlockNotFoundError, match=f"Block with ID '{block_id}' not found."):
+        eth_tester_provider.get_block(block_id)
 
 
 def test_get_block_transaction(vyper_contract_instance, owner, eth_tester_provider):
@@ -61,10 +68,8 @@ def test_chain_id_when_none_raises(eth_tester_provider):
 
 def test_get_receipt_not_exists_with_timeout(eth_tester_provider):
     unknown_txn = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
-    with pytest.raises(ProviderError) as err:
+    with pytest.raises(TransactionNotFoundError, match=f"Transaction '{unknown_txn}' not found"):
         eth_tester_provider.get_receipt(unknown_txn, timeout=0)
-
-    assert f"Transaction '{unknown_txn}' not found" in str(err.value)
 
 
 def test_get_receipt_exists_with_timeout(eth_tester_provider, vyper_contract_instance, owner):
