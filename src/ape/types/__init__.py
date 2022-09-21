@@ -220,6 +220,13 @@ class ContractLog(BaseModel):
 
         return convert(value, AddressType)
 
+    @validator("data", pre=True)
+    def validate_data(cls, value):
+        if isinstance(value, str):
+            return HexBytes(value)
+
+        return value
+
     @cached_property
     def _event_args_str(self) -> str:
         return " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
