@@ -170,3 +170,11 @@ def test_connect_wrong_chain_id(mocker, ethereum, eth_tester_provider_geth):
     )
     with pytest.raises(NetworkMismatchError, match=expected_error_message):
         eth_tester_provider_geth.connect()
+
+
+def test_get_receipt(vyper_contract_instance, eth_tester_provider_geth, owner):
+    receipt = vyper_contract_instance.setNumber(123, sender=owner)
+    actual = eth_tester_provider_geth.get_receipt(receipt.txn_hash)
+    assert receipt.txn_hash == actual.txn_hash
+    assert actual.receiver == vyper_contract_instance.address
+    assert actual.sender == receipt.sender
