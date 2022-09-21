@@ -191,6 +191,7 @@ class ContractLog(BaseModel):
 
     @property
     def event_name(self) -> str:
+        """The name of the event."""
         return self.abi.name
 
     @cached_property
