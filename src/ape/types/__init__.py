@@ -189,6 +189,9 @@ class ContractLog(BaseModel):
     topics: List[str] = []
     """The list of topics logged for the event."""
 
+    class Config:
+        keep_untouched = (cached_property,)
+
     @property
     def event_name(self) -> str:
         """The name of the event."""
@@ -260,9 +263,6 @@ class ContractLog(BaseModel):
 
     def get(self, item: str, default: Optional[Any] = None) -> Any:
         return self.event_arguments.get(item, default)
-
-    class Config:
-        keep_untouched = (cached_property,)
 
 
 __all__ = [
