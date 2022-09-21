@@ -170,3 +170,7 @@ def test_connect_wrong_chain_id(mocker, ethereum, eth_tester_provider_geth):
     )
     with pytest.raises(NetworkMismatchError, match=expected_error_message):
         eth_tester_provider_geth.connect()
+
+
+def test_supports_tracing(eth_tester_provider_geth):
+    assert eth_tester_provider_geth.supports_tracing
