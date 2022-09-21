@@ -183,7 +183,7 @@ class ContractLog(BaseModel):
     Is `None` when from the pending block.
     """
 
-    data: Any = b""
+    data: bytes = b""
     """The unstructured data logged for the event."""
 
     topics: List[str] = []
@@ -202,7 +202,7 @@ class ContractLog(BaseModel):
         """The arguments to the event, including both indexed and non-indexed data."""
         abis = LogInputABICollection(abi=self.abi)
         try:
-            return abis.decode(self.topics, self.data)
+            return abis.decode(self.topics, self.data.hex())
         except InsufficientDataBytes:
             logger.debug("failed to decode log data for %s", self.json(), exc_info=True)
             return {}
