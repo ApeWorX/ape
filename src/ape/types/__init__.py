@@ -183,7 +183,7 @@ class ContractLog(BaseModel):
     Is `None` when from the pending block.
     """
 
-    data: str = ""
+    data: Any = b""
     """The unstructured data logged for the event."""
 
     topics: List[str] = []
