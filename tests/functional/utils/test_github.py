@@ -56,6 +56,10 @@ class TestGithubClient:
         # Test that we used the given tag.
         mock_repo.get_release.assert_called_once_with("0.1.0")
 
+        # Ensure that it uses the repo cache the second time
+        github_client_with_mocks.get_release("test/path", "0.1.0")
+        assert github_client_with_mocks._client.get_repo.call_count == 1
+
     def test_get_release_when_tag_fails_tries_with_v(
         self, mock_release, github_client_with_mocks, mock_repo
     ):
