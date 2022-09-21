@@ -305,7 +305,7 @@ class CallTraceParser:
                     f"{len(gases)}",
                     f"{min(gases)}",
                     f"{max(gases)}",
-                    f"{mean(gases)}",
+                    f"{round(mean(gases))}",
                     f"{round(median(gases))}",
                 )
 
