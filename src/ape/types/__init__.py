@@ -183,11 +183,11 @@ class ContractLog(BaseModel):
     Is `None` when from the pending block.
     """
 
-    data: Any = Field(default=None)
-    """The data hash of the event."""
+    data: str = ""
+    """The unstructured data logged for the event."""
 
-    topics: List = Field(default=[])
-    """The hashed topics of the event."""
+    topics: List[str] = []
+    """The list of topics logged for the event."""
 
     @property
     def event_name(self) -> str:
@@ -202,34 +202,6 @@ class ContractLog(BaseModel):
         except InsufficientDataBytes:
             logger.debug("failed to decode log data for %s", self.json(), exc_info=True)
             return {}
-
-    @cached_property
-    def topic_0(self) -> Optional[str]:
-        if self.topics:
-            return self.topics[0]
-
-        return None
-
-    @cached_property
-    def topic_1(self) -> Optional[str]:
-        if self.topics and len(self.topics) > 1:
-            return self.topics[1]
-
-        return None
-
-    @cached_property
-    def topic_2(self) -> Optional[str]:
-        if self.topics and len(self.topics) > 2:
-            return self.topics[2]
-
-        return None
-
-    @cached_property
-    def topic_3(self) -> Optional[str]:
-        if self.topics and len(self.topics) > 3:
-            return self.topics[3]
-
-        return None
 
     @validator("block_number", "log_index", "transaction_index", pre=True)
     def validate_hex_ints(cls, value):
