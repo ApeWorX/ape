@@ -202,3 +202,11 @@ def test_get_receipt_not_exists_with_timeout(eth_tester_provider_geth):
     unknown_txn = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
     with pytest.raises(TransactionNotFoundError, match=f"Transaction '{unknown_txn}' not found"):
         eth_tester_provider_geth.get_receipt(unknown_txn, timeout=0)
+
+
+def test_get_receipt(vyper_contract_instance, eth_tester_provider_geth, owner):
+    receipt = vyper_contract_instance.setNumber(123, sender=owner)
+    actual = eth_tester_provider_geth.get_receipt(receipt.txn_hash)
+    assert receipt.txn_hash == actual.txn_hash
+    assert actual.receiver == vyper_contract_instance.address
+    assert actual.sender == receipt.sender
