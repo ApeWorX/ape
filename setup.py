@@ -112,6 +112,9 @@ setup(
         "eip712>=0.1.4,<0.2",
         "ethpm-types>=0.3.7,<0.4",
         "evm-trace==0.1.0a10",
+        # NOTE: macOS M1 compatibility, should be removed once web3 updates its
+        # protobuf dependency
+        "protobuf==3.20.1",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
