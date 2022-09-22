@@ -488,9 +488,11 @@ class ProjectManager(BaseManager):
             Dict[str, ``ContractType``]: A dictionary of contract names to their
             types for each compiled contract.
         """
-        self._load_dependencies()
 
-        if not self.contracts_folder.exists():
+        # NOTE: Always load dependencies even when there is no contracts folder.
+        #  This is to support projects that only use dependencies.
+        self._load_dependencies()
+        if not self.contracts_folder.is_dir():
             return {}
 
         in_source_cache = self.contracts_folder / ".cache"
