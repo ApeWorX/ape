@@ -301,6 +301,7 @@ class CallTraceParser:
             table.add_column("Median", justify="right")
 
             for method_call, gases in method_calls.items():
+
                 def _format(val: Any) -> str:
                     # Add commas if > 6 length
                     return f"{int(val):,}" if len(str(val)) > 6 else str(val)
