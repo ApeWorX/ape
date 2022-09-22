@@ -294,25 +294,20 @@ class CallTraceParser:
             title = f"{contract_id} Gas"
             table = Table(title=title, box=SIMPLE)
             table.add_column("Method")
-            table.add_column("Times called")
+            table.add_column("Times called", justify="right")
             table.add_column("Min.", justify="right")
             table.add_column("Max.", justify="right")
             table.add_column("Mean", justify="right")
             table.add_column("Median", justify="right")
 
             for method_call, gases in method_calls.items():
-
-                def _format(val: Any) -> str:
-                    # Add commas if > 6 length
-                    return f"{int(val):,}" if len(str(val)) > 6 else str(val)
-
                 table.add_row(
                     method_call,
-                    _format(len(gases)),
-                    _format(min(gases)),
-                    _format(max(gases)),
-                    _format(round(mean(gases))),
-                    _format(round(median(gases))),
+                    f"{len(gases)}",
+                    f"{min(gases)}",
+                    f"{max(gases)}",
+                    f"{int(round(mean(gases)))}",
+                    f"{int(round(median(gases)))}",
                 )
 
             tables.append(table)
