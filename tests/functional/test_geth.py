@@ -181,6 +181,10 @@ def test_connect_wrong_chain_id(mocker, ethereum, eth_tester_provider_geth):
         eth_tester_provider_geth.connect()
 
 
+def test_supports_tracing(eth_tester_provider_geth):
+    assert eth_tester_provider_geth.supports_tracing
+
+
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
 def test_get_block(eth_tester_provider_geth, block_id):
     block = cast(Block, eth_tester_provider_geth.get_block(block_id))

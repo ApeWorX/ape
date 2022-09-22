@@ -141,3 +141,7 @@ def test_get_contract_logs_single_log_unmatched(
     )
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 0
+
+
+def test_supports_tracing(eth_tester_provider):
+    assert not eth_tester_provider.supports_tracing
