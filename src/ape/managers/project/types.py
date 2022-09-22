@@ -88,7 +88,7 @@ class BaseProject(ProjectAPI):
             else:
                 manifest = PackageManifest()
 
-                if self.manifest_cachefile.exists():
+                if self.manifest_cachefile.is_file():
                     self.manifest_cachefile.unlink()
 
             cached_sources = manifest.sources or {}
