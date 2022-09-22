@@ -263,6 +263,16 @@ available. Defaults to <code class="docutils literal notranslate"><span class="p
 </div>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.source_path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">source_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.contracts.base.ContractContainer.source_path" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the path to the local contract if determined that this container
+belongs to the active project by cross checking source_id.</p>
+<p>WARN: The will return a path if the contract has the same
+source ID as one in the current project. That does not necessarily mean
+they are the same contract, however.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
