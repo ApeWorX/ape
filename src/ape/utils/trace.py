@@ -13,6 +13,7 @@ from evm_trace import CallTreeNode, CallType
 from evm_trace.display import TreeRepresentation
 from evm_trace.gas import merge_reports
 from hexbytes import HexBytes
+from rich.box import MINIMAL as BOX_TYPE
 from rich.table import Table
 from rich.tree import Tree
 
@@ -291,7 +292,7 @@ class CallTraceParser:
 
         for contract_id, method_calls in report.items():
             title = f"{contract_id} Gas"
-            table = Table(title=title)
+            table = Table(title=title, box=BOX_TYPE)
             table.add_column("Method")
             table.add_column("Times called")
             table.add_column("Min.")
@@ -305,8 +306,8 @@ class CallTraceParser:
                     f"{len(gases)}",
                     f"{min(gases)}",
                     f"{max(gases)}",
-                    f"{mean(gases)}",
-                    f"{round(median(gases))}",
+                    f"{int(round(mean(gases)))}",
+                    f"{int(round(median(gases)))}",
                 )
 
             tables.append(table)

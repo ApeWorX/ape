@@ -6,7 +6,7 @@ from eth_utils import humanize_hash
 if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
-    from ape.types import SnapshotID
+    from ape.types import BlockID, SnapshotID
 
 
 class ApeException(Exception):
@@ -186,6 +186,29 @@ class ProviderError(ApeException):
     """
     Raised when a problem occurs when using providers.
     """
+
+
+class BlockNotFoundError(ProviderError):
+    """
+    Raised when unable to find a block.
+    """
+
+    def __init__(self, block_id: "BlockID"):
+        if isinstance(block_id, bytes):
+            block_id_str = block_id.hex()
+        else:
+            block_id_str = str(block_id)
+
+        super().__init__(f"Block with ID '{block_id_str}' not found.")
+
+
+class TransactionNotFoundError(ProviderError):
+    """
+    Raised when unable to find a transaction.
+    """
+
+    def __init__(self, txn_hash: str):
+        super().__init__(f"Transaction '{txn_hash}' not found.")
 
 
 class NetworkMismatchError(ProviderError):

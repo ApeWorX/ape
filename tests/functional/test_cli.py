@@ -23,7 +23,7 @@ def one_keyfile_account(keyfile_swap_paths, keyfile_account):
         yield keyfile_account
 
     else:
-        if dest_path.exists():
+        if dest_path.is_file():
             dest_path.unlink() if dest_path.is_file() else shutil.rmtree(dest_path)
 
         dest_path.mkdir()
