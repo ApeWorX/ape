@@ -1,0 +1,84 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "prevNum",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "newNum",
+          "type": "uint256"
+        }
+      ],
+      "name": "NumberChange",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "name": "num",
+          "type": "uint256"
+        }
+      ],
+      "name": "setNumber",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "myNumber",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "prevNumber",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "contractName": "Contract",
+  "deploymentBytecode": {
+    "bytecode": "0x3360005561012261001c6300000000396101226000016300000000f3600436101561000d57610117565b60003560e01c3461011d57633fb5c1cb81186100d057600054331461008957600b6040527f21617574686f72697a65640000000000000000000000000000000000000000006060526040506040518060600181600003601f1636823750506308c379a06000526020602052601f19601f6040510116604401601cfd5b60056004351461011d576001546002556004356001556004357f2295d5ec33e3af0d43cc4b73aa3cd7d784150fe365cbdb4b4fd338220e4f135760025460405260206040a2005b638da5cb5b81186100e75760005460405260206040f35b6323fd0e4081186100fe5760015460405260206040f35b634825cf6f81186101155760025460405260206040f35b505b60006000fd5b600080fd"
+  },
+  "devdoc": {},
+  "runtimeBytecode": {
+    "bytecode": "0x600436101561000d57610117565b60003560e01c3461011d57633fb5c1cb81186100d057600054331461008957600b6040527f21617574686f72697a65640000000000000000000000000000000000000000006060526040506040518060600181600003601f1636823750506308c379a06000526020602052601f19601f6040510116604401601cfd5b60056004351461011d576001546002556004356001556004357f2295d5ec33e3af0d43cc4b73aa3cd7d784150fe365cbdb4b4fd338220e4f135760025460405260206040a2005b638da5cb5b81186100e75760005460405260206040f35b6323fd0e4081186100fe5760015460405260206040f35b634825cf6f81186101155760025460405260206040f35b505b60006000fd5b600080fd"
+  },
+  "sourceId": "Contract.json",
+  "userdoc": {}
+}

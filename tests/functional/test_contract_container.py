@@ -66,3 +66,16 @@ def test_deploy_proxy(
     # Show we get the implementation contract type using the proxy address
     implementation = chain.contracts.instance_at(proxy.address)
     assert implementation.contract_type == vyper_contract_instance.contract_type
+
+
+def test_source_path_in_project(project_with_contract):
+    path = (
+        project_with_contract.contracts_folder
+        / project_with_contract.contracts["Contract"].source_id
+    )
+    assert path
+    assert project_with_contract.get_contract("Contract").source_path == path
+
+
+def test_source_path_out_of_project(contract_container):
+    assert not contract_container.source_path

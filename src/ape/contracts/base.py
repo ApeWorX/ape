@@ -1,5 +1,6 @@
 from functools import partial
 from itertools import islice
+from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
@@ -841,6 +842,34 @@ class ContractContainer(ManagerAccessMixin):
         return self.chain_manager.contracts.instance_at(
             address, self.contract_type, txn_hash=txn_hash
         )
+
+    @cached_property
+    def source_path(self) -> Optional[Path]:
+        """
+        Returns the path to the local contract if determined that this container
+        belongs to the active project by cross checking source_id.
+
+        WARN: The will return a path if the contract has the same
+        source ID as one in the current project. That does not necessarily mean
+        they are the same contract, however.
+        """
+        contract_name = self.contract_type.name
+        source_id = self.contract_type.source_id
+        if not (contract_name and source_id):
+            return None
+
+        contract_container = self.project_manager._get_contract(contract_name)
+        if not (
+            contract_container
+            and contract_container.contract_type.source_id
+            and self.contract_type.source_id
+        ):
+            return None
+
+        if source_id == contract_container.contract_type.source_id:
+            return self.project_manager.contracts_folder / source_id
+        else:
+            return None
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
