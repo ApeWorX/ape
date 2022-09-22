@@ -19,6 +19,7 @@ from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
+from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
 from web3.types import RPCEndpoint
@@ -29,6 +30,7 @@ from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
+    BlockNotFoundError,
     ContractLogicError,
     ProviderError,
     ProviderNotConnectedError,
@@ -36,6 +38,7 @@ from ape.exceptions import (
     SubprocessError,
     SubprocessTimeoutError,
     TransactionError,
+    TransactionNotFoundError,
     VirtualMachineError,
 )
 from ape.logging import logger
@@ -280,6 +283,10 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             block_id (:class:`~ape.types.BlockID`): The ID of the block to get.
                 Can be ``"latest"``, ``"earliest"``, ``"pending"``, a block hash or a block number.
+
+        Raises:
+            :class:`~ape.exceptions.BlockNotFoundError`: Likely the exception raised when a block
+              is not found (depends on implementation).
 
         Returns:
             :class:`~ape.types.BlockID`: The block for the given ID.
@@ -740,7 +747,11 @@ class Web3Provider(ProviderAPI, ABC):
         if isinstance(block_id, str) and block_id.isnumeric():
             block_id = int(block_id)
 
-        block_data = dict(self.web3.eth.get_block(block_id))
+        try:
+            block_data = dict(self.web3.eth.get_block(block_id))
+        except BlockNotFound as err:
+            raise BlockNotFoundError(block_id) from err
+
         return self.network.ecosystem.decode_block(block_data)
 
     def get_nonce(self, address: str, **kwargs) -> int:
@@ -831,6 +842,10 @@ class Web3Provider(ProviderAPI, ABC):
             timeout (Optional[int]): The amount of time to wait for a receipt
               before timing out.
 
+        Raises:
+            :class:`~ape.exceptions.TransactionNotFoundError`: Likely the exception raised
+              when the transaction receipt is not found (depends on implementation).
+
         Returns:
             :class:`~api.providers.ReceiptAPI`:
             The receipt of the transaction with the given hash.
@@ -848,7 +863,7 @@ class Web3Provider(ProviderAPI, ABC):
                 HexBytes(txn_hash), timeout=timeout
             )
         except TimeExhausted as err:
-            raise ProviderError(f"Transaction '{txn_hash}' not found.") from err
+            raise TransactionNotFoundError(txn_hash) from err
 
         txn = dict(self.web3.eth.get_transaction(txn_hash))  # type: ignore
         receipt = self.network.ecosystem.decode_receipt(

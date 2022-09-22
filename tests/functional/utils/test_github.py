@@ -5,6 +5,19 @@ from github import UnknownObjectException
 
 from ape.utils.github import GithubClient, GitRemoteCallbacks
 
+REPO_PATH = "test/path"
+
+
+@pytest.fixture(autouse=True)
+def clear_repo_cache(github_client_with_mocks):
+    def clear():
+        if REPO_PATH in github_client_with_mocks._repo_cache:
+            del github_client_with_mocks._repo_cache[REPO_PATH]
+
+    clear()
+    yield
+    clear()
+
 
 @pytest.fixture
 def mock_client(mocker):
@@ -51,10 +64,14 @@ class TestGithubClient:
         assert GitRemoteCallbacks.current_objects_cloned == 62
 
     def test_get_release(self, github_client_with_mocks, mock_repo):
-        github_client_with_mocks.get_release("test/path", "0.1.0")
+        github_client_with_mocks.get_release(REPO_PATH, "0.1.0")
 
         # Test that we used the given tag.
         mock_repo.get_release.assert_called_once_with("0.1.0")
+
+        # Ensure that it uses the repo cache the second time
+        github_client_with_mocks.get_release(REPO_PATH, "0.1.0")
+        assert github_client_with_mocks._client.get_repo.call_count == 1
 
     def test_get_release_when_tag_fails_tries_with_v(
         self, mock_release, github_client_with_mocks, mock_repo
@@ -68,7 +85,7 @@ class TestGithubClient:
             return mock_release
 
         mock_repo.get_release.side_effect = side_effect
-        actual = github_client_with_mocks.get_release("test/path", "v0.1.0")
+        actual = github_client_with_mocks.get_release(REPO_PATH, "v0.1.0")
         assert actual == mock_release
 
     def test_get_release_when_tag_fails_tries_without_v(
@@ -83,5 +100,5 @@ class TestGithubClient:
             return mock_release
 
         mock_repo.get_release.side_effect = side_effect
-        actual = github_client_with_mocks.get_release("test/path", "0.1.0")
+        actual = github_client_with_mocks.get_release(REPO_PATH, "0.1.0")
         assert actual == mock_release

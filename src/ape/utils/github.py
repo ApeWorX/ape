@@ -66,7 +66,7 @@ class GithubClient:
         Returns:
             github.GitRelease.GitRelease
         """
-        repo = self._client.get_repo(repo_path)
+        repo = self.get_repo(repo_path)
 
         if version == "latest":
             return repo.get_latest_release()
