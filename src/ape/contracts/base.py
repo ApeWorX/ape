@@ -867,7 +867,10 @@ class ContractContainer(ManagerAccessMixin):
         if not (contract_bytecode and self_bytecode):
             return None
 
-        if contract_bytecode == self_bytecode:
+        if (
+            contract_bytecode == self_bytecode
+            and source_id == contract_container.contract_type.source_id
+        ):
             return self.project_manager.contracts_folder / source_id
         else:
             return None
