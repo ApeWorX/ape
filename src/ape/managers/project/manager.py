@@ -496,7 +496,7 @@ class ProjectManager(BaseManager):
             return {}
 
         in_source_cache = self.contracts_folder / ".cache"
-        if not use_cache and in_source_cache.exists():
+        if not use_cache and in_source_cache.is_dir():
             shutil.rmtree(str(in_source_cache))
 
         file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
