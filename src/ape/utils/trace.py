@@ -13,7 +13,7 @@ from evm_trace import CallTreeNode, CallType
 from evm_trace.display import TreeRepresentation
 from evm_trace.gas import merge_reports
 from hexbytes import HexBytes
-from rich.box import MINIMAL as BOX_TYPE
+from rich.box import SIMPLE
 from rich.table import Table
 from rich.tree import Tree
 
@@ -292,13 +292,13 @@ class CallTraceParser:
 
         for contract_id, method_calls in report.items():
             title = f"{contract_id} Gas"
-            table = Table(title=title, box=BOX_TYPE)
+            table = Table(title=title, box=SIMPLE)
             table.add_column("Method")
-            table.add_column("Times called")
-            table.add_column("Min.")
-            table.add_column("Max.")
-            table.add_column("Mean")
-            table.add_column("Median")
+            table.add_column("Times called", justify="right")
+            table.add_column("Min.", justify="right")
+            table.add_column("Max.", justify="right")
+            table.add_column("Mean", justify="right")
+            table.add_column("Median", justify="right")
 
             for method_call, gases in method_calls.items():
                 table.add_row(
@@ -340,10 +340,10 @@ class CallTraceParser:
             if method_id:
                 method_name = method_id.name
             else:
-                method_name = f"<{selector.hex()}>"
+                method_name = selector.hex()
         else:
             contract_name = address
-            method_name = f"<{selector.hex()}>"
+            method_name = selector.hex()
 
         report = {contract_name: {method_name: [calltree.gas_cost] if calltree.gas_cost else []}}
         return merge_reports(report, *map(self._get_rich_gas_report, calltree.calls))
