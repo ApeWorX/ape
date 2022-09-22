@@ -1753,11 +1753,15 @@ reported in the fee-currency’s smallest unit, e.g. Wei.</p>
 <dd class="field-odd"><p><strong>block_id</strong> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>) – The ID of the block to get.
 Can be <code class="docutils literal notranslate"><span class="pre">&quot;latest&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;earliest&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;pending&quot;</span></code>, a block hash or a block number.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The block for the given ID.</p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="exceptions.html#ape.exceptions.BlockNotFoundError" title="ape.exceptions.BlockNotFoundError"><strong>BlockNotFoundError</strong></a> – Likely the exception raised when a block
+    is not found (depends on implementation).</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a></p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The block for the given ID.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2195,11 +2199,15 @@ return the block maximum gas limit.</p>
 <dd class="field-odd"><p><strong>block_id</strong> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>) – The ID of the block to get.
 Can be <code class="docutils literal notranslate"><span class="pre">&quot;latest&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;earliest&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;pending&quot;</span></code>, a block hash or a block number.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The block for the given ID.</p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="exceptions.html#ape.exceptions.BlockNotFoundError" title="ape.exceptions.BlockNotFoundError"><strong>BlockNotFoundError</strong></a> – Likely the exception raised when a block
+    is not found (depends on implementation).</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a></p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The block for the given ID.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2271,11 +2279,15 @@ to wait before returning the receipt.</p></li>
 before timing out.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The receipt of the transaction with the given hash.</p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="exceptions.html#ape.exceptions.TransactionNotFoundError" title="ape.exceptions.TransactionNotFoundError"><strong>TransactionNotFoundError</strong></a> – Likely the exception raised
+    when the transaction receipt is not found (depends on implementation).</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The receipt of the transaction with the given hash.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></p>
 </dd>
 </dl>
 </dd></dl>

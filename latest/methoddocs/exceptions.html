@@ -164,6 +164,13 @@ that already maps to another account.</p>
 </dd></dl>
 
 <dl class="py exception">
+<dt class="sig sig-object py" id="ape.exceptions.BlockNotFoundError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></span><span class="sig-name descname"><span class="pre">BlockNotFoundError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BlockID</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.BlockNotFoundError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ProviderError" title="ape.exceptions.ProviderError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.exceptions.ProviderError</span></code></a></p>
+<p>Raised when unable to find a block.</p>
+</dd></dl>
+
+<dl class="py exception">
 <dt class="sig sig-object py" id="ape.exceptions.ChainError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></span><span class="sig-name descname"><span class="pre">ChainError</span></span><a class="headerlink" href="#ape.exceptions.ChainError" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ApeException" title="ape.exceptions.ApeException"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.exceptions.ApeException</span></code></a></p>
@@ -321,6 +328,13 @@ the given timeout seconds.</p>
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></span><span class="sig-name descname"><span class="pre">TransactionError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_err</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.TransactionError" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ContractError" title="ape.exceptions.ContractError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.exceptions.ContractError</span></code></a></p>
 <p>Raised when issues occur related to transactions.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="ape.exceptions.TransactionNotFoundError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></span><span class="sig-name descname"><span class="pre">TransactionNotFoundError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.TransactionNotFoundError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ProviderError" title="ape.exceptions.ProviderError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.exceptions.ProviderError</span></code></a></p>
+<p>Raised when unable to find a transaction.</p>
 </dd></dl>
 
 <dl class="py exception">
