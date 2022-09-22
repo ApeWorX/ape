@@ -21,7 +21,7 @@ class BaseProject(ProjectAPI):
 
     @property
     def is_valid(self) -> bool:
-        if self.config_file.exists():
+        if self.config_file.is_file():
             return True
 
         logger.warning(
@@ -42,7 +42,7 @@ class BaseProject(ProjectAPI):
         """
         files: List[Path] = []
 
-        if not self.contracts_folder.exists():
+        if not self.contracts_folder.is_dir():
             return files
 
         for extension in self.compiler_manager.registered_compilers:
@@ -55,7 +55,7 @@ class BaseProject(ProjectAPI):
 
     def configure(self, **kwargs):
         # Don't override existing config file.
-        if self.config_file.exists():
+        if self.config_file.is_file():
             return
 
         config_data = {**kwargs}

@@ -150,7 +150,7 @@ class GithubClient:
                                 to the downloaded package.
             target_path (path): A path in your local filesystem to save the downloaded package.
         """
-        if not target_path or not target_path.exists() or not target_path.is_dir():
+        if not target_path or not target_path.is_dir():
             raise ValueError(f"'target_path' must be a valid directory (got '{target_path}').")
 
         release = self.get_release(repo_path, version)

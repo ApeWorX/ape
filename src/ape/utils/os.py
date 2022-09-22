@@ -85,7 +85,7 @@ def get_all_files_in_directory(
         pattern = re.compile(pattern)
 
     if path.is_dir():
-        all_files = [p for p in list(path.rglob("*.*")) if not p.is_dir() and p.exists()]
+        all_files = [p for p in list(path.rglob("*.*")) if p.is_file()]
 
         if pattern:
             return [f for f in all_files if pattern.match(f.name)]

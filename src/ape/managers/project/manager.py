@@ -84,7 +84,7 @@ class ProjectManager(BaseManager):
             List[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
-        if not self.contracts_folder.exists():
+        if not self.contracts_folder.is_dir():
             return files
 
         for extension in self.compiler_manager.registered_compilers:
@@ -99,7 +99,7 @@ class ProjectManager(BaseManager):
         in the project. ``False`` otherwise.
         """
 
-        return not self.contracts_folder.exists() or not self.contracts_folder.iterdir()
+        return not self.contracts_folder.is_dir() or not self.contracts_folder.iterdir()
 
     @property
     def interfaces_folder(self) -> Path:
@@ -568,7 +568,7 @@ class ProjectManager(BaseManager):
         deployments_folder.mkdir(exist_ok=True, parents=True)
         destination = deployments_folder / f"{contract_name}.json"
 
-        if destination.exists():
+        if destination.is_file():
             logger.debug("Deployment already tracked. Re-tracking.")
             destination.unlink()
 

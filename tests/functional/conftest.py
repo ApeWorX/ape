@@ -91,7 +91,7 @@ def keyfile_account(sender, keyparams, temp_accounts_path, eth_tester_provider):
     test_keyfile_path = temp_accounts_path / f"{ALIAS}.json"
     yield _make_keyfile_account(temp_accounts_path, ALIAS, keyparams, sender)
 
-    if test_keyfile_path.exists():
+    if test_keyfile_path.is_file():
         test_keyfile_path.unlink()
 
 
@@ -100,14 +100,14 @@ def second_keyfile_account(sender, keyparams, temp_accounts_path, eth_tester_pro
     test_keyfile_path = temp_accounts_path / f"{ALIAS_2}.json"
     yield _make_keyfile_account(temp_accounts_path, ALIAS_2, keyparams, sender)
 
-    if test_keyfile_path.exists():
+    if test_keyfile_path.is_file():
         test_keyfile_path.unlink()
 
 
 def _make_keyfile_account(base_path: Path, alias: str, params: Dict, funder):
     test_keyfile_path = base_path / f"{alias}.json"
 
-    if test_keyfile_path.exists():
+    if test_keyfile_path.is_file():
         # Corrupted from a previous test
         test_keyfile_path.unlink()
 
@@ -345,12 +345,12 @@ def assert_log_values(contract_instance):
 
 @pytest.fixture
 def remove_disk_writes_deployments(chain):
-    if chain.contracts._deployments_mapping_cache.exists():
+    if chain.contracts._deployments_mapping_cache.is_file():
         chain.contracts._deployments_mapping_cache.unlink()
 
     yield
 
-    if chain.contracts._deployments_mapping_cache.exists():
+    if chain.contracts._deployments_mapping_cache.is_file():
         chain.contracts._deployments_mapping_cache.unlink()
 
 

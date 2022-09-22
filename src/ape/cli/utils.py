@@ -18,7 +18,7 @@ class Abort(click.ClickException):
         if not message:
             caller = getframeinfo(stack()[1][0])
             file_path = Path(caller.filename)
-            location = file_path.name if file_path.exists() else caller.filename
+            location = file_path.name if file_path.is_file() else caller.filename
             message = f"Operation aborted in {location}::{caller.function} on line {caller.lineno}."
 
         super().__init__(message)
