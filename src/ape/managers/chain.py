@@ -882,7 +882,7 @@ class ContractCache(BaseManager):
     def _load_deployments_cache(self) -> Dict:
         return (
             json.loads(self._deployments_mapping_cache.read_text())
-            if self._deployments_mapping_cache.exists()
+            if self._deployments_mapping_cache.is_file()
             else {}
         )
 

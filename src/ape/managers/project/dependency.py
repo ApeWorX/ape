@@ -137,7 +137,7 @@ class LocalDependency(DependencyAPI):
     @property
     def path(self) -> Path:
         given_path = Path(self.local).absolute()
-        if not given_path.exists():
+        if not given_path.is_dir():
             raise ProjectError(f"No project exists at path '{given_path}'.")
 
         return given_path
