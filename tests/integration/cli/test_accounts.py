@@ -16,7 +16,7 @@ GENERATE_VALID_INPUT = "\n".join(["random entropy", PASSWORD, PASSWORD])
 def temp_keyfile_path(temp_accounts_path):
     test_keyfile_path = temp_accounts_path / f"{ALIAS}.json"
 
-    if test_keyfile_path.exists():
+    if test_keyfile_path.is_file():
         # Corrupted from a previous test
         test_keyfile_path.unlink()
 
@@ -29,7 +29,7 @@ def temp_keyfile(temp_keyfile_path, keyparams):
 
     yield temp_keyfile_path
 
-    if temp_keyfile_path.exists():
+    if temp_keyfile_path.is_file():
         temp_keyfile_path.unlink()
 
 
@@ -40,13 +40,13 @@ def temp_account():
 
 @run_once
 def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
-    assert not temp_keyfile_path.exists()
+    assert not temp_keyfile_path.is_file()
     # Add account from private keys
     result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
     assert result.exit_code == 0, result.output
     assert temp_account.address in result.output
     assert ALIAS in result.output
-    assert temp_keyfile_path.exists()
+    assert temp_keyfile_path.is_file()
 
 
 @run_once
@@ -70,12 +70,12 @@ def test_import_account_instantiation_failure(mocker, ape_cli, runner, temp_acco
 
 @run_once
 def test_generate(ape_cli, runner, temp_keyfile_path):
-    assert not temp_keyfile_path.exists()
+    assert not temp_keyfile_path.is_file()
     # Generate new private key
     result = runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
     assert result.exit_code == 0, result.output
     assert ALIAS in result.output
-    assert temp_keyfile_path.exists()
+    assert temp_keyfile_path.is_file()
 
 
 @run_once
@@ -92,7 +92,7 @@ def test_generate_alias_already_in_use(ape_cli, runner, temp_account):
 @run_once
 def test_list(ape_cli, runner, temp_keyfile):
     # Check availability
-    assert temp_keyfile.exists()
+    assert temp_keyfile.is_file()
     result = runner.invoke(ape_cli, ["accounts", "list"], catch_exceptions=False)
     assert ALIAS in result.output
 
@@ -104,14 +104,14 @@ def test_list(ape_cli, runner, temp_keyfile):
 @run_once
 def test_list_all(ape_cli, runner, temp_keyfile):
     # Check availability
-    assert temp_keyfile.exists()
+    assert temp_keyfile.is_file()
     result = runner.invoke(ape_cli, ["accounts", "list", "--all"])
     assert ALIAS in result.output
 
 
 @run_once
 def test_change_password(ape_cli, runner, temp_keyfile):
-    assert temp_keyfile.exists()
+    assert temp_keyfile.is_file()
     # Delete Account (`N` for "Leave unlocked?")
     valid_input = [PASSWORD, "N", "b", "b"]
     result = runner.invoke(
@@ -124,8 +124,8 @@ def test_change_password(ape_cli, runner, temp_keyfile):
 
 @run_once
 def test_delete(ape_cli, runner, temp_keyfile):
-    assert temp_keyfile.exists()
+    assert temp_keyfile.is_file()
     # Delete Account
     result = runner.invoke(ape_cli, ["accounts", "delete", ALIAS], input=f"{PASSWORD}\n")
     assert result.exit_code == 0, result.output
-    assert not temp_keyfile.exists()
+    assert not temp_keyfile.is_file()

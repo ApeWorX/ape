@@ -115,7 +115,7 @@ def temp_accounts_path(config):
 
     yield path
 
-    if path.exists():
+    if path.is_dir():
         shutil.rmtree(path)
 
 

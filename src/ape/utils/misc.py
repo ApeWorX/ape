@@ -120,7 +120,7 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
     Returns:
         Dict (dict): Configured settings parsed from a config file.
     """
-    if path.exists():
+    if path.is_file():
         contents = path.read_text()
         if expand_envars:
             contents = expand_environment_variables(contents)

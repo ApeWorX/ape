@@ -84,7 +84,7 @@ class ProjectManager(BaseManager):
             List[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
-        if not self.contracts_folder.exists():
+        if not self.contracts_folder.is_dir():
             return files
 
         for extension in self.compiler_manager.registered_compilers:
@@ -99,7 +99,7 @@ class ProjectManager(BaseManager):
         in the project. ``False`` otherwise.
         """
 
-        return not self.contracts_folder.exists() or not self.contracts_folder.iterdir()
+        return not self.contracts_folder.is_dir() or not self.contracts_folder.iterdir()
 
     @property
     def interfaces_folder(self) -> Path:
@@ -488,13 +488,15 @@ class ProjectManager(BaseManager):
             Dict[str, ``ContractType``]: A dictionary of contract names to their
             types for each compiled contract.
         """
-        self._load_dependencies()
 
-        if not self.contracts_folder.exists():
+        # NOTE: Always load dependencies even when there is no contracts folder.
+        #  This is to support projects that only use dependencies.
+        self._load_dependencies()
+        if not self.contracts_folder.is_dir():
             return {}
 
         in_source_cache = self.contracts_folder / ".cache"
-        if not use_cache and in_source_cache.exists():
+        if not use_cache and in_source_cache.is_dir():
             shutil.rmtree(str(in_source_cache))
 
         file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
@@ -566,7 +568,7 @@ class ProjectManager(BaseManager):
         deployments_folder.mkdir(exist_ok=True, parents=True)
         destination = deployments_folder / f"{contract_name}.json"
 
-        if destination.exists():
+        if destination.is_file():
             logger.debug("Deployment already tracked. Re-tracking.")
             destination.unlink()
 
