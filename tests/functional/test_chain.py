@@ -67,6 +67,14 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     assert receiver.balance == initial_balance
 
 
+def test_get_receipt_from_account_history(chain, vyper_contract_instance, owner):
+    expected = vyper_contract_instance.setNumber(3, sender=owner)
+    actual = chain.account_history.get_receipt(expected.txn_hash)
+    assert actual.txn_hash == expected.txn_hash
+    assert actual.sender == expected.sender
+    assert actual.receiver == expected.receiver
+
+
 def test_snapshot_and_restore_unknown_snapshot_id(chain):
     _ = chain.snapshot()
     chain.mine()

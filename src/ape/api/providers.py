@@ -273,7 +273,7 @@ class ProviderAPI(BaseInterfaceModel):
             NotImplementedError: When this provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
         """
-        raise NotImplementedError("base_fee is not implemented by this provider")
+        raise APINotImplementedError("base_fee is not implemented by this provider")
 
     @abstractmethod
     def get_block(self, block_id: BlockID) -> BlockAPI:
@@ -610,7 +610,7 @@ class Web3Provider(ProviderAPI, ABC):
     @property
     def web3(self) -> Web3:
         """
-        Access to the ``web3`` object as if you did ``Web3(HTTPProvder(uri))``.
+        Access to the ``web3`` object as if you did ``Web3(HTTPProvider(uri))``.
         """
 
         if not self._web3:
@@ -853,6 +853,10 @@ class Web3Provider(ProviderAPI, ABC):
 
         if required_confirmations < 0:
             raise TransactionError(message="Required confirmations cannot be negative.")
+
+        cached_receipt = self.chain_manager.account_history.get_receipt(txn_hash)
+        if cached_receipt:
+            return cached_receipt
 
         timeout = (
             timeout if timeout is not None else self.provider.network.transaction_acceptance_timeout
