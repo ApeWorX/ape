@@ -1,6 +1,7 @@
 import pytest
 from eip712.messages import EIP712Message
 from eth_account.messages import encode_defunct
+from ape.types.signatures import recover_signer
 
 import ape
 from ape import convert
@@ -37,6 +38,10 @@ def test_sign_message(signer):
     signature = signer.sign_message(message)
     assert signer.check_signature(message, signature)
 
+def test_recover_signer(signer):
+    message = encode_defunct(text="Hello Apes!")
+    signature = signer.sign_message(message)
+    assert recover_signer(message,signature) == signer
 
 def test_sign_eip712_message(signer):
     message = Foo(signer.address).signable_message
