@@ -38,7 +38,7 @@ class MessageSignature(_Signature):
 
 def recover_signer(msg: SignableMessage, sig: MessageSignature) -> AddressType:
     """
-    Recovers the signer of a message with the signature and the original message
+    Returns the signer of a message with the arguments of the SignableMessage and MessageSignature
     """
     return Account.recover_message(msg, sig)
 
