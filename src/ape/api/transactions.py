@@ -253,19 +253,19 @@ class ReceiptAPI(BaseInterfaceModel):
         :class:`~api.providers.TransactionStatusEnum`.
         """
 
-    def await_confirmations(self) -> "ReceiptAPI":
+    def await_confirmations(self, raise_on_fail: bool = False) -> "ReceiptAPI":
         """
         Wait for a transaction to be considered confirmed.
+
+        Args:
+            raise_on_fail (bool): If ``True``, causes a :class:`~ape.exceptions.TransactionError`
+              to be raised if the transaction has failed.
 
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
-
-        try:
+        if raise_on_fail:
             self.raise_for_status()
-        except TransactionError:
-            # Skip waiting for confirmations when the transaction has failed.
-            return self
 
         iterations_timeout = 20
         iteration = 0

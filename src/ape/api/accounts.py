@@ -73,20 +73,28 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
           :class:`~ape.types.signatures.TransactionSignature` (optional): The signed transaction.
         """
 
-    def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
+    def call(
+        self,
+        txn: TransactionAPI,
+        send_everything: bool = False,
+        raise_on_fail: bool = True,
+    ) -> ReceiptAPI:
         """
         Make a transaction call.
 
         Raises:
             :class:`~ape.exceptions.AccountsError`: When the nonce is invalid or the sender does
               not have enough funds.
-            :class:`~ape.exceptions.TransactionError`: When the required confirmations are negative.
+            :class:`~ape.exceptions.TransactionError`: When the required confirmations
+              are negative or on transaction failure if ``raise_on_fail`` is ``True``.
             :class:`~ape.exceptions.SignatureError`: When the user does not sign the transaction.
 
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`): An invoke-transaction.
             send_everything (bool): ``True`` will send the difference from balance and fee.
               Defaults to ``False``.
+            raise_on_fail (bool): ``True`` will cause failed transactions to raise
+              `~ape.exceptions.TransactionError`.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
@@ -128,7 +136,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         if not txn.signature:
             raise SignatureError("The transaction was not signed.")
 
-        return self.provider.send_transaction(txn)
+        return self.provider.send_transaction(txn, raise_on_fail=raise_on_fail)
 
     def transfer(
         self,
@@ -445,6 +453,11 @@ class ImpersonatedAccount(AccountAPI):
     def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
         return None
 
-    def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
+    def call(
+        self,
+        txn: TransactionAPI,
+        send_everything: bool = False,
+        raise_on_fail: bool = True,
+    ) -> ReceiptAPI:
         txn = self.prepare_transaction(txn)
-        return self.provider.send_transaction(txn)
+        return self.provider.send_transaction(txn, raise_on_fail=raise_on_fail)

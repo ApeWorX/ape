@@ -209,12 +209,14 @@ class ContractTransaction(ManagerAccessMixin):
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        raise_on_fail = kwargs.pop("raise_on_fail", True)
+
         txn = self.serialize_transaction(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
-            return kwargs["sender"].call(txn)
+            return kwargs["sender"].call(txn, raise_on_fail=raise_on_fail)
 
-        return self.provider.send_transaction(txn)
+        return self.provider.send_transaction(txn, raise_on_fail=raise_on_fail)
 
 
 class ContractTransactionHandler(ManagerAccessMixin):

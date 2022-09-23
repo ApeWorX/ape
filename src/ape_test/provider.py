@@ -127,14 +127,15 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         except TransactionFailed as err:
             raise self.get_virtual_machine_error(err, sender=txn.sender) from err
 
-    def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+    def send_transaction(self, txn: TransactionAPI, raise_on_fail: bool = True) -> ReceiptAPI:
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except (ValidationError, TransactionFailed) as err:
             raise self.get_virtual_machine_error(err, sender=txn.sender) from err
 
         receipt = self.get_receipt(
-            txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
+            txn_hash.hex(),
+            required_confirmations=txn.required_confirmations or 0,
         )
 
         if receipt.failed:
@@ -147,6 +148,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 self.web3.eth.call(txn_params)
             except (ValidationError, TransactionFailed) as err:
                 raise self.get_virtual_machine_error(err, sender=txn.sender) from err
+
+        if raise_on_fail:
+            receipt.raise_for_status()
 
         self.chain_manager.account_history.append(receipt)
         return receipt
