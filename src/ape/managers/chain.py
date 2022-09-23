@@ -1092,3 +1092,12 @@ class ChainManager(BaseManager):
             amount = int(amount, 16)
 
         return self.provider.set_balance(account, amount)
+
+    def get_receipt(self, transaction_hash: str) -> ReceiptAPI:
+        cached_receipt = self.chain_manager.account_history.get_receipt(transaction_hash)
+        if cached_receipt:
+            return cached_receipt
+
+        receipt = self.provider.get_receipt(transaction_hash)
+        self.chain_manager.account_history.append(receipt)
+        return receipt

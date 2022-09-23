@@ -72,19 +72,11 @@ def test_get_receipt_not_exists_with_timeout(eth_tester_provider):
         eth_tester_provider.get_receipt(unknown_txn, timeout=0)
 
 
-def test_get_receipt_exists_with_timeout(
-    mocker, eth_tester_provider, vyper_contract_instance, owner
-):
+def test_get_receipt_exists_with_timeout(eth_tester_provider, vyper_contract_instance, owner):
     receipt_from_invoke = vyper_contract_instance.setNumber(123, sender=owner)
-    eth = eth_tester_provider.web3.eth
-    rpc_spy = mocker.spy(eth, "get_transaction")
-
     receipt_from_provider = eth_tester_provider.get_receipt(receipt_from_invoke.txn_hash, timeout=0)
     assert receipt_from_provider.txn_hash == receipt_from_invoke.txn_hash
     assert receipt_from_provider.receiver == vyper_contract_instance.address
-
-    # Ensure that it used the cache (no RPC made)
-    assert not rpc_spy.call_count
 
 
 def test_get_contracts_logs_all_logs(chain, contract_instance, owner, eth_tester_provider):

@@ -67,6 +67,26 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     assert receiver.balance == initial_balance
 
 
+def test_get_receipt_uses_cache(mocker, eth_tester_provider, chain, vyper_contract_instance, owner):
+    expected = vyper_contract_instance.setNumber(3, sender=owner)
+    eth = eth_tester_provider.web3.eth
+    rpc_spy = mocker.spy(eth, "get_transaction")
+    actual = chain.get_receipt(expected.txn_hash)
+    assert actual.txn_hash == expected.txn_hash
+    assert actual.sender == expected.sender
+    assert actual.receiver == expected.receiver
+    assert not rpc_spy.call_count
+
+    # Show it uses the provider when the receipt is not cached.
+    del chain.account_history._hash_to_receipt_map[expected.txn_hash]
+    chain.get_receipt(expected.txn_hash)
+    assert rpc_spy.call_count == 1
+
+    # Show it is cached after the first time
+    chain.get_receipt(expected.txn_hash)
+    assert rpc_spy.call_count == 1  # Not changed
+
+
 def test_get_receipt_from_account_history(chain, vyper_contract_instance, owner):
     expected = vyper_contract_instance.setNumber(3, sender=owner)
     actual = chain.account_history.get_receipt(expected.txn_hash)
