@@ -180,7 +180,11 @@ class CacheQueryProvider(QueryAPI):
     @_estimate_query_clause.register
     def _block_estimate_query_clause(self, query: BlockQuery) -> Select:
         return (
-            select(func.count())
+            select(
+                func.min(Blocks.number),
+                func.max(Blocks.number),
+                func.count(),
+            )
             .select_from(Blocks)
             .where(Blocks.number >= query.start_block)
             .where(Blocks.number <= query.stop_block)
@@ -198,7 +202,11 @@ class CacheQueryProvider(QueryAPI):
     @_estimate_query_clause.register
     def _contract_events_estimate_query_clause(self, query: ContractEventQuery) -> Select:
         return (
-            select(func.count())
+            select(
+                func.min(ContractEvents.block_number),
+                func.max(ContractEvents.block_number),
+                func.count(),
+            )
             .select_from(ContractEvents)
             .where(ContractEvents.block_number >= query.start_block)
             .where(ContractEvents.block_number <= query.stop_block)
@@ -222,17 +230,21 @@ class CacheQueryProvider(QueryAPI):
         query: BlockQuery,
         result: CursorResult,
     ) -> Optional[BlockQueryEstimate]:
-        if result.scalar() == (1 + query.stop_block - query.start_block) // query.step:
-            return BlockQueryEstimate(
-                start_block=query.start_block,
-                stop_block=query.stop_block,
-                # NOTE: Assume 200 msec to get data from database
-                cost=200,
-            )
+        min_max_count = result.all()[0]
+        if len(min_max_count) != 3:
+            # Nothing retrieved from db
+            return None
 
-        # Can't handle this query
-        # TODO: Allow partial queries
-        return None
+        if min_max_count[2] < (1 + query.stop_block - query.start_block) // query.step:
+            # TODO: Allow multiple disjoint ranges
+            return None
+
+        return BlockQueryEstimate(
+            start_block=min_max_count[0],
+            stop_block=min_max_count[1],
+            # NOTE: Assume 200 msec to get data from database
+            cost=200,
+        )
 
     @_compute_estimate.register
     def _compute_estimate_block_transaction_query(
@@ -255,17 +267,21 @@ class CacheQueryProvider(QueryAPI):
         query: ContractEventQuery,
         result: CursorResult,
     ) -> Optional[ContractEventQueryEstimate]:
-        if result.scalar() > 0:  # type: ignore
-            return ContractEventQueryEstimate(
-                start_block=query.start_block,
-                stop_block=query.stop_block,
-                # NOTE: Assume 200 msec to get data from database
-                cost=200,
-            )
+        min_max_count = result.all()[0]
+        if len(min_max_count) != 3:
+            # Nothing retrieved from db
+            return None
 
-        # Can't handle this query
-        # TODO: Allow partial queries
-        return None
+        if min_max_count[0] != query.start_block or min_max_count[1] != query.stop_block:
+            # TODO: Allow multiple disjoint ranges
+            return None
+
+        return ContractEventQueryEstimate(
+            start_block=min_max_count[0],
+            stop_block=min_max_count[1],
+            # NOTE: Assume 200 msec to get data from database
+            cost=200,
+        )
 
     def estimate_query(self, query: QueryType) -> Optional[QueryEstimateType]:
         """
