@@ -15,6 +15,14 @@ QueryType = Union[
     "ContractMethodQuery",
 ]
 
+QueryEstimateType = Union[
+    "BlockQueryEstimate",
+    "BlockTransactionQueryEstimate",
+    "AccountTransactionQueryEstimate",
+    "ContractEventQueryEstimate",
+    "ContractMethodQueryEstimate",
+]
+
 
 def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceModel]) -> List[str]:
     if len(columns) == 1 and columns[0] == "*":
@@ -62,6 +70,10 @@ class _BaseQuery(BaseModel):
     # TODO: Support "*" from getting the EcosystemAPI fields
 
 
+class _BaseQueryEstimate(BaseModel):
+    cost: int  # milliseconds
+
+
 class _BaseBlockQuery(_BaseQuery):
     start_block: NonNegativeInt = 0
     stop_block: NonNegativeInt
@@ -85,6 +97,12 @@ class BlockQuery(_BaseBlockQuery):
     """
 
 
+class BlockQueryEstimate(_BaseQueryEstimate):
+    start_block: NonNegativeInt = 0
+    stop_block: NonNegativeInt
+    # NOTE: `step` is unnecessary to track
+
+
 class BlockTransactionQuery(_BaseQuery):
     """
     A ``QueryType`` that collects properties of ``TransactionAPI`` over a range of
@@ -92,6 +110,11 @@ class BlockTransactionQuery(_BaseQuery):
     """
 
     block_id: Any
+
+
+class BlockTransactionQueryEstimate(_BaseQueryEstimate):
+    # NOTE: either all or nothing, so no need to delineate rows
+    pass
 
 
 class AccountTransactionQuery(_BaseQuery):
@@ -115,6 +138,11 @@ class AccountTransactionQuery(_BaseQuery):
         return values
 
 
+class AccountTransactionQueryEstimate(_BaseQueryEstimate):
+    start_nonce: NonNegativeInt = 0
+    stop_nonce: NonNegativeInt
+
+
 class ContractEventQuery(_BaseBlockQuery):
     """
     A ``QueryType`` that collects members from ``event`` over a range of
@@ -124,6 +152,12 @@ class ContractEventQuery(_BaseBlockQuery):
     contract: Union[AddressType, List[AddressType]]
     event: EventABI
     search_topics: Optional[Dict[str, Any]] = None
+
+
+class ContractEventQueryEstimate(_BaseQueryEstimate):
+    start_block: NonNegativeInt = 0
+    stop_block: NonNegativeInt
+    # NOTE: `step` is unnecessary to track
 
 
 class ContractMethodQuery(_BaseBlockQuery):
@@ -137,9 +171,15 @@ class ContractMethodQuery(_BaseBlockQuery):
     method_args: Dict[str, Any]
 
 
+class ContractMethodQueryEstimate(_BaseQueryEstimate):
+    start_block: NonNegativeInt = 0
+    stop_block: NonNegativeInt
+    # NOTE: `step` is unnecessary to track
+
+
 class QueryAPI(BaseInterfaceModel):
     @abstractmethod
-    def estimate_query(self, query: QueryType) -> Optional[int]:
+    def estimate_query(self, query: QueryType) -> Optional[QueryEstimateType]:
         """
         Estimation of time needed to complete the query. The estimation is returned
         as an int representing milliseconds. A value of None indicates that the
@@ -149,8 +189,8 @@ class QueryAPI(BaseInterfaceModel):
             query (``QueryType``): Query to estimate.
 
         Returns:
-            Optional[int]: Represents milliseconds, returns ``None`` if unable to execute.
-
+            Optional[``QueryEstimateType``]: Represents an estimate to perform the query,
+                                            returns ``None`` if unable to execute.
         """
 
     @abstractmethod

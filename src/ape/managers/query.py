@@ -1,8 +1,16 @@
 from itertools import tee
 from typing import Dict, Iterator, Optional
 
-from ape.api import QueryAPI, QueryType, TransactionAPI
-from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
+from ape.api import QueryAPI, QueryEstimateType, QueryType, TransactionAPI
+from ape.api.query import (
+    BaseInterfaceModel,
+    BlockQuery,
+    BlockQueryEstimate,
+    BlockTransactionQuery,
+    BlockTransactionQueryEstimate,
+    ContractEventQuery,
+    ContractEventQueryEstimate,
+)
 from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
@@ -17,23 +25,38 @@ class DefaultQueryProvider(QueryAPI):
     """
 
     @singledispatchmethod
-    def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
+    def estimate_query(self, query: QueryType) -> Optional[QueryEstimateType]:  # type: ignore
         return None  # can't handle this query
 
     @estimate_query.register
-    def estimate_block_query(self, query: BlockQuery) -> Optional[int]:
-        # NOTE: Very loose estimate of 100ms per block
-        return (query.stop_block - query.start_block) * 100
+    def estimate_block_query(self, query: BlockQuery) -> BlockQueryEstimate:
+        return BlockQueryEstimate(
+            start_block=query.start_block,
+            stop_block=query.stop_block,
+            # NOTE: Very loose estimate of 100ms per block
+            cost=(query.stop_block - query.start_block) * 100,
+        )
 
     @estimate_query.register
-    def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> int:
-        # NOTE: Very loose estimate of 1000ms per block for this query.
-        return self.provider.get_block(query.block_id).num_transactions * 100
+    def estimate_block_transaction_query(
+        self, query: BlockTransactionQuery
+    ) -> BlockTransactionQueryEstimate:
+        return BlockTransactionQueryEstimate(
+            # NOTE: Very loose estimate of 100ms per transaction in block for this query.
+            cost=self.provider.get_block(query.block_id).num_transactions
+            * 100,
+        )
 
     @estimate_query.register
-    def estimate_contract_events_query(self, query: ContractEventQuery) -> int:
-        # NOTE: Very loose estimate of 100ms per block for this query.
-        return (query.stop_block - query.start_block) * 100
+    def estimate_contract_events_query(
+        self, query: ContractEventQuery
+    ) -> ContractEventQueryEstimate:
+        return ContractEventQueryEstimate(
+            start_block=query.start_block,
+            stop_block=query.stop_block,
+            # NOTE: Very loose estimate of 100ms per block
+            cost=(query.stop_block - query.start_block) * 100,
+        )
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
@@ -134,7 +157,7 @@ class QueryManager(ManagerAccessMixin):
             try:
                 # Find the "best" engine to perform the query
                 # NOTE: Sorted by fastest time heuristic
-                selected_engine, _ = min(valid_estimates, key=lambda qe: qe[1])  # type: ignore
+                selected_engine, _ = min(valid_estimates, key=lambda qe: qe[1].cost)  # type: ignore
 
             except ValueError as e:
                 raise QueryEngineError("No query engines are available.") from e

@@ -6,9 +6,17 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.sql import column, insert, select
 from sqlalchemy.sql.expression import Insert, Select
 
-from ape.api import BlockAPI, QueryAPI, QueryType
+from ape.api import BlockAPI, QueryAPI, QueryEstimateType, QueryType
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
+from ape.api.query import (
+    BaseInterfaceModel,
+    BlockQuery,
+    BlockQueryEstimate,
+    BlockTransactionQuery,
+    BlockTransactionQueryEstimate,
+    ContractEventQuery,
+    ContractEventQueryEstimate,
+)
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.types import ContractLog
@@ -172,7 +180,7 @@ class CacheQueryProvider(QueryAPI):
     @_estimate_query_clause.register
     def _block_estimate_query_clause(self, query: BlockQuery) -> Select:
         return (
-            select([func.count()])
+            select(func.count())
             .select_from(Blocks)
             .where(Blocks.number >= query.start_block)
             .where(Blocks.number <= query.stop_block)
@@ -182,7 +190,7 @@ class CacheQueryProvider(QueryAPI):
     @_estimate_query_clause.register
     def _transaction_estimate_query_clause(self, query: BlockTransactionQuery) -> Select:
         return (
-            select([func.count()])
+            select(func.count())
             .select_from(Transactions)
             .where(Transactions.block_hash == query.block_id)
         )
@@ -190,7 +198,7 @@ class CacheQueryProvider(QueryAPI):
     @_estimate_query_clause.register
     def _contract_events_estimate_query_clause(self, query: ContractEventQuery) -> Select:
         return (
-            select([func.count()])
+            select(func.count())
             .select_from(ContractEvents)
             .where(ContractEvents.block_number >= query.start_block)
             .where(ContractEvents.block_number <= query.stop_block)
@@ -198,7 +206,9 @@ class CacheQueryProvider(QueryAPI):
         )
 
     @singledispatchmethod
-    def _compute_estimate(self, query: QueryType, result: CursorResult) -> Optional[int]:
+    def _compute_estimate(
+        self, query: QueryType, result: CursorResult
+    ) -> Optional[QueryEstimateType]:
         """
         A singledispatchemethod that computes the time a query
         will take to perform from the caching database
@@ -211,10 +221,14 @@ class CacheQueryProvider(QueryAPI):
         self,
         query: BlockQuery,
         result: CursorResult,
-    ) -> Optional[int]:
+    ) -> Optional[BlockQueryEstimate]:
         if result.scalar() == (1 + query.stop_block - query.start_block) // query.step:
-            # NOTE: Assume 200 msec to get data from database
-            return 200
+            return BlockQueryEstimate(
+                start_block=query.start_block,
+                stop_block=query.stop_block,
+                # NOTE: Assume 200 msec to get data from database
+                cost=200,
+            )
 
         # Can't handle this query
         # TODO: Allow partial queries
@@ -225,12 +239,12 @@ class CacheQueryProvider(QueryAPI):
         self,
         query: BlockTransactionQuery,
         result: CursorResult,
-    ) -> Optional[int]:
+    ) -> Optional[BlockTransactionQueryEstimate]:
         # TODO: Update `transactions` table schema so this query functions properly
         # Uncomment below after https://github.com/ApeWorX/ape/issues/994
         # if result.scalar() > 0:  # type: ignore
         #    # NOTE: Assume 200 msec to get data from database
-        #    return 200
+        #    return BlockTransactionQueryEstimate(cost=200)
 
         # Can't handle this query
         return None
@@ -240,16 +254,20 @@ class CacheQueryProvider(QueryAPI):
         self,
         query: ContractEventQuery,
         result: CursorResult,
-    ) -> Optional[int]:
-        if result.scalar() == (query.stop_block - query.start_block) // query.step:
-            # NOTE: Assume 200 msec to get data from database
-            return 200
+    ) -> Optional[ContractEventQueryEstimate]:
+        if result.scalar() > 0:  # type: ignore
+            return ContractEventQueryEstimate(
+                start_block=query.start_block,
+                stop_block=query.stop_block,
+                # NOTE: Assume 200 msec to get data from database
+                cost=200,
+            )
 
         # Can't handle this query
         # TODO: Allow partial queries
         return None
 
-    def estimate_query(self, query: QueryType) -> Optional[int]:
+    def estimate_query(self, query: QueryType) -> Optional[QueryEstimateType]:
         """
         Method called by the client to return a query time estimate.
 

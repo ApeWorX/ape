@@ -20,7 +20,7 @@ from .providers import (
     UpstreamProvider,
     Web3Provider,
 )
-from .query import QueryAPI, QueryType
+from .query import QueryAPI, QueryEstimateType, QueryType
 from .transactions import ReceiptAPI, TransactionAPI
 
 __all__ = [
@@ -42,6 +42,7 @@ __all__ = [
     "ProviderAPI",
     "ProviderContextManager",
     "QueryType",
+    "QueryEstimateType",
     "QueryAPI",
     "NetworkAPI",
     "ReceiptAPI",
