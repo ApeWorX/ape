@@ -12,6 +12,7 @@ from ape.exceptions import (
     SignatureError,
     TransactionError,
 )
+from ape.types.signatures import recover_signer
 from ape_ethereum.ecosystem import ProxyType
 
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
@@ -36,6 +37,12 @@ def test_sign_message(signer):
     message = encode_defunct(text="Hello Apes!")
     signature = signer.sign_message(message)
     assert signer.check_signature(message, signature)
+
+
+def test_recover_signer(signer):
+    message = encode_defunct(text="Hello Apes!")
+    signature = signer.sign_message(message)
+    assert recover_signer(message, signature) == signer
 
 
 def test_sign_eip712_message(signer):
