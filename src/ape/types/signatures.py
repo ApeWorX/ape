@@ -38,14 +38,14 @@ class MessageSignature(_Signature):
 
 def recover_signer(msg: SignableMessage, sig: MessageSignature) -> AddressType:
     """
-    Get the address of the signer
+    Get the address of the signer.
     
     Args:
-        :class:``SignableMessage``: A formatted and signable message
-        :class:`~ape.types.MessageSignature`MessageSignature: Signature of the message
+        :class:``SignableMessage``: A formatted and signable message.
+        :class:`~ape.types.MessageSignature`MessageSignature: Signature of the message.
 
     Returns:
-        ``AddressType``: address of message signer
+        ``AddressType``: address of message signer.
     """
     return Account.recover_message(msg, sig)
 
