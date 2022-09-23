@@ -1,11 +1,11 @@
 from typing import Iterator, Union
 
-from eth_account.messages import SignableMessage
 from eth_account import Account
+from eth_account.messages import SignableMessage
 from eth_utils import to_bytes
 from pydantic.dataclasses import dataclass
-from ape.types import AddressType
 
+from ape.types import AddressType
 
 
 @dataclass(frozen=True)
@@ -35,11 +35,13 @@ class MessageSignature(_Signature):
     A ECDSA signature (vrs) of a message.
     """
 
+
 def recover_signer(msg: SignableMessage, sig: MessageSignature) -> AddressType:
     """
     Recovers the signer of a message with the signature and the original message
     """
     return Account.recover_message(msg, sig)
+
 
 class TransactionSignature(_Signature):
     """
