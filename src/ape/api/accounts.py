@@ -135,13 +135,13 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             sender=self.address, receiver=receiver, **kwargs
         )
 
-        if data:
-            txn.data = self.conversion_manager.convert(data, bytes)
-
         if value and "send_everything" in kwargs and kwargs["send_everything"]:
             raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
 
-        elif value:
+        if data:
+            txn.data = self.conversion_manager.convert(data, bytes)
+
+        if value:
             txn.value = self.conversion_manager.convert(value, int)
             return self.call(txn)
 
