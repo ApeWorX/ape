@@ -190,7 +190,7 @@ class QueryAPI(BaseInterfaceModel):
 
         Returns:
             Optional[``QueryEstimateType``]: Represents an estimate to perform the query,
-                                            returns ``None`` if unable to execute.
+            returns ``None`` if unable to execute.
         """
 
     @abstractmethod
