@@ -211,7 +211,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
             )
             self._geth.connect()
 
-            if not self._web3.isConnected():
+            if not self._web3.is_connected():
                 self._geth.disconnect()
                 raise ConnectionError("Unable to connect to locally running geth.")
         elif "geth" in self.client_version.lower():
