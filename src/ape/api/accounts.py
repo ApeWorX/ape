@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Iterator, List, Optional, Type, Union
 
 import click
 from eip712.messages import SignableMessage as EIP712SignableMessage
@@ -9,7 +9,7 @@ from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.types.signatures import _Signature
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 from .address import BaseAddress
 from .transactions import ReceiptAPI, TransactionAPI
@@ -111,10 +111,6 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         return self.provider.send_transaction(txn)
 
-    @cached_property
-    def _convert(self) -> Callable:
-        return self.conversion_manager.convert
-
     def transfer(
         self,
         account: Union[str, AddressType, BaseAddress],
@@ -134,21 +130,24 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             :class:`~ape.api.transactions.ReceiptAPI`
         """
 
+        receiver = self.conversion_manager.convert(account, AddressType)
         txn = self.provider.network.ecosystem.create_transaction(
-            sender=self.address, receiver=self._convert(account, AddressType), **kwargs
+            sender=self.address, receiver=receiver, **kwargs
         )
 
+        if value and "send_everything" in kwargs and kwargs["send_everything"]:
+            raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
+
         if data:
-            txn.data = self._convert(data, bytes)
+            txn.data = self.conversion_manager.convert(data, bytes)
 
         if value:
-            if "send_everything" in kwargs and kwargs["send_everything"]:
-                raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
-            txn.value = self._convert(value, int)
+            txn.value = self.conversion_manager.convert(value, int)
             return self.call(txn)
 
         elif not kwargs.get("send_everything"):
             raise AccountsError("Must provide 'VALUE' or use 'send_everything=True'")
+
         else:
             return self.call(txn, send_everything=True)
 
@@ -161,7 +160,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         Args:
             contract (:class:`~ape.contracts.ContractContainer`):
-                The type of contract to deploy.
+              The type of contract to deploy.
+            publish (bool): Set to ``True`` to attempt explorer contract verification.
+              Defaults to ``False``.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`: An instance of the deployed contract.

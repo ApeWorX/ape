@@ -610,7 +610,7 @@ class ContractInstance(BaseAddress):
         """
 
         if not self._cached_receipt and self.txn_hash:
-            receipt = self.provider.get_receipt(self.txn_hash)
+            receipt = self.chain_manager.get_receipt(self.txn_hash)
             self._cached_receipt = receipt
             return receipt
 

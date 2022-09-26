@@ -3,7 +3,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from pathlib import Path
-from typing import Callable, Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
+from typing import Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import pandas as pd
 from ethpm_types import ContractType
@@ -17,7 +17,6 @@ from ape.exceptions import ChainError, ConversionError, UnknownSnapshotError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, SnapshotID
-from ape.utils import cached_property
 
 
 class BlockContainer(BaseManager):
@@ -330,12 +329,10 @@ class AccountHistory(BaseManager):
     A container mapping account addresses to the transaction from the active session.
     """
 
-    _map: Dict[AddressType, List[ReceiptAPI]] = {}
+    _address_list_map: Dict[AddressType, List[ReceiptAPI]] = {}
 
-    @cached_property
-    def _convert(self) -> Callable:
-
-        return self.conversion_manager.convert
+    # Faciliates faster look-ups.
+    _hash_to_receipt_map: Dict[str, ReceiptAPI] = {}
 
     def __getitem__(self, address: Union[BaseAddress, AddressType, str]) -> List[ReceiptAPI]:
         """
@@ -349,7 +346,7 @@ class AccountHistory(BaseManager):
             are no recorded transactions, returns an empty list.
         """
 
-        address_key: AddressType = self._convert(address, AddressType)
+        address_key: AddressType = self.conversion_manager.convert(address, AddressType)
         explorer = self.provider.network.explorer
         explorer_receipts = (
             [r for r in explorer.get_account_transactions(address_key)] if explorer else []
@@ -359,10 +356,10 @@ class AccountHistory(BaseManager):
             # NOTE: Cache the receipt by its sender and not by the address sent to the explorer API
             #  because explorers return various receipts when given contract addresses.
             sender: AddressType = receipt.sender  # type: ignore
-            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(sender, [])]:
+            if receipt.txn_hash not in [r.txn_hash for r in self._address_list_map.get(sender, [])]:
                 self.append(receipt)
 
-        return self._map.get(address_key, [])
+        return self._address_list_map.get(address_key, [])
 
     def __iter__(self) -> Iterator[AddressType]:
         """
@@ -372,7 +369,7 @@ class AccountHistory(BaseManager):
             List[str]
         """
 
-        yield from self._map
+        yield from self._address_list_map
 
     def items(self) -> Iterator[Tuple[AddressType, List[ReceiptAPI]]]:
         """
@@ -381,7 +378,10 @@ class AccountHistory(BaseManager):
         Returns:
             Iterator[Tuple[``AddressType``, :class:`~ape.api.transactions.ReceiptAPI`]]
         """
-        yield from self._map.items()
+        yield from self._address_list_map.items()
+
+    def values(self) -> Iterator[List[ReceiptAPI]]:
+        yield from self._address_list_map.values()
 
     def append(self, txn_receipt: ReceiptAPI):
         """
@@ -397,16 +397,16 @@ class AccountHistory(BaseManager):
               :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
 
-        address = self._convert(txn_receipt.sender, AddressType)
-        if address not in self._map:
-            self._map[address] = [txn_receipt]
+        self._hash_to_receipt_map[txn_receipt.txn_hash] = txn_receipt
+        address = self.conversion_manager.convert(txn_receipt.sender, AddressType)
+        if address not in self._address_list_map:
+            self._address_list_map[address] = [txn_receipt]
             return
 
-        if txn_receipt.txn_hash in [r.txn_hash for r in self._map[address]]:
+        if txn_receipt.txn_hash in [r.txn_hash for r in self._address_list_map[address]]:
             logger.warning(f"Transaction '{txn_receipt.txn_hash}' already known.")
-            return
 
-        self._map[address].append(txn_receipt)
+        self._address_list_map[address].append(txn_receipt)
 
     def revert_to_block(self, block_number: int):
         """
@@ -416,10 +416,35 @@ class AccountHistory(BaseManager):
             block_number (int): The block number to revert to.
         """
 
-        self._map = {
+        self._address_list_map = {
             a: [r for r in receipts if r.block_number <= block_number]
             for a, receipts in self.items()
         }
+        self._hash_to_receipt_map = {
+            h: r for h, r in self._hash_to_receipt_map.items() if r.block_number <= block_number
+        }
+
+    def get_receipt(self, transaction_hash: str) -> ReceiptAPI:
+        """
+        Get a receipt from the history by its transaction hash.
+        If the receipt is not currently cached, will use the provider
+        to retrieve it.
+
+        Args:
+            transaction_hash (str): The hash of the transaction.
+
+        Returns:
+            :class:`~ape.api.transactions.ReceiptAPI`: The receipt.
+        """
+
+        receipt = self._hash_to_receipt_map.get(transaction_hash)
+        if not receipt:
+            # TODO: Replace with query manager once supports receipts
+            #  instead of transactions.
+            receipt = self.provider.get_receipt(transaction_hash)
+            self.append(receipt)
+
+        return receipt
 
 
 class ContractCache(BaseManager):
@@ -1075,3 +1100,6 @@ class ChainManager(BaseManager):
             amount = int(amount, 16)
 
         return self.provider.set_balance(account, amount)
+
+    def get_receipt(self, transaction_hash: str) -> ReceiptAPI:
+        return self.chain_manager.account_history.get_receipt(transaction_hash)
