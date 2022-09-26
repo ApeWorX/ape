@@ -226,7 +226,11 @@ The message or transaction to verify.</p></li>
 deploying and a provider must be active.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>contract</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractContainer</span></code>) – The type of contract to deploy.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractContainer</span></code>) – The type of contract to deploy.</p></li>
+<li><p><strong>publish</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to attempt explorer contract verification.
+Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>An instance of the deployed contract.</p>
@@ -2421,7 +2425,7 @@ May require a reconnect.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.providers.Web3Provider.web3">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">web3</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">web3.main.Web3</span></em><a class="headerlink" href="#ape.api.providers.Web3Provider.web3" title="Permalink to this definition"></a></dt>
-<dd><p>Access to the <code class="docutils literal notranslate"><span class="pre">web3</span></code> object as if you did <code class="docutils literal notranslate"><span class="pre">Web3(HTTPProvder(uri))</span></code>.</p>
+<dd><p>Access to the <code class="docutils literal notranslate"><span class="pre">web3</span></code> object as if you did <code class="docutils literal notranslate"><span class="pre">Web3(HTTPProvider(uri))</span></code>.</p>
 </dd></dl>
 
 </dd></dl>
