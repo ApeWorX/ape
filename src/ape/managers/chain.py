@@ -424,19 +424,27 @@ class AccountHistory(BaseManager):
             h: r for h, r in self._hash_to_receipt_map.items() if r.block_number <= block_number
         }
 
-    def get_receipt(self, transaction_hash: str) -> Optional[ReceiptAPI]:
+    def get_receipt(self, transaction_hash: str) -> ReceiptAPI:
         """
         Get a receipt from the history by its transaction hash.
+        If the receipt is not currently cached, will use the provider
+        to retrieve it.
 
         Args:
             transaction_hash (str): The hash of the transaction.
 
         Returns:
-            Optional[:class:`~ape.api.transactions.ReceiptAPI`]: The receipt, if it
-              is present in the transaction history. Else, ``None``.
+            :class:`~ape.api.transactions.ReceiptAPI`: The receipt.
         """
 
-        return self._hash_to_receipt_map.get(transaction_hash)
+        receipt = self._hash_to_receipt_map.get(transaction_hash)
+        if not receipt:
+            # TODO: Replace with query manager once supports receipts
+            #  instead of transactions.
+            receipt = self.provider.get_receipt(transaction_hash)
+            self.append(receipt)
+
+        return receipt
 
 
 class ContractCache(BaseManager):
@@ -1094,10 +1102,4 @@ class ChainManager(BaseManager):
         return self.provider.set_balance(account, amount)
 
     def get_receipt(self, transaction_hash: str) -> ReceiptAPI:
-        cached_receipt = self.chain_manager.account_history.get_receipt(transaction_hash)
-        if cached_receipt:
-            return cached_receipt
-
-        receipt = self.provider.get_receipt(transaction_hash)
-        self.chain_manager.account_history.append(receipt)
-        return receipt
+        return self.chain_manager.account_history.get_receipt(transaction_hash)
