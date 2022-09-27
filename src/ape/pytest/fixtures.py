@@ -129,9 +129,7 @@ class PytestApeFixtures(ManagerAccessMixin):
         if snapshot_id not in self.chain_manager._snapshots:
             return
 
-        _silence_connection_failure(
-            lambda: self.chain_manager.restore(snapshot_id)
-        )
+        _silence_connection_failure(lambda: self.chain_manager.restore(snapshot_id))
 
     def _get_block_number(self) -> Optional[int]:
         return _silence_connection_failure(lambda: self.provider.get_block("latest").number)
@@ -187,7 +185,7 @@ class ReceiptCapture(ManagerAccessMixin):
         # Ensure call_tree is cached
         call_tree = receipt.call_tree
         do_track_gas = track_gas if track_gas is not None else self._track_gas
-        if do_track_gas:
+        if do_track_gas and call_tree:
             parser = CallTraceParser(receipt)
             gas_report = parser._get_rich_gas_report(call_tree)
             if self.gas_report:

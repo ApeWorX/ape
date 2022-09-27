@@ -326,12 +326,12 @@ class CallTraceParser(ManagerAccessMixin):
         selector = calltree.calldata[:4]
         contract_id = self._get_contract_id(address, contract_type=contract_type)
 
-        if contract_id == _ETH_TRANSFER:
-            receiver_id = address
-            if receiver_id in self.account_manager:
-                receiver_id = self.account_manager[receiver_id].alias
-
+        if contract_id == _ETH_TRANSFER and address in self.account_manager:
+            receiver_id = self.account_manager[address].alias or address
             method_id = f"to:{receiver_id}"
+
+        elif contract_id == _ETH_TRANSFER:
+            method_id = f"to:{address}"
 
         elif contract_type:
             method_abi = _get_method_abi(selector, contract_type)
