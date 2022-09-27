@@ -49,7 +49,7 @@ from ape.utils.testing import (
     GeneratedDevAccount,
     generate_dev_accounts,
 )
-from ape.utils.trace import CallTraceParser, TraceStyles
+from ape.utils.trace import CallTraceParser, TraceStyles, parse_gas_table
 
 __all__ = [
     "abstractmethod",
@@ -82,6 +82,7 @@ __all__ = [
     "load_config",
     "LogInputABICollection",
     "ManagerAccessMixin",
+    "parse_gas_table",
     "parse_type",
     "raises_not_implemented",
     "returns_array",
