@@ -102,12 +102,12 @@ setup(
         "traitlets>=5.3.0",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=3.0.1,<4",
-        "eth-account>=0.6.1,<0.7",
+        "eth-account>=0.7,<0.8",
         "eth-typing>=3.1,<4",
         "eth-utils>=2.0.0,<3",
         "hexbytes>=0.2.3,<1",
         "py-geth>=3.8.0,<4",
-        "web3[tester]==6.0.0b4",
+        "web3[tester]==6.0.0b6",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.1.4,<0.2",
         "ethpm-types>=0.3.7,<0.4",

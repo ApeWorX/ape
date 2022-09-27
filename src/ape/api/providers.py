@@ -644,7 +644,7 @@ class Web3Provider(ProviderAPI, ABC):
         if self._web3 is None:
             return False
 
-        return run_until_complete(self._web3.isConnected())
+        return run_until_complete(self._web3.is_connected())
 
     @cached_property
     def supports_tracing(self) -> bool:
