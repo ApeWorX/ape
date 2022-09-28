@@ -334,6 +334,9 @@ class CallTraceParser(ManagerAccessMixin):
             method_id = f"to:{address}"
 
         elif contract_type:
+            # NOTE: Use source ID when possible to distinguish between sources with the same
+            #  symbol or contract name.
+            contract_id = contract_type.source_id or contract_id
             method_abi = _get_method_abi(selector, contract_type)
             method_id = selector.hex() if not method_abi else method_abi.name
 
