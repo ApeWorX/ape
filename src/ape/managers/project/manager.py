@@ -368,7 +368,15 @@ class ProjectManager(BaseManager):
 
             # Fixes anomaly when accessing non-ContractType attributes.
             # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
-            return self.__getattribute__(attr_name)  # type: ignore
+            try:
+                return self.__getattribute__(attr_name)  # type: ignore
+            except AttributeError as err:
+                message = f"ProjectManager has no attribute or contract named '{attr_name}'."
+                missing_exts = self.extensions_with_missing_compilers([])
+                if missing_exts:
+                    message = f"{message} Could it be from one of the missing compilers for extensions: {', '.join(missing_exts)}"
+
+                raise AttributeError(message) from err
 
         return contract
 
