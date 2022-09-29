@@ -192,4 +192,3 @@ def test_uninstall(ape_cli, runner, caplog):
     result = runner.invoke(ape_cli, ["plugins", "uninstall", plugins], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert plugins in caplog.records[-1].message
-
