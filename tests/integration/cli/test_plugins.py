@@ -187,7 +187,7 @@ def test_install_from_config_file(ape_cli, runner, temp_config, caplog):
 @plugins_xfail()
 def test_uninstall(ape_cli, runner, installed_plugin, caplog):
     result = runner.invoke(
-        ape_cli, ["plugins", "uninstall", TEST_PLUGIN_NAME], catch_exceptions=False
+        ape_cli, ["plugins", "uninstall", TEST_PLUGIN_NAME, "--yes"], catch_exceptions=False
     )
     assert result.exit_code == 0, result.output
     assert TEST_PLUGIN_NAME in caplog.records[-1].message
