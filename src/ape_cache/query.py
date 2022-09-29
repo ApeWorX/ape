@@ -438,7 +438,7 @@ class CacheQueryProvider(QueryAPI):
     def _get_cache_events_data(
         self, query: ContractEventQuery, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
-        return [m.dict(by_alias=False) for m in result]
+        return [m.dict(by_alias=False, exclude={"abi"}) for m in result]
 
     def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):
         try:

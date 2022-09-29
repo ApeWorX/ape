@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, BigInteger, Column, ForeignKey, Integer, LargeBinary, Numeric
+from sqlalchemy import JSON, BLOB, BigInteger, Column, ForeignKey, Integer, LargeBinary, Numeric
 from sqlalchemy.types import String, TypeDecorator
 
 from .base import Base
@@ -64,6 +64,8 @@ class ContractEvents(Base):
     event_name = Column(String, nullable=False, index=True)
     contract_address = Column(HexByteString, nullable=False, index=True)
     event_arguments = Column(JSON, index=True)
+    topics = Column(JSON, index=True)
+    data = Column(String, index=True)
     transaction_hash = Column(HexByteString, nullable=False, index=True)
     block_number = Column(Integer, nullable=False, index=True)
     block_hash = Column(HexByteString, nullable=False, index=True)

@@ -435,6 +435,7 @@ class ContractEvent(ManagerAccessMixin):
         if column_list[0] == "*":
             column_list = list(ContractLog.__fields__)
             column_list.append("event_name")
+            column_list.remove("abi")
 
         contract_event_query = ContractEventQuery(
             columns=column_list,
