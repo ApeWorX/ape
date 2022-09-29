@@ -185,10 +185,9 @@ def test_install_from_config_file(ape_cli, runner, temp_config, caplog):
 
 
 @plugins_xfail()
-def test_uninstall(ape_cli, runner, caplog):
-    plugins = "vyper solidity"
-    result = runner.invoke(ape_cli, ["plugins", "install", plugins], catch_exceptions=False)
+def test_uninstall(ape_cli, runner, installed_plugin, caplog):
+    result = runner.invoke(
+        ape_cli, ["plugins", "uninstall", TEST_PLUGIN_NAME], catch_exceptions=False
+    )
     assert result.exit_code == 0, result.output
-    result = runner.invoke(ape_cli, ["plugins", "uninstall", plugins], catch_exceptions=False)
-    assert result.exit_code == 0, result.output
-    assert plugins in caplog.records[-1].message
+    assert TEST_PLUGIN_NAME in caplog.records[-1].message
