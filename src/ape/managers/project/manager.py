@@ -374,7 +374,10 @@ class ProjectManager(BaseManager):
                 message = f"ProjectManager has no attribute or contract named '{attr_name}'."
                 missing_exts = self.extensions_with_missing_compilers([])
                 if missing_exts:
-                    message = f"{message} Could it be from one of the missing compilers for extensions: {', '.join(missing_exts)}"
+                    message = (
+                        f"{message} Could it be from one of the missing compilers for extensions:"
+                        + f"{', '.join(missing_exts)}"
+                    )
 
                 raise AttributeError(message) from err
 
