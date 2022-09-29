@@ -229,7 +229,7 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
     failures_occurred = False
     did_warn_about_version = False
     for plugin in plugins:
-        if plugin.requested_version is not None and not did_warn_about_version:
+        if plugin.version is not None and not did_warn_about_version:
             cli_ctx.logger.warning("Specifying a version when uninstalling is not necessary.")
             did_warn_about_version = True
 
