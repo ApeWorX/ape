@@ -404,7 +404,9 @@ class ProjectManager(BaseManager):
 
         return contract
 
-    def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
+    def extensions_with_missing_compilers(
+        self, extensions: Optional[List[str]] = None
+    ) -> List[str]:
         """
         All file extensions in the ``contracts/`` directory (recursively)
         that do not correspond to a registered compiler.
@@ -417,6 +419,8 @@ class ProjectManager(BaseManager):
             List[str]: A list of file extensions found in the ``contracts/`` directory
             that do not have associated compilers installed.
         """
+        extensions = extensions or []
+
         extensions_found = []
 
         def _append_extensions_in_dir(directory: Path):
