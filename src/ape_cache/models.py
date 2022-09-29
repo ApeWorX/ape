@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, BLOB, BigInteger, Column, ForeignKey, Integer, LargeBinary, Numeric
+from sqlalchemy import JSON, BigInteger, Column, ForeignKey, Integer, LargeBinary, Numeric
 from sqlalchemy.types import String, TypeDecorator
 
 from .base import Base
