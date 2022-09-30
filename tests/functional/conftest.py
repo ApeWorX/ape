@@ -37,7 +37,6 @@ APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
 BASE_SOURCES_DIRECTORY = (Path(__file__).parent / "data/sources").absolute()
 
 
-
 class _ContractLogicError(ContractLogicError):
     pass
 
