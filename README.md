@@ -234,7 +234,7 @@ Learn more about scripting using Ape by following the [scripting guide](https://
 To enable debug logging, run your command with the `--verbosity` flag using `DEBUG` as the value:
 
 ```bash
-ape run --verbosity DEBUG
+ape --verbosity DEBUG run
 ```
 
 ### Networks
