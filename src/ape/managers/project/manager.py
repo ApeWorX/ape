@@ -422,8 +422,6 @@ class ProjectManager(BaseManager):
             List[str]: A list of file extensions found in the ``contracts/`` directory
             that do not have associated compilers installed.
         """
-        extensions = extensions or []
-
         extensions_found = []
 
         def _append_extensions_in_dir(directory: Path):
