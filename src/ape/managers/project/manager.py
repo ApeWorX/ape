@@ -376,7 +376,7 @@ class ProjectManager(BaseManager):
                 if missing_exts:
                     message = (
                         f"{message} Could it be from one of the missing compilers for extensions:"
-                        + f"{', '.join(missing_exts)}"
+                        + ', '.join(missing_exts)
                     )
 
                 raise AttributeError(message) from err
