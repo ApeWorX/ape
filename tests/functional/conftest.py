@@ -34,6 +34,8 @@ BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
 DS_NOTE_TEST_CONTRACT_TYPE = _get_raw_contract("ds_note_test")
 APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
+BASE_SOURCES_DIRECTORY = (Path(__file__).parent / "data/sources").absolute()
+
 
 
 class _ContractLogicError(ContractLogicError):
@@ -176,6 +178,18 @@ def project_with_contract(config):
     project_source_dir = APE_PROJECT_FOLDER
     project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
     copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
+
+    with config.using_project(project_dest_dir) as project:
+        yield project
+
+
+@pytest.fixture
+def project_with_source_files_contract(config):
+    bases_source_dir = BASE_SOURCES_DIRECTORY
+    project_source_dir = APE_PROJECT_FOLDER
+    project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
+    copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
+    copy_tree(bases_source_dir.as_posix(), project_dest_dir.as_posix() + "/contracts/")
 
     with config.using_project(project_dest_dir) as project:
         yield project
