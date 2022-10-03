@@ -101,7 +101,7 @@ class PytestApeFixtures(ManagerAccessMixin):
 
             if start_block is not None and self._using_traces:
                 stop_block = self._get_block_number()
-                if stop_block is not None:
+                if stop_block is not None and start_block <= stop_block:
                     self.receipt_capture.capture_range(start_block, stop_block)
 
     # isolation fixtures
