@@ -153,7 +153,7 @@ class CallTraceParser(ManagerAccessMixin):
 
                 call_signature = str(
                     _MethodTraceSignature(
-                        contract_id or address,
+                        contract_id,
                         method.name or f"<{selector}>",  # type: ignore
                         arguments,
                         return_value,
@@ -175,7 +175,7 @@ class CallTraceParser(ManagerAccessMixin):
                     }
                     call_signature += f" {json.dumps(extra_info, indent=self._indent)}"
             elif contract_id != address:
-                call_signature = next(TreeRepresentation.make_tree(call)).title  # type: ignore
+                call_signature = next(TreeRepresentation.make_tree(call)).title
                 call_signature = call_signature.replace(address, contract_id)
                 call_signature = _dim_default_gas(call_signature)
         else:
