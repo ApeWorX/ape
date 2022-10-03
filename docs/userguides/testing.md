@@ -279,7 +279,7 @@ ape test --network ethereum:local:hardhat --gas
 At the end of test suite, you will see tables such as:
 
 ```sh
-                            FundMe Gas
+                            FundMe.vy Gas
 
   Method           Times called    Min.    Max.    Mean   Median
  ────────────────────────────────────────────────────────────────
@@ -294,7 +294,7 @@ At the end of test suite, you will see tables such as:
  ───────────────────────────────────────────────────────
   to:test0              2   2400   9100   5750     5750
 
-                     TestContractVy Gas
+                     TestContract.Vy Gas
 
   Method      Times called    Min.    Max.    Mean   Median
  ───────────────────────────────────────────────────────────
