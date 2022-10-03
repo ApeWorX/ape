@@ -7,7 +7,7 @@ from rich import print as rich_print
 
 import ape
 from ape.api import ProviderContextManager
-from ape.logging import logger
+from ape.logging import logger, LogLevel
 from ape.pytest.contextmanagers import RevertsContextManager
 from ape.pytest.fixtures import ReceiptCapture
 from ape.utils import ManagerAccessMixin, parse_gas_table
@@ -167,6 +167,8 @@ class PytestApeRunner(ManagerAccessMixin):
             if gas_report:
                 tables = parse_gas_table(gas_report)
                 rich_print(*tables)
+            else:
+                terminalreporter.write_line(f"{LogLevel.WARNING.name}: No gas usage data found.")
 
         if self._provider_is_connected:
             self._provider_context.disconnect_all()
