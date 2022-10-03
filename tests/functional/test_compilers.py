@@ -18,9 +18,11 @@ def test_missing_compilers_with_source_files(project_with_source_files_contract)
 
 
 def test_missing_compilers_error_message(project_with_source_files_contract, sender):
+    missing_exts = project_with_source_files_contract.extensions_with_missing_compilers()
     expected = (
         "ProjectManager has no attribute or contract named 'ContractA'. "
-        "Could it be from one of the missing compilers for extensions: .sol, .vy"
+        "Could it be from one of the missing compilers for extensions: "
+        f'{", ".join(sorted(missing_exts))}?'
     )
     with pytest.raises(AttributeError, match=expected):
         project_with_source_files_contract.ContractA.deploy(sender=sender)
