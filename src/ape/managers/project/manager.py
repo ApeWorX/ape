@@ -375,7 +375,7 @@ class ProjectManager(BaseManager):
                 missing_exts = self.extensions_with_missing_compilers([])
                 if missing_exts:
                     message = (
-                        f"{message} Could it be from one of the missing compilers for extensions:"
+                        f"{message} Could it be from one of the missing compilers for extensions: "
                         + ", ".join(missing_exts)
                     )
 
