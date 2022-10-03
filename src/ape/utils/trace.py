@@ -138,23 +138,27 @@ class CallTraceParser(ManagerAccessMixin):
 
         if contract_type:
             contract_id = self._get_contract_id(address, contract_type=contract_type)
-            method = _get_method_abi(selector, contract_type)
-            if method:
+            method_abi = _get_method_abi(selector, contract_type)
+
+            if method_abi:
                 raw_calldata = call.calldata[4:]
-                arguments = self.decode_calldata(method, raw_calldata)
+                arguments = self.decode_calldata(method_abi, raw_calldata)
 
                 # The revert-message appears at the top of the trace output.
                 try:
                     return_value = (
-                        self.decode_returndata(method, call.returndata) if not call.failed else None
+                        self.decode_returndata(method_abi, call.returndata)
+                        if not call.failed
+                        else None
                     )
                 except (DecodingError, InsufficientDataBytes):
                     return_value = "<?>"
 
+                method_id = method_abi.name or f"<{selector.hex()}>"
                 call_signature = str(
                     _MethodTraceSignature(
                         contract_id,
-                        method.name or f"<{selector}>",  # type: ignore
+                        method_id,
                         arguments,
                         return_value,
                         call.call_type,
@@ -174,7 +178,9 @@ class CallTraceParser(ManagerAccessMixin):
                         "call_type": call.call_type.value,
                     }
                     call_signature += f" {json.dumps(extra_info, indent=self._indent)}"
-            elif contract_id != address:
+            elif contract_type.name and contract_id == contract_type.name:
+                # The case where we know the contract name but couldn't decipher the method ID,
+                #  such as an unsupported proxy or fallback.
                 call_signature = next(TreeRepresentation.make_tree(call)).title
                 call_signature = call_signature.replace(address, contract_id)
                 call_signature = _dim_default_gas(call_signature)
@@ -294,25 +300,30 @@ class CallTraceParser(ManagerAccessMixin):
     def _get_contract_id(
         self, address: "AddressType", contract_type: Optional[ContractType] = None
     ) -> str:
-        result = None if not contract_type else contract_type.name
-        if contract_type and "symbol" in contract_type.view_methods:
+        if not contract_type:
+            return self._get_contract_id_from_address(address)
+
+        if "symbol" in contract_type.view_methods:
             # Use token symbol as name
             contract = self._receipt.chain_manager.contracts.instance_at(
                 address, contract_type=contract_type, txn_hash=self._receipt.txn_hash
             )
 
             try:
-                result = contract.symbol()
-                if result and str(result):
-                    result = str(result)
+                symbol = contract.symbol()
+                if symbol and str(symbol).strip():
+                    return str(symbol).strip()
 
             except ContractError:
                 pass
 
-        if not result:
-            result = self._get_contract_id_from_address(address)
+        contract_id = contract_type.name
+        if contract_id:
+            contract_id = contract_id.strip()
+            if contract_id:
+                return contract_id
 
-        return result
+        return self._get_contract_id(address)
 
     def _get_contract_id_from_address(self, address: "AddressType") -> str:
         if address in self.account_manager:
