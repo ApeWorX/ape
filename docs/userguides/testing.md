@@ -294,7 +294,7 @@ At the end of test suite, you will see tables such as:
  ───────────────────────────────────────────────────────
   to:test0              2   2400   9100   5750     5750
 
-                     TestContract.Vy Gas
+                     TestContract.vy Gas
 
   Method      Times called    Min.    Max.    Mean   Median
  ───────────────────────────────────────────────────────────
