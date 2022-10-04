@@ -1,18 +1,17 @@
 from contextlib import contextmanager
-from typing import Any, Callable, Iterator, List, Optional
+from typing import Iterator, List, Optional
 
 import pytest
 from _pytest.config import Config as PytestConfig
 from evm_trace.gas import merge_reports
 
 from ape.api import TestAccountAPI
-from ape.exceptions import ProviderNotConnectedError
 from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 from ape.types import GasReport, SnapshotID
-from ape.utils import CallTraceParser, ManagerAccessMixin, cached_property
+from ape.utils import CallTraceParser, ManagerAccessMixin, allow_disconnected, cached_property
 
 
 class PytestApeFixtures(ManagerAccessMixin):
@@ -111,10 +110,10 @@ class PytestApeFixtures(ManagerAccessMixin):
     _class_isolation = pytest.fixture(_isolation, scope="class")
     _function_isolation = pytest.fixture(_func_isolation, scope="function")
 
+    @allow_disconnected
     def _snapshot(self) -> Optional[SnapshotID]:
         try:
-            fn = self.chain_manager.snapshot
-            return _silence_connection_failure(fn)
+            return self.chain_manager.snapshot()
         except NotImplementedError:
             if not self._warned_for_unimplemented_snapshot:
                 logger.warning(
@@ -125,29 +124,16 @@ class PytestApeFixtures(ManagerAccessMixin):
 
         return None
 
+    @allow_disconnected
     def _restore(self, snapshot_id: SnapshotID):
         if snapshot_id not in self.chain_manager._snapshots:
             return
 
-        _silence_connection_failure(lambda: self.chain_manager.restore(snapshot_id))
+        self.chain_manager.restore(snapshot_id)
 
+    @allow_disconnected
     def _get_block_number(self) -> Optional[int]:
-        return _silence_connection_failure(lambda: self.provider.get_block("latest").number)
-
-
-def _silence_connection_failure(fn: Callable) -> Optional[Any]:
-    """
-    When tests fail, the provider may become disconnected.
-    Rather than cause more failures, let ``pytest`` complete.
-
-    Returns ``None`` when gets ``ProviderNotConnectedError``.
-    """
-
-    try:
-        return fn()
-    except ProviderNotConnectedError:
-        logger.warning("Provider became disconnected mid-test.")
-        return None
+        return self.provider.get_block("latest").number
 
 
 class ReceiptCapture(ManagerAccessMixin):
