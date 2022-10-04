@@ -7,7 +7,7 @@ from rich import print as rich_print
 
 import ape
 from ape.api import ProviderContextManager
-from ape.logging import logger, LogLevel
+from ape.logging import LogLevel, logger
 from ape.pytest.contextmanagers import RevertsContextManager
 from ape.pytest.fixtures import ReceiptCapture
 from ape.utils import ManagerAccessMixin, parse_gas_table
