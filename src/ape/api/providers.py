@@ -419,6 +419,18 @@ class ProviderAPI(BaseInterfaceModel):
         return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
 
     @raises_not_implemented
+    def set_code(self, address: AddressType, code: bytes):
+        """
+        Change the code of a smart contract, for development purposes.
+        Test providers implement this method when they support it.
+
+        Args:
+            address (AddressType): An address on the network.
+            code(bytes): The new bytecode
+
+        """
+
+    @raises_not_implemented
     def unlock_account(self, address: AddressType) -> bool:
         """
         Ask the provider to allow an address to submit transactions without validating
