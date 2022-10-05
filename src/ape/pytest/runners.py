@@ -170,6 +170,7 @@ class PytestApeRunner(ManagerAccessMixin):
             else:
                 terminalreporter.write_line(f"{LogLevel.WARNING.name}: No gas usage data found.")
 
+    def pytest_unconfigure(self):
         if self._provider_is_connected:
             self._provider_context.disconnect_all()
             self._provider_is_connected = False
