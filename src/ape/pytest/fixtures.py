@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 from typing import Dict, Iterator, List, Optional
 
 import pytest
@@ -67,25 +66,22 @@ class PytestApeFixtures(ManagerAccessMixin):
 
         return self.project_manager
 
-    @contextmanager
-    def _isolation_context(self):
-        snapshot_id = self._snapshot()
-        yield snapshot_id
-        if snapshot_id:
-            self._restore(snapshot_id)
-
     def _isolation(self) -> Iterator[None]:
         """
         Isolation logic used to implement isolation fixtures for each pytest scope.
         When tracing support is available, will also assist in capturing receipts.
         """
 
-        with self._isolation_context():
-            if self._using_traces:
-                with self.receipt_capture:
-                    yield
-            else:
+        snapshot_id = self._snapshot()
+
+        if self._using_traces:
+            with self.receipt_capture:
                 yield
+        else:
+            yield
+
+        if snapshot_id:
+            self._restore(snapshot_id)
 
     # isolation fixtures
     _session_isolation = pytest.fixture(_isolation, scope="session")
