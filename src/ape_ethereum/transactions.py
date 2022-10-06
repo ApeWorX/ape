@@ -153,7 +153,11 @@ class Receipt(ReceiptAPI):
         return self.status != TransactionStatusEnum.NO_ERROR
 
     @cached_property
-    def call_tree(self) -> CallTreeNode:
+    def call_tree(self) -> Optional[CallTreeNode]:
+        if not self.receiver:
+            # Not an function invoke
+            return None
+
         return self.provider.get_call_tree(self.txn_hash)
 
     def raise_for_status(self):
@@ -164,19 +168,23 @@ class Receipt(ReceiptAPI):
             raise TransactionError(message=f"Transaction '{txn_hash}' failed.")
 
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
+        call_tree = self.call_tree
+        if not call_tree:
+            return
+
         tree_factory = CallTraceParser(self, verbose=verbose)
-        root = tree_factory.parse_as_tree(self.call_tree)
+        root = tree_factory.parse_as_tree(call_tree)
         console = RichConsole(file=file)
         console.print(f"Call trace for [bold blue]'{self.txn_hash}'[/]")
 
-        if self.call_tree.failed:
+        if call_tree.failed:
             default_message = "reverted without message"
-            if not self.call_tree.returndata.hex().startswith(
+            if not call_tree.returndata.hex().startswith(
                 "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
             ):
                 suffix = default_message
             else:
-                decoded_result = decode(("string",), self.call_tree.returndata[4:])
+                decoded_result = decode(("string",), call_tree.returndata[4:])
                 if len(decoded_result) == 1:
                     suffix = f'reverted with message: "{decoded_result[0]}"'
                 else:
@@ -188,8 +196,12 @@ class Receipt(ReceiptAPI):
         console.print(root)
 
     def show_gas_report(self, file: IO[str] = sys.stdout):
+        call_tree = self.call_tree
+        if not call_tree:
+            return
+
         tree_factory = CallTraceParser(self)
-        tables = tree_factory.parse_as_gas_report(self.call_tree)
+        tables = tree_factory.parse_as_gas_report(call_tree)
         rich_print(*tables, file=file)
 
     def decode_logs(

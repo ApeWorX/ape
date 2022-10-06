@@ -55,6 +55,12 @@ and otherwise you can provide a numeric value.
 """
 
 
+GasReport = Dict[str, Dict[str, List[int]]]
+"""
+A gas report in Ape.
+"""
+
+
 TopicFilter = List[Union[Optional[HexStr], List[Optional[HexStr]]]]
 
 

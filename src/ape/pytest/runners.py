@@ -3,12 +3,14 @@ from pathlib import Path
 import click
 import pytest
 from _pytest.config import Config as PytestConfig
+from rich import print as rich_print
 
 import ape
 from ape.api import ProviderContextManager
-from ape.logging import logger
+from ape.logging import LogLevel, logger
 from ape.pytest.contextmanagers import RevertsContextManager
-from ape.utils import ManagerAccessMixin
+from ape.pytest.fixtures import ReceiptCapture
+from ape.utils import ManagerAccessMixin, parse_gas_table
 from ape_console._cli import console
 
 
@@ -16,8 +18,10 @@ class PytestApeRunner(ManagerAccessMixin):
     def __init__(
         self,
         pytest_config: PytestConfig,
+        receipt_capture: ReceiptCapture,
     ):
         self.pytest_config = pytest_config
+        self.receipt_capture = receipt_capture
         self._provider_is_connected = False
         ape.reverts = RevertsContextManager  # type: ignore
 
@@ -38,7 +42,6 @@ class PytestApeRunner(ManagerAccessMixin):
         """
 
         if self.pytest_config.getoption("interactive") and report.failed:
-
             capman = self.pytest_config.pluginmanager.get_plugin("capturemanager")
             if capman:
                 capman.suspend_global_capture(in_=True)
@@ -153,14 +156,21 @@ class PytestApeRunner(ManagerAccessMixin):
             self._provider_context.push_provider()
             self._provider_is_connected = True
 
-    def pytest_sessionfinish(self):
+    def pytest_terminal_summary(self, terminalreporter):
         """
-        Called after whole test run finished, right before returning the exit
-        status to the system.
+        Add a section to terminal summary reporting.
+        When ``--gas`` is active, outputs the gas profile report.
+        """
+        if self.pytest_config.getoption("--gas"):
+            terminalreporter.section("Gas Profile")
+            gas_report = self.receipt_capture.gas_report
+            if gas_report:
+                tables = parse_gas_table(gas_report)
+                rich_print(*tables)
+            else:
+                terminalreporter.write_line(f"{LogLevel.WARNING.name}: No gas usage data found.")
 
-        **NOTE**: This hook fires even when exceptions occur, so we cannot
-        assume the provider successfully connected.
-        """
+    def pytest_unconfigure(self):
         if self._provider_is_connected:
             self._provider_context.disconnect_all()
             self._provider_is_connected = False

@@ -266,3 +266,37 @@ When you exit a provider's context, Ape **does not** disconnect the provider.
 When you re-enter that provider's context, Ape uses the previously-connected provider.
 At the end of the tests, Ape disconnects all the providers.
 Thus, you can enter and exit a provider's context as much as you need in tests.
+
+## Gas Reporting
+
+To include a gas report at the end of your tests, you can use the `--gas` flag.
+**NOTE**: This feature requires using a provider with tracing support, such as [ape-hardhat](https://github.com/ApeWorX/ape-hardhat).
+
+```bash
+ape test --network ethereum:local:hardhat --gas
+```
+
+At the end of test suite, you will see tables such as:
+
+```sh
+                            FundMe.vy Gas
+
+  Method           Times called    Min.    Max.    Mean   Median
+ ────────────────────────────────────────────────────────────────
+  fund                        8   57198   91398   82848    91398
+  withdraw                    2   28307   38679   33493    33493
+  changeOnStatus              2   23827   45739   34783    34783
+  getSecret                   1   24564   24564   24564    24564
+
+                  Transferring ETH Gas
+
+  Method     Times called   Min.   Max.   Mean   Median
+ ───────────────────────────────────────────────────────
+  to:test0              2   2400   9100   5750     5750
+
+                     TestContract.vy Gas
+
+  Method      Times called    Min.    Max.    Mean   Median
+ ───────────────────────────────────────────────────────────
+  setNumber              1   51021   51021   51021    51021
+```

@@ -175,6 +175,10 @@ class ReceiptAPI(BaseInterfaceModel):
         return value
 
     @property
+    def call_tree(self) -> Optional[Any]:
+        return None
+
+    @property
     def failed(self) -> bool:
         """
         Whether the receipt represents a failing transaction.

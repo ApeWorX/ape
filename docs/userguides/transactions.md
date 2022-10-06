@@ -246,17 +246,15 @@ receipt.show_gas_report()
 It will output tables of contracts and methods with gas usages that look like this:
 
 ```bash
-                           DAI Gas
-┏━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━━┓
-┃ Method    ┃ Times called ┃ Min.  ┃ Max.  ┃ Mean  ┃ Median ┃
-┡━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━━┩
-│ balanceOf │ 4            │ 1302  │ 1302  │ 1302  │ 1302   │
-│ transfer  │ 5            │ 6974  │ 30374 │ 20174 │ 26174  │
-│ allowance │ 1            │ 1377  │ 1377  │ 1377  │ 1377   │
-│ approve   │ 1            │ 22414 │ 22414 │ 22414 │ 22414  │
-│ burn      │ 1            │ 11946 │ 11946 │ 11946 │ 11946  │
-│ mint      │ 1            │ 25845 │ 25845 │ 25845 │ 25845  │
-└───────────┴──────────────┴───────┴───────┴───────┴────────┘
+                            DAI Gas
+
+  Method           Times called    Min.    Max.    Mean   Median
+ ────────────────────────────────────────────────────────────────
+  balanceOf                   4   1302    13028   1302    1302
+  allowance                   2   1377    1377    1337    1337
+│ approve                     1   22414   22414   22414   22414
+│ burn                        1   11946   11946   11946   11946
+│ mint                        1   25845   25845   25845   25845
 ```
 
 ## Estimate Gas Cost

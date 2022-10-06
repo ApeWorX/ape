@@ -110,7 +110,7 @@ def assert_trace(capsys):
             parts = line.split(" ")
             for part in [p.strip() for p in parts if p.strip()]:
                 part = part.strip()
-                assert part in actual, f"Could not find '{part}' in expected"
+                assert part in actual, f"Could not find '{part}' in expected\n{output}"
 
     return assert_trace
 
