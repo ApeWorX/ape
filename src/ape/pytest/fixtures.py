@@ -67,13 +67,6 @@ class PytestApeFixtures(ManagerAccessMixin):
 
         return self.project_manager
 
-    def _isolation(self) -> Iterator[None]:
-        """
-        Isolation logic used to implement isolation fixtures for each pytest scope.
-        """
-        with self._isolation_context():
-            yield
-
     @contextmanager
     def _isolation_context(self):
         snapshot_id = self._snapshot()
@@ -81,10 +74,10 @@ class PytestApeFixtures(ManagerAccessMixin):
         if snapshot_id:
             self._restore(snapshot_id)
 
-    def _func_isolation(self) -> Iterator[None]:
+    def _isolation(self) -> Iterator[None]:
         """
-        When tracing support is available, will also
-        assist in capturing receipts.
+        Isolation logic used to implement isolation fixtures for each pytest scope.
+        When tracing support is available, will also assist in capturing receipts.
         """
 
         with self._isolation_context():
@@ -108,7 +101,7 @@ class PytestApeFixtures(ManagerAccessMixin):
     _package_isolation = pytest.fixture(_isolation, scope="package")
     _module_isolation = pytest.fixture(_isolation, scope="module")
     _class_isolation = pytest.fixture(_isolation, scope="class")
-    _function_isolation = pytest.fixture(_func_isolation, scope="function")
+    _function_isolation = pytest.fixture(_isolation, scope="function")
 
     @allow_disconnected
     def _snapshot(self) -> Optional[SnapshotID]:
