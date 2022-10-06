@@ -1,11 +1,11 @@
 from contextlib import contextmanager
-from typing import Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 import pytest
 from _pytest.config import Config as PytestConfig
 from evm_trace.gas import merge_reports
 
-from ape.api import TestAccountAPI
+from ape.api import ReceiptAPI, TestAccountAPI
 from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
@@ -139,6 +139,7 @@ class PytestApeFixtures(ManagerAccessMixin):
 class ReceiptCapture(ManagerAccessMixin):
     pytest_config: PytestConfig
     gas_report: Optional[GasReport] = None
+    receipt_map: Dict[str, ReceiptAPI] = {}
 
     def __init__(self, pytest_config):
         self.pytest_config = pytest_config
@@ -160,7 +161,11 @@ class ReceiptCapture(ManagerAccessMixin):
             self.capture(txn.txn_hash.hex())
 
     def capture(self, transaction_hash: str, track_gas: Optional[bool] = None):
+        if transaction_hash in self.receipt_map:
+            return
+
         receipt = self.chain_manager.account_history.get_receipt(transaction_hash)
+        self.receipt_map[transaction_hash] = receipt
         if not receipt:
             return
 
@@ -168,7 +173,7 @@ class ReceiptCapture(ManagerAccessMixin):
             # TODO: Handle deploy receipts once trace supports it
             return
 
-        # Ensure call_tree is cached
+        # Merge-in the receipt's gas report with everything so far.
         call_tree = receipt.call_tree
         do_track_gas = track_gas if track_gas is not None else self._track_gas
         if do_track_gas and call_tree:
