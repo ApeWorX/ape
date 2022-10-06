@@ -81,20 +81,11 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
 
         with self._isolation_context():
-            start_block = None
             if self._using_traces:
-                last_block = self._get_block_number()
-                if last_block is not None:
-                    # The start block is the next block after the one before
-                    # running the test.
-                    start_block = last_block + 1
-
-            yield
-
-            if start_block is not None and self._using_traces:
-                stop_block = self._get_block_number()
-                if stop_block is not None and start_block <= stop_block:
-                    self.receipt_capture.capture_range(start_block, stop_block)
+                with self.receipt_capture:
+                    yield
+            else:
+                yield
 
     # isolation fixtures
     _session_isolation = pytest.fixture(_isolation, scope="session")
@@ -124,18 +115,31 @@ class PytestApeFixtures(ManagerAccessMixin):
 
         self.chain_manager.restore(snapshot_id)
 
-    @allow_disconnected
-    def _get_block_number(self) -> Optional[int]:
-        return self.provider.get_block("latest").number
-
 
 class ReceiptCapture(ManagerAccessMixin):
     pytest_config: PytestConfig
     gas_report: Optional[GasReport] = None
     receipt_map: Dict[str, ReceiptAPI] = {}
+    enter_blocks: List[int] = []
 
     def __init__(self, pytest_config):
         self.pytest_config = pytest_config
+
+    def __enter__(self):
+        block_number = self._get_block_number()
+        if block_number is not None:
+            self.enter_blocks.append(block_number)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if not self.enter_blocks:
+            return
+
+        start_block = self.enter_blocks.pop()
+        stop_block = self._get_block_number()
+        if stop_block is None or start_block > stop_block:
+            return
+
+        self.capture_range(start_block, stop_block)
 
     @cached_property
     def _track_gas(self) -> bool:
@@ -176,3 +180,7 @@ class ReceiptCapture(ManagerAccessMixin):
                 self.gas_report = merge_reports(self.gas_report, gas_report)
             else:
                 self.gas_report = gas_report
+
+    @allow_disconnected
+    def _get_block_number(self) -> Optional[int]:
+        return self.provider.get_block("latest").number
