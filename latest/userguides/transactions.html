@@ -348,17 +348,15 @@ ContractA.methodWithoutArguments<span class="o">()</span> -&gt; 0x00..7a9c <span
 </pre></div>
 </div>
 <p>It will output tables of contracts and methods with gas usages that look like this:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>                           DAI Gas
-┏━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━━┓
-┃ Method    ┃ Times called ┃ Min.  ┃ Max.  ┃ Mean  ┃ Median ┃
-┡━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━━┩
-│ balanceOf │ <span class="m">4</span>            │ <span class="m">1302</span>  │ <span class="m">1302</span>  │ <span class="m">1302</span>  │ <span class="m">1302</span>   │
-│ transfer  │ <span class="m">5</span>            │ <span class="m">6974</span>  │ <span class="m">30374</span> │ <span class="m">20174</span> │ <span class="m">26174</span>  │
-│ allowance │ <span class="m">1</span>            │ <span class="m">1377</span>  │ <span class="m">1377</span>  │ <span class="m">1377</span>  │ <span class="m">1377</span>   │
-│ approve   │ <span class="m">1</span>            │ <span class="m">22414</span> │ <span class="m">22414</span> │ <span class="m">22414</span> │ <span class="m">22414</span>  │
-│ burn      │ <span class="m">1</span>            │ <span class="m">11946</span> │ <span class="m">11946</span> │ <span class="m">11946</span> │ <span class="m">11946</span>  │
-│ mint      │ <span class="m">1</span>            │ <span class="m">25845</span> │ <span class="m">25845</span> │ <span class="m">25845</span> │ <span class="m">25845</span>  │
-└───────────┴──────────────┴───────┴───────┴───────┴────────┘
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>                            DAI Gas
+
+  Method           Times called    Min.    Max.    Mean   Median
+ ────────────────────────────────────────────────────────────────
+  balanceOf                   <span class="m">4</span>   <span class="m">1302</span>    <span class="m">13028</span>   <span class="m">1302</span>    <span class="m">1302</span>
+  allowance                   <span class="m">2</span>   <span class="m">1377</span>    <span class="m">1377</span>    <span class="m">1337</span>    <span class="m">1337</span>
+│ approve                     <span class="m">1</span>   <span class="m">22414</span>   <span class="m">22414</span>   <span class="m">22414</span>   <span class="m">22414</span>
+│ burn                        <span class="m">1</span>   <span class="m">11946</span>   <span class="m">11946</span>   <span class="m">11946</span>   <span class="m">11946</span>
+│ mint                        <span class="m">1</span>   <span class="m">25845</span>   <span class="m">25845</span>   <span class="m">25845</span>   <span class="m">25845</span>
 </pre></div>
 </div>
 </section>

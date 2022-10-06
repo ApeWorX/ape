@@ -86,6 +86,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#test-providers">Test Providers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#advanced-testing-tips">Advanced Testing Tips</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#multi-chain-testing">Multi-chain Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gas-reporting">Gas Reporting</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
@@ -368,6 +369,37 @@ The easiest way to achieve this is to use the <code class="docutils literal notr
 When you re-enter that provider’s context, Ape uses the previously-connected provider.
 At the end of the tests, Ape disconnects all the providers.
 Thus, you can enter and exit a provider’s context as much as you need in tests.</p>
+</section>
+<section id="gas-reporting">
+<h2>Gas Reporting<a class="headerlink" href="#gas-reporting" title="Permalink to this headline"></a></h2>
+<p>To include a gas report at the end of your tests, you can use the <code class="docutils literal notranslate"><span class="pre">--gas</span></code> flag.
+<strong>NOTE</strong>: This feature requires using a provider with tracing support, such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --network ethereum:local:hardhat --gas
+</pre></div>
+</div>
+<p>At the end of test suite, you will see tables such as:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>                            FundMe.vy Gas
+
+  Method           Times called    Min.    Max.    Mean   Median
+ ────────────────────────────────────────────────────────────────
+  fund                        <span class="m">8</span>   <span class="m">57198</span>   <span class="m">91398</span>   <span class="m">82848</span>    <span class="m">91398</span>
+  withdraw                    <span class="m">2</span>   <span class="m">28307</span>   <span class="m">38679</span>   <span class="m">33493</span>    <span class="m">33493</span>
+  changeOnStatus              <span class="m">2</span>   <span class="m">23827</span>   <span class="m">45739</span>   <span class="m">34783</span>    <span class="m">34783</span>
+  getSecret                   <span class="m">1</span>   <span class="m">24564</span>   <span class="m">24564</span>   <span class="m">24564</span>    <span class="m">24564</span>
+
+                  Transferring ETH Gas
+
+  Method     Times called   Min.   Max.   Mean   Median
+ ───────────────────────────────────────────────────────
+  to:test0              <span class="m">2</span>   <span class="m">2400</span>   <span class="m">9100</span>   <span class="m">5750</span>     <span class="m">5750</span>
+
+                     TestContract.vy Gas
+
+  Method      Times called    Min.    Max.    Mean   Median
+ ───────────────────────────────────────────────────────────
+  setNumber              <span class="m">1</span>   <span class="m">51021</span>   <span class="m">51021</span>   <span class="m">51021</span>    <span class="m">51021</span>
+</pre></div>
+</div>
 </section>
 </section>
 
