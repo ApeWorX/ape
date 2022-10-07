@@ -39,7 +39,7 @@ def get_context(networks_connected_to_tester):
 
 @pytest.fixture
 def network_with_no_providers(ethereum):
-    network = ethereum.get_network("rinkeby-fork")
+    network = ethereum.get_network("goerli-fork")
     default_provider = network.default_provider
     providers = network.__dict__["providers"]
 
@@ -62,29 +62,17 @@ def test_get_network_choices_filter_ecosystem(networks):
         "::test",
         ":goerli",
         ":goerli:geth",
-        ":kovan",
-        ":kovan:geth",
         ":local",
         ":mainnet",
         ":mainnet:geth",
-        ":rinkeby",
-        ":rinkeby:geth",
-        ":ropsten",
-        ":ropsten:geth",
         "ethereum",
         "ethereum:goerli",
         "ethereum:goerli:geth",
-        "ethereum:kovan",
-        "ethereum:kovan:geth",
         "ethereum:local",
         "ethereum:local:geth",
         "ethereum:local:test",
         "ethereum:mainnet",
         "ethereum:mainnet:geth",
-        "ethereum:rinkeby",
-        "ethereum:rinkeby:geth",
-        "ethereum:ropsten",
-        "ethereum:ropsten:geth",
     }
     assert all_choices.issubset(actual)
 
@@ -109,7 +97,7 @@ def test_get_network_choices_filter_provider(networks):
 
 def test_get_provider_when_no_default(network_with_no_providers):
     with pytest.raises(NetworkError) as err:
-        # Not provider installed out-of-the-box for rinkeby-fork network
+        # Not provider installed out-of-the-box for goerli-fork network
         provider = network_with_no_providers.get_provider()
         assert not provider, f"Provider should be None but got '{provider.name}'"
 
@@ -118,11 +106,11 @@ def test_get_provider_when_no_default(network_with_no_providers):
 
 def test_get_provider_when_not_found(networks):
     ethereum = networks.get_ecosystem("ethereum")
-    network = ethereum.get_network("rinkeby-fork")
+    network = ethereum.get_network("goerli-fork")
     with pytest.raises(NetworkError) as err:
         network.get_provider("test")
 
-    assert "'test' is not a valid provider for network 'rinkeby-fork'" in str(err.value)
+    assert "'test' is not a valid provider for network 'goerli-fork'" in str(err.value)
 
 
 def test_repr_connected_to_local(networks_connected_to_tester):
@@ -140,7 +128,7 @@ def test_repr_disconnected(networks_disconnected):
     assert repr(networks_disconnected) == "<NetworkManager>"
     assert repr(networks_disconnected.ethereum) == "<ethereum>"
     assert repr(networks_disconnected.ethereum.local) == "<ethereum:local>"
-    assert repr(networks_disconnected.ethereum.rinkeby) == "<ethereum:rinkeby chain_id=4>"
+    assert repr(networks_disconnected.ethereum.goerli) == "<ethereum:goerli chain_id=5>"
 
 
 def test_get_provider_from_choice_adhoc_provider(networks_connected_to_tester):
@@ -208,7 +196,7 @@ def test_parse_network_choice_multiple_contexts(get_provider_with_unused_chain_i
 
 
 def test_block_times(ethereum):
-    assert ethereum.rinkeby.block_time == 15
+    assert ethereum.goerli.block_time == 15
 
 
 def test_ecosystems_when_default_network_not_exists(temp_config, caplog, networks):
@@ -226,14 +214,14 @@ def test_ecosystems_when_default_network_not_exists(temp_config, caplog, network
 
 def test_ecosystems_when_default_provider_not_exists(temp_config, caplog, networks):
     bad_provider = "NOT_EXISTS"
-    config = {"ethereum": {"kovan": {"default_provider": bad_provider}}}
+    config = {"ethereum": {"goerli": {"default_provider": bad_provider}}}
     with temp_config(config):
         assert networks.ecosystems
 
     err = caplog.records[-1].message
     assert err == (
         f"Failed setting default provider: "
-        f"Provider '{bad_provider}' not found in network 'kovan'."
+        f"Provider '{bad_provider}' not found in network 'goerli'."
     )
 
 
@@ -241,5 +229,5 @@ def test_gas_limits(ethereum):
     """
     Test the default gas limit configurations for local and live networks.
     """
-    assert ethereum.rinkeby.gas_limit == "auto"
+    assert ethereum.goerli.gas_limit == "auto"
     assert ethereum.local.gas_limit == "auto"

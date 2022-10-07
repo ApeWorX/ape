@@ -121,9 +121,6 @@ class EphemeralGeth(LoggingMixin, BaseGethProcess):
 class GethNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
     mainnet: dict = DEFAULT_SETTINGS.copy()
-    ropsten: dict = DEFAULT_SETTINGS.copy()
-    rinkeby: dict = DEFAULT_SETTINGS.copy()
-    kovan: dict = DEFAULT_SETTINGS.copy()
     goerli: dict = DEFAULT_SETTINGS.copy()
     # Make sure to run via `geth --dev` (or similar)
     local: dict = DEFAULT_SETTINGS.copy()
@@ -251,8 +248,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
                 else "Error getting chain id."
             )
 
-        # If network is rinkeby, goerli, or kovan (PoA test-nets)
-        if chain_id in (4, 5, 42) or is_likely_poa():
+        if is_likely_poa():
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         self.network.verify_chain_id(chain_id)
