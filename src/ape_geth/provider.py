@@ -248,7 +248,6 @@ class GethProvider(Web3Provider, UpstreamProvider):
                 else "Error getting chain id."
             )
 
-        # If network a custom PoA testnet
         if is_likely_poa():
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
