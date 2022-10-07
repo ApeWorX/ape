@@ -128,8 +128,8 @@ def test_repr_on_local_network_and_disconnected(networks):
 
 
 def test_repr_on_live_network_and_disconnected(networks):
-    geth = networks.get_provider_from_choice("ethereum:rinkeby:geth")
-    assert repr(geth) == "<geth chain_id=4>"
+    geth = networks.get_provider_from_choice("ethereum:goerli:geth")
+    assert repr(geth) == "<geth chain_id=5>"
 
 
 def test_repr_connected(mock_web3, geth_provider):
@@ -150,8 +150,8 @@ def test_chain_id_when_connected(eth_tester_provider_geth):
 
 
 def test_chain_id_live_network_not_connected(networks):
-    geth = networks.get_provider_from_choice("ethereum:rinkeby:geth")
-    assert geth.chain_id == 4
+    geth = networks.get_provider_from_choice("ethereum:goerli:geth")
+    assert geth.chain_id == 5
 
 
 def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, eth_tester_provider_geth):
@@ -166,7 +166,7 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, eth_tester_p
 
 
 def test_connect_wrong_chain_id(mocker, ethereum, eth_tester_provider_geth):
-    eth_tester_provider_geth.network = ethereum.get_network("kovan")
+    eth_tester_provider_geth.network = ethereum.get_network("goerli")
 
     # Ensure when reconnecting, it does not use HTTP
     factory = mocker.patch("ape_geth.provider._create_web3")
@@ -174,8 +174,8 @@ def test_connect_wrong_chain_id(mocker, ethereum, eth_tester_provider_geth):
 
     expected_error_message = (
         "Provider connected to chain ID '131277322940537', "
-        "which does not match network chain ID '42'. "
-        "Are you connected to 'kovan'?"
+        "which does not match network chain ID '5'. "
+        "Are you connected to 'goerli'?"
     )
     with pytest.raises(NetworkMismatchError, match=expected_error_message):
         eth_tester_provider_geth.connect()

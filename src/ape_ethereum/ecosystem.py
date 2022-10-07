@@ -39,9 +39,6 @@ from ape_ethereum.transactions import (
 NETWORKS = {
     # chain_id, network_id
     "mainnet": (1, 1),
-    "ropsten": (3, 3),
-    "kovan": (42, 42),
-    "rinkeby": (4, 4),
     "goerli": (5, 5),
 }
 
@@ -87,7 +84,7 @@ class NetworkConfig(PluginConfig):
     class Config:
         smart_union = True
 
-    @validator("gas_limit", pre=True)
+    @validator("gas_limit", pre=True, allow_reuse=True)
     def validate_gas_limit(cls, value: GasLimit) -> GasLimit:
         if isinstance(value, str):
             if value.lower() in ("auto", "max"):
@@ -106,36 +103,28 @@ class NetworkConfig(PluginConfig):
         return value
 
 
+def _create_fork_config(**kwargs) -> NetworkConfig:
+    return _create_config(
+        default_provider=None,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+        **kwargs,
+    )
+
+
+def _create_config(**kwargs) -> NetworkConfig:
+    # Put in own method to isolate type: ignore comments
+    return NetworkConfig(**kwargs)  # type: ignore
+
+
 class EthereumConfig(PluginConfig):
-    mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
-    mainnet_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
-    ropsten_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
-    kovan_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    rinkeby_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    goerli_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    local: NetworkConfig = NetworkConfig(
+    mainnet: NetworkConfig = _create_config(required_confirmations=7, block_time=13)
+    mainnet_fork: NetworkConfig = _create_fork_config()
+    goerli: NetworkConfig = _create_config(required_confirmations=2, block_time=15)
+    goerli_fork: NetworkConfig = _create_fork_config()
+    local: NetworkConfig = _create_config(
         default_provider="test",
         transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
+    )
     default_network: str = LOCAL_NETWORK_NAME
 
 
