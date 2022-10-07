@@ -49,5 +49,8 @@ def test_fixture_docs(ape_test_runner, project):
 @skip_projects_except(["test"])
 def test_gas_flag(ape_test_runner, project):
     # NOTE: See `ape-hardhat` for better gas reporting tests.
-    result = ape_test_runner.invoke(["--help"])
-    assert "--gas" in result.output
+    result = ape_test_runner.invoke(["--gas"])
+    assert (
+        "Provider 'test' does not support transaction "
+        "tracing and is unable to display a gas profile"
+    ) in result.output
