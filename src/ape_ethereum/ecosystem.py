@@ -103,28 +103,26 @@ class NetworkConfig(PluginConfig):
         return value
 
 
-def _create_fork_config(**kwargs) -> NetworkConfig:
+def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> NetworkConfig:
     return _create_config(
-        default_provider=None,
+        required_confirmations=0,
+        default_provider=default_provider,
         transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
         **kwargs,
     )
 
 
-def _create_config(**kwargs) -> NetworkConfig:
-    # Put in own method to isolate type: ignore comments
-    return NetworkConfig(**kwargs)  # type: ignore
+def _create_config(required_confirmations: int = 2, **kwargs) -> NetworkConfig:
+    # Put in own method to isolate `type: ignore` comments
+    return NetworkConfig(required_confirmations=required_confirmations, **kwargs)  # type: ignore
 
 
 class EthereumConfig(PluginConfig):
-    mainnet: NetworkConfig = _create_config(required_confirmations=7, block_time=13)
-    mainnet_fork: NetworkConfig = _create_fork_config()
-    goerli: NetworkConfig = _create_config(required_confirmations=2, block_time=15)
-    goerli_fork: NetworkConfig = _create_fork_config()
-    local: NetworkConfig = _create_config(
-        default_provider="test",
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )
+    mainnet: NetworkConfig = _create_config(block_time=13)
+    mainnet_fork: NetworkConfig = _create_local_config()
+    goerli: NetworkConfig = _create_config(block_time=15)
+    goerli_fork: NetworkConfig = _create_local_config()
+    local: NetworkConfig = _create_local_config(default_provider="test")
     default_network: str = LOCAL_NETWORK_NAME
 
 
