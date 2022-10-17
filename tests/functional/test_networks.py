@@ -230,4 +230,4 @@ def test_gas_limits(ethereum):
     Test the default gas limit configurations for local and live networks.
     """
     assert ethereum.goerli.gas_limit == "auto"
-    assert ethereum.local.gas_limit == "auto"
+    assert ethereum.local.gas_limit == "max"

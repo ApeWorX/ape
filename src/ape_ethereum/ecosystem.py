@@ -79,6 +79,8 @@ class NetworkConfig(PluginConfig):
     estimate gas limits based on the transaction. If set to ``"max"`` the gas limit
     will be set to the maximum block gas limit for the network. Otherwise an ``int``
     can be used to specify an explicit gas limit amount (either base 10 or 16).
+
+    The default for local networks is ``"max"``, otherwise ``"auto"``.
     """
 
     class Config:
@@ -108,6 +110,7 @@ def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> Ne
         required_confirmations=0,
         default_provider=default_provider,
         transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+        gas_limit="max",
         **kwargs,
     )
 
