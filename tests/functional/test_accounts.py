@@ -13,8 +13,8 @@ from ape.exceptions import (
     TransactionError,
 )
 from ape.types.signatures import recover_signer
-from ape_ethereum.ecosystem import ProxyType
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
+from ape_ethereum.ecosystem import ProxyType
 
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
 
@@ -200,7 +200,7 @@ def test_send_transaction_with_bad_nonce(sender, receiver):
 
 
 def test_send_transaction_without_enough_funds(sender, receiver):
-    with pytest.raises(TransactionError, match="Sender does not have enough balance to cover" ):
+    with pytest.raises(TransactionError, match="Sender does not have enough balance to cover"):
         sender.transfer(receiver, "10000000000000 ETH")
 
 

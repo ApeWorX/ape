@@ -11,7 +11,6 @@ from web3.providers.eth_tester.defaults import API_ENDPOINTS
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import (
     ContractLogicError,
-    OutOfGasError,
     ProviderNotConnectedError,
     TransactionError,
     VirtualMachineError,
