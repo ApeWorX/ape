@@ -173,24 +173,6 @@ def test_deploy_proxy(
     assert implementation.contract_type == vyper_contract_instance.contract_type
 
 
-def test_contract_calls(owner, contract_instance):
-    contract_instance.setNumber(2, sender=owner)
-    assert contract_instance.myNumber() == 2
-
-
-def test_contract_revert(sender, contract_instance):
-    # 'sender' is not the owner so it will revert (with a message)
-    with pytest.raises(ContractLogicError, match="!authorized"):
-        contract_instance.setNumber(5, sender=sender)
-
-
-def test_contract_revert_no_message(owner, contract_instance):
-    # The Contract raises empty revert when setting number to 5.
-    expected = "Transaction failed."  # Default message
-    with pytest.raises(ContractLogicError, match=expected):
-        contract_instance.setNumber(5, sender=owner)
-
-
 def test_send_transaction_with_bad_nonce(sender, receiver):
     # Bump the nonce so we can set one that is too low.
     sender.transfer(receiver, "1 gwei", type=0)

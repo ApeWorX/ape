@@ -6,7 +6,7 @@ from hexbytes import HexBytes
 
 from ape import Contract
 from ape.contracts import ContractInstance
-from ape.exceptions import ChainError, ContractError
+from ape.exceptions import ChainError, ContractError, ContractLogicError
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
@@ -33,6 +33,24 @@ def test_init_specify_contract_type(
     assert contract.contract_type == vyper_contract_type
     assert contract.setNumber(2, sender=owner)
     assert contract.myNumber() == 2
+
+
+def test_contract_calls(owner, contract_instance):
+    contract_instance.setNumber(2, sender=owner)
+    assert contract_instance.myNumber() == 2
+
+
+def test_contract_revert(sender, contract_instance):
+    # 'sender' is not the owner so it will revert (with a message)
+    with pytest.raises(ContractLogicError, match="!authorized"):
+        contract_instance.setNumber(5, sender=sender)
+
+
+def test_contract_revert_no_message(owner, contract_instance):
+    # The Contract raises empty revert when setting number to 5.
+    expected = "Transaction failed."  # Default message
+    with pytest.raises(ContractLogicError, match=expected):
+        contract_instance.setNumber(5, sender=owner)
 
 
 def test_call_using_block_identifier(
