@@ -133,9 +133,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         receipt = self.get_receipt(
             txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
         )
-        if txn.gas_limit is not None and receipt.ran_out_of_gas:
-            raise OutOfGasError()
-
+        receipt.raise_for_status()
         self.chain_manager.account_history.append(receipt)
         return receipt
 
