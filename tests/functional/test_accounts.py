@@ -223,7 +223,7 @@ def test_send_transaction_with_bad_nonce(sender, receiver):
 
 
 def test_send_transaction_without_enough_funds(sender, receiver):
-    with pytest.raises(TransactionError, match="Sender does not have enough balance to cover"):
+    with pytest.raises(AccountsError, match="Transfer value meets or exceeds account balance"):
         sender.transfer(receiver, "10000000000000 ETH")
 
 
