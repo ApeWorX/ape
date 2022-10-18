@@ -40,17 +40,22 @@ def test_contract_calls(owner, contract_instance):
     assert contract_instance.myNumber() == 2
 
 
-def test_contract_revert(sender, contract_instance):
+def test_revert(sender, contract_instance):
     # 'sender' is not the owner so it will revert (with a message)
     with pytest.raises(ContractLogicError, match="!authorized"):
         contract_instance.setNumber(5, sender=sender)
 
 
-def test_contract_revert_no_message(owner, contract_instance):
+def test_revert_no_message(owner, contract_instance):
     # The Contract raises empty revert when setting number to 5.
     expected = "Transaction failed."  # Default message
     with pytest.raises(ContractLogicError, match=expected):
         contract_instance.setNumber(5, sender=owner)
+
+
+def test_revert_specify_gas(sender, contract_instance):
+    with pytest.raises(ContractLogicError, match="!authorized"):
+        contract_instance.setNumber(5, sender=sender, gas="200000")
 
 
 def test_call_using_block_identifier(

@@ -6,7 +6,7 @@ import pytest
 
 from ape.api.query import validate_and_expand_columns
 from ape.utils import BaseInterfaceModel
-from ape_test.providers import CHAIN_ID
+from ape_test.provider import CHAIN_ID
 
 
 def test_basic_query(chain, eth_tester_provider):
