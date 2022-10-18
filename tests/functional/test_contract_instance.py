@@ -341,3 +341,21 @@ def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
     )
     with pytest.raises(ContractError, match=expected_err):
         ContractInstance.from_receipt(receipt, contract_instance.contract_type)
+
+
+def test_encode_call_data_for_mutable_transaction(vyper_contract_instance):
+    actual = vyper_contract_instance.setNumber.encode_calldata(4)
+    expected = (
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x04"
+    )
+    assert actual == expected
+
+
+def test_encode_call_data_for_view_call(vyper_contract_instance, owner):
+    actual = vyper_contract_instance.balances.encode_calldata(owner)
+    expected = (
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x001\x8bF\x9b\xba9j\xec,`4/"
+        b"\x94A\xbe6\xa1\x94Qt"
+    )
+    assert actual == expected

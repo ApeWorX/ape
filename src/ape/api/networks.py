@@ -359,6 +359,19 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
+    def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
+        """
+        Encode the calldata for the given ABI.
+
+        Args:
+            abi (Union[ConstructorABI, MethodABI]): The ABI to use to encode the data.
+            *args: The calldata itself.
+
+        Returns:
+            bytes: Encoded calldata ready for a transaction.
+        """
+
+    @abstractmethod
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Any:
         """
         Get the result of a contract call.

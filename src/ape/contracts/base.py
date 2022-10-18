@@ -48,6 +48,10 @@ class ContractConstructor(ManagerAccessMixin):
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
 
+    def encode_calldata(self, *args):
+        arguments = self.conversion_manager.convert(args, tuple)
+        return self.provider.network.ecosystem.encode_calldata(self.abi, *arguments)
+
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
         kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
@@ -112,6 +116,11 @@ class ContractCallHandler(ManagerAccessMixin):
     def __repr__(self) -> str:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
+
+    def encode_calldata(self, *args):
+        arguments = self.conversion_manager.convert(args, tuple)
+        selected_abi = _select_method_abi(self.abis, arguments)
+        return self.provider.network.ecosystem.encode_calldata(selected_abi, *arguments)
 
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.conversion_manager.convert(v, tuple)
@@ -226,6 +235,11 @@ class ContractTransactionHandler(ManagerAccessMixin):
     def __repr__(self) -> str:
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
+
+    def encode_calldata(self, *args):
+        arguments = self.conversion_manager.convert(args, tuple)
+        selected_abi = _select_method_abi(self.abis, arguments)
+        return self.provider.network.ecosystem.encode_calldata(selected_abi, *arguments)
 
     def as_transaction(self, *args, **kwargs) -> TransactionAPI:
         """
