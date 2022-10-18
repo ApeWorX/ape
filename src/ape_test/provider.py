@@ -136,11 +136,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         )
 
         if receipt.failed:
+            txn_dict = receipt.transaction.dict()
+            txn_dict["nonce"] += 1
+            txn_params = cast(TxParams, txn_dict)
+
             # Replay txn to get revert reason
             try:
-                txn_dict = receipt.transaction.dict()
-                txn_dict["nonce"] += 1
-                self.web3.eth.call(cast(TxParams, txn_dict))
+                self.web3.eth.call(txn_params)
             except (ValidationError, TransactionFailed) as err:
                 raise self.get_virtual_machine_error(err, sender=txn.sender) from err
 
