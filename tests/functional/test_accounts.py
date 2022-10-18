@@ -6,7 +6,6 @@ import ape
 from ape import convert
 from ape.exceptions import (
     AccountsError,
-    ContractLogicError,
     NetworkError,
     ProjectError,
     SignatureError,
