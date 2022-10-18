@@ -550,7 +550,6 @@ class ProjectManager(BaseManager):
             raise ProjectError("Can only publish deployments on a live network.")
 
         contract_name = contract.contract_type.name
-
         receipt = contract.receipt
         if not receipt:
             raise ProjectError(f"Contract '{contract_name}' transaction receipt is unknown.")
