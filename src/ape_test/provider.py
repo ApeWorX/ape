@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Optional, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_tester.backends import PyEVMBackend  # type: ignore
@@ -8,11 +8,11 @@ from eth_utils.exceptions import ValidationError
 from web3 import EthereumTesterProvider, Web3
 from web3.middleware import simple_cache_middleware
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
+from web3.types import TxParams
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import (
     ContractLogicError,
-    OutOfGasError,
     ProviderNotConnectedError,
     TransactionError,
     UnknownSnapshotError,
@@ -120,7 +120,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             block_id = kwargs.pop("block_identifier", None)
             state = kwargs.pop("state_override", None)
             call_kwargs = {"block_identifier": block_id, "state_override": state}
-            return self.web3.eth.call(txn.dict(), **call_kwargs)  # type: ignore
+            tx_params = cast(TxParams, txn.dict())
+            return self.web3.eth.call(tx_params, **call_kwargs)
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:
@@ -135,8 +136,17 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         receipt = self.get_receipt(
             txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
         )
-        if txn.gas_limit is not None and receipt.ran_out_of_gas:
-            raise OutOfGasError()
+
+        if receipt.failed:
+            txn_dict = receipt.transaction.dict()
+            txn_dict["nonce"] += 1
+            txn_params = cast(TxParams, txn_dict)
+
+            # Replay txn to get revert reason
+            try:
+                self.web3.eth.call(txn_params)
+            except (ValidationError, TransactionFailed) as err:
+                raise self.get_virtual_machine_error(err, sender=txn.sender) from err
 
         self.chain_manager.account_history.append(receipt)
         return receipt
