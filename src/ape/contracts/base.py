@@ -903,7 +903,6 @@ class ContractContainer(ManagerAccessMixin):
             txn = self.provider.prepare_transaction(txn)
             receipt = self.provider.send_transaction(txn)
 
-        self.chain_manager.account_history.append(receipt)
         address = receipt.contract_address
         if not address:
             raise ContractError(f"'{receipt.txn_hash}' did not create a contract.")
