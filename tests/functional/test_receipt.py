@@ -1,7 +1,7 @@
 import pytest
 
 from ape.api import ReceiptAPI
-from ape.exceptions import APINotImplementedError, OutOfGasError
+from ape.exceptions import APINotImplementedError, ContractLogicError, OutOfGasError
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
@@ -123,7 +123,14 @@ def test_get_failed_receipt(owner, vyper_contract_instance, eth_tester_provider)
     transaction = vyper_contract_instance.setNumber.as_transaction(
         5, sender=owner, gas_limit=100000
     )
-    receipt = owner.call(transaction)
+
+    # Publish failing txn
+    try:
+        owner.call(transaction)
+    except ContractLogicError:
+        pass
+
+    receipt = eth_tester_provider.get_receipt(transaction.txn_hash.hex())
     assert receipt.failed
 
 
