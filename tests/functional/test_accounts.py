@@ -4,13 +4,7 @@ from eth_account.messages import encode_defunct
 
 import ape
 from ape import convert
-from ape.exceptions import (
-    AccountsError,
-    NetworkError,
-    ProjectError,
-    SignatureError,
-    TransactionError,
-)
+from ape.exceptions import AccountsError, NetworkError, ProjectError, SignatureError
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
