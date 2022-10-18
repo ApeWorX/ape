@@ -441,6 +441,7 @@ class AccountHistory(BaseManager):
         if not receipt:
             # TODO: Replace with query manager once supports receipts
             #  instead of transactions.
+            # TODO: Add timeout = 0 once in API method to not wait for txns
             receipt = self.provider.get_receipt(transaction_hash)
             self.append(receipt)
 

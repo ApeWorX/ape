@@ -173,6 +173,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         txn = contract(*args, **kwargs)
         txn.sender = self.address
         receipt = self.call(txn)
+        self.chain_manager.account_history.append(receipt)
 
         address = receipt.contract_address
         if not address:

@@ -10,6 +10,7 @@ import yaml
 from click.testing import CliRunner
 
 import ape
+from ape.exceptions import UnknownSnapshotError
 from ape.managers.config import CONFIG_FILE_NAME
 
 # NOTE: Ensure that we don't use local paths for these
@@ -148,13 +149,17 @@ def eth_tester_provider(networks_connected_to_tester):
     yield networks_connected_to_tester.provider
 
 
-@pytest.fixture
-def isolation(chain):
+@pytest.fixture(autouse=True)
+def isolation(chain, eth_tester_provider):
     snapshot = chain.snapshot()
     yield
 
     if snapshot:
-        chain.restore(snapshot)
+        try:
+            chain.restore(snapshot)
+        except UnknownSnapshotError:
+            # Assume snapshot removed for testing reasons
+            pass
 
 
 @pytest.fixture(scope="session")

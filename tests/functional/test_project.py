@@ -235,11 +235,17 @@ def test_track_deployment_from_previously_deployed_contract(
 
 def test_track_deployment_from_unknown_contract_missing_txn_hash(
     clean_deployments,
-    project_manager,
-    vyper_contract_instance,
     dummy_live_network,
+    owner,
+    vyper_contract_container,
+    chain,
+    project_manager,
 ):
-    contract = Contract(vyper_contract_instance.address)
+    snapshot = chain.snapshot()
+    contract = owner.deploy(vyper_contract_container, required_confirmations=0)
+    chain.restore(snapshot)
+
+    contract = Contract(contract.address)
     with pytest.raises(
         ProjectError,
         match=f"Contract '{contract.contract_type.name}' transaction receipt is unknown.",

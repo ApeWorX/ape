@@ -264,10 +264,8 @@ def ds_note():
 
 @pytest.fixture
 def chain_that_mined_5(chain):
-    snapshot_id = chain.snapshot()
     chain.mine(5)
-    yield chain
-    chain.restore(snapshot_id)
+    return chain
 
 
 class PollDaemonThread(threading.Thread):
