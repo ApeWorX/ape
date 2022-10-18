@@ -6,13 +6,13 @@ import ape
 from ape import convert
 from ape.exceptions import (
     AccountsError,
-    ContractLogicError,
     NetworkError,
     ProjectError,
     SignatureError,
     TransactionError,
 )
 from ape.types.signatures import recover_signer
+from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
 
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
@@ -172,42 +172,17 @@ def test_deploy_proxy(
     assert implementation.contract_type == vyper_contract_instance.contract_type
 
 
-def test_contract_calls(owner, contract_instance):
-    contract_instance.setNumber(2, sender=owner)
-    assert contract_instance.myNumber() == 2
-
-
-def test_contract_revert(sender, contract_instance):
-    # 'sender' is not the owner so it will revert (with a message)
-    with pytest.raises(ContractLogicError) as err:
-        contract_instance.setNumber(5, sender=sender)
-
-    assert str(err.value) == "!authorized"
-
-
-def test_contract_revert_no_message(owner, contract_instance):
-    # The Contract raises empty revert when setting number to 5.
-    with pytest.raises(ContractLogicError) as err:
-        contract_instance.setNumber(5, sender=owner)
-
-    assert str(err.value) == "Transaction failed."  # Default message
-
-
 def test_send_transaction_with_bad_nonce(sender, receiver):
     # Bump the nonce so we can set one that is too low.
     sender.transfer(receiver, "1 gwei", type=0)
 
-    with pytest.raises(AccountsError) as err:
+    with pytest.raises(AccountsError, match="Invalid nonce, will not publish."):
         sender.transfer(receiver, "1 gwei", type=0, nonce=0)
-
-    assert str(err.value) == "Invalid nonce, will not publish."
 
 
 def test_send_transaction_without_enough_funds(sender, receiver):
-    with pytest.raises(TransactionError) as err:
+    with pytest.raises(TransactionError, match="Sender does not have enough balance to cover"):
         sender.transfer(receiver, "10000000000000 ETH")
-
-    assert "Sender does not have enough balance to cover" in str(err.value)
 
 
 def test_send_transaction_sets_defaults(sender, receiver):
@@ -258,25 +233,21 @@ def test_autosign_transactions(runner, keyfile_account, receiver):
 
 def test_impersonate_not_implemented(accounts):
     test_address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-    with pytest.raises(IndexError) as err:
-        _ = accounts[test_address]
-
     expected_err_msg = (
         "Your provider does not support impersonating accounts:\n"
         f"No account with address '{test_address}'."
     )
-    assert expected_err_msg in str(err.value)
+    with pytest.raises(IndexError, match=expected_err_msg):
+        _ = accounts[test_address]
 
 
 def test_contract_as_sender_non_fork_network(contract_instance):
-    with pytest.raises(IndexError) as err:
-        contract_instance.setNumber(5, sender=contract_instance)
-
     expected_err_msg = (
         "Your provider does not support impersonating accounts:\n"
         f"No account with address '{contract_instance}'."
     )
-    assert expected_err_msg in str(err.value)
+    with pytest.raises(IndexError, match=expected_err_msg):
+        contract_instance.setNumber(5, sender=contract_instance)
 
 
 def test_unlock_with_passphrase_and_sign_message(runner, keyfile_account):
@@ -321,20 +292,17 @@ def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiv
 
 
 def test_custom_num_of_test_accts_config(test_accounts, temp_config):
-    from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
-
-    CUSTOM_NUMBER_OF_TEST_ACCOUNTS = 20
-
+    custom_number_of_test_accounts = 20
     test_config = {
         "test": {
-            "number_of_accounts": CUSTOM_NUMBER_OF_TEST_ACCOUNTS,
+            "number_of_accounts": custom_number_of_test_accounts,
         }
     }
 
     assert len(test_accounts) == DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 
     with temp_config(test_config):
-        assert len(test_accounts) == CUSTOM_NUMBER_OF_TEST_ACCOUNTS
+        assert len(test_accounts) == custom_number_of_test_accounts
 
 
 def test_test_accounts_repr(test_accounts):

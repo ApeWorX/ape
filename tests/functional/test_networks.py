@@ -1,7 +1,7 @@
 import pytest
 
 from ape.exceptions import NetworkError
-from ape_test.providers import CHAIN_ID
+from ape_test.provider import CHAIN_ID
 
 
 class NewChainID:

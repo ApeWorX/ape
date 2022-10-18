@@ -5,7 +5,7 @@ from eth_typing import HexStr
 
 from ape.exceptions import BlockNotFoundError, ProviderNotConnectedError, TransactionNotFoundError
 from ape.types import LogFilter
-from ape_test.providers import CHAIN_ID
+from ape_test.provider import CHAIN_ID
 
 
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))

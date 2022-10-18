@@ -6,7 +6,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.utils import DEFAULT_NUMBER_OF_TEST_ACCOUNTS, DEFAULT_TEST_MNEMONIC
 
 from .accounts import TestAccount, TestAccountContainer
-from .providers import LocalProvider
+from .provider import LocalProvider
 
 
 class Config(PluginConfig):
