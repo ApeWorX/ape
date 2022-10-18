@@ -216,9 +216,11 @@ def test_track_deployment_from_previously_deployed_contract(
 ):
     receipt = owner.deploy(vyper_contract_container, required_confirmations=0).receipt
     address = receipt.contract_address
-    contract = Contract(address)
+    contract = Contract(address, txn_hash=receipt.txn_hash)
     name = contract.contract_type.name
+
     project_manager.track_deployment(contract)
+
     path = base_deployments_path / f"{contract.contract_type.name}.json"
     expected_block_hash = eth_tester_provider.get_block(receipt.block_number).hash.hex()
     expected_uri = f"blockchain://{bip122_chain_id}/block/{expected_block_hash}"
