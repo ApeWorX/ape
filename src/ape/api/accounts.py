@@ -37,6 +37,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             "call",
             "transfer",
             "deploy",
+            "deploy_blueprint",
         ]
 
     @property
@@ -190,6 +191,40 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             self.provider.network.publish_contract(address)
 
         return instance
+
+    def deploy_blueprint(
+        self, contract: "ContractContainer", *args, publish: bool = False, **kwargs
+    ) -> "ContractInstance":
+        """
+        Create a smart contract blueprint on the blockchain. The smart contract must compile before
+        deploying and a provider must be active.
+
+        Args:
+            contract (:class:`~ape.contracts.ContractContainer`):
+              The type of contract to deploy.
+            publish (bool): Set to ``True`` to attempt explorer contract verification.
+              Defaults to ``False``.
+
+        Returns:
+            :class:`~ape.contracts.ContractInstance`: An instance of the deployed contract.
+        """
+
+        # create a copy of the instance
+        from copy import deepcopy
+
+        contract_copy = deepcopy(contract)
+
+        # change bytecode with blueprint prefix
+        blueprint_bytecode = b"\xFE\x71\x00" + HexBytes(
+            contract_copy.contract_type.deployment_bytecode.bytecode
+        )  # ERC5202
+        len_bytes = len(blueprint_bytecode).to_bytes(2, "big")
+        contract_copy.contract_type.deployment_bytecode.bytecode = HexBytes(
+            b"\x61" + len_bytes + b"\x3d\x81\x60\x0a\x3d\x39\xf3" + blueprint_bytecode
+        )
+        contract_copy.contract_type.name = f"{contract_copy.contract_type.name}Blueprint"
+
+        return self.deploy(contract_copy, *args, publish, **kwargs)
 
     def check_signature(
         self,
