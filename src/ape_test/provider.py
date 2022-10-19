@@ -1,6 +1,7 @@
 import re
 from typing import Optional, cast
 
+from eth.exceptions import HeaderNotFound
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
@@ -14,6 +15,7 @@ from ape.exceptions import (
     ContractLogicError,
     ProviderNotConnectedError,
     TransactionError,
+    UnknownSnapshotError,
     VirtualMachineError,
 )
 from ape.types import SnapshotID
@@ -156,7 +158,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         if snapshot_id:
             current_hash = self.get_block("latest").hash
             if current_hash != snapshot_id:
-                return self.evm_backend.revert_to_snapshot(snapshot_id)
+                try:
+                    return self.evm_backend.revert_to_snapshot(snapshot_id)
+                except HeaderNotFound:
+                    raise UnknownSnapshotError(snapshot_id)
 
     def set_timestamp(self, new_timestamp: int):
         self.evm_backend.time_travel(new_timestamp)

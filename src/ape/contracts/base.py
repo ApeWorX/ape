@@ -12,7 +12,7 @@ from hexbytes import HexBytes
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery, extract_fields
-from ape.exceptions import ArgumentsLengthError, ChainError, ContractError
+from ape.exceptions import ArgumentsLengthError, ChainError, ContractError, TransactionNotFoundError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -610,7 +610,12 @@ class ContractInstance(BaseAddress):
         """
 
         if not self._cached_receipt and self.txn_hash:
-            receipt = self.chain_manager.get_receipt(self.txn_hash)
+
+            try:
+                receipt = self.chain_manager.get_receipt(self.txn_hash)
+            except TransactionNotFoundError:
+                return None
+
             self._cached_receipt = receipt
             return receipt
 
