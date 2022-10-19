@@ -64,11 +64,22 @@ def test_sign_message_with_prompts(runner, keyfile_account):
         assert signature is None
 
 
-def test_transfer(sender, receiver):
-    initial_balance = receiver.balance
-    sender.transfer(receiver, "1 gwei")
-    expected = initial_balance + convert("1 gwei", int)
-    assert receiver.balance == expected
+def test_transfer(sender, receiver, eth_tester_provider):
+    initial_receiver_balance = receiver.balance
+    initial_sender_balance = sender.balance
+    value_str = "2 gwei"
+    value_int = convert(value_str, int)
+
+    receipt = sender.transfer(receiver, value_str)
+
+    # Ensure each account balance was affected accordingly
+    expected_receiver_balance = initial_receiver_balance + value_int
+    expected_sender_loss = receipt.total_fees_paid + value_int
+    expected_sender_balance = initial_sender_balance - expected_sender_loss
+    assert receiver.balance == expected_receiver_balance
+    assert (
+        sender.balance == expected_sender_balance
+    ), f"difference: {abs(sender.balance - expected_sender_balance)}"
 
 
 def test_transfer_without_value(sender, receiver):
@@ -81,13 +92,44 @@ def test_transfer_without_value_send_everything_false(sender, receiver):
         sender.transfer(receiver, send_everything=False)
 
 
-def test_transfer_without_value_send_everything_true(sender, receiver, isolation):
+def test_transfer_without_value_send_everything_true(sender, receiver):
+    initial_receiver_balance = receiver.balance
+    initial_sender_balance = sender.balance
+
     # Clear balance of sender
-    sender.transfer(receiver, send_everything=True)
+    receipt = sender.transfer(receiver, send_everything=True)
+
+    value_given = receipt.value
+    total_spent = value_given + receipt.total_fees_paid
+    assert sender.balance < 3000000000000  # Part of gas not spent remains
+    assert sender.balance == initial_sender_balance - total_spent
+    assert receiver.balance == initial_receiver_balance + value_given
 
     expected_err_regex = r"Sender does not have enough to cover transaction value and gas: \d*"
     with pytest.raises(AccountsError, match=expected_err_regex):
         sender.transfer(receiver, send_everything=True)
+
+
+def test_transfer_without_value_send_everything_true_with_gas_specified(
+    sender, receiver, eth_tester_provider
+):
+    initial_receiver_balance = receiver.balance
+    initial_sender_balance = sender.balance
+
+    # The gas selected here is very high compared to what actually gets used.
+    gas = 25000000
+
+    # Clear balance of sender
+    receipt = sender.transfer(receiver, send_everything=True, gas=gas)
+
+    value_given = receipt.value
+    total_spent = value_given + receipt.total_fees_paid
+    assert sender.balance == initial_sender_balance - total_spent
+    assert receiver.balance == initial_receiver_balance + value_given
+
+    # The sender is able to transfer again because they have so much left over
+    # from safely using such a high gas before.
+    sender.transfer(receiver, send_everything=True)
 
 
 def test_transfer_with_value_send_everything_true(sender, receiver, isolation):

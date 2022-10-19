@@ -19,6 +19,7 @@ from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
+from web3.eth import TxParams
 from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
@@ -477,14 +478,18 @@ class ProviderAPI(BaseInterfaceModel):
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
         txn.chain_id = self.network.chain_id
 
-        from ape_ethereum.transactions import TransactionType
+        from ape_ethereum.transactions import StaticFeeTransaction, TransactionType
 
         txn_type = TransactionType(txn.type)
-        if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
-            txn.gas_price = self.gas_price  # type: ignore
+        if (
+            txn_type == TransactionType.STATIC
+            and isinstance(txn, StaticFeeTransaction)
+            and txn.gas_price is None
+        ):
+            txn.gas_price = self.gas_price
         elif txn_type == TransactionType.DYNAMIC:
-            if txn.max_priority_fee is None:  # type: ignore
-                txn.max_priority_fee = self.priority_fee  # type: ignore
+            if txn.max_priority_fee is None:
+                txn.max_priority_fee = self.priority_fee
 
             if txn.max_fee is None:
                 txn.max_fee = self.base_fee + txn.max_priority_fee
@@ -686,7 +691,7 @@ class Web3Provider(ProviderAPI, ABC):
         if isinstance(self.network.gas_limit, int):
             return self.network.gas_limit
 
-        if self.network.gas_limit == "max":
+        elif self.network.gas_limit == "max":
             block = self.web3.eth.get_block("latest")
             return block["gasLimit"]
         # else: Handle "auto" gas limit via estimation
@@ -694,7 +699,8 @@ class Web3Provider(ProviderAPI, ABC):
         txn_dict = txn.dict()
         try:
             block_id = kwargs.pop("block_identifier", None)
-            return self.web3.eth.estimate_gas(txn_dict, block_identifier=block_id)  # type: ignore
+            txn_params = cast(TxParams, txn_dict)
+            return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
         except ValueError as err:
             tx_error = self.get_virtual_machine_error(err)
 

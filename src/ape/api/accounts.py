@@ -86,24 +86,40 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`): An invoke-transaction.
             send_everything (bool): ``True`` will send the difference from balance and fee.
+              Defaults to ``False``.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
         """
 
         txn = self.prepare_transaction(txn)
+        max_fee = txn.max_fee
+        gas_limit = txn.gas_limit
 
+        # The conditions below should never reached but are here for mypy's sake.
+        # The `max_fee` was either set manaully or from `prepare_transaction()`.
+        # The `gas_limit` was either set manually or from `prepare_transaction()`.
+        if max_fee is None:
+            raise TransactionError(
+                message="`max_fee` failed to get set in transaction preparation."
+            )
+        elif gas_limit is None:
+            raise TransactionError(
+                message="`gas_limit` failed to get set in transaction preparation."
+            )
+
+        total_fees = max_fee * gas_limit
+
+        # Send the whole balance.
         if send_everything:
-            if txn.max_fee is None:
-                raise TransactionError(message="Max fee must not be None.")
-            if not txn.gas_limit or txn.gas_limit is None:
-                raise TransactionError(message="The txn.gas_limit is not set.")
-            txn.value = self.balance - (txn.max_fee * txn.gas_limit)
-            if txn.value <= 0:
+            amount_to_send = self.balance - total_fees
+            if amount_to_send <= 0:
                 raise AccountsError(
                     f"Sender does not have enough to cover transaction value and gas: "
-                    f"{txn.max_fee * txn.gas_limit}"
+                    f"{total_fees}"
                 )
+            else:
+                txn.value = amount_to_send
 
         txn.signature = self.sign_transaction(txn)
         if not txn.signature:
