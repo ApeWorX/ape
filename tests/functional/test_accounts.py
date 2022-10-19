@@ -90,8 +90,9 @@ def test_transfer_without_value_send_everything_true(sender, receiver):
     initial_receiver_balance = receiver.balance
     initial_sender_balance = sender.balance
 
-    # Clear balance of sender
-    receipt = sender.transfer(receiver, send_everything=True)
+    # Clear balance of sender.
+    # Use small gas so for sure runs out of money.
+    receipt = sender.transfer(receiver, send_everything=True, gas=21000)
 
     value_given = receipt.value
     total_spent = value_given + receipt.total_fees_paid
@@ -123,7 +124,8 @@ def test_transfer_without_value_send_everything_true_with_gas_specified(
 
     # The sender is able to transfer again because they have so much left over
     # from safely using such a high gas before.
-    sender.transfer(receiver, send_everything=True)
+    # Use smaller (more expected) amount of gas this time.
+    sender.transfer(receiver, send_everything=True, gas=21000)
 
 
 def test_transfer_with_value_send_everything_true(sender, receiver, isolation):
