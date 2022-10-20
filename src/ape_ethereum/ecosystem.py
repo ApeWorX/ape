@@ -469,7 +469,19 @@ class Ethereum(EcosystemAPI):
         if "max_fee_per_gas" in kwargs:
             kwargs["max_fee"] = kwargs.pop("max_fee_per_gas")
 
-        return txn_class(**kwargs)
+        do_estimate_gas = False
+        if kwargs.get("gas") == "auto":
+            kwargs.pop("gas")
+            do_estimate_gas = True
+        elif kwargs.get("gas") == "max":
+            kwargs["gas"] = self.provider.max_gas
+
+        txn = txn_class(**kwargs)
+
+        if do_estimate_gas:
+            txn.gas_limit = self.provider.estimate_gas_cost(txn)
+
+        return txn
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         abi_inputs = {

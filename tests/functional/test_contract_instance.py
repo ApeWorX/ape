@@ -364,3 +364,17 @@ def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
     )
     with pytest.raises(ContractError, match=expected_err):
         ContractInstance.from_receipt(receipt, contract_instance.contract_type)
+
+
+def test_transact_specify_auto_gas(vyper_contract_instance, owner):
+    """
+    Tests that we can specify "auto" gas even though "max" is the default for
+    local networks.
+    """
+    receipt = vyper_contract_instance.setNumber(123, sender=owner, gas="auto")
+    assert not receipt.failed
+
+
+def test_transact_specify_max_gas(vyper_contract_instance, owner):
+    receipt = vyper_contract_instance.setNumber(123, sender=owner, gas="max")
+    assert not receipt.failed
