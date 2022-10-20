@@ -79,6 +79,8 @@ class NetworkConfig(PluginConfig):
     estimate gas limits based on the transaction. If set to ``"max"`` the gas limit
     will be set to the maximum block gas limit for the network. Otherwise an ``int``
     can be used to specify an explicit gas limit amount (either base 10 or 16).
+
+    The default for local networks is ``"max"``, otherwise ``"auto"``.
     """
 
     class Config:
@@ -108,6 +110,7 @@ def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> Ne
         required_confirmations=0,
         default_provider=default_provider,
         transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+        gas_limit="max",
         **kwargs,
     )
 
@@ -466,7 +469,19 @@ class Ethereum(EcosystemAPI):
         if "max_fee_per_gas" in kwargs:
             kwargs["max_fee"] = kwargs.pop("max_fee_per_gas")
 
-        return txn_class(**kwargs)
+        do_estimate_gas = False
+        if kwargs.get("gas") == "auto":
+            kwargs.pop("gas")
+            do_estimate_gas = True
+        elif kwargs.get("gas") == "max":
+            kwargs["gas"] = self.provider.max_gas
+
+        txn = txn_class(**kwargs)
+
+        if do_estimate_gas:
+            txn.gas_limit = self.provider.estimate_gas_cost(txn)
+
+        return txn
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         abi_inputs = {

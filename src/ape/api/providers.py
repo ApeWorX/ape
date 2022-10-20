@@ -32,6 +32,7 @@ from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
+    ConfigError,
     ContractLogicError,
     ProviderError,
     ProviderNotConnectedError,
@@ -237,6 +238,14 @@ class ProviderAPI(BaseInterfaceModel):
         The price for what it costs to transact
         (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
+
+    @property
+    def max_gas(self) -> int:
+        """
+        The max gas limit value you can use.
+        """
+        # TODO: Make abstract
+        return 0
 
     @property
     def config(self) -> PluginConfig:
@@ -496,7 +505,18 @@ class ProviderAPI(BaseInterfaceModel):
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.gas_limit is None:
-            txn.gas_limit = self.estimate_gas_cost(txn)
+            if isinstance(self.network.gas_limit, int):
+                txn.gas_limit = self.network.gas_limit
+
+            elif self.network.gas_limit == "max":
+                txn.gas_limit = self.max_gas
+
+            elif self.network.gas_limit in ("auto", None):
+                txn.gas_limit = self.estimate_gas_cost(txn)
+
+            else:
+                raise ConfigError(f"Unknown gas limit value '{self.network.gas_limit}'")
+
         # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.required_confirmations is None:
@@ -651,6 +671,11 @@ class Web3Provider(ProviderAPI, ABC):
 
         return run_until_complete(self._web3.is_connected())
 
+    @property
+    def max_gas(self) -> int:
+        block = self.web3.eth.get_block("latest")
+        return block["gasLimit"]
+
     @cached_property
     def supports_tracing(self) -> bool:
         try:
@@ -688,13 +713,6 @@ class Web3Provider(ProviderAPI, ABC):
             will be returned. If the gas limit configuration is "max" this will
             return the block maximum gas limit.
         """
-        if isinstance(self.network.gas_limit, int):
-            return self.network.gas_limit
-
-        elif self.network.gas_limit == "max":
-            block = self.web3.eth.get_block("latest")
-            return block["gasLimit"]
-        # else: Handle "auto" gas limit via estimation
 
         txn_dict = txn.dict()
         try:

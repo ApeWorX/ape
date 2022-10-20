@@ -4,13 +4,7 @@ from eth_account.messages import encode_defunct
 
 import ape
 from ape import convert
-from ape.exceptions import (
-    AccountsError,
-    NetworkError,
-    ProjectError,
-    SignatureError,
-    TransactionError,
-)
+from ape.exceptions import AccountsError, NetworkError, ProjectError, SignatureError
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
@@ -92,12 +86,13 @@ def test_transfer_without_value_send_everything_false(sender, receiver):
         sender.transfer(receiver, send_everything=False)
 
 
-def test_transfer_without_value_send_everything_true(sender, receiver):
+def test_transfer_without_value_send_everything_true_with_low_gas(sender, receiver):
     initial_receiver_balance = receiver.balance
     initial_sender_balance = sender.balance
 
-    # Clear balance of sender
-    receipt = sender.transfer(receiver, send_everything=True)
+    # Clear balance of sender.
+    # Use small gas so for sure runs out of money.
+    receipt = sender.transfer(receiver, send_everything=True, gas=21000)
 
     value_given = receipt.value
     total_spent = value_given + receipt.total_fees_paid
@@ -110,7 +105,7 @@ def test_transfer_without_value_send_everything_true(sender, receiver):
         sender.transfer(receiver, send_everything=True)
 
 
-def test_transfer_without_value_send_everything_true_with_gas_specified(
+def test_transfer_without_value_send_everything_true_with_high_gas(
     sender, receiver, eth_tester_provider
 ):
     initial_receiver_balance = receiver.balance
@@ -129,7 +124,8 @@ def test_transfer_without_value_send_everything_true_with_gas_specified(
 
     # The sender is able to transfer again because they have so much left over
     # from safely using such a high gas before.
-    sender.transfer(receiver, send_everything=True)
+    # Use smaller (more expected) amount of gas this time.
+    sender.transfer(receiver, send_everything=True, gas=21000)
 
 
 def test_transfer_with_value_send_everything_true(sender, receiver, isolation):
@@ -223,7 +219,7 @@ def test_send_transaction_with_bad_nonce(sender, receiver):
 
 
 def test_send_transaction_without_enough_funds(sender, receiver):
-    with pytest.raises(TransactionError, match="Sender does not have enough balance to cover"):
+    with pytest.raises(AccountsError, match="Transfer value meets or exceeds account balance"):
         sender.transfer(receiver, "10000000000000 ETH")
 
 
