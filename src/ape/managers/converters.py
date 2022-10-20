@@ -9,7 +9,7 @@ from hexbytes import HexBytes
 from ape.api import ConverterAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ConversionError
-from ape.types import AddressType, GasLimit
+from ape.types import AddressType
 from ape.utils import cached_property
 
 from .base import BaseManager
@@ -248,10 +248,7 @@ class ConversionManager(BaseManager):
             any: The same given value but with the new given type.
         """
 
-        if type == GasLimit:
-            type = int
-
-        elif type not in self._converters:
+        if type not in self._converters:
             options = ", ".join([t.__name__ for t in self._converters])
             raise ConversionError(f"Type '{type}' must be one of [{options}].")
 
