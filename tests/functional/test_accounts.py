@@ -86,7 +86,7 @@ def test_transfer_without_value_send_everything_false(sender, receiver):
         sender.transfer(receiver, send_everything=False)
 
 
-def test_transfer_without_value_send_everything_true(sender, receiver):
+def test_transfer_without_value_send_everything_true_with_low_gas(sender, receiver):
     initial_receiver_balance = receiver.balance
     initial_sender_balance = sender.balance
 
@@ -105,7 +105,7 @@ def test_transfer_without_value_send_everything_true(sender, receiver):
         sender.transfer(receiver, send_everything=True)
 
 
-def test_transfer_without_value_send_everything_true_with_gas_specified(
+def test_transfer_without_value_send_everything_true_with_high_gas(
     sender, receiver, eth_tester_provider
 ):
     initial_receiver_balance = receiver.balance
