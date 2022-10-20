@@ -504,18 +504,15 @@ class ProviderAPI(BaseInterfaceModel):
                 txn.max_fee = self.base_fee + txn.max_priority_fee
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
-        if txn.gas_limit is None:
-            if isinstance(self.network.gas_limit, int):
-                txn.gas_limit = self.network.gas_limit
+        gas_limit = txn.gas_limit or self.network.gas_limit
+        if isinstance(gas_limit, int):
+            txn.gas_limit = self.network.gas_limit
 
-            elif self.network.gas_limit == "max":
-                txn.gas_limit = self.max_gas
+        elif gas_limit == "max":
+            txn.gas_limit = self.max_gas
 
-            elif self.network.gas_limit in ("auto", None):
-                txn.gas_limit = self.estimate_gas_cost(txn)
-
-            else:
-                raise ConfigError(f"Unknown gas limit value '{self.network.gas_limit}'")
+        elif gas_limit in ("auto", None):
+            txn.gas_limit = self.estimate_gas_cost(txn)
 
         # else: Assume user specified the correct amount or txn will fail and waste gas
 
