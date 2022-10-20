@@ -32,7 +32,6 @@ from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
-    ConfigError,
     ContractLogicError,
     ProviderError,
     ProviderNotConnectedError,
