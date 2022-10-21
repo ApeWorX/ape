@@ -53,9 +53,10 @@ def test_revert_no_message(owner, contract_instance):
         contract_instance.setNumber(5, sender=owner)
 
 
-def test_revert_specify_gas(sender, contract_instance):
+@pytest.mark.parametrize("gas", ("200000", 200000, "max", "auto", "0x235426"))
+def test_revert_specify_gas(sender, contract_instance, gas):
     with pytest.raises(ContractLogicError, match="!authorized"):
-        contract_instance.setNumber(5, sender=sender, gas="200000")
+        contract_instance.setNumber(5, sender=sender, gas=gas)
 
 
 def test_call_using_block_identifier(

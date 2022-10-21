@@ -120,9 +120,7 @@ def test_decode_logs_unspecified_abi_gets_all_logs(owner, contract_instance):
 
 def test_get_failed_receipt(owner, vyper_contract_instance, eth_tester_provider):
     # Setting to '5' always fails.
-    transaction = vyper_contract_instance.setNumber.as_transaction(
-        5, sender=owner, gas_limit=100000
-    )
+    transaction = vyper_contract_instance.setNumber.as_transaction(5, sender=owner, gas=100000)
 
     # Publish failing txn
     try:

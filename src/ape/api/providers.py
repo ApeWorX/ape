@@ -14,7 +14,7 @@ from subprocess import PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix
+from eth_utils import add_0x_prefix, is_hex
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
@@ -32,7 +32,6 @@ from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
-    ConfigError,
     ContractLogicError,
     ProviderError,
     ProviderNotConnectedError,
@@ -504,19 +503,19 @@ class ProviderAPI(BaseInterfaceModel):
                 txn.max_fee = self.base_fee + txn.max_priority_fee
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
-        if txn.gas_limit is None:
-            if isinstance(self.network.gas_limit, int):
-                txn.gas_limit = self.network.gas_limit
+        gas_limit = txn.gas_limit or self.network.gas_limit
+        if isinstance(gas_limit, str) and gas_limit.isnumeric():
+            txn.gas_limit = int(gas_limit)
+        elif isinstance(gas_limit, str) and is_hex(gas_limit):
+            txn.gas_limit = int(gas_limit, 16)
+        elif gas_limit == "max":
+            txn.gas_limit = self.max_gas
+        elif gas_limit in ("auto", None):
+            txn.gas_limit = self.estimate_gas_cost(txn)
+        else:
+            txn.gas_limit = gas_limit
 
-            elif self.network.gas_limit == "max":
-                txn.gas_limit = self.max_gas
-
-            elif self.network.gas_limit in ("auto", None):
-                txn.gas_limit = self.estimate_gas_cost(txn)
-
-            else:
-                raise ConfigError(f"Unknown gas limit value '{self.network.gas_limit}'")
-
+        assert txn.gas_limit not in ("auto", "max")
         # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.required_confirmations is None:
