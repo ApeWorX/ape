@@ -160,7 +160,7 @@ class ConfigManager(BaseInterfaceModel):
             raise ConfigError("'dependencies' config item must be a list of dicts.")
 
         decode = self.dependency_manager.decode_dependency
-        configs["dependencies"] = [decode(dep) for dep in dependencies]  # type: ignore
+        configs["dependencies"] = [decode(dep) for dep in dependencies]
         self.dependencies = configs["dependencies"]
 
         # NOTE: It is okay for this directory not to exist at this point.

@@ -9,7 +9,7 @@ from types import ModuleType
 from typing import Any, Dict
 
 import click
-import IPython
+import IPython  # type: ignore
 
 from ape import config
 from ape import project as default_project

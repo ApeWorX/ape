@@ -90,7 +90,7 @@ class NetworkConfig(PluginConfig):
     def validate_gas_limit(cls, value: GasLimit) -> GasLimit:
         if isinstance(value, str):
             if value.lower() in ("auto", "max"):
-                return value.lower()  # type: ignore
+                return value.lower()
 
             # Value could be an integer string
             if value.isdigit():
@@ -117,7 +117,7 @@ def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> Ne
 
 def _create_config(required_confirmations: int = 2, **kwargs) -> NetworkConfig:
     # Put in own method to isolate `type: ignore` comments
-    return NetworkConfig(required_confirmations=required_confirmations, **kwargs)  # type: ignore
+    return NetworkConfig(required_confirmations=required_confirmations, **kwargs)
 
 
 class EthereumConfig(PluginConfig):
@@ -275,7 +275,7 @@ class Ethereum(EcosystemAPI):
         elif data.get("input", b"") and isinstance(data.get("input", b""), str):
             data["input"] = bytes(HexBytes(data.get("input", b"")))
 
-        receipt = Receipt(  # type: ignore
+        receipt = Receipt(
             block_number=data.get("block_number") or data.get("blockNumber"),
             contract_address=data.get("contractAddress"),
             gas_limit=data.get("gas") or data.get("gasLimit"),
@@ -317,7 +317,7 @@ class Ethereum(EcosystemAPI):
         return HexBytes(b"")
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
-        output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
+        output_types = [o.canonical_type for o in abi.outputs]
 
         try:
             vm_return_values = decode(output_types, raw_data)
@@ -504,4 +504,4 @@ class Ethereum(EcosystemAPI):
                 log_index=log["logIndex"],
                 transaction_hash=log["transactionHash"],
                 transaction_index=log["transactionIndex"],
-            )  # type: ignore
+            )

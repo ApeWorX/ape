@@ -215,7 +215,7 @@ class CallTraceParser(ManagerAccessMixin):
         return parent
 
     def decode_calldata(self, method: MethodABI, raw_data: bytes) -> Dict:
-        input_types = [i.canonical_type for i in method.inputs]  # type: ignore
+        input_types = [i.canonical_type for i in method.inputs]
 
         try:
             raw_input_values = decode(input_types, raw_data)
