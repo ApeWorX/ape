@@ -1,6 +1,6 @@
 import re
 from enum import IntEnum
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
@@ -413,7 +413,7 @@ class Ethereum(EcosystemAPI):
             :class:`~ape.api.transactions.TransactionAPI`
         """
 
-        transaction_types = {
+        transaction_types: Dict[TransactionType, Type[TransactionAPI]] = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
             TransactionType.ACCESS_LIST: AccessListTransaction,

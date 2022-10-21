@@ -9,13 +9,13 @@ from types import ModuleType
 from typing import Any, Dict
 
 import click
-import IPython  # type: ignore
+import IPython
 
 from ape import config
 from ape import project as default_project
 from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 from ape.utils.misc import _python_version
-from ape.version import version as ape_version  # type: ignore
+from ape.version import version as ape_version
 
 CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
 
