@@ -252,7 +252,7 @@ class ConversionManager(BaseManager):
             options = ", ".join([t.__name__ for t in self._converters])
             raise ConversionError(f"Type '{type}' must be one of [{options}].")
 
-        if self.is_type(value, type) and not isinstance(value, (list, tuple)):
+        elif self.is_type(value, type) and not isinstance(value, (list, tuple)):
             # NOTE: Always process lists and tuples
             return value
 
