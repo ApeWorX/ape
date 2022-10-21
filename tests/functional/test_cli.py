@@ -103,7 +103,7 @@ def test_get_user_selected_account_specify_type(runner, one_keyfile_account):
 
 def test_get_user_selected_account_unknown_type(runner, keyfile_account):
     with pytest.raises(AccountsError) as err:
-        get_user_selected_account(account_type=str)  # type: ignore
+        get_user_selected_account(account_type=str)
 
     assert "Cannot return accounts with type '<class 'str'>'" in str(err.value)
 

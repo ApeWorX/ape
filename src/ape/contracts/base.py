@@ -124,7 +124,7 @@ class ContractCallHandler(ManagerAccessMixin):
         args = self._convert_tuple(args)
         selected_abi = _select_method_abi(self.abis, args)
 
-        return ContractCall(  # type: ignore
+        return ContractCall(
             abi=selected_abi,
             address=self.contract.address,
         )(*args, **kwargs)
@@ -293,7 +293,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
         args = self._convert_tuple(args)
         selected_abi = _select_method_abi(self.abis, args)
 
-        return ContractTransaction(  # type: ignore
+        return ContractTransaction(
             abi=selected_abi,
             address=self.contract.address,
         )
@@ -878,9 +878,9 @@ class ContractContainer(ManagerAccessMixin):
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
-        constructor = ContractConstructor(  # type: ignore
+        constructor = ContractConstructor(
             abi=self.contract_type.constructor,
-            deployment_bytecode=self.contract_type.get_deployment_bytecode() or b"",  # type: ignore
+            deployment_bytecode=self.contract_type.get_deployment_bytecode() or HexBytes(b""),
         )
 
         args_length = len(args)
@@ -987,4 +987,4 @@ class ContractNamespace:
                 subcontracts = [c for c in self.contracts if _get_name(c).startswith(subname)]
                 return ContractNamespace(subname, subcontracts)
 
-        return self.__getattribute__(item)  # type: ignore
+        return self.__getattribute__(item)

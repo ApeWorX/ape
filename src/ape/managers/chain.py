@@ -355,7 +355,7 @@ class AccountHistory(BaseManager):
 
             # NOTE: Cache the receipt by its sender and not by the address sent to the explorer API
             #  because explorers return various receipts when given contract addresses.
-            sender: AddressType = receipt.sender  # type: ignore
+            sender: AddressType = receipt.sender
             if receipt.txn_hash not in [r.txn_hash for r in self._address_list_map.get(sender, [])]:
                 self.append(receipt)
 
@@ -1091,7 +1091,7 @@ class ChainManager(BaseManager):
 
     def set_balance(self, account: Union[BaseAddress, AddressType], amount: Union[int, str]):
         if isinstance(account, BaseAddress):
-            account = account.address  # type: ignore
+            account = account.address
 
         if isinstance(amount, str) and len(str(amount).split(" ")) > 1:
             # Support values like "1000 ETH".
