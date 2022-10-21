@@ -103,7 +103,7 @@ class CompilerManager(BaseManager):
                 if contract_type.name in contract_types_dict:
                     raise CompilerError(
                         "ContractType collision across compiler plugins "
-                        f"with contract name: {contract_type.name}"
+                        f"with contract: {contract_type.source_id}"
                     )
 
                 contract_types_dict[contract_type.name] = contract_type
