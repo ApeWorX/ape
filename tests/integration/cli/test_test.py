@@ -44,3 +44,13 @@ def test_fixture_docs(ape_test_runner, project):
         # The doc str of the fixture shows in the CLI output
         doc_str = fixture.__doc__.strip()
         assert doc_str in result.output
+
+
+@skip_projects_except(["test"])
+def test_gas_flag(ape_test_runner, project):
+    # NOTE: See `ape-hardhat` for better gas reporting tests.
+    result = ape_test_runner.invoke(["--gas"])
+    assert (
+        "Provider 'test' does not support transaction "
+        "tracing and is unable to display a gas profile"
+    ) in result.output

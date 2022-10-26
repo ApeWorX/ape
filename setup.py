@@ -18,17 +18,17 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=22.6.0,<23.0",  # auto-formatter and linter
-        "mypy>=0.971,<1.0",  # Static type analyzer
+        "black>=22.10.0,<23",  # auto-formatter and linter
+        "mypy>=0.982,<1",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
         "types-pkg-resources",  # NOTE: Needed due to mypy typeshed
         "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",
-        "flake8>=4.0.1,<5.0",  # Style linter
-        "flake8-breakpoint>=1.1.0,<2.0.0",  # detect breakpoints left in code
-        "flake8-print>=4.0.0,<5.0.0",  # detect print statements left in code
-        "isort>=5.10.1,<6.0",  # Import sorting linter
+        "flake8>=5.0.4,<6",  # Style linter
+        "flake8-breakpoint>=1.1.0,<2",  # detect breakpoints left in code
+        "flake8-print>=4.0.0,<5",  # detect print statements left in code
+        "isort>=5.10.1,<6",  # Import sorting linter
         "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy types
     ],
     "doc": [
@@ -85,7 +85,7 @@ setup(
         "click>=8.1.3,<9",
         "ijson>=3.1.4,<4",
         "importlib-metadata",
-        "ipython>=7.31.1,<8",
+        "ipython>=8.5.0,<9",
         "packaging>=20.9,<21",
         "pandas>=1.3.0,<2",
         "pluggy>=1.0.0,<2",

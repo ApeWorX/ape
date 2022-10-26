@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from eth_account import Account  # type: ignore
+from eth_account import Account
 
 from tests.integration.cli.utils import assert_failure, run_once
 

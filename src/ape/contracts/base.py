@@ -12,7 +12,7 @@ from hexbytes import HexBytes
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery, extract_fields
-from ape.exceptions import ArgumentsLengthError, ChainError, ContractError
+from ape.exceptions import ArgumentsLengthError, ChainError, ContractError, TransactionNotFoundError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -124,7 +124,7 @@ class ContractCallHandler(ManagerAccessMixin):
         args = self._convert_tuple(args)
         selected_abi = _select_method_abi(self.abis, args)
 
-        return ContractCall(  # type: ignore
+        return ContractCall(
             abi=selected_abi,
             address=self.contract.address,
         )(*args, **kwargs)
@@ -293,7 +293,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
         args = self._convert_tuple(args)
         selected_abi = _select_method_abi(self.abis, args)
 
-        return ContractTransaction(  # type: ignore
+        return ContractTransaction(
             abi=selected_abi,
             address=self.contract.address,
         )
@@ -610,7 +610,12 @@ class ContractInstance(BaseAddress):
         """
 
         if not self._cached_receipt and self.txn_hash:
-            receipt = self.chain_manager.get_receipt(self.txn_hash)
+
+            try:
+                receipt = self.chain_manager.get_receipt(self.txn_hash)
+            except TransactionNotFoundError:
+                return None
+
             self._cached_receipt = receipt
             return receipt
 
@@ -873,9 +878,9 @@ class ContractContainer(ManagerAccessMixin):
 
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
-        constructor = ContractConstructor(  # type: ignore
+        constructor = ContractConstructor(
             abi=self.contract_type.constructor,
-            deployment_bytecode=self.contract_type.get_deployment_bytecode() or b"",  # type: ignore
+            deployment_bytecode=self.contract_type.get_deployment_bytecode() or HexBytes(b""),
         )
 
         args_length = len(args)
@@ -982,4 +987,4 @@ class ContractNamespace:
                 subcontracts = [c for c in self.contracts if _get_name(c).startswith(subname)]
                 return ContractNamespace(subname, subcontracts)
 
-        return self.__getattribute__(item)  # type: ignore
+        return self.__getattribute__(item)

@@ -1,6 +1,6 @@
 import re
 from enum import IntEnum
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
@@ -39,9 +39,6 @@ from ape_ethereum.transactions import (
 NETWORKS = {
     # chain_id, network_id
     "mainnet": (1, 1),
-    "ropsten": (3, 3),
-    "kovan": (42, 42),
-    "rinkeby": (4, 4),
     "goerli": (5, 5),
 }
 
@@ -82,16 +79,18 @@ class NetworkConfig(PluginConfig):
     estimate gas limits based on the transaction. If set to ``"max"`` the gas limit
     will be set to the maximum block gas limit for the network. Otherwise an ``int``
     can be used to specify an explicit gas limit amount (either base 10 or 16).
+
+    The default for local networks is ``"max"``, otherwise ``"auto"``.
     """
 
     class Config:
         smart_union = True
 
-    @validator("gas_limit", pre=True)
+    @validator("gas_limit", pre=True, allow_reuse=True)
     def validate_gas_limit(cls, value: GasLimit) -> GasLimit:
         if isinstance(value, str):
             if value.lower() in ("auto", "max"):
-                return value.lower()  # type: ignore
+                return value.lower()
 
             # Value could be an integer string
             if value.isdigit():
@@ -106,36 +105,27 @@ class NetworkConfig(PluginConfig):
         return value
 
 
+def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> NetworkConfig:
+    return _create_config(
+        required_confirmations=0,
+        default_provider=default_provider,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+        gas_limit="max",
+        **kwargs,
+    )
+
+
+def _create_config(required_confirmations: int = 2, **kwargs) -> NetworkConfig:
+    # Put in own method to isolate `type: ignore` comments
+    return NetworkConfig(required_confirmations=required_confirmations, **kwargs)
+
+
 class EthereumConfig(PluginConfig):
-    mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
-    mainnet_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
-    ropsten_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
-    kovan_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    rinkeby_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    goerli_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    local: NetworkConfig = NetworkConfig(
-        default_provider="test",
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
+    mainnet: NetworkConfig = _create_config(block_time=13)
+    mainnet_fork: NetworkConfig = _create_local_config()
+    goerli: NetworkConfig = _create_config(block_time=15)
+    goerli_fork: NetworkConfig = _create_local_config()
+    local: NetworkConfig = _create_local_config(default_provider="test")
     default_network: str = LOCAL_NETWORK_NAME
 
 
@@ -285,7 +275,7 @@ class Ethereum(EcosystemAPI):
         elif data.get("input", b"") and isinstance(data.get("input", b""), str):
             data["input"] = bytes(HexBytes(data.get("input", b"")))
 
-        receipt = Receipt(  # type: ignore
+        receipt = Receipt(
             block_number=data.get("block_number") or data.get("blockNumber"),
             contract_address=data.get("contractAddress"),
             gas_limit=data.get("gas") or data.get("gasLimit"),
@@ -327,7 +317,7 @@ class Ethereum(EcosystemAPI):
         return HexBytes(b"")
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
-        output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
+        output_types = [o.canonical_type for o in abi.outputs]
 
         try:
             vm_return_values = decode(output_types, raw_data)
@@ -423,7 +413,7 @@ class Ethereum(EcosystemAPI):
             :class:`~ape.api.transactions.TransactionAPI`
         """
 
-        transaction_types = {
+        transaction_types: Dict[TransactionType, Type[TransactionAPI]] = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
             TransactionType.ACCESS_LIST: AccessListTransaction,
@@ -514,4 +504,4 @@ class Ethereum(EcosystemAPI):
                 log_index=log["logIndex"],
                 transaction_hash=log["transactionHash"],
                 transaction_index=log["transactionIndex"],
-            )  # type: ignore
+            )

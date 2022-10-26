@@ -132,8 +132,8 @@ class ProjectAPI(BaseInterfaceModel):
         source_dict: Dict[str, Source] = {}
         for source_path in contract_filepaths:
             key = str(get_relative_path(source_path, base_path))
-            source_dict[key] = Source(  # type: ignore
-                checksum=Checksum(  # type: ignore
+            source_dict[key] = Source(
+                checksum=Checksum(
                     algorithm="md5",
                     hash=compute_checksum(source_path.read_bytes()),
                 ),

@@ -12,7 +12,7 @@ from tqdm import tqdm  # type: ignore
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import ContractError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, TransactionSignature
+from ape.types import AddressType, ContractLog, GasLimit, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ class TransactionAPI(BaseInterfaceModel):
     chain_id: int = Field(0, alias="chainId")
     receiver: Optional[AddressType] = Field(None, alias="to")
     sender: Optional[AddressType] = Field(None, alias="from")
-    gas_limit: Optional[int] = Field(None, alias="gas")
+    gas_limit: Optional[GasLimit] = Field(None, alias="gas")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
     data: bytes = b""
@@ -175,6 +175,10 @@ class ReceiptAPI(BaseInterfaceModel):
         return value
 
     @property
+    def call_tree(self) -> Optional[Any]:
+        return None
+
+    @property
     def failed(self) -> bool:
         """
         Whether the receipt represents a failing transaction.
@@ -269,7 +273,7 @@ class ReceiptAPI(BaseInterfaceModel):
         if self.sender:
             sender_nonce = self.provider.get_nonce(self.sender)
 
-            while sender_nonce == self.nonce:  # type: ignore
+            while sender_nonce == self.nonce:
                 time.sleep(1)
                 sender_nonce = self.provider.get_nonce(self.sender)
                 iteration += 1

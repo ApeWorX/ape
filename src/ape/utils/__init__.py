@@ -25,6 +25,7 @@ from ape.utils.misc import (
     USER_AGENT,
     ZERO_ADDRESS,
     add_padding_to_strings,
+    allow_disconnected,
     cached_property,
     extract_nested_value,
     gas_estimation_error_message,
@@ -49,11 +50,12 @@ from ape.utils.testing import (
     GeneratedDevAccount,
     generate_dev_accounts,
 )
-from ape.utils.trace import CallTraceParser, TraceStyles
+from ape.utils.trace import CallTraceParser, TraceStyles, parse_gas_table
 
 __all__ = [
     "abstractmethod",
     "add_padding_to_strings",
+    "allow_disconnected",
     "BaseInterface",
     "BaseInterfaceModel",
     "cached_property",
@@ -82,6 +84,7 @@ __all__ = [
     "load_config",
     "LogInputABICollection",
     "ManagerAccessMixin",
+    "parse_gas_table",
     "parse_type",
     "raises_not_implemented",
     "returns_array",

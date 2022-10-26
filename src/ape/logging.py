@@ -98,7 +98,7 @@ class CliLogger:
         _logger = _get_logger("ape")
         self.error = _logger.error
         self.warning = _logger.warning
-        self.success = _logger.success  # type: ignore
+        self.success = _logger.success
         self.info = _logger.info
         self.debug = _logger.debug
         self._logger = _logger

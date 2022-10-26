@@ -18,18 +18,20 @@ from rich.table import Table
 from rich.tree import Tree
 
 from ape.exceptions import ContractError, DecodingError
-from ape.types import AddressType
+from ape.utils import ManagerAccessMixin
 from ape.utils.abi import Struct, parse_type
 from ape.utils.misc import ZERO_ADDRESS
 
 if TYPE_CHECKING:
     from ape.api.networks import EcosystemAPI
     from ape.api.transactions import ReceiptAPI
+    from ape.types import AddressType, GasReport
 
 
 _DEFAULT_TRACE_GAS_PATTERN = re.compile(r"\[\d* gas]")
 _DEFAULT_WRAP_THRESHOLD = 50
 _DEFAULT_INDENT = 2
+_ETH_TRANSFER = "Transferring ETH"
 
 
 class TraceStyles:
@@ -61,7 +63,7 @@ class TraceStyles:
     """The gas used of the call."""
 
 
-class CallTraceParser:
+class CallTraceParser(ManagerAccessMixin):
     """
     A class for parsing a call trace, used in the
     :meth:`~ape.api.transactions.ReceiptAPI.show_trace` method,
@@ -135,25 +137,28 @@ class CallTraceParser:
             return call_sig
 
         if contract_type:
-            contract_name = self._get_contract_name(address, contract_type)
-            method = _get_method_abi(selector, contract_type)
+            contract_id = self._get_contract_id(address, contract_type=contract_type)
+            method_abi = _get_method_abi(selector, contract_type)
 
-            if method:
+            if method_abi:
                 raw_calldata = call.calldata[4:]
-                arguments = self.decode_calldata(method, raw_calldata)
+                arguments = self.decode_calldata(method_abi, raw_calldata)
 
                 # The revert-message appears at the top of the trace output.
                 try:
                     return_value = (
-                        self.decode_returndata(method, call.returndata) if not call.failed else None
+                        self.decode_returndata(method_abi, call.returndata)
+                        if not call.failed
+                        else None
                     )
                 except (DecodingError, InsufficientDataBytes):
                     return_value = "<?>"
 
+                method_id = method_abi.name or f"<{selector.hex()}>"
                 call_signature = str(
                     _MethodTraceSignature(
-                        contract_name or address,
-                        method.name or f"<{selector}>",  # type: ignore
+                        contract_id,
+                        method_id,
                         arguments,
                         return_value,
                         call.call_type,
@@ -173,9 +178,11 @@ class CallTraceParser:
                         "call_type": call.call_type.value,
                     }
                     call_signature += f" {json.dumps(extra_info, indent=self._indent)}"
-            elif contract_name is not None:
-                call_signature = next(TreeRepresentation.make_tree(call)).title  # type: ignore
-                call_signature = call_signature.replace(address, contract_name)
+            elif contract_type.name and contract_id == contract_type.name:
+                # The case where we know the contract name but couldn't decipher the method ID,
+                #  such as an unsupported proxy or fallback.
+                call_signature = next(TreeRepresentation.make_tree(call)).title
+                call_signature = call_signature.replace(address, contract_id)
                 call_signature = _dim_default_gas(call_signature)
         else:
             next_node: Optional[TreeRepresentation] = None
@@ -208,7 +215,7 @@ class CallTraceParser:
         return parent
 
     def decode_calldata(self, method: MethodABI, raw_data: bytes) -> Dict:
-        input_types = [i.canonical_type for i in method.inputs]  # type: ignore
+        input_types = [i.canonical_type for i in method.inputs]
 
         try:
             raw_input_values = decode(input_types, raw_data)
@@ -288,64 +295,66 @@ class CallTraceParser:
 
     def parse_as_gas_report(self, call: CallTreeNode) -> List[Table]:
         report = self._get_rich_gas_report(call)
-        tables: List[Table] = []
+        return parse_gas_table(report)
 
-        for contract_id, method_calls in report.items():
-            title = f"{contract_id} Gas"
-            table = Table(title=title, box=SIMPLE)
-            table.add_column("Method")
-            table.add_column("Times called", justify="right")
-            table.add_column("Min.", justify="right")
-            table.add_column("Max.", justify="right")
-            table.add_column("Mean", justify="right")
-            table.add_column("Median", justify="right")
+    def _get_contract_id(
+        self, address: "AddressType", contract_type: Optional[ContractType] = None
+    ) -> str:
+        if not contract_type:
+            return self._get_contract_id_from_address(address)
 
-            for method_call, gases in method_calls.items():
-                table.add_row(
-                    method_call,
-                    f"{len(gases)}",
-                    f"{min(gases)}",
-                    f"{max(gases)}",
-                    f"{int(round(mean(gases)))}",
-                    f"{int(round(median(gases)))}",
-                )
+        if "symbol" in contract_type.view_methods:
+            # Use token symbol as name
+            contract = self._receipt.chain_manager.contracts.instance_at(
+                address, contract_type=contract_type, txn_hash=self._receipt.txn_hash
+            )
 
-            tables.append(table)
+            try:
+                symbol = contract.symbol()
+                if symbol and str(symbol).strip():
+                    return str(symbol).strip()
 
-        return tables
+            except ContractError:
+                pass
 
-    def _get_contract_name(self, address: AddressType, contract_type: ContractType):
-        contract_name = contract_type.name
-        if "symbol" not in contract_type.view_methods:
-            return contract_name
+        contract_id = contract_type.name
+        if contract_id:
+            contract_id = contract_id.strip()
+            if contract_id:
+                return contract_id
 
-        # Use token symbol as name
-        contract = self._receipt.chain_manager.contracts.instance_at(
-            address, contract_type, txn_hash=self._receipt.txn_hash
-        )
+        return self._get_contract_id(address)
 
-        try:
-            return contract.symbol() or contract_name
-        except ContractError:
-            return contract_type.name
+    def _get_contract_id_from_address(self, address: "AddressType") -> str:
+        if address in self.account_manager:
+            return _ETH_TRANSFER
 
-    def _get_rich_gas_report(self, calltree: CallTreeNode) -> Dict[str, Dict[str, List[int]]]:
+        return address
+
+    def _get_rich_gas_report(self, calltree: CallTreeNode) -> "GasReport":
         address = self._receipt.provider.network.ecosystem.decode_address(calltree.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
         selector = calltree.calldata[:4]
+        contract_id = self._get_contract_id(address, contract_type=contract_type)
 
-        if contract_type:
-            contract_name = self._get_contract_name(address, contract_type)
-            method_id = _get_method_abi(selector, contract_type)
-            if method_id:
-                method_name = method_id.name
-            else:
-                method_name = selector.hex()
+        if contract_id == _ETH_TRANSFER and address in self.account_manager:
+            receiver_id = self.account_manager[address].alias or address
+            method_id = f"to:{receiver_id}"
+
+        elif contract_id == _ETH_TRANSFER:
+            method_id = f"to:{address}"
+
+        elif contract_type:
+            # NOTE: Use source ID when possible to distinguish between sources with the same
+            #  symbol or contract name.
+            contract_id = contract_type.source_id or contract_id
+            method_abi = _get_method_abi(selector, contract_type)
+            method_id = selector.hex() if not method_abi else method_abi.name
+
         else:
-            contract_name = address
-            method_name = selector.hex()
+            method_id = selector.hex()
 
-        report = {contract_name: {method_name: [calltree.gas_cost] if calltree.gas_cost else []}}
+        report = {contract_id: {method_id: [calltree.gas_cost] if calltree.gas_cost else []}}
         return merge_reports(report, *map(self._get_rich_gas_report, calltree.calls))
 
 
@@ -491,3 +500,31 @@ def _get_method_abi(selector, contract_type) -> Optional[MethodABI]:
         return contract_type.view_methods[selector]
 
     return None
+
+
+def parse_gas_table(report: "GasReport") -> List[Table]:
+    tables: List[Table] = []
+
+    for contract_id, method_calls in report.items():
+        title = f"{contract_id} Gas"
+        table = Table(title=title, box=SIMPLE)
+        table.add_column("Method")
+        table.add_column("Times called", justify="right")
+        table.add_column("Min.", justify="right")
+        table.add_column("Max.", justify="right")
+        table.add_column("Mean", justify="right")
+        table.add_column("Median", justify="right")
+
+        for method_call, gases in method_calls.items():
+            table.add_row(
+                method_call,
+                f"{len(gases)}",
+                f"{min(gases)}",
+                f"{max(gases)}",
+                f"{int(round(mean(gases)))}",
+                f"{int(round(median(gases)))}",
+            )
+
+        tables.append(table)
+
+    return tables

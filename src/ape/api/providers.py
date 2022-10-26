@@ -14,11 +14,12 @@ from subprocess import PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix
+from eth_utils import add_0x_prefix, is_hex
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
+from web3.eth import TxParams
 from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
@@ -236,6 +237,14 @@ class ProviderAPI(BaseInterfaceModel):
         The price for what it costs to transact
         (pre-`EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__).
         """
+
+    @property
+    def max_gas(self) -> int:
+        """
+        The max gas limit value you can use.
+        """
+        # TODO: Make abstract
+        return 0
 
     @property
     def config(self) -> PluginConfig:
@@ -488,21 +497,36 @@ class ProviderAPI(BaseInterfaceModel):
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
         txn.chain_id = self.network.chain_id
 
-        from ape_ethereum.transactions import TransactionType
+        from ape_ethereum.transactions import StaticFeeTransaction, TransactionType
 
         txn_type = TransactionType(txn.type)
-        if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
-            txn.gas_price = self.gas_price  # type: ignore
+        if (
+            txn_type == TransactionType.STATIC
+            and isinstance(txn, StaticFeeTransaction)
+            and txn.gas_price is None
+        ):
+            txn.gas_price = self.gas_price
         elif txn_type == TransactionType.DYNAMIC:
-            if txn.max_priority_fee is None:  # type: ignore
-                txn.max_priority_fee = self.priority_fee  # type: ignore
+            if txn.max_priority_fee is None:
+                txn.max_priority_fee = self.priority_fee
 
             if txn.max_fee is None:
                 txn.max_fee = self.base_fee + txn.max_priority_fee
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
-        if txn.gas_limit is None:
+        gas_limit = txn.gas_limit or self.network.gas_limit
+        if isinstance(gas_limit, str) and gas_limit.isnumeric():
+            txn.gas_limit = int(gas_limit)
+        elif isinstance(gas_limit, str) and is_hex(gas_limit):
+            txn.gas_limit = int(gas_limit, 16)
+        elif gas_limit == "max":
+            txn.gas_limit = self.max_gas
+        elif gas_limit in ("auto", None):
             txn.gas_limit = self.estimate_gas_cost(txn)
+        else:
+            txn.gas_limit = gas_limit
+
+        assert txn.gas_limit not in ("auto", "max")
         # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.required_confirmations is None:
@@ -657,6 +681,11 @@ class Web3Provider(ProviderAPI, ABC):
 
         return run_until_complete(self._web3.is_connected())
 
+    @property
+    def max_gas(self) -> int:
+        block = self.web3.eth.get_block("latest")
+        return block["gasLimit"]
+
     @cached_property
     def supports_tracing(self) -> bool:
         try:
@@ -694,18 +723,12 @@ class Web3Provider(ProviderAPI, ABC):
             will be returned. If the gas limit configuration is "max" this will
             return the block maximum gas limit.
         """
-        if isinstance(self.network.gas_limit, int):
-            return self.network.gas_limit
-
-        if self.network.gas_limit == "max":
-            block = self.web3.eth.get_block("latest")
-            return block["gasLimit"]
-        # else: Handle "auto" gas limit via estimation
 
         txn_dict = txn.dict()
         try:
             block_id = kwargs.pop("block_identifier", None)
-            return self.web3.eth.estimate_gas(txn_dict, block_identifier=block_id)  # type: ignore
+            txn_params = cast(TxParams, txn_dict)
+            return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
         except ValueError as err:
             tx_error = self.get_virtual_machine_error(err)
 
@@ -801,9 +824,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         block_id = kwargs.pop("block_identifier", None)
         try:
-            return self.web3.eth.get_storage_at(
-                address, slot, block_identifier=block_id
-            )  # type: ignore
+            return self.web3.eth.get_storage_at(address, slot, block_identifier=block_id)
         except ValueError as err:
             if "RPC Endpoint has not been implemented" in str(err):
                 raise APINotImplementedError(str(err)) from err

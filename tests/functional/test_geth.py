@@ -17,7 +17,7 @@ from ape_ethereum.ecosystem import Block
 from ape_geth import GethProvider
 from tests.functional.data.python import TRACE_RESPONSE
 
-_TEST_REVERT_REASON = "TEST REVERT REASON."
+TEST_REVERT_REASON = "TEST REVERT REASON."
 
 
 @pytest.fixture
@@ -65,30 +65,34 @@ def test_send_when_web3_error_raises_transaction_error(geth_provider, mock_web3,
         "message": "Test Error Message",
     }
     mock_web3.eth.send_raw_transaction.side_effect = ValueError(web3_error_data)
-    with pytest.raises(TransactionError) as err:
+    with pytest.raises(TransactionError, match=web3_error_data["message"]):
         geth_provider.send_transaction(mock_transaction)
-
-    assert web3_error_data["message"] in str(err.value)
 
 
 def test_send_transaction_reverts_from_contract_logic(geth_provider, mock_web3, mock_transaction):
-    test_err = Web3ContractLogicError(f"execution reverted: {_TEST_REVERT_REASON}")
+    test_err = Web3ContractLogicError(f"execution reverted: {TEST_REVERT_REASON}")
     mock_web3.eth.send_raw_transaction.side_effect = test_err
 
-    with pytest.raises(ContractLogicError) as err:
+    with pytest.raises(ContractLogicError, match=TEST_REVERT_REASON):
         geth_provider.send_transaction(mock_transaction)
 
-    assert str(err.value) == _TEST_REVERT_REASON
+
+def test_send_transaction_when_specify_gas_reverts_from_contract_logic(
+    geth_provider, mock_web3, mock_transaction
+):
+    test_err = Web3ContractLogicError(f"execution reverted: {TEST_REVERT_REASON}")
+    mock_web3.eth.send_raw_transaction.side_effect = test_err
+
+    with pytest.raises(ContractLogicError, match=TEST_REVERT_REASON):
+        geth_provider.send_transaction(mock_transaction)
 
 
 def test_send_transaction_no_revert_message(mock_web3, geth_provider, mock_transaction):
     test_err = Web3ContractLogicError("execution reverted")
     mock_web3.eth.send_raw_transaction.side_effect = test_err
 
-    with pytest.raises(ContractLogicError) as err:
+    with pytest.raises(ContractLogicError, match=TransactionError.DEFAULT_MESSAGE):
         geth_provider.send_transaction(mock_transaction)
-
-    assert str(err.value) == TransactionError.DEFAULT_MESSAGE
 
 
 def test_uri_default_value(geth_provider):
@@ -128,8 +132,8 @@ def test_repr_on_local_network_and_disconnected(networks):
 
 
 def test_repr_on_live_network_and_disconnected(networks):
-    geth = networks.get_provider_from_choice("ethereum:rinkeby:geth")
-    assert repr(geth) == "<geth chain_id=4>"
+    geth = networks.get_provider_from_choice("ethereum:goerli:geth")
+    assert repr(geth) == "<geth chain_id=5>"
 
 
 def test_repr_connected(mock_web3, geth_provider):
@@ -150,8 +154,8 @@ def test_chain_id_when_connected(eth_tester_provider_geth):
 
 
 def test_chain_id_live_network_not_connected(networks):
-    geth = networks.get_provider_from_choice("ethereum:rinkeby:geth")
-    assert geth.chain_id == 4
+    geth = networks.get_provider_from_choice("ethereum:goerli:geth")
+    assert geth.chain_id == 5
 
 
 def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, eth_tester_provider_geth):
@@ -166,7 +170,7 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, eth_tester_p
 
 
 def test_connect_wrong_chain_id(mocker, ethereum, eth_tester_provider_geth):
-    eth_tester_provider_geth.network = ethereum.get_network("kovan")
+    eth_tester_provider_geth.network = ethereum.get_network("goerli")
 
     # Ensure when reconnecting, it does not use HTTP
     factory = mocker.patch("ape_geth.provider._create_web3")
@@ -174,8 +178,8 @@ def test_connect_wrong_chain_id(mocker, ethereum, eth_tester_provider_geth):
 
     expected_error_message = (
         "Provider connected to chain ID '131277322940537', "
-        "which does not match network chain ID '42'. "
-        "Are you connected to 'kovan'?"
+        "which does not match network chain ID '5'. "
+        "Are you connected to 'goerli'?"
     )
     with pytest.raises(NetworkMismatchError, match=expected_error_message):
         eth_tester_provider_geth.connect()

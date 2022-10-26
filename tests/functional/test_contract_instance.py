@@ -6,7 +6,7 @@ from hexbytes import HexBytes
 
 from ape import Contract
 from ape.contracts import ContractInstance
-from ape.exceptions import ChainError, ContractError
+from ape.exceptions import ChainError, ContractError, ContractLogicError
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
@@ -33,6 +33,30 @@ def test_init_specify_contract_type(
     assert contract.contract_type == vyper_contract_type
     assert contract.setNumber(2, sender=owner)
     assert contract.myNumber() == 2
+
+
+def test_contract_calls(owner, contract_instance):
+    contract_instance.setNumber(2, sender=owner)
+    assert contract_instance.myNumber() == 2
+
+
+def test_revert(sender, contract_instance):
+    # 'sender' is not the owner so it will revert (with a message)
+    with pytest.raises(ContractLogicError, match="!authorized"):
+        contract_instance.setNumber(5, sender=sender)
+
+
+def test_revert_no_message(owner, contract_instance):
+    # The Contract raises empty revert when setting number to 5.
+    expected = "Transaction failed."  # Default message
+    with pytest.raises(ContractLogicError, match=expected):
+        contract_instance.setNumber(5, sender=owner)
+
+
+@pytest.mark.parametrize("gas", ("200000", 200000, "max", "auto", "0x235426"))
+def test_revert_specify_gas(sender, contract_instance, gas):
+    with pytest.raises(ContractLogicError, match="!authorized"):
+        contract_instance.setNumber(5, sender=sender, gas=gas)
 
 
 def test_call_using_block_identifier(
@@ -341,3 +365,17 @@ def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
     )
     with pytest.raises(ContractError, match=expected_err):
         ContractInstance.from_receipt(receipt, contract_instance.contract_type)
+
+
+def test_transact_specify_auto_gas(vyper_contract_instance, owner):
+    """
+    Tests that we can specify "auto" gas even though "max" is the default for
+    local networks.
+    """
+    receipt = vyper_contract_instance.setNumber(123, sender=owner, gas="auto")
+    assert not receipt.failed
+
+
+def test_transact_specify_max_gas(vyper_contract_instance, owner):
+    receipt = vyper_contract_instance.setNumber(123, sender=owner, gas="max")
+    assert not receipt.failed

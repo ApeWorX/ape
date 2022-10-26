@@ -7,12 +7,6 @@ _DEFAULT_NETWORKS_TREE = """
 ethereum  (default)
 ├── mainnet
 │   └── geth  (default)
-├── ropsten
-│   └── geth  (default)
-├── kovan
-│   └── geth  (default)
-├── rinkeby
-│   └── geth  (default)
 ├── goerli
 │   └── geth  (default)
 └── local  (default)
@@ -29,24 +23,6 @@ ecosystems:
     - name: geth
       isDefault: true
   - name: mainnet-fork
-    providers: []
-  - name: ropsten
-    providers:
-    - name: geth
-      isDefault: true
-  - name: ropsten-fork
-    providers: []
-  - name: kovan
-    providers:
-    - name: geth
-      isDefault: true
-  - name: kovan-fork
-    providers: []
-  - name: rinkeby
-    providers:
-    - name: geth
-      isDefault: true
-  - name: rinkeby-fork
     providers: []
   - name: goerli
     providers:
@@ -65,12 +41,6 @@ _GETH_NETWORKS_TREE = """
 ethereum  (default)
 ├── mainnet
 │   └── geth  (default)
-├── ropsten
-│   └── geth  (default)
-├── kovan
-│   └── geth  (default)
-├── rinkeby
-│   └── geth  (default)
 ├── goerli
 │   └── geth  (default)
 └── local  (default)
@@ -82,9 +52,9 @@ ethereum  (default)
 └── local  (default)
     └── test  (default)
 """
-_RINKEBY_NETWORK_TREE_OUTPUT = """
+_GOERLI_NETWORK_TREE_OUTPUT = """
 ethereum  (default)
-└── rinkeby
+└── goerli
     └── geth  (default)
 """
 
@@ -142,8 +112,8 @@ def test_geth(ape_cli, runner, networks):
 
 @run_once
 def test_filter_networks(ape_cli, runner, networks):
-    result = runner.invoke(ape_cli, ["networks", "list", "--network", "rinkeby"])
-    assert_rich_text(result.output, _RINKEBY_NETWORK_TREE_OUTPUT)
+    result = runner.invoke(ape_cli, ["networks", "list", "--network", "goerli"])
+    assert_rich_text(result.output, _GOERLI_NETWORK_TREE_OUTPUT)
 
 
 @run_once

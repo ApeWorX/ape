@@ -191,7 +191,7 @@ class ProjectManager(BaseManager):
         Use when publishing your package manifest.
         """
 
-        return self.config_manager.meta  # type: ignore
+        return self.config_manager.meta
 
     @property
     def tracked_deployments(self) -> Dict[BIP122_URI, Dict[str, EthPMContractInstance]]:
@@ -294,7 +294,7 @@ class ProjectManager(BaseManager):
                     name=name,
                     path=path,
                     version=version,
-                )  # type: ignore
+                )
                 if proj.is_valid:
                     return proj
 
@@ -369,7 +369,7 @@ class ProjectManager(BaseManager):
             # Fixes anomaly when accessing non-ContractType attributes.
             # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
             try:
-                return self.__getattribute__(attr_name)  # type: ignore
+                return self.__getattribute__(attr_name)
             except AttributeError as err:
                 message = f"ProjectManager has no attribute or contract named '{attr_name}'."
                 missing_exts = self.extensions_with_missing_compilers([])

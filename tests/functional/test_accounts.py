@@ -4,15 +4,9 @@ from eth_account.messages import encode_defunct
 
 import ape
 from ape import convert
-from ape.exceptions import (
-    AccountsError,
-    ContractLogicError,
-    NetworkError,
-    ProjectError,
-    SignatureError,
-    TransactionError,
-)
+from ape.exceptions import AccountsError, NetworkError, ProjectError, SignatureError
 from ape.types.signatures import recover_signer
+from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
 
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
@@ -64,11 +58,22 @@ def test_sign_message_with_prompts(runner, keyfile_account):
         assert signature is None
 
 
-def test_transfer(sender, receiver):
-    initial_balance = receiver.balance
-    sender.transfer(receiver, "1 gwei")
-    expected = initial_balance + convert("1 gwei", int)
-    assert receiver.balance == expected
+def test_transfer(sender, receiver, eth_tester_provider):
+    initial_receiver_balance = receiver.balance
+    initial_sender_balance = sender.balance
+    value_str = "2 gwei"
+    value_int = convert(value_str, int)
+
+    receipt = sender.transfer(receiver, value_str)
+
+    # Ensure each account balance was affected accordingly
+    expected_receiver_balance = initial_receiver_balance + value_int
+    expected_sender_loss = receipt.total_fees_paid + value_int
+    expected_sender_balance = initial_sender_balance - expected_sender_loss
+    assert receiver.balance == expected_receiver_balance
+    assert (
+        sender.balance == expected_sender_balance
+    ), f"difference: {abs(sender.balance - expected_sender_balance)}"
 
 
 def test_transfer_without_value(sender, receiver):
@@ -81,13 +86,46 @@ def test_transfer_without_value_send_everything_false(sender, receiver):
         sender.transfer(receiver, send_everything=False)
 
 
-def test_transfer_without_value_send_everything_true(sender, receiver, isolation):
-    # Clear balance of sender
-    sender.transfer(receiver, send_everything=True)
+def test_transfer_without_value_send_everything_true_with_low_gas(sender, receiver):
+    initial_receiver_balance = receiver.balance
+    initial_sender_balance = sender.balance
+
+    # Clear balance of sender.
+    # Use small gas so for sure runs out of money.
+    receipt = sender.transfer(receiver, send_everything=True, gas=21000)
+
+    value_given = receipt.value
+    total_spent = value_given + receipt.total_fees_paid
+    assert sender.balance < 3000000000000  # Part of gas not spent remains
+    assert sender.balance == initial_sender_balance - total_spent
+    assert receiver.balance == initial_receiver_balance + value_given
 
     expected_err_regex = r"Sender does not have enough to cover transaction value and gas: \d*"
     with pytest.raises(AccountsError, match=expected_err_regex):
         sender.transfer(receiver, send_everything=True)
+
+
+def test_transfer_without_value_send_everything_true_with_high_gas(
+    sender, receiver, eth_tester_provider
+):
+    initial_receiver_balance = receiver.balance
+    initial_sender_balance = sender.balance
+
+    # The gas selected here is very high compared to what actually gets used.
+    gas = 25000000
+
+    # Clear balance of sender
+    receipt = sender.transfer(receiver, send_everything=True, gas=gas)
+
+    value_given = receipt.value
+    total_spent = value_given + receipt.total_fees_paid
+    assert sender.balance == initial_sender_balance - total_spent
+    assert receiver.balance == initial_receiver_balance + value_given
+
+    # The sender is able to transfer again because they have so much left over
+    # from safely using such a high gas before.
+    # Use smaller (more expected) amount of gas this time.
+    sender.transfer(receiver, send_everything=True, gas=21000)
 
 
 def test_transfer_with_value_send_everything_true(sender, receiver, isolation):
@@ -172,42 +210,17 @@ def test_deploy_proxy(
     assert implementation.contract_type == vyper_contract_instance.contract_type
 
 
-def test_contract_calls(owner, contract_instance):
-    contract_instance.setNumber(2, sender=owner)
-    assert contract_instance.myNumber() == 2
-
-
-def test_contract_revert(sender, contract_instance):
-    # 'sender' is not the owner so it will revert (with a message)
-    with pytest.raises(ContractLogicError) as err:
-        contract_instance.setNumber(5, sender=sender)
-
-    assert str(err.value) == "!authorized"
-
-
-def test_contract_revert_no_message(owner, contract_instance):
-    # The Contract raises empty revert when setting number to 5.
-    with pytest.raises(ContractLogicError) as err:
-        contract_instance.setNumber(5, sender=owner)
-
-    assert str(err.value) == "Transaction failed."  # Default message
-
-
 def test_send_transaction_with_bad_nonce(sender, receiver):
     # Bump the nonce so we can set one that is too low.
     sender.transfer(receiver, "1 gwei", type=0)
 
-    with pytest.raises(AccountsError) as err:
+    with pytest.raises(AccountsError, match="Invalid nonce, will not publish."):
         sender.transfer(receiver, "1 gwei", type=0, nonce=0)
-
-    assert str(err.value) == "Invalid nonce, will not publish."
 
 
 def test_send_transaction_without_enough_funds(sender, receiver):
-    with pytest.raises(TransactionError) as err:
+    with pytest.raises(AccountsError, match="Transfer value meets or exceeds account balance"):
         sender.transfer(receiver, "10000000000000 ETH")
-
-    assert "Sender does not have enough balance to cover" in str(err.value)
 
 
 def test_send_transaction_sets_defaults(sender, receiver):
@@ -258,25 +271,21 @@ def test_autosign_transactions(runner, keyfile_account, receiver):
 
 def test_impersonate_not_implemented(accounts):
     test_address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-    with pytest.raises(IndexError) as err:
-        _ = accounts[test_address]
-
     expected_err_msg = (
         "Your provider does not support impersonating accounts:\n"
         f"No account with address '{test_address}'."
     )
-    assert expected_err_msg in str(err.value)
+    with pytest.raises(IndexError, match=expected_err_msg):
+        _ = accounts[test_address]
 
 
 def test_contract_as_sender_non_fork_network(contract_instance):
-    with pytest.raises(IndexError) as err:
-        contract_instance.setNumber(5, sender=contract_instance)
-
     expected_err_msg = (
         "Your provider does not support impersonating accounts:\n"
         f"No account with address '{contract_instance}'."
     )
-    assert expected_err_msg in str(err.value)
+    with pytest.raises(IndexError, match=expected_err_msg):
+        contract_instance.setNumber(5, sender=contract_instance)
 
 
 def test_unlock_with_passphrase_and_sign_message(runner, keyfile_account):
@@ -321,20 +330,17 @@ def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiv
 
 
 def test_custom_num_of_test_accts_config(test_accounts, temp_config):
-    from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
-
-    CUSTOM_NUMBER_OF_TEST_ACCOUNTS = 20
-
+    custom_number_of_test_accounts = 20
     test_config = {
         "test": {
-            "number_of_accounts": CUSTOM_NUMBER_OF_TEST_ACCOUNTS,
+            "number_of_accounts": custom_number_of_test_accounts,
         }
     }
 
     assert len(test_accounts) == DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 
     with temp_config(test_config):
-        assert len(test_accounts) == CUSTOM_NUMBER_OF_TEST_ACCOUNTS
+        assert len(test_accounts) == custom_number_of_test_accounts
 
 
 def test_test_accounts_repr(test_accounts):
