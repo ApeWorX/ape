@@ -51,23 +51,12 @@ class ConfigWrapper(ManagerAccessMixin):
         if cli_value:
             items = cli_value.split(",")
             for item in items:
-                if ":" in item:
-                    contract_name, method_name = item.split(":")
-                    exclusion = ContractFunctionPath(contract=contract_name, method=method_name)
-                else:
-                    exclusion = ContractFunctionPath(contract=item)
-
+                exclusion = ContractFunctionPath.from_str(item)
                 exclusions.append(exclusion)
 
         config_value = self.ape_test_config.gas.exclude
-        exclusions.extend([x.dict() for x in config_value])
-
-        filtered_exclusions = []
-        for exclusion in exclusions:
-            if exclusion not in filtered_exclusions:
-                filtered_exclusions.append(exclusion)
-
-        return filtered_exclusions
+        exclusions.extend(config_value)
+        return exclusions
 
     def get_pytest_plugin(self, name: str) -> Any:
         return self.pytest_config.pluginmanager.get_plugin(name)

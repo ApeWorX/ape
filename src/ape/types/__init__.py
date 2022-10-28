@@ -74,6 +74,20 @@ class ContractFunctionPath:
     contract: str
     method: Optional[str] = None
 
+    @classmethod
+    def from_str(cls, value: str) -> "ContractFunctionPath":
+        if ":" in value:
+            contract_name, method_name = value.split(":")
+            return cls(contract=contract_name, method=method_name)
+
+        return cls(contract=value)
+
+    def __str__(self) -> str:
+        return f"{self.contract}:{self.method}"
+
+    def __repr__(self) -> str:
+        return f"<{self}>"
+
 
 class LogFilter(BaseModel):
     addresses: List[AddressType] = []
