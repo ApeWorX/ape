@@ -160,7 +160,11 @@ class ReceiptCapture(ManagerAccessMixin):
             # TODO: Handle deploy receipts once trace supports it
             return
 
-        contract_type = self.chain_manager.contracts[contract_address]
+        contract_type = self.chain_manager.contracts.get(contract_address)
+        if not contract_type:
+            # Not an invoke-transaction or a known address
+            return
+
         source_id = contract_type.source_id or None
         if not source_id:
             # Not a local or known contract type.
@@ -169,7 +173,7 @@ class ReceiptCapture(ManagerAccessMixin):
         elif source_id not in self.receipt_map:
             self.receipt_map[source_id] = {}
 
-        elif transaction_hash in self.receipt_map[source_id]:
+        if transaction_hash in self.receipt_map[source_id]:
             # Transaction already known.
             return
 

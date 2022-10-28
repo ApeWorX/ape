@@ -533,6 +533,9 @@ class ContractCache(BaseManager):
         # NOTE: The txn_hash is not included when caching this way.
         self._cache_deployment(address, contract_type)
 
+    def __contains__(self, address: AddressType) -> bool:
+        return self.get(address) is not None
+
     def cache_deployment(self, contract_instance: ContractInstance):
         """
         Cache the given contract instance's type and deployment information.
