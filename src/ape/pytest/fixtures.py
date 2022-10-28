@@ -175,7 +175,7 @@ class ReceiptCapture(ManagerAccessMixin):
 
         self.receipt_map[source_id][transaction_hash] = receipt
 
-        # Merge-in the receipt's gas rdeport with everything so far.
+        # Merge-in the receipt's gas report with everything so far.
         call_tree = receipt.call_tree
         do_track_gas = self.config_wrapper.track_gas if track_gas is None else track_gas
         exclusions = self.config_wrapper.gas_exclusions
