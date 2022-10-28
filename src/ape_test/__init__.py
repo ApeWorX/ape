@@ -12,7 +12,7 @@ from .provider import LocalProvider
 
 
 class GasExclusion(PluginConfig):
-    contract: Optional[str] = None
+    contract: str = "*"  # If only given method, searches across all contracts.
     method: Optional[str] = None
 
 

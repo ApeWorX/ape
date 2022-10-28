@@ -1,3 +1,4 @@
+import fnmatch
 import json
 import re
 from dataclasses import dataclass
@@ -25,8 +26,7 @@ from ape.utils.misc import ZERO_ADDRESS
 if TYPE_CHECKING:
     from ape.api.networks import EcosystemAPI
     from ape.api.transactions import ReceiptAPI
-    from ape.types import AddressType, GasReport
-
+    from ape.types import AddressType, ContractFunctionPath, GasReport
 
 _DEFAULT_TRACE_GAS_PATTERN = re.compile(r"\[\d* gas]")
 _DEFAULT_WRAP_THRESHOLD = 50
@@ -334,11 +334,32 @@ class CallTraceParser(ManagerAccessMixin):
 
         return address
 
-    def _get_rich_gas_report(self, calltree: CallTreeNode) -> "GasReport":
+    def _get_rich_gas_report(
+        self, calltree: CallTreeNode, exclude: Optional[List["ContractFunctionPath"]] = None
+    ) -> "GasReport":
+        exclusions = exclude or []
+        sub_calls = calltree.calls
+        this_method = self._get_rich_gas_report
+        exclude_arg = [exclusions for _ in sub_calls]
         address = self._receipt.provider.network.ecosystem.decode_address(calltree.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
         selector = calltree.calldata[:4]
         contract_id = self._get_contract_id(address, contract_type=contract_type, use_symbol=False)
+
+        for exclusion in exclusions:
+            if exclusion.method is not None:
+                # Method-related excludes are handled below, even when contract also specified.
+                continue
+
+            if fnmatch.fnmatch(contract_id, exclusion.contract):
+                # Skip this whole contract
+                reports = [x for x in map(this_method, sub_calls, exclude_arg)]
+                if len(reports) == 1:
+                    return reports[0]
+                elif len(reports) > 1:
+                    return merge_reports(*reports)
+                else:
+                    return {}
 
         if contract_id == _ETH_TRANSFER and address in self.account_manager:
             receiver_id = self.account_manager[address].alias or address
@@ -353,11 +374,34 @@ class CallTraceParser(ManagerAccessMixin):
             method_abi = _get_method_abi(selector, contract_type)
             method_id = selector.hex() if not method_abi else method_abi.name
 
+            for exclusion in exclusions:
+                if not exclusion.method:
+                    # Full contract skips handled above.
+                    continue
+
+                elif not fnmatch.fnmatch(contract_id, exclusion.contract):
+                    # Method may match, but contract does not match, so continue.
+                    continue
+
+                elif fnmatch.fnmatch(method_id, exclusion.method):
+                    # Skip this report
+                    reports = [r for r in map(this_method, sub_calls, exclude_arg)]
+                    if len(reports) == 1:
+                        return reports[0]
+                    elif len(reports) > 1:
+                        return merge_reports(*reports)
+                    else:
+                        return {}
+
         else:
             method_id = selector.hex()
 
         report = {contract_id: {method_id: [calltree.gas_cost] if calltree.gas_cost else []}}
-        return merge_reports(report, *map(self._get_rich_gas_report, calltree.calls))
+        reports = [r for r in map(this_method, sub_calls, exclude_arg)]
+        if len(reports) >= 1:
+            return merge_reports(report, *reports)
+        else:
+            return report
 
 
 @dataclass()

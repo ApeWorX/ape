@@ -1,7 +1,8 @@
-from typing import Any, Dict, List
+from typing import Any, List
 
 from _pytest.config import Config as PytestConfig
 
+from ape.types import ContractFunctionPath
 from ape.utils import ManagerAccessMixin, cached_property
 
 
@@ -40,21 +41,21 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("--gas") or self.ape_test_config.gas.show
 
     @cached_property
-    def gas_exclusions(self) -> List[Dict]:
+    def gas_exclusions(self) -> List[ContractFunctionPath]:
         """
         The combination of both CLI values and config values.
         """
 
         cli_value = self.pytest_config.getoption("--gas-exclude")
-        exclusions = []
+        exclusions: List[ContractFunctionPath] = []
         if cli_value:
             items = cli_value.split(",")
             for item in items:
                 if ":" in item:
                     contract_name, method_name = item.split(":")
-                    exclusion = {"contract": contract_name, "method": method_name}
+                    exclusion = ContractFunctionPath(contract=contract_name, method=method_name)
                 else:
-                    exclusion = {"contract": item}
+                    exclusion = ContractFunctionPath(contract=item)
 
                 exclusions.append(exclusion)
 

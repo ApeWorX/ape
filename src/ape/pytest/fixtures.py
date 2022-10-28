@@ -1,3 +1,4 @@
+import copy
 from fnmatch import fnmatch
 from typing import Dict, Iterator, List, Optional
 
@@ -188,18 +189,13 @@ class ReceiptCapture(ManagerAccessMixin):
         if do_track_gas and call_tree:
             parser = CallTraceParser(receipt)
             for exclusion in exclusions:
-                # Default to looking at all contracts
-                contract_pattern = exclusion.get("contract") or "*"
-                if not fnmatch(contract_name, contract_pattern):
-                    continue
-
-                method_pattern = exclusion.get("method")
-                if not method_pattern or fnmatch(method_name, method_pattern):
-                    # Only contract was specified. It's a match.
+                if contract_name and self._exclude_from_gas_report(contract_name, method_name):
                     return
 
             # Update the gas report using this receipt
-            gas_report = parser._get_rich_gas_report(call_tree)
+            gas_report = parser._get_rich_gas_report(
+                call_tree, exclude=self.config_wrapper.gas_exclusions
+            )
             if self.gas_report:
                 self.gas_report = merge_reports(self.gas_report, gas_report)
             else:
@@ -208,3 +204,35 @@ class ReceiptCapture(ManagerAccessMixin):
     @allow_disconnected
     def _get_block_number(self) -> Optional[int]:
         return self.provider.get_block("latest").number
+
+    def _exclude_from_gas_report(
+        self, contract_name: str, method_name: Optional[str] = None
+    ) -> bool:
+        """
+        Helper method to determine if a certain contract / method combination should be
+        excluded from the gas report.
+        """
+
+        for exclusion in self.config_wrapper.gas_exclusions:
+            # Default to looking at all contracts
+            contract_pattern = exclusion.contract
+            if not fnmatch(contract_name, contract_pattern) or not method_name:
+                continue
+
+            method_pattern = exclusion.method
+            if not method_pattern or fnmatch(method_name, method_pattern):
+                return True
+
+        return False
+
+
+def _build_report(report: Dict, contract: str, method: str, usages: List) -> Dict:
+    new_dict = copy.deepcopy(report)
+    if contract not in new_dict:
+        new_dict[contract] = {method: usages}
+    elif method not in new_dict[contract]:
+        new_dict[contract][method] = usages
+    else:
+        new_dict[contract][method].extend(usages)
+
+    return new_dict

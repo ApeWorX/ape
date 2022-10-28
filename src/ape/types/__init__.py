@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from eth_abi.abi import encode
@@ -62,6 +63,16 @@ A gas report in Ape.
 
 
 TopicFilter = List[Union[Optional[HexStr], List[Optional[HexStr]]]]
+
+
+@dataclass
+class ContractFunctionPath:
+    """
+    Useful for identifying a method in a contract.
+    """
+
+    contract: str
+    method: Optional[str] = None
 
 
 class LogFilter(BaseModel):

@@ -342,9 +342,11 @@ class ReceiptAPI(BaseInterfaceModel):
         if not call_tree:
             return None
 
-        output = self.provider.network.ecosystem.decode_returndata(
-            self.method_called, call_tree.returndata
-        )
+        method_abi = self.method_called
+        if not method_abi:
+            return None
+
+        output = self.provider.network.ecosystem.decode_returndata(method_abi, call_tree.returndata)
         if isinstance(output, tuple) and len(output) < 2:
             # NOTE: Two special cases
             output = output[0] if len(output) == 1 else None
