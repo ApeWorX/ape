@@ -172,6 +172,13 @@ def subprocess_runner(subprocess_runner_cls):
 
 @pytest.fixture
 def switch_config(config):
+    """
+    A config-context switcher for Integration tests.
+    It will change the contents of the active project's config file,
+    reload it, yield, and change it back. Useful for testing different
+    config scenarios without having to create entire new projects.
+    """
+
     def replace_config(config_file, new_content: str):
         if config_file.is_file():
             config_file.unlink()

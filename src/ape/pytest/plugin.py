@@ -39,7 +39,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--gas-exclude",
         action="store",
-        help="A comma-separated list of contract:method-name patterns to ignore.",
+        help="A comma-separated list of contract:method-name glob-patterns to ignore.",
     )
 
     # NOTE: Other pytest plugins, such as hypothesis, should integrate with pytest separately

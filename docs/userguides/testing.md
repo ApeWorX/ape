@@ -314,7 +314,7 @@ test:
 ```
 
 Similarly, you can exclude sources via the CLI option `--gas-exclude`.
-The value `--gas-exclude` takes a comma-separated list of colon-separated values representing the structure similar as above, except you must explicitly use `*` where meaning "all".
+The value `--gas-exclude` takes is a comma-separated list of colon-separated values representing the structure similar as above, except you must explicitly use `*` where meaning "all".
 For example to exclude all methods starting with `DEBUG_`, you would do:
 
 ```bash

@@ -316,6 +316,12 @@ class ReceiptAPI(BaseInterfaceModel):
 
     @property
     def method_called(self) -> Optional[MethodABI]:
+        """
+        The method ABI of the method called to produce this receipt.
+        Requires both that the user is using a provider that supports traces
+        as well as for this to have been a contract invocation.
+        """
+
         call_tree = self.call_tree
         if not call_tree:
             return None

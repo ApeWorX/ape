@@ -9,7 +9,7 @@ from ape.utils import ManagerAccessMixin, cached_property
 class ConfigWrapper(ManagerAccessMixin):
     """
     A class aggregating settings choices from both the pytest command line
-    as well as the `ape-config.yaml` file. Also serves as a wrapper around the
+    as well as the ``ape-config.yaml`` file. Also serves as a wrapper around the
     Pytest config object for ease-of-use and code-sharing.
     """
 

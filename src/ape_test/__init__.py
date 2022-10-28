@@ -28,11 +28,11 @@ class GasConfig(PluginConfig):
 
     exclude: List[GasExclusion] = []
     """
-    Contract methods patterns to skip.
-    Skip all methods in a contract by including the contract name.
-    Skip a particular method in a contract by including a value like
-    ``<contract-name>:<method-name>``. Skip all methods starting with a
-    prefix by doing ``*:<prefix>*``
+    Contract methods patterns to skip. Specify ``contract:`` and not
+    ``method:`` to skip all methods in the contract. Only specify
+    ``method:`` to skip all methods across all contracts. Specify
+    both to skip methods in a certain contracts. Entries use glob-rules;
+    use ``prefix_*`` to skip all items with a certain prefix.
     """
 
 
