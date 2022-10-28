@@ -95,6 +95,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#advanced-testing-tips">Advanced Testing Tips</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#multi-chain-testing">Multi-chain Testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#gas-reporting">Gas Reporting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#iterative-testing">Iterative Testing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
@@ -266,7 +267,7 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <p>Use the <code class="docutils literal notranslate"><span class="pre">networks</span></code> fixture to change the active provider in tests.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_multi_chain</span><span class="p">(</span><span class="n">networks</span><span class="p">):</span>
     <span class="k">assert</span> <span class="s2">&quot;Something&quot;</span>  <span class="c1"># Make assertion in root network</span>
-    
+
     <span class="c1"># NOTE: Assume have ecosystem named &quot;foo&quot; with network &quot;local&quot; and provider &quot;bar&quot;</span>
     <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">foo</span><span class="o">.</span><span class="n">local</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;bar&quot;</span><span class="p">):</span>
         <span class="k">assert</span> <span class="s2">&quot;Something else&quot;</span>
@@ -325,7 +326,7 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <p>If you want to use sample projects, follow this link to <a class="reference external" href="https://github.com/ApeAcademy">Ape Academy</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>project                     # The root project directory
 └── tests/                  # Project tests folder, ran using the &#39;ape test&#39; command to run all tests within the folder.
-    └── conftest.py         # A file to define global variable for testing 
+    └── conftest.py         # A file to define global variable for testing
     └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use &#39;ape test test_accounts.py&#39; command
     └── test_mint.py        # A test file
 </pre></div>
@@ -348,10 +349,10 @@ The easiest way to achieve this is to use the <code class="docutils literal notr
 <span class="k">def</span> <span class="nf">test_my_fantom_test</span><span class="p">(</span><span class="n">networks</span><span class="p">):</span>
     <span class="c1"># The test starts in 1 ecosystem but switches to another</span>
     <span class="k">assert</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;ethereum&quot;</span>
-    
+
     <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fantom</span><span class="o">.</span><span class="n">local</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;fantom&quot;</span>
-    
+
     <span class="c1"># You can also use the context manager like this:</span>
     <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;fantom:local:test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
        <span class="k">assert</span> <span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;fantom&quot;</span>
@@ -408,6 +409,16 @@ Thus, you can enter and exit a provider’s context as much as you need in tests
   setNumber              <span class="m">1</span>   <span class="m">51021</span>   <span class="m">51021</span>   <span class="m">51021</span>    <span class="m">51021</span>
 </pre></div>
 </div>
+</section>
+<section id="iterative-testing">
+<h2>Iterative Testing<a class="headerlink" href="#iterative-testing" title="Permalink to this headline"></a></h2>
+<p>Ape has a set of flags that controls running your test suite locally in a “watch” mode,
+which means watching for updates to files in your project and re-triggering the test suite.</p>
+<p>To enable this mode, run <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span> <span class="pre">--watch</span></code> to set up this mode using the default settings.
+While in this mode, any time a <code class="docutils literal notranslate"><span class="pre">.py</span></code> file (i.e. your tests) or smart contract source file
+(i.e. any files that get compiled using your installed compiler plugins) is added, removed,
+or changed, then the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> task will be re-triggered, based on a polling interval.</p>
+<p>To exit this mode, press Ctrl+D (on Linux or macOS) to stop the execution and undo it.</p>
 </section>
 </section>
 

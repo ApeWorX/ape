@@ -140,7 +140,7 @@ Use the `networks` fixture to change the active provider in tests.
 ```python
 def test_multi_chain(networks):
     assert "Something"  # Make assertion in root network
-    
+
     # NOTE: Assume have ecosystem named "foo" with network "local" and provider "bar"
     with networks.foo.local.use_provider("bar"):
         assert "Something else"
@@ -210,7 +210,7 @@ If you want to use sample projects, follow this link to [Ape Academy](https://gi
 ```
 project                     # The root project directory
 └── tests/                  # Project tests folder, ran using the 'ape test' command to run all tests within the folder.
-    └── conftest.py         # A file to define global variable for testing 
+    └── conftest.py         # A file to define global variable for testing
     └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use 'ape test test_accounts.py' command
     └── test_mint.py        # A test file
 ```
@@ -235,10 +235,10 @@ The easiest way to achieve this is to use the `networks` provider context-manage
 def test_my_fantom_test(networks):
     # The test starts in 1 ecosystem but switches to another
     assert networks.provider.network.ecosystem.name == "ethereum"
-    
+
     with networks.fantom.local.use_provider("test") as provider:
         assert provider.network.ecosystem.name == "fantom"
-    
+
     # You can also use the context manager like this:
     with networks.parse_network_choice("fantom:local:test") as provider:
        assert provider.network.ecosystem.name == "fantom"
@@ -300,3 +300,15 @@ At the end of test suite, you will see tables such as:
  ───────────────────────────────────────────────────────────
   setNumber              1   51021   51021   51021    51021
 ```
+
+## Iterative Testing
+
+Ape has a set of flags that controls running your test suite locally in a "watch" mode,
+which means watching for updates to files in your project and re-triggering the test suite.
+
+To enable this mode, run `ape test --watch` to set up this mode using the default settings.
+While in this mode, any time a `.py` file (i.e. your tests) or smart contract source file
+(i.e. any files that get compiled using your installed compiler plugins) is added, removed,
+or changed, then the `ape test` task will be re-triggered, based on a polling interval.
+
+To exit this mode, press Ctrl+D (on Linux or macOS) to stop the execution and undo it.
