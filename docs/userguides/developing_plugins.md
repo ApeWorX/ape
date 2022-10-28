@@ -1,9 +1,9 @@
 # Developing Plugins
 
 Your plugin project can be any type of python project, so long as its package name starts with `ape_` (such as `ape_ethereum`).
-To create an `ape` plugin, implement one or more API classes from the the `ape.api` namespace and/or add key
+To create an `ape` plugin, implement one or more API classes from the `ape.api` namespace and/or add key
  `ape_cli_subcommands` to your entry-points list in your project's `setup.py`, depending on what type of plugin you want to create.
-This guide is intended to assist in both of those use-cases.
+This guide is intended to assist in both of those use cases.
 
 The following is a list of example plugins to use as a reference when developing plugins:
 
@@ -22,7 +22,7 @@ The template may be good to follow if you want to keep your plugin of similar qu
 
 ## Implementing API Classes
 
-API classes (classes from the `ape.api` namespace) are primary composed of abstract methods and properties that plugins must implement.
+API classes (classes from the `ape.api` namespace) are primarily composed of abstract methods and properties that plugins must implement.
 A benefit of the plugin system is that each plugin can implement these however they need, so long as they conform to the API interface.
 Two plugins with the same API may do entirely different things and yet be interchangeable in their usage.
 

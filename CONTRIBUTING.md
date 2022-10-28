@@ -31,7 +31,7 @@ Committing will now automatically run the local hooks and ensure that your commi
 
 ## Github Access Token
 
-If you are a member of ApeWorX and would like to install private plugins, 
+If you are a member of ApeWorX and would like to install private plugins,
 [create a Github access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
 
 Once you have your token, export it to your terminal session:
@@ -45,7 +45,7 @@ export GITHUB_ACCESS_TOKEN=<your-token>
 First, make sure you have the docs-related tooling installed:
 
 ```bash
-pip install -e .'[docs]'
+pip install -e .'[doc]'
 ```
 
 Then, run the following from the root project directory:

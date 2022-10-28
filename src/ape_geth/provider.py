@@ -259,7 +259,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
             self._geth = None
 
         # Must happen after geth.disconnect()
-        self._web3 = None  # type: ignore
+        self._web3 = None
         self._client_version = None
 
     def stream_request(self, method, params, iter_path="result.item"):

@@ -273,7 +273,7 @@ class ReceiptAPI(BaseInterfaceModel):
         if self.sender:
             sender_nonce = self.provider.get_nonce(self.sender)
 
-            while sender_nonce == self.nonce:  # type: ignore
+            while sender_nonce == self.nonce:
                 time.sleep(1)
                 sender_nonce = self.provider.get_nonce(self.sender)
                 iteration += 1
