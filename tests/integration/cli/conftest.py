@@ -1,5 +1,6 @@
 import subprocess
 import sys
+from contextlib import contextmanager
 from distutils.dir_util import copy_tree
 from importlib import import_module
 from pathlib import Path
@@ -167,3 +168,31 @@ def subprocess_runner_cls():
 @pytest.fixture(scope="session")
 def subprocess_runner(subprocess_runner_cls):
     return subprocess_runner_cls()
+
+
+@pytest.fixture
+def switch_config(config):
+    def replace_config(config_file, new_content: str):
+        if config_file.is_file():
+            config_file.unlink()
+
+        config_file.touch()
+        config_file.write_text(new_content)
+
+    @contextmanager
+    def switch(project, new_content: str):
+        config_file = project.path / "ape-config.yaml"
+        original = config_file.read_text() if config_file.is_file() else None
+
+        try:
+            replace_config(config_file, new_content)
+            config.load(force_reload=True)
+            yield
+        finally:
+            if original:
+                replace_config(config_file, original)
+            elif config_file.is_file():
+                # Delete created config.
+                config_file.unlink()
+
+    return switch

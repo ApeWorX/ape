@@ -298,12 +298,15 @@ class CallTraceParser(ManagerAccessMixin):
         return parse_gas_table(report)
 
     def _get_contract_id(
-        self, address: "AddressType", contract_type: Optional[ContractType] = None
+        self,
+        address: "AddressType",
+        contract_type: Optional[ContractType] = None,
+        use_symbol: bool = True,
     ) -> str:
         if not contract_type:
             return self._get_contract_id_from_address(address)
 
-        if "symbol" in contract_type.view_methods:
+        if use_symbol and "symbol" in contract_type.view_methods:
             # Use token symbol as name
             contract = self._receipt.chain_manager.contracts.instance_at(
                 address, contract_type=contract_type, txn_hash=self._receipt.txn_hash
@@ -335,7 +338,7 @@ class CallTraceParser(ManagerAccessMixin):
         address = self._receipt.provider.network.ecosystem.decode_address(calltree.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
         selector = calltree.calldata[:4]
-        contract_id = self._get_contract_id(address, contract_type=contract_type)
+        contract_id = self._get_contract_id(address, contract_type=contract_type, use_symbol=False)
 
         if contract_id == _ETH_TRANSFER and address in self.account_manager:
             receiver_id = self.account_manager[address].alias or address
@@ -345,9 +348,8 @@ class CallTraceParser(ManagerAccessMixin):
             method_id = f"to:{address}"
 
         elif contract_type:
-            # NOTE: Use source ID when possible to distinguish between sources with the same
-            #  symbol or contract name.
-            contract_id = contract_type.source_id or contract_id
+            # NOTE: Use contract name when possible to distinguish between sources with the same
+            #  symbol. Also, ape projects don't permit multiple contract types with the same name.
             method_abi = _get_method_abi(selector, contract_type)
             method_id = selector.hex() if not method_abi else method_abi.name
 

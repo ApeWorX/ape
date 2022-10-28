@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from pydantic import PositiveInt
 
 from ape import plugins
@@ -9,9 +11,35 @@ from .accounts import TestAccount, TestAccountContainer
 from .provider import LocalProvider
 
 
+class GasExclusion(PluginConfig):
+    contract: Optional[str] = None
+    method: Optional[str] = None
+
+
+class GasConfig(PluginConfig):
+    """
+    Configuration related to test gas reports.
+    """
+
+    show: bool = False
+    """
+    Set to ``True`` to always show gas.
+    """
+
+    exclude: List[GasExclusion] = []
+    """
+    Contract methods patterns to skip.
+    Skip all methods in a contract by including the contract name.
+    Skip a particular method in a contract by including a value like
+    ``<contract-name>:<method-name>``. Skip all methods starting with a
+    prefix by doing ``*:<prefix>*``
+    """
+
+
 class Config(PluginConfig):
     mnemonic: str = DEFAULT_TEST_MNEMONIC
     number_of_accounts: PositiveInt = DEFAULT_NUMBER_OF_TEST_ACCOUNTS
+    gas: GasConfig = GasConfig()
 
 
 @plugins.register(plugins.Config)

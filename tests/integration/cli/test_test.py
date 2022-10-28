@@ -54,3 +54,19 @@ def test_gas_flag(ape_test_runner, project):
         "Provider 'test' does not support transaction "
         "tracing and is unable to display a gas profile"
     ) in result.output
+
+
+@skip_projects_except(["test"])
+def test_gas_flag_set_in_config(ape_test_runner, project, switch_config):
+    gas_config = r"""
+    test:
+      gas:
+        show: true
+    """
+    with switch_config(project, gas_config):
+        assert project.config_manager.get_config("test").gas.show
+        result = ape_test_runner.invoke()
+        assert (
+            "Provider 'test' does not support transaction "
+            "tracing and is unable to display a gas profile"
+        ) in result.output
