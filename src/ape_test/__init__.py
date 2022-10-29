@@ -12,8 +12,8 @@ from .provider import LocalProvider
 
 
 class GasExclusion(PluginConfig):
-    contract: str = "*"  # If only given method, searches across all contracts.
-    method: Optional[str] = None
+    contract_name: str = "*"  # If only given method, searches across all contracts.
+    method_name: Optional[str] = None  # By default, match all methods in a contract
 
 
 class GasConfig(PluginConfig):

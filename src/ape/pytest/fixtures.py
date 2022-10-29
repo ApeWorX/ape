@@ -219,11 +219,11 @@ class ReceiptCapture(ManagerAccessMixin):
 
         for exclusion in self.config_wrapper.gas_exclusions:
             # Default to looking at all contracts
-            contract_pattern = exclusion.contract
+            contract_pattern = exclusion.contract_id
             if not fnmatch(contract_name, contract_pattern) or not method_name:
                 continue
 
-            method_pattern = exclusion.method
+            method_pattern = exclusion.method_id
             if not method_pattern or fnmatch(method_name, method_pattern):
                 return True
 

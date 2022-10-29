@@ -59,7 +59,11 @@ class ConfigWrapper(ManagerAccessMixin):
                 exclusions.append(exclusion)
 
         config_value = self.ape_test_config.gas.exclude
-        exclusions.extend(config_value)
+        paths = [
+            ContractFunctionPath(contract_id=x.contract_name, method_id=x.method_name)
+            for x in config_value
+        ]
+        exclusions.extend(paths)
         return exclusions
 
     def get_pytest_plugin(self, name: str) -> Any:

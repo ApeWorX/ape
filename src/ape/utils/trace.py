@@ -347,11 +347,11 @@ class CallTraceParser(ManagerAccessMixin):
         contract_id = self._get_contract_id(address, contract_type=contract_type, use_symbol=False)
 
         for exclusion in exclusions:
-            if exclusion.method is not None:
+            if exclusion.method_id is not None:
                 # Method-related excludes are handled below, even when contract also specified.
                 continue
 
-            if fnmatch.fnmatch(contract_id, exclusion.contract):
+            if fnmatch.fnmatch(contract_id, exclusion.contract_id):
                 # Skip this whole contract
                 reports = [x for x in map(this_method, sub_calls, exclude_arg)]
                 if len(reports) == 1:
@@ -375,15 +375,15 @@ class CallTraceParser(ManagerAccessMixin):
             method_id = selector.hex() if not method_abi else method_abi.name
 
             for exclusion in exclusions:
-                if not exclusion.method:
+                if not exclusion.method_id:
                     # Full contract skips handled above.
                     continue
 
-                elif not fnmatch.fnmatch(contract_id, exclusion.contract):
+                elif not fnmatch.fnmatch(contract_id, exclusion.contract_id):
                     # Method may match, but contract does not match, so continue.
                     continue
 
-                elif fnmatch.fnmatch(method_id, exclusion.method):
+                elif fnmatch.fnmatch(method_id, exclusion.method_id):
                     # Skip this report
                     reports = [r for r in map(this_method, sub_calls, exclude_arg)]
                     if len(reports) == 1:
