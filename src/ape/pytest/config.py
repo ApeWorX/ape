@@ -33,6 +33,10 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("--disable-warnings")
 
     @cached_property
+    def disconnect_providers_after(self) -> bool:
+        return self.ape_test_config.disconnect_providers_after
+
+    @cached_property
     def ape_test_config(self):
         return self.config_manager.get_config("test")
 

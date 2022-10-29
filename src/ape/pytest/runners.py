@@ -178,6 +178,6 @@ class PytestApeRunner(ManagerAccessMixin):
                 )
 
     def pytest_unconfigure(self):
-        if self._provider_is_connected:
+        if self._provider_is_connected and self.config_wrapper.disconnect_providers_after:
             self._provider_context.disconnect_all()
             self._provider_is_connected = False

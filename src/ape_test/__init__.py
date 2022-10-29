@@ -38,8 +38,24 @@ class GasConfig(PluginConfig):
 
 class Config(PluginConfig):
     mnemonic: str = DEFAULT_TEST_MNEMONIC
+    """
+    The mnemonic to use when generating the test accounts.
+    """
+
     number_of_accounts: PositiveInt = DEFAULT_NUMBER_OF_TEST_ACCOUNTS
+    """
+    The number of test accounts to generate in the provider.
+    """
+
     gas: GasConfig = GasConfig()
+    """
+    Configuration related to gas reporting.
+    """
+
+    disconnect_providers_after: bool = True
+    """
+    Set to ``False`` to keep providers connected at the end of the test run.
+    """
 
 
 @plugins.register(plugins.Config)
