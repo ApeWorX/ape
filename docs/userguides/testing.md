@@ -307,10 +307,10 @@ The following demonstrates how to use the `ape-config.yaml` file to exclude cont
 test:
   gas:
     exclude:
-      - method: DEBUG_*         # Exclude all methods starting with `DEBUG_`.
-      - contract: MockToken     # Exclude all methods in contract named `MockToken`.
-      - contract: PoolContract  # Exclude methods starting with `reset_` in `PoolContract`.
-        method: reset_*
+      - method_name: DEBUG_*         # Exclude all methods starting with `DEBUG_`.
+      - contract_name: MockToken     # Exclude all methods in contract named `MockToken`.
+      - contract_name: PoolContract  # Exclude methods starting with `reset_` in `PoolContract`.
+        method_name: reset_*
 ```
 
 Similarly, you can exclude sources via the CLI option `--gas-exclude`.
