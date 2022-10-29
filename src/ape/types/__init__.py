@@ -71,19 +71,19 @@ class ContractFunctionPath:
     Useful for identifying a method in a contract.
     """
 
-    contract_id: str
-    method_id: Optional[str] = None
+    contract_name: str
+    method_name: Optional[str] = None
 
     @classmethod
     def from_str(cls, value: str) -> "ContractFunctionPath":
         if ":" in value:
             contract_name, method_name = value.split(":")
-            return cls(contract_id=contract_name, method_id=method_name)
+            return cls(contract_name=contract_name, method_name=method_name)
 
-        return cls(contract_id=value)
+        return cls(contract_name=value)
 
     def __str__(self) -> str:
-        return f"{self.contract_id}:{self.method_id}"
+        return f"{self.contract_name}:{self.method_name}"
 
     def __repr__(self) -> str:
         return f"<{self}>"

@@ -60,7 +60,7 @@ class ConfigWrapper(ManagerAccessMixin):
 
         config_value = self.ape_test_config.gas.exclude
         paths = [
-            ContractFunctionPath(contract_id=x.contract_name, method_id=x.method_name)
+            ContractFunctionPath(contract_name=x.contract_name, method_name=x.method_name)
             for x in config_value
         ]
         exclusions.extend(paths)
