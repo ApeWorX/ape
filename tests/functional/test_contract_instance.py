@@ -379,3 +379,24 @@ def test_transact_specify_auto_gas(vyper_contract_instance, owner):
 def test_transact_specify_max_gas(vyper_contract_instance, owner):
     receipt = vyper_contract_instance.setNumber(123, sender=owner, gas="max")
     assert not receipt.failed
+
+
+def test_dir(vyper_contract_instance):
+    actual = dir(vyper_contract_instance)
+    expected = [
+        # From base class
+        "address",
+        "balance",
+        "code",
+        "contract_type",
+        "codesize",
+        "nonce",
+        "is_contract",
+        "provider",
+        "receipt",
+        "txn_hash",
+        *vyper_contract_instance._events_,
+        *vyper_contract_instance._mutable_methods_,
+        *vyper_contract_instance._view_methods_,
+    ]
+    assert sorted(actual) == sorted(expected)

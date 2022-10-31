@@ -2,6 +2,7 @@ import tempfile
 
 import pytest
 from github import UnknownObjectException
+from requests.exceptions import ConnectTimeout
 
 from ape.utils.github import GithubClient, GitRemoteCallbacks
 
@@ -48,7 +49,10 @@ class TestGithubClient:
         client = GithubClient()
         git_patch = mocker.patch("ape.utils.github.pygit2.clone_repository")
         with tempfile.TemporaryDirectory() as temp_dir:
-            client.clone_repo("dapphub/ds-test", temp_dir, branch="master")
+            try:
+                client.clone_repo("dapphub/ds-test", temp_dir, branch="master")
+            except ConnectTimeout:
+                pytest.skip("Internet required to run this test.")
 
         call_args = git_patch.call_args[0]
         call_kwargs = git_patch.call_args[1]
