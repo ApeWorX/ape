@@ -387,7 +387,7 @@ Thus, you can enter and exit a provider’s context as much as you need in tests
 </pre></div>
 </div>
 <p>At the end of test suite, you will see tables such as:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>                            FundMe.vy Gas
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>                            FundMe Gas
 
   Method           Times called    Min.    Max.    Mean   Median
  ────────────────────────────────────────────────────────────────
@@ -402,11 +402,35 @@ Thus, you can enter and exit a provider’s context as much as you need in tests
  ───────────────────────────────────────────────────────
   to:test0              <span class="m">2</span>   <span class="m">2400</span>   <span class="m">9100</span>   <span class="m">5750</span>     <span class="m">5750</span>
 
-                     TestContract.vy Gas
+                     TestContract Gas
 
   Method      Times called    Min.    Max.    Mean   Median
  ───────────────────────────────────────────────────────────
   setNumber              <span class="m">1</span>   <span class="m">51021</span>   <span class="m">51021</span>   <span class="m">51021</span>    <span class="m">51021</span>
+</pre></div>
+</div>
+<p>The following demonstrates how to use the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file to exclude contracts and / or methods from the gas report:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">gas</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEBUG_*</span><span class="w">         </span><span class="c1"># Exclude all methods starting with `DEBUG_`.</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MockToken</span><span class="w">     </span><span class="c1"># Exclude all methods in contract named `MockToken`.</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PoolContract</span><span class="w">  </span><span class="c1"># Exclude methods starting with `reset_` in `PoolContract`.</span><span class="w"></span>
+<span class="w">        </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reset_*</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Similarly, you can exclude sources via the CLI option <code class="docutils literal notranslate"><span class="pre">--gas-exclude</span></code>.
+The value <code class="docutils literal notranslate"><span class="pre">--gas-exclude</span></code> takes is a comma-separated list of colon-separated values representing the structure similar as above, except you must explicitly use <code class="docutils literal notranslate"><span class="pre">*</span></code> where meaning “all”.
+For example to exclude all methods starting with <code class="docutils literal notranslate"><span class="pre">DEBUG_</span></code>, you would do:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --gas --gas-exclude <span class="s2">&quot;*:DEBUG_*&quot;</span>.
+</pre></div>
+</div>
+<p>To exclude all methods in the <code class="docutils literal notranslate"><span class="pre">MockToken</span></code> contract, do:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --gas --gas-exclude MockToken
+</pre></div>
+</div>
+<p>And finally, to exclude all methods starting with <code class="docutils literal notranslate"><span class="pre">reset_</span></code> in <code class="docutils literal notranslate"><span class="pre">PoolContract</span></code>, do:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --gas --gas-exclude <span class="s2">&quot;PoolContract:reset_*&quot;</span>
 </pre></div>
 </div>
 </section>

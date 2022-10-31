@@ -2502,6 +2502,14 @@ Ecosystem plugins override this property when their receipts
 are able to be failing.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.method_called">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">method_called</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.abi.MethodABI</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.method_called" title="Permalink to this definition"></a></dt>
+<dd><p>The method ABI of the method called to produce this receipt.
+Requires both that the user is using a provider that supports traces
+as well as for this to have been a contract invocation.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.raise_for_status">
 <span class="sig-name descname"><span class="pre">raise_for_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.raise_for_status" title="Permalink to this definition"></a></dt>

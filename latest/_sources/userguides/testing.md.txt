@@ -279,7 +279,7 @@ ape test --network ethereum:local:hardhat --gas
 At the end of test suite, you will see tables such as:
 
 ```sh
-                            FundMe.vy Gas
+                            FundMe Gas
 
   Method           Times called    Min.    Max.    Mean   Median
  ────────────────────────────────────────────────────────────────
@@ -294,11 +294,43 @@ At the end of test suite, you will see tables such as:
  ───────────────────────────────────────────────────────
   to:test0              2   2400   9100   5750     5750
 
-                     TestContract.vy Gas
+                     TestContract Gas
 
   Method      Times called    Min.    Max.    Mean   Median
  ───────────────────────────────────────────────────────────
   setNumber              1   51021   51021   51021    51021
+```
+
+The following demonstrates how to use the `ape-config.yaml` file to exclude contracts and / or methods from the gas report:
+
+```yaml
+test:
+  gas:
+    exclude:
+      - method_name: DEBUG_*         # Exclude all methods starting with `DEBUG_`.
+      - contract_name: MockToken     # Exclude all methods in contract named `MockToken`.
+      - contract_name: PoolContract  # Exclude methods starting with `reset_` in `PoolContract`.
+        method_name: reset_*
+```
+
+Similarly, you can exclude sources via the CLI option `--gas-exclude`.
+The value `--gas-exclude` takes is a comma-separated list of colon-separated values representing the structure similar as above, except you must explicitly use `*` where meaning "all".
+For example to exclude all methods starting with `DEBUG_`, you would do:
+
+```bash
+ape test --gas --gas-exclude "*:DEBUG_*".
+```
+
+To exclude all methods in the `MockToken` contract, do:
+
+```bash
+ape test --gas --gas-exclude MockToken
+```
+
+And finally, to exclude all methods starting with `reset_` in `PoolContract`, do:
+
+```bash
+ape test --gas --gas-exclude "PoolContract:reset_*"
 ```
 
 ## Iterative Testing
