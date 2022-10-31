@@ -11,6 +11,26 @@ class BaseAddress(BaseInterface):
     """
 
     @property
+    def _base_dir_values(self) -> List[str]:
+        """
+        This exists because when you call ``dir(BaseAddress)``, you get the type's return
+        value and not the instances. This allows base-classes to make use of shared
+        ``IPython`` ``__dir__`` values.
+        """
+
+        # NOTE: mypy is confused by abstract properties.
+        #  https://github.com/python/typing/issues/1112
+        return [
+            str(BaseAddress.address.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.balance.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.code.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.codesize.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.nonce.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.is_contract.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.provider.fget.__name__),  # type: ignore[attr-defined]
+        ]
+
+    @property
     @abstractmethod
     def address(self) -> AddressType:
         """
@@ -35,19 +55,12 @@ class BaseAddress(BaseInterface):
     def __dir__(self) -> List[str]:
         """
         Display methods to IPython on ``a.[TAB]`` tab completion.
+        Overridden to lessen amount of methods shown to only those that are useful.
 
         Returns:
             List[str]: Method names that IPython uses for tab completion.
         """
-        return [
-            "address",
-            "balance",
-            "code",
-            "codesize",
-            "nonce",
-            "is_contract",
-            "provider",
-        ]
+        return self._base_dir_values
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.address}>"

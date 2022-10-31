@@ -5,14 +5,13 @@ import click
 from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
 
+from ape.api.address import BaseAddress
+from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.types.signatures import _Signature
 from ape.utils import BaseInterfaceModel, abstractmethod
-
-from .address import BaseAddress
-from .transactions import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance
@@ -30,13 +29,16 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             List[str]: Method names that IPython uses for tab completion.
         """
-        return list(super(BaseAddress, self).__dir__()) + [
-            "alias",
-            "sign_message",
-            "sign_transaction",
-            "call",
-            "transfer",
-            "deploy",
+        base_value_excludes = ("code", "codesize", "is_contract")  # Not needed for accounts
+        base_values = [v for v in self._base_dir_values if v not in base_value_excludes]
+        return base_values + [
+            self.__class__.alias.fget.__name__,  # type: ignore[attr-defined]
+            self.__class__.call.__name__,
+            self.__class__.deploy.__name__,
+            self.__class__.prepare_transaction.__name__,
+            self.__class__.sign_message.__name__,
+            self.__class__.sign_transaction.__name__,
+            self.__class__.transfer.__name__,
         ]
 
     @property
