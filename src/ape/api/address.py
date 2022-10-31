@@ -18,7 +18,7 @@ class BaseAddress(BaseInterface):
         ``IPython`` ``__dir__`` values.
         """
 
-        # NOTE: mypy is confused by abstract properties.
+        # NOTE: mypy is confused by properties.
         #  https://github.com/python/typing/issues/1112
         return [
             str(BaseAddress.address.fget.__name__),  # type: ignore[attr-defined]

@@ -202,4 +202,7 @@ def switch_config(config):
                 # Delete created config.
                 config_file.unlink()
 
+        # Reload back
+        config.load(force_reload=True)
+
     return switch

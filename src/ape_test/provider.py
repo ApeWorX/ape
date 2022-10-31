@@ -68,9 +68,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         block_id = kwargs.pop("block_identifier", None)
         estimate_gas = self.web3.eth.estimate_gas
+        txn_dict = txn.dict()
+        if txn_dict.get("gas") == "auto":
+            # Remove from dict before estimating
+            txn_dict.pop("gas")
 
         try:
-            return estimate_gas(txn.dict(), block_identifier=block_id)  # type: ignore
+            return estimate_gas(txn_dict, block_identifier=block_id)  # type: ignore
         except (ValidationError, TransactionFailed) as err:
             ape_err = self.get_virtual_machine_error(err, sender=txn.sender)
             gas_match = self._INVALID_NONCE_PATTERN.match(str(ape_err))

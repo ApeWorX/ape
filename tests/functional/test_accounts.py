@@ -380,6 +380,4 @@ def test_dir(core_account):
         "sign_transaction",
         "transfer",
     ]
-    missing = [x for x in actual if x not in expected]
-    err_msg = f"Extra: {', '.join(missing)}" if missing else ""
-    assert actual == expected, err_msg
+    assert sorted(actual) == sorted(expected)

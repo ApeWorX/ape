@@ -399,6 +399,4 @@ def test_dir(vyper_contract_instance):
         *vyper_contract_instance._mutable_methods_,
         *vyper_contract_instance._view_methods_,
     ]
-    missing = [x for x in actual if x not in expected]
-    err_msg = f"Extra: {', '.join(missing)}" if missing else ""
-    assert actual == expected, err_msg
+    assert sorted(actual) == sorted(expected)
