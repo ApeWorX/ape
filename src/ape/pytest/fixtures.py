@@ -1,7 +1,8 @@
+import copy
+from fnmatch import fnmatch
 from typing import Dict, Iterator, List, Optional
 
 import pytest
-from _pytest.config import Config as PytestConfig
 from evm_trace.gas import merge_reports
 
 from ape.api import ReceiptAPI, TestAccountAPI
@@ -9,6 +10,7 @@ from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
+from ape.pytest.config import ConfigWrapper
 from ape.types import GasReport, SnapshotID
 from ape.utils import CallTraceParser, ManagerAccessMixin, allow_disconnected, cached_property
 
@@ -19,11 +21,10 @@ class PytestApeFixtures(ManagerAccessMixin):
     # `ape test -q --fixture` (`pytest -q --fixture`).
 
     _warned_for_unimplemented_snapshot = False
-    pytest_config: PytestConfig
     receipt_capture: "ReceiptCapture"
 
-    def __init__(self, pytest_config, receipt_capture: "ReceiptCapture"):
-        self.pytest_config = pytest_config
+    def __init__(self, config_wrapper: ConfigWrapper, receipt_capture: "ReceiptCapture"):
+        self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
 
     @cached_property
@@ -113,13 +114,13 @@ class PytestApeFixtures(ManagerAccessMixin):
 
 
 class ReceiptCapture(ManagerAccessMixin):
-    pytest_config: PytestConfig
+    config_wrapper: ConfigWrapper
     gas_report: Optional[GasReport] = None
-    receipt_map: Dict[str, ReceiptAPI] = {}
+    receipt_map: Dict[str, Dict[str, ReceiptAPI]] = {}
     enter_blocks: List[int] = []
 
-    def __init__(self, pytest_config):
-        self.pytest_config = pytest_config
+    def __init__(self, config_wrapper: ConfigWrapper):
+        self.config_wrapper = config_wrapper
 
     def __enter__(self):
         block_number = self._get_block_number()
@@ -137,10 +138,6 @@ class ReceiptCapture(ManagerAccessMixin):
 
         self.capture_range(start_block, stop_block)
 
-    @cached_property
-    def _track_gas(self) -> bool:
-        return self.pytest_config.getoption("--gas")
-
     def capture_range(self, start_block: int, stop_block: int):
         blocks = self.chain_manager.blocks.range(start_block, stop_block + 1)
         transactions = [
@@ -154,24 +151,55 @@ class ReceiptCapture(ManagerAccessMixin):
             self.capture(txn.txn_hash.hex())
 
     def capture(self, transaction_hash: str, track_gas: Optional[bool] = None):
-        if transaction_hash in self.receipt_map:
-            return
-
         receipt = self.chain_manager.account_history.get_receipt(transaction_hash)
-        self.receipt_map[transaction_hash] = receipt
         if not receipt:
             return
 
-        if not receipt.receiver:
+        contract_address = receipt.receiver
+        if not contract_address:
             # TODO: Handle deploy receipts once trace supports it
             return
 
+        contract_type = self.chain_manager.contracts.get(contract_address)
+        if not contract_type:
+            # Not an invoke-transaction or a known address
+            return
+
+        source_id = contract_type.source_id or None
+        if not source_id:
+            # Not a local or known contract type.
+            return
+
+        elif source_id not in self.receipt_map:
+            self.receipt_map[source_id] = {}
+
+        if transaction_hash in self.receipt_map[source_id]:
+            # Transaction already known.
+            return
+
+        self.receipt_map[source_id][transaction_hash] = receipt
+
         # Merge-in the receipt's gas report with everything so far.
         call_tree = receipt.call_tree
-        do_track_gas = track_gas if track_gas is not None else self._track_gas
+        do_track_gas = self.config_wrapper.track_gas if track_gas is None else track_gas
+        exclusions = self.config_wrapper.gas_exclusions
+        if exclusions:
+            contract_address = receipt.receiver
+            contract_type = self.chain_manager.contracts[contract_address]
+            contract_name = contract_type.name
+            method_called = receipt.method_called
+            method_name = method_called.name if method_called else None
+
         if do_track_gas and call_tree:
             parser = CallTraceParser(receipt)
-            gas_report = parser._get_rich_gas_report(call_tree)
+            for exclusion in exclusions:
+                if contract_name and self._exclude_from_gas_report(contract_name, method_name):
+                    return
+
+            # Update the gas report using this receipt
+            gas_report = parser._get_rich_gas_report(
+                call_tree, exclude=self.config_wrapper.gas_exclusions
+            )
             if self.gas_report:
                 self.gas_report = merge_reports(self.gas_report, gas_report)
             else:
@@ -180,3 +208,35 @@ class ReceiptCapture(ManagerAccessMixin):
     @allow_disconnected
     def _get_block_number(self) -> Optional[int]:
         return self.provider.get_block("latest").number
+
+    def _exclude_from_gas_report(
+        self, contract_name: str, method_name: Optional[str] = None
+    ) -> bool:
+        """
+        Helper method to determine if a certain contract / method combination should be
+        excluded from the gas report.
+        """
+
+        for exclusion in self.config_wrapper.gas_exclusions:
+            # Default to looking at all contracts
+            contract_pattern = exclusion.contract_name
+            if not fnmatch(contract_name, contract_pattern) or not method_name:
+                continue
+
+            method_pattern = exclusion.method_name
+            if not method_pattern or fnmatch(method_name, method_pattern):
+                return True
+
+        return False
+
+
+def _build_report(report: Dict, contract: str, method: str, usages: List) -> Dict:
+    new_dict = copy.deepcopy(report)
+    if contract not in new_dict:
+        new_dict[contract] = {method: usages}
+    elif method not in new_dict[contract]:
+        new_dict[contract][method] = usages
+    else:
+        new_dict[contract][method].extend(usages)
+
+    return new_dict

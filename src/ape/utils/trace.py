@@ -1,3 +1,4 @@
+import fnmatch
 import json
 import re
 from dataclasses import dataclass
@@ -25,8 +26,7 @@ from ape.utils.misc import ZERO_ADDRESS
 if TYPE_CHECKING:
     from ape.api.networks import EcosystemAPI
     from ape.api.transactions import ReceiptAPI
-    from ape.types import AddressType, GasReport
-
+    from ape.types import AddressType, ContractFunctionPath, GasReport
 
 _DEFAULT_TRACE_GAS_PATTERN = re.compile(r"\[\d* gas]")
 _DEFAULT_WRAP_THRESHOLD = 50
@@ -298,12 +298,15 @@ class CallTraceParser(ManagerAccessMixin):
         return parse_gas_table(report)
 
     def _get_contract_id(
-        self, address: "AddressType", contract_type: Optional[ContractType] = None
+        self,
+        address: "AddressType",
+        contract_type: Optional[ContractType] = None,
+        use_symbol: bool = True,
     ) -> str:
         if not contract_type:
             return self._get_contract_id_from_address(address)
 
-        if "symbol" in contract_type.view_methods:
+        if use_symbol and "symbol" in contract_type.view_methods:
             # Use token symbol as name
             contract = self._receipt.chain_manager.contracts.instance_at(
                 address, contract_type=contract_type, txn_hash=self._receipt.txn_hash
@@ -331,11 +334,32 @@ class CallTraceParser(ManagerAccessMixin):
 
         return address
 
-    def _get_rich_gas_report(self, calltree: CallTreeNode) -> "GasReport":
+    def _get_rich_gas_report(
+        self, calltree: CallTreeNode, exclude: Optional[List["ContractFunctionPath"]] = None
+    ) -> "GasReport":
+        exclusions = exclude or []
+        sub_calls = calltree.calls
+        this_method = self._get_rich_gas_report
+        exclude_arg = [exclusions for _ in sub_calls]
         address = self._receipt.provider.network.ecosystem.decode_address(calltree.address)
         contract_type = self._receipt.chain_manager.contracts.get(address)
         selector = calltree.calldata[:4]
-        contract_id = self._get_contract_id(address, contract_type=contract_type)
+        contract_id = self._get_contract_id(address, contract_type=contract_type, use_symbol=False)
+
+        for exclusion in exclusions:
+            if exclusion.method_name is not None:
+                # Method-related excludes are handled below, even when contract also specified.
+                continue
+
+            if fnmatch.fnmatch(contract_id, exclusion.contract_name):
+                # Skip this whole contract
+                reports = [x for x in map(this_method, sub_calls, exclude_arg)]
+                if len(reports) == 1:
+                    return reports[0]
+                elif len(reports) > 1:
+                    return merge_reports(*reports)
+                else:
+                    return {}
 
         if contract_id == _ETH_TRANSFER and address in self.account_manager:
             receiver_id = self.account_manager[address].alias or address
@@ -345,17 +369,39 @@ class CallTraceParser(ManagerAccessMixin):
             method_id = f"to:{address}"
 
         elif contract_type:
-            # NOTE: Use source ID when possible to distinguish between sources with the same
-            #  symbol or contract name.
-            contract_id = contract_type.source_id or contract_id
+            # NOTE: Use contract name when possible to distinguish between sources with the same
+            #  symbol. Also, ape projects don't permit multiple contract types with the same name.
             method_abi = _get_method_abi(selector, contract_type)
             method_id = selector.hex() if not method_abi else method_abi.name
+
+            for exclusion in exclusions:
+                if not exclusion.method_name:
+                    # Full contract skips handled above.
+                    continue
+
+                elif not fnmatch.fnmatch(contract_id, exclusion.contract_name):
+                    # Method may match, but contract does not match, so continue.
+                    continue
+
+                elif fnmatch.fnmatch(method_id, exclusion.method_name):
+                    # Skip this report
+                    reports = [r for r in map(this_method, sub_calls, exclude_arg)]
+                    if len(reports) == 1:
+                        return reports[0]
+                    elif len(reports) > 1:
+                        return merge_reports(*reports)
+                    else:
+                        return {}
 
         else:
             method_id = selector.hex()
 
         report = {contract_id: {method_id: [calltree.gas_cost] if calltree.gas_cost else []}}
-        return merge_reports(report, *map(self._get_rich_gas_report, calltree.calls))
+        reports = [r for r in map(this_method, sub_calls, exclude_arg)]
+        if len(reports) >= 1:
+            return merge_reports(report, *reports)
+        else:
+            return report
 
 
 @dataclass()
