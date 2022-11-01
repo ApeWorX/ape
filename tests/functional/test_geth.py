@@ -3,6 +3,7 @@ from typing import cast
 
 import pytest
 from eth_typing import HexStr
+from evm_trace import CallType
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -14,10 +15,45 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape_ethereum.ecosystem import Block
+from ape_ethereum.transactions import TransactionStatusEnum
 from ape_geth import GethProvider
 from tests.functional.data.python import TRACE_RESPONSE
 
 TEST_REVERT_REASON = "TEST REVERT REASON."
+TRACE_FRAME_DATA = [
+    {
+        "pc": 1564,
+        "op": "RETURN",
+        "gas": 0,
+        "gasCost": 0,
+        "depth": 1,
+        "callType": CallType.CALL.value,
+        "stack": [
+            "0000000000000000000000000000000000000000000000000000000040c10f19",
+            "0000000000000000000000000000000000000000000000000000000000000020",
+            "0000000000000000000000000000000000000000000000000000000000000140",
+        ],
+        "memory": [
+            "0000000000000000000000001e59ce931b4cfea3fe4b875411e280e173cb7a9c",
+            "0000000000000000000000000000000000000000000000000000000000000001",
+        ],
+        "storage": {
+            "0000000000000000000000000000000000000000000000000000000000000004": "0000000000000000000000001e59ce931b4cfea3fe4b875411e280e173cb7a9c",  # noqa: E501
+            "ad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb5": "0000000000000000000000001e59ce931b4cfea3fe4b875411e280e173cb7a9c",  # noqa: E501
+            "aadb61a4b4c5d48b7a5669391b7c73852a3ab7795f24721b9a439220b54b591b": "0000000000000000000000000000000000000000000000000000000000000001",  # noqa: E501
+        },
+    }
+]
+TRANSACTION_HASH = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
+RECEIPT_DATA = {
+    "hash": TRANSACTION_HASH,
+    "status": TransactionStatusEnum.NO_ERROR.value,
+    "gas_limit": 100,
+    "gas_price": 10,
+    "block_number": 123,
+    "gas_used": 999,
+    "to": "0x1230000000000000000000000000000000000123",
+}
 
 
 @pytest.fixture
@@ -115,15 +151,29 @@ def test_uri_uses_value_from_settings(mock_network, mock_web3, temp_config):
         assert provider.uri == "value/from/settings"
 
 
+def test_get_call_tree(mock_web3, geth_provider):
+    def side_effects(method_name: str, *args, **kwargs):
+        if method_name == "trace_transaction":
+            return {"error": "Method 'trace_transaction' does not exist/is not available"}
+        elif method_name == "debug_traceTransaction":
+            return TRACE_FRAME_DATA
+
+    mock_web3.clientVersion = "geth_MOCK"
+    mock_web3.provider.make_request.side_effects = side_effects
+    mock_web3.eth.get_transaction.return_value = RECEIPT_DATA
+    result = geth_provider.get_call_tree(TRANSACTION_HASH)
+    actual = repr(result)
+    expected = f"CALL: {RECEIPT_DATA['to']} [999 gas]"
+    assert expected in actual
+
+
 def test_get_call_tree_erigon(mock_web3, geth_provider, trace_response):
     mock_web3.clientVersion = "erigon_MOCK"
     mock_web3.provider.make_request.return_value = trace_response
-    result = geth_provider.get_call_tree(
-        "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
-    )
-    assert "CALL: 0xC17f2C69aE2E66FD87367E3260412EEfF637F70E.<0x96d373e5> [1401584 gas]" in repr(
-        result
-    )
+    result = geth_provider.get_call_tree(TRANSACTION_HASH)
+    actual = repr(result)
+    expected = "CALL: 0xC17f2C69aE2E66FD87367E3260412EEfF637F70E.<0x96d373e5> [1401584 gas]"
+    assert expected in actual
 
 
 def test_repr_on_local_network_and_disconnected(networks):
@@ -207,7 +257,7 @@ def test_get_block_not_found(eth_tester_provider_geth):
 
 
 def test_get_receipt_not_exists_with_timeout(eth_tester_provider_geth):
-    unknown_txn = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
+    unknown_txn = TRANSACTION_HASH
     with pytest.raises(TransactionNotFoundError, match=f"Transaction '{unknown_txn}' not found"):
         eth_tester_provider_geth.get_receipt(unknown_txn, timeout=0)
 

@@ -305,10 +305,11 @@ class ProviderAPI(BaseInterfaceModel):
     def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
         """
         Execute a new transaction call immediately without creating a
-        transaction on the block chain.
+        transaction on the blockchain.
 
         Args:
-            txn: :class:`~ape.api.transactions.TransactionAPI`
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction
+              to send as a call.
 
         Returns:
             str: The result of the transaction call.
@@ -855,9 +856,9 @@ class Web3Provider(ProviderAPI, ABC):
         Args:
             txn_hash (str): The hash of the transaction to retrieve.
             required_confirmations (int): The amount of block confirmations
-              to wait before returning the receipt.
+              to wait before returning the receipt. Defaults to ``0``.
             timeout (Optional[int]): The amount of time to wait for a receipt
-              before timing out.
+              before timing out. Defaults ``None``.
 
         Raises:
             :class:`~ape.exceptions.TransactionNotFoundError`: Likely the exception raised
@@ -882,7 +883,7 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise TransactionNotFoundError(txn_hash) from err
 
-        txn = dict(self.web3.eth.get_transaction(txn_hash))  # type: ignore
+        txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
         receipt = self.network.ecosystem.decode_receipt(
             {
                 "provider": self,

@@ -1,12 +1,14 @@
 import shutil
 from pathlib import Path
-from typing import Dict, Iterator, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Union
 
 import ijson  # type: ignore
 import requests
-from eth_utils import to_wei
+from eth_typing import HexStr
+from eth_utils import add_0x_prefix, to_hex, to_wei
 from evm_trace import (
     CallTreeNode,
+    CallType,
     ParityTraceList,
     TraceFrame,
     get_calltree_from_geth_trace,
@@ -17,6 +19,7 @@ from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
+from hexbytes import HexBytes
 from pydantic import Extra, PositiveInt
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
@@ -26,9 +29,9 @@ from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from yarl import URL
 
-from ape.api import PluginConfig, UpstreamProvider, Web3Provider
+from ape.api import PluginConfig, TransactionAPI, UpstreamProvider, Web3Provider
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import ProviderError
+from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import logger
 from ape.utils import generate_dev_accounts
 
@@ -295,12 +298,59 @@ class GethProvider(Web3Provider, UpstreamProvider):
         try:
             # Try the Parity traces first just in case
             return _get_call_tree_from_parity()
-        except ValueError:
+        except (ValueError, APINotImplementedError, ProviderError):
+            if not root_node_kwargs:
+                receipt = self.get_receipt(txn_hash)
+
+                if not receipt.receiver:
+                    raise ProviderError("Receipt missing receiver.")
+
+                root_node_kwargs = {
+                    "gas_cost": receipt.gas_used,
+                    "gas_limit": receipt.gas_limit,
+                    "address": receipt.receiver,
+                    "calldata": receipt.data,
+                    "value": receipt.value,
+                    "call_type": CallType.CALL,
+                    "failed": receipt.failed,
+                }
+
             frames = self.get_transaction_trace(txn_hash)
             return get_calltree_from_geth_trace(frames, **root_node_kwargs)
 
+    def trace_call(self, txn: TransactionAPI, block_number: Optional[str] = None, **kwargs) -> Any:
+        block_number = block_number or "latest"
+        txn_dict = txn.dict()
+        data = txn_dict.get("data")
+        chain_id = txn_dict.get("chainId")
+        value = txn_dict.get("value")
+
+        if isinstance(data, bytes):
+            txn_dict["data"] = add_0x_prefix(HexStr(data.hex()))
+        if isinstance(chain_id, int):
+            txn_dict["chainId"] = to_hex(chain_id)
+        if isinstance(value, int):
+            txn_dict["value"] = to_hex(value)
+
+        result = self._make_request("debug_traceCall", [txn_dict, block_number, kwargs])
+        return_value = result["returnValue"]
+
+        # Returns `bytes` so an be used like `send_call()`.
+        return HexBytes(return_value)
+
     def _log_connection(self, client_name: str):
         logger.info(f"Connecting to existing {client_name} node at '{self._clean_uri}'.")
+
+    def _make_request(self, endpoint: str, parameters: List) -> Any:
+        try:
+            return super()._make_request(endpoint, parameters)
+        except ProviderError as err:
+            if "does not exist/is not available" in str(err):
+                raise APINotImplementedError(
+                    f"RPC method '{endpoint}' is not implemented by this node instance."
+                ) from err
+
+            raise  # Original error
 
 
 def _create_web3(uri: str):
