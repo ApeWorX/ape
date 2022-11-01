@@ -372,7 +372,7 @@ class CallTraceParser(ManagerAccessMixin):
             # NOTE: Use contract name when possible to distinguish between sources with the same
             #  symbol. Also, ape projects don't permit multiple contract types with the same name.
             method_abi = _get_method_abi(selector, contract_type)
-            method_id = selector.hex() if not method_abi else method_abi.name
+            method_id = method_abi.name if method_abi else selector.hex()
 
             for exclusion in exclusions:
                 if not exclusion.method_name:
