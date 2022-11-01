@@ -1955,10 +1955,11 @@ checked in <code class="docutils literal notranslate"><span class="pre">ape.reve
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.send_call">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">send_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">ape.api.transactions.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.send_call" title="Permalink to this definition"></a></dt>
 <dd><p>Execute a new transaction call immediately without creating a
-transaction on the block chain.</p>
+transaction on the blockchain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>txn</strong> – <a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p>
+<dd class="field-odd"><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction
+to send as a call.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The result of the transaction call.</p>
@@ -2300,9 +2301,9 @@ for checking a previous account nonce.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>txn_hash</strong> (<em>str</em>) – The hash of the transaction to retrieve.</p></li>
 <li><p><strong>required_confirmations</strong> (<em>int</em>) – The amount of block confirmations
-to wait before returning the receipt.</p></li>
+to wait before returning the receipt. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
 <li><p><strong>timeout</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The amount of time to wait for a receipt
-before timing out.</p></li>
+before timing out. Defaults <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>
