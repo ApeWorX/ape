@@ -176,6 +176,18 @@ def test_get_call_tree(mocker, mock_web3, geth_provider):
     expected = f"CALL: {RECEIPT_DATA['to']} [999 gas]"
     assert expected in actual
 
+    # Ensure we enabled memory correctly.
+    expected_params = [TRANSACTION_HASH, {"enableMemory": True}]
+    expected_payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "debug_traceTransaction",
+        "params": expected_params,
+    }
+    streamer.post.assert_called_once_with(
+        "http://localhost:8545", json=expected_payload, stream=True
+    )
+
 
 def test_get_call_tree_erigon(mock_web3, geth_provider, trace_response):
     mock_web3.client_version = "erigon_MOCK"
