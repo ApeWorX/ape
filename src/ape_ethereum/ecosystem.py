@@ -269,11 +269,12 @@ class Ethereum(EcosystemAPI):
         if txn_hash:
             txn_hash = txn_hash.hex() if isinstance(txn_hash, HexBytes) else txn_hash
 
-        if data.get("data") and isinstance(data.get("data"), str):
-            data["data"] = HexBytes(data.get("data"))
+        data_bytes = data.get("data", b"")
+        if data_bytes and isinstance(data_bytes, str):
+            data["data"] = HexBytes(data_bytes)
 
-        elif data.get("input", b"") and isinstance(data.get("input", b""), str):
-            data["input"] = HexBytes(data.get("input", b""))
+        elif "input" in data and isinstance(data["input"], str):
+            data["input"] = HexBytes(data["input"])
 
         receipt = Receipt(
             block_number=data.get("block_number") or data.get("blockNumber"),
