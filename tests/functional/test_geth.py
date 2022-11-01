@@ -151,16 +151,26 @@ def test_uri_uses_value_from_settings(mock_network, mock_web3, temp_config):
         assert provider.uri == "value/from/settings"
 
 
-def test_get_call_tree(mock_web3, geth_provider):
-    def side_effects(method_name: str, *args, **kwargs):
-        if method_name == "trace_transaction":
-            return {"error": "Method 'trace_transaction' does not exist/is not available"}
-        elif method_name == "debug_traceTransaction":
-            return TRACE_FRAME_DATA
-
-    mock_web3.clientVersion = "geth_MOCK"
-    mock_web3.provider.make_request.side_effects = side_effects
+def test_get_call_tree(mocker, mock_web3, geth_provider):
+    # If trying Parity style traces, it will raise not-implemented,
+    #  which should trigger attempting the geth-style traces.
+    mock_web3.client_version = "geth_MOCK"
+    mock_web3.provider.make_request.return_value = {
+        "error": "Method 'trace_transaction' does not exist/is not available"
+    }
     mock_web3.eth.get_transaction.return_value = RECEIPT_DATA
+
+    # Prevent actual `post()` request from being made during
+    #  streaming the trace's structLogs.
+    streamer = mocker.patch("ape_geth.provider.requests")
+    mock_response = mocker.MagicMock()
+    mock_response.iter_content.return_value = (x for x in [])
+    streamer.post.return_value = mock_response
+
+    # Inject mock trace data so the geth traces works.
+    mock_response_collector = mocker.patch("ape_geth.provider.ijson")
+    mock_response_collector.sendable_list.return_value = TRACE_RESPONSE
+
     result = geth_provider.get_call_tree(TRANSACTION_HASH)
     actual = repr(result)
     expected = f"CALL: {RECEIPT_DATA['to']} [999 gas]"
@@ -168,7 +178,7 @@ def test_get_call_tree(mock_web3, geth_provider):
 
 
 def test_get_call_tree_erigon(mock_web3, geth_provider, trace_response):
-    mock_web3.clientVersion = "erigon_MOCK"
+    mock_web3.client_version = "erigon_MOCK"
     mock_web3.provider.make_request.return_value = trace_response
     result = geth_provider.get_call_tree(TRANSACTION_HASH)
     actual = repr(result)

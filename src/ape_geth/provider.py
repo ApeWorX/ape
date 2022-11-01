@@ -294,7 +294,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
             return _get_call_tree_from_parity()
 
         try:
-            # Try the Parity traces first just in case
+            # Try the Parity traces first, in case node client supports it.
             return _get_call_tree_from_parity()
         except (ValueError, APINotImplementedError, ProviderError):
             if not root_node_kwargs:
