@@ -263,7 +263,7 @@ class GethProvider(Web3Provider, UpstreamProvider):
         self._web3 = None
         self._client_version = None
 
-    def stream_request(self, method, params, iter_path="result.item"):
+    def stream_request(self, method: str, params: List, iter_path="result.item"):
         payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
         results = ijson.sendable_list()
         coro = ijson.items_coro(results, iter_path)
@@ -277,7 +277,9 @@ class GethProvider(Web3Provider, UpstreamProvider):
             del results[:]
 
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
-        frames = self.stream_request("debug_traceTransaction", [txn_hash], "result.structLogs.item")
+        frames = self.stream_request(
+            "debug_traceTransaction", [txn_hash, {"enableMemory": True}], "result.structLogs.item"
+        )
         for frame in frames:
             yield TraceFrame(**frame)
 
