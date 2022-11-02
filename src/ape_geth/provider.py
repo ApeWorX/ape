@@ -349,8 +349,6 @@ class GethDev(TestProviderAPI, BaseGethProvider):
 
         super().disconnect()
 
-        super().disconnect()
-
     def revert(self, snapshot_id: SnapshotID):
         if isinstance(snapshot_id, int):
             block_number = to_hex(snapshot_id)
