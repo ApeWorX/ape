@@ -5,9 +5,7 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 import ijson  # type: ignore
 import requests
 from eth_typing import HexStr
-from eth_utils import to_wei, to_hex, add_0x_prefix
-
-from ape.types import SnapshotID
+from eth_utils import add_0x_prefix, to_hex, to_wei
 from evm_trace import (
     CallTreeNode,
     CallType,
@@ -30,9 +28,10 @@ from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from yarl import URL
 
-from ape.api import PluginConfig, UpstreamProvider, Web3Provider, TestProviderAPI
+from ape.api import PluginConfig, TestProviderAPI, UpstreamProvider, Web3Provider
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import logger
+from ape.types import SnapshotID
 from ape.utils import generate_dev_accounts, raises_not_implemented
 
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
@@ -309,9 +308,9 @@ class GethDev(TestProviderAPI, BaseGethProvider):
         parsed_uri = URL(self.uri)
 
         if parsed_uri.host not in ("localhost", "127.0.0.1"):
-            raise ConnectionError(f"Unable to connect web3 to {parsed_uri.host}.")
+            raise ConnectionError(f"Unable to start Geth on non-local host {parsed_uri.host}.")
 
-        if not shutil.which("geth"):
+        elif not shutil.which("geth"):
             raise GethNotInstalledError()
 
         # Use mnemonic from test config
@@ -365,7 +364,6 @@ class GethDev(TestProviderAPI, BaseGethProvider):
 
 
 class Geth(BaseGethProvider, UpstreamProvider):
-
     @property
     def connection_str(self) -> str:
         return self.uri
