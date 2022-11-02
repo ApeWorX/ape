@@ -94,7 +94,7 @@ class CallTraceParser(ManagerAccessMixin):
 
     @property
     def _ecosystem(self) -> "EcosystemAPI":
-        return self._receipt.provider.network.ecosystem
+        return self.provider.network.ecosystem
 
     def parse_as_tree(self, call: CallTreeNode) -> Tree:
         """
@@ -109,7 +109,7 @@ class CallTraceParser(ManagerAccessMixin):
             ``rich.Tree``: A rich tree from the ``rich`` library.
         """
 
-        address = self._receipt.provider.network.ecosystem.decode_address(call.address)
+        address = self.provider.network.ecosystem.decode_address(call.address)
 
         # Collapse pre-compile address calls
         address_int = int(address, 16)
@@ -124,7 +124,7 @@ class CallTraceParser(ManagerAccessMixin):
 
             return intermediary_node
 
-        contract_type = self._receipt.chain_manager.contracts.get(address)
+        contract_type = self.chain_manager.contracts.get(address)
         selector = call.calldata[:4]
         call_signature = ""
 
@@ -286,8 +286,8 @@ class CallTraceParser(ManagerAccessMixin):
             return "tx.origin"
 
         # Use name of known contract if possible.
-        checksum_address = self._receipt.provider.network.ecosystem.decode_address(address)
-        con_type = self._receipt.chain_manager.contracts.get(checksum_address)
+        checksum_address = self.provider.network.ecosystem.decode_address(address)
+        con_type = self.chain_manager.contracts.get(checksum_address)
         if con_type and con_type.name:
             return con_type.name
 
@@ -308,7 +308,7 @@ class CallTraceParser(ManagerAccessMixin):
 
         if use_symbol and "symbol" in contract_type.view_methods:
             # Use token symbol as name
-            contract = self._receipt.chain_manager.contracts.instance_at(
+            contract = self.chain_manager.contracts.instance_at(
                 address, contract_type=contract_type, txn_hash=self._receipt.txn_hash
             )
 
@@ -341,8 +341,8 @@ class CallTraceParser(ManagerAccessMixin):
         sub_calls = calltree.calls
         this_method = self._get_rich_gas_report
         exclude_arg = [exclusions for _ in sub_calls]
-        address = self._receipt.provider.network.ecosystem.decode_address(calltree.address)
-        contract_type = self._receipt.chain_manager.contracts.get(address)
+        address = self.provider.network.ecosystem.decode_address(calltree.address)
+        contract_type = self.chain_manager.contracts.get(address)
         selector = calltree.calldata[:4]
         contract_id = self._get_contract_id(address, contract_type=contract_type, use_symbol=False)
 
