@@ -37,7 +37,7 @@ from ape.utils import generate_dev_accounts, raises_not_implemented
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
 
 
-class EphemeralGeth(LoggingMixin, BaseGethProcess):
+class GethDevProcess(LoggingMixin, BaseGethProcess):
     """
     A developer-configured geth that only exists until disconnected.
     """
@@ -294,7 +294,7 @@ class BaseGethProvider(Web3Provider):
 
 
 class GethDev(TestProviderAPI, BaseGethProvider):
-    _geth: Optional[EphemeralGeth] = None
+    _geth: Optional[GethDevProcess] = None
     name: str = "geth"
 
     def connect(self):
@@ -319,7 +319,7 @@ class GethDev(TestProviderAPI, BaseGethProvider):
         mnemonic = test_config["mnemonic"]
         num_of_accounts = test_config["number_of_accounts"]
 
-        self._geth = EphemeralGeth(
+        self._geth = GethDevProcess(
             self.data_folder,
             parsed_uri.host,
             parsed_uri.port,
