@@ -1090,6 +1090,7 @@ class ChainManager(BaseManager):
             self.pending_timestamp = timestamp
         elif deltatime:
             self.pending_timestamp += deltatime
+
         self.provider.mine(num_blocks)
 
     def set_balance(self, account: Union[BaseAddress, AddressType], amount: Union[int, str]):
