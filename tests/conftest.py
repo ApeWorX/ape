@@ -161,7 +161,7 @@ def isolation(chain, eth_tester_provider):
 
     yield
 
-    if snapshot:
+    if snapshot is not None:
         try:
             chain.restore(snapshot)
         except UnknownSnapshotError:
