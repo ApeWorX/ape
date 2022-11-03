@@ -116,7 +116,7 @@ class ApeTestGethTests:
     Tests using ``ape-geth`` provider. Geth supports more testing features,
     such as tracing.
 
-    Tests are placed in class for ``pytest-xdist`` scoping reasons.
+    **NOTE**: These tests are placed in a class for ``pytest-xdist`` scoping reasons.
     """
 
     @skip_projects_except("geth")
