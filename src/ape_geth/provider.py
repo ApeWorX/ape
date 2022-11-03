@@ -215,7 +215,14 @@ class BaseGethProvider(Web3Provider):
             )
 
         if is_likely_poa:
-            self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            try:
+                self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            except ValueError as err:
+                if "You can't add the same un-named instance twice" in str(err):
+                    # Already added
+                    pass
+                else:
+                    raise  # Original error
 
         self.network.verify_chain_id(chain_id)
 
@@ -294,7 +301,7 @@ class BaseGethProvider(Web3Provider):
 
 
 class GethDev(TestProviderAPI, BaseGethProvider):
-    _geth: Optional[GethDevProcess] = None
+    _process: Optional[GethDevProcess] = None
     name: str = "geth"
 
     def connect(self):
@@ -319,25 +326,27 @@ class GethDev(TestProviderAPI, BaseGethProvider):
         mnemonic = test_config["mnemonic"]
         num_of_accounts = test_config["number_of_accounts"]
 
-        self._geth = GethDevProcess(
+        self._process = GethDevProcess(
             self.data_folder,
             parsed_uri.host,
             parsed_uri.port,
             mnemonic,
             number_of_accounts=num_of_accounts,
         )
-        self._geth.connect()
+        self._process.connect()
         if not self._web3.is_connected():
-            self._geth.disconnect()
+            self._process.disconnect()
             raise ConnectionError("Unable to connect to locally running geth.")
         else:
             self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     def disconnect(self):
         # Must disconnect process first.
-        if self._geth is not None:
-            self._geth.disconnect()
-            self._geth = None
+        if self._process is not None:
+            self._process.disconnect()
+            self._process = None
+
+        super().disconnect()
 
         super().disconnect()
 

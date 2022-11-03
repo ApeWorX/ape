@@ -10,12 +10,15 @@ import yaml
 from click.testing import CliRunner
 
 import ape
-from ape.exceptions import UnknownSnapshotError
+from ape.exceptions import APINotImplementedError, UnknownSnapshotError
 from ape.managers.config import CONFIG_FILE_NAME
 
 # NOTE: Ensure that we don't use local paths for these
 ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
 ape.config.PROJECT_FOLDER = Path(mkdtemp()).resolve()
+
+# Needed to test tracing support in core `ape test` command.
+pytest_plugins = ["pytester"]
 
 
 @pytest.fixture(autouse=True)
@@ -151,7 +154,11 @@ def eth_tester_provider(networks_connected_to_tester):
 
 @pytest.fixture(autouse=True)
 def isolation(chain, eth_tester_provider):
-    snapshot = chain.snapshot()
+    try:
+        snapshot = chain.snapshot()
+    except APINotImplementedError:
+        snapshot = None
+
     yield
 
     if snapshot:

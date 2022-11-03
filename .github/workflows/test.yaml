@@ -68,6 +68,9 @@ jobs:
           with:
               python-version: ${{ matrix.python-version }}
 
+        - name: Install Geth
+          uses: gacts/install-geth-tools@v1.0.1
+
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade pip

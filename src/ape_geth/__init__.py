@@ -1,7 +1,7 @@
 from ape import plugins
 from ape.api.networks import LOCAL_NETWORK_NAME
 
-from .provider import Geth as GethProvider  # TODO: Export as Geth on 0.6
+from .provider import Geth as GethProvider
 from .provider import GethDev, GethNetworkConfig, NetworkConfig
 
 

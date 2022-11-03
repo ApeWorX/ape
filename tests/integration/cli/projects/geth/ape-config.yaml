@@ -8,4 +8,10 @@ ethereum:
 geth:
   ethereum:
     mainnet:
-      uri: localhost:5000
+      uri: http://localhost:5000
+    local:
+      uri: http://127.0.0.1:5001
+
+test:
+  # `false` because running pytest within pytest.
+  disconnect_providers_after: false
