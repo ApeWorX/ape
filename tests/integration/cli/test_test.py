@@ -84,14 +84,14 @@ def run_gas_test(result, expected_number_passed: int, expected_report: str = EXP
         assert actual_line == expected_line
 
 
-@skip_projects_except(("test", "with-contracts"))
+@skip_projects_except("test", "with-contracts")
 def test_test(networks, setup_pytester, project, pytester):
     expected_test_passes = setup_pytester(project.path.name)
     result = pytester.runpytest()
     result.assert_outcomes(passed=expected_test_passes), "\n".join(result.outlines)
 
 
-@skip_projects_except(("test", "with-contracts"))
+@skip_projects_except("test", "with-contracts")
 def test_test_isolation_disabled(setup_pytester, project, pytester):
     # check the disable isolation option actually disables built-in isolation
     setup_pytester(project.path.name)
@@ -99,7 +99,7 @@ def test_test_isolation_disabled(setup_pytester, project, pytester):
     assert "F _function_isolation" not in "\n".join(result.outlines)
 
 
-@skip_projects_except(("test", "with-contracts"))
+@skip_projects_except("test", "with-contracts")
 def test_fixture_docs(setup_pytester, project, pytester):
     result = pytester.runpytest("-q", "--fixtures")
 

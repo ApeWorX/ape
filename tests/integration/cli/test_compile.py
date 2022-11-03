@@ -7,28 +7,24 @@ from ape.contracts import ContractContainer
 from .utils import skip_projects, skip_projects_except
 
 skip_non_compilable_projects = skip_projects(
-    [
-        "empty-config",
-        "no-config",
-        "script",
-        "only-dependencies",
-        "unregistered-contracts",
-        "test",
-        "geth",
-    ]
+    "empty-config",
+    "no-config",
+    "script",
+    "only-dependencies",
+    "unregistered-contracts",
+    "test",
+    "geth",
 )
 
 
 @skip_projects(
-    (
-        "geth",
-        "multiple-interfaces",
-        "only-dependencies",
-        "test",
-        "unregistered-contracts",
-        "with-dependencies",
-        "with-contracts",
-    )
+    "geth",
+    "multiple-interfaces",
+    "only-dependencies",
+    "test",
+    "unregistered-contracts",
+    "with-dependencies",
+    "with-contracts",
 )
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
