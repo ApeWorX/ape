@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable, Collection, List, Optional, Union
 
 import pytest
 
@@ -77,7 +77,7 @@ class ProjectSkipper:
 
             self.projects[project][node.module_name].add(node.name)
 
-    def skip_projects_except(self, method: Callable, projects: List[str]):
+    def skip_projects_except(self, method: Callable, projects: Collection[str]):
         """
         Call this method to record 'skip's for each project that is not
         in the given list. The ``skip_project_except`` decorator calls
@@ -96,11 +96,15 @@ class ProjectSkipper:
 project_skipper = ProjectSkipper()
 
 
-def skip_projects(names: List[str]):
+def skip_projects(names: Optional[Union[str, Collection[str]]] = None):
     """
     Use this decorator to cause a CLI integration test
     not to run for the given projects.
     """
+
+    names = names or []
+    if isinstance(names, str):
+        names = (names,)
 
     def decorator(f):
         project_skipper.skip_projects(f, names)
@@ -109,11 +113,15 @@ def skip_projects(names: List[str]):
     return decorator
 
 
-def skip_projects_except(names: List[str]):
+def skip_projects_except(names: Optional[Union[str, Collection[str]]] = None):
     """
     Use this decorator to cause a CLI integration test
     to only run for the given projects.
     """
+
+    names = names or []
+    if isinstance(names, str):
+        names = (names,)
 
     def decorator(f):
         project_skipper.skip_projects_except(f, names)
@@ -122,7 +130,7 @@ def skip_projects_except(names: List[str]):
     return decorator
 
 
-run_once = skip_projects_except(["test"])
+run_once = skip_projects_except("test")
 """
 For times when the CLI integration test is unlikely to be
 affected by project structure.

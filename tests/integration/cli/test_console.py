@@ -71,7 +71,7 @@ def clean_console_rc_write(project):
 
 
 # NOTE: We export `__all__` into the IPython session that the console runs in
-@skip_projects(["geth"])
+@skip_projects("geth")
 @pytest.mark.parametrize("item", __all__)
 def test_console(ape_cli, runner, item):
     result = runner.invoke(ape_cli, ["console"], input=f"{item}\nexit\n", catch_exceptions=False)
@@ -84,7 +84,7 @@ def test_console(ape_cli, runner, item):
     assert no_console_error(result), result.output
 
 
-@skip_projects(["geth"])
+@skip_projects("geth")
 @data_and_project_folders
 def test_console_extras(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_1)
@@ -102,7 +102,7 @@ def test_console_extras(project, folder, ape_cli, runner):
     assert no_console_error(result), result.output
 
 
-@skip_projects(["geth"])
+@skip_projects("geth")
 @data_and_project_folders
 def test_console_init_extras(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_2)
@@ -113,7 +113,7 @@ def test_console_init_extras(project, folder, ape_cli, runner):
     assert no_console_error(result), result.output
 
 
-@skip_projects(["geth"])
+@skip_projects("geth")
 @data_and_project_folders
 def test_console_init_extras_kwargs(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_3)
@@ -123,7 +123,7 @@ def test_console_init_extras_kwargs(project, folder, ape_cli, runner):
     assert no_console_error(result), result.output
 
 
-@skip_projects(["geth"])
+@skip_projects("geth")
 @data_and_project_folders
 def test_console_init_extras_return(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_4)
@@ -146,7 +146,7 @@ def test_console_init_extras_return(project, folder, ape_cli, runner):
     assert no_console_error(result), result.output
 
 
-@skip_projects_except(["only-dependencies"])
+@skip_projects_except("only-dependencies")
 def test_console_import_local_path(project, ape_cli, runner):
     result = runner.invoke(
         ape_cli,
@@ -157,7 +157,7 @@ def test_console_import_local_path(project, ape_cli, runner):
     assert no_console_error(result), result.output
 
 
-@skip_projects_except(["only-dependencies"])
+@skip_projects_except("only-dependencies")
 def test_console_import_local_path_in_extras_file(project, ape_cli, runner):
     write_ape_console_extras(project, "PROJECT_FOLDER", EXTRAS_SCRIPT_5)
 
