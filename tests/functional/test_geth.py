@@ -23,7 +23,8 @@ TRANSACTION_HASH = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a58
 
 @pytest.fixture(scope="module", autouse=True)
 def geth(networks):
-    with networks.ethereum.local.use_provider("geth") as provider:
+    config = {"geth": {"ethereum": {"local": {"uri": "http://127.0.0.1:5550"}}}}
+    with networks.ethereum.local.use_provider("geth", provider_settings=config) as provider:
         yield provider
 
 
