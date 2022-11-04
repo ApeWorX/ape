@@ -429,7 +429,7 @@ class ProviderAPI(BaseInterfaceModel):
         return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
 
     @raises_not_implemented
-    def set_code(self, address: AddressType, code: bytes):
+    def set_code(self, address: AddressType, code: Union[str, bytes, HexBytes]) -> bool:
         """
         Change the code of a smart contract, for development purposes.
         Test providers implement this method when they support it.
