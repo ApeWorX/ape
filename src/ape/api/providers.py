@@ -429,7 +429,7 @@ class ProviderAPI(BaseInterfaceModel):
         return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
 
     @raises_not_implemented
-    def set_code(self, address: AddressType, code: Union[str, bytes, HexBytes]) -> bool:
+    def set_code(self, address: AddressType, code: ContractCode) -> bool:
         """
         Change the code of a smart contract, for development purposes.
         Test providers implement this method when they support it.
@@ -805,7 +805,7 @@ class Web3Provider(ProviderAPI, ABC):
     def get_balance(self, address: str) -> int:
         return self.web3.eth.get_balance(address)
 
-    def get_code(self, address: AddressType) -> bytes:
+    def get_code(self, address: AddressType) -> ContractCode:
         return self.web3.eth.get_code(address)
 
     def get_storage_at(self, address: str, slot: int, **kwargs) -> bytes:
