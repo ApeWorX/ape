@@ -805,7 +805,7 @@ class Web3Provider(ProviderAPI, ABC):
     def get_balance(self, address: str) -> int:
         return self.web3.eth.get_balance(address)
 
-    def get_code(self, address: str) -> bytes:
+    def get_code(self, address: AddressType) -> bytes:
         return self.web3.eth.get_code(address)
 
     def get_storage_at(self, address: str, slot: int, **kwargs) -> bytes:
