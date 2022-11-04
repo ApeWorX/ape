@@ -31,6 +31,11 @@ An ID that can match a block, such as the literals ``"earliest"``, ``"latest"``,
 as well as a block number or hash (HexBytes).
 """
 
+ContractCode = Union[str, bytes, HexBytes]
+"""
+An ID that represents contract code, which can be represented in string, bytes, or HexBytes. 
+"""
+
 SnapshotID = Union[str, int, bytes]
 """
 An ID representing a point in time on a blockchain, as used in the
