@@ -264,21 +264,22 @@ class Ethereum(EcosystemAPI):
 
             status = TransactionStatusEnum(status)
 
-        txn_hash = data.get("hash")
+        txn_hash = data.get("hash") or data.get("txn_hash") or data.get("transaction_hash")
 
         if txn_hash:
-            txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
+            txn_hash = txn_hash.hex() if isinstance(txn_hash, HexBytes) else txn_hash
 
-        if data.get("data") and isinstance(data.get("data"), str):
-            data["data"] = bytes(HexBytes(data.get("data")))  # type: ignore
+        data_bytes = data.get("data", b"")
+        if data_bytes and isinstance(data_bytes, str):
+            data["data"] = HexBytes(data_bytes)
 
-        elif data.get("input", b"") and isinstance(data.get("input", b""), str):
-            data["input"] = bytes(HexBytes(data.get("input", b"")))
+        elif "input" in data and isinstance(data["input"], str):
+            data["input"] = HexBytes(data["input"])
 
         receipt = Receipt(
             block_number=data.get("block_number") or data.get("blockNumber"),
-            contract_address=data.get("contractAddress"),
-            gas_limit=data.get("gas") or data.get("gasLimit"),
+            contract_address=data.get("contract_address") or data.get("contractAddress"),
+            gas_limit=data.get("gas") or data.get("gas_limit") or data.get("gasLimit"),
             gas_price=data.get("gas_price") or data.get("gasPrice"),
             gas_used=data.get("gas_used") or data.get("gasUsed"),
             logs=data.get("logs", []),

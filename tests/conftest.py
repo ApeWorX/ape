@@ -139,7 +139,7 @@ def networks_disconnected(networks):
     networks.active_provider = provider
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def ethereum(networks):
     return networks.ethereum
 

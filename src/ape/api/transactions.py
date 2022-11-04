@@ -3,7 +3,7 @@ import time
 from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
-from ethpm_types.abi import EventABI
+from ethpm_types.abi import EventABI, MethodABI
 from evm_trace import TraceFrame
 from pydantic import validator
 from pydantic.fields import Field
@@ -315,12 +315,16 @@ class ReceiptAPI(BaseInterfaceModel):
         return self
 
     @property
-    def return_value(self) -> Any:
+    def method_called(self) -> Optional[MethodABI]:
         """
-        Obtain the final return value of the call. Requires tracing to function,
-        since this is not available from the receipt object.
+        The method ABI of the method called to produce this receipt.
+        Requires both that the user is using a provider that supports traces
+        as well as for this to have been a contract invocation.
         """
-        call_tree = self.provider.get_call_tree(self.txn_hash)
+
+        call_tree = self.call_tree
+        if not call_tree:
+            return None
 
         contract_type = self.chain_manager.contracts.get(call_tree.address)
         if not contract_type:
@@ -328,11 +332,25 @@ class ReceiptAPI(BaseInterfaceModel):
 
         selector = call_tree.calldata
         if selector in contract_type.mutable_methods:
-            method_abi = contract_type.mutable_methods[selector]
+            return contract_type.mutable_methods[selector]
         elif selector in contract_type.view_methods:
-            method_abi = contract_type.view_methods[selector]
-        else:
-            raise ContractError(f"Selector '{selector}' not found in {contract_type.name}")
+            return contract_type.view_methods[selector]
+
+        raise ContractError(f"Selector '{selector}' not found in {contract_type.name}")
+
+    @property
+    def return_value(self) -> Any:
+        """
+        Obtain the final return value of the call. Requires tracing to function,
+        since this is not available from the receipt object.
+        """
+        call_tree = self.call_tree
+        if not call_tree:
+            return None
+
+        method_abi = self.method_called
+        if not method_abi:
+            return None
 
         output = self.provider.network.ecosystem.decode_returndata(method_abi, call_tree.returndata)
         if isinstance(output, tuple) and len(output) < 2:

@@ -731,9 +731,17 @@ class ContractInstance(BaseAddress):
         Returns:
             List[str]
         """
+
+        # NOTE: Type ignores because of this issue: https://github.com/python/typing/issues/1112
+        #  They can be removed after next `mypy` release containing fix.
+        values = [
+            "contract_type",
+            "txn_hash",
+            ContractInstance.receipt.fget.__name__,  # type: ignore[attr-defined]
+        ]
         return list(
-            set(super(BaseAddress, self).__dir__()).union(
-                self._view_methods_, self._mutable_methods_, self._events_
+            set(self._base_dir_values).union(
+                self._view_methods_, self._mutable_methods_, self._events_, values
             )
         )
 

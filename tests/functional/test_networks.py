@@ -225,9 +225,10 @@ def test_ecosystems_when_default_provider_not_exists(temp_config, caplog, networ
     )
 
 
-def test_gas_limits(ethereum):
+def test_gas_limits(networks, config, project_with_source_files_contract):
     """
     Test the default gas limit configurations for local and live networks.
     """
-    assert ethereum.goerli.gas_limit == "auto"
-    assert ethereum.local.gas_limit == "max"
+    _ = project_with_source_files_contract  # Ensure use of project with default config
+    assert networks.ethereum.goerli.gas_limit == "auto"
+    assert networks.ethereum.local.gas_limit == "max"

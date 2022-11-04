@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from ape import networks, project
+from ape.pytest.config import ConfigWrapper
 from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
 from ape.pytest.runners import PytestApeRunner
 
@@ -35,6 +36,11 @@ def pytest_addoption(parser):
         action="store_true",
         help="Show a transaction gas report at the end of the test session.",
     )
+    parser.addoption(
+        "--gas-exclude",
+        action="store",
+        help="A comma-separated list of contract:method-name glob-patterns to ignore.",
+    )
 
     # NOTE: Other pytest plugins, such as hypothesis, should integrate with pytest separately
 
@@ -51,13 +57,14 @@ def pytest_configure(config):
         for module in modules:
             module.__tracebackhide__ = True
 
-    receipt_capture = ReceiptCapture(config)
+    config_wrapper = ConfigWrapper(config)
+    receipt_capture = ReceiptCapture(config_wrapper)
 
     # Enable verbose output if stdout capture is disabled
     config.option.verbose = config.getoption("capture") == "no"
 
     # Register the custom Ape test runner
-    session = PytestApeRunner(config, receipt_capture)
+    session = PytestApeRunner(config_wrapper, receipt_capture)
     config.pluginmanager.register(session, "ape-test")
 
     # Include custom fixtures for project, accounts etc.

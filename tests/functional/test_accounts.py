@@ -11,6 +11,9 @@ from ape_ethereum.ecosystem import ProxyType
 
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
 
+APE_TEST_PATH = "ape_test.accounts.TestAccount"
+APE_ACCOUNTS_PATH = "ape_accounts.accounts.KeyfileAccount"
+
 
 @pytest.fixture(autouse=True, scope="module")
 def connected(eth_tester_provider):
@@ -20,6 +23,15 @@ def connected(eth_tester_provider):
 @pytest.fixture
 def signer(test_accounts):
     return test_accounts[2]
+
+
+@pytest.fixture(params=(APE_TEST_PATH, APE_ACCOUNTS_PATH))
+def core_account(request, owner, keyfile_account):
+    if request.param == APE_TEST_PATH:
+        yield owner  # from ape_test plugin
+
+    elif request.param == APE_ACCOUNTS_PATH:
+        yield keyfile_account  # from ape_accounts plugin
 
 
 class Foo(EIP712Message):
@@ -329,7 +341,7 @@ def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiv
         assert receipt.receiver == receiver
 
 
-def test_custom_num_of_test_accts_config(test_accounts, temp_config):
+def test_custom_num_of_test_accounts_config(test_accounts, temp_config):
     custom_number_of_test_accounts = 20
     test_config = {
         "test": {
@@ -348,6 +360,24 @@ def test_test_accounts_repr(test_accounts):
     assert all(a.address in actual for a in test_accounts)
 
 
-def test_account_comparison_to_non_account(receiver):
+def test_account_comparison_to_non_account(core_account):
     # Before, would get a ConversionError.
-    assert receiver != "foo"
+    assert core_account != "foo"
+
+
+def test_dir(core_account):
+    actual = dir(core_account)
+    expected = [
+        "address",
+        "alias",
+        "balance",
+        "call",
+        "deploy",
+        "nonce",
+        "prepare_transaction",
+        "provider",
+        "sign_message",
+        "sign_transaction",
+        "transfer",
+    ]
+    assert sorted(actual) == sorted(expected)

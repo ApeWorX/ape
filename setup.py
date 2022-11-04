@@ -100,6 +100,7 @@ setup(
         "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
+        "watchdog>=2.1.9,<3.0",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=3.0.1,<4",
         "eth-account>=0.7,<0.8",
@@ -111,7 +112,7 @@ setup(
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.1.4,<0.2",
         "ethpm-types>=0.3.7,<0.4",
-        "evm-trace==0.1.0a10",
+        "evm-trace>=0.1.0a10",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

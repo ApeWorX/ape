@@ -2,12 +2,12 @@ from pathlib import Path
 
 import click
 import pytest
-from _pytest.config import Config as PytestConfig
 from rich import print as rich_print
 
 import ape
 from ape.api import ProviderContextManager
 from ape.logging import LogLevel, logger
+from ape.pytest.config import ConfigWrapper
 from ape.pytest.contextmanagers import RevertsContextManager
 from ape.pytest.fixtures import ReceiptCapture
 from ape.utils import ManagerAccessMixin, parse_gas_table
@@ -17,22 +17,17 @@ from ape_console._cli import console
 class PytestApeRunner(ManagerAccessMixin):
     def __init__(
         self,
-        pytest_config: PytestConfig,
+        config_wrapper: ConfigWrapper,
         receipt_capture: ReceiptCapture,
     ):
-        self.pytest_config = pytest_config
+        self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
         self._provider_is_connected = False
         ape.reverts = RevertsContextManager  # type: ignore
 
     @property
-    def _network_choice(self) -> str:
-        # The option the user providers via --network (or the default).
-        return self.pytest_config.getoption("network")
-
-    @property
     def _provider_context(self) -> ProviderContextManager:
-        return self.network_manager.parse_network_choice(self._network_choice)
+        return self.network_manager.parse_network_choice(self.config_wrapper.network)
 
     def pytest_exception_interact(self, report, call):
         """
@@ -41,8 +36,8 @@ class PytestApeRunner(ManagerAccessMixin):
         same console as the ``ape console`` command.
         """
 
-        if self.pytest_config.getoption("interactive") and report.failed:
-            capman = self.pytest_config.pluginmanager.get_plugin("capturemanager")
+        if self.config_wrapper.interactive and report.failed:
+            capman = self.config_wrapper.get_pytest_plugin("capturemanager")
             if capman:
                 capman.suspend_global_capture(in_=True)
 
@@ -96,7 +91,7 @@ class PytestApeRunner(ManagerAccessMixin):
         https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_runtest_setup
         """
         if (
-            self.pytest_config.getoption("disable_isolation") is True
+            self.config_wrapper.isolation is False
             or "_function_isolation" in item.fixturenames  # prevent double injection
         ):
             # isolation is disabled via cmdline option
@@ -138,10 +133,10 @@ class PytestApeRunner(ManagerAccessMixin):
         so related assertions cannot be rewritten". The warning is not relevant
         for end users who are performing tests with ape.
         """
-        reporter = self.pytest_config.pluginmanager.get_plugin("terminalreporter")
+        reporter = self.config_wrapper.get_pytest_plugin("terminalreporter")
         warnings = reporter.stats.pop("warnings", [])
         warnings = [i for i in warnings if "PytestAssertRewriteWarning" not in i.message]
-        if warnings and not self.pytest_config.getoption("--disable-warnings"):
+        if warnings and not self.config_wrapper.disable_warnings:
             reporter.stats["warnings"] = warnings
 
     @pytest.hookimpl(trylast=True, hookwrapper=True)
@@ -161,7 +156,7 @@ class PytestApeRunner(ManagerAccessMixin):
         Add a section to terminal summary reporting.
         When ``--gas`` is active, outputs the gas profile report.
         """
-        if self.pytest_config.getoption("--gas"):
+        if self.config_wrapper.track_gas:
             terminalreporter.section("Gas Profile")
 
             if not self.provider.supports_tracing:
@@ -183,6 +178,6 @@ class PytestApeRunner(ManagerAccessMixin):
                 )
 
     def pytest_unconfigure(self):
-        if self._provider_is_connected:
+        if self._provider_is_connected and self.config_wrapper.disconnect_providers_after:
             self._provider_context.disconnect_all()
             self._provider_is_connected = False
