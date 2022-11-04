@@ -180,7 +180,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_code(self, address: str) -> bytes:
+    def get_code(self, address: AddressType) -> bytes:
         """
         Get the bytes a contract.
 
