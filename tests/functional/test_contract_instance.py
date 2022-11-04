@@ -40,6 +40,12 @@ def test_contract_calls(owner, contract_instance):
     assert contract_instance.myNumber() == 2
 
 
+def test_contract_mehtod_calls(owner, contract_instance):
+    contract_instance.method_call("setNumber", 3, sender=owner)
+    assert contract_instance.myNumber() == 3
+    assert contract_instance.method_call("myNumber", sender=owner) == 3
+
+
 def test_revert(sender, contract_instance):
     # 'sender' is not the owner so it will revert (with a message)
     with pytest.raises(ContractLogicError, match="!authorized"):
