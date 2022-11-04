@@ -180,15 +180,15 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_code(self, address: AddressType) -> bytes:
+    def get_code(self, address: AddressType) -> ContractCode:
         """
         Get the bytes a contract.
 
         Args:
-            address (str): The address of the contract.
+            address (``AddressType``): The address of the contract.
 
         Returns:
-            bytes: The contract byte-code.
+            :class:`~ape.types.ContractCode`: The contract bytecode.
         """
 
     @raises_not_implemented
