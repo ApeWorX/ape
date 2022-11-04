@@ -33,7 +33,7 @@ as well as a block number or hash (HexBytes).
 
 ContractCode = Union[str, bytes, HexBytes]
 """
-An ID that represents contract code, which can be represented in string, bytes, or HexBytes. 
+An ID that represents contract code, which can be represented in string, bytes, or HexBytes.
 """
 
 SnapshotID = Union[str, int, bytes]
