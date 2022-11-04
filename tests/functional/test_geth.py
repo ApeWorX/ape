@@ -19,12 +19,12 @@ from tests.functional.conftest import RAW_VYPER_CONTRACT_TYPE
 from tests.functional.data.python import TRACE_RESPONSE
 
 TRANSACTION_HASH = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
+URI = "http://127.0.0.1:5550"
 
 
 @pytest.fixture(scope="module", autouse=True)
 def geth(networks):
-    config = {"geth": {"ethereum": {"local": {"uri": "http://127.0.0.1:5550"}}}}
-    with networks.ethereum.local.use_provider("geth", provider_settings=config) as provider:
+    with networks.ethereum.local.use_provider("geth", provider_settings={"uri": URI}) as provider:
         yield provider
 
 
@@ -58,22 +58,18 @@ def test_did_start_local_process(geth):
 
 
 def test_uri(geth):
-    assert geth.uri == "http://localhost:8545"
+    assert geth.uri == URI
 
 
 def test_uri_uses_value_from_config(geth, temp_config):
+    settings = geth.provider_settings
+    geth.provider_settings = {}
     config = {"geth": {"ethereum": {"local": {"uri": "value/from/config"}}}}
-    with temp_config(config):
-        assert geth.uri == "value/from/config"
-
-
-def test_uri_uses_value_from_settings(geth, temp_config):
-    # The value from the adhoc-settings is valued over the value from the config file.
-    config = {"geth": {"ethereum": {"local": {"uri": "value/from/config"}}}}
-    with temp_config(config):
-        geth.provider_settings["uri"] = "value/from/settings"
-        assert geth.uri == "value/from/settings"
-        del geth.provider_settings["uri"]
+    try:
+        with temp_config(config):
+            assert geth.uri == "value/from/config"
+    finally:
+        geth.provider_settings = settings
 
 
 def test_tx_revert(accounts, sender, geth_contract):
