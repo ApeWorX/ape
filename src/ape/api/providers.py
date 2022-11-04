@@ -43,7 +43,7 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import logger
-from ape.types import AddressType, BlockID, ContractLog, LogFilter, SnapshotID
+from ape.types import AddressType, BlockID, ContractLog, LogFilter, SnapshotID, ContractCode
 from ape.utils import (
     EMPTY_BYTES32,
     BaseInterfaceModel,
