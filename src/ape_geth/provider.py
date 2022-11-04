@@ -1,4 +1,5 @@
 import shutil
+from abc import ABC
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Union
 
@@ -145,7 +146,7 @@ class GethNotInstalledError(ConnectionError):
         )
 
 
-class BaseGethProvider(Web3Provider):
+class BaseGethProvider(Web3Provider, ABC):
     _client_version: Optional[str] = None
 
     # optimal values for geth
