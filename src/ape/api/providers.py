@@ -436,7 +436,7 @@ class ProviderAPI(BaseInterfaceModel):
 
         Args:
             address (AddressType): An address on the network.
-            code(bytes): The new bytecode.
+            code (:class:`~ape.types.ContractCode`): The new bytecode.
         """
 
     @raises_not_implemented
