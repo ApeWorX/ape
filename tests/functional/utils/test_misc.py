@@ -6,6 +6,7 @@ from ape.utils.misc import (
     add_padding_to_strings,
     extract_nested_value,
     get_package_version,
+    mergesort_iterators,
     raises_not_implemented,
 )
 
@@ -46,3 +47,21 @@ def test_get_package_version():
     version = get_package_version("ape")
     # Fails if invalid version
     assert Version(version)
+
+
+@pytest.mark.parametrize(
+    "items,result",
+    [
+        # NOTE: All inputs must be ordered according to key fn
+        (([1], []), [1]),
+        (([], [1]), [1]),
+        (([1], [2]), [1, 2]),
+        (([1, 3], [2]), [1, 2, 3]),
+        (([1, 4], [2, 3, 5]), [1, 2, 3, 4, 5]),
+        (([1], [3], [2]), [1, 2, 3]),
+        (([1, 3, 4], [], [2, 5]), [1, 2, 3, 4, 5]),
+    ],
+)
+def test_mergesort_iterators(items, result):
+    iters = map(iter, items)
+    assert list(mergesort_iterators(*iters)) == result

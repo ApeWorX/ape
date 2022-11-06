@@ -1,9 +1,10 @@
 import asyncio
 import json
+import operator
 import sys
-from functools import cached_property, lru_cache, singledispatchmethod
+from functools import cached_property, lru_cache, reduce, singledispatchmethod
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional
+from typing import Any, Callable, Coroutine, Dict, Iterator, List, Mapping, Optional, TypeVar
 
 import requests
 import yaml
@@ -319,6 +320,60 @@ def allow_disconnected(fn: Callable):
     return inner
 
 
+T = TypeVar("T")
+
+
+def _mergesort_iterators(
+    a: Iterator[T],
+    b: Iterator[T],
+    key: Callable[[T, T], bool] = operator.ge,  # type: ignore
+) -> Iterator[T]:
+    """
+    Creates an iterator from merging two input iterators,
+    similar to `itertools.chain` except the inputs are ordered
+
+    NOTE: Both `a` and `b` are already assumed to be ordered individually, otherwise
+          total ordering will not be maintained
+    """
+    try:
+        a_item = None  # NOTE: Placeholder in case next line fails
+        b_item = next(b)  # pull first item from `b` to compare to items from `a`
+
+        for a_item in a:  # start pulling items from `a`
+
+            while key(a_item, b_item):
+                # if comparison passes, keep pulling the next item from `b` until it doesn't
+                yield b_item
+                b_item = next(b)  # NOTE: If we run out of items, will raise `StopIteration`
+
+            # Comparison failed, so now we just yield the item from `a`
+            yield a_item
+
+        # We have pulled `b_item` but it hasn't been yielded
+        # NOTE: Either `a` is empty from the start or we finished iterating `a`
+        yield b_item
+
+    except StopIteration:
+        # NOTE: We only perform `next` on `b`, so this exception means that
+        #       all items from `b` are completely exhausted or starts empty
+        if a_item:
+            # NOTE: Exhausted `b` so `a_item` was never yielded
+            yield a_item
+        yield from a
+
+    # NOTE: If we yielded all items from `a` but `b` is longer, then this
+    #       will trigger, but even if `b` has been exhausted this shouldn't
+    #       be a problem because it'll just be empty anyways
+    yield from b
+
+
+def mergesort_iterators(
+    *iters: Iterator[T],
+    key: Callable[[T, T], bool] = operator.ge,  # type: ignore
+) -> Iterator[T]:
+    return reduce(lambda a, b: _mergesort_iterators(a, b, key=key), iters)
+
+
 __all__ = [
     "allow_disconnected",
     "cached_property",
@@ -326,6 +381,7 @@ __all__ = [
     "gas_estimation_error_message",
     "get_package_version",
     "load_config",
+    "mergesort_iterators",
     "raises_not_implemented",
     "run_until_complete",
     "singledispatchmethod",
