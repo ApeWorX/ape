@@ -215,13 +215,14 @@ class CallTraceParser(ManagerAccessMixin):
         return parent
 
     def decode_calldata(self, method: MethodABI, raw_data: bytes) -> Dict:
-        input_types = [i.canonical_type for i in method.inputs]
+        input_types_str = [i.canonical_type for i in method.inputs]
+        input_types = [parse_type(i.dict()) for i in method.inputs]
 
         try:
-            raw_input_values = decode(input_types, raw_data)
+            raw_input_values = decode(input_types_str, raw_data)
             input_values = [
                 self.decode_value(
-                    self._ecosystem.decode_primitive_value(v, parse_type(t)),
+                    self._ecosystem.decode_primitive_value(v, t),
                 )
                 for v, t in zip(raw_input_values, input_types)
             ]

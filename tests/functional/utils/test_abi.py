@@ -44,5 +44,4 @@ def test_parse_type(s):
     #   - ,int
     #   - int,
     # See tests in `tests_contracts` for specific ABI parsing tests.
-
-    assert parse_type(s)
+    ...
