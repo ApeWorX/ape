@@ -4,6 +4,7 @@ import pytest
 
 from ape.pytest.fixtures import PytestApeFixtures
 from tests.integration.cli.utils import skip_projects_except
+from tests.conftest import geth_process_test
 
 BASE_PROJECTS_PATH = Path(__file__).parent / "projects"
 TOKEN_B_GAS_REPORT = """
@@ -111,6 +112,16 @@ def test_fixture_docs(setup_pytester, project, pytester):
         assert doc_str in "\n".join(result.outlines)
 
 
+@skip_projects_except("test")
+def test_gas_flag_when_not_supported(setup_pytester, project, pytester):
+    setup_pytester(project.path.name)
+    result = pytester.runpytest("--gas")
+    assert (
+        "Provider 'test' does not support transaction "
+        "tracing and is unable to display a gas profile"
+    ) in "\n".join(result.outlines)
+
+
 class ApeTestGethTests:
     """
     Tests using ``ape-geth`` provider. Geth supports more testing features,
@@ -119,6 +130,7 @@ class ApeTestGethTests:
     **NOTE**: These tests are placed in a class for ``pytest-xdist`` scoping reasons.
     """
 
+    @geth_process_test
     @skip_projects_except("geth")
     def test_gas_flag_in_tests(self, networks, setup_pytester, project, pytester):
         settings = {"geth": {"ethereum": {"local": {"uri": "http://127.0.0.1:5005"}}}}
@@ -127,6 +139,7 @@ class ApeTestGethTests:
             result = pytester.runpytest("--gas")
             run_gas_test(result, expected_test_passes)
 
+    @geth_process_test
     @skip_projects_except("geth")
     def test_gas_flag_set_in_config(self, setup_pytester, project, pytester, switch_config):
         expected_test_passes = setup_pytester(project.path.name)
@@ -145,6 +158,7 @@ test:
             result = pytester.runpytest()
             run_gas_test(result, expected_test_passes)
 
+    @geth_process_test
     @skip_projects_except("geth")
     def test_gas_flag_exclude_method_using_cli_option(self, setup_pytester, project, pytester):
         expected_test_passes = setup_pytester(project.path.name)
@@ -153,6 +167,7 @@ test:
         result = pytester.runpytest("--gas", "--gas-exclude", "*:fooAndBar")
         run_gas_test(result, expected_test_passes, expected_report=expected)
 
+    @geth_process_test
     @skip_projects_except("geth")
     def test_gas_flag_exclusions_set_in_config(
         self, setup_pytester, project, pytester, switch_config
@@ -177,17 +192,9 @@ test:
             result = pytester.runpytest("--gas")
             run_gas_test(result, expected_test_passes, expected_report=expected)
 
+    @geth_process_test
     @skip_projects_except("geth")
     def test_gas_flag_excluding_contracts(self, setup_pytester, project, pytester):
         expected_test_passes = setup_pytester(project.path.name)
         result = pytester.runpytest("--gas", "--gas-exclude", "TestContractVy,TokenA")
         run_gas_test(result, expected_test_passes, expected_report=TOKEN_B_GAS_REPORT)
-
-    @skip_projects_except("test")
-    def test_gas_flag_when_not_supported(self, setup_pytester, project, pytester):
-        setup_pytester(project.path.name)
-        result = pytester.runpytest("--gas")
-        assert (
-            "Provider 'test' does not support transaction "
-            "tracing and is unable to display a gas profile"
-        ) in "\n".join(result.outlines)

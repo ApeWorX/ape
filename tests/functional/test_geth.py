@@ -15,6 +15,7 @@ from ape.exceptions import (
 )
 from ape_ethereum.ecosystem import Block
 from ape_geth.provider import Geth
+from tests.conftest import geth_process_test
 from tests.functional.conftest import RAW_VYPER_CONTRACT_TYPE
 from tests.functional.data.python import TRACE_RESPONSE
 
@@ -28,6 +29,7 @@ def geth(networks):
         yield provider
 
 
+@geth_process_test
 @pytest.fixture
 def mock_geth(geth, mock_web3):
     provider = Geth(
@@ -52,15 +54,18 @@ def parity_trace_response():
     return TRACE_RESPONSE
 
 
+@geth_process_test
 def test_did_start_local_process(geth):
     assert geth._process is not None
     assert geth._process.is_running
 
 
+@geth_process_test
 def test_uri(geth):
     assert geth.uri == URI
 
 
+@geth_process_test
 def test_uri_uses_value_from_config(geth, temp_config):
     settings = geth.provider_settings
     geth.provider_settings = {}
@@ -88,6 +93,7 @@ def test_revert_no_message(accounts, geth_contract):
         contract.setNumber(5, sender=owner)
 
 
+@geth_process_test
 def test_get_call_tree(geth, geth_contract, accounts):
     owner = accounts.test_accounts[-3]
     contract = owner.deploy(geth_contract)
@@ -107,6 +113,7 @@ def test_get_call_tree_erigon(mock_web3, mock_geth, parity_trace_response):
     assert re.match(expected, actual)
 
 
+@geth_process_test
 def test_repr_connected(geth):
     assert repr(geth) == "<geth chain_id=1337>"
 
@@ -121,6 +128,7 @@ def test_repr_on_live_network_and_disconnected(networks):
     assert repr(geth) == "<geth chain_id=5>"
 
 
+@geth_process_test
 def test_get_logs(geth, accounts, geth_contract):
     owner = accounts.test_accounts[-4]
     contract = owner.deploy(geth_contract)
@@ -131,6 +139,7 @@ def test_get_logs(geth, accounts, geth_contract):
     assert actual.event_arguments["newNum"] == 101010
 
 
+@geth_process_test
 def test_chain_id_when_connected(geth):
     assert geth.chain_id == 1337
 
@@ -140,6 +149,7 @@ def test_chain_id_live_network_not_connected(networks):
     assert geth.chain_id == 5
 
 
+@geth_process_test
 def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth):
     mock_network = mocker.MagicMock()
     mock_network.chain_id = 999999999  # Shouldn't use hardcoded network
@@ -154,6 +164,7 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth):
         geth.network = orig_network
 
 
+@geth_process_test
 def test_connect_wrong_chain_id(mocker, ethereum, geth):
     start_network = geth.network
 
@@ -175,10 +186,12 @@ def test_connect_wrong_chain_id(mocker, ethereum, geth):
         geth.network = start_network
 
 
+@geth_process_test
 def test_supports_tracing(geth):
     assert geth.supports_tracing
 
 
+@geth_process_test
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
 def test_get_block(geth, block_id):
     block = cast(Block, geth.get_block(block_id))
@@ -189,6 +202,7 @@ def test_get_block(geth, block_id):
     assert block.gas_used == 0
 
 
+@geth_process_test
 def test_get_block_not_found(geth):
     latest_block = geth.get_block("latest")
     block_id = latest_block.number + 1000
@@ -196,12 +210,14 @@ def test_get_block_not_found(geth):
         geth.get_block(block_id)
 
 
+@geth_process_test
 def test_get_receipt_not_exists_with_timeout(geth):
     unknown_txn = TRANSACTION_HASH
     with pytest.raises(TransactionNotFoundError, match=f"Transaction '{unknown_txn}' not found"):
         geth.get_receipt(unknown_txn, timeout=0)
 
 
+@geth_process_test
 def test_get_receipt(accounts, geth_contract, geth):
     owner = accounts.test_accounts[-5]
     contract = owner.deploy(geth_contract)
