@@ -165,7 +165,7 @@ class Receipt(ReceiptAPI):
             raise OutOfGasError()
         elif self.status != TransactionStatusEnum.NO_ERROR:
             txn_hash = HexBytes(self.txn_hash).hex()
-            raise TransactionError(message=f"Transaction '{txn_hash}' failed.")
+            raise TransactionError(message=f"Transaction '{txn_hash}' failed.", receipt=self)
 
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         call_tree = self.call_tree
