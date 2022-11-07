@@ -19,6 +19,7 @@ ape.config.PROJECT_FOLDER = Path(mkdtemp()).resolve()
 
 # Needed to test tracing support in core `ape test` command.
 pytest_plugins = ["pytester"]
+geth_process_test = pytest.mark.xdist_group(name="geth-tests")
 
 
 @pytest.fixture(autouse=True)
