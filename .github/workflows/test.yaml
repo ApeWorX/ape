@@ -84,7 +84,7 @@ jobs:
             tar -zxvf geth.tar.gz
             cd go-ethereum-$GETH_VERSION
             make geth
-            cp ./build/bin/geth $HOME/.local/bin
+            cp ./build/bin/geth /usr/local/bin
             geth version
 
         - name: Install Dependencies
