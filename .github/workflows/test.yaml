@@ -85,6 +85,7 @@ jobs:
             cd go-ethereum-$GETH_VERSION
             make geth
             cp ./build/bin/geth $HOME/.local/bin
+            geth version
 
         - name: Install Dependencies
           run: |
