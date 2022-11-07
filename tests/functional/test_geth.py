@@ -55,12 +55,6 @@ def parity_trace_response():
 
 
 @geth_process_test
-def test_did_start_local_process(geth):
-    assert geth._process is not None
-    assert geth._process.is_running
-
-
-@geth_process_test
 def test_uri(geth):
     assert geth.uri == URI
 
