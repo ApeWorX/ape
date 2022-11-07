@@ -74,7 +74,7 @@ jobs:
           uses: actions/cache@v3
           with:
             path: $HOME/.local/bin
-            key: ${{ runner.os }}-geth-$GETH_VERSION
+            key: ${{ runner.os }}-geth-${{ env.GETH_VERSION }}
 
         - name: Install Geth
           if: steps.cache-geth.outputs.cache-hit != 'true'
