@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 
 from ape.pytest.fixtures import PytestApeFixtures
-from tests.integration.cli.utils import skip_projects_except
 from tests.conftest import geth_process_test
+from tests.integration.cli.utils import skip_projects_except
 
 BASE_PROJECTS_PATH = Path(__file__).parent / "projects"
 TOKEN_B_GAS_REPORT = """
