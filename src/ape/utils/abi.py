@@ -295,13 +295,13 @@ def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
     >>> parse_type({'type': 'tuple', 'components': [{'type': 'uint256'}, {'type':\
     'uint256'}]})
     ('uint256', 'uint256')
-    >>> parse_type({'type': 'tuple', 'components': [{'type': 'uint256'}, {'type': 'tuple',\
-    'components': [{'type': 'uint256'}]}]})
+    >>> parse_type({'type': 'tuple', 'components': [{'type': 'uint256'}, {'type':\
+    'tuple', 'components': [{'type': 'uint256'}]}]})
     ('uint256', ('uint256',))
     >>> parse_type({'type': 'tuple[]', 'components': [{'type': 'uint256'}]})
     [('uint256',)]
-    >>> parse_type({'type': 'tuple[]', 'components': [{'type': 'uint256'}, {'type': 'tuple',\
-    'components': [{'type': 'uint256[]'}]}]}) 
+    >>> parse_type({'type': 'tuple[]', 'components': [{'type': 'uint256'}, {'type':\
+    'tuple', 'components': [{'type': 'uint256[]'}]}]}) 
     [('uint256', (['uint256'],))]
 
     Args:
