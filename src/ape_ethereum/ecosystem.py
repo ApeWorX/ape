@@ -319,7 +319,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types_str = [o.canonical_type for o in abi.outputs]
-        output_types = [parse_type(t.dict()) for t in abi.outputs]
+        output_types = [parse_type(o.dict()) for o in abi.outputs]
 
         try:
             vm_return_values = decode(output_types_str, raw_data)
