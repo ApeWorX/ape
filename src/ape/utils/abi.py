@@ -285,12 +285,40 @@ class LogInputABICollection:
 
         return value
 
-def parse_type(t):
-    if t["type"] == "tuple[]":
-        return [tuple([parse_type(c) for c in t["components"]])]
-    elif t["type"] == "tuple":
-        return tuple([parse_type(c) for c in t["components"]])
-    elif t["type"].endswith("]"):
-        return [t["type"][:-2]]
+def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
+    """Parses ABIType.dict() into Python types.
+
+    >>> parse_type({'type': 'uint256'})
+    'uint256'
+    >>> parse_type({'type': 'tuple', 'components': [{'type': 'uint256'}]})
+    ('uint256',)
+    >>> parse_type({'type': 'tuple', 'components': [{'type': 'uint256'}, {'type':\
+    'uint256'}]})
+    ('uint256', 'uint256')
+    >>> parse_type({'type': 'tuple', 'components': [{'type': 'uint256'}, {'type': 'tuple',\
+    'components': [{'type': 'uint256'}]}]})
+    ('uint256', ('uint256',))
+    >>> parse_type({'type': 'tuple[]', 'components': [{'type': 'uint256'}]})
+    [('uint256',)]
+    >>> parse_type({'type': 'tuple[]', 'components': [{'type': 'uint256'}, {'type': 'tuple',\
+    'components': [{'type': 'uint256[]'}]}]}) 
+    [('uint256', (['uint256'],))]
+
+    Args:
+        type (Dict[str, Any]): This is ABIType.dict(). The two keys
+        that we are interested in are `type` and `components`.
+        `components` produces the same two keys (if present),
+        namely `type` and `components`.
+
+    Returns:
+        Union[str, Tuple, List]: Python representation of the type.
+        For example, `uint256[]` becomes ['uint256'].
+    """
+    if type["type"] == "tuple[]":
+        return [tuple([parse_type(c) for c in type["components"]])]
+    elif type["type"] == "tuple":
+        return tuple([parse_type(c) for c in type["components"]])
+    elif type["type"].endswith("]"):
+        return [type["type"][:-2]]
     else:
-        return t["type"]
+        return type["type"]
