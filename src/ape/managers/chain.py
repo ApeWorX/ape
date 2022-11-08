@@ -720,7 +720,7 @@ class ContractCache(BaseManager):
 
             if proxy_info:
                 self._local_proxies[address_key] = proxy_info
-                return self.get(proxy_info.target)
+                return self.get(proxy_info.target, default=default)
 
             if not self.provider.get_code(address_key):
                 if default:
