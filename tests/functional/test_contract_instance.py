@@ -38,12 +38,9 @@ def test_init_specify_contract_type(
 def test_contract_calls(owner, contract_instance):
     contract_instance.setNumber(2, sender=owner)
     assert contract_instance.myNumber() == 2
-
-
-def test_contract_mehtod_calls(owner, contract_instance):
-    contract_instance.method_call("setNumber", 3, sender=owner)
+    contract_instance.invoke_transaction("setNumber", 3, sender=owner)
     assert contract_instance.myNumber() == 3
-    assert contract_instance.method_call("myNumber", sender=owner) == 3
+    assert contract_instance.call_view_method("myNumber")
 
 
 def test_revert(sender, contract_instance):
