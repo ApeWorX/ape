@@ -710,7 +710,7 @@ class ContractInstance(BaseAddress):
             name = self.contract_type.name or self.__class__.__name__
             raise AttributeError(f"'{name}' has no attribute '{method_name}'.")
 
-    def invoke_transaction(self, method_name: str, *args, **kwargs) -> Any:
+    def invoke_transaction(self, method_name: str, *args, **kwargs) -> ReceiptAPI:
         """
         Call a contract's function directly using the method_name.
         This function is for non-view function's which may change
