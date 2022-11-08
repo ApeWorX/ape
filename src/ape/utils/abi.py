@@ -306,6 +306,8 @@ def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
     >>> parse_type({'type': 'tuple', 'components': [{'type': 'tuple[]',\
     'components': [{'type': 'int[]'}]}, {'type': 'int'}]})
     ([(['int'],)], 'int')
+    >>> parse_type({'type': 'int[][]'})
+    [['int']]
 
     Args:
         type (Dict[str, Any]): This is ABIType.dict(). The two keys
@@ -321,7 +323,9 @@ def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
         return [tuple([parse_type(c) for c in type["components"]])]
     elif type["type"] == "tuple":
         return tuple([parse_type(c) for c in type["components"]])
-    elif type["type"].endswith("]"):
+    elif type["type"].endswith("[][]"):
+        return [[type["type"][:-4]]]
+    elif type["type"].endswith("[]"):
         return [type["type"][:-2]]
     else:
         return type["type"]
