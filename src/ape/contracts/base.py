@@ -686,9 +686,11 @@ class ContractInstance(BaseAddress):
 
         Args:
             method_name (str): The contract method name to be called
+            *args: Contract method arguments.
+            **kwargs: Transaction values, such as ``value`` or ``sender``
 
         Returns:
-            Output of smart contract interaction
+            Any: Output of smart contract view call.
 
         """
 
@@ -719,9 +721,11 @@ class ContractInstance(BaseAddress):
 
         Args:
             method_name (str): The contract method name to be called
+            *args: Contract method arguments.
+            **kwargs: Transaction values, such as ``value`` or ``sender``
 
         Returns:
-            Output of smart contract interaction
+            ReceiptAPI: Output of smart contract interaction.
 
         """
 
