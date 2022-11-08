@@ -351,9 +351,9 @@ class GethDev(TestProviderAPI, BaseGethProvider):
 
     def revert(self, snapshot_id: SnapshotID):
         if isinstance(snapshot_id, int):
-            block_number = to_hex(snapshot_id)
+            block_number = str(to_hex(snapshot_id))
         elif isinstance(snapshot_id, bytes):
-            block_number = add_0x_prefix(HexStr(snapshot_id.hex()))
+            block_number = str(add_0x_prefix(HexStr(snapshot_id.hex())))
         else:
             block_number = str(snapshot_id)
 
