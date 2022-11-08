@@ -13,8 +13,9 @@ from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
 @pytest.fixture(scope="module", autouse=True)
-def connection(networks_connected_to_tester):
-    yield
+def connection(networks):
+    with networks.ethereum.local.use_provider("test"):
+        yield
 
 
 @pytest.fixture
@@ -244,7 +245,8 @@ def test_set_pending_timestamp_with_deltatime(chain):
     start_timestamp = chain.pending_timestamp
     chain.mine(deltatime=5)
     new_timestamp = chain.pending_timestamp
-    assert new_timestamp - start_timestamp - 5 <= 1
+    actual = new_timestamp - start_timestamp - 5
+    assert actual <= 1
 
 
 def test_set_pending_timestamp_failure(chain):

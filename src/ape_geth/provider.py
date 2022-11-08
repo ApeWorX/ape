@@ -1,4 +1,5 @@
 import shutil
+from abc import ABC
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Union
 
@@ -27,16 +28,16 @@ from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from yarl import URL
 
-from ape.api import PluginConfig, UpstreamProvider, Web3Provider
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api import PluginConfig, TestProviderAPI, UpstreamProvider, Web3Provider
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import logger
-from ape.utils import generate_dev_accounts
+from ape.types import SnapshotID
+from ape.utils import generate_dev_accounts, raises_not_implemented
 
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
 
 
-class EphemeralGeth(LoggingMixin, BaseGethProcess):
+class GethDevProcess(LoggingMixin, BaseGethProcess):
     """
     A developer-configured geth that only exists until disconnected.
     """
@@ -145,8 +146,7 @@ class GethNotInstalledError(ConnectionError):
         )
 
 
-class GethProvider(Web3Provider, UpstreamProvider):
-    _geth: Optional[EphemeralGeth] = None
+class BaseGethProvider(Web3Provider, ABC):
     _client_version: Optional[str] = None
 
     # optimal values for geth
@@ -173,46 +173,12 @@ class GethProvider(Web3Provider, UpstreamProvider):
     def _clean_uri(self) -> str:
         return str(URL(self.uri).with_user(None).with_password(None))
 
-    @property
-    def connection_str(self) -> str:
-        return self.uri
-
-    def connect(self):
+    def _set_web3(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
         self._web3 = _create_web3(self.uri)
 
-        if not self.is_connected:
-            if self.network.name != LOCAL_NETWORK_NAME:
-                raise ProviderError(f"No node found on '{self._clean_uri}'.")
-
-            # Start an ephemeral geth process.
-            parsed_uri = URL(self.uri)
-
-            if parsed_uri.host not in ("localhost", "127.0.0.1"):
-                raise ConnectionError(f"Unable to connect web3 to {parsed_uri.host}.")
-
-            if not shutil.which("geth"):
-                raise GethNotInstalledError()
-
-            # Use mnemonic from test config
-            config_manager = self.network.config_manager
-            test_config = config_manager.get_config("test")
-            mnemonic = test_config["mnemonic"]
-            num_of_accounts = test_config["number_of_accounts"]
-
-            self._geth = EphemeralGeth(
-                self.data_folder,
-                parsed_uri.host,
-                parsed_uri.port,
-                mnemonic,
-                number_of_accounts=num_of_accounts,
-            )
-            self._geth.connect()
-
-            if not self._web3.is_connected():
-                self._geth.disconnect()
-                raise ConnectionError("Unable to connect to locally running geth.")
-        elif "geth" in self.client_version.lower():
+    def _complete_connect(self):
+        if "geth" in self.client_version.lower():
             self._log_connection("Geth")
         elif "erigon" in self.client_version.lower():
             self._log_connection("Erigon")
@@ -228,17 +194,6 @@ class GethProvider(Web3Provider, UpstreamProvider):
 
         self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
-        def is_likely_poa() -> bool:
-            try:
-                block = self.web3.eth.get_block("latest")
-            except ExtraDataLengthError:
-                return True
-
-            return (
-                "proofOfAuthorityData" in block
-                or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
-            )
-
         # Check for chain errors, including syncing
         try:
             chain_id = self._web3.eth.chain_id
@@ -249,35 +204,34 @@ class GethProvider(Web3Provider, UpstreamProvider):
                 else "Error getting chain id."
             )
 
-        if is_likely_poa():
-            self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+        try:
+            block = self.web3.eth.get_block("latest")
+        except ExtraDataLengthError:
+            is_likely_poa = True
+        else:
+            is_likely_poa = (
+                "proofOfAuthorityData" in block
+                or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
+            )
+
+        if is_likely_poa:
+            try:
+                self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            except ValueError as err:
+                if "You can't add the same un-named instance twice" in str(err):
+                    # Already added
+                    pass
+                else:
+                    raise  # Original error
 
         self.network.verify_chain_id(chain_id)
 
     def disconnect(self):
-        if self._geth is not None:
-            self._geth.disconnect()
-            self._geth = None
-
-        # Must happen after geth.disconnect()
         self._web3 = None
         self._client_version = None
 
-    def stream_request(self, method: str, params: List, iter_path="result.item"):
-        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
-        results = ijson.sendable_list()
-        coro = ijson.items_coro(results, iter_path)
-
-        resp = requests.post(self.uri, json=payload, stream=True)
-        resp.raise_for_status()
-
-        for chunk in resp.iter_content(chunk_size=2**17):
-            coro.send(chunk)
-            yield from results
-            del results[:]
-
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
-        frames = self.stream_request(
+        frames = self._stream_request(
             "debug_traceTransaction", [txn_hash, {"enableMemory": True}], "result.structLogs.item"
         )
         for frame in frames:
@@ -331,6 +285,97 @@ class GethProvider(Web3Provider, UpstreamProvider):
                 ) from err
 
             raise  # Original error
+
+    def _stream_request(self, method: str, params: List, iter_path="result.item"):
+        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
+        results = ijson.sendable_list()
+        coroutine = ijson.items_coro(results, iter_path)
+
+        resp = requests.post(self.uri, json=payload, stream=True)
+        resp.raise_for_status()
+
+        for chunk in resp.iter_content(chunk_size=2**17):
+            coroutine.send(chunk)
+            yield from results
+            del results[:]
+
+
+class GethDev(TestProviderAPI, BaseGethProvider):
+    _process: Optional[GethDevProcess] = None
+    name: str = "geth"
+
+    def connect(self):
+        self._set_web3()
+        if not self.is_connected:
+            self._start_geth()
+        else:
+            self._complete_connect()
+
+    def _start_geth(self):
+        parsed_uri = URL(self.uri)
+
+        if parsed_uri.host not in ("localhost", "127.0.0.1"):
+            raise ConnectionError(f"Unable to start Geth on non-local host {parsed_uri.host}.")
+
+        elif not shutil.which("geth"):
+            raise GethNotInstalledError()
+
+        # Use mnemonic from test config
+        config_manager = self.network.config_manager
+        test_config = config_manager.get_config("test")
+        mnemonic = test_config["mnemonic"]
+        num_of_accounts = test_config["number_of_accounts"]
+
+        self._process = GethDevProcess(
+            self.data_folder,
+            parsed_uri.host,
+            parsed_uri.port,
+            mnemonic,
+            number_of_accounts=num_of_accounts,
+        )
+        self._process.connect()
+        if not self._web3.is_connected():
+            self._process.disconnect()
+            raise ConnectionError("Unable to connect to locally running geth.")
+        else:
+            self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+    def disconnect(self):
+        # Must disconnect process first.
+        if self._process is not None:
+            self._process.disconnect()
+            self._process = None
+
+        super().disconnect()
+
+    @raises_not_implemented
+    def revert(self, snapshot_id: SnapshotID):
+        pass
+
+    @raises_not_implemented
+    def snapshot(self) -> SnapshotID:
+        pass
+
+    @raises_not_implemented
+    def set_timestamp(self, new_timestamp: int):
+        pass
+
+    @raises_not_implemented
+    def mine(self, num_blocks: int = 1):
+        pass
+
+
+class Geth(BaseGethProvider, UpstreamProvider):
+    @property
+    def connection_str(self) -> str:
+        return self.uri
+
+    def connect(self):
+        self._set_web3()
+        if not self.is_connected:
+            raise ProviderError(f"No node found on '{self._clean_uri}'.")
+
+        self._complete_connect()
 
 
 def _create_web3(uri: str):

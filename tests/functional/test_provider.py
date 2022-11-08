@@ -73,7 +73,7 @@ def test_get_receipt_not_exists_with_timeout(eth_tester_provider):
 
 
 def test_get_receipt_exists_with_timeout(eth_tester_provider, vyper_contract_instance, owner):
-    receipt_from_invoke = vyper_contract_instance.setNumber(123, sender=owner)
+    receipt_from_invoke = vyper_contract_instance.setNumber(888, sender=owner)
     receipt_from_provider = eth_tester_provider.get_receipt(receipt_from_invoke.txn_hash, timeout=0)
     assert receipt_from_provider.txn_hash == receipt_from_invoke.txn_hash
     assert receipt_from_provider.receiver == vyper_contract_instance.address

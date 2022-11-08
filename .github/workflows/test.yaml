@@ -57,6 +57,7 @@ jobs:
 
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GETH_VERSION: 1.10.26
 
         steps:
         - uses: actions/checkout@v2
@@ -67,6 +68,24 @@ jobs:
           uses: actions/setup-python@v2
           with:
               python-version: ${{ matrix.python-version }}
+
+        - name: Cache Geth
+          id: cache-geth
+          uses: actions/cache@v3
+          with:
+            path: $HOME/.local/bin
+            key: ${{ runner.os }}-geth-${{ env.GETH_VERSION }}
+
+        - name: Install Geth
+          if: steps.cache-geth.outputs.cache-hit != 'true'
+          run: |
+            mkdir -p $HOME/.local/bin
+            wget -O geth.tar.gz "https://github.com/ethereum/go-ethereum/archive/v$GETH_VERSION.tar.gz"
+            tar -zxvf geth.tar.gz
+            cd go-ethereum-$GETH_VERSION
+            make geth
+            cp ./build/bin/geth /usr/local/bin
+            geth version
 
         - name: Install Dependencies
           run: |
