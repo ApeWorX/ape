@@ -220,3 +220,28 @@ def test_get_receipt(accounts, geth_contract, geth):
     assert receipt.txn_hash == actual.txn_hash
     assert actual.receiver == contract.address
     assert actual.sender == receipt.sender
+
+
+@geth_process_test
+def test_snapshot_and_revert(geth, accounts, geth_contract):
+    owner = accounts.test_accounts[-6]
+    contract = owner.deploy(geth_contract)
+
+    snapshot = geth.snapshot()
+    start_nonce = owner.nonce
+    contract.setNumber(211112, sender=owner)  # Advance a block
+    actual_block_number = geth.get_block("latest").number
+    expected_block_number = snapshot + 1
+    actual_nonce = owner.nonce
+    expected_nonce = start_nonce + 1
+    assert actual_block_number == expected_block_number
+    assert actual_nonce == expected_nonce
+
+    geth.revert(snapshot)
+
+    actual_block_number = geth.get_block("latest").number
+    expected_block_number = snapshot
+    actual_nonce = owner.nonce
+    expected_nonce = start_nonce
+    assert actual_block_number == expected_block_number
+    assert actual_nonce == expected_nonce
