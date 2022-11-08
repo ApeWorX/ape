@@ -677,9 +677,42 @@ class ContractInstance(BaseAddress):
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
             raise AttributeError(str(err)) from err
 
-    def method_call(self, method_name: str, *args, **kwargs) -> Any:
+    def call_view_method(self, method_name: str, *args, **kwargs) -> Any:
         """
-        Call a contract function directly using the method_name.
+        Call a contract's view function directly using the method_name.
+        This is helpful in the scenario where the contract has a
+        method name matching an attribute of the BaseAddress class,
+        such as 'nonce' or 'balance'
+
+        Args:
+            method_name (str): The contract method name to be called
+
+        Returns:
+            Output of smart contract interaction
+
+        """
+
+        if method_name in self._view_methods_:
+            view_handler = self._view_methods_[method_name]
+            output = view_handler(*args, **kwargs)
+            return output
+
+        elif method_name in self._mutable_methods_:
+            mutable_handler = self._mutable_methods_[method_name]
+            output = mutable_handler(*args, **kwargs)
+            return output
+
+        else:
+            # Didn't find anything that matches
+            # NOTE: `__getattr__` *must* raise `AttributeError`
+            name = self.contract_type.name or self.__class__.__name__
+            raise AttributeError(f"'{name}' has no attribute '{method_name}'.")
+
+    def invoke_transaction(self, method_name: str, *args, **kwargs) -> ReceiptAPI:
+        """
+        Call a contract's function directly using the method_name.
+        This function is for non-view function's which may change
+        contract state and will execute a transaction.
         This is helpful in the scenario where the contract has a
         method name matching an attribute of the BaseAddress class,
         such as 'nonce' or 'balance'
