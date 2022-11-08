@@ -691,11 +691,6 @@ class ContractInstance(BaseAddress):
             Output of smart contract interaction
 
         """
-        if method_name not in {*self._view_methods_, *self._mutable_methods_}:
-            # Didn't find anything that matches
-            # NOTE: `__getattr__` *must* raise `AttributeError`
-            name = self.contract_type.name or self.__class__.__name__
-            raise AttributeError(f"'{name}' has no attribute '{method_name}'.")
 
         if method_name in self._view_methods_:
             view_handler = self._view_methods_[method_name]
@@ -706,6 +701,12 @@ class ContractInstance(BaseAddress):
             mutable_handler = self._mutable_methods_[method_name]
             output = mutable_handler(*args, **kwargs)
             return output
+
+        else:
+            # Didn't find anything that matches
+            # NOTE: `__getattr__` *must* raise `AttributeError`
+            name = self.contract_type.name or self.__class__.__name__
+            raise AttributeError(f"'{name}' has no attribute '{method_name}'.")
 
     def get_event_by_signature(self, signature: str) -> ContractEvent:
         """
