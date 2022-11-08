@@ -9,7 +9,7 @@ def test_parse_type_simple():
 
 
 def test_parse_type_simple_array():
-    assert parse_type({"type": "int[]"}) == "int[]"
+    assert parse_type({"type": "int[]"}) == ["int"]
 
 
 def test_parse_type_simple_tuple():
