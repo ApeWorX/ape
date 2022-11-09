@@ -38,9 +38,27 @@ def test_init_specify_contract_type(
 def test_contract_calls(owner, contract_instance):
     contract_instance.setNumber(2, sender=owner)
     assert contract_instance.myNumber() == 2
-    contract_instance.invoke_transaction("setNumber", 3, sender=owner)
+
+
+def test_invoke_transaction(owner, contract_instance):
+    # Test mutable method call with invoke_transaction
+    receipt = contract_instance.invoke_transaction("setNumber", 3, sender=owner)
+    print(receipt)
     assert contract_instance.myNumber() == 3
-    assert contract_instance.call_view_method("myNumber")
+    assert not receipt.failed
+    # Test view method can be called with invoke transaction and returns a receipt
+    view_receipt = contract_instance.invoke_transaction("myNumber", sender=owner)
+    assert not view_receipt.failed
+
+
+def test_call_view_method(owner, contract_instance):
+    contract_instance.setNumber(2, sender=owner)
+    value = contract_instance.call_view_method("myNumber")
+    assert value == 2
+    # Test that a mutable method can be called and is treated as a call (a simulation)
+    contract_instance.call_view_method("setNumber", 3, sender=owner)
+    # myNumber should still equal 2 because the above line is call
+    assert contract_instance.myNumber() == 2
 
 
 def test_revert(sender, contract_instance):

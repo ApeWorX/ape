@@ -681,8 +681,9 @@ class ContractInstance(BaseAddress):
         """
         Call a contract's view function directly using the method_name.
         This is helpful in the scenario where the contract has a
-        method name matching an attribute of the BaseAddress class,
-        such as 'nonce' or 'balance'
+        method name matching an attribute of the
+        :class:`~ape.api.address.BaseAddress` class, such as ``nonce``
+        or ``balance``
 
         Args:
             method_name (str): The contract method name to be called
@@ -700,13 +701,12 @@ class ContractInstance(BaseAddress):
             return output
 
         elif method_name in self._mutable_methods_:
-            mutable_handler = self._mutable_methods_[method_name]
-            output = mutable_handler(*args, **kwargs)
+            handler = self._mutable_methods_[method_name].call
+            output = handler(*args, **kwargs)
             return output
 
         else:
             # Didn't find anything that matches
-            # NOTE: `__getattr__` *must* raise `AttributeError`
             name = self.contract_type.name or self.__class__.__name__
             raise AttributeError(f"'{name}' has no attribute '{method_name}'.")
 
@@ -716,8 +716,9 @@ class ContractInstance(BaseAddress):
         This function is for non-view function's which may change
         contract state and will execute a transaction.
         This is helpful in the scenario where the contract has a
-        method name matching an attribute of the BaseAddress class,
-        such as 'nonce' or 'balance'
+        method name matching an attribute of the
+        :class:`~ape.api.address.BaseAddress` class, such as ``nonce``
+        or ``balance``
 
         Args:
             method_name (str): The contract method name to be called
@@ -725,23 +726,22 @@ class ContractInstance(BaseAddress):
             **kwargs: Transaction values, such as ``value`` or ``sender``
 
         Returns:
-            ReceiptAPI: Output of smart contract interaction.
+            :class:`~ape.api.transactions.ReceiptAPI`: Output of smart contract interaction.
 
         """
 
         if method_name in self._view_methods_:
-            view_handler = self._view_methods_[method_name]
+            view_handler = self._view_methods_[method_name].transact
             output = view_handler(*args, **kwargs)
             return output
 
         elif method_name in self._mutable_methods_:
-            mutable_handler = self._mutable_methods_[method_name]
-            output = mutable_handler(*args, **kwargs)
+            handler = self._mutable_methods_[method_name]
+            output = handler(*args, **kwargs)
             return output
 
         else:
             # Didn't find anything that matches
-            # NOTE: `__getattr__` *must* raise `AttributeError`
             name = self.contract_type.name or self.__class__.__name__
             raise AttributeError(f"'{name}' has no attribute '{method_name}'.")
 
