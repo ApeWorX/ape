@@ -43,7 +43,6 @@ def test_contract_calls(owner, contract_instance):
 def test_invoke_transaction(owner, contract_instance):
     # Test mutable method call with invoke_transaction
     receipt = contract_instance.invoke_transaction("setNumber", 3, sender=owner)
-    print(receipt)
     assert contract_instance.myNumber() == 3
     assert not receipt.failed
     # Test view method can be called with invoke transaction and returns a receipt
