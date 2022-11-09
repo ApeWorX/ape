@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable
 
 import pytest
 
@@ -63,7 +63,7 @@ class ProjectSkipper:
                 f"Project '{project_name}' does not exist (test={node_id}."
             )
 
-    def skip_projects(self, method: Callable, projects: List[str]):
+    def skip_projects(self, method: Callable, *projects: str):
         """
         Call this method to record a 'skip'.
         The ``skip_project`` decorator calls this method
@@ -77,7 +77,7 @@ class ProjectSkipper:
 
             self.projects[project][node.module_name].add(node.name)
 
-    def skip_projects_except(self, method: Callable, projects: List[str]):
+    def skip_projects_except(self, method: Callable, *projects: str):
         """
         Call this method to record 'skip's for each project that is not
         in the given list. The ``skip_project_except`` decorator calls
@@ -89,40 +89,40 @@ class ProjectSkipper:
         for proj in projects:
             self._raise_if_not_exists(proj, node.node_id)
 
-        projects = [p for p in self.projects if p not in projects]
-        self.skip_projects(method, projects)
+        filtered_projects = [p for p in self.projects if p not in projects]
+        self.skip_projects(method, *filtered_projects)
 
 
 project_skipper = ProjectSkipper()
 
 
-def skip_projects(names: List[str]):
+def skip_projects(*names: str):
     """
     Use this decorator to cause a CLI integration test
     not to run for the given projects.
     """
 
     def decorator(f):
-        project_skipper.skip_projects(f, names)
+        project_skipper.skip_projects(f, *names)
         return f
 
     return decorator
 
 
-def skip_projects_except(names: List[str]):
+def skip_projects_except(*names: str):
     """
     Use this decorator to cause a CLI integration test
     to only run for the given projects.
     """
 
     def decorator(f):
-        project_skipper.skip_projects_except(f, names)
+        project_skipper.skip_projects_except(f, *names)
         return f
 
     return decorator
 
 
-run_once = skip_projects_except(["test"])
+run_once = skip_projects_except("test")
 """
 For times when the CLI integration test is unlikely to be
 affected by project structure.

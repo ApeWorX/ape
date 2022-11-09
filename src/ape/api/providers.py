@@ -953,7 +953,16 @@ class Web3Provider(ProviderAPI, ABC):
         )
 
         receipt = self.get_receipt(txn_hash.hex(), required_confirmations=required_confirmations)
-        receipt.raise_for_status()
+        if receipt.failed:
+            txn_dict = receipt.transaction.dict()
+            txn_params = cast(TxParams, txn_dict)
+
+            # Replay txn to get revert reason
+            try:
+                self.web3.eth.call(txn_params)
+            except Exception as err:
+                raise self.get_virtual_machine_error(err) from err
+
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self.chain_manager.account_history.append(receipt)
         return receipt
