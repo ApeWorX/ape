@@ -738,12 +738,14 @@ class NetworkAPI(BaseInterfaceModel):
 
         provider_name = provider_name or self.default_provider
         if not provider_name:
+            from ape.managers.config import CONFIG_FILE_NAME
+
             raise NetworkError(
                 f"No default provider for network '{self.name}'. "
-                f"Set one in your ape-config.yaml:\n"
+                f"Set one in your {CONFIG_FILE_NAME}:\n"
                 f"\n{self.ecosystem.name}:"
                 f"\n  {self.name}:"
-                f"\n    default_provider: <DEFAULT_PROVIDER>"
+                "\n    default_provider: <DEFAULT_PROVIDER>"
             )
 
         provider_settings = provider_settings or {}

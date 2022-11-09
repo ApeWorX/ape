@@ -378,7 +378,7 @@ def test_receipt(contract_instance, owner):
 
 
 def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
-    receipt = contract_instance.setNumber(123, sender=owner)
+    receipt = contract_instance.setNumber(555, sender=owner)
     expected_err = (
         "Receipt missing 'contract_address' field. "
         "Was this from a deploy transaction (e.g. `project.MyContract.deploy()`)?"
@@ -392,12 +392,12 @@ def test_transact_specify_auto_gas(vyper_contract_instance, owner):
     Tests that we can specify "auto" gas even though "max" is the default for
     local networks.
     """
-    receipt = vyper_contract_instance.setNumber(123, sender=owner, gas="auto")
+    receipt = vyper_contract_instance.setNumber(111, sender=owner, gas="auto")
     assert not receipt.failed
 
 
 def test_transact_specify_max_gas(vyper_contract_instance, owner):
-    receipt = vyper_contract_instance.setNumber(123, sender=owner, gas="max")
+    receipt = vyper_contract_instance.setNumber(222, sender=owner, gas="max")
     assert not receipt.failed
 
 
