@@ -5,7 +5,8 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 
 import ijson  # type: ignore
 import requests
-from eth_utils import to_wei
+from eth_typing import HexStr
+from eth_utils import add_0x_prefix, to_hex, to_wei
 from evm_trace import (
     CallTreeNode,
     CallType,
@@ -348,13 +349,18 @@ class GethDev(TestProviderAPI, BaseGethProvider):
 
         super().disconnect()
 
-    @raises_not_implemented
     def revert(self, snapshot_id: SnapshotID):
-        pass
+        if isinstance(snapshot_id, int):
+            block_number = str(to_hex(snapshot_id))
+        elif isinstance(snapshot_id, bytes):
+            block_number = str(add_0x_prefix(HexStr(snapshot_id.hex())))
+        else:
+            block_number = str(snapshot_id)
 
-    @raises_not_implemented
+        self._make_request("debug_setHead", [block_number])
+
     def snapshot(self) -> SnapshotID:
-        pass
+        return self.get_block("latest").number or 0
 
     @raises_not_implemented
     def set_timestamp(self, new_timestamp: int):
