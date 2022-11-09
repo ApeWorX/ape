@@ -287,27 +287,11 @@ class LogInputABICollection:
 
 def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
     """Parses ABIType.dict() into Python types.
-
-    >>> parse_type({'type': 'uint256'})
-    'uint256'
-    >>> parse_type({'type': 'tuple', 'components': [{'type': 'uint256'}]})
-    ('uint256',)
-    >>> parse_type({'type': 'tuple', 'components': [{'type': 'uint256'}, {'type':\
-    'uint256'}]})
-    ('uint256', 'uint256')
-    >>> parse_type({'type': 'tuple', 'components': [{'type': 'uint256'}, {'type':\
-    'tuple', 'components': [{'type': 'uint256'}]}]})
-    ('uint256', ('uint256',))
-    >>> parse_type({'type': 'tuple[]', 'components': [{'type': 'uint256'}]})
-    [('uint256',)]
-    >>> parse_type({'type': 'tuple[]', 'components': [{'type': 'uint256'}, {'type':\
-    'tuple', 'components': [{'type': 'uint256[]'}]}]}) 
-    [('uint256', (['uint256'],))]
-    >>> parse_type({'type': 'tuple', 'components': [{'type': 'tuple[]',\
-    'components': [{'type': 'int[]'}]}, {'type': 'int'}]})
-    ([(['int'],)], 'int')
-    >>> parse_type({'type': 'int[][]'})
-    [['int']]
+    Note that this function is not quite necessary, since
+    `decode_primitive_value` in `ape_ethereum.ecosystem` handles
+    this logic to some degree. The suggestion is that we deprecate
+    this function in the future, in favour of handling this logic
+    completely in `ape_ethereum.ecosystem.decode_primitive_value`.
 
     Args:
         type (Dict[str, Any]): This is ABIType.dict(). The two keys
@@ -319,13 +303,10 @@ def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
         Union[str, Tuple, List]: Python representation of the type.
         For example, `uint256[]` becomes ['uint256'].
     """
-    if type["type"] == "tuple[]":
-        return [tuple([parse_type(c) for c in type["components"]])]
-    elif type["type"] == "tuple":
-        return tuple([parse_type(c) for c in type["components"]])
-    elif type["type"].endswith("[][]"):
-        return [[type["type"][:-4]]]
-    elif type["type"].endswith("[]"):
-        return [type["type"][:-2]]
+    if "tuple" in type["type"]:
+        r = tuple([parse_type(c) for c in type["components"]])
+        if is_array(type["type"]):
+            return [r]
+        return r
     else:
         return type["type"]
