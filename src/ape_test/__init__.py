@@ -57,6 +57,11 @@ class Config(PluginConfig):
     Set to ``False`` to keep providers connected at the end of the test run.
     """
 
+    transaction_tracing: bool = True
+    """
+    Set to ``False`` to disable all transaction tracing features.
+    """
+
 
 @plugins.register(plugins.Config)
 def config_class():

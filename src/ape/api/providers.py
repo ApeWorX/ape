@@ -944,7 +944,17 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValueError as err:
-            raise self.get_virtual_machine_error(err) from err
+            vm_err = self.get_virtual_machine_error(err)
+
+            if "nonce too low" in str(vm_err):
+                # Add additional nonce information
+                new_err_msg = f"Nonce '{txn.nonce}' is too low"
+                raise VirtualMachineError(
+                    base_err=vm_err.base_err, message=new_err_msg, code=vm_err.code
+                ) from err
+
+            else:
+                raise vm_err from err
 
         required_confirmations = (
             txn.required_confirmations

@@ -22,8 +22,8 @@ INTERNAL_TRANSFERS_TXN_HASH_1 = "0x0537316f37627655b7fe5e50e23f71cd835b377d1cde4
 BASE_CONTRACTS_PATH = Path(__file__).parent.parent / "data" / "contracts" / "ethereum"
 
 
-@pytest.fixture(scope="module")
-def local_contracts(owner, networks_connected_to_tester):
+@pytest.fixture
+def local_contracts(owner, eth_tester_provider):
     containers = {}
     for char in ("a", "b", "c"):
         contract_data = BASE_CONTRACTS_PATH / "local" / f"contract_{char}.json"
@@ -47,7 +47,7 @@ def full_contracts_cache(chain):
         chain.contracts._local_contract_types[address] = contract_type
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def local_receipt(local_contracts, owner):
     return local_contracts[0].methodWithoutArguments(sender=owner, value=123)
 
@@ -59,7 +59,7 @@ def mainnet_receipt():
     return Receipt.parse_obj(MAINNET_RECEIPT_DICT)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def local_call_tree(local_contracts):
     def set_address(d):
         if d["address"] == "b":

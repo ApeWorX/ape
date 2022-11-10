@@ -36,6 +36,7 @@ from ape.types import SnapshotID
 from ape.utils import generate_dev_accounts, raises_not_implemented
 
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
+GETH_DEV_CHAIN_ID = 1337
 
 
 class GethDevProcess(LoggingMixin, BaseGethProcess):
@@ -50,7 +51,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         port: int,
         mnemonic: str,
         number_of_accounts: PositiveInt,
-        chain_id: int = 1337,
+        chain_id: int = GETH_DEV_CHAIN_ID,
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
     ):
         self.data_dir = base_directory / "dev"
@@ -303,7 +304,20 @@ class BaseGethProvider(Web3Provider, ABC):
 
 class GethDev(TestProviderAPI, BaseGethProvider):
     _process: Optional[GethDevProcess] = None
+    _chain_id: Optional[int] = None
     name: str = "geth"
+
+    @property
+    def chain_id(self) -> int:
+        if self._chain_id is not None:
+            return self._chain_id
+        elif hasattr(self.web3, "eth"):
+            chain_id = self.web3.eth.chain_id
+        else:
+            return GETH_DEV_CHAIN_ID
+
+        self._chain_id = chain_id
+        return chain_id
 
     def connect(self):
         self._set_web3()
@@ -351,13 +365,24 @@ class GethDev(TestProviderAPI, BaseGethProvider):
 
     def revert(self, snapshot_id: SnapshotID):
         if isinstance(snapshot_id, int):
-            block_number = str(to_hex(snapshot_id))
+            block_number_int = snapshot_id
+            block_number_hex_str = str(to_hex(snapshot_id))
         elif isinstance(snapshot_id, bytes):
-            block_number = str(add_0x_prefix(HexStr(snapshot_id.hex())))
+            block_number_hex_str = add_0x_prefix(HexStr(snapshot_id.hex()))
+            block_number_int = int(block_number_hex_str, 16)
         else:
-            block_number = str(snapshot_id)
+            block_number_hex_str = add_0x_prefix(HexStr(snapshot_id))
+            block_number_int = int(snapshot_id, 16)
 
-        self._make_request("debug_setHead", [block_number])
+        current_block = self.get_block("latest").number
+        if block_number_int == current_block:
+            # Head is already at this block.
+            return
+        elif block_number_int > block_number_int:
+            logger.error("Unable to set head to future block.")
+            return
+
+        self._make_request("debug_setHead", [block_number_hex_str])
 
     def snapshot(self) -> SnapshotID:
         return self.get_block("latest").number or 0

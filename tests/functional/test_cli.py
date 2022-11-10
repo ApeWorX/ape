@@ -24,7 +24,9 @@ def one_keyfile_account(keyfile_swap_paths, keyfile_account):
 
     else:
         if dest_path.is_file():
-            dest_path.unlink() if dest_path.is_file() else shutil.rmtree(dest_path)
+            dest_path.unlink()
+        elif dest_path.is_dir():
+            shutil.rmtree(dest_path)
 
         dest_path.mkdir()
         for keyfile in [x for x in existing_keyfiles if x != keyfile_account.keyfile_path]:
@@ -103,7 +105,7 @@ def test_get_user_selected_account_specify_type(runner, one_keyfile_account):
 
 def test_get_user_selected_account_unknown_type(runner, keyfile_account):
     with pytest.raises(AccountsError) as err:
-        get_user_selected_account(account_type=str)
+        get_user_selected_account(account_type=str)  # type: ignore
 
     assert "Cannot return accounts with type '<class 'str'>'" in str(err.value)
 

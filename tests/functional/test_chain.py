@@ -12,12 +12,6 @@ from ape.exceptions import APINotImplementedError, ChainError, ConversionError
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
-@pytest.fixture(scope="module", autouse=True)
-def connection(networks):
-    with networks.ethereum.local.use_provider("test"):
-        yield
-
-
 @pytest.fixture
 def contract_0(project_with_contract):
     return project_with_contract.ApeContract0

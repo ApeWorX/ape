@@ -30,7 +30,8 @@ class PytestApeFixtures(ManagerAccessMixin):
     @cached_property
     def _using_traces(self) -> bool:
         return (
-            self.network_manager.provider is not None
+            self.config_wrapper.transaction_tracing
+            and self.network_manager.provider is not None
             and self.provider.is_connected
             and self.provider.supports_tracing
         )
@@ -178,6 +179,10 @@ class ReceiptCapture(ManagerAccessMixin):
             return
 
         self.receipt_map[source_id][transaction_hash] = receipt
+
+        # Only capture trace if tracing is enabled
+        if not self.config_wrapper.transaction_tracing:
+            return
 
         # Merge-in the receipt's gas report with everything so far.
         call_tree = receipt.call_tree

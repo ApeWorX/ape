@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from ape.pytest.fixtures import PytestApeFixtures
-from tests.conftest import geth_process_test
+from tests.conftest import GETH_URI, geth_process_test
 from tests.integration.cli.utils import skip_projects_except
 
 BASE_PROJECTS_PATH = Path(__file__).parent / "projects"
@@ -30,12 +30,12 @@ EXPECTED_GAS_REPORT = rf"""
   transfer              1   50911   50911   50911    50911
 {TOKEN_B_GAS_REPORT}
 """
-
-
-@pytest.fixture(autouse=True)
-def connection(networks):
-    with networks.ethereum.local.use_default_provider():
-        yield
+GETH_LOCAL_CONFIG = f"""
+geth:
+  ethereum:
+    local:
+      uri: {GETH_URI}
+"""
 
 
 @pytest.fixture
@@ -80,7 +80,18 @@ def run_gas_test(result, expected_number_passed: int, expected_report: str = EXP
     start_index = gas_header_line_index + 1
     end_index = start_index + len(expected)
     actual = [x.rstrip() for x in result.outlines[start_index:end_index]]
-    assert len(actual) == len(expected)
+    assert "WARNING: No gas usage data found." not in actual, "Gas data missing!"
+
+    actual_len = len(actual)
+    expected_len = len(expected)
+
+    if actual_len > expected_len:
+        remainder = "\n".join(actual[expected_len:])
+        pytest.xfail(f"Actual contains more than expected:\n{remainder}")
+    elif expected_len > actual_len:
+        remainder = "\n".join(expected[actual_len:])
+        pytest.xfail(f"Expected contains more than actual:\n{remainder}")
+
     for actual_line, expected_line in zip(actual, expected):
         assert actual_line == expected_line
 
@@ -122,79 +133,97 @@ def test_gas_flag_when_not_supported(setup_pytester, project, pytester):
     ) in "\n".join(result.outlines)
 
 
-class ApeTestGethTests:
-    """
-    Tests using ``ape-geth`` provider. Geth supports more testing features,
-    such as tracing.
+@geth_process_test
+@skip_projects_except("geth")
+def test_gas_flag_in_tests(geth_provider, setup_pytester, project, pytester):
+    expected_test_passes = setup_pytester(project.path.name)
+    result = pytester.runpytest("--gas")
+    run_gas_test(result, expected_test_passes)
 
-    **NOTE**: These tests are placed in a class for ``pytest-xdist`` scoping reasons.
-    """
 
-    @geth_process_test
-    @skip_projects_except("geth")
-    def test_gas_flag_in_tests(self, networks, setup_pytester, project, pytester):
-        settings = {"geth": {"ethereum": {"local": {"uri": "http://127.0.0.1:5005"}}}}
-        expected_test_passes = setup_pytester(project.path.name)
-        with networks.ethereum.local.use_default_provider(provider_settings=settings):
-            result = pytester.runpytest("--gas")
-            run_gas_test(result, expected_test_passes)
-
-    @geth_process_test
-    @skip_projects_except("geth")
-    def test_gas_flag_set_in_config(self, setup_pytester, project, pytester, switch_config):
-        expected_test_passes = setup_pytester(project.path.name)
-        config_content = """
-geth:
-  ethereum:
-    local:
-      uri: http://127.0.0.1:5001
-
-test:
-  gas:
-    show: true
-    """
-
-        with switch_config(project, config_content):
-            result = pytester.runpytest()
-            run_gas_test(result, expected_test_passes)
-
-    @geth_process_test
-    @skip_projects_except("geth")
-    def test_gas_flag_exclude_method_using_cli_option(self, setup_pytester, project, pytester):
-        expected_test_passes = setup_pytester(project.path.name)
-        line = "\n  fooAndBar               1   23430   23430   23430    23430"
-        expected = EXPECTED_GAS_REPORT.replace(line, "")
-        result = pytester.runpytest("--gas", "--gas-exclude", "*:fooAndBar")
-        run_gas_test(result, expected_test_passes, expected_report=expected)
-
-    @geth_process_test
-    @skip_projects_except("geth")
-    def test_gas_flag_exclusions_set_in_config(
-        self, setup_pytester, project, pytester, switch_config
-    ):
-        expected_test_passes = setup_pytester(project.path.name)
-        line = "\n  fooAndBar               1   23430   23430   23430    23430"
-        expected = EXPECTED_GAS_REPORT.replace(line, "")
-        expected = expected.replace(TOKEN_B_GAS_REPORT, "")
-        config_content = r"""
+@geth_process_test
+@skip_projects_except("geth")
+def test_gas_flag_set_in_config(geth_provider, setup_pytester, project, pytester, switch_config):
+    expected_test_passes = setup_pytester(project.path.name)
+    config_content = f"""
     geth:
       ethereum:
         local:
-          uri: http://127.0.0.1:5001
+          uri: {GETH_URI}
 
     test:
+      disconnect_providers_after: false
+      gas:
+        show: true
+    """
+
+    with switch_config(project, config_content):
+        result = pytester.runpytest()
+        run_gas_test(result, expected_test_passes)
+
+
+@geth_process_test
+@skip_projects_except("geth")
+def test_gas_flag_exclude_method_using_cli_option(geth_provider, setup_pytester, project, pytester):
+    expected_test_passes = setup_pytester(project.path.name)
+    line = "\n  fooAndBar               1   23430   23430   23430    23430"
+    expected = EXPECTED_GAS_REPORT.replace(line, "")
+    result = pytester.runpytest("--gas", "--gas-exclude", "*:fooAndBar")
+    run_gas_test(result, expected_test_passes, expected_report=expected)
+
+
+@geth_process_test
+@skip_projects_except("geth")
+def test_gas_flag_exclusions_set_in_config(
+    geth_provider, setup_pytester, project, pytester, switch_config
+):
+    expected_test_passes = setup_pytester(project.path.name)
+    line = "\n  fooAndBar               1   23430   23430   23430    23430"
+    expected = EXPECTED_GAS_REPORT.replace(line, "")
+    expected = expected.replace(TOKEN_B_GAS_REPORT, "")
+    config_content = rf"""
+    geth:
+      ethereum:
+        local:
+          uri: {GETH_URI}
+
+    test:
+      disconnect_providers_after: false
       gas:
         exclude:
           - method_name: fooAndBar
           - contract_name: TokenB
     """
-        with switch_config(project, config_content):
-            result = pytester.runpytest("--gas")
-            run_gas_test(result, expected_test_passes, expected_report=expected)
+    with switch_config(project, config_content):
+        result = pytester.runpytest("--gas")
+        run_gas_test(result, expected_test_passes, expected_report=expected)
 
-    @geth_process_test
-    @skip_projects_except("geth")
-    def test_gas_flag_excluding_contracts(self, setup_pytester, project, pytester):
-        expected_test_passes = setup_pytester(project.path.name)
-        result = pytester.runpytest("--gas", "--gas-exclude", "TestContractVy,TokenA")
-        run_gas_test(result, expected_test_passes, expected_report=TOKEN_B_GAS_REPORT)
+
+@geth_process_test
+@skip_projects_except("geth")
+def test_gas_report_when_tracing_disabled(
+    geth_provider, setup_pytester, project, pytester, switch_config
+):
+    expected_test_passes = setup_pytester(project.path.name)
+    config_content = f"""
+    geth:
+      ethereum:
+        local:
+          uri: {GETH_URI}
+
+    test:
+      disconnect_providers_after: false
+      transaction_tracing: false
+    """
+    with switch_config(project, config_content):
+        result = pytester.runpytest("--gas")
+        result.assert_outcomes(passed=expected_test_passes), "\n".join(result.outlines)
+        assert "WARNING: No gas usage data found." in result.outlines
+
+
+@geth_process_test
+@skip_projects_except("geth")
+def test_gas_flag_excluding_contracts(geth_provider, setup_pytester, project, pytester):
+    expected_test_passes = setup_pytester(project.path.name)
+    result = pytester.runpytest("--gas", "--gas-exclude", "TestContractVy,TokenA")
+    run_gas_test(result, expected_test_passes, expected_report=TOKEN_B_GAS_REPORT)
