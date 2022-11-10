@@ -88,6 +88,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
                 "istanbulBlock": 0,
                 "berlinBlock": 0,
                 "londonBlock": 0,
+                "parisBlock": 0,
                 "clique": {"period": 0, "epoch": 30000},
             },
             "alloc": {a.address: {"balance": str(initial_balance)} for a in accounts},
