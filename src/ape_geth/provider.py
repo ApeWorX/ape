@@ -62,6 +62,11 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
             rpc_addr=hostname,
             rpc_port=port,
             network_id=chain_id,
+            ws_enabled=False,
+            ws_addr=None,
+            ws_origins=None,
+            ws_port=None,
+            ws_api=None,
         )
 
         # Ensure a clean data-dir.
