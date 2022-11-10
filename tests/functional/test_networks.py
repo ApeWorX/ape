@@ -29,7 +29,7 @@ def get_provider_with_unused_chain_id(networks_connected_to_tester):
     return fn
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def get_context(networks_connected_to_tester):
     def fn():
         return networks_connected_to_tester.parse_network_choice("ethereum:local:test")

@@ -54,7 +54,7 @@ def test_call_method_excluded_from_cli_options(accounts, contract):
     Call a method so that we can intentionally ignore it via command
     line options and test that it does not show in the report.
     """
-    receipt = contract.fooAndBar(sender=accounts[8])
+    receipt = contract.fooAndBar(sender=accounts[9])
     assert not receipt.failed
 
 

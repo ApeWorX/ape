@@ -10,7 +10,7 @@ geth:
     mainnet:
       uri: http://localhost:5000
     local:
-      uri: http://127.0.0.1:5001
+      uri: http://127.0.0.1:5550  # NOTE: Has to be same as tests/conftest.py::GETH_URI
 
 test:
   # `false` because running pytest within pytest.

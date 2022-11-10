@@ -1,4 +1,5 @@
 from ape.api.networks import LOCAL_NETWORK_NAME
+from tests.conftest import GETH_URI
 
 from .utils import run_once, skip_projects_except
 
@@ -107,8 +108,7 @@ def test_geth(ape_cli, runner, networks):
     # (was bug where one network's URI disappeared when setting different network's URI)
     geth_provider = networks.get_provider_from_choice(f"ethereum:{LOCAL_NETWORK_NAME}:geth")
     actual = geth_provider.uri
-    expected = "http://127.0.0.1:5001"  # Exists in `ape-config.yaml` for geth project.
-    assert actual == expected
+    assert actual == GETH_URI
 
 
 @run_once

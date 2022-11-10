@@ -36,6 +36,7 @@ from ape.types import SnapshotID
 from ape.utils import generate_dev_accounts, raises_not_implemented
 
 DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
+GETH_DEV_CHAIN_ID = 1337
 
 
 class GethDevProcess(LoggingMixin, BaseGethProcess):
@@ -50,7 +51,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         port: int,
         mnemonic: str,
         number_of_accounts: PositiveInt,
-        chain_id: int = 1337,
+        chain_id: int = GETH_DEV_CHAIN_ID,
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
     ):
         self.data_dir = base_directory / "dev"
@@ -61,6 +62,11 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
             rpc_addr=hostname,
             rpc_port=port,
             network_id=chain_id,
+            ws_enabled=False,
+            ws_addr=None,
+            ws_origins=None,
+            ws_port=None,
+            ws_api=None,
         )
 
         # Ensure a clean data-dir.
@@ -87,6 +93,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
                 "istanbulBlock": 0,
                 "berlinBlock": 0,
                 "londonBlock": 0,
+                "parisBlock": 0,
                 "clique": {"period": 0, "epoch": 30000},
             },
             "alloc": {a.address: {"balance": str(initial_balance)} for a in accounts},
@@ -305,6 +312,17 @@ class GethDev(TestProviderAPI, BaseGethProvider):
     _process: Optional[GethDevProcess] = None
     name: str = "geth"
 
+    @property
+    def chain_id(self) -> int:
+        return GETH_DEV_CHAIN_ID
+
+    def __repr__(self):
+        if self._process is None:
+            # Exclude chain ID when not connected
+            return "<geth>"
+
+        return super().__repr__()
+
     def connect(self):
         self._set_web3()
         if not self.is_connected:
@@ -349,18 +367,41 @@ class GethDev(TestProviderAPI, BaseGethProvider):
 
         super().disconnect()
 
-    def revert(self, snapshot_id: SnapshotID):
-        if isinstance(snapshot_id, int):
-            block_number = str(to_hex(snapshot_id))
-        elif isinstance(snapshot_id, bytes):
-            block_number = str(add_0x_prefix(HexStr(snapshot_id.hex())))
-        else:
-            block_number = str(snapshot_id)
-
-        self._make_request("debug_setHead", [block_number])
-
+    @raises_not_implemented
     def snapshot(self) -> SnapshotID:
+        # TODO: Replace with impl below after
+        #  https://github.com/ethereum/go-ethereum/issues/26154 resolved
+        pass
+
+    def _snapshot(self) -> SnapshotID:
         return self.get_block("latest").number or 0
+
+    @raises_not_implemented
+    def revert(self, snapshot_id: SnapshotID):
+        # TODO: Replace with impl below after
+        #  https://github.com/ethereum/go-ethereum/issues/26154 resolved
+        pass
+
+    def _revert(self, snapshot_id: SnapshotID):
+        if isinstance(snapshot_id, int):
+            block_number_int = snapshot_id
+            block_number_hex_str = str(to_hex(snapshot_id))
+        elif isinstance(snapshot_id, bytes):
+            block_number_hex_str = add_0x_prefix(HexStr(snapshot_id.hex()))
+            block_number_int = int(block_number_hex_str, 16)
+        else:
+            block_number_hex_str = add_0x_prefix(HexStr(snapshot_id))
+            block_number_int = int(snapshot_id, 16)
+
+        current_block = self.get_block("latest").number
+        if block_number_int == current_block:
+            # Head is already at this block.
+            return
+        elif block_number_int > block_number_int:
+            logger.error("Unable to set head to future block.")
+            return
+
+        self._make_request("debug_setHead", [block_number_hex_str])
 
     @raises_not_implemented
     def set_timestamp(self, new_timestamp: int):

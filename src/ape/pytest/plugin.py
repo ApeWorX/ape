@@ -68,7 +68,7 @@ def pytest_configure(config):
     config.pluginmanager.register(session, "ape-test")
 
     # Include custom fixtures for project, accounts etc.
-    fixtures = PytestApeFixtures(config, receipt_capture)
+    fixtures = PytestApeFixtures(config_wrapper, receipt_capture)
     config.pluginmanager.register(fixtures, "ape-fixtures")
 
 
