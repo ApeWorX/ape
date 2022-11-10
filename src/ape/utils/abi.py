@@ -286,22 +286,9 @@ class LogInputABICollection:
         return value
 
 def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
-    """Parses ABIType.dict() into Python types.
-    Note that this function is not quite necessary, since
-    `decode_primitive_value` in `ape_ethereum.ecosystem` handles
-    this logic to some degree. The suggestion is that we deprecate
-    this function in the future, in favour of handling this logic
-    completely in `ape_ethereum.ecosystem.decode_primitive_value`.
-
-    Args:
-        type (Dict[str, Any]): This is ABIType.dict(). The two keys
-        that we are interested in are `type` and `components`.
-        `components` produces the same two keys (if present),
-        namely `type` and `components`.
-
-    Returns:
-        Union[str, Tuple, List]: Python representation of the type.
-        For example, `uint256[]` becomes ['uint256'].
+    """
+    Parses ``ABIType.dict()`` into Python types.
+    Deprecated: Use :class:`~ape.api.networks.EcosystemAPI` implemented methods.
     """
     if "tuple" in type["type"]:
         r = tuple([parse_type(c) for c in type["components"]])
