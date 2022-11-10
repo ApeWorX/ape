@@ -285,6 +285,7 @@ class LogInputABICollection:
 
         return value
 
+
 def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
     """
     Parses ``ABIType.dict()`` into Python types.
