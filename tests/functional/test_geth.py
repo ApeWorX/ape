@@ -215,6 +215,7 @@ def test_get_receipt(accounts, geth_contract, geth_provider):
     assert actual.sender == receipt.sender
 
 
+@pytest.mark.skip("https://github.com/ethereum/go-ethereum/issues/26154")
 @geth_process_test
 def test_snapshot_and_revert(geth_provider, accounts, geth_contract):
     owner = accounts.test_accounts[-6]
