@@ -29,10 +29,6 @@ class ConfigWrapper(ManagerAccessMixin):
         return not self.pytest_config.getoption("disable_isolation")
 
     @cached_property
-    def transaction_tracing(self) -> bool:
-        return self.ape_test_config.transaction_tracing
-
-    @cached_property
     def disable_warnings(self) -> bool:
         return self.pytest_config.getoption("--disable-warnings")
 

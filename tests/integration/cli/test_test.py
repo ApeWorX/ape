@@ -201,28 +201,6 @@ def test_gas_flag_exclusions_set_in_config(
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_gas_report_when_tracing_disabled(
-    geth_provider, setup_pytester, project, pytester, switch_config
-):
-    expected_test_passes = setup_pytester(project.path.name)
-    config_content = f"""
-    geth:
-      ethereum:
-        local:
-          uri: {GETH_URI}
-
-    test:
-      disconnect_providers_after: false
-      transaction_tracing: false
-    """
-    with switch_config(project, config_content):
-        result = pytester.runpytest("--gas")
-        result.assert_outcomes(passed=expected_test_passes), "\n".join(result.outlines)
-        assert "WARNING: No gas usage data found." in result.outlines
-
-
-@geth_process_test
-@skip_projects_except("geth")
 def test_gas_flag_excluding_contracts(geth_provider, setup_pytester, project, pytester):
     expected_test_passes = setup_pytester(project.path.name)
     result = pytester.runpytest("--gas", "--gas-exclude", "TestContractVy,TokenA")
