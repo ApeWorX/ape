@@ -310,20 +310,18 @@ class BaseGethProvider(Web3Provider, ABC):
 
 class GethDev(TestProviderAPI, BaseGethProvider):
     _process: Optional[GethDevProcess] = None
-    _chain_id: Optional[int] = None
     name: str = "geth"
 
     @property
     def chain_id(self) -> int:
-        if self._chain_id is not None:
-            return self._chain_id
-        elif hasattr(self.web3, "eth"):
-            chain_id = self.web3.eth.chain_id
-        else:
-            return GETH_DEV_CHAIN_ID
+        return GETH_DEV_CHAIN_ID
 
-        self._chain_id = chain_id
-        return chain_id
+    def __repr__(self):
+        if self._process is None:
+            # Exclude chain ID when not connected
+            return "<geth>"
+
+        return super().__repr__()
 
     def connect(self):
         self._set_web3()
