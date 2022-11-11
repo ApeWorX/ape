@@ -1,7 +1,7 @@
 from typing import List
 
 from ape.exceptions import ConversionError
-from ape.types import AddressType
+from ape.types import AddressType, ContractCode
 from ape.utils import BaseInterface, abstractmethod
 
 
@@ -91,7 +91,7 @@ class BaseAddress(BaseInterface):
         return self.provider.get_balance(self.address)
 
     @property
-    def code(self) -> bytes:
+    def code(self) -> ContractCode:
         """
         The raw bytes of the smart-contract code at the address.
         """
