@@ -15,11 +15,6 @@ APE_TEST_PATH = "ape_test.accounts.TestAccount"
 APE_ACCOUNTS_PATH = "ape_accounts.accounts.KeyfileAccount"
 
 
-@pytest.fixture(autouse=True, scope="module")
-def connected(eth_tester_provider):
-    yield
-
-
 @pytest.fixture
 def signer(test_accounts):
     return test_accounts[2]
@@ -59,6 +54,7 @@ def test_sign_eip712_message(signer):
 
 def test_sign_message_with_prompts(runner, keyfile_account):
     # "y\na\ny": yes sign, password, yes keep unlocked
+    start_nonce = keyfile_account.nonce
     with runner.isolation(input="y\na\ny"):
         message = encode_defunct(text="Hello Apes!")
         signature = keyfile_account.sign_message(message)
@@ -69,11 +65,15 @@ def test_sign_message_with_prompts(runner, keyfile_account):
         signature = keyfile_account.sign_message(message)
         assert signature is None
 
+    # Nonce should not change from signing messages.
+    end_nonce = keyfile_account.nonce
+    assert start_nonce == end_nonce
+
 
 def test_transfer(sender, receiver, eth_tester_provider):
     initial_receiver_balance = receiver.balance
     initial_sender_balance = sender.balance
-    value_str = "2 gwei"
+    value_str = "24 gwei"
     value_int = convert(value_str, int)
 
     receipt = sender.transfer(receiver, value_str)
@@ -117,9 +117,7 @@ def test_transfer_without_value_send_everything_true_with_low_gas(sender, receiv
         sender.transfer(receiver, send_everything=True)
 
 
-def test_transfer_without_value_send_everything_true_with_high_gas(
-    sender, receiver, eth_tester_provider
-):
+def test_transfer_without_value_send_everything_true_with_high_gas(sender, receiver):
     initial_receiver_balance = receiver.balance
     initial_sender_balance = sender.balance
 
@@ -140,7 +138,7 @@ def test_transfer_without_value_send_everything_true_with_high_gas(
     sender.transfer(receiver, send_everything=True, gas=21000)
 
 
-def test_transfer_with_value_send_everything_true(sender, receiver, isolation):
+def test_transfer_with_value_send_everything_true(sender, receiver):
     with pytest.raises(AccountsError, match="Cannot use 'send_everything=True' with 'VALUE'."):
         sender.transfer(receiver, 1, send_everything=True)
 

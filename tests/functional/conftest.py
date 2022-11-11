@@ -1,6 +1,7 @@
 import json
 import threading
 import time
+from contextlib import contextmanager
 from distutils.dir_util import copy_tree
 from pathlib import Path
 from typing import Dict, Optional
@@ -87,22 +88,32 @@ def owner(test_accounts):
     return test_accounts[2]
 
 
-@pytest.fixture(scope="session")
-def keyfile_account(sender, keyparams, temp_accounts_path, eth_tester_provider):
-    test_keyfile_path = temp_accounts_path / f"{ALIAS}.json"
-    yield _make_keyfile_account(temp_accounts_path, ALIAS, keyparams, sender)
+@contextmanager
+def _temp_keyfile_account(base_path: Path, alias: str, keyparams, sender):
+    test_keyfile_path = base_path / f"{alias}.json"
 
-    if test_keyfile_path.is_file():
-        test_keyfile_path.unlink()
+    if not test_keyfile_path.is_file():
+        account = _make_keyfile_account(base_path, alias, keyparams, sender)
+    else:
+        account = ape.accounts.load(ALIAS)
+
+    try:
+        yield account
+    finally:
+        if test_keyfile_path.is_file():
+            test_keyfile_path.unlink()
 
 
-@pytest.fixture(scope="session")
-def second_keyfile_account(sender, keyparams, temp_accounts_path, eth_tester_provider):
-    test_keyfile_path = temp_accounts_path / f"{ALIAS_2}.json"
-    yield _make_keyfile_account(temp_accounts_path, ALIAS_2, keyparams, sender)
+@pytest.fixture
+def keyfile_account(sender, keyparams, temp_accounts_path):
+    with _temp_keyfile_account(temp_accounts_path, ALIAS, keyparams, sender) as account:
+        yield account
 
-    if test_keyfile_path.is_file():
-        test_keyfile_path.unlink()
+
+@pytest.fixture
+def second_keyfile_account(sender, keyparams, temp_accounts_path):
+    with _temp_keyfile_account(temp_accounts_path, ALIAS_2, keyparams, sender) as account:
+        yield account
 
 
 def _make_keyfile_account(base_path: Path, alias: str, params: Dict, funder):
@@ -161,12 +172,14 @@ def contract_container(
 
 
 @pytest.fixture(params=("solidity", "vyper"))
-def contract_instance(request, solidity_contract_instance, vyper_contract_instance):
+def contract_instance(
+    eth_tester_provider, request, solidity_contract_instance, vyper_contract_instance
+):
     return solidity_contract_instance if request.param == "solidity" else vyper_contract_instance
 
 
 @pytest.fixture
-def ds_note_test_contract(vyper_contract_type, owner, eth_tester_provider):
+def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner):
     contract_type = ContractType.parse_raw(DS_NOTE_TEST_CONTRACT_TYPE)
     contract_container = ContractContainer(contract_type=contract_type)
     return contract_container.deploy(sender=owner)

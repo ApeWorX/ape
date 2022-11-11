@@ -13,17 +13,24 @@ def bob(accounts):
 
 @pytest.fixture(scope="module", autouse=True)
 def setup(alice, bob, chain):
-    assert chain.provider.get_block("latest").number == 0
+    start_number = chain.provider.get_block("latest").number
     alice.transfer(bob, 10**18)
-    assert chain.provider.get_block("latest").number == 1
+    actual = chain.provider.get_block("latest").number
+    expected = start_number + 1
+    assert actual == expected
 
 
-def test_isolation_first(alice, bob, chain):
-    assert chain.provider.get_block("latest").number == 1
+@pytest.fixture(scope="module")
+def start_block_number(chain):
+    return chain.blocks.height
+
+
+def test_isolation_first(alice, bob, chain, start_block_number):
+    assert chain.provider.get_block("latest").number == start_block_number
     assert bob.balance == 1_000_001 * 10**18
     alice.transfer(bob, "1 ether")
 
 
-def test_isolation_second(bob, chain):
-    assert chain.provider.get_block("latest").number == 1
+def test_isolation_second(bob, chain, start_block_number):
+    assert chain.provider.get_block("latest").number == start_block_number
     assert bob.balance == 1_000_001 * 10**18

@@ -8,6 +8,8 @@ from typing import List, Optional
 
 import pytest
 
+from ape.managers.config import CONFIG_FILE_NAME
+
 from .utils import NodeId, project_names, project_skipper, projects_directory
 
 
@@ -188,7 +190,7 @@ def switch_config(config):
 
     @contextmanager
     def switch(project, new_content: str):
-        config_file = project.path / "ape-config.yaml"
+        config_file = project.path / CONFIG_FILE_NAME
         original = config_file.read_text() if config_file.is_file() else None
 
         try:

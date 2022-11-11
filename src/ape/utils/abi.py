@@ -286,44 +286,15 @@ class LogInputABICollection:
         return value
 
 
-def parse_type(output_type: str) -> Union[str, Tuple, List]:
-    if not output_type.startswith("("):
-        return output_type
-
-    # Strip off first opening parens
-    output_type = output_type[1:]
-    found_types: List[Union[str, Tuple, List]] = []
-
-    while output_type:
-        if output_type.startswith(")"):
-            result = tuple(found_types)
-            if "[" in output_type:
-                return [result]
-
-            return result
-
-        elif output_type[0] == "(" and ")" in output_type:
-            # A tuple within the tuple
-            end_index = output_type.index(")") + 1
-            found_type = parse_type(output_type[:end_index])
-            output_type = output_type[end_index:]
-
-            if output_type.startswith("[") and "]" in output_type:
-                end_array_index = output_type.index("]") + 1
-                found_type = [found_type]
-                output_type = output_type[end_array_index:].lstrip(",")
-
-        else:
-            found_type = output_type.split(",")[0].rstrip(")")
-            end_index = len(found_type) + 1
-            output_type = output_type[end_index:]
-
-        if isinstance(found_type, str) and "[" in found_type and ")" in found_type:
-            parts = found_type.split(")")
-            found_type = parts[0]
-            output_type = f"){parts[1]}"
-
-        if found_type:
-            found_types.append(found_type)
-
-    return tuple(found_types)
+def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
+    """
+    Parses ``ABIType.dict()`` into Python types.
+    Deprecated: Use :class:`~ape.api.networks.EcosystemAPI` implemented methods.
+    """
+    if "tuple" in type["type"]:
+        r = tuple([parse_type(c) for c in type["components"]])
+        if is_array(type["type"]):
+            return [r]
+        return r
+    else:
+        return type["type"]

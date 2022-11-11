@@ -322,10 +322,11 @@ class Ethereum(EcosystemAPI):
         return HexBytes(b"")
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
-        output_types = [o.canonical_type for o in abi.outputs]
+        output_types_str = [o.canonical_type for o in abi.outputs]
+        output_types = [parse_type(o.dict()) for o in abi.outputs]
 
         try:
-            vm_return_values = decode(output_types, raw_data)
+            vm_return_values = decode(output_types_str, raw_data)
         except InsufficientDataBytes as err:
             raise DecodingError() from err
 
@@ -336,8 +337,7 @@ class Ethereum(EcosystemAPI):
             vm_return_values = (vm_return_values,)
 
         output_values = [
-            self.decode_primitive_value(v, parse_type(t))
-            for v, t in zip(vm_return_values, output_types)
+            self.decode_primitive_value(v, t) for v, t in zip(vm_return_values, output_types)
         ]
 
         parser = StructParser(abi)
