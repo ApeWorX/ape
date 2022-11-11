@@ -43,7 +43,7 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import logger
-from ape.types import AddressType, BlockID, ContractLog, LogFilter, SnapshotID
+from ape.types import AddressType, BlockID, ContractCode, ContractLog, LogFilter, SnapshotID
 from ape.utils import (
     EMPTY_BYTES32,
     BaseInterfaceModel,
@@ -180,15 +180,15 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_code(self, address: str) -> bytes:
+    def get_code(self, address: AddressType) -> ContractCode:
         """
         Get the bytes a contract.
 
         Args:
-            address (str): The address of the contract.
+            address (``AddressType``): The address of the contract.
 
         Returns:
-            bytes: The contract byte-code.
+            :class:`~ape.types.ContractCode`: The contract bytecode.
         """
 
     @raises_not_implemented
@@ -427,6 +427,17 @@ class ProviderAPI(BaseInterfaceModel):
             chain_id = None
 
         return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
+
+    @raises_not_implemented
+    def set_code(self, address: AddressType, code: ContractCode) -> bool:
+        """
+        Change the code of a smart contract, for development purposes.
+        Test providers implement this method when they support it.
+
+        Args:
+            address (AddressType): An address on the network.
+            code (:class:`~ape.types.ContractCode`): The new bytecode.
+        """
 
     @raises_not_implemented
     def unlock_account(self, address: AddressType) -> bool:
@@ -794,7 +805,7 @@ class Web3Provider(ProviderAPI, ABC):
     def get_balance(self, address: str) -> int:
         return self.web3.eth.get_balance(address)
 
-    def get_code(self, address: str) -> bytes:
+    def get_code(self, address: AddressType) -> ContractCode:
         return self.web3.eth.get_code(address)
 
     def get_storage_at(self, address: str, slot: int, **kwargs) -> bytes:
