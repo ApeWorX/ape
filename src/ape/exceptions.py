@@ -89,7 +89,7 @@ class TransactionError(ContractError):
         base_err: Optional[Exception] = None,
         message: Optional[str] = None,
         code: Optional[int] = None,
-        receipt: Optional[ReceiptAPI] = None,
+        receipt: Optional["ReceiptAPI"] = None,
     ):
         self.base_err = base_err
         if not message:
