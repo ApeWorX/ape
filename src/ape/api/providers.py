@@ -960,12 +960,19 @@ class Web3Provider(ProviderAPI, ABC):
             if "nonce too low" in str(vm_err):
                 # Add additional nonce information
                 new_err_msg = f"Nonce '{txn.nonce}' is too low"
-                raise VirtualMachineError(
+                vm_err = VirtualMachineError(
                     base_err=vm_err.base_err, message=new_err_msg, code=vm_err.code
-                ) from err
+                )
 
-            else:
-                raise vm_err from err
+            vm_err.receipt = self.get_receipt(
+                txn.txn_hash.hex(),
+                required_confirmations=(
+                    txn.required_confirmations
+                    if txn.required_confirmations is not None
+                    else self.network.required_confirmations
+                ),
+            )
+            raise vm_err from err
 
         required_confirmations = (
             txn.required_confirmations
@@ -982,7 +989,9 @@ class Web3Provider(ProviderAPI, ABC):
             try:
                 self.web3.eth.call(txn_params)
             except Exception as err:
-                raise self.get_virtual_machine_error(err) from err
+                vm_err = self.get_virtual_machine_error(err)
+                vm_err.receipt = receipt
+                raise vm_err from err
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self.chain_manager.account_history.append(receipt)
