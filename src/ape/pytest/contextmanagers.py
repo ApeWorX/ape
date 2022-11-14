@@ -70,10 +70,12 @@ class RevertsContextManager:
 
         assertion_error_prefix = f"Expected dev revert message '{self.dev_message}'."
 
-        if offending_source.line_start not in contract.contract_type.dev_messages or {}:
+        dev_messages = contract.contract_type.dev_messages or {}
+
+        if offending_source.line_start not in dev_messages:
             raise AssertionError(f"{assertion_error_prefix} but there was none.")
 
-        contract_dev_message = contract.contract_type.dev_messages[offending_source.line_start]
+        contract_dev_message = dev_messages[offending_source.line_start]
 
         if contract_dev_message != self.dev_message:
             raise AssertionError(f"{assertion_error_prefix} but got '{contract_dev_message}'.")
