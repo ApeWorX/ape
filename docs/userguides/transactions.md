@@ -232,7 +232,7 @@ receipt.show_trace()
 ```
 
 In Ape, you can also show the trace for a call.
-Use the `show_trace=` kwarg on a contract call and Ape will display the show trace before returning the data.
+Use the `show_trace=` kwarg on a contract call and Ape will display the trace before returning the data.
 
 ```python
 token.balanceOf(account, show_trace=True)
