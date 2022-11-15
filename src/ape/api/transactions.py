@@ -10,7 +10,7 @@ from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
-from ape.exceptions import ContractError, TransactionError
+from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, GasLimit, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
@@ -326,17 +326,7 @@ class ReceiptAPI(BaseInterfaceModel):
         if not call_tree:
             return None
 
-        contract_type = self.chain_manager.contracts.get(call_tree.address)
-        if not contract_type:
-            raise ContractError("Cannot find contract type to decode with. Is it published?")
-
-        selector = call_tree.calldata
-        if selector in contract_type.mutable_methods:
-            return contract_type.mutable_methods[selector]
-        elif selector in contract_type.view_methods:
-            return contract_type.view_methods[selector]
-
-        raise ContractError(f"Selector '{selector}' not found in {contract_type.name}")
+        return self.chain_manager.contracts.lookup_method(call_tree.address, call_tree.calldata)
 
     @property
     def return_value(self) -> Any:
@@ -375,3 +365,17 @@ class ReceiptAPI(BaseInterfaceModel):
         """
         Display a gas report for the calls made in this transaction.
         """
+
+    def track_gas(self):
+        """
+        Track this receipt's gas in the on-going sessional gas-report.
+        Requires using a provider that support transaction traces.
+        This gets called when running tests with the ``--gas`` flag.
+        """
+
+        call_tree = self.call_tree
+        receiver = self.receiver
+        if call_tree and receiver is not None:
+            self.chain_manager._reports.append_gas(
+                call_tree, receiver, sender=self.sender, transaction_hash=self.txn_hash
+            )

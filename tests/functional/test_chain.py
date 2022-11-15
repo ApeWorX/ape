@@ -62,6 +62,20 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     assert receiver.balance == initial_balance
 
 
+def test_isolate(chain, vyper_contract_instance, owner):
+    number_at_start = 444
+    vyper_contract_instance.setNumber(number_at_start, sender=owner)
+    start_head = chain.blocks.height
+
+    with chain.isolate():
+        vyper_contract_instance.setNumber(333, sender=owner)
+        assert vyper_contract_instance.myNumber() == 333
+        assert chain.blocks.height == start_head + 1
+
+    assert vyper_contract_instance.myNumber() == number_at_start
+    assert chain.blocks.height == start_head
+
+
 def test_get_receipt_uses_cache(mocker, eth_tester_provider, chain, vyper_contract_instance, owner):
     expected = vyper_contract_instance.setNumber(3, sender=owner)
     eth = eth_tester_provider.web3.eth

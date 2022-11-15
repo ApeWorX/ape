@@ -81,6 +81,14 @@ def test_revert_no_message(accounts, geth_contract):
 
 
 @geth_process_test
+def test_contract_interaction(geth_provider, geth_contract, accounts):
+    owner = accounts.test_accounts[-2]
+    contract = owner.deploy(geth_contract)
+    contract.setNumber(102, sender=owner)
+    assert contract.myNumber() == 102
+
+
+@geth_process_test
 def test_get_call_tree(geth_provider, geth_contract, accounts):
     owner = accounts.test_accounts[-3]
     contract = owner.deploy(geth_contract)
@@ -239,3 +247,7 @@ def test_snapshot_and_revert(geth_provider, accounts, geth_contract):
     expected_nonce = start_nonce
     assert actual_block_number == expected_block_number
     assert actual_nonce == expected_nonce
+
+    # Use account after revert
+    receipt = contract.setNumber(311113, sender=owner)  # Advance a block
+    assert not receipt.failed

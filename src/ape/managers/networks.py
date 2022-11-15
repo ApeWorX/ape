@@ -412,7 +412,7 @@ class NetworkManager(BaseManager):
         provider = self.get_provider_from_choice(
             network_choice=network_choice, provider_settings=provider_settings
         )
-        return ProviderContextManager(provider=provider, network_manager=self)
+        return ProviderContextManager(provider=provider)
 
     @property
     def default_ecosystem(self) -> EcosystemAPI:

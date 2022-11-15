@@ -1,22 +1,35 @@
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
+from typing import IO, Any, Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import pandas as pd
 from ethpm_types import ContractType
+from ethpm_types.abi import MethodABI
+from evm_trace.gas import merge_reports
+from hexbytes import HexBytes
+from rich import get_console
+from rich.console import Console as RichConsole
 
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
 from ape.api.query import BlockQuery, extract_fields, validate_and_expand_columns
 from ape.contracts import ContractContainer, ContractInstance
-from ape.exceptions import ChainError, ConversionError, UnknownSnapshotError
+from ape.exceptions import (
+    APINotImplementedError,
+    ChainError,
+    ContractError,
+    ConversionError,
+    UnknownSnapshotError,
+)
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.types import AddressType, BlockID, SnapshotID
+from ape.types import AddressType, BlockID, ContractFunctionPath, GasReport, SnapshotID
+from ape.utils import CallTraceParser, TraceStyles, parse_gas_table
 
 
 class BlockContainer(BaseManager):
@@ -868,6 +881,40 @@ class ContractCache(BaseManager):
 
         return instances
 
+    def lookup_method(
+        self, contract: Union[AddressType, ContractType], selector: HexBytes
+    ) -> MethodABI:
+        """
+        Find the method ABI from the given contract address and selector.
+
+        Args:
+            contract_address (``AddressType``): The address of the contract.
+            selector (``HexBytes``): The method ID.
+
+        Returns:
+            ``ethpm_types.abi.MethodABI``: The ABI object of the method.
+        """
+
+        if isinstance(contract, ContractType):
+            contract_type = contract
+        else:
+            contract_type = self[contract]
+
+        if selector in contract_type.mutable_methods:
+            return contract_type.mutable_methods[selector]
+        elif selector in contract_type.view_methods:
+            return contract_type.view_methods[selector]
+
+        raise ContractError(f"Selector '{selector.hex()}' not found in {contract_type.name}")
+
+    def clear_local_caches(self):
+        """
+        Reset local caches to a blank state.
+        """
+        self._local_contract_types = {}
+        self._local_proxies = {}
+        self._local_deployments_mapping = {}
+
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         address_file = self._contract_types_cache / f"{address}.json"
         if not address_file.is_file():
@@ -921,6 +968,96 @@ class ContractCache(BaseManager):
             json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
 
 
+class ReportManager(BaseManager):
+    """
+    A class representing the active Ape session. Useful for tracking data and
+    building reports.
+
+    **NOTE**: This class is not part of the public API.
+    """
+
+    track_gas: bool = False
+    gas_exclusions: List[ContractFunctionPath] = []
+    sessional_gas_report: Optional[GasReport] = None
+    rich_console_map: Dict[str, RichConsole] = {}
+
+    def show_trace(
+        self,
+        call_tree: Any,
+        sender: Optional[AddressType] = None,
+        transaction_hash: Optional[str] = None,
+        revert_message: Optional[str] = None,
+        file: Optional[IO[str]] = None,
+        verbose: bool = False,
+    ):
+        parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash, verbose=verbose)
+        root = parser.parse_as_tree(call_tree)
+        console = self._get_console(file)
+
+        if transaction_hash:
+            console.print(f"Call trace for [bold blue]'{transaction_hash}'[/]")
+        if revert_message:
+            console.print(f"[bold red]{revert_message}[/]")
+        if sender:
+            console.print(f"tx.origin=[{TraceStyles.CONTRACTS}]{sender}[/]")
+
+        console.print(root)
+
+    def show_gas(
+        self,
+        call_tree: Any,
+        sender: Optional[AddressType] = None,
+        transaction_hash: Optional[str] = None,
+        file: Optional[IO[str]] = None,
+    ):
+        console = self._get_console(file)
+        parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash)
+        tables = parser.parse_as_gas_report(call_tree)
+        console.print(*tables)
+
+    def show_session_gas(
+        self,
+        file: Optional[IO[str]] = None,
+    ) -> bool:
+        if not self.sessional_gas_report:
+            return False
+
+        tables = parse_gas_table(self.sessional_gas_report)
+        console = self._get_console(file)
+        console.print(*tables)
+        return True
+
+    def append_gas(
+        self,
+        call_tree: Any,
+        contract_address: AddressType,
+        sender: Optional[AddressType] = None,
+        transaction_hash: Optional[str] = None,
+    ):
+        contract_type = self.chain_manager.contracts.get(contract_address)
+        if not contract_type:
+            # Skip unknown contracts.
+            return
+
+        parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash)
+        gas_report = parser._get_rich_gas_report(call_tree, exclude=self.gas_exclusions)
+        if gas_report and self.sessional_gas_report:
+            self.sessional_gas_report = merge_reports(self.sessional_gas_report, gas_report)
+        elif gas_report:
+            self.sessional_gas_report = gas_report
+
+    def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
+        if not file:
+            return get_console()
+
+        # Configure custom file console
+        file_id = str(file)
+        if file_id not in self.rich_console_map:
+            self.rich_console_map[file_id] = RichConsole(file=file)
+
+        return self.rich_console_map[file_id]
+
+
 class ChainManager(BaseManager):
     """
     A class for managing the state of the active blockchain.
@@ -937,6 +1074,7 @@ class ChainManager(BaseManager):
     _block_container_map: Dict[int, BlockContainer] = {}
     _account_history_map: Dict[int, AccountHistory] = {}
     contracts: ContractCache = ContractCache()
+    _reports: ReportManager = ReportManager()
 
     @property
     def blocks(self) -> BlockContainer:
@@ -1063,6 +1201,50 @@ class ChainManager(BaseManager):
 
         self.provider.revert(snapshot_id)
         self.account_history.revert_to_block(self.blocks.height)
+
+    @contextmanager
+    def isolate(self):
+        """
+        Run code in an isolated context.
+        Requires using a local provider that supports snapshotting.
+
+        Usages example::
+
+            owner = accounts[0]
+            with chain.isolate():
+                contract = owner.deploy(project.MyContract)
+                receipt = contract.fooBar(sender=owner)
+        """
+
+        try:
+            snapshot = self.snapshot()
+        except APINotImplementedError:
+            logger.warning("Provider does not support snapshotting.")
+
+        start_ecosystem_name = self.provider.network.ecosystem.name
+        start_network_name = self.provider.network.name
+        start_provider_name = self.provider.name
+
+        try:
+            yield
+        finally:
+            if snapshot is None:
+                logger.error("Failed to create snapshot.")
+                return
+
+            end_ecosystem_name = self.provider.network.ecosystem.name
+            end_network_name = self.provider.network.name
+            end_provider_name = self.provider.name
+
+            if (
+                start_ecosystem_name != end_ecosystem_name
+                or start_network_name != end_network_name
+                or start_provider_name != end_provider_name
+            ):
+                logger.warning("Provider changed before isolation completed.")
+                return
+
+            self.chain_manager.restore(snapshot)
 
     def mine(
         self,

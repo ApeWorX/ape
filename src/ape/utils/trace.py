@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from ape.api.transactions import ReceiptAPI
     from ape.types import AddressType, ContractFunctionPath, GasReport
 
+
 _DEFAULT_TRACE_GAS_PATTERN = re.compile(r"\[\d* gas]")
 _DEFAULT_WRAP_THRESHOLD = 50
 _DEFAULT_INDENT = 2
@@ -73,20 +74,25 @@ class CallTraceParser(ManagerAccessMixin):
 
     Usage example::
 
-        tree_factory = CallTraceParser(self, verbose=verbose)
-        call_tree = self.provider.get_call_tree(self.txn_hash)
-        root = tree_factory.parse_as_tree(call_tree)
+        parser = CallTraceParser(sender=sender, transaction_hash=txn_hash, verbose=verbose)
+        call_tree = self.provider.get_call_tree(txn_hash)
+        root = parser.parse_as_tree(call_tree)
     """
 
     def __init__(
         self,
-        receipt: "ReceiptAPI",
+        sender: Union["ReceiptAPI", Optional["AddressType"]] = None,
+        transaction_hash: Optional[str] = None,
         verbose: bool = False,
         wrap_threshold: int = _DEFAULT_WRAP_THRESHOLD,
         indent: int = _DEFAULT_INDENT,
         color_set: Union[TraceStyles, Type[TraceStyles]] = TraceStyles,
     ):
-        self._receipt = receipt
+        # NOTE: Supports `ReceiptAPI` for backwards-compatability.
+        sender = getattr(sender, "sender", sender)
+        transaction_hash = transaction_hash or getattr(sender, "transaction_hash", None)
+        self._sender = sender
+        self._transaction_hash = transaction_hash
         self._verbose = verbose
         self._wrap_threshold = wrap_threshold
         self._indent = indent
@@ -283,14 +289,14 @@ class CallTraceParser(ManagerAccessMixin):
         if address == ZERO_ADDRESS:
             return "ZERO_ADDRESS"
 
-        elif address == self._receipt.sender:
+        elif self._sender is not None and address == self._sender:
             return "tx.origin"
 
         # Use name of known contract if possible.
         checksum_address = self.provider.network.ecosystem.decode_address(address)
-        con_type = self.chain_manager.contracts.get(checksum_address)
-        if con_type and con_type.name:
-            return con_type.name
+        contract_type = self.chain_manager.contracts.get(checksum_address)
+        if contract_type and contract_type.name:
+            return contract_type.name
 
         return checksum_address
 
@@ -310,7 +316,7 @@ class CallTraceParser(ManagerAccessMixin):
         if use_symbol and "symbol" in contract_type.view_methods:
             # Use token symbol as name
             contract = self.chain_manager.contracts.instance_at(
-                address, contract_type=contract_type, txn_hash=self._receipt.txn_hash
+                address, contract_type=contract_type, txn_hash=self._transaction_hash
             )
 
             try:
@@ -397,7 +403,9 @@ class CallTraceParser(ManagerAccessMixin):
         else:
             method_id = selector.hex()
 
-        report = {contract_id: {method_id: [calltree.gas_cost] if calltree.gas_cost else []}}
+        report = {
+            contract_id: {method_id: [calltree.gas_cost] if calltree.gas_cost is not None else []}
+        }
         reports = [r for r in map(this_method, sub_calls, exclude_arg)]
         if len(reports) >= 1:
             return merge_reports(report, *reports)
@@ -562,7 +570,12 @@ def parse_gas_table(report: "GasReport") -> List[Table]:
         table.add_column("Mean", justify="right")
         table.add_column("Median", justify="right")
 
+        has_at_least_1_row = False
         for method_call, gases in method_calls.items():
+            if not gases:
+                continue
+
+            has_at_least_1_row = True
             table.add_row(
                 method_call,
                 f"{len(gases)}",
@@ -572,6 +585,7 @@ def parse_gas_table(report: "GasReport") -> List[Table]:
                 f"{int(round(median(gases)))}",
             )
 
-        tables.append(table)
+        if has_at_least_1_row:
+            tables.append(table)
 
     return tables
