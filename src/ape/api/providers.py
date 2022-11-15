@@ -964,7 +964,11 @@ class Web3Provider(ProviderAPI, ABC):
                     base_err=vm_err.base_err, message=new_err_msg, code=vm_err.code
                 )
 
-            vm_err.receipt = self.get_receipt(txn.txn_hash.hex())
+            try:
+                vm_err.receipt = self.get_receipt(txn.txn_hash.hex())
+            except (TransactionNotFoundError, TransactionError):
+                pass
+
             raise vm_err from err
 
         receipt = self.get_receipt(
