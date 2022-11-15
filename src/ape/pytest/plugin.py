@@ -2,9 +2,8 @@ import sys
 from pathlib import Path
 
 import pytest
-from _pytest.capture import CaptureIO
 
-from ape import chain, networks, project
+from ape import networks, project
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
 from ape.pytest.runners import PytestApeRunner
