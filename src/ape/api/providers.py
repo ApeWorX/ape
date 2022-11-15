@@ -952,12 +952,6 @@ class Web3Provider(ProviderAPI, ABC):
         return self._make_request("eth_getLogs", [filter_params])
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        required_confirmations = (
-            txn.required_confirmations
-            if txn.required_confirmations is not None
-            else self.network.required_confirmations
-        )
-
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValueError as err:
@@ -970,13 +964,18 @@ class Web3Provider(ProviderAPI, ABC):
                     base_err=vm_err.base_err, message=new_err_msg, code=vm_err.code
                 )
 
-            vm_err.receipt = self.get_receipt(
-                txn.txn_hash.hex(),
-                required_confirmations=required_confirmations,
-            )
+            vm_err.receipt = self.get_receipt(txn.txn_hash.hex())
             raise vm_err from err
 
-        receipt = self.get_receipt(txn_hash.hex(), required_confirmations=required_confirmations)
+        receipt = self.get_receipt(
+            txn_hash.hex(),
+            required_confirmations=(
+                txn.required_confirmations
+                if txn.required_confirmations is not None
+                else self.network.required_confirmations
+            ),
+        )
+
         if receipt.failed:
             txn_dict = receipt.transaction.dict()
             txn_params = cast(TxParams, txn_dict)
