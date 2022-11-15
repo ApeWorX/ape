@@ -966,7 +966,7 @@ class Web3Provider(ProviderAPI, ABC):
             if "nonce too low" in str(vm_err):
                 # Add additional nonce information
                 new_err_msg = f"Nonce '{txn.nonce}' is too low"
-                vm_err = VirtualMachineError(
+                raise VirtualMachineError(
                     base_err=vm_err.base_err, message=new_err_msg, code=vm_err.code
                 )
 
