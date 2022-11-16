@@ -68,7 +68,7 @@ class BaseTransaction(TransactionAPI):
         return signed_txn
 
     @property
-    def txn_hash(self):
+    def txn_hash(self) -> HexBytes:
         txn_bytes = self.serialize_transaction()
         return HexBytes(keccak(txn_bytes))
 
