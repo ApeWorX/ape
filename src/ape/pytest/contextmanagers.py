@@ -2,7 +2,12 @@ from collections import deque
 from typing import Optional, Type
 
 import ape
-from ape.exceptions import APINotImplementedError, ContractLogicError, TransactionError
+from ape.exceptions import (
+    APINotImplementedError,
+    ContractLogicError,
+    ProviderError,
+    TransactionError,
+)
 
 
 class RevertsContextManager:
@@ -40,7 +45,7 @@ class RevertsContextManager:
             raise AssertionError(
                 "Cannot check dev message; provider must support transaction tracing."
             ) from exc
-        except Exception as exc:
+        except ProviderError as exc:
             raise AssertionError("Cannot fetch transaction trace.") from exc
 
         pc = None
