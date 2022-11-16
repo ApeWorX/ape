@@ -6,7 +6,7 @@ from eth_utils import humanize_hash
 if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
-    from ape.api.transactions import ReceiptAPI
+    from ape.api.transactions import TransactionAPI
     from ape.types import BlockID, SnapshotID
 
 
@@ -89,7 +89,7 @@ class TransactionError(ContractError):
         base_err: Optional[Exception] = None,
         message: Optional[str] = None,
         code: Optional[int] = None,
-        receipt: Optional["ReceiptAPI"] = None,
+        txn: Optional["TransactionAPI"] = None,
     ):
         self.base_err = base_err
         if not message:
@@ -97,7 +97,7 @@ class TransactionError(ContractError):
 
         self.message = message
         self.code = code
-        self.receipt = receipt
+        self.txn = txn
 
         ex_message = f"({code}) {message}" if code else message
         super().__init__(ex_message)

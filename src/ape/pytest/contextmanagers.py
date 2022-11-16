@@ -19,27 +19,29 @@ class RevertsContextManager:
             AssertionError: When the trace or source can not be retrieved, the dev message cannot
             be found, or the found dev message does not match the expected dev message.
         """
-        receipt = exception.receipt
+        txn = exception.txn
 
-        if receipt is None or receipt.receiver is None:
+        if txn is None or txn.receiver is None:
             raise AssertionError("Could not fetch transaction information to check dev message.")
 
         try:
-            contract = ape.Contract(receipt.receiver)
+            contract = ape.Contract(txn.receiver)
         except ValueError as exc:
             raise AssertionError(
-                f"Could not fetch contract at {receipt.receiver} to check dev message."
+                f"Could not fetch contract at {txn.receiver} to check dev message."
             ) from exc
 
         if contract.contract_type.pcmap is None:
             raise AssertionError("Compiler does not support source code mapping.")
 
         try:
-            trace = deque(receipt.trace)
+            trace = deque(txn.provider.get_transaction_trace(txn_hash=txn.txn_hash.hex()))
         except APINotImplementedError as exc:
             raise AssertionError(
                 "Cannot check dev message; provider must support transaction tracing."
             ) from exc
+        except Exception as exc:
+            raise AssertionError("Cannot fetch transaction trace.") from exc
 
         pc = None
         pcmap = contract.contract_type.pcmap.parse()

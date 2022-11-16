@@ -964,11 +964,7 @@ class Web3Provider(ProviderAPI, ABC):
                     base_err=vm_err.base_err, message=new_err_msg, code=vm_err.code
                 )
 
-            try:
-                vm_err.receipt = self.get_receipt(txn.txn_hash.hex())
-            except (TransactionNotFoundError, TransactionError):
-                pass
-
+            vm_err.txn = txn
             raise vm_err from err
 
         receipt = self.get_receipt(
@@ -989,7 +985,7 @@ class Web3Provider(ProviderAPI, ABC):
                 self.web3.eth.call(txn_params)
             except Exception as err:
                 vm_err = self.get_virtual_machine_error(err)
-                vm_err.receipt = receipt
+                vm_err.txn = txn
                 raise vm_err from err
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
