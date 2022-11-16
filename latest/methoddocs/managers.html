@@ -785,6 +785,18 @@ to go back to this point. This method is for local networks only.</p>
 <p>When retrieving a contract, if a <a class="reference internal" href="api.html#ape.api.explorers.ExplorerAPI" title="ape.api.explorers.ExplorerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplorerAPI</span></code></a> is used,
 it will be cached to disk for faster look-up next time.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.__delitem__">
+<span class="sig-name descname"><span class="pre">__delitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.__delitem__" title="Permalink to this definition"></a></dt>
+<dd><p>Delete a cached contract.
+If using a live network, it will also delete the file-cache for the contract.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>address</strong> (<em>AddressType</em>) – The address to remove from the cache.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.ContractCache.__setitem__">
 <span class="sig-name descname"><span class="pre">__setitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ethpm_types.contract_type.ContractType</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.__setitem__" title="Permalink to this definition"></a></dt>
 <dd><p>Cache the given contract type. Contracts are cached in memory per session.
