@@ -1449,8 +1449,8 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">None</s
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.api.networks.ProviderContextManager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">ProviderContextManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ProviderAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="managers.html#ape.managers.networks.NetworkManager" title="ape.managers.networks.NetworkManager"><span class="pre">NetworkManager</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.ProviderContextManager" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">ProviderContextManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ProviderAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.ProviderContextManager" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.utils.basemodel.ManagerAccessMixin</span></code></p>
 <p>A context manager for temporarily connecting to a network.
 When entering the context, calls the <a class="reference internal" href="#ape.api.providers.ProviderAPI.connect" title="ape.api.providers.ProviderAPI.connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI.connect()</span></code></a> method.
 And conversely, when exiting, calls the <code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.providers.ProviderPAI.disconnect()</span></code>
@@ -1953,7 +1953,7 @@ checked in <code class="docutils literal notranslate"><span class="pre">ape.reve
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.send_call">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">send_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">ape.api.transactions.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.send_call" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">send_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">ape.api.transactions.TransactionAPI</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.send_call" title="Permalink to this definition"></a></dt>
 <dd><p>Execute a new transaction call immediately without creating a
 transaction on the blockchain.</p>
 <dl class="field-list simple">
@@ -2400,6 +2400,14 @@ to use to send a call at a historical point of a contract.
 checking a past estimation cost of a transaction.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">state_overrides</span></code> (Dict): Modify the state of the blockchain
 prior to sending the call, for testing purposes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show_trace</span></code> (bool): Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to display the call’s
+trace. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show_gas_report</span> <span class="pre">(bool):</span> <span class="pre">Set</span> <span class="pre">to</span> <span class="pre">``True</span></code> to display the call’s
+gas report. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">skip_trace</span></code> (bool): Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to skip the trace no matter
+what. This is useful if you are making a more background contract call
+of some sort, such as proxy-checking, and you are running a global
+call-tracer such as using the <code class="docutils literal notranslate"><span class="pre">--gas</span></code> flag in tests.</p></li>
 </ul>
 </p></li>
 </ul>
@@ -2550,6 +2558,14 @@ since this is not available from the receipt object.</p>
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.trace">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">evm_trace.base.TraceFrame</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.trace" title="Permalink to this definition"></a></dt>
 <dd><p>The trace of the transaction, if available from your provider.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.track_gas">
+<span class="sig-name descname"><span class="pre">track_gas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.track_gas" title="Permalink to this definition"></a></dt>
+<dd><p>Track this receipt’s gas in the on-going sessional gas-report.
+Requires using a provider that support transaction traces.
+This gets called when running tests with the <code class="docutils literal notranslate"><span class="pre">--gas</span></code> flag.</p>
 </dd></dl>
 
 </dd></dl>

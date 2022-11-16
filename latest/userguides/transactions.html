@@ -344,6 +344,12 @@ ContractA.methodWithoutArguments<span class="o">()</span> -&gt; 0x00..7a9c <span
 <span class="n">receipt</span><span class="o">.</span><span class="n">show_trace</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>In Ape, you can also show the trace for a call.
+Use the <code class="docutils literal notranslate"><span class="pre">show_trace=</span></code> kwarg on a contract call and Ape will display the trace before returning the data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">token</span><span class="o">.</span><span class="n">balanceOf</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">show_trace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: This may not work on all providers, but it should work on common ones such as <code class="docutils literal notranslate"><span class="pre">ape-hardhat</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code>.</p>
 </section>
 <section id="gas-reports">
 <h2>Gas Reports<a class="headerlink" href="#gas-reports" title="Permalink to this headline"></a></h2>

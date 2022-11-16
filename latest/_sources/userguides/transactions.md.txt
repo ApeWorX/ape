@@ -231,6 +231,15 @@ receipt = networks.provider.get_receipt(txn_hash)
 receipt.show_trace()
 ```
 
+In Ape, you can also show the trace for a call.
+Use the `show_trace=` kwarg on a contract call and Ape will display the trace before returning the data.
+
+```python
+token.balanceOf(account, show_trace=True)
+```
+
+**NOTE**: This may not work on all providers, but it should work on common ones such as `ape-hardhat` or `ape-geth`.
+
 ## Gas Reports
 
 To view the gas report of a transaction receipt, use the [`ReceiptAPI.show_gas_report()`](../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report) method:
