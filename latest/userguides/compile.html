@@ -156,8 +156,14 @@ This compiler is useful for the following:</p>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
 
+<span class="c1"># Comes from a file named `MyInterface.json` in the contracts/ folder.</span>
+<span class="n">my_interface</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyInterface</span>
 <span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;0x1234556b5Ed9202110D7Ecd637A4581db8b9879F&quot;</span>
-<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyInterface</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+
+<span class="c1"># Instantiate a deployed contract using the local interface.</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">my_interface</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+
+<span class="c1"># Call a method named `my_method` found in the local contract ABI.</span>
 <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">()</span>
 </pre></div>
 </div>
