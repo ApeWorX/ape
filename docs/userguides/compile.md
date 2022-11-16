@@ -22,8 +22,14 @@ This compiler is useful for the following:
 ```python
 from ape import project
 
+# Comes from a file named `MyInterface.json` in the contracts/ folder.
+my_interface = project.MyInterface
 address = "0x1234556b5Ed9202110D7Ecd637A4581db8b9879F"
-contract = project.MyInterface.at(address)
+
+# Instantiate a deployed contract using the local interface.
+contract = my_interface.at(address)
+
+# Call a method named `my_method` found in the local contract ABI.
 contract.my_method()
 ```
 
