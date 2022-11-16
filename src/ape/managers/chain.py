@@ -541,10 +541,36 @@ class ContractCache(BaseManager):
             contract_type (ContractType): The contract's type.
         """
 
+        if self.network_manager.active_provider:
+            address = self.provider.network.ecosystem.decode_address(int(address, 16))
+        else:
+            logger.warning("Not connected to a provider. Assuming Ethereum-style checksums.")
+            ethereum = self.network_manager.ethereum
+            address = ethereum.decode_address(int(address, 16))
+
         self._cache_contract_type(address, contract_type)
 
         # NOTE: The txn_hash is not included when caching this way.
         self._cache_deployment(address, contract_type)
+
+    def __delitem__(self, address: AddressType):
+        """
+        Delete a cached contract.
+        If using a live network, it will also delete the file-cache for the contract.
+
+        Args:
+            address (AddressType): The address to remove from the cache.
+        """
+
+        if address in self._local_contract_types:
+            del self._local_contract_types[address]
+
+        if self._is_live_network:
+            if not self._contract_types_cache.is_dir():
+                return
+
+            address_file = self._contract_types_cache / f"{address}.json"
+            address_file.unlink(missing_ok=True)
 
     def __contains__(self, address: AddressType) -> bool:
         return self.get(address) is not None
