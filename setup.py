@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import Dict
 
-from setuptools import find_packages, setup  # type: ignore
+from setuptools import find_packages, setup
 
 here = Path(__file__).parent.absolute()
 packages_data: Dict = {}
@@ -20,9 +20,10 @@ extras_require = {
     "lint": [
         "black>=22.10.0,<23",  # auto-formatter and linter
         "mypy==0.982",  # Static type analyzer
-        "types-PyYAML",  # NOTE: Needed due to mypy typeshed
-        "types-requests",  # NOTE: Needed due to mypy typeshed
-        "types-pkg-resources",  # NOTE: Needed due to mypy typeshed
+        "types-PyYAML",  # Needed due to mypy typeshed
+        "types-requests",  # Needed due to mypy typeshed
+        "types-pkg-resources",  # Needed due to mypy typeshed
+        "types-setuptools",  # Needed due to mypy typeshed
         "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",
         "flake8>=5.0.4,<6",  # Style linter
