@@ -116,7 +116,7 @@ def assert_trace(capsys):
 
 
 def test_trace(case, assert_trace):
-    parser = CallTraceParser(case.receipt)
+    parser = CallTraceParser(sender=case.receipt.sender, transaction_hash=case.receipt.txn_hash)
     actual = parser.parse_as_tree(case.call_tree)
     rich_print(actual)
     assert_trace(case.expected)

@@ -20,6 +20,7 @@ from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
+from hexbytes import HexBytes
 from pydantic import Extra, PositiveInt
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
@@ -29,7 +30,7 @@ from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from yarl import URL
 
-from ape.api import PluginConfig, TestProviderAPI, UpstreamProvider, Web3Provider
+from ape.api import PluginConfig, TestProviderAPI, TransactionAPI, UpstreamProvider, Web3Provider
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import logger
 from ape.types import SnapshotID
@@ -246,39 +247,43 @@ class BaseGethProvider(Web3Provider, ABC):
             yield TraceFrame(**frame)
 
     def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
-        def _get_call_tree_from_parity():
-            result = self._make_request("trace_transaction", [txn_hash])
-            if not result:
-                raise ProviderError(f"Failed to get trace for '{txn_hash}'.")
-
-            traces = ParityTraceList.parse_obj(result)
-            return get_calltree_from_parity_trace(traces)
-
         if "erigon" in self.client_version.lower():
-            return _get_call_tree_from_parity()
+            return self._get_call_tree_from_parity(txn_hash)
 
         try:
             # Try the Parity traces first, in case node client supports it.
-            return _get_call_tree_from_parity()
+            return self._get_call_tree_from_parity(txn_hash)
         except (ValueError, APINotImplementedError, ProviderError):
-            if not root_node_kwargs:
-                receipt = self.get_receipt(txn_hash)
+            return self._get_call_tree_from_geth(txn_hash, **root_node_kwargs)
 
-                if not receipt.receiver:
-                    raise ProviderError("Receipt missing receiver.")
+    def _get_call_tree_from_parity(self, txn_hash: str) -> CallTreeNode:
+        result = self._make_request("trace_transaction", [txn_hash])
+        if not result:
+            raise ProviderError(f"Failed to get trace for '{txn_hash}'.")
 
-                root_node_kwargs = {
-                    "gas_cost": receipt.gas_used,
-                    "gas_limit": receipt.gas_limit,
-                    "address": receipt.receiver,
-                    "calldata": receipt.data,
-                    "value": receipt.value,
-                    "call_type": CallType.CALL,
-                    "failed": receipt.failed,
-                }
+        traces = ParityTraceList.parse_obj(result)
+        return get_calltree_from_parity_trace(traces)
 
-            frames = self.get_transaction_trace(txn_hash)
-            return get_calltree_from_geth_trace(frames, **root_node_kwargs)
+    def _get_call_tree_from_geth(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
+        frames = self.get_transaction_trace(txn_hash)
+
+        if not root_node_kwargs:
+            receipt = self.get_receipt(txn_hash)
+
+            if not receipt.receiver:
+                raise ProviderError("Receipt missing receiver.")
+
+            root_node_kwargs = {
+                "gas_cost": receipt.gas_used,
+                "gas_limit": receipt.gas_limit,
+                "address": receipt.receiver,
+                "calldata": receipt.data,
+                "value": receipt.value,
+                "call_type": CallType.CALL,
+                "failed": receipt.failed,
+            }
+
+        return get_calltree_from_geth_trace(frames, **root_node_kwargs)
 
     def _log_connection(self, client_name: str):
         logger.info(f"Connecting to existing {client_name} node at '{self._clean_uri}'.")
@@ -308,7 +313,7 @@ class BaseGethProvider(Web3Provider, ABC):
             del results[:]
 
 
-class GethDev(TestProviderAPI, BaseGethProvider):
+class GethDev(BaseGethProvider, TestProviderAPI):
     _process: Optional[GethDevProcess] = None
     name: str = "geth"
 
@@ -410,6 +415,53 @@ class GethDev(TestProviderAPI, BaseGethProvider):
     @raises_not_implemented
     def mine(self, num_blocks: int = 1):
         pass
+
+    def send_call(self, txn: TransactionAPI, **kwargs: Any) -> bytes:
+        skip_trace = kwargs.pop("skip_trace", False)
+        arguments = self._prepare_call(txn, **kwargs)
+        if skip_trace:
+            return self._eth_call(arguments)
+
+        show_gas = kwargs.pop("show_gas_report", False)
+        show_trace = kwargs.pop("show_trace", False)
+        track_gas = self.chain_manager._reports.track_gas
+        needs_trace = show_gas or show_trace or track_gas
+        if not needs_trace:
+            return self._eth_call(arguments)
+
+        # The user is requesting information related to a call's trace,
+        # such as gas usage data.
+
+        result = self._make_request("debug_traceCall", arguments)
+        trace_data = result.get("structLogs", [])
+        trace_frames = (TraceFrame(**f) for f in trace_data)
+        return_value = HexBytes(result["returnValue"])
+        root_node_kwargs = {
+            "gas_cost": result.get("gas", 0),
+            "gas_limit": txn.gas_limit,
+            "address": txn.receiver,
+            "calldata": txn.data,
+            "value": txn.value,
+            "call_type": CallType.CALL,
+            "failed": False,
+            "returndata": return_value,
+        }
+
+        call_tree = get_calltree_from_geth_trace(trace_frames, **root_node_kwargs)
+        receiver = txn.receiver
+        if track_gas and call_tree and receiver is not None:
+            # Gas report being collected, likely for showing a report
+            # at the end of a test run.
+            self.chain_manager._reports.append_gas(call_tree, receiver)
+        if show_trace:
+            self.chain_manager._reports.show_trace(call_tree)
+        if show_gas:
+            self.chain_manager._reports.show_gas(call_tree)
+
+        return return_value
+
+    def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
+        return self._get_call_tree_from_geth(txn_hash, **root_node_kwargs)
 
 
 class Geth(BaseGethProvider, UpstreamProvider):

@@ -76,14 +76,14 @@ def pytest_load_initial_conftests(early_config):
     """
     Compile contracts before loading ``conftest.py``s.
     """
-    cap_sys = early_config.pluginmanager.get_plugin("capturemanager")
+    capture_manager = early_config.pluginmanager.get_plugin("capturemanager")
 
     if not project.sources_missing:
         # Suspend stdout capture to display compilation data
-        cap_sys.suspend()
+        capture_manager.suspend()
         try:
             project.load_contracts()
         except Exception as err:
             raise pytest.UsageError(f"Unable to load project. Reason: {err}")
         finally:
-            cap_sys.resume()
+            capture_manager.resume()

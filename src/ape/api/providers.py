@@ -14,7 +14,7 @@ from subprocess import PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, is_hex
+from eth_utils import add_0x_prefix, is_hex, to_hex
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
@@ -302,7 +302,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
+    def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:  # Return value of function
         """
         Execute a new transaction call immediately without creating a
         transaction on the blockchain.
@@ -845,18 +845,89 @@ class Web3Provider(ProviderAPI, ABC):
                   checking a past estimation cost of a transaction.
                 * ``state_overrides`` (Dict): Modify the state of the blockchain
                   prior to sending the call, for testing purposes.
+                * ``show_trace`` (bool): Set to ``True`` to display the call's
+                  trace. Defaults to ``False``.
+                * ``show_gas_report (bool): Set to ``True`` to display the call's
+                  gas report. Defaults to ``False``.
+                * ``skip_trace`` (bool): Set to ``True`` to skip the trace no matter
+                  what. This is useful if you are making a more background contract call
+                  of some sort, such as proxy-checking, and you are running a global
+                  call-tracer such as using the ``--gas`` flag in tests.
 
         Returns:
             str: The result of the transaction call.
         """
+        skip_trace = kwargs.pop("skip_trace", False)
+        if skip_trace:
+            return self._send_call(txn, **kwargs)
 
+        track_gas = self.chain_manager._reports.track_gas
+        show_trace = kwargs.pop("show_trace", False)
+        show_gas = kwargs.pop("show_gas_report", False)
+        needs_trace = track_gas or show_trace or show_gas
+        if not needs_trace or not self.provider.supports_tracing or not txn.receiver:
+            return self._send_call(txn, **kwargs)
+
+        # The user is requesting information related to a call's trace,
+        # such as gas usage data.
         try:
-            block_id = kwargs.pop("block_identifier", None)
-            state = kwargs.pop("state_override", None)
-            return self.web3.eth.call(txn.dict(), block_id, state)  # type: ignore
+            with self.chain_manager.isolate():
+                return self._send_call_as_txn(
+                    txn, track_gas=track_gas, show_trace=show_trace, show_gas=show_gas, **kwargs
+                )
 
-        except ValueError as err:
+        except APINotImplementedError:
+            return self._send_call(txn, **kwargs)
+
+    def _send_call_as_txn(
+        self,
+        txn: TransactionAPI,
+        track_gas: bool = False,
+        show_trace: bool = False,
+        show_gas: bool = False,
+        **kwargs,
+    ) -> bytes:
+        account = self.account_manager.test_accounts[0]
+        receipt = account.call(txn)
+        call_tree = receipt.call_tree
+        if not call_tree:
+            return self._send_call(txn, **kwargs)
+
+        if track_gas:
+            receipt.track_gas()
+        if show_trace:
+            self.chain_manager._reports.show_trace(call_tree)
+        if show_gas:
+            self.chain_manager._reports.show_gas(call_tree)
+
+        return call_tree.returndata
+
+    def _send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
+        arguments = self._prepare_call(txn, **kwargs)
+        return self._eth_call(arguments)
+
+    def _eth_call(self, arguments: List) -> bytes:
+        try:
+            result = self._make_request("eth_call", arguments)
+        except Exception as err:
             raise self.get_virtual_machine_error(err) from err
+
+        return HexBytes(result)
+
+    def _prepare_call(self, txn: TransactionAPI, **kwargs) -> List:
+        txn_dict = txn.dict()
+        fields_to_convert = ("data", "chainId", "value")
+        for field in fields_to_convert:
+            value = txn_dict.get(field)
+            if value is not None and not isinstance(value, str):
+                txn_dict[field] = to_hex(value)
+
+        block_identifier = kwargs.pop("block_identifier", "latest")
+        arguments = [txn_dict, block_identifier]
+        if "state_override" in kwargs:
+            arguments.append(kwargs["state_override"])
+
+        return arguments
 
     def get_receipt(
         self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None

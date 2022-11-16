@@ -62,6 +62,20 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     assert receiver.balance == initial_balance
 
 
+def test_isolate(chain, vyper_contract_instance, owner):
+    number_at_start = 444
+    vyper_contract_instance.setNumber(number_at_start, sender=owner)
+    start_head = chain.blocks.height
+
+    with chain.isolate():
+        vyper_contract_instance.setNumber(333, sender=owner)
+        assert vyper_contract_instance.myNumber() == 333
+        assert chain.blocks.height == start_head + 1
+
+    assert vyper_contract_instance.myNumber() == number_at_start
+    assert chain.blocks.height == start_head
+
+
 def test_get_receipt_uses_cache(mocker, eth_tester_provider, chain, vyper_contract_instance, owner):
     expected = vyper_contract_instance.setNumber(3, sender=owner)
     eth = eth_tester_provider.web3.eth
@@ -543,3 +557,16 @@ def test_contracts_get_non_contract_address(chain, owner):
 def test_contracts_get_attempts_to_convert(chain):
     with pytest.raises(ConversionError):
         chain.contracts.get("test.eth")
+
+
+def test_cache_non_checksum_address(chain, vyper_contract_instance):
+    """
+    When caching a non-checksum address, it should use its checksum
+    form automatically.
+    """
+    if vyper_contract_instance.address in chain.contracts:
+        del chain.contracts[vyper_contract_instance.address]
+
+    lowered_address = vyper_contract_instance.address.lower()
+    chain.contracts[lowered_address] = vyper_contract_instance.contract_type
+    assert chain.contracts[vyper_contract_instance.address] == vyper_contract_instance.contract_type

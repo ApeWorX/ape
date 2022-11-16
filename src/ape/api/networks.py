@@ -25,6 +25,7 @@ from ape.types import AddressType, ContractLog, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
+    ManagerAccessMixin,
     abstractmethod,
     cached_property,
     raises_not_implemented,
@@ -33,10 +34,9 @@ from ape.utils import (
 from .config import PluginConfig
 
 if TYPE_CHECKING:
-    from ape.managers.networks import NetworkManager
-
     from .explorers import ExplorerAPI
-    from .providers import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI
+    from .providers import BlockAPI, ProviderAPI
+    from .transactions import ReceiptAPI, TransactionAPI
 
 
 LOCAL_NETWORK_NAME = "local"
@@ -440,7 +440,7 @@ class EcosystemAPI(BaseInterfaceModel):
         return None
 
 
-class ProviderContextManager:
+class ProviderContextManager(ManagerAccessMixin):
     """
     A context manager for temporarily connecting to a network.
     When entering the context, calls the :meth:`ape.api.providers.ProviderAPI.connect` method.
@@ -459,13 +459,11 @@ class ProviderContextManager:
             ...
     """
 
-    network_manager: "NetworkManager"
     connected_providers: Dict[str, "ProviderAPI"] = {}
     provider_stack: List[str] = []
 
-    def __init__(self, provider: "ProviderAPI", network_manager: "NetworkManager"):
-        self.provider = provider
-        self.network_manager = network_manager
+    def __init__(self, provider: "ProviderAPI"):
+        self._provider = provider
 
     @property
     def empty(self) -> bool:
@@ -478,26 +476,26 @@ class ProviderContextManager:
         self.pop_provider()
 
     def push_provider(self):
-        must_connect = not self.provider.is_connected
+        must_connect = not self._provider.is_connected
         if must_connect:
-            self.provider.connect()
+            self._provider.connect()
 
-        provider_id = self.get_provider_id(self.provider)
+        provider_id = self.get_provider_id(self._provider)
         self.provider_stack.append(provider_id)
 
         if provider_id in self.connected_providers:
             # Using already connected instance
             if must_connect:
                 # Disconnect if had to connect to check chain ID
-                self.provider.disconnect()
+                self._provider.disconnect()
 
-            self.provider = self.connected_providers[provider_id]
+            self._provider = self.connected_providers[provider_id]
         else:
             # Adding provider for the first time. Retain connection.
-            self.connected_providers[provider_id] = self.provider
+            self.connected_providers[provider_id] = self._provider
 
-        self.network_manager.active_provider = self.provider
-        return self.provider
+        self.network_manager.active_provider = self._provider
+        return self._provider
 
     def pop_provider(self):
         if self.empty:
@@ -803,7 +801,6 @@ class NetworkAPI(BaseInterfaceModel):
             provider=self.get_provider(
                 provider_name=provider_name, provider_settings=provider_settings
             ),
-            network_manager=self.network_manager,
         )
 
     @property

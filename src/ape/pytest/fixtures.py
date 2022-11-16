@@ -3,7 +3,6 @@ from fnmatch import fnmatch
 from typing import Dict, Iterator, List, Optional
 
 import pytest
-from evm_trace.gas import merge_reports
 
 from ape.api import ReceiptAPI, TestAccountAPI
 from ape.logging import logger
@@ -11,8 +10,8 @@ from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 from ape.pytest.config import ConfigWrapper
-from ape.types import GasReport, SnapshotID
-from ape.utils import CallTraceParser, ManagerAccessMixin, allow_disconnected, cached_property
+from ape.types import SnapshotID
+from ape.utils import ManagerAccessMixin, allow_disconnected, cached_property
 
 
 class PytestApeFixtures(ManagerAccessMixin):
@@ -33,6 +32,8 @@ class PytestApeFixtures(ManagerAccessMixin):
             self.network_manager.provider is not None
             and self.provider.is_connected
             and self.provider.supports_tracing
+            # Has reason to use traces?
+            and self.config_wrapper.track_gas
         )
 
     @pytest.fixture(scope="session")
@@ -115,12 +116,13 @@ class PytestApeFixtures(ManagerAccessMixin):
 
 class ReceiptCapture(ManagerAccessMixin):
     config_wrapper: ConfigWrapper
-    gas_report: Optional[GasReport] = None
     receipt_map: Dict[str, Dict[str, ReceiptAPI]] = {}
     enter_blocks: List[int] = []
 
     def __init__(self, config_wrapper: ConfigWrapper):
         self.config_wrapper = config_wrapper
+        self.chain_manager._reports.track_gas = self.config_wrapper.track_gas
+        self.chain_manager._reports.gas_exclusions = self.config_wrapper.gas_exclusions
 
     def __enter__(self):
         block_number = self._get_block_number()
@@ -150,7 +152,7 @@ class ReceiptCapture(ManagerAccessMixin):
         for txn in transactions:
             self.capture(txn.txn_hash.hex())
 
-    def capture(self, transaction_hash: str, track_gas: Optional[bool] = None):
+    def capture(self, transaction_hash: str):
         receipt = self.chain_manager.account_history.get_receipt(transaction_hash)
         if not receipt:
             return
@@ -178,36 +180,15 @@ class ReceiptCapture(ManagerAccessMixin):
             return
 
         self.receipt_map[source_id][transaction_hash] = receipt
-        do_track_gas = self.config_wrapper.track_gas if track_gas is None else track_gas
-
-        if not do_track_gas:
+        if not self.config_wrapper.track_gas:
             # Only capture trace if has a reason to.
             return
 
-        # Merge-in the receipt's gas report with everything so far.
-        call_tree = receipt.call_tree
-        exclusions = self.config_wrapper.gas_exclusions
-        if exclusions:
-            contract_address = receipt.receiver
-            contract_type = self.chain_manager.contracts[contract_address]
-            contract_name = contract_type.name
-            method_called = receipt.method_called
-            method_name = method_called.name if method_called else None
+        receipt.track_gas()
 
-        if do_track_gas and call_tree:
-            parser = CallTraceParser(receipt)
-            for exclusion in exclusions:
-                if contract_name and self._exclude_from_gas_report(contract_name, method_name):
-                    return
-
-            # Update the gas report using this receipt
-            gas_report = parser._get_rich_gas_report(
-                call_tree, exclude=self.config_wrapper.gas_exclusions
-            )
-            if self.gas_report:
-                self.gas_report = merge_reports(self.gas_report, gas_report)
-            else:
-                self.gas_report = gas_report
+    def clear(self):
+        self.receipt_map = {}
+        self.enter_blocks = []
 
     @allow_disconnected
     def _get_block_number(self) -> Optional[int]:
