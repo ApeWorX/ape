@@ -8,4 +8,4 @@ def owner(accounts):
 
 @pytest.fixture(scope="module")
 def contract_from_fixture(project, owner):
-    return owner.deploy(project.Contract)
+    return owner.deploy(project.ContractA)

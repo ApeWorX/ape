@@ -2,7 +2,6 @@ from pathlib import Path
 
 import click
 import pytest
-from rich import print as rich_print
 
 import ape
 from ape.api import ProviderContextManager
@@ -10,7 +9,7 @@ from ape.logging import LogLevel, logger
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.contextmanagers import RevertsContextManager
 from ape.pytest.fixtures import ReceiptCapture
-from ape.utils import ManagerAccessMixin, parse_gas_table
+from ape.utils import ManagerAccessMixin
 from ape_console._cli import console
 
 
@@ -169,12 +168,7 @@ class PytestApeRunner(ManagerAccessMixin):
             )
             return
 
-        gas_report = self.receipt_capture.gas_report
-        if gas_report:
-            tables = parse_gas_table(gas_report)
-            rich_print(*tables)
-        else:
-
+        if not self.chain_manager._reports.show_session_gas():
             terminalreporter.write_line(
                 f"{LogLevel.WARNING.name}: No gas usage data found.", yellow=True
             )
@@ -183,3 +177,9 @@ class PytestApeRunner(ManagerAccessMixin):
         if self._provider_is_connected and self.config_wrapper.disconnect_providers_after:
             self._provider_context.disconnect_all()
             self._provider_is_connected = False
+
+        # NOTE: Clearing the state is helpful for pytester-based tests,
+        #  which may run pytest many times in-process.
+        self.receipt_capture.clear()
+        self.chain_manager.contracts.clear_local_caches()
+        self.chain_manager._reports.sessional_gas_report = None

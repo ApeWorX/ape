@@ -9,26 +9,29 @@ from tests.integration.cli.utils import skip_projects_except
 
 BASE_PROJECTS_PATH = Path(__file__).parent / "projects"
 TOKEN_B_GAS_REPORT = r"""
-                         TokenB Gas
+ +TokenB Gas
 
-  Method     Times called    Min.    Max.    Mean   Median
- ──────────────────────────────────────────────────────────
-  transfer              \d   \d+   \d+   \d+    \d+
+  Method +Times called +Min. +Max. +Mean +Median
+ ─+
+  balanceOf +\d +\d+ + \d+ + \d+ + \d+
+  transfer +\d +\d+ + \d+ + \d+ + \d+
 """
 EXPECTED_GAS_REPORT = rf"""
-                      TestContractVy Gas
+ +TestContractVy Gas
 
-  Method       Times called    Min.    Max.    Mean   Median
- ────────────────────────────────────────────────────────────
-  setNumber               \d   \d+   \d+   \d+    \d+
-  fooAndBar               \d   \d+   \d+   \d+    \d+
-  setAddress              \d   \d+   \d+   \d+    \d+
+  Method +Times called +Min. +Max. +Mean +Median
+ ─+
+  myNumber +\d +\d+ + \d+ + \d+ + \d+
+  setNumber +\d +\d+ + \d+ + \d+ + \d+
+  fooAndBar +\d +\d+ + \d+ + \d+ + \d+
+  setAddress +\d +\d+ + \d+ + \d+ + \d+
 
-                         TokenA Gas
+ +TokenA Gas
 
-  Method     Times called    Min.    Max.    Mean   Median
- ──────────────────────────────────────────────────────────
-  transfer              \d   \d+   \d+   \d+    \d+
+  Method +Times called +Min. +Max. +Mean +Median
+ ─+
+  balanceOf +\d +\d+ + \d+ + \d+ + \d+
+  transfer +\d +\d+ + \d+ + \d+ + \d+
 {TOKEN_B_GAS_REPORT}
 """
 GETH_LOCAL_CONFIG = f"""
@@ -37,6 +40,15 @@ geth:
     local:
       uri: {GETH_URI}
 """
+
+
+def filter_expected_methods(*methods_to_remove: str) -> str:
+    expected = EXPECTED_GAS_REPORT
+    for name in methods_to_remove:
+        line = f"\n  {name} +\\d +\\d+ + \\d+ + \\d+ + \\d+"
+        expected = expected.replace(line, "")
+
+    return expected
 
 
 @pytest.fixture
@@ -88,32 +100,36 @@ def run_gas_test(result, expected_number_passed: int, expected_report: str = EXP
 
     if actual_len > expected_len:
         remainder = "\n".join(actual[expected_len:])
-        pytest.xfail(f"Actual contains more than expected:\n{remainder}")
+        pytest.fail(f"Actual contains more than expected:\n{remainder}")
     elif expected_len > actual_len:
         remainder = "\n".join(expected[actual_len:])
-        pytest.xfail(f"Expected contains more than actual:\n{remainder}")
+        pytest.fail(f"Expected contains more than actual:\n{remainder}")
 
     for actual_line, expected_line in zip(actual, expected):
-        assert re.match(expected_line, actual_line)
+        message = f"'{actual_line}' does not match pattern '{expected_line}'."
+        assert re.match(expected_line, actual_line), message
 
 
 @skip_projects_except("test", "with-contracts")
-def test_test(networks, setup_pytester, project, pytester):
+def test_test(networks, setup_pytester, project, pytester, eth_tester_provider):
+    _ = eth_tester_provider  # Ensure using EthTester for this test.
     expected_test_passes = setup_pytester(project.path.name)
     result = pytester.runpytest()
     result.assert_outcomes(passed=expected_test_passes), "\n".join(result.outlines)
 
 
 @skip_projects_except("test", "with-contracts")
-def test_test_isolation_disabled(setup_pytester, project, pytester):
+def test_test_isolation_disabled(setup_pytester, project, pytester, eth_tester_provider):
     # check the disable isolation option actually disables built-in isolation
+    _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(project.path.name)
     result = pytester.runpytest("--disable-isolation", "--setup-show")
     assert "F _function_isolation" not in "\n".join(result.outlines)
 
 
 @skip_projects_except("test", "with-contracts")
-def test_fixture_docs(setup_pytester, project, pytester):
+def test_fixture_docs(setup_pytester, project, pytester, eth_tester_provider):
+    _ = eth_tester_provider  # Ensure using EthTester for this test.
     result = pytester.runpytest("-q", "--fixtures")
 
     # 'accounts', 'networks', 'chain', and 'project' (etc.)
@@ -125,7 +141,8 @@ def test_fixture_docs(setup_pytester, project, pytester):
 
 
 @skip_projects_except("test")
-def test_gas_flag_when_not_supported(setup_pytester, project, pytester):
+def test_gas_flag_when_not_supported(setup_pytester, project, pytester, eth_tester_provider):
+    _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(project.path.name)
     result = pytester.runpytest("--gas")
     assert (
@@ -167,9 +184,11 @@ def test_gas_flag_set_in_config(geth_provider, setup_pytester, project, pytester
 @skip_projects_except("geth")
 def test_gas_flag_exclude_method_using_cli_option(geth_provider, setup_pytester, project, pytester):
     expected_test_passes = setup_pytester(project.path.name)
-    line = "\n  fooAndBar               \\d   \\d+   \\d+   \\d+    \\d+"
-    expected = EXPECTED_GAS_REPORT.replace(line, "")
-    result = pytester.runpytest("--gas", "--gas-exclude", "*:fooAndBar")
+    # NOTE: Includes both a mutable and a view method.
+    expected = filter_expected_methods("fooAndBar", "myNumber")
+    # Also ensure can filter out whole class
+    expected = expected.replace(TOKEN_B_GAS_REPORT, "")
+    result = pytester.runpytest("--gas", "--gas-exclude", "*:fooAndBar,*:myNumber,tokenB:*")
     run_gas_test(result, expected_test_passes, expected_report=expected)
 
 
@@ -179,8 +198,9 @@ def test_gas_flag_exclusions_set_in_config(
     geth_provider, setup_pytester, project, pytester, switch_config
 ):
     expected_test_passes = setup_pytester(project.path.name)
-    line = "\n  fooAndBar               \\d   \\d+   \\d+   \\d+    \\d+"
-    expected = EXPECTED_GAS_REPORT.replace(line, "")
+    # NOTE: Includes both a mutable and a view method.
+    expected = filter_expected_methods("fooAndBar", "myNumber")
+    # Also ensure can filter out whole class
     expected = expected.replace(TOKEN_B_GAS_REPORT, "")
     config_content = rf"""
     geth:
@@ -193,6 +213,7 @@ def test_gas_flag_exclusions_set_in_config(
       gas:
         exclude:
           - method_name: fooAndBar
+          - method_name: myNumber
           - contract_name: TokenB
     """
     with switch_config(project, config_content):

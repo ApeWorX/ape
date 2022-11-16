@@ -120,11 +120,12 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)
 
+        block_id = kwargs.pop("block_identifier", None)
+        state = kwargs.pop("state_override", None)
+        call_kwargs = {"block_identifier": block_id, "state_override": state}
+        tx_params = cast(TxParams, txn.dict())
+
         try:
-            block_id = kwargs.pop("block_identifier", None)
-            state = kwargs.pop("state_override", None)
-            call_kwargs = {"block_identifier": block_id, "state_override": state}
-            tx_params = cast(TxParams, txn.dict())
             return self.web3.eth.call(tx_params, **call_kwargs)
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err

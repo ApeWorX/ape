@@ -212,7 +212,7 @@ class Ethereum(EcosystemAPI):
                     stateMutability="view",
                     outputs=[ABIType(type="address")],
                 )
-                target = ContractCall(abi, target)()
+                target = ContractCall(abi, target)(skip_trace=True)
 
             return ProxyInfo(type=type, target=target)
 

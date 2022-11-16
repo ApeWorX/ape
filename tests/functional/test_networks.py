@@ -23,7 +23,7 @@ def get_provider_with_unused_chain_id(networks_connected_to_tester):
         new_provider = networks.provider.copy()
         new_provider.cached_chain_id = chain_id_factory()
         context = networks.parse_network_choice("ethereum:local:test")
-        context.provider = new_provider
+        context._provider = new_provider
         return context
 
     return fn
