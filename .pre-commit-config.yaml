@@ -15,7 +15,7 @@ repos:
       - id: black
         name: black
 
--   repo: https://gitlab.com/pycqa/flake8
+-   repo: https://github.com/pycqa/flake8
     rev: 5.0.4
     hooks:
     -   id: flake8
@@ -24,7 +24,7 @@ repos:
     rev: v0.982
     hooks:
     -   id: mypy
-        additional_dependencies: [types-PyYAML, types-requests, types-pkg-resources]
+        additional_dependencies: [types-PyYAML, types-requests, types-setuptools]
 
 
 default_language_version:

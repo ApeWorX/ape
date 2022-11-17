@@ -22,7 +22,7 @@ extras_require = {
         "mypy==0.982",  # Static type analyzer
         "types-PyYAML",  # NOTE: Needed due to mypy typeshed
         "types-requests",  # NOTE: Needed due to mypy typeshed
-        "types-pkg-resources",  # NOTE: Needed due to mypy typeshed
+        "types-setuptools",  # NOTE: Needed due to mypy typeshed
         "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",
         "flake8>=5.0.4,<6",  # Style linter
