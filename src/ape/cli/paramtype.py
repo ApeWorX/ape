@@ -14,7 +14,10 @@ class Path(click.Path):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, path_type=PathLibPath, **kwargs)
+        if "path_type" not in kwargs:
+            kwargs["path_type"] = PathLibPath
+
+        super().__init__(*args, **kwargs)
 
 
 class AllFilePaths(Path):

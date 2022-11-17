@@ -214,7 +214,7 @@ def test_poll_logs_stop_block_not_in_future(
 
 def test_poll_logs(chain, vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
     size = 3
-    logs = Queue(maxsize=size)
+    logs: Queue = Queue(maxsize=size)
     poller = vyper_contract_instance.NumberChange.poll_logs(start_block=0)
     start_block = chain.blocks.height
 

@@ -283,7 +283,8 @@ def chain_that_mined_5(chain):
 
 class PollDaemonThread(threading.Thread):
     def __init__(self, name, poller, handler, stop_condition, *args, **kwargs):
-        super().__init__(*args, name=f"ape_poll_{name}", **kwargs)
+        kwargs["name"] = f"ape_poll_{name}"
+        super().__init__(*args, **kwargs)
         self._poller = poller
         self._handler = handler
         self._do_stop = stop_condition

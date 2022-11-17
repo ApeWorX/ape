@@ -3,10 +3,11 @@ import json
 import re
 from dataclasses import dataclass
 from statistics import mean, median
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union, cast
 
 from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
+from eth_typing import Hash32
 from eth_utils import humanize_hash, is_hex_address
 from ethpm_types import ContractType
 from ethpm_types.abi import MethodABI
@@ -260,7 +261,7 @@ class CallTraceParser(ManagerAccessMixin):
             except UnicodeDecodeError:
                 # Truncate bytes if very long.
                 if len(value) > 24:
-                    return humanize_hash(value)
+                    return humanize_hash(cast(Hash32, value))
 
                 hex_str = HexBytes(value).hex()
                 if is_hex_address(hex_str):
@@ -276,12 +277,10 @@ class CallTraceParser(ManagerAccessMixin):
             return f'"{value}"'
 
         elif isinstance(value, (list, tuple)):
-            decoded_values = [self.decode_value(v) for v in value]
-            return decoded_values
+            return [self.decode_value(v) for v in value]
 
         elif isinstance(value, Struct):
-            decoded_values = {k: self.decode_value(v) for k, v in value.items()}
-            return decoded_values
+            return {k: self.decode_value(v) for k, v in value.items()}
 
         return value
 

@@ -3,7 +3,7 @@ import logging
 import sys
 import traceback
 from enum import IntEnum
-from typing import IO, Optional, Union
+from typing import IO, Any, Dict, Optional, Union
 
 import click
 
@@ -68,7 +68,8 @@ class ApeColorFormatter(logging.Formatter):
         if _isatty(sys.stdout) and _isatty(sys.stderr):
             # only color log messages when sys.stdout and sys.stderr are sent to the terminal
             level = LogLevel(record.levelno)
-            styles = CLICK_STYLE_KWARGS.get(level, {})
+            default_dict: Dict[str, Any] = {}
+            styles: Dict[str, Any] = CLICK_STYLE_KWARGS.get(level, default_dict)
             record.levelname = click.style(record.levelname, **styles)
 
         return super().format(record)
@@ -98,7 +99,7 @@ class CliLogger:
         _logger = _get_logger("ape")
         self.error = _logger.error
         self.warning = _logger.warning
-        self.success = _logger.success
+        self.success = getattr(_logger, "success", _logger.info)
         self.info = _logger.info
         self.debug = _logger.debug
         self._logger = _logger

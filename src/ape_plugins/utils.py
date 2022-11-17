@@ -2,7 +2,7 @@ import subprocess
 import sys
 from typing import List, Optional
 
-from pydantic import ValidationError, root_validator
+from pydantic import root_validator
 
 from ape.__modules__ import __modules__
 from ape.logging import CliLogger
@@ -43,7 +43,7 @@ class PluginInstallRequest(BaseInterfaceModel):
     @root_validator(pre=True)
     def validate_name(cls, values):
         if "name" not in values:
-            raise ValidationError("'name' required.")
+            raise ValueError("'name' required.")
 
         name = values["name"]
         if "==" in name:

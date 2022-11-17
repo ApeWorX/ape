@@ -119,7 +119,7 @@ class LocalDependency(DependencyAPI):
             return value
 
         # If using default value, check if exists
-        local_path_value = value.get("local") or os.cwd()
+        local_path_value = value.get("local") or os.getcwd()
         local_project_path = Path(local_path_value)
         try_contracts_path = local_project_path / "contracts"
         if try_contracts_path.is_dir():

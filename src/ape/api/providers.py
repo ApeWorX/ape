@@ -192,7 +192,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_storage_at(self, address: str, slot: int) -> bytes:
+    def get_storage_at(self, address: str, slot: int) -> bytes:  # type: ignore[empty-body]
         """
         Gets the raw value of a storage slot of a contract.
 
@@ -366,7 +366,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def snapshot(self) -> SnapshotID:
+    def snapshot(self) -> SnapshotID:  # type: ignore[empty-body]
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -377,7 +377,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def revert(self, snapshot_id: SnapshotID):
+    def revert(self, snapshot_id: SnapshotID):  # type: ignore[empty-body]
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -388,7 +388,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def set_timestamp(self, new_timestamp: int):
+    def set_timestamp(self, new_timestamp: int):  # type: ignore[empty-body]
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -399,7 +399,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def mine(self, num_blocks: int = 1):
+    def mine(self, num_blocks: int = 1):  # type: ignore[empty-body]
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -410,7 +410,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def set_balance(self, address: AddressType, amount: int):
+    def set_balance(self, address: AddressType, amount: int):  # type: ignore[empty-body]
         """
         Change the balance of an account.
 
@@ -429,7 +429,9 @@ class ProviderAPI(BaseInterfaceModel):
         return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
 
     @raises_not_implemented
-    def set_code(self, address: AddressType, code: ContractCode) -> bool:
+    def set_code(  # type: ignore[empty-body]
+        self, address: AddressType, code: ContractCode
+    ) -> bool:
         """
         Change the code of a smart contract, for development purposes.
         Test providers implement this method when they support it.
@@ -440,7 +442,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def unlock_account(self, address: AddressType) -> bool:
+    def unlock_account(self, address: AddressType) -> bool:  # type: ignore[empty-body]
         """
         Ask the provider to allow an address to submit transactions without validating
         signatures. This feature is intended to be subclassed by a
@@ -458,7 +460,9 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
+    def get_transaction_trace(  # type: ignore[empty-body]
+        self, txn_hash: str
+    ) -> Iterator[TraceFrame]:
         """
         Provide a detailed description of opcodes.
 
@@ -470,7 +474,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_call_tree(self, txn_hash: str) -> CallTreeNode:
+    def get_call_tree(self, txn_hash: str) -> CallTreeNode:  # type: ignore[empty-body]
         """
         Create a tree structure of calls for a transaction.
 
@@ -1207,16 +1211,35 @@ class SubprocessProvider(ProviderAPI):
                     _timeout.check()
 
     def produce_stdout_queue(self):
-        for line in iter(self.process.stdout.readline, b""):
+        process = self.process
+        if self.stdout_queue is None or process is None:
+            return
+
+        stdout = process.stdout
+        if stdout is None:
+            return
+
+        for line in iter(stdout.readline, b""):
             self.stdout_queue.put(line)
             time.sleep(0)
 
     def produce_stderr_queue(self):
-        for line in iter(self.process.stderr.readline, b""):
+        process = self.process
+        if self.stderr_queue is None or process is None:
+            return
+
+        stderr = process.stderr
+        if stderr is None:
+            return
+
+        for line in iter(stderr.readline, b""):
             self.stderr_queue.put(line)
             time.sleep(0)
 
     def consume_stdout_queue(self):
+        if self.stdout_queue is None:
+            return
+
         for line in self.stdout_queue:
             output = line.decode("utf8").strip()
             logger.debug(output)
@@ -1228,6 +1251,9 @@ class SubprocessProvider(ProviderAPI):
             time.sleep(0)
 
     def consume_stderr_queue(self):
+        if self.stderr_queue is None:
+            return
+
         for line in self.stderr_queue:
             logger.debug(line.decode("utf8").strip())
             self._stdout_logger.debug(line)
@@ -1272,21 +1298,24 @@ class SubprocessProvider(ProviderAPI):
 
         def _try_close(warn_message):
             try:
-                self.process.send_signal(SIGINT)
+                if self.process:
+                    self.process.send_signal(SIGINT)
+
                 self._wait_for_popen(self.PROCESS_WAIT_TIMEOUT)
             except KeyboardInterrupt:
                 logger.warning(warn_message)
 
         try:
-            if self.process.poll() is None:
+            if self.process is not None and self.process.poll() is None:
                 _try_close(f"{warn_prefix}. Press Ctrl+C 1 more times to force quit")
 
-            if self.process.poll() is None:
+            if self.process is not None and self.process.poll() is None:
                 self.process.kill()
                 self._wait_for_popen(2)
 
         except KeyboardInterrupt:
-            self.process.kill()
+            if self.process is not None:
+                self.process.kill()
 
         self.process = None
 

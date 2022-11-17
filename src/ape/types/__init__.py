@@ -133,7 +133,7 @@ class LogFilter(BaseModel):
         cls,
         event: EventABI,
         search_topics: Optional[Dict[str, Any]] = None,
-        addresses: List[AddressType] = None,
+        addresses: Optional[List[AddressType]] = None,
         start_block=None,
         stop_block=None,
     ):

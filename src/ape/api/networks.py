@@ -329,7 +329,7 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def decode_primitive_value(
+    def decode_primitive_value(  # type: ignore[empty-body]
         self, value: Any, output_type: Union[str, Tuple, List]
     ) -> Union[str, HexBytes, Tuple]:
         """
@@ -481,8 +481,10 @@ class ProviderContextManager(ManagerAccessMixin):
             self._provider.connect()
 
         provider_id = self.get_provider_id(self._provider)
-        self.provider_stack.append(provider_id)
+        if provider_id is None:
+            raise ProviderNotConnectedError()
 
+        self.provider_stack.append(provider_id)
         if provider_id in self.connected_providers:
             # Using already connected instance
             if must_connect:
@@ -719,7 +721,7 @@ class NetworkAPI(BaseInterfaceModel):
     def get_provider(
         self,
         provider_name: Optional[str] = None,
-        provider_settings: dict = None,
+        provider_settings: Optional[Dict] = None,
     ):
         """
         Get a provider for the given name. If given ``None``, returns the default provider.
@@ -773,7 +775,7 @@ class NetworkAPI(BaseInterfaceModel):
     def use_provider(
         self,
         provider_name: str,
-        provider_settings: dict = None,
+        provider_settings: Optional[Dict] = None,
     ) -> ProviderContextManager:
         """
         Use and connect to a provider in a temporary context. When entering the context, it calls
@@ -797,10 +799,9 @@ class NetworkAPI(BaseInterfaceModel):
             :class:`ape.api.networks.ProviderContextManager`
         """
 
+        settings = provider_settings or {}
         return ProviderContextManager(
-            provider=self.get_provider(
-                provider_name=provider_name, provider_settings=provider_settings
-            ),
+            provider=self.get_provider(provider_name=provider_name, provider_settings=settings),
         )
 
     @property
@@ -860,7 +861,8 @@ class NetworkAPI(BaseInterfaceModel):
             :class:`~ape.api.networks.ProviderContextManager`
         """
         if self.default_provider:
-            return self.use_provider(self.default_provider, provider_settings=provider_settings)
+            settings = provider_settings or {}
+            return self.use_provider(self.default_provider, provider_settings=settings)
 
         raise NetworkError(f"No providers for network '{self.name}'.")
 

@@ -1,7 +1,7 @@
 import subprocess
 import sys
 from pathlib import Path
-from typing import Collection, List, Set, Tuple
+from typing import Collection, Dict, List, Set, Tuple
 
 import click
 
@@ -116,7 +116,7 @@ def _list(cli_ctx, display_all):
         else:
             cli_ctx.logger.error(f"'{plugin.name}' is not a plugin.")
 
-    sections = {}
+    sections: Dict[str, List[Set[str]]] = {}
     if display_all:
         sections["Installed Core Plugins"] = [installed_core_plugins]
 
@@ -125,10 +125,10 @@ def _list(cli_ctx, display_all):
         github_client.available_plugins - {p.strip() for p in installed_org_plugins.keys()}
     )
 
-    formatted_org_plugins = [f"{k}{v}" for k, v in installed_org_plugins.items()]
-    formatted_installed_third_party_plugins = [
+    formatted_org_plugins = {f"{k}{v}" for k, v in installed_org_plugins.items()}
+    formatted_installed_third_party_plugins = {
         f"{k}{v}" for k, v in installed_third_party_plugins.items()
-    ]
+    }
     # Get the list of plugin lists that are populated.
     installed_plugin_lists = [
         ls for ls in [formatted_org_plugins, formatted_installed_third_party_plugins] if ls
