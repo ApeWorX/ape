@@ -24,8 +24,7 @@ repos:
     rev: v0.982
     hooks:
     -   id: mypy
-        additional_dependencies: [types-PyYAML, types-requests, types-setuptools]
-
+        additional_dependencies: [types-PyYAML, types-requests, types-pkg-resources, types-setuptools]
 
 default_language_version:
     python: python3
