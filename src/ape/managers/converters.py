@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Tuple, Type, Union
 
 from dateutil.parser import parse  # type: ignore
-from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address
+from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address, to_hex
 from hexbytes import HexBytes
 
 from ape.api import ConverterAPI
@@ -93,6 +93,18 @@ class BytesAddressConverter(ConverterAPI):
 
     def convert(self, value: bytes) -> AddressType:
         return to_checksum_address(value)
+
+
+class IntAddressConverter(ConverterAPI):
+    """
+    A converter that converts an integer address to an ``AddressType``.
+    """
+
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, int) and is_hex_address(to_hex(value))
+
+    def convert(self, value: Any) -> AddressType:
+        return to_checksum_address(to_hex(value))
 
 
 class ListTupleConverter(ConverterAPI):
@@ -192,7 +204,12 @@ class ConversionManager(BaseManager):
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
         converters: Dict[Type, List[ConverterAPI]] = {
-            AddressType: [AddressAPIConverter(), BytesAddressConverter(), HexAddressConverter()],
+            AddressType: [
+                AddressAPIConverter(),
+                BytesAddressConverter(),
+                HexAddressConverter(),
+                IntAddressConverter(),
+            ],
             bytes: [HexConverter()],
             int: [TimestampConverter()],
             Decimal: [],
