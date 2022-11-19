@@ -1,23 +1,44 @@
 import os
-import re
 import shutil
+import subprocess
 import tempfile
 import zipfile
 from io import BytesIO
 from pathlib import Path
 from typing import Dict, Optional, Set
 
-import pygit2  # type: ignore
 from github import Github, UnknownObjectException
 from github.GitRelease import GitRelease
 from github.Organization import Organization
 from github.Repository import Repository as GithubRepository
-from pygit2 import Repository as GitRepository
-from tqdm.auto import tqdm  # type: ignore
 
 from ape.exceptions import CompilerError, ProjectError
 from ape.logging import logger
 from ape.utils.misc import USER_AGENT, cached_property, stream_response
+
+
+class GitProcessWrapper:
+    @cached_property
+    def git(self) -> str:
+        git_cmd_path = shutil.which("git")
+        if not git_cmd_path:
+            raise ProjectError("`git` not installed.")
+
+        return git_cmd_path
+
+    def clone(self, url: str, target_path: Optional[Path] = None, branch: Optional[str] = None):
+        command = [self.git, "clone", url]
+
+        if target_path:
+            command.append(str(target_path))
+
+        if branch is not None:
+            command.extend(("--branch", branch))
+
+        logger.debug(f"Running git command: '{' '.join(command)}'")
+        result = subprocess.call(command)
+        if result != 0:
+            raise ProjectError(f"`git clone` command failed for '{url}'.")
 
 
 class GithubClient:
@@ -27,6 +48,7 @@ class GithubClient:
 
     TOKEN_KEY = "GITHUB_ACCESS_TOKEN"
     _repo_cache: Dict[str, GithubRepository] = {}
+    git: GitProcessWrapper = GitProcessWrapper()
 
     def __init__(self):
         token = os.environ[self.TOKEN_KEY] if self.TOKEN_KEY in os.environ else None
@@ -115,8 +137,12 @@ class GithubClient:
             return self._repo_cache[repo_path]
 
     def clone_repo(
-        self, repo_path: str, target_path: Path, branch: Optional[str] = None
-    ) -> GitRepository:
+        self,
+        repo_path: str,
+        target_path: Path,
+        branch: Optional[str] = None,
+        scheme: str = "ssh",
+    ):
         """
         Clone a repository from Github.
 
@@ -125,19 +151,22 @@ class GithubClient:
               e.g. ``OpenZeppelin/openzeppelin-contracts``.
             target_path (Path): The local path to store the repo.
             branch (Optional[str]): The branch to clone. Defaults to the default branch.
-
-        Returns:
-            pygit2.repository.Repository
+            scheme (str): The git scheme to use when cloning. Defaults to `ssh`.
         """
 
         repo = self.get_repo(repo_path)
         branch = branch or repo.default_branch
         logger.info(f"Cloning branch '{branch}' from '{repo.name}'.")
-        url = repo.git_url.replace("git://", "https://")
-        clone = pygit2.clone_repository(
-            url, str(target_path), checkout_branch=branch, callbacks=GitRemoteCallbacks()
-        )
-        return clone
+        url = repo.git_url
+
+        if "ssh" in scheme or "git" in scheme:
+            url = url.replace("git://github.com/", "git@github.com:")
+        elif "http" in scheme:
+            url = url.replace("git://", "https://")
+        else:
+            raise ValueError(f"Scheme '{scheme}' not supported.")
+
+        self.git.clone(url, branch=branch, target_path=target_path)
 
     def download_package(self, repo_path: str, version: str, target_path: Path):
         """
@@ -171,48 +200,6 @@ class GithubClient:
             package_path = temp_path / downloaded_packages[0]
             for source_file in package_path.iterdir():
                 shutil.move(str(source_file), str(target_path))
-
-
-class GitRemoteCallbacks(pygit2.RemoteCallbacks):
-    percentage_pattern = re.compile(r"\d{1,3}% \(\d*/\d*\)(, done)?")  # e.g. '75% (324/432)'
-    total_objects: int = 0
-    current_objects_cloned: int = 0
-    _progress_bar = None
-
-    def sideband_progress(self, string: str):
-        # Parse a line like 'Compressing objects:   0% (1/432)'
-        string = string.lower()
-        expected_prefix = "compressing objects:"
-        if expected_prefix not in string:
-            return
-
-        progress_str = string.split(expected_prefix)[-1].strip()
-
-        if not self.percentage_pattern.match(progress_str):
-            return None
-
-        progress_parts = progress_str.split(" ")[:2]
-        fraction_str = progress_parts[1].lstrip("(").rstrip("),.")
-        fraction = fraction_str.split("/")
-        if not fraction:
-            return
-
-        total_objects = fraction[1]
-        if not str(total_objects).isnumeric():
-            return
-
-        GitRemoteCallbacks.total_objects = int(total_objects)
-        previous_value = GitRemoteCallbacks.current_objects_cloned
-        new_value = int(fraction[0])
-        GitRemoteCallbacks.current_objects_cloned = new_value
-
-        if GitRemoteCallbacks.total_objects and not GitRemoteCallbacks._progress_bar:
-            GitRemoteCallbacks._progress_bar = tqdm(range(GitRemoteCallbacks.total_objects))
-
-        difference = new_value - previous_value
-        if difference > 0:
-            GitRemoteCallbacks._progress_bar.update(difference)  # type: ignore
-            GitRemoteCallbacks._progress_bar.refresh()  # type: ignore
 
 
 github_client = GithubClient()
