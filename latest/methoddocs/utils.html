@@ -248,7 +248,7 @@ accounts using the <a class="reference internal" href="managers.html#ape.manager
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.utils.GithubClient.clone_repo">
-<span class="sig-name descname"><span class="pre">clone_repo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pygit2.repository.Repository</span></span></span><a class="headerlink" href="#ape.utils.GithubClient.clone_repo" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clone_repo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheme</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ssh'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.GithubClient.clone_repo" title="Permalink to this definition"></a></dt>
 <dd><p>Clone a repository from Github.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -257,10 +257,8 @@ accounts using the <a class="reference internal" href="managers.html#ape.manager
 e.g. <code class="docutils literal notranslate"><span class="pre">OpenZeppelin/openzeppelin-contracts</span></code>.</p></li>
 <li><p><strong>target_path</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The local path to store the repo.</p></li>
 <li><p><strong>branch</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The branch to clone. Defaults to the default branch.</p></li>
+<li><p><strong>scheme</strong> (<em>str</em>) – The git scheme to use when cloning. Defaults to <cite>ssh</cite>.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>pygit2.repository.Repository</p>
 </dd>
 </dl>
 </dd></dl>
