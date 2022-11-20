@@ -2,9 +2,9 @@ from typing import List
 from unittest.mock import MagicMock
 
 import pytest
-from ethpm_types import ContractInstance
 from evm_trace import TraceFrame
 
+from ape.contracts.base import ContractInstance
 from ape.pytest.contextmanagers import RevertsContextManager as reverts
 
 
@@ -15,8 +15,11 @@ def make_mock_trace(contract: ContractInstance, expected_dev_message: str) -> Li
 
     Only the ``TraceFrame.pc`` value will be used by RevertsContextManager.
     """
+    if contract.contract_type.pcmap is None:
+        raise AssertionError("Contract is missing pcmap")
+
     pcmap = contract.contract_type.pcmap.parse()
-    dev_messages = contract.contract_type.dev_messages
+    dev_messages = contract.contract_type.dev_messages or {}
 
     expected_line = None
     for line, message in dev_messages.items():
@@ -39,7 +42,7 @@ def make_mock_trace(contract: ContractInstance, expected_dev_message: str) -> Li
                     )
                 ]
 
-    raise AssertionError("")
+    raise AssertionError("Could not resolve PC location for expected dev message")
 
 
 @pytest.fixture(scope="function")
