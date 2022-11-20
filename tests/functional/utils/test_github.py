@@ -4,7 +4,7 @@ import pytest
 from github import UnknownObjectException
 from requests.exceptions import ConnectTimeout
 
-from ape.utils.github import GithubClient, GitRemoteCallbacks
+from ape.utils.github import GithubClient
 
 REPO_PATH = "test/path"
 
@@ -47,25 +47,21 @@ class TestGithubClient:
     def test_clone_repo(self, mocker):
         # NOTE: this test actually clones the repo.
         client = GithubClient()
-        git_patch = mocker.patch("ape.utils.github.pygit2.clone_repository")
+        git_patch = mocker.patch("ape.utils.github.subprocess.call")
+        git_patch.return_value = 0
         with tempfile.TemporaryDirectory() as temp_dir:
             try:
                 client.clone_repo("dapphub/ds-test", temp_dir, branch="master")
             except ConnectTimeout:
-                pytest.skip("Internet required to run this test.")
+                pytest.xfail("Internet required to run this test.")
 
-        call_args = git_patch.call_args[0]
-        call_kwargs = git_patch.call_args[1]
-        assert call_args[0] == "https://github.com/dapphub/ds-test.git"
-        assert call_args[1]
-        assert call_kwargs["checkout_branch"] == "master"
-
-        # Test callbacks
-        callbacks = call_kwargs["callbacks"]
-        progress_str = "remote: Compressing objects: 95% (62/65)."
-        callbacks.sideband_progress(progress_str)
-        assert GitRemoteCallbacks.total_objects == 65
-        assert GitRemoteCallbacks.current_objects_cloned == 62
+        cmd = git_patch.call_args[0][0]
+        assert cmd[0].endswith("git")
+        assert cmd[1] == "clone"
+        assert cmd[2] == "git@github.com:dapphub/ds-test.git"
+        # cmd[3] is the temporary output path
+        assert cmd[4] == "--branch"
+        assert cmd[5] == "master"
 
     def test_get_release(self, github_client_with_mocks, mock_repo):
         github_client_with_mocks.get_release(REPO_PATH, "0.1.0")

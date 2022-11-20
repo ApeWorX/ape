@@ -206,6 +206,11 @@ def test_account_as_address_input(contract_instance, sender):
     assert contract_instance.theAddress() == sender
 
 
+def test_int_as_address_input(contract_instance, sender):
+    contract_instance.setAddress(int(sender.address, 16), sender=sender)
+    assert contract_instance.theAddress() == sender
+
+
 def test_vyper_struct_arrays(vyper_contract_instance, sender):
     # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
     actual_dynamic = vyper_contract_instance.getDynamicStructArray()

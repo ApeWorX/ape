@@ -91,7 +91,6 @@ setup(
         "pandas>=1.3.0,<2",
         "pluggy>=1.0.0,<2",
         "pydantic>=1.9.2,<2",
-        "pygit2>=1.7.2,<2",
         "PyGithub>=1.54,<2",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
