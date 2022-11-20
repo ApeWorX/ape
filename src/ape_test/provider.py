@@ -136,7 +136,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except (ValidationError, TransactionFailed) as err:
-            raise self.get_virtual_machine_error(err, sender=txn.sender) from err
+            vm_err = self.get_virtual_machine_error(err, sender=txn.sender)
+            vm_err.txn = txn
+            raise vm_err from err
 
         receipt = self.get_receipt(
             txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
@@ -151,7 +153,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             try:
                 self.web3.eth.call(txn_params)
             except (ValidationError, TransactionFailed) as err:
-                raise self.get_virtual_machine_error(err, sender=txn.sender) from err
+                vm_err = self.get_virtual_machine_error(err, sender=txn.sender)
+                vm_err.txn = txn
+                raise vm_err from err
 
         self.chain_manager.account_history.append(receipt)
         return receipt

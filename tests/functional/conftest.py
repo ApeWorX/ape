@@ -30,6 +30,7 @@ ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
 ALIAS_2 = "__FUNCTIONAL_TESTS_ALIAS_2__"
 RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity_contract")
 RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper_contract")
+RAW_REVERTS_CONTRACT_TYPE = _get_raw_contract("reverts_contract")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
@@ -162,6 +163,30 @@ def vyper_contract_instance(
     owner, vyper_contract_container, networks_connected_to_tester
 ) -> ContractInstance:
     return owner.deploy(vyper_contract_container, required_confirmations=0)
+
+
+@pytest.fixture
+def reverts_contract_type() -> ContractType:
+    result = ContractType.parse_raw(RAW_REVERTS_CONTRACT_TYPE)
+    result.dev_messages = {
+        6: "dev: one",
+        7: "dev: error",
+        9: "dev: such modifiable, wow",
+        12: "dev: great job",
+    }
+    return result
+
+
+@pytest.fixture
+def reverts_contract_container(reverts_contract_type) -> ContractContainer:
+    return ContractContainer(contract_type=reverts_contract_type)
+
+
+@pytest.fixture
+def reverts_contract_instance(
+    owner, reverts_contract_container, networks_connected_to_tester
+) -> ContractInstance:
+    return owner.deploy(reverts_contract_container, required_confirmations=0)
 
 
 @pytest.fixture(params=("solidity", "vyper"))
