@@ -86,17 +86,28 @@ def generate(cli_ctx, alias):
 
 
 # Different name because `import` is a keyword
-@cli.command(name="import", short_help="Add a new keyfile account by entering a private key")
+@cli.command(name="import", short_help="Add a new keyfile account by entering a private key or seed phrase")
+@click.option("--mnemonic", "import_from_mnemonic", help="Import a key from a mnemonic", is_flag=True)
 @non_existing_alias_argument()
 @ape_cli_context()
-def _import(cli_ctx, alias):
+def _import(cli_ctx, alias, import_from_mnemonic):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
-    key = click.prompt("Enter Private Key", hide_input=True)
-    try:
-        account = EthAccount.from_key(to_bytes(hexstr=key))
-    except Exception as error:
-        cli_ctx.abort(f"Key can't be imported: {error}")
-        return
+    if import_from_mnemonic:
+        key = click.prompt("Enter Mnemonic Seed Phrase", hide_input=True)
+        EthAccount.enable_unaudited_hdwallet_features()
+        try:
+            account = EthAccount.from_mnemonic(key)
+        except Exception as error:
+            pass
+            cli_ctx.abort(f"Seed phrase can't be imported: {error}")
+            return
+    else:
+        key = click.prompt("Enter Private Key", hide_input=True)
+        try:
+            account = EthAccount.from_key(to_bytes(hexstr=key))
+        except Exception as error:
+            cli_ctx.abort(f"Key can't be imported: {error}")
+            return
 
     passphrase = click.prompt(
         "Create Passphrase",
