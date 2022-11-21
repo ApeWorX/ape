@@ -197,7 +197,7 @@ ape test --network ethereum:local:geth
 
 Each testing plugin should work the same way. You will have access to the same test accounts.
 
-Another option for testing providers is the [ape-hardhat plugin](https://github.com/ApeWorX/ape-hardhat), which does not come with `ape` but can be installed by including it in the `plugins` list in your `ape-config.yaml` file or manually installing it using the command:
+Another option for testing providers is the [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) plugin, which does not come with `ape` but can be installed by including it in the `plugins` list in your `ape-config.yaml` file or manually installing it using the command:
 
 ```bash
 ape plugins install hardhat
@@ -223,6 +223,101 @@ def test_account_balance(project, owner, receiver, nft):
     actual = project.balanceOf(receiver)
     expect = quantity
     assert actual == expect
+```
+
+## Testing Transaction Failures
+
+Similar to `pytest.raises()`, you can use `ape.reverts()` to assert that contract transactions fail and revert.
+
+From our earlier example we can see this in action:
+
+```python
+def test_authorization(my_contract, owner, not_owner):
+    my_contract.set_owner(sender=owner)
+    assert owner == my_contract.owner()
+
+    with ape.reverts("!authorized"):
+        my_contract.authorized_method(sender=not_owner)
+```
+
+`reverts()` takes two optional parameters:
+
+### `expected_message`
+
+This is the expected revert reason given when the transaction fails.
+If the message in the `ContractLogicError` raised by the transaction failure is empty or does not match the `expected_message`, then `ape.reverts()` will raise an `AssertionError`.
+
+### `dev_message`
+
+This is the expected dev message corresponding to the line in the contract's source code where the error occurred.
+These can be helpful in optimizing for gas usage and keeping revert reason strings shorter.
+
+Dev messages take the form of a comment in Vyper, and should be placed on the line that may cause a transaction revert:
+
+```python
+assert x != 0  # dev: invalid value
+```
+
+Take for example:
+
+```python
+# @version 0.3.7
+
+@external
+def check_value(_value: uint256) -> bool:
+    assert _value != 0  # dev: invalid value
+    return True
+```
+
+We can explicitly cause a transaction revert and check the failed line by supplying an expected `dev_message`:
+
+```python
+def test_authorization(my_contract, owner):
+    with ape.reverts(dev_message="dev: invalid value"):
+        my_contract.check_value(sender=owner)
+```
+
+When the transaction reverts and `ContractLogicError` is raised, `ape.reverts()` will check the source contract to see if the failed line contains a message.
+
+There are a few scenarios where `AssertionError` will be raised when using `dev_message`:
+- If the line in the source contract has a different dev message or no dev message
+- If the contract source cannot be obtained
+- If the transaction trace cannot be obtained
+
+Because `dev_message` relies on transaction tracing to function, you must use a provider like [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) when testing with `dev_message`.
+
+### Caveats
+
+#### Language Support
+
+As of `ape` version `0.5.6`, `dev_messages` assertions are available for contracts compiled with [ape-vyper](https://github.com/ApeWorX/ape-vyper), but not for those compiled with [ape-solidity](https://github.com/ApeWorX/ape-solidity) or [ape-cairo](https://github.com/ApeWorX/ape-cairo).
+
+#### Inlining
+
+Due to function inlining, the position of the `# dev: ...` message may sometimes be one line higher than expected:
+
+```python
+@external
+def foo(_x: decimal) -> decimal:  # dev: correct location
+    return sqrt(_x)  # dev: incorrect location
+```
+
+This typically only applies when trying to add dev messages to statements containing built-in function calls.
+
+#### Non-reentrant Functions
+
+Similarly, if you require dev assertions for non-reentrant functions you must be sure to leave the comment on the function that should not have reentry:
+
+```python
+@internal
+@nonreentrant('lock')
+def _foo_internal():  # dev: correct location
+    pass
+
+@external
+@nonreentrant('lock')
+def foo():
+    self._foo_internal()  # dev: incorrect location
 ```
 
 ## Multi-chain Testing
