@@ -97,10 +97,10 @@ def generate(cli_ctx, alias):
 def _import(cli_ctx, alias, import_from_mnemonic):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
     if import_from_mnemonic:
-        key = click.prompt("Enter Mnemonic Seed Phrase", hide_input=True)
+        mnemonic = click.prompt("Enter Mnemonic Seed Phrase", hide_input=True)
         EthAccount.enable_unaudited_hdwallet_features()
         try:
-            account = EthAccount.from_mnemonic(key)
+            account = EthAccount.from_mnemonic(mnemonic)
         except Exception as error:
             cli_ctx.abort(f"Seed phrase can't be imported: {error}")
             return
