@@ -101,7 +101,8 @@ def test_import_invalid_mnemonic(ape_cli, runner, temp_account_mnemonic, temp_ke
     assert result.exit_code == 1, result.output
     assert_failure(
         result,
-        f"Seed phrase can't be imported: Provided words: '{INVALID_MNEMONIC}', are not a valid BIP39 mnemonic phrase!",
+        f"Seed phrase can't be imported: Provided words: '{INVALID_MNEMONIC}'" + 
+        ", are not a valid BIP39 mnemonic phrase!",
     )
 
 
