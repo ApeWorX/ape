@@ -72,7 +72,7 @@ def test_import_invalid_private_key(ape_cli, runner):
 
 
 @run_once
-def test_import_alias_already_in_use(ape_cli, runner, temp_account):
+def test_import_alias_already_in_use(ape_cli, runner):
     def invoke_import():
         return runner.invoke(
             ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT_PRIVKEY
@@ -85,7 +85,7 @@ def test_import_alias_already_in_use(ape_cli, runner, temp_account):
 
 
 @run_once
-def test_import_account_instantiation_failure(mocker, ape_cli, runner, temp_account):
+def test_import_account_instantiation_failure(mocker, ape_cli, runner):
     eth_account_from_key_patch = mocker.patch("ape_accounts._cli.EthAccount.from_key")
     eth_account_from_key_patch.side_effect = Exception("Can't instantiate this account!")
     result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT_PRIVKEY)
@@ -129,7 +129,7 @@ def test_generate(ape_cli, runner, temp_keyfile_path):
 
 
 @run_once
-def test_generate_alias_already_in_use(ape_cli, runner, temp_account):
+def test_generate_alias_already_in_use(ape_cli, runner):
     def invoke_generate():
         return runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
 
