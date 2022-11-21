@@ -8,7 +8,9 @@ from tests.integration.cli.utils import assert_failure, run_once
 ALIAS = "test"
 PASSWORD = "a"
 PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
-IMPORT_VALID_INPUT = "\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD])
+MNEMONIC = "test test test test test test test test test test test junk"
+IMPORT_VALID_INPUT_MNEMONIC = "\n".join([f"{MNEMONIC}", PASSWORD, PASSWORD])
+IMPORT_VALID_INPUT_PRIVKEY = "\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD])
 GENERATE_VALID_INPUT = "\n".join(["random entropy", PASSWORD, PASSWORD])
 
 
@@ -38,11 +40,17 @@ def temp_account():
     return Account.from_key(bytes.fromhex(PRIVATE_KEY))
 
 
+@pytest.fixture()
+def temp_account_mnemonic():
+    Account.enable_unaudited_hdwallet_features()
+    return Account.from_mnemonic(MNEMONIC)
+
+
 @run_once
 def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
     # Add account from private keys
-    result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
+    result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT_PRIVKEY)
     assert result.exit_code == 0, result.output
     assert temp_account.address in result.output
     assert ALIAS in result.output
@@ -50,9 +58,23 @@ def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
 
 
 @run_once
+def test_import_mnemonic(ape_cli, runner, temp_account_mnemonic, temp_keyfile_path):
+    # Add account from mnemonic
+    result = runner.invoke(
+        ape_cli, ["accounts", "import", "--mnemonic", ALIAS], input=IMPORT_VALID_INPUT_MNEMONIC
+    )
+    assert result.exit_code == 0, result.output
+    assert temp_account_mnemonic.address in result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
 def test_import_alias_already_in_use(ape_cli, runner, temp_account):
     def invoke_import():
-        return runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
+        return runner.invoke(
+            ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT_PRIVKEY
+        )
 
     result = invoke_import()
     assert result.exit_code == 0, result.output
@@ -64,7 +86,7 @@ def test_import_alias_already_in_use(ape_cli, runner, temp_account):
 def test_import_account_instantiation_failure(mocker, ape_cli, runner, temp_account):
     eth_account_from_key_patch = mocker.patch("ape_accounts._cli.EthAccount.from_key")
     eth_account_from_key_patch.side_effect = Exception("Can't instantiate this account!")
-    result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
+    result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT_PRIVKEY)
     assert_failure(result, "Key can't be imported: Can't instantiate this account!")
 
 
