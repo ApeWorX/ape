@@ -2,6 +2,7 @@ import json
 
 import pytest
 from eth_account import Account
+from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 
 from tests.integration.cli.utils import assert_failure, run_once
 
@@ -16,6 +17,8 @@ IMPORT_INVALID_INPUT_MNEMONIC = "\n".join([f"{INVALID_MNEMONIC}", "", PASSWORD, 
 IMPORT_VALID_INPUT_PRIVKEY = "\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD])
 IMPORT_INVALID_INPUT_PRIVKEY = "\n".join([f"0x{INVALID_PRIVATE_KEY}", PASSWORD, PASSWORD])
 GENERATE_VALID_INPUT = "\n".join(["random entropy", PASSWORD, PASSWORD])
+CUSTOM_HDPATH = "m/44'/61'/0'/0/0"
+IMPORT_VALID_INPUT_MNEMONIC_CUSTOM_HDPATH = "\n".join([f"{MNEMONIC}", CUSTOM_HDPATH, PASSWORD, PASSWORD])
 
 
 @pytest.fixture(autouse=True)
@@ -45,9 +48,15 @@ def temp_account():
 
 
 @pytest.fixture()
-def temp_account_mnemonic():
+def temp_account_mnemonic_default_hdpath():
     Account.enable_unaudited_hdwallet_features()
-    return Account.from_mnemonic(MNEMONIC)
+    return Account.from_mnemonic(MNEMONIC, account_path=ETHEREUM_DEFAULT_PATH)
+
+
+@pytest.fixture()
+def temp_account_mnemonic_custom_hdpath():
+    Account.enable_unaudited_hdwallet_features()
+    return Account.from_mnemonic(MNEMONIC, account_path=CUSTOM_HDPATH)
 
 
 @run_once
@@ -93,13 +102,25 @@ def test_import_account_instantiation_failure(mocker, ape_cli, runner):
 
 
 @run_once
-def test_import_mnemonic(ape_cli, runner, temp_account_mnemonic, temp_keyfile_path):
+def test_import_mnemonic_default_hdpath(ape_cli, runner, temp_account_mnemonic_default_hdpath, temp_keyfile_path):
     # Add account from mnemonic
     result = runner.invoke(
         ape_cli, ["accounts", "import", "--mnemonic", ALIAS], input=IMPORT_VALID_INPUT_MNEMONIC
     )
     assert result.exit_code == 0, result.output
-    assert temp_account_mnemonic.address in result.output
+    assert temp_account_mnemonic_default_hdpath.address in result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_import_mnemonic_custom_hdpath(ape_cli, runner, temp_account_mnemonic_custom_hdpath, temp_keyfile_path):
+    # Add account from mnemonic
+    result = runner.invoke(
+        ape_cli, ["accounts", "import", "--mnemonic", ALIAS], input=IMPORT_VALID_INPUT_MNEMONIC_CUSTOM_HDPATH
+    )
+    assert result.exit_code == 0, result.output
+    assert temp_account_mnemonic_custom_hdpath.address in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
 
