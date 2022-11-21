@@ -12,15 +12,8 @@ PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
 INVALID_PRIVATE_KEY = "hello"
 MNEMONIC = "test test test test test test test test test test test junk"
 INVALID_MNEMONIC = "test test"
-IMPORT_VALID_INPUT_MNEMONIC = "\n".join([f"{MNEMONIC}", "", PASSWORD, PASSWORD])
-IMPORT_INVALID_INPUT_MNEMONIC = "\n".join([f"{INVALID_MNEMONIC}", "", PASSWORD, PASSWORD])
-IMPORT_VALID_INPUT_PRIVKEY = "\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD])
-IMPORT_INVALID_INPUT_PRIVKEY = "\n".join([f"0x{INVALID_PRIVATE_KEY}", PASSWORD, PASSWORD])
 GENERATE_VALID_INPUT = "\n".join(["random entropy", PASSWORD, PASSWORD])
 CUSTOM_HDPATH = "m/44'/61'/0'/0/0"
-IMPORT_VALID_INPUT_MNEMONIC_CUSTOM_HDPATH = "\n".join(
-    [f"{MNEMONIC}", CUSTOM_HDPATH, PASSWORD, PASSWORD]
-)
 
 
 @pytest.fixture(autouse=True)
@@ -65,7 +58,11 @@ def temp_account_mnemonic_custom_hdpath():
 def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
     # Add account from private keys
-    result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT_PRIVKEY)
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "import", ALIAS],
+        input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
+    )
     assert result.exit_code == 0, result.output
     assert temp_account.address in result.output
     assert ALIAS in result.output
@@ -76,7 +73,9 @@ def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
 def test_import_invalid_private_key(ape_cli, runner):
     # Add account from invalid private keys
     result = runner.invoke(
-        ape_cli, ["accounts", "import", ALIAS], input=IMPORT_INVALID_INPUT_PRIVKEY
+        ape_cli,
+        ["accounts", "import", ALIAS],
+        input="\n".join([f"0x{INVALID_PRIVATE_KEY}", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 1, result.output
     assert_failure(result, "Key can't be imported: Non-hexadecimal digit found")
@@ -86,7 +85,9 @@ def test_import_invalid_private_key(ape_cli, runner):
 def test_import_alias_already_in_use(ape_cli, runner):
     def invoke_import():
         return runner.invoke(
-            ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT_PRIVKEY
+            ape_cli,
+            ["accounts", "import", ALIAS],
+            input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
         )
 
     result = invoke_import()
@@ -99,7 +100,11 @@ def test_import_alias_already_in_use(ape_cli, runner):
 def test_import_account_instantiation_failure(mocker, ape_cli, runner):
     eth_account_from_key_patch = mocker.patch("ape_accounts._cli.EthAccount.from_key")
     eth_account_from_key_patch.side_effect = Exception("Can't instantiate this account!")
-    result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT_PRIVKEY)
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "import", ALIAS],
+        input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
+    )
     assert_failure(result, "Key can't be imported: Can't instantiate this account!")
 
 
@@ -109,7 +114,9 @@ def test_import_mnemonic_default_hdpath(
 ):
     # Add account from mnemonic
     result = runner.invoke(
-        ape_cli, ["accounts", "import", "--mnemonic", ALIAS], input=IMPORT_VALID_INPUT_MNEMONIC
+        ape_cli, 
+        ["accounts", "import", "--mnemonic", ALIAS],
+        input="\n".join([f"{MNEMONIC}", "", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert temp_account_mnemonic_default_hdpath.address in result.output
@@ -125,7 +132,7 @@ def test_import_mnemonic_custom_hdpath(
     result = runner.invoke(
         ape_cli,
         ["accounts", "import", "--mnemonic", ALIAS],
-        input=IMPORT_VALID_INPUT_MNEMONIC_CUSTOM_HDPATH,
+        input="\n".join([f"{MNEMONIC}", CUSTOM_HDPATH, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert temp_account_mnemonic_custom_hdpath.address in result.output
@@ -137,7 +144,9 @@ def test_import_mnemonic_custom_hdpath(
 def test_import_invalid_mnemonic(ape_cli, runner):
     # Add account from invalid mnemonic
     result = runner.invoke(
-        ape_cli, ["accounts", "import", "--mnemonic", ALIAS], input=IMPORT_INVALID_INPUT_MNEMONIC
+        ape_cli,
+        ["accounts", "import", "--mnemonic", ALIAS],
+        input="\n".join([f"{INVALID_MNEMONIC}", "", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 1, result.output
     assert_failure(
