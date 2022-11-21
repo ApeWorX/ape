@@ -102,7 +102,6 @@ def _import(cli_ctx, alias, import_from_mnemonic):
         try:
             account = EthAccount.from_mnemonic(key)
         except Exception as error:
-            pass
             cli_ctx.abort(f"Seed phrase can't be imported: {error}")
             return
     else:
