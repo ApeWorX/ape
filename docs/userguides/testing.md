@@ -268,7 +268,7 @@ def check_value(_value: uint256) -> bool:
     return True
 ```
 
-We can explicitly cause a transaction revert and check that it was that assertion line that failed by supplying an expected `dev_message`:
+We can explicitly cause a transaction revert and check the failed line by supplying an expected `dev_message`:
 
 ```python
 def test_authorization(my_contract, owner):
