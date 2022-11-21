@@ -2,6 +2,7 @@ import json
 
 import click
 from eth_account import Account as EthAccount
+from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_utils import to_bytes
 
 from ape import accounts
@@ -98,9 +99,10 @@ def _import(cli_ctx, alias, import_from_mnemonic):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
     if import_from_mnemonic:
         mnemonic = click.prompt("Enter Mnemonic Seed Phrase", hide_input=True)
+        hd_path = click.prompt("Input HD Path to use", default=ETHEREUM_DEFAULT_PATH)
         EthAccount.enable_unaudited_hdwallet_features()
         try:
-            account = EthAccount.from_mnemonic(mnemonic)
+            account = EthAccount.from_mnemonic(mnemonic, account_path=hd_path)
         except Exception as error:
             cli_ctx.abort(f"Seed phrase can't be imported: {error}")
             return
