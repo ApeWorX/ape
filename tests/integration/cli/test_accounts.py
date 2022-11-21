@@ -8,11 +8,13 @@ from tests.integration.cli.utils import assert_failure, run_once
 ALIAS = "test"
 PASSWORD = "a"
 PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
+INVALID_PRIVATE_KEY = "hello"
 MNEMONIC = "test test test test test test test test test test test junk"
 INVALID_MNEMONIC = "test test"
 IMPORT_VALID_INPUT_MNEMONIC = "\n".join([f"{MNEMONIC}", PASSWORD, PASSWORD])
 IMPORT_INVALID_INPUT_MNEMONIC = "\n".join([f"{INVALID_MNEMONIC}", PASSWORD, PASSWORD])
 IMPORT_VALID_INPUT_PRIVKEY = "\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD])
+IMPORT_INVALID_INPUT_PRIVKEY = "\n".join([f"0x{INVALID_PRIVATE_KEY}", PASSWORD, PASSWORD])
 GENERATE_VALID_INPUT = "\n".join(["random entropy", PASSWORD, PASSWORD])
 
 
@@ -57,6 +59,17 @@ def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
     assert temp_account.address in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_import_invalid_private_key(ape_cli, runner, temp_account, temp_keyfile_path):
+    assert not temp_keyfile_path.is_file()
+    # Add account from private keys
+    result = runner.invoke(
+        ape_cli, ["accounts", "import", ALIAS], input=IMPORT_INVALID_INPUT_PRIVKEY
+    )
+    assert result.exit_code == 1, result.output
+    assert_failure(result, "Key can't be imported: Non-hexadecimal digit found")
 
 
 @run_once
