@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import pytest
 
@@ -85,25 +85,6 @@ def _clean(lines):
     return [x for x in [x.strip() for x in lines if x]]
 
 
-@pytest.fixture(scope="module")
-def ape_plugins_runner(subprocess_runner_cls):
-    """
-    Use subprocess runner so can manipulate site packages and see results.
-    """
-
-    class PluginSubprocessRunner(subprocess_runner_cls):
-        def __init__(self):
-            super().__init__(["plugins"])
-
-        def invoke_list(self, arguments: Optional[List] = None):
-            arguments = arguments or []
-            result = self.invoke(["list", *arguments])
-            assert result.exit_code == 0
-            return ListResult.parse_output(result.output)
-
-    return PluginSubprocessRunner()
-
-
 def plugins_xfail():
     """
     Expects failures because of GitHib rate limiting
@@ -140,12 +121,12 @@ def installed_plugin(ape_plugins_runner):
 @plugins_xfail()
 def test_list_excludes_core_plugins(ape_plugins_runner):
     result = ape_plugins_runner.invoke_list()
-    msg = "{} should not be in installed plugins".format
+    message = "{} should not be in installed plugins".format
     assert not result.core_plugins
     assert not result.available_plugins
-    assert "console" not in result.installed_plugins, msg("console")
-    assert "networks" not in result.installed_plugins, msg("networks")
-    assert "geth" not in result.installed_plugins, msg("geth")
+    assert "console" not in result.installed_plugins, message("console")
+    assert "networks" not in result.installed_plugins, message("networks")
+    assert "geth" not in result.installed_plugins, message("geth")
 
 
 @plugins_xfail()

@@ -48,14 +48,17 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     # Do not include ape internals in tracebacks unless explicitly asked
     if not config.getoption("showinternal"):
-        base_path = Path(sys.modules["ape"].__file__).parent.as_posix()
+        path_str = sys.modules["ape"].__file__
+        if path_str:
+            base_path = Path(path_str).parent.as_posix()
 
-        def is_module(v):
-            return getattr(v, "__file__", None) and v.__file__.startswith(base_path)
+            def is_module(v):
+                return getattr(v, "__file__", None) and v.__file__.startswith(base_path)
 
-        modules = [v for v in sys.modules.values() if is_module(v)]
-        for module in modules:
-            module.__tracebackhide__ = True
+            modules = [v for v in sys.modules.values() if is_module(v)]
+            for module in modules:
+                if hasattr(module, "__tracebackhide__"):
+                    setattr(module, "__tracebackhide__", True)
 
     config_wrapper = ConfigWrapper(config)
     receipt_capture = ReceiptCapture(config_wrapper)

@@ -47,7 +47,8 @@ def test_recover_signer(signer):
 
 
 def test_sign_eip712_message(signer):
-    message = Foo(signer.address).signable_message
+    foo = Foo(signer.address)  # type: ignore
+    message = foo.signable_message
     signature = signer.sign_message(message)
     assert signer.check_signature(message, signature)
 

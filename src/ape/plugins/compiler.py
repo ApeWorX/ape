@@ -13,7 +13,7 @@ class CompilerPlugin(PluginType):
     """
 
     @hookspec
-    def register_compiler(self) -> Tuple[Tuple[str], Type[CompilerAPI]]:
+    def register_compiler(self) -> Tuple[Tuple[str], Type[CompilerAPI]]:  # type: ignore[empty-body]
         """
         A hook for returning the set of file extensions the plugin handles
         and the compiler class that can be used to compile them.

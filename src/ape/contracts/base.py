@@ -314,7 +314,7 @@ class ContractEvent(ManagerAccessMixin):
         self,
         contract: "ContractInstance",
         abi: EventABI,
-        cached_logs: List[ContractLog] = None,
+        cached_logs: Optional[List[ContractLog]] = None,
     ) -> None:
         super().__init__()
         self.contract = contract

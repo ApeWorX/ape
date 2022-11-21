@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Dict
 
 import pytest
 
@@ -39,7 +39,7 @@ class ProjectSkipper:
     """
 
     def __init__(self):
-        self.projects = {n: {} for n in project_names}
+        self.projects: Dict[str, Dict] = {n: {} for n in project_names}
 
     def __iter__(self):
         return iter(self.projects)

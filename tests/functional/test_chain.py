@@ -494,7 +494,7 @@ def test_poll_blocks_stop_block_not_in_future(chain_that_mined_5):
 
 
 def test_poll_blocks(chain_that_mined_5, eth_tester_provider, owner, PollDaemon):
-    blocks = Queue(maxsize=3)
+    blocks: Queue = Queue(maxsize=3)
     poller = chain_that_mined_5.blocks.poll_blocks()
 
     with PollDaemon("blocks", poller, blocks.put, blocks.full):

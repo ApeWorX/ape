@@ -12,7 +12,7 @@ class ConversionPlugin(PluginType):
     """
 
     @hookspec
-    def converters(self) -> Iterator[Tuple[str, Type[ConverterAPI]]]:
+    def converters(self) -> Iterator[Tuple[str, Type[ConverterAPI]]]:  # type: ignore[empty-body]
         """
         A hook that returns an iterator of tuples of a string ABI type and a
         ``ConverterAPI`` subclass.

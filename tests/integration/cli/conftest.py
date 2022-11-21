@@ -10,6 +10,7 @@ import pytest
 
 from ape.managers.config import CONFIG_FILE_NAME
 
+from .test_plugins import ListResult
 from .utils import NodeId, project_names, project_skipper, projects_directory
 
 
@@ -163,11 +164,6 @@ class SubprocessResult:
 
 
 @pytest.fixture(scope="session")
-def subprocess_runner_cls():
-    return ApeSubprocessRunner
-
-
-@pytest.fixture(scope="session")
 def subprocess_runner(subprocess_runner_cls):
     return subprocess_runner_cls()
 
@@ -208,3 +204,22 @@ def switch_config(config):
         config.load(force_reload=True)
 
     return switch
+
+
+@pytest.fixture(scope="module")
+def ape_plugins_runner():
+    """
+    Use subprocess runner so can manipulate site packages and see results.
+    """
+
+    class PluginSubprocessRunner(ApeSubprocessRunner):
+        def __init__(self):
+            super().__init__(["plugins"])
+
+        def invoke_list(self, arguments: Optional[List] = None):
+            arguments = arguments or []
+            result = self.invoke(["list", *arguments])
+            assert result.exit_code == 0
+            return ListResult.parse_output(result.output)
+
+    return PluginSubprocessRunner()

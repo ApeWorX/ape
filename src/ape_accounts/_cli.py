@@ -6,12 +6,14 @@ from eth_utils import to_bytes
 
 from ape import accounts
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
-from ape_accounts import KeyfileAccount
+from ape_accounts import AccountContainer, KeyfileAccount
 
 
-def _get_container():
+def _get_container() -> AccountContainer:
     # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
-    return accounts.containers["accounts"]
+    container = accounts.containers["accounts"]
+    assert isinstance(container, AccountContainer)
+    return container
 
 
 @click.group(short_help="Manage local accounts")
@@ -32,15 +34,17 @@ def _list(cli_ctx, show_all_plugins):
 
     containers = accounts.containers if show_all_plugins else {"accounts": _get_container()}
     account_map = {n: [a for a in c.accounts] for n, c in containers.items()}
-    account_map = [pair for pair in {n: ls for n, ls in account_map.items() if len(ls) > 0}.items()]
+    account_pairs = [
+        pair for pair in {n: ls for n, ls in account_map.items() if len(ls) > 0}.items()
+    ]
 
-    if sum([len(c) for c in account_map]) == 0:
+    if sum([len(c) for c in account_pairs]) == 0:
         cli_ctx.logger.warning("No accounts found.")
         return
 
-    num_containers = len(account_map)
+    num_containers = len(account_pairs)
     for index in range(num_containers):
-        plugin_name, container = account_map[index]
+        plugin_name, container = account_pairs[index]
         num_accounts = len(container)
         header = f"Found {num_accounts} account"
         if num_accounts > 1:
@@ -110,6 +114,7 @@ def _import(cli_ctx, alias):
 @ape_cli_context()
 def change_password(cli_ctx, alias):
     account = accounts.load(alias)
+    assert isinstance(account, KeyfileAccount)
     account.change_password()
     cli_ctx.logger.success(f"Password has been changed for account '{alias}'")
 
@@ -119,5 +124,6 @@ def change_password(cli_ctx, alias):
 @ape_cli_context()
 def delete(cli_ctx, alias):
     account = accounts.load(alias)
+    assert isinstance(account, KeyfileAccount)
     account.delete()
     cli_ctx.logger.success(f"Account '{alias}' has been deleted")

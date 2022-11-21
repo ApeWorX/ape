@@ -19,10 +19,9 @@ extras_require = {
     ],
     "lint": [
         "black>=22.10.0,<23",  # auto-formatter and linter
-        "mypy==0.982",  # Static type analyzer
+        "mypy>=0.991",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
-        "types-pkg-resources",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
         "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",

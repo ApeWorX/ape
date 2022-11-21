@@ -1,4 +1,5 @@
 import tempfile
+from pathlib import Path
 
 import pytest
 from github import UnknownObjectException
@@ -51,7 +52,7 @@ class TestGithubClient:
         git_patch.return_value = 0
         with tempfile.TemporaryDirectory() as temp_dir:
             try:
-                client.clone_repo("dapphub/ds-test", temp_dir, branch="master")
+                client.clone_repo("dapphub/ds-test", Path(temp_dir), branch="master")
             except ConnectTimeout:
                 pytest.xfail("Internet required to run this test.")
 
