@@ -62,9 +62,8 @@ def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
 
 
 @run_once
-def test_import_invalid_private_key(ape_cli, runner, temp_account, temp_keyfile_path):
-    assert not temp_keyfile_path.is_file()
-    # Add account from private keys
+def test_import_invalid_private_key(ape_cli, runner):
+    # Add account from invalid private keys
     result = runner.invoke(
         ape_cli, ["accounts", "import", ALIAS], input=IMPORT_INVALID_INPUT_PRIVKEY
     )
@@ -106,8 +105,8 @@ def test_import_mnemonic(ape_cli, runner, temp_account_mnemonic, temp_keyfile_pa
 
 
 @run_once
-def test_import_invalid_mnemonic(ape_cli, runner, temp_account_mnemonic, temp_keyfile_path):
-    # Add account from mnemonic
+def test_import_invalid_mnemonic(ape_cli, runner):
+    # Add account from invalid mnemonic
     result = runner.invoke(
         ape_cli, ["accounts", "import", "--mnemonic", ALIAS], input=IMPORT_INVALID_INPUT_MNEMONIC
     )
