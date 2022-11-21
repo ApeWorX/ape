@@ -289,9 +289,7 @@ Because `dev_message` relies on transaction tracing to function, you must use a 
 
 #### Language Support
 
-As of `ape` version `0.5.6`, `dev_messages` assertions are only available with Vyper and `ape-vyper`.
-
-You must use `ape-vyper` to compile your contracts for the relevant source information to be present for `ape.reverts()`.
+As of `ape` version `0.5.6`, `dev_messages` assertions are available for contracts compiled with `ape-vyper`, but not for those compiled with `ape-solidity` or `ape-cairo`.
 
 #### Inlining
 
