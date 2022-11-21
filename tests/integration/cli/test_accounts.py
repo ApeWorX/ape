@@ -114,7 +114,7 @@ def test_import_mnemonic_default_hdpath(
 ):
     # Add account from mnemonic
     result = runner.invoke(
-        ape_cli, 
+        ape_cli,
         ["accounts", "import", "--mnemonic", ALIAS],
         input="\n".join([f"{MNEMONIC}", "", PASSWORD, PASSWORD]),
     )
