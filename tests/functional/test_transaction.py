@@ -46,6 +46,6 @@ def test_transaction_dict_excludes_none_values():
     txn.value = 1000000
     actual = txn.dict()
     assert "value" in actual
-    txn.value = None
+    txn.value = None  # type: ignore
     actual = txn.dict()
     assert "value" not in actual

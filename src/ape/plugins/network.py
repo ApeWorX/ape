@@ -12,7 +12,7 @@ class EcosystemPlugin(PluginType):
     what is required to implement an ecosystem plugin.
     """
 
-    @hookspec
+    @hookspec  # type: ignore[empty-body]
     def ecosystems(self) -> Iterator[Type[EcosystemAPI]]:
         """
         A hook that must return an iterator of :class:`ape.api.networks.EcosystemAPI`
@@ -36,7 +36,7 @@ class NetworkPlugin(PluginType):
     networks.
     """
 
-    @hookspec
+    @hookspec  # type: ignore[empty-body]
     def networks(self) -> Iterator[Tuple[str, str, Type[NetworkAPI]]]:
         """
         A hook that must return an iterator of tuples of:
@@ -65,7 +65,7 @@ class ProviderPlugin(PluginType):
     """
 
     @hookspec
-    def providers(self) -> Iterator[Tuple[str, str, Type[ProviderAPI]]]:
+    def providers(self) -> Iterator[Tuple[str, str, Type[ProviderAPI]]]:  # type: ignore[empty-body]
         """
         A hook that must return an iterator of tuples of:
 
@@ -91,7 +91,7 @@ class ExplorerPlugin(PluginType):
     """
 
     @hookspec
-    def explorers(self) -> Iterator[Tuple[str, str, Type[ExplorerAPI]]]:
+    def explorers(self) -> Iterator[Tuple[str, str, Type[ExplorerAPI]]]:  # type: ignore[empty-body]
         """
         A hook that must return an iterator of tuples of:
 

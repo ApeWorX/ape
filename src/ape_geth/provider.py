@@ -21,7 +21,7 @@ from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
 from hexbytes import HexBytes
-from pydantic import Extra, PositiveInt
+from pydantic import Extra
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
 from web3.exceptions import ExtraDataLengthError
@@ -34,9 +34,16 @@ from ape.api import PluginConfig, TestProviderAPI, TransactionAPI, UpstreamProvi
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import logger
 from ape.types import SnapshotID
-from ape.utils import generate_dev_accounts, raises_not_implemented
+from ape.utils import (
+    DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
+    DEFAULT_TEST_MNEMONIC,
+    generate_dev_accounts,
+    raises_not_implemented,
+)
 
-DEFAULT_SETTINGS = {"uri": "http://localhost:8545"}
+DEFAULT_PORT = 8545
+DEFAULT_HOSTNAME = "localhost"
+DEFAULT_SETTINGS = {"uri": f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"}
 GETH_DEV_CHAIN_ID = 1337
 
 
@@ -48,13 +55,16 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
     def __init__(
         self,
         base_directory: Path,
-        hostname: str,
-        port: int,
-        mnemonic: str,
-        number_of_accounts: PositiveInt,
+        hostname: str = DEFAULT_HOSTNAME,
+        port: int = DEFAULT_PORT,
+        mnemonic: str = DEFAULT_TEST_MNEMONIC,
+        number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
         chain_id: int = GETH_DEV_CHAIN_ID,
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
     ):
+        if not shutil.which("geth"):
+            raise GethNotInstalledError()
+
         self.data_dir = base_directory / "dev"
         self._hostname = hostname
         self._port = port
@@ -111,6 +121,24 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
             geth_kwargs,
             stdout_logfile_path=make_logs_paths("stdout"),
             stderr_logfile_path=make_logs_paths("stderr"),
+        )
+
+    @classmethod
+    def from_uri(cls, uri: str, data_folder: Path, **kwargs):
+        parsed_uri = URL(uri)
+
+        if parsed_uri.host not in ("localhost", "127.0.0.1"):
+            raise ConnectionError(f"Unable to start Geth on non-local host {parsed_uri.host}.")
+
+        port = parsed_uri.port if parsed_uri.port is not None else DEFAULT_PORT
+        mnemonic = kwargs.get("mnemonic", DEFAULT_TEST_MNEMONIC)
+        number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
+        return cls(
+            data_folder,
+            hostname=parsed_uri.host,
+            port=port,
+            mnemonic=mnemonic,
+            number_of_accounts=number_of_accounts,
         )
 
     def connect(self):
@@ -201,11 +229,11 @@ class BaseGethProvider(Web3Provider, ABC):
             client_name = self.client_version.split("/")[0]
             logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
 
-        self._web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
+        self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
         # Check for chain errors, including syncing
         try:
-            chain_id = self._web3.eth.chain_id
+            chain_id = self.web3.eth.chain_id
         except ValueError as err:
             raise ProviderError(
                 err.args[0].get("message")
@@ -225,7 +253,7 @@ class BaseGethProvider(Web3Provider, ABC):
 
         if is_likely_poa:
             try:
-                self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+                self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
             except ValueError as err:
                 if "You can't add the same un-named instance twice" in str(err):
                     # Already added
@@ -336,33 +364,16 @@ class GethDev(BaseGethProvider, TestProviderAPI):
             self._complete_connect()
 
     def _start_geth(self):
-        parsed_uri = URL(self.uri)
-
-        if parsed_uri.host not in ("localhost", "127.0.0.1"):
-            raise ConnectionError(f"Unable to start Geth on non-local host {parsed_uri.host}.")
-
-        elif not shutil.which("geth"):
-            raise GethNotInstalledError()
-
-        # Use mnemonic from test config
-        config_manager = self.network.config_manager
-        test_config = config_manager.get_config("test")
-        mnemonic = test_config["mnemonic"]
-        num_of_accounts = test_config["number_of_accounts"]
-
-        self._process = GethDevProcess(
-            self.data_folder,
-            parsed_uri.host,
-            parsed_uri.port,
-            mnemonic,
-            number_of_accounts=num_of_accounts,
-        )
-        self._process.connect()
-        if not self._web3.is_connected():
-            self._process.disconnect()
+        test_config = self.config_manager.get_config("test").dict()
+        process = GethDevProcess.from_uri(self.uri, self.data_folder, **test_config)
+        process.connect()
+        if not self.web3.is_connected():
+            process.disconnect()
             raise ConnectionError("Unable to connect to locally running geth.")
         else:
-            self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+        self._process = process
 
     def disconnect(self):
         # Must disconnect process first.
@@ -373,7 +384,7 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         super().disconnect()
 
     @raises_not_implemented
-    def snapshot(self) -> SnapshotID:
+    def snapshot(self) -> SnapshotID:  # type: ignore[empty-body]
         # TODO: Replace with impl below after
         #  https://github.com/ethereum/go-ethereum/issues/26154 resolved
         pass
@@ -382,7 +393,7 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         return self.get_block("latest").number or 0
 
     @raises_not_implemented
-    def revert(self, snapshot_id: SnapshotID):
+    def revert(self, snapshot_id: SnapshotID):  # type: ignore[empty-body]
         # TODO: Replace with impl below after
         #  https://github.com/ethereum/go-ethereum/issues/26154 resolved
         pass
@@ -409,11 +420,11 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         self._make_request("debug_setHead", [block_number_hex_str])
 
     @raises_not_implemented
-    def set_timestamp(self, new_timestamp: int):
+    def set_timestamp(self, new_timestamp: int):  # type: ignore[empty-body]
         pass
 
     @raises_not_implemented
-    def mine(self, num_blocks: int = 1):
+    def mine(self, num_blocks: int = 1):  # type: ignore[empty-body]
         pass
 
     def send_call(self, txn: TransactionAPI, **kwargs: Any) -> bytes:

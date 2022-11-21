@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import yaml
 from ethpm_types import PackageManifest
@@ -207,7 +207,7 @@ class BrownieProject(BaseProject):
     def configure(self):
         # Migrate the brownie-config.yaml file to ape-config.yaml
 
-        migrated_config_data = {}
+        migrated_config_data: Dict[str, Any] = {}
         with open(self.brownie_config_path) as brownie_config_file:
             brownie_config_data = yaml.safe_load(brownie_config_file)
 
@@ -265,7 +265,7 @@ class BrownieProject(BaseProject):
                             )
 
         if import_remapping or solidity_version:
-            migrated_solidity_config = {}
+            migrated_solidity_config: Dict[str, Any] = {}
 
             if import_remapping:
                 migrated_solidity_config["import_remapping"] = import_remapping

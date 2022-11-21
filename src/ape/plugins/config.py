@@ -14,7 +14,7 @@ class Config(PluginType):
     """
 
     @hookspec
-    def config_class(self) -> Type[PluginConfig]:
+    def config_class(self) -> Type[PluginConfig]:  # type: ignore[empty-body]
         """
         A hook that returns a :class:`~ape.api.config.PluginConfig` parser class that can be
         used to deconstruct the user config options for this plugins.

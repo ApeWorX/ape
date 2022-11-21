@@ -294,8 +294,8 @@ class SubprocessTimeoutError(SubprocessError):
         self._message = message or "Timed out waiting for process."
         self._seconds = seconds
         self._exception = exception
-        self._start_time = None
-        self._is_running = None
+        self._start_time: Optional[float] = None
+        self._is_running: Optional[bool] = None
 
     def __enter__(self):
         self.start()
@@ -351,7 +351,6 @@ class SubprocessTimeoutError(SubprocessError):
     def cancel(self):
         if self._provider:
             self._provider.stop()
-            self._provider = None
 
         self._is_running = False
 

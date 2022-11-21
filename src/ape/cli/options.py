@@ -28,7 +28,7 @@ class ApeCliContextObject(ManagerAccessMixin):
         self.config_manager.load()
 
     @staticmethod
-    def abort(msg: str, base_error: Exception = None):
+    def abort(msg: str, base_error: Optional[Exception] = None):
         """
         End execution of the current command invocation.
 
@@ -255,7 +255,7 @@ def incompatible_with(incompatible_opts):
                 found_incompatible = ", ".join(
                     [f"--{opt.replace('_', '-')}" for opt in opts if opt in incompatible_opts]
                 )
-                if self.name in opts and found_incompatible:
+                if self.name is not None and self.name in opts and found_incompatible:
                     name = self.name.replace("_", "-")
                     raise click.BadOptionUsage(
                         option_name=self.name,

@@ -350,7 +350,9 @@ class ReceiptAPI(BaseInterfaceModel):
         return output
 
     @raises_not_implemented
-    def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
+    def show_trace(  # type: ignore[empty-body]
+        self, verbose: bool = False, file: IO[str] = sys.stdout
+    ):
         """
         Display the complete sequence of contracts and methods called during
         the transaction.
@@ -361,7 +363,7 @@ class ReceiptAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def show_gas_report(self, file: IO[str] = sys.stdout):
+    def show_gas_report(self, file: IO[str] = sys.stdout):  # type: ignore[empty-body]
         """
         Display a gas report for the calls made in this transaction.
         """
