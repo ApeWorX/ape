@@ -276,7 +276,7 @@ def test_authorization(my_contract, owner):
         my_contract.check_value(sender=owner)
 ```
 
-When the transaction reverts and `ContractLogicError` is raised, `ape.reverts()` will check the source contract and see if the line that failed contains the message.
+When the transaction reverts and `ContractLogicError` is raised, `ape.reverts()` will check the source contract to see if the failed line contains a message.
 
 There are a few scenarios where `AssertionError` will be raised when using `dev_message`:
 - If the line in the source contract has a different dev message or no dev message
