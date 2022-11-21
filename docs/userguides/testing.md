@@ -250,6 +250,7 @@ If the message in the `ContractLogicError` raised by the transaction failure is 
 ### `dev_message`
 
 This is the expected dev message corresponding to the line in the contract's source code where the error occurred.
+These can be helpful in optimizing for gas usage and keeping revert reason strings shorter.
 
 Dev messages take the form of a comment in Vyper, and should be placed on the line that may cause a transaction revert:
 
