@@ -859,7 +859,7 @@ class ContractInstance(BaseAddress):
             if len(handler_options) > 1:
                 raise AttributeError(
                     f"Multiple events named '{attr_name}' in '{self.contract_type.name}'.\n"
-                    f"Use 'events_by_signature' look-up."
+                    f"Use '{self.get_event_by_signature.__name__}' look-up."
                 )
             handler = handler_options[0]
 

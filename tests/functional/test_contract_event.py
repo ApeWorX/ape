@@ -259,11 +259,12 @@ def test_contract_two_events_with_same_name(owner, chain, networks_connected_to_
     impl_container = chain.contracts.get_container(impl_contract_type)
     impl_instance = owner.deploy(impl_container)
 
-    with pytest.raises(AttributeError) as err:
+    expected_err = (
+        f"Multiple events named '{event_name}' in '{impl_contract_type.name}'.\n"
+        f"Use 'get_event_by_signature' look-up."
+    )
+    with pytest.raises(AttributeError, match=expected_err):
         _ = impl_instance.FooEvent
-
-    expected_err_prefix = f"Multiple events named '{event_name}'"
-    assert expected_err_prefix in str(err.value)
 
     expected_sig_from_impl = "FooEvent(uint256 bar, uint256 baz)"
     expected_sig_from_interface = "FooEvent(uint256 bar)"
