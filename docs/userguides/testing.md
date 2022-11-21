@@ -197,7 +197,7 @@ ape test --network ethereum:local:geth
 
 Each testing plugin should work the same way. You will have access to the same test accounts.
 
-Another option for testing providers is the [ape-hardhat plugin](https://github.com/ApeWorX/ape-hardhat), which does not come with `ape` but can be installed by including it in the `plugins` list in your `ape-config.yaml` file or manually installing it using the command:
+Another option for testing providers is the [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) plugin, which does not come with `ape` but can be installed by including it in the `plugins` list in your `ape-config.yaml` file or manually installing it using the command:
 
 ```bash
 ape plugins install hardhat
@@ -283,13 +283,13 @@ There are a few scenarios where `AssertionError` will be raised when using `dev_
 - If the contract source cannot be obtained
 - If the transaction trace cannot be obtained
 
-Because `dev_message` relies on transaction tracing to function, you must use a provider like `ape-hardhat` when testing with `dev_message`.
+Because `dev_message` relies on transaction tracing to function, you must use a provider like [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) when testing with `dev_message`.
 
 ### Caveats
 
 #### Language Support
 
-As of `ape` version `0.5.6`, `dev_messages` assertions are available for contracts compiled with `ape-vyper`, but not for those compiled with `ape-solidity` or `ape-cairo`.
+As of `ape` version `0.5.6`, `dev_messages` assertions are available for contracts compiled with [ape-vyper](https://github.com/ApeWorX/ape-vyper), but not for those compiled with [ape-solidity](https://github.com/ApeWorX/ape-solidity) or [ape-cairo](https://github.com/ApeWorX/ape-cairo).
 
 #### Inlining
 
