@@ -85,6 +85,17 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape-testing-commands">Ape testing commands</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#test-providers">Test Providers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#advanced-testing-tips">Advanced Testing Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#testing-transaction-failures">Testing Transaction Failures</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#expected-message"><code class="docutils literal notranslate"><span class="pre">expected_message</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dev-message"><code class="docutils literal notranslate"><span class="pre">dev_message</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#caveats">Caveats</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#language-support">Language Support</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#inlining">Inlining</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#non-reentrant-functions">Non-reentrant Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#multi-chain-testing">Multi-chain Testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#gas-reporting">Gas Reporting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#iterative-testing">Iterative Testing</a></li>
@@ -308,7 +319,7 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 </pre></div>
 </div>
 <p>Each testing plugin should work the same way. You will have access to the same test accounts.</p>
-<p>Another option for testing providers is the <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat plugin</a>, which does not come with <code class="docutils literal notranslate"><span class="pre">ape</span></code> but can be installed by including it in the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file or manually installing it using the command:</p>
+<p>Another option for testing providers is the <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a> plugin, which does not come with <code class="docutils literal notranslate"><span class="pre">ape</span></code> but can be installed by including it in the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file or manually installing it using the command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install hardhat
 </pre></div>
 </div>
@@ -332,6 +343,89 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
     <span class="k">assert</span> <span class="n">actual</span> <span class="o">==</span> <span class="n">expect</span>
 </pre></div>
 </div>
+</section>
+<section id="testing-transaction-failures">
+<h2>Testing Transaction Failures<a class="headerlink" href="#testing-transaction-failures" title="Permalink to this headline"></a></h2>
+<p>Similar to <code class="docutils literal notranslate"><span class="pre">pytest.raises()</span></code>, you can use <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> to assert that contract transactions fail and revert.</p>
+<p>From our earlier example we can see this in action:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
+    <span class="n">my_contract</span><span class="o">.</span><span class="n">set_owner</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">owner</span> <span class="o">==</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="s2">&quot;!authorized&quot;</span><span class="p">):</span>
+        <span class="n">my_contract</span><span class="o">.</span><span class="n">authorized_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">reverts()</span></code> takes two optional parameters:</p>
+<section id="expected-message">
+<h3><code class="docutils literal notranslate"><span class="pre">expected_message</span></code><a class="headerlink" href="#expected-message" title="Permalink to this headline"></a></h3>
+<p>This is the expected revert reason given when the transaction fails.
+If the message in the <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code> raised by the transaction failure is empty or does not match the <code class="docutils literal notranslate"><span class="pre">expected_message</span></code>, then <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> will raise an <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code>.</p>
+</section>
+<section id="dev-message">
+<h3><code class="docutils literal notranslate"><span class="pre">dev_message</span></code><a class="headerlink" href="#dev-message" title="Permalink to this headline"></a></h3>
+<p>This is the expected dev message corresponding to the line in the contract’s source code where the error occurred.
+These can be helpful in optimizing for gas usage and keeping revert reason strings shorter.</p>
+<p>Dev messages take the form of a comment in Vyper, and should be placed on the line that may cause a transaction revert:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">x</span> <span class="o">!=</span> <span class="mi">0</span>  <span class="c1"># dev: invalid value</span>
+</pre></div>
+</div>
+<p>Take for example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># @version 0.3.7</span>
+
+<span class="nd">@external</span>
+<span class="k">def</span> <span class="nf">check_value</span><span class="p">(</span><span class="n">_value</span><span class="p">:</span> <span class="n">uint256</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">_value</span> <span class="o">!=</span> <span class="mi">0</span>  <span class="c1"># dev: invalid value</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>We can explicitly cause a transaction revert and check the failed line by supplying an expected <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">dev_message</span><span class="o">=</span><span class="s2">&quot;dev: invalid value&quot;</span><span class="p">):</span>
+        <span class="n">my_contract</span><span class="o">.</span><span class="n">check_value</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When the transaction reverts and <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code> is raised, <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> will check the source contract to see if the failed line contains a message.</p>
+<p>There are a few scenarios where <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code> will be raised when using <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>:</p>
+<ul class="simple">
+<li><p>If the line in the source contract has a different dev message or no dev message</p></li>
+<li><p>If the contract source cannot be obtained</p></li>
+<li><p>If the transaction trace cannot be obtained</p></li>
+</ul>
+<p>Because <code class="docutils literal notranslate"><span class="pre">dev_message</span></code> relies on transaction tracing to function, you must use a provider like <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a> when testing with <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>.</p>
+</section>
+<section id="caveats">
+<h3>Caveats<a class="headerlink" href="#caveats" title="Permalink to this headline"></a></h3>
+<section id="language-support">
+<h4>Language Support<a class="headerlink" href="#language-support" title="Permalink to this headline"></a></h4>
+<p>As of <code class="docutils literal notranslate"><span class="pre">ape</span></code> version <code class="docutils literal notranslate"><span class="pre">0.5.6</span></code>, <code class="docutils literal notranslate"><span class="pre">dev_messages</span></code> assertions are available for contracts compiled with <a class="reference external" href="https://github.com/ApeWorX/ape-vyper">ape-vyper</a>, but not for those compiled with <a class="reference external" href="https://github.com/ApeWorX/ape-solidity">ape-solidity</a> or <a class="reference external" href="https://github.com/ApeWorX/ape-cairo">ape-cairo</a>.</p>
+</section>
+<section id="inlining">
+<h4>Inlining<a class="headerlink" href="#inlining" title="Permalink to this headline"></a></h4>
+<p>Due to function inlining, the position of the <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">dev:</span> <span class="pre">...</span></code> message may sometimes be one line higher than expected:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@external</span>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">_x</span><span class="p">:</span> <span class="n">decimal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">decimal</span><span class="p">:</span>  <span class="c1"># dev: correct location</span>
+    <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">_x</span><span class="p">)</span>  <span class="c1"># dev: incorrect location</span>
+</pre></div>
+</div>
+<p>This typically only applies when trying to add dev messages to statements containing built-in function calls.</p>
+</section>
+<section id="non-reentrant-functions">
+<h4>Non-reentrant Functions<a class="headerlink" href="#non-reentrant-functions" title="Permalink to this headline"></a></h4>
+<p>Similarly, if you require dev assertions for non-reentrant functions you must be sure to leave the comment on the function that should not have reentry:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@internal</span>
+<span class="nd">@nonreentrant</span><span class="p">(</span><span class="s1">&#39;lock&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_foo_internal</span><span class="p">():</span>  <span class="c1"># dev: correct location</span>
+    <span class="k">pass</span>
+
+<span class="nd">@external</span>
+<span class="nd">@nonreentrant</span><span class="p">(</span><span class="s1">&#39;lock&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_foo_internal</span><span class="p">()</span>  <span class="c1"># dev: incorrect location</span>
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 <section id="multi-chain-testing">
 <h2>Multi-chain Testing<a class="headerlink" href="#multi-chain-testing" title="Permalink to this headline"></a></h2>
