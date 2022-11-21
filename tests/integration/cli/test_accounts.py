@@ -9,7 +9,9 @@ ALIAS = "test"
 PASSWORD = "a"
 PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
 MNEMONIC = "test test test test test test test test test test test junk"
+INVALID_MNEMONIC = "test test"
 IMPORT_VALID_INPUT_MNEMONIC = "\n".join([f"{MNEMONIC}", PASSWORD, PASSWORD])
+IMPORT_INVALID_INPUT_MNEMONIC = "\n".join([f"{INVALID_MNEMONIC}", PASSWORD, PASSWORD])
 IMPORT_VALID_INPUT_PRIVKEY = "\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD])
 GENERATE_VALID_INPUT = "\n".join(["random entropy", PASSWORD, PASSWORD])
 
@@ -58,18 +60,6 @@ def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
 
 
 @run_once
-def test_import_mnemonic(ape_cli, runner, temp_account_mnemonic, temp_keyfile_path):
-    # Add account from mnemonic
-    result = runner.invoke(
-        ape_cli, ["accounts", "import", "--mnemonic", ALIAS], input=IMPORT_VALID_INPUT_MNEMONIC
-    )
-    assert result.exit_code == 0, result.output
-    assert temp_account_mnemonic.address in result.output
-    assert ALIAS in result.output
-    assert temp_keyfile_path.is_file()
-
-
-@run_once
 def test_import_alias_already_in_use(ape_cli, runner, temp_account):
     def invoke_import():
         return runner.invoke(
@@ -88,6 +78,31 @@ def test_import_account_instantiation_failure(mocker, ape_cli, runner, temp_acco
     eth_account_from_key_patch.side_effect = Exception("Can't instantiate this account!")
     result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT_PRIVKEY)
     assert_failure(result, "Key can't be imported: Can't instantiate this account!")
+
+
+@run_once
+def test_import_mnemonic(ape_cli, runner, temp_account_mnemonic, temp_keyfile_path):
+    # Add account from mnemonic
+    result = runner.invoke(
+        ape_cli, ["accounts", "import", "--mnemonic", ALIAS], input=IMPORT_VALID_INPUT_MNEMONIC
+    )
+    assert result.exit_code == 0, result.output
+    assert temp_account_mnemonic.address in result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_import_invalid_mnemonic(ape_cli, runner, temp_account_mnemonic, temp_keyfile_path):
+    # Add account from mnemonic
+    result = runner.invoke(
+        ape_cli, ["accounts", "import", "--mnemonic", ALIAS], input=IMPORT_INVALID_INPUT_MNEMONIC
+    )
+    assert result.exit_code == 1, result.output
+    assert_failure(
+        result,
+        f"Seed phrase can't be imported: Provided words: '{INVALID_MNEMONIC}', are not a valid BIP39 mnemonic phrase!",
+    )
 
 
 @run_once
