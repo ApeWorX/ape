@@ -254,7 +254,7 @@ This is the expected dev message corresponding to the line in the contract's sou
 Dev messages take the form of a comment in Vyper, and should be placed on the line that may cause a transaction revert:
 
 ```python
-assert x != 0 # dev: invalid value
+assert x != 0  # dev: invalid value
 ```
 
 Take for example:
@@ -264,7 +264,7 @@ Take for example:
 
 @external
 def check_value(_value: uint256) -> bool:
-    assert _value != 0 # dev: invalid value
+    assert _value != 0  # dev: invalid value
     return True
 ```
 
@@ -299,8 +299,8 @@ Due to function inlining, the position of the `# dev: ...` message may sometimes
 
 ```python
 @external
-def foo(_x: decimal) -> decimal: # dev: correct location
-    return sqrt(_x) # dev: incorrect location
+def foo(_x: decimal) -> decimal:  # dev: correct location
+    return sqrt(_x)  # dev: incorrect location
 ```
 
 This typically only applies when trying to add dev messages to statements containing built-in function calls.
@@ -312,13 +312,13 @@ Similarly, if you require dev assertions for non-reentrant functions you must be
 ```python
 @internal
 @nonreentrant('lock')
-def _foo_internal(): # dev: correct location
+def _foo_internal():  # dev: correct location
     pass
 
 @external
 @nonreentrant('lock')
 def foo():
-    self._foo_internal() # dev: incorrect location
+    self._foo_internal()  # dev: incorrect location
 ```
 
 ## Multi-chain Testing
