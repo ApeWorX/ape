@@ -66,22 +66,23 @@ ape accounts import <ALIAS>
 It will prompt you for the private key.
 If you need help exporting your private key from Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
 
-You can also import accounts from mnemonic seed by using the `--mnemonic` flag:
+You can also import accounts from mnemonic seed by using the `--use-mnemonic` flag:
 
 ```bash
-ape accounts import <ALIAS> --mnemonic
+ape accounts import <ALIAS> --use-mnemonic
 ```
 
-It will then prompt you for the mnemonic seed. If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase). 
+It will then prompt you for the [mnemonic seed](https://en.bitcoin.it/wiki/Seed_phrase). 
+If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase). 
 
 In addition, you can also use a custom HDPath by using the `--hdpath` flag:
 
 ```bash
-ape accounts import <ALIAS> --mnemonic --hdpath
+ape accounts import <ALIAS> --use-mnemonic --hdpath
 ```
 
 It will prompt you for the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) to the account you'd like to use after you input the seed phrase.
-If you don't know what HDPath to use you can use the default (Ethereum network) by just pressing enter when it asks for the mnemonic seed.
+If you don't know what HDPath to use you can use the default (Ethereum network, first account) by just pressing enter when it asks for the mnemonic seed.
 
 Then, in your scripts, you can [load](../methoddocs/managers.html#ape.managers.accounts.AccountManager.load) an account:
 
