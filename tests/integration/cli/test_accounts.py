@@ -110,6 +110,7 @@ def test_import_account_instantiation_failure(mocker, ape_cli, runner):
 def test_import_mnemonic_default_hdpath(
     ape_cli, runner, temp_account_mnemonic_default_hdpath, temp_keyfile_path
 ):
+    assert not temp_keyfile_path.is_file()
     # Add account from mnemonic with default hdpath of ETHEREUM_DEFAULT_PATH
     result = runner.invoke(
         ape_cli,
@@ -126,6 +127,7 @@ def test_import_mnemonic_default_hdpath(
 def test_import_mnemonic_custom_hdpath(
     ape_cli, runner, temp_account_mnemonic_custom_hdpath, temp_keyfile_path
 ):
+    assert not temp_keyfile_path.is_file()
     # Add account from mnemonic with custom hdpath
     result = runner.invoke(
         ape_cli,
