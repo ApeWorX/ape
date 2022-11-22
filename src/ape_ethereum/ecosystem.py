@@ -16,6 +16,7 @@ from ape.contracts.base import ContractCall
 from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, GasLimit, RawAddress, TransactionSignature
+from ape_ethereum.abi import parse_type
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -23,7 +24,6 @@ from ape.utils import (
     Struct,
     StructParser,
     is_array,
-    parse_type,
     returns_array,
 )
 from ape_ethereum.transactions import (

@@ -21,7 +21,7 @@ from rich.tree import Tree
 
 from ape.exceptions import ContractError, DecodingError
 from ape.utils import ManagerAccessMixin
-from ape.utils.abi import Struct, parse_type
+from ape_ethereum.abi import Struct, parse_type
 from ape.utils.misc import ZERO_ADDRESS
 
 if TYPE_CHECKING:

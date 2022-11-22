@@ -5,6 +5,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ._converters import WeiConversions
 from .ecosystem import NETWORKS, Ethereum, EthereumConfig
 
+from .abi  import parse_type
 
 @plugins.register(plugins.Config)
 def config_class():
