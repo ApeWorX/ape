@@ -21,8 +21,10 @@ from rich.tree import Tree
 
 from ape.exceptions import ContractError, DecodingError
 from ape.utils import ManagerAccessMixin
-from ape.utils.abi import Struct, parse_type
+from ape.utils.abi import Struct
 from ape.utils.misc import ZERO_ADDRESS
+
+from ape_ethereum.ecosystem import _parse_type
 
 if TYPE_CHECKING:
     from ape.api.networks import EcosystemAPI
@@ -223,7 +225,7 @@ class CallTraceParser(ManagerAccessMixin):
 
     def decode_calldata(self, method: MethodABI, raw_data: bytes) -> Dict:
         input_types_str = [i.canonical_type for i in method.inputs]
-        input_types = [parse_type(i.dict()) for i in method.inputs]
+        input_types = [_parse_type(i.dict()) for i in method.inputs]
 
         try:
             raw_input_values = decode(input_types_str, raw_data)

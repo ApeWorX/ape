@@ -23,7 +23,6 @@ from ape.utils import (
     Struct,
     StructParser,
     is_array,
-    parse_type,
     returns_array,
 )
 from ape_ethereum.transactions import (
@@ -323,7 +322,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types_str = [o.canonical_type for o in abi.outputs]
-        output_types = [parse_type(o.dict()) for o in abi.outputs]
+        output_types = [_parse_type(o.dict()) for o in abi.outputs]
 
         try:
             vm_return_values = decode(output_types_str, raw_data)
@@ -510,3 +509,15 @@ class Ethereum(EcosystemAPI):
                 transaction_hash=log["transactionHash"],
                 transaction_index=log["transactionIndex"],
             )
+def _parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
+    """
+    Parses ``ABIType.dict()`` into Python types.
+    Deprecated: Use :class:`~ape.api.networks.EcosystemAPI` implemented methods.
+    """
+    if "tuple" in type["type"]:
+        r = tuple([_parse_type(c) for c in type["components"]])
+        if is_array(type["type"]):
+            return [r]
+        return r
+    else:
+        return type["type"]
