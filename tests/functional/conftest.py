@@ -184,8 +184,9 @@ def reverts_contract_container(reverts_contract_type) -> ContractContainer:
 
 @pytest.fixture
 def reverts_contract_instance(
-    owner, reverts_contract_container, networks_connected_to_tester
+    owner, reverts_contract_container, networks_connected_to_tester, geth_provider
 ) -> ContractInstance:
+    _ = geth_provider  # Must use geth, as it supports traces
     return owner.deploy(reverts_contract_container, required_confirmations=0)
 
 
