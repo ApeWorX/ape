@@ -98,7 +98,7 @@ def generate(cli_ctx, alias):
 def _import(cli_ctx, alias, import_from_mnemonic):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
     if import_from_mnemonic:
-        mnemonic = click.prompt("Enter Mnemonic Seed Phrase", hide_input=True)
+        mnemonic = click.prompt("Enter mnemonic seed phrase", hide_input=True)
         hd_path = click.prompt("Input HD Path to use", default=ETHEREUM_DEFAULT_PATH)
         EthAccount.enable_unaudited_hdwallet_features()
         try:
