@@ -144,7 +144,7 @@ def test_import_invalid_mnemonic(ape_cli, runner):
     result = runner.invoke(
         ape_cli,
         ["accounts", "import", "--mnemonic", ALIAS],
-        input="\n".join([f"{INVALID_MNEMONIC}", "", PASSWORD, PASSWORD]),
+        input="\n".join([f"{INVALID_MNEMONIC}", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 1, result.output
     assert_failure(
