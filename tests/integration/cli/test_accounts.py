@@ -9,10 +9,8 @@ from tests.integration.cli.utils import assert_failure, run_once
 ALIAS = "test"
 PASSWORD = "a"
 PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
-INVALID_PRIVATE_KEY = "hello"
 MNEMONIC = "test test test test test test test test test test test junk"
 INVALID_MNEMONIC = "test test"
-GENERATE_VALID_INPUT = "\n".join(["random entropy", PASSWORD, PASSWORD])
 CUSTOM_HDPATH = "m/44'/61'/0'/0/0"
 
 
@@ -75,7 +73,7 @@ def test_import_invalid_private_key(ape_cli, runner):
     result = runner.invoke(
         ape_cli,
         ["accounts", "import", ALIAS],
-        input="\n".join([f"0x{INVALID_PRIVATE_KEY}", PASSWORD, PASSWORD]),
+        input="\n".join(["0xhello", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 1, result.output
     assert_failure(result, "Key can't be imported: Non-hexadecimal digit found")
@@ -160,7 +158,11 @@ def test_import_invalid_mnemonic(ape_cli, runner):
 def test_generate(ape_cli, runner, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
     # Generate new private key
-    result = runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "generate", ALIAS],
+        input="\n".join(["random entropy", PASSWORD, PASSWORD]),
+    )
     assert result.exit_code == 0, result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
@@ -169,7 +171,11 @@ def test_generate(ape_cli, runner, temp_keyfile_path):
 @run_once
 def test_generate_alias_already_in_use(ape_cli, runner):
     def invoke_generate():
-        return runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
+        return runner.invoke(
+            ape_cli,
+            ["accounts", "generate", ALIAS],
+            input="\n".join(["random entropy", PASSWORD, PASSWORD]),
+        )
 
     result = invoke_generate()
     assert result.exit_code == 0, result.output
