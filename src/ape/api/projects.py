@@ -57,7 +57,7 @@ class ProjectAPI(BaseInterfaceModel):
         Create a manifest from the project.
 
         Args:
-            file_paths (Optional[List]): An optional list of paths to compile
+            file_paths (Optional[List[Path]]): An optional list of paths to compile
               from this project.
             use_cache (bool): Set to ``False`` to clear caches and force a re-compile.
 

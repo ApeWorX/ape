@@ -59,7 +59,15 @@ def test_compile(ape_cli, runner, project, clean_cache):
     # First time it compiles, it compiles the files with registered compilers successfully.
     # Files with multiple extensions are currently not supported.
     all_files = [f for f in project.path.glob("contracts/**/*")]
-    expected_files = [f for f in all_files if f.name.count(".") == 1]
+
+    # Don't expect directories that may happen to have `.json` in name
+    # as well as hidden files, such as `.gitkeep`. Both examples are present
+    # in the test project!
+    expected_files = [
+        f
+        for f in all_files
+        if f.name.count(".") == 1 and f.is_file() and not f.name.startswith(".")
+    ]
     unexpected_files = [f for f in all_files if f not in expected_files]
 
     manifest = project.extract_manifest()

@@ -96,7 +96,8 @@ class CompilerManager(BaseManager):
             paths_to_compile = [
                 path
                 for path in contract_filepaths
-                if path not in paths_to_ignore
+                if path.is_file()
+                and path not in paths_to_ignore
                 and path.suffix == extension
                 and ".cache" not in [p.name for p in path.parents]
             ]
