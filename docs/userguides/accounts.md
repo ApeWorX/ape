@@ -66,7 +66,7 @@ ape accounts import <ALIAS>
 It will prompt you for the private key.
 If you need help exporting your private key from Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
 
-You can also import from mnemonic seed by using the --mnemonic flag:
+You can also import accounts from mnemonic seed by using the --mnemonic flag:
 
 ```bash
 ape accounts import --mnemonic <ALIAS>
