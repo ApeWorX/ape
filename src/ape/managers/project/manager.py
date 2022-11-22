@@ -147,7 +147,7 @@ class ProjectManager(BaseManager):
         compiler_list: List[Compiler] = []
         contracts_folder = self.config_manager.contracts_folder
         for ext, compiler in self.compiler_manager.registered_compilers.items():
-            sources = [x for x in self.source_paths if x.suffix == ext]
+            sources = [x for x in self.source_paths if x.is_file() and x.suffix == ext]
             if not sources:
                 continue
 
