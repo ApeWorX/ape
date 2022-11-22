@@ -16,7 +16,6 @@ from ape.contracts.base import ContractCall
 from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, GasLimit, RawAddress, TransactionSignature
-from ape_ethereum.abi import parse_type
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -510,6 +509,8 @@ class Ethereum(EcosystemAPI):
                 transaction_hash=log["transactionHash"],
                 transaction_index=log["transactionIndex"],
             )
+
+
 def _parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
     """
     Parses ``ABIType.dict()`` into Python types.
