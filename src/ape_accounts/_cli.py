@@ -93,16 +93,20 @@ def generate(cli_ctx, alias):
 @click.option(
     "--mnemonic", "import_from_mnemonic", help="Import a key from a mnemonic", is_flag=True
 )
+@click.option("--hdpath", "custom_hd_path", help="Input HD Path to use", is_flag=True)
 @non_existing_alias_argument()
 @ape_cli_context()
-def _import(cli_ctx, alias, import_from_mnemonic):
+def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
     if import_from_mnemonic:
         mnemonic = click.prompt("Enter mnemonic seed phrase", hide_input=True)
-        hd_path = click.prompt("Input HD Path to use", default=ETHEREUM_DEFAULT_PATH)
+        if not custom_hd_path:
+            custom_hd_path = ETHEREUM_DEFAULT_PATH
+        else:
+            custom_hd_path = click.prompt("Input HD Path to use", default=ETHEREUM_DEFAULT_PATH)
         EthAccount.enable_unaudited_hdwallet_features()
         try:
-            account = EthAccount.from_mnemonic(mnemonic, account_path=hd_path)
+            account = EthAccount.from_mnemonic(mnemonic, account_path=custom_hd_path)
         except Exception as error:
             cli_ctx.abort(f"Seed phrase can't be imported: {error}")
             return
