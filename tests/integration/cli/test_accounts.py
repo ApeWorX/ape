@@ -11,7 +11,7 @@ PASSWORD = "a"
 PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
 MNEMONIC = "test test test test test test test test test test test junk"
 INVALID_MNEMONIC = "test test"
-CUSTOM_HDPATH = "m/44'/61'/0'/0/0"
+CUSTOM_HDPATH = "m/44'/61'/0'/0/0"  # Ethereum Classic ($ETC) HDPath
 
 
 @pytest.fixture(autouse=True)
@@ -53,9 +53,9 @@ def temp_account_mnemonic_custom_hdpath():
 
 
 @run_once
-def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
+def test_import_valid_private_key(ape_cli, runner, temp_account, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
-    # Add account from private keys
+    # Add account from valid private key
     result = runner.invoke(
         ape_cli,
         ["accounts", "import", ALIAS],
@@ -69,7 +69,7 @@ def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
 
 @run_once
 def test_import_invalid_private_key(ape_cli, runner):
-    # Add account from invalid private keys
+    # Add account from invalid private key
     result = runner.invoke(
         ape_cli,
         ["accounts", "import", ALIAS],
@@ -110,7 +110,7 @@ def test_import_account_instantiation_failure(mocker, ape_cli, runner):
 def test_import_mnemonic_default_hdpath(
     ape_cli, runner, temp_account_mnemonic_default_hdpath, temp_keyfile_path
 ):
-    # Add account from mnemonic
+    # Add account from mnemonic with default hdpath of ETHEREUM_DEFAULT_PATH
     result = runner.invoke(
         ape_cli,
         ["accounts", "import", "--mnemonic", ALIAS],
@@ -126,7 +126,7 @@ def test_import_mnemonic_default_hdpath(
 def test_import_mnemonic_custom_hdpath(
     ape_cli, runner, temp_account_mnemonic_custom_hdpath, temp_keyfile_path
 ):
-    # Add account from mnemonic
+    # Add account from mnemonic with custom hdpath
     result = runner.invoke(
         ape_cli,
         ["accounts", "import", "--mnemonic", "--hdpath", ALIAS],
