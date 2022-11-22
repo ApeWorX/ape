@@ -72,7 +72,7 @@ You can also import accounts from mnemonic seed by using the `--mnemonic` flag:
 ape accounts import --mnemonic <ALIAS>
 ```
 
-It will prompt you for the [mnemonic seed](https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase). 
+It will prompt you for the mnemonic seed. If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase). 
 After this it will prompt you for the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) to the account you'd like to use with this seed phrase.
 If you don't know what HDPath to use you can use the default (Ethereum network) by just pressing enter when it asks for the mnemonic seed.
 
