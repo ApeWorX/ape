@@ -1,3 +1,4 @@
+import re
 import shutil
 
 import pytest
@@ -50,13 +51,6 @@ def test_skip_contracts(ape_cli, runner, project, switch_config):
         assert "INFO: Compiling 'subdir/tsconfig.json'." in result.output
 
 
-@skip_projects_except("bad-contracts")
-def test_no_compiler_for_extension(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["compile", "contracts/Contract.test"])
-    assert result.exit_code == 0, result.output
-    assert "WARNING: No compilers detected for the following extensions: .test" in result.output
-
-
 @skip_non_compilable_projects
 def test_compile(ape_cli, runner, project, clean_cache):
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
@@ -103,6 +97,32 @@ def test_compile_when_sources_change(ape_cli, runner, project, clean_cache):
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" not in result.output
+
+
+@skip_projects_except("multiple-interfaces")
+def test_compile_when_contract_type_collision(ape_cli, runner, project, clean_cache):
+    source_path = project.contracts_folder / "Interface.json"
+    temp_dir = project.contracts_folder / "temp"
+    source_copy = temp_dir / "Interface.json"
+    expected = (
+        r"ERROR: \(CompilerError\) ContractType collision between sources '"
+        r"([\w\/]+\.json)' and '([\w\/]+\.json)'\."
+    )
+    temp_dir.mkdir()
+    try:
+        source_copy.touch()
+        source_copy.write_text(source_path.read_text())
+        result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+        assert result.exit_code == 1
+        actual = result.output
+        search_result = re.search(expected, actual)
+        assert search_result, actual
+        groups = search_result.groups()
+        assert {groups[0], groups[1]} == {"Interface.json", "temp/Interface.json"}
+
+    finally:
+        if temp_dir.is_dir():
+            shutil.rmtree(temp_dir)
 
 
 @skip_projects_except("multiple-interfaces")
