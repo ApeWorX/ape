@@ -11,7 +11,7 @@ skip_non_compilable_projects = skip_projects(
     "no-config",
     "script",
     "only-dependencies",
-    "unregistered-contracts",
+    "bad-contracts",
     "test",
     "geth",
 )
@@ -22,7 +22,7 @@ skip_non_compilable_projects = skip_projects(
     "multiple-interfaces",
     "only-dependencies",
     "test",
-    "unregistered-contracts",
+    "bad-contracts",
     "with-dependencies",
     "with-contracts",
 )
@@ -33,16 +33,24 @@ def test_compile_missing_contracts_dir(ape_cli, runner, project):
     assert "Nothing to compile" in result.output
 
 
-@skip_projects_except("unregistered-contracts")
-def test_missing_extensions(ape_cli, runner, project):
+@skip_projects_except("bad-contracts")
+def test_skip_contracts(ape_cli, runner, project, switch_config):
     result = runner.invoke(ape_cli, ["compile", "--force"])
-    assert result.exit_code == 0, result.output
-    assert "WARNING: No compilers detected for the following extensions:" in result.output
-    assert ".test" in result.output
-    assert ".foobar" in result.output
+    assert "INFO: Compiling 'subdir/tsconfig.json'." not in result.output
+    assert "INFO: Compiling 'package.json'." not in result.output
+
+    # Simulate configuring Ape to not ignore tsconfig.json for some reason.
+    content = """
+    compiler:
+      ignore_files:
+        - "*package.json"
+    """
+    with switch_config(project, content):
+        result = runner.invoke(ape_cli, ["compile", "--force"])
+        assert "INFO: Compiling 'subdir/tsconfig.json'." in result.output
 
 
-@skip_projects_except("unregistered-contracts")
+@skip_projects_except("bad-contracts")
 def test_no_compiler_for_extension(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile", "contracts/Contract.test"])
     assert result.exit_code == 0, result.output

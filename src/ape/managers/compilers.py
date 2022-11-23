@@ -81,22 +81,32 @@ class CompilerManager(BaseManager):
         """
 
         extensions = self._get_contract_extensions(contract_filepaths)
+        contracts_folder = self.config_manager.contracts_folder
         contract_types_dict = {}
         for extension in extensions:
+            path_patterns_to_ignore = self.config_manager.compiler.ignore_files
+            ignore_path_lists = [contracts_folder.rglob(p) for p in path_patterns_to_ignore]
+            paths_to_ignore = [
+                contracts_folder / get_relative_path(p, contracts_folder)
+                for files in ignore_path_lists
+                for p in files
+            ]
 
             # Filter out in-source cache files from dependencies.
             paths_to_compile = [
                 path
                 for path in contract_filepaths
-                if path.suffix == extension and ".cache" not in [p.name for p in path.parents]
+                if path not in paths_to_ignore
+                and path.suffix == extension
+                and ".cache" not in [p.name for p in path.parents]
             ]
 
             for path in paths_to_compile:
-                source_id = get_relative_path(path, self.config_manager.contracts_folder)
+                source_id = get_relative_path(path, contracts_folder)
                 logger.info(f"Compiling '{source_id}'.")
 
             compiled_contracts = self.registered_compilers[extension].compile(
-                paths_to_compile, base_path=self.config_manager.contracts_folder
+                paths_to_compile, base_path=contracts_folder
             )
             for contract_type in compiled_contracts:
 
