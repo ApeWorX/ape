@@ -67,6 +67,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Compile</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#the-json-compiler">The JSON Compiler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#other-compiler-plugins">Other Compiler Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ignore-files">Ignore Files</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
@@ -170,6 +171,21 @@ This is useful if you are unable or unwilling to install a compiler.</p></li>
 <p>If your project includes Solidity (<code class="docutils literal notranslate"><span class="pre">.sol</span></code>) or Vyper (<code class="docutils literal notranslate"><span class="pre">.vy</span></code>) files, you will have to install additional compilers.
 To include additional compilers in your project, you can add the plugins to the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> or install them using the CLI.
 For information on how to configure plugins in your project, follow <a class="reference external" href="./installing_plugins.html">this guide</a>.</p>
+</section>
+<section id="ignore-files">
+<h2>Ignore Files<a class="headerlink" href="#ignore-files" title="Permalink to this headline"></a></h2>
+<p>You can configure files to be ignored from compilation.
+By default, Ape ignores files <code class="docutils literal notranslate"><span class="pre">package.json</span></code>, <code class="docutils literal notranslate"><span class="pre">package-lock.json</span></code>, <code class="docutils literal notranslate"><span class="pre">tsconfig.json</span></code>.
+To override this list, edit your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> similarly:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compiler</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">ignore_files</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*package.json&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*package-lock.json&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*tsconfig.json&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*custom.json&quot;</span><span class="w">  </span><span class="c1"># Append a custom ignore</span><span class="w"></span>
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: You must include the defaults in the list when overriding if you wish to retain them.</p>
 </section>
 </section>
 
