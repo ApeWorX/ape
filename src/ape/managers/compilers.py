@@ -82,7 +82,7 @@ class CompilerManager(BaseManager):
 
         extensions = self._get_contract_extensions(contract_filepaths)
         contracts_folder = self.config_manager.contracts_folder
-        contract_types_dict = {}
+        contract_types_dict: Dict[str, ContractType] = {}
         for extension in extensions:
             path_patterns_to_ignore = self.config_manager.compiler.ignore_files
             ignore_path_lists = [contracts_folder.rglob(p) for p in path_patterns_to_ignore]
@@ -109,16 +109,33 @@ class CompilerManager(BaseManager):
                 paths_to_compile, base_path=contracts_folder
             )
             for contract_type in compiled_contracts:
+                contract_name = contract_type.name
+                if not contract_name:
+                    # Compiler plugins should have let this happen, but just in case we get here,
+                    # raise a better error so the user has some indication of what happened.
+                    if contract_type.source_id:
+                        raise CompilerError(
+                            f"Contract '{contract_type.source_id}' missing name. "
+                            f"Was compiler plugin for '{extension} implemented correctly?"
+                        )
+                    else:
+                        raise CompilerError(
+                            f"Empty contract type found in compiler '{extension}'. "
+                            f"Was compiler plugin for '{extension} implemented correctly?"
+                        )
 
-                if contract_type.name in contract_types_dict:
-                    raise CompilerError(
-                        "ContractType collision across compiler plugins "
-                        f"with contract: {contract_type.source_id}"
+                if contract_name in contract_types_dict:
+                    already_added_contract_type = contract_types_dict[contract_name]
+                    error_message = (
+                        f"{ContractType.__name__} collision between sources "
+                        f"'{contract_type.source_id}' and "
+                        f"'{already_added_contract_type.source_id}'."
                     )
+                    raise CompilerError(error_message)
 
-                contract_types_dict[contract_type.name] = contract_type
+                contract_types_dict[contract_name] = contract_type
 
-        return contract_types_dict  # type: ignore
+        return contract_types_dict
 
     def get_imports(
         self, contract_filepaths: List[Path], base_path: Optional[Path] = None
