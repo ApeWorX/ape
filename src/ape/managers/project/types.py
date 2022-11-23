@@ -12,7 +12,7 @@ from ape.managers.config import CONFIG_FILE_NAME as APE_CONFIG_FILE_NAME
 from ape.utils import cached_property, get_all_files_in_directory, get_relative_path
 
 
-class ProjectSources:
+class _ProjectSources:
     # NOTE: This class is an implementation detail and excluded from the public API.
     # It helps with diff calculations between the project's cached manifest sources
     # and the current, active sources. It's used to determine what files to compile when
@@ -174,7 +174,7 @@ class BaseProject(ProjectAPI):
                     else self.source_paths
                 )
             )
-            project_sources = ProjectSources(manifest, source_paths, self.contracts_folder)
+            project_sources = _ProjectSources(manifest, source_paths, self.contracts_folder)
             contract_types = project_sources.contract_types
 
             # Set the context in case compiling a dependency (or anything outside the root project).
