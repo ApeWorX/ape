@@ -23,6 +23,11 @@ class DeploymentConfig(PluginConfig):
     contract_type: str
 
 
+class CompilerConfig(PluginConfig):
+    ignore_files: List[str] = ["*package.json", "*package-lock.json", "*tsconfig.json"]
+    """List of globular files to ignore"""
+
+
 class DeploymentConfigCollection(dict):
     def __init__(self, data: Dict, valid_ecosystems: Dict, valid_networks: List[str]):
         for ecosystem_name, networks in data.items():
@@ -89,6 +94,9 @@ class ConfigManager(BaseInterfaceModel):
     meta: PackageMeta = PackageMeta()
     """Metadata about the project."""
 
+    compiler: CompilerConfig = CompilerConfig()
+    """Global compiler information."""
+
     contracts_folder: Path = None  # type: ignore
     """
     The path to the project's ``contracts/`` directory
@@ -132,6 +140,7 @@ class ConfigManager(BaseInterfaceModel):
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
+            self.compiler = CompilerConfig.parse_obj(cache.get("compiler", {}))
             return cache
 
         # First, load top-level configs. Then, load all the plugin configs.
@@ -149,6 +158,9 @@ class ConfigManager(BaseInterfaceModel):
         self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
             "default_ecosystem", "ethereum"
         )
+        compiler_dict = user_config.pop("compiler", CompilerConfig().dict())
+        configs["compiler"] = compiler_dict
+        self.compiler = CompilerConfig(**compiler_dict)
 
         try:
             self.network_manager.set_default_ecosystem(self.default_ecosystem)
