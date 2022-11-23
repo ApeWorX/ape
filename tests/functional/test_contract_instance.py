@@ -1,7 +1,7 @@
 import re
 
 import pytest
-from eth_utils import is_checksum_address
+from eth_utils import is_checksum_address, to_hex
 from hexbytes import HexBytes
 
 from ape import Contract
@@ -58,6 +58,24 @@ def test_call_view_method(owner, contract_instance):
     contract_instance.call_view_method("setNumber", 3, sender=owner)
     # myNumber should still equal 2 because the above line is call
     assert contract_instance.myNumber() == 2
+
+
+def test_call_use_block_identifier(contract_instance, owner, chain):
+    expected = 2
+    contract_instance.setNumber(expected, sender=owner)
+    block_id = chain.blocks.height  # int
+    contract_instance.setNumber(3, sender=owner)  # latest
+    actual = contract_instance.myNumber(block_identifier=block_id)
+    assert actual == expected
+
+    # Ensure works with hex
+    block_id = to_hex(block_id)
+    actual = contract_instance.myNumber(block_identifier=block_id)
+    assert actual == expected
+
+    # Ensure works keywords like "latest"
+    actual = contract_instance.myNumber(block_identifier="latest")
+    assert actual == 3
 
 
 def test_revert(sender, contract_instance):
