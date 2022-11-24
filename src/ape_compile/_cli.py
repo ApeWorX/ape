@@ -1,4 +1,5 @@
-from typing import Dict
+from pathlib import Path
+from typing import Dict, Set
 
 import click
 from ethpm_types import ContractType
@@ -26,7 +27,7 @@ from ape.cli import ape_cli_context, contract_file_paths_argument
     help="Show deployment bytecode size for all contracts",
 )
 @ape_cli_context()
-def cli(cli_ctx, file_paths, use_cache, display_size):
+def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool):
     """
     Compiles the manifest for this project and saves the results
     back to the manifest.

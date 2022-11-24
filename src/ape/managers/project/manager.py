@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Dict, List, Optional, Type, Union
+from typing import Dict, Iterable, List, Optional, Type, Union
 
 from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
@@ -147,7 +147,7 @@ class ProjectManager(BaseManager):
         compiler_list: List[Compiler] = []
         contracts_folder = self.config_manager.contracts_folder
         for ext, compiler in self.compiler_manager.registered_compilers.items():
-            sources = [x for x in self.source_paths if x.suffix == ext]
+            sources = [x for x in self.source_paths if x.is_file() and x.suffix == ext]
             if not sources:
                 continue
 
@@ -483,7 +483,7 @@ class ProjectManager(BaseManager):
         return find_in_dir(self.contracts_folder)
 
     def load_contracts(
-        self, file_paths: Optional[Union[List[Path], Path]] = None, use_cache: bool = True
+        self, file_paths: Optional[Union[Iterable[Path], Path]] = None, use_cache: bool = True
     ) -> Dict[str, ContractType]:
         """
         Compile and get the contract types in the project.
@@ -512,8 +512,14 @@ class ProjectManager(BaseManager):
         if not use_cache and in_source_cache.is_dir():
             shutil.rmtree(str(in_source_cache))
 
-        file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
-        manifest = self._project.create_manifest(file_paths, use_cache=use_cache)
+        if isinstance(file_paths, Path):
+            file_path_list = [file_paths]
+        elif file_paths is not None:
+            file_path_list = list(file_paths)
+        else:
+            file_path_list = None
+
+        manifest = self._project.create_manifest(file_paths=file_path_list, use_cache=use_cache)
         return manifest.contract_types or {}
 
     def _load_dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
