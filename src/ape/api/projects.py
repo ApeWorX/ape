@@ -7,7 +7,7 @@ from ethpm_types.utils import compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
 
-from ape.exceptions import ProjectError
+from ape.exceptions import CompilerError, ProjectError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
@@ -106,16 +106,10 @@ class ProjectAPI(BaseInterfaceModel):
         initial_manifest: Optional[PackageManifest] = None,
     ) -> PackageManifest:
         manifest = initial_manifest or PackageManifest()
-
-        if name:
-            manifest.name = PackageName(name.lower())
-
-        if version:
-            manifest.version = version
-
+        manifest.name = PackageName(name.lower()) if name is not None else manifest.name
+        manifest.version = version or manifest.version
         manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
-
         return manifest
 
     @classmethod
@@ -200,7 +194,7 @@ class DependencyAPI(BaseInterfaceModel):
     @abstractmethod
     def extract_manifest(self) -> PackageManifest:
         """
-        Create a :class:`~ape.api.projects.ProjectAPI` implementation,
+        Create a ``PackageManifest`` definition,
         presumably by downloading and compiling the dependency.
 
         Implementations may use ``self.project_manager`` to call method
@@ -209,7 +203,7 @@ class DependencyAPI(BaseInterfaceModel):
         based on the project's structure.
 
         Returns:
-            :class:`~ape.api.projects.ProjectAPI`
+            ``PackageManifest``
         """
 
     @property
@@ -261,9 +255,19 @@ class DependencyAPI(BaseInterfaceModel):
             excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
 
         sources = [s for s in all_sources if s not in excluded_files]
-        project_manifest = project.create_manifest(file_paths=sources)
+        allow_empty = False
 
-        if not project_manifest.contract_types:
+        try:
+            project_manifest = project.create_manifest(file_paths=sources)
+        except CompilerError as err:
+            logger.warning("Depedency failed to compile. Contract types can still be imported.")
+            logger.debug(f"Compiler error: '{err}'")
+            project_manifest = project._create_manifest(
+                sources, project.contracts_folder, {}, name=project.name, version=project.version
+            )
+            allow_empty = True
+
+        if not allow_empty and not project_manifest.contract_types:
             raise ProjectError(
                 f"No contract types found in dependency '{self.name}'. "
                 "Do you have the correct compilers installed?"
@@ -281,7 +285,7 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
         return None
 
     try:
-        return PackageManifest.parse_raw(file_path.read_text())
+        return PackageManifest.parse_file(file_path)
     except ValidationError as err:
         logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
         logger.debug(str(err))
