@@ -7,7 +7,6 @@ from ethpm_types.utils import compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
 
-from ape.exceptions import CompilerError, ProjectError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
@@ -255,23 +254,13 @@ class DependencyAPI(BaseInterfaceModel):
             excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
 
         sources = [s for s in all_sources if s not in excluded_files]
-        allow_empty = False
 
-        try:
-            project_manifest = project.create_manifest(file_paths=sources)
-        except CompilerError as err:
-            logger.warning("Depedency failed to compile. Contract types can still be imported.")
-            logger.debug(f"Compiler error: '{err}'")
-            project_manifest = project._create_manifest(
-                sources, project.contracts_folder, {}, name=project.name, version=project.version
-            )
-            allow_empty = True
-
-        if not allow_empty and not project_manifest.contract_types:
-            raise ProjectError(
-                f"No contract types found in dependency '{self.name}'. "
-                "Do you have the correct compilers installed?"
-            )
+        # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
+        # for later usage via imports. For legacy reasons, many dependency-esque projects
+        # are not meant to compile on their own.
+        project_manifest = project._create_manifest(
+            sources, project.contracts_folder, {}, name=project.name, version=project.version
+        )
 
         # Cache the manifest for future use outside of this tempdir.
         self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
