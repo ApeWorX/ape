@@ -237,16 +237,8 @@ class DependencyAPI(BaseInterfaceModel):
 
         return None
 
-    def _extract_local_manifest(self, project_path: Path):
-        project_path = project_path.resolve()
-        contracts_folder = project_path / self.contracts_folder
-        project = self.project_manager.get_project(
-            project_path,
-            contracts_folder=contracts_folder,
-            name=self.name,
-            version=self.version,
-        )
-
+    def _extract_local_manifest(self, project_path: Path, compile: bool = False):
+        project = self._get_project(project_path)
         all_sources = get_all_files_in_directory(project.contracts_folder)
 
         excluded_files = set()
@@ -267,6 +259,16 @@ class DependencyAPI(BaseInterfaceModel):
         self._target_manifest_cache_file.write_text(project_manifest.json())
 
         return project_manifest
+
+    def _get_project(self, project_path: Path) -> ProjectAPI:
+        project_path = project_path.resolve()
+        contracts_folder = project_path / self.contracts_folder
+        return self.project_manager.get_project(
+            project_path,
+            contracts_folder=contracts_folder,
+            name=self.name,
+            version=self.version,
+        )
 
 
 def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
