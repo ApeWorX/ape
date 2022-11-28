@@ -3,7 +3,7 @@
 To get started with working on the codebase, use the following steps prepare your local environment:
 
 ```bash
-# clone the github repo and navigate into the folder
+# clone the GitHub repo and navigate into the folder
 git clone https://github.com/ApeWorX/ape.git
 cd ape
 
@@ -29,10 +29,10 @@ pre-commit install
 
 Committing will now automatically run the local hooks and ensure that your commit passes all lint checks.
 
-## Github Access Token
+## GitHub Access Token
 
 If you are a member of ApeWorX and would like to install private plugins,
-[create a Github access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
+[create a GitHub access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
 
 Once you have your token, export it to your terminal session:
 
