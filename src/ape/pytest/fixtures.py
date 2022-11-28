@@ -36,20 +36,6 @@ class PytestApeFixtures(ManagerAccessMixin):
             # Has reason to use traces?
             and self.config_wrapper.track_gas
         )
-
-    @pytest.fixture(scope="session")
-    def wrapped_config(self) -> ConfigWrapper:
-        """
-        A wrapper around the pytest config object.
-        """
-        return self.config_wrapper
-
-    @pytest.fixture(scope="session")
-    def cfg_manager(self) -> ConfigManager:
-        """
-        A wrapper around the pytest config object.
-        """
-        return self.config_manager
     
     @pytest.fixture(scope="session")
     def accounts(self) -> List[TestAccountAPI]:
