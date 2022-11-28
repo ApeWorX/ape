@@ -7,6 +7,7 @@ import pytest
 from ape.api import ReceiptAPI, TestAccountAPI
 from ape.logging import logger
 from ape.managers.chain import ChainManager
+from ape.managers.config import ConfigManager
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 from ape.pytest.config import ConfigWrapper
@@ -36,6 +37,20 @@ class PytestApeFixtures(ManagerAccessMixin):
             and self.config_wrapper.track_gas
         )
 
+    @pytest.fixture(scope="session")
+    def wrapped_config(self) -> ConfigWrapper:
+        """
+        A wrapper around the pytest config object.
+        """
+        return self.config_wrapper
+
+    @pytest.fixture(scope="session")
+    def cfg_manager(self) -> ConfigManager:
+        """
+        A wrapper around the pytest config object.
+        """
+        return self.config_manager
+    
     @pytest.fixture(scope="session")
     def accounts(self) -> List[TestAccountAPI]:
         """

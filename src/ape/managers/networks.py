@@ -99,7 +99,9 @@ class NetworkManager(BaseManager):
                 data_folder=self.config_manager.DATA_FOLDER / plugin_name,
                 request_header=self.config_manager.REQUEST_HEADER,
             )
+            print(f"ecosystem config for {plugin_name}:")
             ecosystem_config = self.config_manager.get_config(plugin_name).dict()
+            print(f" {ecosystem_config}")
             default_network = ecosystem_config.get("default_network", LOCAL_NETWORK_NAME)
 
             try:

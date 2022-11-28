@@ -1,0 +1,37 @@
+default_required_confirmations: &default_required_confirmations 2
+default_local_required_confirmations: &default_local_required_confirmations 0
+default_local_block_time: &default_local_block_time 0
+default_transaction_acceptance_timeout: &default_transaction_acceptance_timeout 120
+default_local_transaction_acceptance_timeout: &default_local_transaction_acceptance_timeout 20
+default_gas_limit: &default_gas_limit "auto"
+default_local_gas_limit: &default_local_gas_limit "max"
+ethereum:
+  mainnet:
+    required_confirmations: *default_required_confirmations
+    block_time: 13
+    transaction_acceptance_timeout: *default_transaction_acceptance_timeout
+    gas_limit: *default_gas_limit
+    # alchemy:
+    #   min_retry_delay: 1_000 # 1 second delay on fail
+    #   retry_backoff_factor: 2 # explonential backoff
+    #   max_retry_delay: 30_000 # 30 seconds
+    #   max_retries: 3
+    #   retry_jitter: 250 # 250 milliseconds
+  goerli:
+    required_confirmations: *default_required_confirmations
+    block_time: 15
+    transaction_acceptance_timeout: *default_transaction_acceptance_timeout
+    gas_limit: *default_gas_limit
+  local:
+    transaction_acceptance_timeout: *default_local_transaction_acceptance_timeout
+    gas_limit: *default_local_gas_limit
+    default_provider: "test"
+  mainnet_fork:
+    transaction_acceptance_timeout: *default_local_transaction_acceptance_timeout
+    gas_limit: *default_local_gas_limit
+    default_provider: 
+  goerli_fork:
+    transaction_acceptance_timeout: *default_local_transaction_acceptance_timeout
+    gas_limit: *default_local_gas_limit
+    default_provider: 
+dependencies:

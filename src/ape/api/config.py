@@ -25,11 +25,13 @@ class PluginConfig(BaseSettings):
     @classmethod
     def from_overrides(cls, overrides: Dict) -> "PluginConfig":
         default_values = cls().dict()
-
         def update(root: Dict, value_map: Dict):
             for key, val in value_map.items():
                 if key in root and isinstance(val, dict):
+                    print(f" overriding {key}")
+                    print(f"  old root[key]: {root[key]}")
                     root[key] = update(root[key], val)
+                    print(f"  new root[key]: {root[key]}")
                 else:
                     root[key] = val
 

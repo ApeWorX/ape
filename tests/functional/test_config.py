@@ -3,6 +3,8 @@ from typing import Dict
 
 import pytest
 
+from ape.pytest.config import ConfigWrapper
+from ape.utils import ManagerAccessMixin
 from ape.api import PluginConfig
 from ape.managers.config import DeploymentConfigCollection
 from ape.types import GasLimit
@@ -45,14 +47,13 @@ def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "l
     }
 
 
-def test_ethereum_network_configs(config, temp_config):
+def test_ethereum_network_configs(temp_config):
     eth_config = {"ethereum": {"goerli": {"default_provider": "test"}}}
-    with temp_config(eth_config):
-        actual = config.get_config("ethereum")
-        assert actual.goerli.default_provider == "test"
+    new_config = temp_config(eth_config).get_config("ethereum")
+    assert new_config.goerli.default_provider == "test"
 
-        # Ensure that non-updated fields remain unaffected
-        assert actual.goerli.block_time == 15
+    # Ensure that non-updated fields remain unaffected
+    assert new_config.goerli.block_time == 15
 
 
 def test_network_gas_limit_default(config):
@@ -74,32 +75,28 @@ def _goerli_with_gas_limit(gas_limit: GasLimit) -> dict:
 
 
 @pytest.mark.parametrize("gas_limit", ("auto", "max"))
-def test_network_gas_limit_string_config(gas_limit, config, temp_config):
+def test_network_gas_limit_string_config(gas_limit, temp_config):
     eth_config = _goerli_with_gas_limit(gas_limit)
+    new_config = temp_config(eth_config).get_config("ethereum")
 
-    with temp_config(eth_config):
-        actual = config.get_config("ethereum")
+    assert new_config.goerli.gas_limit == gas_limit
 
-        assert actual.goerli.gas_limit == gas_limit
-
-        # Local configuration is unaffected
-        assert actual.local.gas_limit == "max"
+    # Local configuration is unaffected
+    assert new_config.local.gas_limit == "max"
 
 
 @pytest.mark.parametrize("gas_limit", (1234, "1234", 0x4D2, "0x4D2"))
-def test_network_gas_limit_numeric_config(gas_limit, config, temp_config):
+def test_network_gas_limit_numeric_config(gas_limit, temp_config):
     eth_config = _goerli_with_gas_limit(gas_limit)
+    new_config = temp_config(eth_config).get_config("ethereum")
 
-    with temp_config(eth_config):
-        actual = config.get_config("ethereum")
+    assert new_config.goerli.gas_limit == 1234
 
-        assert actual.goerli.gas_limit == 1234
-
-        # Local configuration is unaffected
-        assert actual.local.gas_limit == "max"
+    # Local configuration is unaffected
+    assert new_config.local.gas_limit == "max"
 
 
-def test_network_gas_limit_invalid_numeric_string(config, temp_config):
+def test_network_gas_limit_invalid_numeric_string(temp_config):
     """
     Test that using hex strings for a network's gas_limit config must be
     prefixed with '0x'
@@ -111,11 +108,11 @@ def test_network_gas_limit_invalid_numeric_string(config, temp_config):
             pass
 
 
-def test_dependencies(dependency_config, config):
-    assert len(config.dependencies) == 1
-    assert config.dependencies[0].name == "testdependency"
-    assert config.dependencies[0].contracts_folder == "source/v0.1"
-    assert config.dependencies[0].local == str(PROJECT_WITH_LONG_CONTRACTS_FOLDER)
+def test_dependencies(dependency_config):
+    assert len(dependency_config.dependencies) == 1
+    assert dependency_config.dependencies[0].name == "testdependency"
+    assert dependency_config.dependencies[0].contracts_folder == "source/v0.1"
+    assert dependency_config.dependencies[0].local == str(PROJECT_WITH_LONG_CONTRACTS_FOLDER)
 
 
 def test_config_access():

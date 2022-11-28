@@ -113,6 +113,7 @@ class ConfigManager(BaseInterfaceModel):
     """The default ecosystem to use. Defaults to ``"ethereum"``."""
 
     _cached_configs: Dict[str, Dict[str, Any]] = {}
+    _additional_config: Dict[str, Any] = {}
 
     @root_validator(pre=True)
     def check_config_for_extra_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -145,7 +146,6 @@ class ConfigManager(BaseInterfaceModel):
 
         # First, load top-level configs. Then, load all the plugin configs.
         # The configs are popped off the dict for checking if all configs were processed.
-
         configs = {}
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
         user_config = load_config(config_file) if config_file.is_file() else {}
@@ -168,6 +168,7 @@ class ConfigManager(BaseInterfaceModel):
             logger.warning(str(err))
 
         dependencies = user_config.pop("dependencies", []) or []
+        dependencies += self._additional_config.pop("dependencies", []) or []
         if not isinstance(dependencies, list):
             raise ConfigError("'dependencies' config item must be a list of dicts.")
 
@@ -189,19 +190,36 @@ class ConfigManager(BaseInterfaceModel):
         self.deployments = configs["deployments"] = DeploymentConfigCollection(
             deployments, valid_ecosystems, valid_network_names
         )
-
         for plugin_name, config_class in self.plugin_manager.config_class:
             user_override = user_config.pop(plugin_name, {})
+            if self._additional_config:
+                print(f"self._additional_config: {self._additional_config} plugin_name: {plugin_name}")
+                additional_override = self._additional_config.pop(plugin_name, {})
+                print(f"user_override: {user_override}")
+                print(f"additional_override: {additional_override}")
+                # override = {**user_override, **additional_override}
+                for k,v in additional_override.items():
+                    if k in user_override:
+                        user_override[k].update(v)
+                    else:
+                        user_override[k] = v
+                print(f"final override: {user_override}")
+            # else:
+            #     override = user_override
             if config_class != ConfigDict:
                 # NOTE: Will raise if improperly provided keys
                 config = config_class.from_overrides(user_override)  # type: ignore
+                if self._additional_config:
+                    config = config_class.from_overrides(additional_override)  # type: ignore
             else:
                 # NOTE: Just use it directly as a dict if `ConfigDict` is passed
                 config = user_override
+                if self._additional_config:
+                    config.update(additional_override)
 
             configs[plugin_name] = config
 
-        remaining_keys = user_config.keys()
+        remaining_keys = [x for x in user_config.keys() if not x.startswith("default_")]
         if len(remaining_keys) > 0:
             remaining_keys_str = ", ".join(remaining_keys)
             logger.warning(
@@ -215,14 +233,16 @@ class ConfigManager(BaseInterfaceModel):
     def __repr__(self):
         return f"<{self.__class__.__name__} project={self.PROJECT_FOLDER.name}>"
 
-    def load(self, force_reload: bool = False) -> "ConfigManager":
+    def load(self, force_reload: bool = False, additional_config = {}) -> "ConfigManager":
         """
         Load the user config file and return this class.
         """
-
+        
+        if additional_config:
+            self._additional_config = additional_config
         if force_reload:
             self._cached_configs = {}
-
+        
         _ = self._plugin_configs
         return self
 
