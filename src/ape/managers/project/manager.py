@@ -208,7 +208,7 @@ class ProjectManager(BaseManager):
 
         for ecosystem_path in [x for x in self._package_deployments_folder.iterdir() if x.is_dir()]:
             for deployment_path in [x for x in ecosystem_path.iterdir() if x.suffix == ".json"]:
-                ethpm_instance = EthPMContractInstance.parse_raw(deployment_path.read_text())
+                ethpm_instance = EthPMContractInstance.parse_file(deployment_path)
                 if not ethpm_instance:
                     continue
 
@@ -526,17 +526,20 @@ class ProjectManager(BaseManager):
         if self.path.name in self._cached_dependencies:
             return self._cached_dependencies[self.path.name]
 
-        dependencies: Dict[str, Dict[str, DependencyAPI]] = {}
+        self._cached_dependencies[self.path.name] = {}
         for dependency_config in self.config_manager.dependencies:
             dependency_config.extract_manifest()
             version_id = dependency_config.version_id
-            if dependency_config.name in dependencies:
-                dependencies[dependency_config.name][version_id] = dependency_config
+            if dependency_config.name in self._cached_dependencies[self.path.name]:
+                self._cached_dependencies[self.path.name][dependency_config.name][
+                    version_id
+                ] = dependency_config
             else:
-                dependencies[dependency_config.name] = {version_id: dependency_config}
+                self._cached_dependencies[self.path.name][dependency_config.name] = {
+                    version_id: dependency_config
+                }
 
-        self._cached_dependencies[self.path.name] = dependencies
-        return dependencies
+        return self._cached_dependencies[self.path.name]
 
     def track_deployment(self, contract: ContractInstance):
         """

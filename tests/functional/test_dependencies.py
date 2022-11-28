@@ -38,14 +38,11 @@ def test_two_dependencies_with_same_name(already_downloaded_dependencies, projec
     assert oz_442.name == name
 
 
-def test_dependency_with_longer_contracts_folder(
-    dependency_config, config, mocker, project_manager
-):
-    spy = mocker.patch("ape.managers.project.types.yaml")
-    _ = project_manager.dependencies
-    assert spy.safe_dump.call_args, "Config file never created"
-    call_config = spy.safe_dump.call_args[0][0]
-    assert call_config["contracts_folder"] == "source/v0.1"
+def test_dependency_with_longer_contracts_folder(dependency_config, config, project_manager):
+    dependency = project_manager.dependencies["testdependency"]["local"]
+    expected = "source/v0.1"
+    actual = dependency.contracts_folder
+    assert actual == expected
 
 
 def test_dependency_with_non_version_version_id(recwarn, dependency_manager):
