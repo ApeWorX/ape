@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import pytest
 from eth_typing import HexAddress, HexStr
 from hexbytes import HexBytes
@@ -103,7 +105,7 @@ def test_decode_logs_empty_list(ethereum, event_abi):
 
 def test_decode_block_when_hash_is_none(ethereum):
     # When using some providers, such as hardhat, the hash of the pending block is None
-    block_data_with_none_hash = {
+    block_data_with_none_hash: Dict[str, Any] = {
         "number": None,
         "hash": None,
         "parentHash": HexBytes(

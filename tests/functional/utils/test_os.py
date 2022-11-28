@@ -43,9 +43,9 @@ def test_get_relative_path_roots():
 
 def test_get_all_files_in_directory():
     with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir = Path(temp_dir)
-        first_dir = temp_dir / "First"
-        second_dir = temp_dir / "Second"
+        temp_dir_path = Path(temp_dir)
+        first_dir = temp_dir_path / "First"
+        second_dir = temp_dir_path / "Second"
         second_first_dir = second_dir / "SecondFirst"
         dirs = (first_dir, second_dir, second_first_dir)
         for dir_ in dirs:
@@ -60,10 +60,11 @@ def test_get_all_files_in_directory():
         for file in files:
             file.touch()
 
-        all_files = get_all_files_in_directory(temp_dir)
-        txt_files = get_all_files_in_directory(temp_dir, pattern=r"\w+\.txt")
-        t_txt_files = get_all_files_in_directory(temp_dir, pattern=r"\w+\.t.txt")
-        inner_txt_files = get_all_files_in_directory(temp_dir, pattern=r"\w+\.inner.txt")
+        temp_dir_path = Path(temp_dir)
+        all_files = get_all_files_in_directory(temp_dir_path)
+        txt_files = get_all_files_in_directory(temp_dir_path, pattern=r"\w+\.txt")
+        t_txt_files = get_all_files_in_directory(temp_dir_path, pattern=r"\w+\.t.txt")
+        inner_txt_files = get_all_files_in_directory(temp_dir_path, pattern=r"\w+\.inner.txt")
 
         assert len(all_files) == 5
         assert len(txt_files) == 3

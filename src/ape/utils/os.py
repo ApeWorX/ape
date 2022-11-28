@@ -81,18 +81,18 @@ def get_all_files_in_directory(
     if not path.exists():
         return []
 
-    if isinstance(pattern, str):
-        pattern = re.compile(pattern)
+    elif path.is_file():
+        return [path]
 
-    if path.is_dir():
-        all_files = [p for p in list(path.rglob("*.*")) if not p.is_dir() and p.exists()]
+    # is dir
+    all_files = [p for p in list(path.rglob("*.*")) if p.is_file()]
+    if pattern:
+        if isinstance(pattern, str):
+            pattern = re.compile(pattern)
 
-        if pattern:
-            return [f for f in all_files if pattern.match(f.name)]
+        return [f for f in all_files if pattern.match(f.name)]
 
-        return all_files
-
-    return [path]
+    return all_files
 
 
 def expand_environment_variables(contents: str) -> str:

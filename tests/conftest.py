@@ -1,15 +1,26 @@
 import shutil
+import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 from tempfile import mkdtemp
+from typing import Dict
 
 import pytest
+import yaml
 from click.testing import CliRunner
 
 import ape
+from ape.exceptions import APINotImplementedError, UnknownSnapshotError
+from ape.managers.config import CONFIG_FILE_NAME
 
 # NOTE: Ensure that we don't use local paths for these
 ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
 ape.config.PROJECT_FOLDER = Path(mkdtemp()).resolve()
+
+# Needed to test tracing support in core `ape test` command.
+pytest_plugins = ["pytester"]
+geth_process_test = pytest.mark.xdist_group(name="geth-tests")
+GETH_URI = "http://127.0.0.1:5550"
 
 
 @pytest.fixture(autouse=True)
@@ -65,6 +76,7 @@ def project_folder(config):
 
 @pytest.fixture(scope="session")
 def project(config):
+    config.PROJECT_FOLDER.mkdir(parents=True, exist_ok=True)
     yield ape.Project(config.PROJECT_FOLDER)
 
 
@@ -109,43 +121,118 @@ def temp_accounts_path(config):
 
     yield path
 
-    if path.exists():
+    if path.is_dir():
         shutil.rmtree(path)
 
 
-@pytest.fixture
-def runner(project):
+@pytest.fixture(scope="session")
+def runner():
     yield CliRunner()
 
 
-@pytest.fixture(scope="session")
-def networks_connected_to_tester():
-    with ape.networks.parse_network_choice("::test"):
+@pytest.fixture
+def networks_disconnected():
+    provider = ape.networks.active_provider
+    ape.networks.active_provider = None
+
+    try:
         yield ape.networks
+    finally:
+        ape.networks.active_provider = provider
 
 
 @pytest.fixture
-def networks_disconnected(networks):
-    provider = networks.active_provider
-    networks.active_provider = None
-    yield networks
-    networks.active_provider = provider
-
-
-@pytest.fixture(scope="session")
 def ethereum(networks):
     return networks.ethereum
 
 
-@pytest.fixture(scope="session")
-def eth_tester_provider(networks_connected_to_tester):
-    yield networks_connected_to_tester.provider
+@pytest.fixture(autouse=True)
+def eth_tester_provider():
+    if not ape.networks.active_provider or ape.networks.provider.name != "test":
+        with ape.networks.ethereum.local.use_provider("test") as provider:
+            yield provider
+    else:
+        yield ape.networks.provider
 
 
 @pytest.fixture
-def isolation(chain):
-    snapshot = chain.snapshot()
+def networks_connected_to_tester(eth_tester_provider):
+    return eth_tester_provider.network_manager
+
+
+@pytest.fixture
+def geth_provider(networks):
+    if not networks.active_provider or networks.provider.name != "geth":
+        with networks.ethereum.local.use_provider(
+            "geth", provider_settings={"uri": GETH_URI}
+        ) as provider:
+            yield provider
+    else:
+        yield networks.provider
+
+
+@contextmanager
+def _isolation():
+    if ape.networks.active_provider is None:
+        raise AssertionError("Isolation should only be used with a connected provider.")
+
+    init_network_name = ape.chain.provider.network.name
+    init_provider_name = ape.chain.provider.name
+
+    try:
+        snapshot = ape.chain.snapshot()
+    except APINotImplementedError:
+        # Provider not used or connected in test.
+        snapshot = None
+
     yield
 
-    if snapshot:
-        chain.restore(snapshot)
+    if (
+        snapshot is None
+        or ape.networks.active_provider is None
+        or ape.chain.provider.network.name != init_network_name
+        or ape.chain.provider.name != init_provider_name
+    ):
+        return
+
+    try:
+        ape.chain.restore(snapshot)
+    except UnknownSnapshotError:
+        # Assume snapshot removed for testing reasons
+        # or the provider was not needed to be connected for the test.
+        pass
+
+
+@pytest.fixture(autouse=True)
+def eth_tester_isolation(eth_tester_provider):
+    with _isolation():
+        yield
+
+
+@pytest.fixture(scope="session")
+def temp_config(config):
+    @contextmanager
+    def func(data: Dict):
+        with tempfile.TemporaryDirectory() as temp_dir_str:
+            temp_dir = Path(temp_dir_str)
+            config._cached_configs = {}
+            config_file = temp_dir / CONFIG_FILE_NAME
+            config_file.touch()
+            config_file.write_text(yaml.dump(data))
+            config.load(force_reload=True)
+
+            with config.using_project(temp_dir):
+                yield
+
+            config_file.unlink()
+            config._cached_configs = {}
+
+    return func
+
+
+@pytest.fixture
+def empty_data_folder():
+    current_data_folder = ape.config.DATA_FOLDER
+    ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
+    yield
+    ape.config.DATA_FOLDER = current_data_folder

@@ -1,19 +1,21 @@
 import re
-from typing import Optional
+from typing import Optional, cast
 
+from eth.exceptions import HeaderNotFound
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
 from web3 import EthereumTesterProvider, Web3
 from web3.middleware import simple_cache_middleware
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
+from web3.types import TxParams
 
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import (
     ContractLogicError,
-    OutOfGasError,
     ProviderNotConnectedError,
     TransactionError,
+    UnknownSnapshotError,
     VirtualMachineError,
 )
 from ape.types import SnapshotID
@@ -57,11 +59,22 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         pass
 
     def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
+        if isinstance(self.network.gas_limit, int):
+            return self.network.gas_limit
+
+        elif self.network.gas_limit == "max":
+            block = self.web3.eth.get_block("latest")
+            return block["gasLimit"]
+
         block_id = kwargs.pop("block_identifier", None)
         estimate_gas = self.web3.eth.estimate_gas
+        txn_dict = txn.dict()
+        if txn_dict.get("gas") == "auto":
+            # Remove from dict before estimating
+            txn_dict.pop("gas")
 
         try:
-            return estimate_gas(txn.dict(), block_identifier=block_id)  # type: ignore
+            return estimate_gas(txn_dict, block_identifier=block_id)  # type: ignore
         except (ValidationError, TransactionFailed) as err:
             ape_err = self.get_virtual_machine_error(err, sender=txn.sender)
             gas_match = self._INVALID_NONCE_PATTERN.match(str(ape_err))
@@ -107,11 +120,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         if "gas" not in data or data["gas"] == 0:
             data["gas"] = int(1e12)
 
+        block_id = kwargs.pop("block_identifier", None)
+        state = kwargs.pop("state_override", None)
+        call_kwargs = {"block_identifier": block_id, "state_override": state}
+        tx_params = cast(TxParams, txn.dict())
+
         try:
-            block_id = kwargs.pop("block_identifier", None)
-            state = kwargs.pop("state_override", None)
-            call_kwargs = {"block_identifier": block_id, "state_override": state}
-            return self.web3.eth.call(txn.dict(), **call_kwargs)  # type: ignore
+            return self.web3.eth.call(tx_params, **call_kwargs)
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except TransactionFailed as err:
@@ -121,15 +136,28 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except (ValidationError, TransactionFailed) as err:
-            raise self.get_virtual_machine_error(err, sender=txn.sender) from err
+            vm_err = self.get_virtual_machine_error(err, sender=txn.sender)
+            vm_err.txn = txn
+            raise vm_err from err
 
-        receipt = self.get_transaction(
+        receipt = self.get_receipt(
             txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
         )
-        if txn.gas_limit is not None and receipt.ran_out_of_gas:
-            raise OutOfGasError()
 
-        self._try_track_receipt(receipt)
+        if receipt.failed:
+            txn_dict = receipt.transaction.dict()
+            txn_dict["nonce"] += 1
+            txn_params = cast(TxParams, txn_dict)
+
+            # Replay txn to get revert reason
+            try:
+                self.web3.eth.call(txn_params)
+            except (ValidationError, TransactionFailed) as err:
+                vm_err = self.get_virtual_machine_error(err, sender=txn.sender)
+                vm_err.txn = txn
+                raise vm_err from err
+
+        self.chain_manager.account_history.append(receipt)
         return receipt
 
     def snapshot(self) -> SnapshotID:
@@ -139,7 +167,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         if snapshot_id:
             current_hash = self.get_block("latest").hash
             if current_hash != snapshot_id:
-                return self.evm_backend.revert_to_snapshot(snapshot_id)
+                try:
+                    return self.evm_backend.revert_to_snapshot(snapshot_id)
+                except HeaderNotFound:
+                    raise UnknownSnapshotError(snapshot_id)
 
     def set_timestamp(self, new_timestamp: int):
         self.evm_backend.time_travel(new_timestamp)

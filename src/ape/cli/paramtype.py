@@ -14,7 +14,10 @@ class Path(click.Path):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, path_type=PathLibPath, **kwargs)
+        if "path_type" not in kwargs:
+            kwargs["path_type"] = PathLibPath
+
+        super().__init__(*args, **kwargs)
 
 
 class AllFilePaths(Path):
@@ -29,4 +32,4 @@ class AllFilePaths(Path):
         path = super().convert(value, param, ctx)
 
         # NOTE: Return the path if it does not exist so it can be resolved downstream.
-        return get_all_files_in_directory(path) if path.exists() else [path]
+        return get_all_files_in_directory(path) if path.is_dir() else [path]

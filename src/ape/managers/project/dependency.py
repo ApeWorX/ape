@@ -35,7 +35,7 @@ class DependencyManager(ManagerAccessMixin):
             if key in config_dependency_data:
                 return dependency_cls(
                     **config_dependency_data,
-                )  # type: ignore
+                )
 
         dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))
         raise ProjectError(f"No installed dependency API that supports '{dep_id}'.")
@@ -119,7 +119,7 @@ class LocalDependency(DependencyAPI):
             return value
 
         # If using default value, check if exists
-        local_path_value = value.get("local") or os.cwd()
+        local_path_value = value.get("local") or os.getcwd()
         local_project_path = Path(local_path_value)
         try_contracts_path = local_project_path / "contracts"
         if try_contracts_path.is_dir():
@@ -137,7 +137,7 @@ class LocalDependency(DependencyAPI):
     @property
     def path(self) -> Path:
         given_path = Path(self.local).absolute()
-        if not given_path.exists():
+        if not given_path.is_dir():
             raise ProjectError(f"No project exists at path '{given_path}'.")
 
         return given_path

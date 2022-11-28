@@ -4,8 +4,10 @@ from typing import TYPE_CHECKING, Optional
 from eth_utils import humanize_hash
 
 if TYPE_CHECKING:
+    from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
-    from ape.types import SnapshotID
+    from ape.api.transactions import TransactionAPI
+    from ape.types import BlockID, SnapshotID
 
 
 class ApeException(Exception):
@@ -87,6 +89,7 @@ class TransactionError(ContractError):
         base_err: Optional[Exception] = None,
         message: Optional[str] = None,
         code: Optional[int] = None,
+        txn: Optional["TransactionAPI"] = None,
     ):
         self.base_err = base_err
         if not message:
@@ -94,6 +97,7 @@ class TransactionError(ContractError):
 
         self.message = message
         self.code = code
+        self.txn = txn
 
         ex_message = f"({code}) {message}" if code else message
         super().__init__(ex_message)
@@ -187,6 +191,42 @@ class ProviderError(ApeException):
     """
 
 
+class BlockNotFoundError(ProviderError):
+    """
+    Raised when unable to find a block.
+    """
+
+    def __init__(self, block_id: "BlockID"):
+        if isinstance(block_id, bytes):
+            block_id_str = block_id.hex()
+        else:
+            block_id_str = str(block_id)
+
+        super().__init__(f"Block with ID '{block_id_str}' not found.")
+
+
+class TransactionNotFoundError(ProviderError):
+    """
+    Raised when unable to find a transaction.
+    """
+
+    def __init__(self, txn_hash: str):
+        super().__init__(f"Transaction '{txn_hash}' not found.")
+
+
+class NetworkMismatchError(ProviderError):
+    """
+    Raised when connecting a provider to the wrong network.
+    """
+
+    def __init__(self, chain_id: int, network: "NetworkAPI"):
+        message = (
+            f"Provider connected to chain ID '{chain_id}', which does not match "
+            f"network chain ID '{network.chain_id}'. Are you connected to '{network.name}'?"
+        )
+        super().__init__(message)
+
+
 class ProviderNotConnectedError(ProviderError):
     """
     Raised when not connected to a provider.
@@ -254,8 +294,8 @@ class SubprocessTimeoutError(SubprocessError):
         self._message = message or "Timed out waiting for process."
         self._seconds = seconds
         self._exception = exception
-        self._start_time = None
-        self._is_running = None
+        self._start_time: Optional[float] = None
+        self._is_running: Optional[bool] = None
 
     def __enter__(self):
         self.start()
@@ -311,7 +351,6 @@ class SubprocessTimeoutError(SubprocessError):
     def cancel(self):
         if self._provider:
             self._provider.stop()
-            self._provider = None
 
         self._is_running = False
 

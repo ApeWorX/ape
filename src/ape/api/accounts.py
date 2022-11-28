@@ -1,18 +1,17 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Iterator, List, Optional, Type, Union
 
 import click
 from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
 
+from ape.api.address import BaseAddress
+from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.types.signatures import _Signature
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
-
-from .address import BaseAddress
-from .transactions import ReceiptAPI, TransactionAPI
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance
@@ -30,13 +29,16 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             List[str]: Method names that IPython uses for tab completion.
         """
-        return list(super(BaseAddress, self).__dir__()) + [
-            "alias",
-            "sign_message",
-            "sign_transaction",
-            "call",
-            "transfer",
-            "deploy",
+        base_value_excludes = ("code", "codesize", "is_contract")  # Not needed for accounts
+        base_values = [v for v in self._base_dir_values if v not in base_value_excludes]
+        return base_values + [
+            self.__class__.alias.fget.__name__,  # type: ignore[attr-defined]
+            self.__class__.call.__name__,
+            self.__class__.deploy.__name__,
+            self.__class__.prepare_transaction.__name__,
+            self.__class__.sign_message.__name__,
+            self.__class__.sign_transaction.__name__,
+            self.__class__.transfer.__name__,
         ]
 
     @property
@@ -86,34 +88,49 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`): An invoke-transaction.
             send_everything (bool): ``True`` will send the difference from balance and fee.
+              Defaults to ``False``.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
         """
 
         txn = self.prepare_transaction(txn)
+        max_fee = txn.max_fee
+        gas_limit = txn.gas_limit
 
+        if not isinstance(gas_limit, int):
+            raise TransactionError(message="Transaction not prepared.")
+
+        # The conditions below should never reached but are here for mypy's sake.
+        # The `max_fee` was either set manaully or from `prepare_transaction()`.
+        # The `gas_limit` was either set manually or from `prepare_transaction()`.
+        if max_fee is None:
+            raise TransactionError(
+                message="`max_fee` failed to get set in transaction preparation."
+            )
+        elif gas_limit is None:
+            raise TransactionError(
+                message="`gas_limit` failed to get set in transaction preparation."
+            )
+
+        total_fees = max_fee * gas_limit
+
+        # Send the whole balance.
         if send_everything:
-            if txn.max_fee is None:
-                raise TransactionError(message="Max fee must not be None.")
-            if not txn.gas_limit or txn.gas_limit is None:
-                raise TransactionError(message="The txn.gas_limit is not set.")
-            txn.value = self.balance - (txn.max_fee * txn.gas_limit)
-            if txn.value <= 0:
+            amount_to_send = self.balance - total_fees
+            if amount_to_send <= 0:
                 raise AccountsError(
                     f"Sender does not have enough to cover transaction value and gas: "
-                    f"{txn.max_fee * txn.gas_limit}"
+                    f"{total_fees}"
                 )
+            else:
+                txn.value = amount_to_send
 
         txn.signature = self.sign_transaction(txn)
         if not txn.signature:
             raise SignatureError("The transaction was not signed.")
 
         return self.provider.send_transaction(txn)
-
-    @cached_property
-    def _convert(self) -> Callable:
-        return self.conversion_manager.convert
 
     def transfer(
         self,
@@ -134,21 +151,24 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             :class:`~ape.api.transactions.ReceiptAPI`
         """
 
+        receiver = self.conversion_manager.convert(account, AddressType)
         txn = self.provider.network.ecosystem.create_transaction(
-            sender=self.address, receiver=self._convert(account, AddressType), **kwargs
+            sender=self.address, receiver=receiver, **kwargs
         )
 
+        if value and "send_everything" in kwargs and kwargs["send_everything"]:
+            raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
+
         if data:
-            txn.data = self._convert(data, bytes)
+            txn.data = self.conversion_manager.convert(data, bytes)
 
         if value:
-            if "send_everything" in kwargs and kwargs["send_everything"]:
-                raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
-            txn.value = self._convert(value, int)
+            txn.value = self.conversion_manager.convert(value, int)
             return self.call(txn)
 
         elif not kwargs.get("send_everything"):
             raise AccountsError("Must provide 'VALUE' or use 'send_everything=True'")
+
         else:
             return self.call(txn, send_everything=True)
 
@@ -161,7 +181,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         Args:
             contract (:class:`~ape.contracts.ContractContainer`):
-                The type of contract to deploy.
+              The type of contract to deploy.
+            publish (bool): Set to ``True`` to attempt explorer contract verification.
+              Defaults to ``False``.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`: An instance of the deployed contract.

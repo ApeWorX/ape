@@ -184,7 +184,7 @@ class AccountManager(BaseManager):
     def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
             for account in container.accounts:
-                yield account  # type: ignore
+                yield account
 
     def __repr__(self) -> str:
         return "[" + ", ".join(repr(a) for a in self) + "]"

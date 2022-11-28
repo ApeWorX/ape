@@ -2,6 +2,7 @@ import pytest
 
 from ape import Contract
 from ape.exceptions import NetworkError, ProjectError
+from ape_ethereum.ecosystem import ProxyType
 
 
 def test_deploy(
@@ -44,7 +45,36 @@ def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_ne
 
 
 def test_deployment_property(chain, owner, project_with_contract, eth_tester_provider):
-    initial_deployed_contract = owner.deploy(project_with_contract.ApeContract0)
+    initial_deployed_contract = project_with_contract.ApeContract0.deploy(sender=owner)
     actual = project_with_contract.ApeContract0.deployments[-1].address
     expected = initial_deployed_contract.address
     assert actual == expected
+
+
+def test_deploy_proxy(
+    owner, project, vyper_contract_instance, proxy_contract_container, chain, eth_tester_provider
+):
+    target = vyper_contract_instance.address
+    proxy = proxy_contract_container.deploy(target, sender=owner)
+    assert proxy.address in chain.contracts._local_contract_types
+    assert proxy.address in chain.contracts._local_proxies
+
+    actual = chain.contracts._local_proxies[proxy.address]
+    assert actual.target == target
+    assert actual.type == ProxyType.Delegate
+
+    # Show we get the implementation contract type using the proxy address
+    implementation = chain.contracts.instance_at(proxy.address)
+    assert implementation.contract_type == vyper_contract_instance.contract_type
+
+
+def test_source_path_in_project(project_with_contract):
+    contracts_folder = project_with_contract.contracts_folder
+    contract = project_with_contract.contracts["Contract"]
+    path = contracts_folder / contract.source_id
+    assert path.is_file()
+    assert project_with_contract.get_contract("Contract").source_path == path
+
+
+def test_source_path_out_of_project(contract_container):
+    assert not contract_container.source_path

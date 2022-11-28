@@ -4,7 +4,8 @@ from pathlib import Path
 import pytest
 
 from ape import networks, project
-from ape.pytest.fixtures import PytestApeFixtures
+from ape.pytest.config import ConfigWrapper
+from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
 from ape.pytest.runners import PytestApeRunner
 
 
@@ -17,18 +18,28 @@ def pytest_addoption(parser):
         "--network",
         action="store",
         default=networks.default_ecosystem.name,
-        help="Override the default network and provider. (see ``ape networks list`` for options)",
+        help="Override the default network and provider (see ``ape networks list`` for options).",
     )
     parser.addoption(
         "--interactive",
         "-I",
         action="store_true",
-        help="Open an interactive console each time a test fails",
+        help="Open an interactive console each time a test fails.",
     )
     parser.addoption(
         "--disable-isolation",
         action="store_true",
-        help="Disable test and fixture isolation (see provider for info on snapshot availability)",
+        help="Disable test and fixture isolation (see provider for info on snapshot availability).",
+    )
+    parser.addoption(
+        "--gas",
+        action="store_true",
+        help="Show a transaction gas report at the end of the test session.",
+    )
+    parser.addoption(
+        "--gas-exclude",
+        action="store",
+        help="A comma-separated list of contract:method-name glob-patterns to ignore.",
     )
 
     # NOTE: Other pytest plugins, such as hypothesis, should integrate with pytest separately
@@ -37,37 +48,45 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     # Do not include ape internals in tracebacks unless explicitly asked
     if not config.getoption("showinternal"):
-        base_path = Path(sys.modules["ape"].__file__).parent.as_posix()
+        path_str = sys.modules["ape"].__file__
+        if path_str:
+            base_path = Path(path_str).parent.as_posix()
 
-        def is_module(v):
-            return getattr(v, "__file__", None) and v.__file__.startswith(base_path)
+            def is_module(v):
+                return getattr(v, "__file__", None) and v.__file__.startswith(base_path)
 
-        modules = [v for v in sys.modules.values() if is_module(v)]
-        for module in modules:
-            module.__tracebackhide__ = True
+            modules = [v for v in sys.modules.values() if is_module(v)]
+            for module in modules:
+                if hasattr(module, "__tracebackhide__"):
+                    setattr(module, "__tracebackhide__", True)
+
+    config_wrapper = ConfigWrapper(config)
+    receipt_capture = ReceiptCapture(config_wrapper)
 
     # Enable verbose output if stdout capture is disabled
     config.option.verbose = config.getoption("capture") == "no"
 
-    session = PytestApeRunner(pytest_config=config)
+    # Register the custom Ape test runner
+    session = PytestApeRunner(config_wrapper, receipt_capture)
     config.pluginmanager.register(session, "ape-test")
 
-    fixtures = PytestApeFixtures()
+    # Include custom fixtures for project, accounts etc.
+    fixtures = PytestApeFixtures(config_wrapper, receipt_capture)
     config.pluginmanager.register(fixtures, "ape-fixtures")
 
 
 def pytest_load_initial_conftests(early_config):
     """
-    Compile contracts before loading conftests.
+    Compile contracts before loading ``conftest.py``s.
     """
-    cap_sys = early_config.pluginmanager.get_plugin("capturemanager")
+    capture_manager = early_config.pluginmanager.get_plugin("capturemanager")
 
     if not project.sources_missing:
         # Suspend stdout capture to display compilation data
-        cap_sys.suspend()
+        capture_manager.suspend()
         try:
             project.load_contracts()
         except Exception as err:
             raise pytest.UsageError(f"Unable to load project. Reason: {err}")
         finally:
-            cap_sys.resume()
+            capture_manager.resume()

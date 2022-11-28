@@ -4,8 +4,8 @@ from typing import Dict
 import pytest
 
 from ape.api import PluginConfig
-from ape.exceptions import NetworkError
 from ape.managers.config import DeploymentConfigCollection
+from ape.types import GasLimit
 from ape_ethereum.ecosystem import NetworkConfig
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
@@ -46,26 +46,69 @@ def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "l
 
 
 def test_ethereum_network_configs(config, temp_config):
-    eth_config = {"ethereum": {"rinkeby": {"default_provider": "test"}}}
+    eth_config = {"ethereum": {"goerli": {"default_provider": "test"}}}
     with temp_config(eth_config):
         actual = config.get_config("ethereum")
-        assert actual.rinkeby.default_provider == "test"
+        assert actual.goerli.default_provider == "test"
 
         # Ensure that non-updated fields remain unaffected
-        assert actual.rinkeby.block_time == 15
+        assert actual.goerli.block_time == 15
 
 
-def test_default_provider_not_found(temp_config, networks):
-    provider_name = "DOES_NOT_EXIST"
-    network_name = "local"
-    eth_config = {"ethereum": {network_name: {"default_provider": provider_name}}}
+def test_network_gas_limit_default(config):
+    eth_config = config.get_config("ethereum")
+
+    assert eth_config.goerli.gas_limit == "auto"
+    assert eth_config.local.gas_limit == "max"
+
+
+def _goerli_with_gas_limit(gas_limit: GasLimit) -> dict:
+    return {
+        "ethereum": {
+            "goerli": {
+                "default_provider": "test",
+                "gas_limit": gas_limit,
+            }
+        }
+    }
+
+
+@pytest.mark.parametrize("gas_limit", ("auto", "max"))
+def test_network_gas_limit_string_config(gas_limit, config, temp_config):
+    eth_config = _goerli_with_gas_limit(gas_limit)
 
     with temp_config(eth_config):
-        with pytest.raises(
-            NetworkError, match=f"Provider '{provider_name}' not found in network '{network_name}'."
-        ):
-            # Trigger re-loading the Ethereum config.
-            _ = networks.ecosystems
+        actual = config.get_config("ethereum")
+
+        assert actual.goerli.gas_limit == gas_limit
+
+        # Local configuration is unaffected
+        assert actual.local.gas_limit == "max"
+
+
+@pytest.mark.parametrize("gas_limit", (1234, "1234", 0x4D2, "0x4D2"))
+def test_network_gas_limit_numeric_config(gas_limit, config, temp_config):
+    eth_config = _goerli_with_gas_limit(gas_limit)
+
+    with temp_config(eth_config):
+        actual = config.get_config("ethereum")
+
+        assert actual.goerli.gas_limit == 1234
+
+        # Local configuration is unaffected
+        assert actual.local.gas_limit == "max"
+
+
+def test_network_gas_limit_invalid_numeric_string(config, temp_config):
+    """
+    Test that using hex strings for a network's gas_limit config must be
+    prefixed with '0x'
+    """
+    eth_config = _goerli_with_gas_limit("4D2")
+
+    with pytest.raises(ValueError, match="Invalid gas_limit, must be 'auto', 'max', or a number"):
+        with temp_config(eth_config):
+            pass
 
 
 def test_dependencies(dependency_config, config):

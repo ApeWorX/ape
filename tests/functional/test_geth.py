@@ -1,116 +1,116 @@
+import re
 from pathlib import Path
+from typing import cast
 
 import pytest
-from web3.exceptions import ContractLogicError as Web3ContractLogicError
+from eth_typing import HexStr
+from ethpm_types import ContractType
 
-from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import ContractLogicError, TransactionError
-from ape_geth import GethProvider
+from ape.contracts import ContractContainer
+from ape.exceptions import (
+    BlockNotFoundError,
+    ContractLogicError,
+    NetworkMismatchError,
+    TransactionNotFoundError,
+)
+from ape_ethereum.ecosystem import Block
+from ape_geth.provider import Geth
+from tests.conftest import GETH_URI, geth_process_test
+from tests.functional.conftest import RAW_VYPER_CONTRACT_TYPE
 from tests.functional.data.python import TRACE_RESPONSE
 
-_TEST_REVERT_REASON = "TEST REVERT REASON."
+TRANSACTION_HASH = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
 
 
+@geth_process_test
 @pytest.fixture
-def trace_response():
-    return TRACE_RESPONSE
-
-
-@pytest.fixture
-def mock_network(mock_network_api, ethereum):
-    mock_network_api.name = LOCAL_NETWORK_NAME
-    mock_network_api.ecosystem = ethereum
-    return mock_network_api
-
-
-@pytest.fixture
-def geth_provider(mock_network, mock_web3):
-    return create_geth(mock_network, mock_web3)
-
-
-def create_geth(network, web3):
-    provider = GethProvider(
+def mock_geth(geth_provider, mock_web3):
+    provider = Geth(
         name="geth",
-        network=network,
+        network=geth_provider.network,
         provider_settings={},
         data_folder=Path("."),
         request_header="",
     )
-    provider._web3 = web3
+    provider._web3 = mock_web3
     return provider
 
 
+@pytest.fixture(scope="module")
+def geth_contract():
+    contract_type = ContractType.parse_raw(RAW_VYPER_CONTRACT_TYPE)
+    return ContractContainer(contract_type=contract_type)
+
+
 @pytest.fixture
-def eth_tester_provider_geth(eth_tester_provider, networks):
-    """Geth using eth-tester provider"""
-    provider = create_geth(eth_tester_provider.network, eth_tester_provider.web3)
-    init_provider = networks.active_provider
-    networks.active_provider = provider
-    yield provider
-    networks.active_provider = init_provider
+def parity_trace_response():
+    return TRACE_RESPONSE
 
 
-def test_send_when_web3_error_raises_transaction_error(geth_provider, mock_web3, mock_transaction):
-    web3_error_data = {
-        "code": -32000,
-        "message": "Test Error Message",
-    }
-    mock_web3.eth.send_raw_transaction.side_effect = ValueError(web3_error_data)
-    with pytest.raises(TransactionError) as err:
-        geth_provider.send_transaction(mock_transaction)
-
-    assert web3_error_data["message"] in str(err.value)
+@geth_process_test
+def test_uri(geth_provider):
+    assert geth_provider.uri == GETH_URI
 
 
-def test_send_transaction_reverts_from_contract_logic(geth_provider, mock_web3, mock_transaction):
-    test_err = Web3ContractLogicError(f"execution reverted: {_TEST_REVERT_REASON}")
-    mock_web3.eth.send_raw_transaction.side_effect = test_err
-
-    with pytest.raises(ContractLogicError) as err:
-        geth_provider.send_transaction(mock_transaction)
-
-    assert str(err.value) == _TEST_REVERT_REASON
-
-
-def test_send_transaction_no_revert_message(mock_web3, geth_provider, mock_transaction):
-    test_err = Web3ContractLogicError("execution reverted")
-    mock_web3.eth.send_raw_transaction.side_effect = test_err
-
-    with pytest.raises(ContractLogicError) as err:
-        geth_provider.send_transaction(mock_transaction)
-
-    assert str(err.value) == TransactionError.DEFAULT_MESSAGE
-
-
-def test_uri_default_value(geth_provider):
-    assert geth_provider.uri == "http://localhost:8545"
-
-
-def test_uri_uses_value_from_config(mock_network, mock_web3, temp_config):
+@geth_process_test
+def test_uri_uses_value_from_config(geth_provider, temp_config):
+    settings = geth_provider.provider_settings
+    geth_provider.provider_settings = {}
     config = {"geth": {"ethereum": {"local": {"uri": "value/from/config"}}}}
-    with temp_config(config):
-        provider = create_geth(mock_network, mock_web3)
-        assert provider.uri == "value/from/config"
+    try:
+        with temp_config(config):
+            assert geth_provider.uri == "value/from/config"
+    finally:
+        geth_provider.provider_settings = settings
 
 
-def test_uri_uses_value_from_settings(mock_network, mock_web3, temp_config):
-    # The value from the adhoc-settings is valued over the value from the config file.
-    config = {"geth": {"ethereum": {"local": {"uri": "value/from/config"}}}}
-    with temp_config(config):
-        provider = create_geth(mock_network, mock_web3)
-        provider.provider_settings["uri"] = "value/from/settings"
-        assert provider.uri == "value/from/settings"
+def test_tx_revert(accounts, sender, geth_contract):
+    # 'sender' is not the owner so it will revert (with a message)
+    contract = accounts.test_accounts[-1].deploy(geth_contract)
+    with pytest.raises(ContractLogicError, match="!authorized"):
+        contract.setNumber(5, sender=sender)
 
 
-def test_get_call_tree_erigon(mock_web3, geth_provider, trace_response):
-    mock_web3.clientVersion = "erigon_MOCK"
-    mock_web3.provider.make_request.return_value = trace_response
-    result = geth_provider.get_call_tree(
-        "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
-    )
-    assert "CALL: 0xC17f2C69aE2E66FD87367E3260412EEfF637F70E.<0x96d373e5> [1401584 gas]" in repr(
-        result
-    )
+def test_revert_no_message(accounts, geth_contract):
+    # The Contract raises empty revert when setting number to 5.
+    expected = "Transaction failed."  # Default message
+    owner = accounts.test_accounts[-2]
+    contract = owner.deploy(geth_contract)
+    with pytest.raises(ContractLogicError, match=expected):
+        contract.setNumber(5, sender=owner)
+
+
+@geth_process_test
+def test_contract_interaction(geth_provider, geth_contract, accounts):
+    owner = accounts.test_accounts[-2]
+    contract = owner.deploy(geth_contract)
+    contract.setNumber(102, sender=owner)
+    assert contract.myNumber() == 102
+
+
+@geth_process_test
+def test_get_call_tree(geth_provider, geth_contract, accounts):
+    owner = accounts.test_accounts[-3]
+    contract = owner.deploy(geth_contract)
+    receipt = contract.setNumber(10, sender=owner)
+    result = geth_provider.get_call_tree(receipt.txn_hash)
+    expected = rf"CALL: {contract.address}.<0x3fb5c1cb> \[\d+ gas\]"
+    actual = repr(result)
+    assert re.match(expected, actual)
+
+
+def test_get_call_tree_erigon(mock_web3, mock_geth, parity_trace_response):
+    mock_web3.client_version = "erigon_MOCK"
+    mock_web3.provider.make_request.return_value = parity_trace_response
+    result = mock_geth.get_call_tree(TRANSACTION_HASH)
+    actual = repr(result)
+    expected = r"CALL: 0xC17f2C69aE2E66FD87367E3260412EEfF637F70E.<0x96d373e5> \[\d+ gas\]"
+    assert re.match(expected, actual)
+
+
+@geth_process_test
+def test_repr_connected(geth_provider):
+    assert repr(geth_provider) == "<geth chain_id=1337>"
 
 
 def test_repr_on_local_network_and_disconnected(networks):
@@ -119,18 +119,135 @@ def test_repr_on_local_network_and_disconnected(networks):
 
 
 def test_repr_on_live_network_and_disconnected(networks):
-    geth = networks.get_provider_from_choice("ethereum:rinkeby:geth")
-    assert repr(geth) == "<geth chain_id=4>"
+    geth = networks.get_provider_from_choice("ethereum:goerli:geth")
+    assert repr(geth) == "<geth chain_id=5>"
 
 
-def test_repr_connected(mock_web3, geth_provider):
-    mock_web3.eth.chain_id = 123
-    assert repr(geth_provider) == "<geth chain_id=123>"
-
-
-def test_get_logs_when_connected_to_geth(vyper_contract_instance, eth_tester_provider_geth, owner):
-    vyper_contract_instance.setNumber(123, sender=owner)
-    actual = vyper_contract_instance.NumberChange[-1]
+@geth_process_test
+def test_get_logs(geth_provider, accounts, geth_contract):
+    owner = accounts.test_accounts[-4]
+    contract = owner.deploy(geth_contract)
+    contract.setNumber(101010, sender=owner)
+    actual = contract.NumberChange[-1]
     assert actual.event_name == "NumberChange"
-    assert actual.contract_address == vyper_contract_instance.address
-    assert actual.event_arguments["newNum"] == 123
+    assert actual.contract_address == contract.address
+    assert actual.event_arguments["newNum"] == 101010
+
+
+@geth_process_test
+def test_chain_id_when_connected(geth_provider):
+    assert geth_provider.chain_id == 1337
+
+
+def test_chain_id_live_network_not_connected(networks):
+    geth = networks.get_provider_from_choice("ethereum:goerli:geth")
+    assert geth.chain_id == 5
+
+
+@geth_process_test
+def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth_provider):
+    mock_network = mocker.MagicMock()
+    mock_network.chain_id = 999999999  # Shouldn't use hardcoded network
+    orig_network = geth_provider.network
+
+    try:
+        geth_provider.network = mock_network
+
+        # Still use the connected chain ID instead network's
+        assert geth_provider.chain_id == 1337
+    finally:
+        geth_provider.network = orig_network
+
+
+@geth_process_test
+def test_connect_wrong_chain_id(mocker, ethereum, geth_provider):
+    start_network = geth_provider.network
+
+    try:
+        geth_provider.network = ethereum.get_network("goerli")
+
+        # Ensure when reconnecting, it does not use HTTP
+        factory = mocker.patch("ape_geth.provider._create_web3")
+        factory.return_value = geth_provider._web3
+        expected_error_message = (
+            "Provider connected to chain ID '1337', "
+            "which does not match network chain ID '5'. "
+            "Are you connected to 'goerli'?"
+        )
+
+        with pytest.raises(NetworkMismatchError, match=expected_error_message):
+            geth_provider.connect()
+    finally:
+        geth_provider.network = start_network
+
+
+@geth_process_test
+def test_supports_tracing(geth_provider):
+    assert geth_provider.supports_tracing
+
+
+@geth_process_test
+@pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
+def test_get_block(geth_provider, block_id):
+    block = cast(Block, geth_provider.get_block(block_id))
+
+    # Each parameter is the same as requesting the first block.
+    assert block.number == 0
+    assert block.base_fee == 1000000000
+    assert block.gas_used == 0
+
+
+@geth_process_test
+def test_get_block_not_found(geth_provider):
+    latest_block = geth_provider.get_block("latest")
+    block_id = latest_block.number + 1000
+    with pytest.raises(BlockNotFoundError, match=f"Block with ID '{block_id}' not found."):
+        geth_provider.get_block(block_id)
+
+
+@geth_process_test
+def test_get_receipt_not_exists_with_timeout(geth_provider):
+    unknown_txn = TRANSACTION_HASH
+    with pytest.raises(TransactionNotFoundError, match=f"Transaction '{unknown_txn}' not found"):
+        geth_provider.get_receipt(unknown_txn, timeout=0)
+
+
+@geth_process_test
+def test_get_receipt(accounts, geth_contract, geth_provider):
+    owner = accounts.test_accounts[-5]
+    contract = owner.deploy(geth_contract)
+    receipt = contract.setNumber(111111, sender=owner)
+    actual = geth_provider.get_receipt(receipt.txn_hash)
+    assert receipt.txn_hash == actual.txn_hash
+    assert actual.receiver == contract.address
+    assert actual.sender == receipt.sender
+
+
+@pytest.mark.skip("https://github.com/ethereum/go-ethereum/issues/26154")
+@geth_process_test
+def test_snapshot_and_revert(geth_provider, accounts, geth_contract):
+    owner = accounts.test_accounts[-6]
+    contract = owner.deploy(geth_contract)
+
+    snapshot = geth_provider.snapshot()
+    start_nonce = owner.nonce
+    contract.setNumber(211112, sender=owner)  # Advance a block
+    actual_block_number = geth_provider.get_block("latest").number
+    expected_block_number = snapshot + 1
+    actual_nonce = owner.nonce
+    expected_nonce = start_nonce + 1
+    assert actual_block_number == expected_block_number
+    assert actual_nonce == expected_nonce
+
+    geth_provider.revert(snapshot)
+
+    actual_block_number = geth_provider.get_block("latest").number
+    expected_block_number = snapshot
+    actual_nonce = owner.nonce
+    expected_nonce = start_nonce
+    assert actual_block_number == expected_block_number
+    assert actual_nonce == expected_nonce
+
+    # Use account after revert
+    receipt = contract.setNumber(311113, sender=owner)  # Advance a block
+    assert not receipt.failed

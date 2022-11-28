@@ -1,6 +1,6 @@
 import re
 from enum import IntEnum
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
@@ -8,14 +8,14 @@ from eth_typing import HexStr
 from eth_utils import add_0x_prefix, encode_hex, keccak, to_bytes, to_checksum_address
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
-from pydantic import Field
+from pydantic import Field, validator
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
 from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, RawAddress, TransactionSignature
+from ape.types import AddressType, ContractLog, GasLimit, RawAddress, TransactionSignature
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -39,9 +39,6 @@ from ape_ethereum.transactions import (
 NETWORKS = {
     # chain_id, network_id
     "mainnet": (1, 1),
-    "ropsten": (3, 3),
-    "kovan": (42, 42),
-    "rinkeby": (4, 4),
     "goerli": (5, 5),
 }
 
@@ -76,37 +73,59 @@ class NetworkConfig(PluginConfig):
     block_time: int = 0
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
 
+    gas_limit: GasLimit = "auto"
+    """
+    The gas limit override to use for the network. If set to ``"auto"``, ape will
+    estimate gas limits based on the transaction. If set to ``"max"`` the gas limit
+    will be set to the maximum block gas limit for the network. Otherwise an ``int``
+    can be used to specify an explicit gas limit amount (either base 10 or 16).
+
+    The default for local networks is ``"max"``, otherwise ``"auto"``.
+    """
+
+    class Config:
+        smart_union = True
+
+    @validator("gas_limit", pre=True, allow_reuse=True)
+    def validate_gas_limit(cls, value: GasLimit) -> GasLimit:
+        if isinstance(value, str):
+            if value.lower() in ("auto", "max"):
+                return value.lower()
+
+            # Value could be an integer string
+            if value.isdigit():
+                return int(value)
+            # Enforce "0x" prefix on base 16 integer strings
+            elif value.lower().startswith("0x"):
+                return int(value, 16)
+            else:
+                raise ValueError("Invalid gas_limit, must be 'auto', 'max', or a number")
+
+        # Value is an integer literal
+        return value
+
+
+def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> NetworkConfig:
+    return _create_config(
+        required_confirmations=0,
+        default_provider=default_provider,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+        gas_limit="max",
+        **kwargs,
+    )
+
+
+def _create_config(required_confirmations: int = 2, **kwargs) -> NetworkConfig:
+    # Put in own method to isolate `type: ignore` comments
+    return NetworkConfig(required_confirmations=required_confirmations, **kwargs)
+
 
 class EthereumConfig(PluginConfig):
-    mainnet: NetworkConfig = NetworkConfig(required_confirmations=7, block_time=13)  # type: ignore
-    mainnet_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    ropsten: NetworkConfig = NetworkConfig(required_confirmations=12, block_time=15)  # type: ignore
-    ropsten_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    kovan: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=4)  # type: ignore
-    kovan_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    rinkeby: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    rinkeby_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    goerli: NetworkConfig = NetworkConfig(required_confirmations=2, block_time=15)  # type: ignore
-    goerli_fork: NetworkConfig = NetworkConfig(
-        default_provider=None,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
-    local: NetworkConfig = NetworkConfig(
-        default_provider="test",
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
-    )  # type: ignore
+    mainnet: NetworkConfig = _create_config(block_time=13)
+    mainnet_fork: NetworkConfig = _create_local_config()
+    goerli: NetworkConfig = _create_config(block_time=15)
+    goerli_fork: NetworkConfig = _create_local_config()
+    local: NetworkConfig = _create_local_config(default_provider="test")
     default_network: str = LOCAL_NETWORK_NAME
 
 
@@ -146,9 +165,14 @@ class Ethereum(EcosystemAPI):
         return str(address)
 
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
-        code = self.provider.get_code(address).hex()[2:]
+        contract_code = self.provider.get_code(address)
+        if isinstance(contract_code, bytes):
+            contract_code = contract_code.hex()
+
+        code = contract_code[2:]
         if not code:
             return None
+
         patterns = {
             ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
             ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
@@ -161,7 +185,9 @@ class Ethereum(EcosystemAPI):
                 target = self.conversion_manager.convert(match.group(1), AddressType)
                 return ProxyInfo(type=type, target=target)
 
-        str_to_slot = lambda text: int(keccak(text=text).hex(), 16)  # noqa: E731
+        def str_to_slot(text):
+            return int(keccak(text=text).hex(), 16)
+
         slots = {
             ProxyType.Standard: str_to_slot("eip1967.proxy.implementation") - 1,
             ProxyType.Beacon: str_to_slot("eip1967.proxy.beacon") - 1,
@@ -178,7 +204,6 @@ class Ethereum(EcosystemAPI):
                 continue
 
             target = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
-
             # read `target.implementation()`
             if type == ProxyType.Beacon:
                 abi = MethodABI(
@@ -187,7 +212,7 @@ class Ethereum(EcosystemAPI):
                     stateMutability="view",
                     outputs=[ABIType(type="address")],
                 )
-                target = ContractCall(abi, target)()
+                target = ContractCall(abi, target)(skip_trace=True)
 
             return ProxyInfo(type=type, target=target)
 
@@ -243,21 +268,22 @@ class Ethereum(EcosystemAPI):
 
             status = TransactionStatusEnum(status)
 
-        txn_hash = data.get("hash")
+        txn_hash = data.get("hash") or data.get("txn_hash") or data.get("transaction_hash")
 
         if txn_hash:
-            txn_hash = data["hash"].hex() if isinstance(data["hash"], HexBytes) else data["hash"]
+            txn_hash = txn_hash.hex() if isinstance(txn_hash, HexBytes) else txn_hash
 
-        if data.get("data") and isinstance(data.get("data"), str):
-            data["data"] = bytes(HexBytes(data.get("data")))  # type: ignore
+        data_bytes = data.get("data", b"")
+        if data_bytes and isinstance(data_bytes, str):
+            data["data"] = HexBytes(data_bytes)
 
-        elif data.get("input", b"") and isinstance(data.get("input", b""), str):
-            data["input"] = bytes(HexBytes(data.get("input", b"")))
+        elif "input" in data and isinstance(data["input"], str):
+            data["input"] = HexBytes(data["input"])
 
-        receipt = Receipt(  # type: ignore
+        receipt = Receipt(
             block_number=data.get("block_number") or data.get("blockNumber"),
-            contract_address=data.get("contractAddress"),
-            gas_limit=data.get("gas") or data.get("gasLimit"),
+            contract_address=data.get("contract_address") or data.get("contractAddress"),
+            gas_limit=data.get("gas") or data.get("gas_limit") or data.get("gasLimit"),
             gas_price=data.get("gas_price") or data.get("gasPrice"),
             gas_used=data.get("gas_used") or data.get("gasUsed"),
             logs=data.get("logs", []),
@@ -280,9 +306,12 @@ class Ethereum(EcosystemAPI):
         if "total_difficulty" in data:
             data["totalDifficulty"] = data.pop("total_difficulty")
         if "base_fee" in data:
-            data["baseFee"] = data.pop("base_fee")
+            data["baseFeePerGas"] = data.pop("base_fee")
+        elif "baseFee" in data:
+            data["baseFeePerGas"] = data.pop("baseFee")
         if "transactions" in data:
             data["num_transactions"] = len(data["transactions"])
+
         return Block.parse_obj(data)
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
@@ -293,10 +322,11 @@ class Ethereum(EcosystemAPI):
         return HexBytes(b"")
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
-        output_types = [o.canonical_type for o in abi.outputs]  # type: ignore
+        output_types_str = [o.canonical_type for o in abi.outputs]
+        output_types = [parse_type(o.dict()) for o in abi.outputs]
 
         try:
-            vm_return_values = decode(output_types, raw_data)
+            vm_return_values = decode(output_types_str, raw_data)
         except InsufficientDataBytes as err:
             raise DecodingError() from err
 
@@ -307,8 +337,7 @@ class Ethereum(EcosystemAPI):
             vm_return_values = (vm_return_values,)
 
         output_values = [
-            self.decode_primitive_value(v, parse_type(t))
-            for v, t in zip(vm_return_values, output_types)
+            self.decode_primitive_value(v, t) for v, t in zip(vm_return_values, output_types)
         ]
 
         parser = StructParser(abi)
@@ -389,7 +418,7 @@ class Ethereum(EcosystemAPI):
             :class:`~ape.api.transactions.TransactionAPI`
         """
 
-        transaction_types = {
+        transaction_types: Dict[TransactionType, Type[TransactionAPI]] = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
             TransactionType.ACCESS_LIST: AccessListTransaction,
@@ -440,7 +469,12 @@ class Ethereum(EcosystemAPI):
                 s=bytes(kwargs["s"]),
             )
 
-        return txn_class(**kwargs)  # type: ignore
+        if "max_priority_fee_per_gas" in kwargs:
+            kwargs["max_priority_fee"] = kwargs.pop("max_priority_fee_per_gas")
+        if "max_fee_per_gas" in kwargs:
+            kwargs["max_fee"] = kwargs.pop("max_fee_per_gas")
+
+        return txn_class(**kwargs)
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         abi_inputs = {
@@ -475,4 +509,4 @@ class Ethereum(EcosystemAPI):
                 log_index=log["logIndex"],
                 transaction_hash=log["transactionHash"],
                 transaction_index=log["transactionIndex"],
-            )  # type: ignore
+            )

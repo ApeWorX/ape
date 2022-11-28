@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
 from sqlalchemy import create_engine, func
-from sqlalchemy.engine import CursorResult  # type: ignore
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.sql import column, insert, select
 from sqlalchemy.sql.expression import Insert, Select
 
@@ -379,7 +379,7 @@ class CacheQueryProvider(QueryAPI):
 
     @_cache_update_clause.register
     def _cache_update_block_clause(self, query: BlockQuery) -> Insert:
-        return insert(Blocks)  # type: ignore
+        return insert(Blocks)
 
     # TODO: Update `transactions` table schema so we can use `EcosystemAPI.decode_receipt`
     # Uncomment below after https://github.com/ApeWorX/ape/issues/994
@@ -389,7 +389,7 @@ class CacheQueryProvider(QueryAPI):
 
     @_cache_update_clause.register
     def _cache_update_events_clause(self, query: ContractEventQuery) -> Insert:
-        return insert(ContractEvents)  # type: ignore
+        return insert(ContractEvents)
 
     @singledispatchmethod
     def _get_cache_data(

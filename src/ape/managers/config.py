@@ -23,6 +23,11 @@ class DeploymentConfig(PluginConfig):
     contract_type: str
 
 
+class CompilerConfig(PluginConfig):
+    ignore_files: List[str] = ["*package.json", "*package-lock.json", "*tsconfig.json"]
+    """List of globular files to ignore"""
+
+
 class DeploymentConfigCollection(dict):
     def __init__(self, data: Dict, valid_ecosystems: Dict, valid_networks: List[str]):
         for ecosystem_name, networks in data.items():
@@ -89,6 +94,9 @@ class ConfigManager(BaseInterfaceModel):
     meta: PackageMeta = PackageMeta()
     """Metadata about the project."""
 
+    compiler: CompilerConfig = CompilerConfig()
+    """Global compiler information."""
+
     contracts_folder: Path = None  # type: ignore
     """
     The path to the project's ``contracts/`` directory
@@ -132,6 +140,7 @@ class ConfigManager(BaseInterfaceModel):
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
+            self.compiler = CompilerConfig.parse_obj(cache.get("compiler", {}))
             return cache
 
         # First, load top-level configs. Then, load all the plugin configs.
@@ -139,7 +148,7 @@ class ConfigManager(BaseInterfaceModel):
 
         configs = {}
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
-        user_config = load_config(config_file) if config_file.exists() else {}
+        user_config = load_config(config_file) if config_file.is_file() else {}
         self.name = configs["name"] = user_config.pop("name", "")
         self.version = configs["version"] = user_config.pop("version", "")
         meta_dict = user_config.pop("meta", {})
@@ -149,6 +158,9 @@ class ConfigManager(BaseInterfaceModel):
         self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
             "default_ecosystem", "ethereum"
         )
+        compiler_dict = user_config.pop("compiler", CompilerConfig().dict())
+        configs["compiler"] = compiler_dict
+        self.compiler = CompilerConfig(**compiler_dict)
 
         try:
             self.network_manager.set_default_ecosystem(self.default_ecosystem)
@@ -160,7 +172,7 @@ class ConfigManager(BaseInterfaceModel):
             raise ConfigError("'dependencies' config item must be a list of dicts.")
 
         decode = self.dependency_manager.decode_dependency
-        configs["dependencies"] = [decode(dep) for dep in dependencies]  # type: ignore
+        configs["dependencies"] = [decode(dep) for dep in dependencies]
         self.dependencies = configs["dependencies"]
 
         # NOTE: It is okay for this directory not to exist at this point.
@@ -268,12 +280,13 @@ class ConfigManager(BaseInterfaceModel):
         self.project_manager.path = project_folder
         os.chdir(project_folder)
 
-        self.load(force_reload=True)
-        yield self.project_manager
+        try:
+            self.load(force_reload=True)
+            yield self.project_manager
+        finally:
+            self.PROJECT_FOLDER = initial_project_folder
+            self.contracts_folder = initial_contracts_folder
+            self.project_manager.path = initial_project_folder
 
-        self.PROJECT_FOLDER = initial_project_folder
-        self.contracts_folder = initial_contracts_folder
-        self.project_manager.path = initial_project_folder
-
-        if initial_project_folder.is_dir():
-            os.chdir(initial_project_folder)
+            if initial_project_folder.is_dir():
+                os.chdir(initial_project_folder)

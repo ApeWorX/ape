@@ -1,7 +1,7 @@
 from typing import List
 
 from ape.exceptions import ConversionError
-from ape.types import AddressType
+from ape.types import AddressType, ContractCode
 from ape.utils import BaseInterface, abstractmethod
 
 
@@ -9,6 +9,26 @@ class BaseAddress(BaseInterface):
     """
     A base address API class. All account-types subclass this type.
     """
+
+    @property
+    def _base_dir_values(self) -> List[str]:
+        """
+        This exists because when you call ``dir(BaseAddress)``, you get the type's return
+        value and not the instances. This allows base-classes to make use of shared
+        ``IPython`` ``__dir__`` values.
+        """
+
+        # NOTE: mypy is confused by properties.
+        #  https://github.com/python/typing/issues/1112
+        return [
+            str(BaseAddress.address.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.balance.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.code.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.codesize.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.nonce.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.is_contract.fget.__name__),  # type: ignore[attr-defined]
+            str(BaseAddress.provider.fget.__name__),  # type: ignore[attr-defined]
+        ]
 
     @property
     @abstractmethod
@@ -35,19 +55,12 @@ class BaseAddress(BaseInterface):
     def __dir__(self) -> List[str]:
         """
         Display methods to IPython on ``a.[TAB]`` tab completion.
+        Overridden to lessen amount of methods shown to only those that are useful.
 
         Returns:
             List[str]: Method names that IPython uses for tab completion.
         """
-        return [
-            "address",
-            "balance",
-            "code",
-            "codesize",
-            "nonce",
-            "is_contract",
-            "provider",
-        ]
+        return self._base_dir_values
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.address}>"
@@ -78,7 +91,7 @@ class BaseAddress(BaseInterface):
         return self.provider.get_balance(self.address)
 
     @property
-    def code(self) -> bytes:
+    def code(self) -> ContractCode:
         """
         The raw bytes of the smart-contract code at the address.
         """

@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Optional, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
@@ -20,7 +21,6 @@ from hexbytes import HexBytes
 from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
-from ape._compat import Literal
 from ape.utils.misc import to_int
 
 from .signatures import MessageSignature, SignableMessage, TransactionSignature
@@ -29,6 +29,11 @@ BlockID = Union[int, HexStr, HexBytes, Literal["earliest", "latest", "pending"]]
 """
 An ID that can match a block, such as the literals ``"earliest"``, ``"latest"``, or ``"pending"``
 as well as a block number or hash (HexBytes).
+"""
+
+ContractCode = Union[str, bytes, HexBytes]
+"""
+A type that represents contract code, which can be represented in string, bytes, or HexBytes.
 """
 
 SnapshotID = Union[str, int, bytes]
@@ -47,7 +52,46 @@ A raw data-type representation of an address.
 """
 
 
+GasLimit = Union[Literal["auto", "max"], int, str]
+"""
+A value you can give to Ape for handling gas-limit calculations.
+``"auto"`` refers to automatically figuring out the gas,
+``"max"`` refers to using the maximum block gas limit,
+and otherwise you can provide a numeric value.
+"""
+
+
+GasReport = Dict[str, Dict[str, List[int]]]
+"""
+A gas report in Ape.
+"""
+
+
 TopicFilter = List[Union[Optional[HexStr], List[Optional[HexStr]]]]
+
+
+@dataclass
+class ContractFunctionPath:
+    """
+    Useful for identifying a method in a contract.
+    """
+
+    contract_name: str
+    method_name: Optional[str] = None
+
+    @classmethod
+    def from_str(cls, value: str) -> "ContractFunctionPath":
+        if ":" in value:
+            contract_name, method_name = value.split(":")
+            return cls(contract_name=contract_name, method_name=method_name)
+
+        return cls(contract_name=value)
+
+    def __str__(self) -> str:
+        return f"{self.contract_name}:{self.method_name}"
+
+    def __repr__(self) -> str:
+        return f"<{self}>"
 
 
 class LogFilter(BaseModel):
@@ -89,7 +133,7 @@ class LogFilter(BaseModel):
         cls,
         event: EventABI,
         search_topics: Optional[Dict[str, Any]] = None,
-        addresses: List[AddressType] = None,
+        addresses: Optional[List[AddressType]] = None,
         start_block=None,
         stop_block=None,
     ):
@@ -116,14 +160,14 @@ class LogFilter(BaseModel):
 
             return encode_hex(encode([abi_type], [value]))
 
-        for topic in abi_inputs.topics:
+        for topic in abi_inputs.topic_abi_types:
             if topic.name in search_topics:
                 encoded_value = encode_topic_value(topic.type, search_topics[topic.name])
                 topic_filter.append(encoded_value)
             else:
                 topic_filter.append(None)
 
-        topic_names = [i.name for i in abi_inputs.topics if i.name]
+        topic_names = [i.name for i in abi_inputs.topic_abi_types if i.name]
         invalid_topics = set(search_topics) - set(topic_names)
         if invalid_topics:
             raise ValueError(

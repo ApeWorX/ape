@@ -5,18 +5,16 @@
 In the latest release, Ape requires:
 
 - Linux or macOS
-- Python 3.7.2 or later
+- Python 3.8 or later
 
 **Windows**:
 
 1.  Install Windows Subsystem Linux
     [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install)
 2.  Choose Ubuntu 20.04 OR Any other Linux Distribution with Python
-    3.7.2 or later
+    3.8 or later
 
-Please make sure you are using Python 3.7.2 or later.
-
-Check your python command by entering
+Check your python command by entering:
 
 ```bash
 python3 --version
@@ -36,18 +34,17 @@ Then install `ape` via
 pipx install eth-ape
 ```
 
-or install w/ ApeWorX-recommended plugins via
+To install Ape and a list of common, recommended plugins at the same time, do:
 
 ```bash
-pipx install eth-ape[recommended-plugins]
+pipx install eth-ape'[recommended-plugins]'
 ```
 
 ### via `pip`
 
 **Suggestion**: Create a virtual environment using `virtualenv` or `venv.`
 
-You may skip this creating a virtual environment if you know you don\'t
-require one for your use case.
+You may skip creating a virtual environment if you know you don\'t require one for your use case.
 
 - [virtualenv](https://pypi.org/project/virtualenv/)
 - [venv](https://docs.python.org/3/library/venv.html)
@@ -58,44 +55,43 @@ require one for your use case.
 
 * (MacOS Option) Install via homebrew [brew](https://formulae.brew.sh/formula/virtualenv)
 
-Create your virtual environment folder
+First, create your virtual environment folder:
 
 ```bash
-python3 -m venv /path/to/new/environment
+python3 -m venv <path/to/new/env>
+```
+
+Then, activate your virtual environment:
+
+```bash
 source <venv_folder>/bin/activate
 ```
 
-NOTE: the path to venv is not a real path.
-
 You should see `(name_of_venv) DESKTOP_NAME:~/path:$`.
+
 To deactivate the virtual environment, do:
 
 ```bash
 deactivate
 ```
 
-Now that your Python version is later than 3.7.2 and you have created a
-virtual environment let\'s install Ape!
-
-You can install the latest release via
-[pip](https://pypi.org/project/pip/):
+Now that you have Python installed in your virtual environment, install the `eth-ape` Python package:
+You can install the latest release via [pip](https://pypi.org/project/pip/):
 
 ```bash
 pip install -U pip
 pip install eth-ape
 ```
 
-or install w/ ApeWorX-recommended plugins via
+To install Ape and a list of common, recommended plugins at the same time, do:
 
 ```bash
-pip install eth-ape[recommended-plugins]
+pip install eth-ape'[recommended-plugins]'
 ```
 
 ### via `docker`
 
-Please visit our
-[Dockerhub](https://hub.docker.com/repository/docker/apeworx/ape) for
-more details on using Ape with Docker.
+Please visit our [Dockerhub](https://hub.docker.com/repository/docker/apeworx/ape) for more details on using Ape with Docker.
 
 ```bash
 docker run \
@@ -114,24 +110,15 @@ sudo rm -rf **\~/.solcx**
 sudo rm -rf **\~/.vvm**
 ```
 
-## Overview
-
-For more in-depth information about the project please look at the [projects](https://docs.apeworx.io/ape/stable/userguides/projects.html)
-It explains the purpose of each folder and how to use them effectively.
-
-Use `ape init` to initialize your ape project folders. Visit [userguide project](https://docs.apeworx.io/ape/stable/userguides/projects.html) for more information.
-
-```bash
-ape init
-```
-
 ## Environment Variables:
 
-Environment Variables are used to help connect you to your files or ecosystems outside of ApeWorX.
+Some plugins require environment variables to connect to their external systems, such project IDs or API keys.
+Follow instructions from individual plugin documentations, such as:
 
-Please setup environment variables (where applicable) and follow the latest instructions from the 3rd party:
+* [ape-alchemy](https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#quick-usage)
+* [ape-infura](https://github.com/ApeWorX/ape-infura#readme)
 
-Example use case:
+Generally, set environment variables by doing the following:
 
 ```bash
 # Used by the `ape-infura` plugin
@@ -140,30 +127,31 @@ export WEB3_INFURA_PROJECT_ID=<YOUR_INFURA_PROJECT_ID>
 export WEB3_ALCHEMY_API_KEY=<YOUR_ALCHEMY_KEY>
 ```
 
-Visit [ape-alchemy](https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#quick-usage)
-
-Visit [ape-infura](https://github.com/ApeWorX/ape-infura#readme)
-
-## Ape Console
-
-Ape provides an IPython interactive console with useful pre-defined locals to interact with your project.
-To interact with a deployed contract in a local environment, start by opening the console:
-
-```bash
-ape console --network :mainnet-fork:hardhat
-```
-
-Visit [Ape Console](https://docs.apeworx.io/ape/stable/commands/console.html) to learn how to use Ape Console.
+Place these in environment files, such as your `.bashrc` or `.zshrc`.
 
 ## Quick Usage
 
-Use `-h` to list all the commands.
+Use `-h` to list all the commands:
 
 ```bash
 ape -h
 ```
 
-You can import or generate accounts.
+### Projects
+
+When using Ape, you generally will work with a project.
+To quickly get started using ape, generate a project using the `ape init` command:
+
+```bash
+ape init
+```
+
+For more in-depth information about smart-contract projects using the Ape framework, see the [projects guide](https://docs.apeworx.io/ape/stable/userguides/projects.html).
+
+### Accounts
+
+In Ape, you will need accounts to make transactions.
+You can import or generate accounts using the core `accounts` plugin:
 
 ```bash
 ape accounts import acc0   # Will prompt for a private key
@@ -176,6 +164,10 @@ List all your accounts with the `list` command.
 ape accounts list
 ```
 
+Learn more about accounts in Ape by following the [accounts guide](https://docs.apeworx.io/ape/stable/userguides/accounts.html).
+
+### Plugins
+
 Add any plugins you may need, such as `vyper`.
 
 ```bash
@@ -184,19 +176,14 @@ ape plugins install vyper
 ape plugins list -a
 ```
 
-**NOTE**: If a plugin does not originate from the 
-[ApeWorX GitHub organization](https://github.com/ApeWorX?q=ape&type=all), you will get a warning about installing 
-3rd-class plugins. Any plugin that is not an official plugin has the chance of not being trustworthy. Thus, you should 
-be mindful about which plugins you install. Additionally, plugins that come bundled with `ape` in the core installation 
-cannot be removed and are considered part of the `ape` core software.
+**NOTE**: If a plugin does not originate from the [ApeWorX GitHub organization](https://github.com/ApeWorX?q=ape&type=all), you will get a warning about installing 3rd-party plugins.
+Install 3rd party plugins at your own risk.
+Additionally, plugins that come bundled with `ape` in the core installation cannot be removed and are part of the `ape` core software.
 
-You can interact and compile contracts.
-Here is an example of a project with a contract you interact with: 
+Learn more about installing plugins from following [this guide](https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html).
+Learn more about developing your own plugins from [this guide](https://docs.apeworx.io/ape/stable/userguides/projects.html).
 
-```bash 
-git clone https://github.com/brownie-mix/vyper-token-mix.git
-cd vyper-token-mix/
-```
+### Compiling
 
 You can compile contracts within the `contracts/` directory of your project.
 The `--size` option will display you the size of the contract.
@@ -205,17 +192,33 @@ The `--size` option will display you the size of the contract.
 ape compile --size
 ```
 
+Learn more about compiling in Ape by following the [compile guide](https://docs.apeworx.io/ape/stable/userguides/compile.html).
+
+### Testing
+
+Use Ape to test your smart-contract projects.
 Provide the same arguments to `pytest` as you would to the `ape test` command.
+
+For example:
 
 ```bash
 ape test -k test_only_one_thing
 ```
 
-Connect an IPython session through your favorite provider.
+Visit the [testing guide](https://docs.apeworx.io/ape/stable/userguides/testing.html) to learn more about testing using Ape.
+
+### Console
+
+Ape provides an `IPython` interactive console with useful pre-defined locals to interact with your project.
+To interact with a deployed contract in a local environment, start by opening the console:
 
 ```bash
 ape console --network ethereum:mainnet:infura
 ```
+
+Visit [Ape Console](https://docs.apeworx.io/ape/stable/commands/console.html) to learn how to use Ape Console.
+
+### Scripts
 
 If you want to run specific files in a `scripts/` directory, you can do it using the `ape run` command.
 
@@ -224,15 +227,17 @@ If you want to run specific files in a `scripts/` directory, you can do it using
 $ ape run deploy
 ```
 
+Learn more about scripting using Ape by following the [scripting guide](https://docs.apeworx.io/ape/stable/userguides/scripts.html).
+
 ### Logging
 
 To enable debug logging, run your command with the `--verbosity` flag using `DEBUG` as the value:
 
 ```bash
-ape run --verbosity DEBUG
+ape --verbosity DEBUG run
 ```
 
-You can use `ape` as a package outside of scripts for the `ape run` command as well.
+### Networks
 
 You can work with registered networks, providers, and blockchain ecosystems (like Ethereum):
 
@@ -242,21 +247,4 @@ with networks.ethereum.mainnet.use_provider("infura"):
     ...  # Work with the infura provider here
 ```
 
-You can work with test accounts, local accounts, and (WIP) popular hardware wallets:
-
-```python
-from ape import accounts
-a = accounts[0]  # Load by index
-a = accounts["example.eth"]  # or load by ENS/address
-a = accounts.load("alias") # or load by alias
-```
-
-You can also work with contract types:
-
-```python
-from ape import project
-c = a.deploy(project.MyContract, ...)
-c.viewThis()  # Make Web3 calls
-c.doThat(sender=a)  # Make Web3 transactions
-assert c.MyEvent[-1].caller == a  # Search through Web3 events
-```
+To learn more about networks in Ape, see [this guide](https://docs.apeworx.io/ape/stable/commands/networks.html). 

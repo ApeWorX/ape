@@ -1,5 +1,6 @@
 from functools import partial
 from itertools import islice
+from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import click
@@ -11,7 +12,7 @@ from hexbytes import HexBytes
 from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery, extract_fields
-from ape.exceptions import ArgumentsLengthError, ChainError, ContractError
+from ape.exceptions import ArgumentsLengthError, ChainError, ContractError, TransactionNotFoundError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -123,7 +124,7 @@ class ContractCallHandler(ManagerAccessMixin):
         args = self._convert_tuple(args)
         selected_abi = _select_method_abi(self.abis, args)
 
-        return ContractCall(  # type: ignore
+        return ContractCall(
             abi=selected_abi,
             address=self.contract.address,
         )(*args, **kwargs)
@@ -292,7 +293,7 @@ class ContractTransactionHandler(ManagerAccessMixin):
         args = self._convert_tuple(args)
         selected_abi = _select_method_abi(self.abis, args)
 
-        return ContractTransaction(  # type: ignore
+        return ContractTransaction(
             abi=selected_abi,
             address=self.contract.address,
         )
@@ -313,7 +314,7 @@ class ContractEvent(ManagerAccessMixin):
         self,
         contract: "ContractInstance",
         abi: EventABI,
-        cached_logs: List[ContractLog] = None,
+        cached_logs: Optional[List[ContractLog]] = None,
     ) -> None:
         super().__init__()
         self.contract = contract
@@ -574,7 +575,7 @@ class ContractInstance(BaseAddress):
 
     def __init__(
         self,
-        address: Union[AddressType, str],
+        address: AddressType,
         contract_type: ContractType,
         txn_hash: Optional[str] = None,
     ) -> None:
@@ -609,7 +610,12 @@ class ContractInstance(BaseAddress):
         """
 
         if not self._cached_receipt and self.txn_hash:
-            receipt = self.provider.get_transaction(self.txn_hash)
+
+            try:
+                receipt = self.chain_manager.get_receipt(self.txn_hash)
+            except TransactionNotFoundError:
+                return None
+
             self._cached_receipt = receipt
             return receipt
 
@@ -631,7 +637,7 @@ class ContractInstance(BaseAddress):
             ``AddressType``
         """
 
-        return self.provider.network.ecosystem.decode_address(self._address)
+        return self._address
 
     @cached_property
     def _view_methods_(self) -> Dict[str, ContractCallHandler]:
@@ -670,6 +676,74 @@ class ContractInstance(BaseAddress):
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
             raise AttributeError(str(err)) from err
+
+    def call_view_method(self, method_name: str, *args, **kwargs) -> Any:
+        """
+        Call a contract's view function directly using the method_name.
+        This is helpful in the scenario where the contract has a
+        method name matching an attribute of the
+        :class:`~ape.api.address.BaseAddress` class, such as ``nonce``
+        or ``balance``
+
+        Args:
+            method_name (str): The contract method name to be called
+            *args: Contract method arguments.
+            **kwargs: Transaction values, such as ``value`` or ``sender``
+
+        Returns:
+            Any: Output of smart contract view call.
+
+        """
+
+        if method_name in self._view_methods_:
+            view_handler = self._view_methods_[method_name]
+            output = view_handler(*args, **kwargs)
+            return output
+
+        elif method_name in self._mutable_methods_:
+            handler = self._mutable_methods_[method_name].call
+            output = handler(*args, **kwargs)
+            return output
+
+        else:
+            # Didn't find anything that matches
+            name = self.contract_type.name or self.__class__.__name__
+            raise AttributeError(f"'{name}' has no attribute '{method_name}'.")
+
+    def invoke_transaction(self, method_name: str, *args, **kwargs) -> ReceiptAPI:
+        """
+        Call a contract's function directly using the method_name.
+        This function is for non-view function's which may change
+        contract state and will execute a transaction.
+        This is helpful in the scenario where the contract has a
+        method name matching an attribute of the
+        :class:`~ape.api.address.BaseAddress` class, such as ``nonce``
+        or ``balance``
+
+        Args:
+            method_name (str): The contract method name to be called
+            *args: Contract method arguments.
+            **kwargs: Transaction values, such as ``value`` or ``sender``
+
+        Returns:
+            :class:`~ape.api.transactions.ReceiptAPI`: Output of smart contract interaction.
+
+        """
+
+        if method_name in self._view_methods_:
+            view_handler = self._view_methods_[method_name].transact
+            output = view_handler(*args, **kwargs)
+            return output
+
+        elif method_name in self._mutable_methods_:
+            handler = self._mutable_methods_[method_name]
+            output = handler(*args, **kwargs)
+            return output
+
+        else:
+            # Didn't find anything that matches
+            name = self.contract_type.name or self.__class__.__name__
+            raise AttributeError(f"'{name}' has no attribute '{method_name}'.")
 
     def get_event_by_signature(self, signature: str) -> ContractEvent:
         """
@@ -725,9 +799,17 @@ class ContractInstance(BaseAddress):
         Returns:
             List[str]
         """
+
+        # NOTE: Type ignores because of this issue: https://github.com/python/typing/issues/1112
+        #  They can be removed after next `mypy` release containing fix.
+        values = [
+            "contract_type",
+            "txn_hash",
+            ContractInstance.receipt.fget.__name__,  # type: ignore[attr-defined]
+        ]
         return list(
-            set(super(BaseAddress, self).__dir__()).union(
-                self._view_methods_, self._mutable_methods_, self._events_
+            set(self._base_dir_values).union(
+                self._view_methods_, self._mutable_methods_, self._events_, values
             )
         )
 
@@ -777,7 +859,7 @@ class ContractInstance(BaseAddress):
             if len(handler_options) > 1:
                 raise AttributeError(
                     f"Multiple events named '{attr_name}' in '{self.contract_type.name}'.\n"
-                    f"Use 'events_by_signature' look-up."
+                    f"Use '{self.get_event_by_signature.__name__}' look-up."
                 )
             handler = handler_options[0]
 
@@ -842,11 +924,39 @@ class ContractContainer(ManagerAccessMixin):
             address, self.contract_type, txn_hash=txn_hash
         )
 
+    @cached_property
+    def source_path(self) -> Optional[Path]:
+        """
+        Returns the path to the local contract if determined that this container
+        belongs to the active project by cross checking source_id.
+
+        WARN: The will return a path if the contract has the same
+        source ID as one in the current project. That does not necessarily mean
+        they are the same contract, however.
+        """
+        contract_name = self.contract_type.name
+        source_id = self.contract_type.source_id
+        if not (contract_name and source_id):
+            return None
+
+        contract_container = self.project_manager._get_contract(contract_name)
+        if not (
+            contract_container
+            and contract_container.contract_type.source_id
+            and self.contract_type.source_id
+        ):
+            return None
+
+        if source_id == contract_container.contract_type.source_id:
+            return self.project_manager.contracts_folder / source_id
+        else:
+            return None
+
     def __call__(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
-        constructor = ContractConstructor(  # type: ignore
+        constructor = ContractConstructor(
             abi=self.contract_type.constructor,
-            deployment_bytecode=self.contract_type.get_deployment_bytecode() or b"",  # type: ignore
+            deployment_bytecode=self.contract_type.get_deployment_bytecode() or HexBytes(b""),
         )
 
         args_length = len(args)
@@ -953,4 +1063,4 @@ class ContractNamespace:
                 subcontracts = [c for c in self.contracts if _get_name(c).startswith(subname)]
                 return ContractNamespace(subname, subcontracts)
 
-        return self.__getattribute__(item)  # type: ignore
+        return self.__getattribute__(item)

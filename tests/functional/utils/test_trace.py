@@ -22,8 +22,8 @@ INTERNAL_TRANSFERS_TXN_HASH_1 = "0x0537316f37627655b7fe5e50e23f71cd835b377d1cde4
 BASE_CONTRACTS_PATH = Path(__file__).parent.parent / "data" / "contracts" / "ethereum"
 
 
-@pytest.fixture(scope="module")
-def local_contracts(owner, networks_connected_to_tester):
+@pytest.fixture
+def local_contracts(owner, eth_tester_provider):
     containers = {}
     for char in ("a", "b", "c"):
         contract_data = BASE_CONTRACTS_PATH / "local" / f"contract_{char}.json"
@@ -47,7 +47,7 @@ def full_contracts_cache(chain):
         chain.contracts._local_contract_types[address] = contract_type
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def local_receipt(local_contracts, owner):
     return local_contracts[0].methodWithoutArguments(sender=owner, value=123)
 
@@ -59,7 +59,7 @@ def mainnet_receipt():
     return Receipt.parse_obj(MAINNET_RECEIPT_DICT)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def local_call_tree(local_contracts):
     def set_address(d):
         if d["address"] == "b":
@@ -110,13 +110,13 @@ def assert_trace(capsys):
             parts = line.split(" ")
             for part in [p.strip() for p in parts if p.strip()]:
                 part = part.strip()
-                assert part in actual, f"Could not find '{part}' in expected"
+                assert part in actual, f"Could not find '{part}' in expected\n{output}"
 
     return assert_trace
 
 
 def test_trace(case, assert_trace):
-    parser = CallTraceParser(case.receipt)
+    parser = CallTraceParser(sender=case.receipt.sender, transaction_hash=case.receipt.txn_hash)
     actual = parser.parse_as_tree(case.call_tree)
     rich_print(actual)
     assert_trace(case.expected)

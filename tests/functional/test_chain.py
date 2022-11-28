@@ -12,11 +12,6 @@ from ape.exceptions import APINotImplementedError, ChainError, ConversionError
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
-@pytest.fixture(scope="module", autouse=True)
-def connection(networks_connected_to_tester):
-    yield
-
-
 @pytest.fixture
 def contract_0(project_with_contract):
     return project_with_contract.ApeContract0
@@ -67,6 +62,48 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     assert receiver.balance == initial_balance
 
 
+def test_isolate(chain, vyper_contract_instance, owner):
+    number_at_start = 444
+    vyper_contract_instance.setNumber(number_at_start, sender=owner)
+    start_head = chain.blocks.height
+
+    with chain.isolate():
+        vyper_contract_instance.setNumber(333, sender=owner)
+        assert vyper_contract_instance.myNumber() == 333
+        assert chain.blocks.height == start_head + 1
+
+    assert vyper_contract_instance.myNumber() == number_at_start
+    assert chain.blocks.height == start_head
+
+
+def test_get_receipt_uses_cache(mocker, eth_tester_provider, chain, vyper_contract_instance, owner):
+    expected = vyper_contract_instance.setNumber(3, sender=owner)
+    eth = eth_tester_provider.web3.eth
+    rpc_spy = mocker.spy(eth, "get_transaction")
+    actual = chain.get_receipt(expected.txn_hash)
+    assert actual.txn_hash == expected.txn_hash
+    assert actual.sender == expected.sender
+    assert actual.receiver == expected.receiver
+    assert not rpc_spy.call_count
+
+    # Show it uses the provider when the receipt is not cached.
+    del chain.account_history._hash_to_receipt_map[expected.txn_hash]
+    chain.get_receipt(expected.txn_hash)
+    assert rpc_spy.call_count == 1
+
+    # Show it is cached after the first time
+    chain.get_receipt(expected.txn_hash)
+    assert rpc_spy.call_count == 1  # Not changed
+
+
+def test_get_receipt_from_account_history(chain, vyper_contract_instance, owner):
+    expected = vyper_contract_instance.setNumber(3, sender=owner)
+    actual = chain.account_history.get_receipt(expected.txn_hash)
+    assert actual.txn_hash == expected.txn_hash
+    assert actual.sender == expected.sender
+    assert actual.receiver == expected.receiver
+
+
 def test_snapshot_and_restore_unknown_snapshot_id(chain):
     _ = chain.snapshot()
     chain.mine()
@@ -97,8 +134,8 @@ def test_account_history(sender, receiver, chain):
     assert len(transactions_from_cache) == length_at_start + 1
 
     txn = transactions_from_cache[-1]
-    assert txn.transaction.sender == receipt.transaction.sender == sender
-    assert txn.transaction.receiver == receipt.transaction.receiver == receiver
+    assert txn.sender == receipt.sender == sender
+    assert txn.receiver == receipt.receiver == receiver
 
 
 def test_account_history_caches_sender_over_address_key(
@@ -216,7 +253,8 @@ def test_set_pending_timestamp_with_deltatime(chain):
     start_timestamp = chain.pending_timestamp
     chain.mine(deltatime=5)
     new_timestamp = chain.pending_timestamp
-    assert new_timestamp - start_timestamp - 5 <= 1
+    actual = new_timestamp - start_timestamp - 5
+    assert actual <= 1
 
 
 def test_set_pending_timestamp_failure(chain):
@@ -294,10 +332,9 @@ def test_instance_at(chain, contract_instance):
 
 def test_instance_at_unknown_hex_str(chain, contract_instance):
     # Fails when decoding Ethereum address and NOT conversion error.
-    with pytest.raises(ValueError):
-        chain.contracts.instance_at(
-            "0x1402b10CA274cD76C441e16C844223F79D3566De12bb12b0aebFE41aDFAe302"
-        )
+    hex_str = "0x1402b10CA274cD76C441e16C844223F79D3566De12bb12b0aebFE41aDFAe302"
+    with pytest.raises(ValueError, match=f"Unknown address value '{hex_str}'."):
+        chain.contracts.instance_at(hex_str)
 
 
 def test_instance_at_when_given_contract_type(chain, contract_instance):
@@ -394,7 +431,7 @@ def test_get_deployments_live_migration(
     chain, owner, contract_0, dummy_live_network, caplog, use_debug
 ):
     contract = owner.deploy(contract_0, required_confirmations=0)
-    old_style_map = {"ethereum": {"rinkeby": {"ApeContract0": [contract.address]}}}
+    old_style_map = {"ethereum": {"goerli": {"ApeContract0": [contract.address]}}}
     chain.contracts._write_deployments_mapping(old_style_map)
     actual = chain.contracts.get_deployments(contract_0)
     assert actual == [contract]
@@ -457,7 +494,7 @@ def test_poll_blocks_stop_block_not_in_future(chain_that_mined_5):
 
 
 def test_poll_blocks(chain_that_mined_5, eth_tester_provider, owner, PollDaemon):
-    blocks = Queue(maxsize=3)
+    blocks: Queue = Queue(maxsize=3)
     poller = chain_that_mined_5.blocks.poll_blocks()
 
     with PollDaemon("blocks", poller, blocks.put, blocks.full):
@@ -494,6 +531,13 @@ def test_contracts_get_multiple(vyper_contract_instance, solidity_contract_insta
     )
 
 
+def test_contracts_get_multiple_no_addresses(chain, caplog):
+    contract_map = chain.contracts.get_multiple([])
+    assert not contract_map
+    assert caplog.records[-1].levelname == "WARNING"
+    assert "No addresses provided." in caplog.records[-1].message
+
+
 def test_contracts_get_all_include_non_contract_address(vyper_contract_instance, chain, owner):
     actual = chain.contracts.get_multiple((vyper_contract_instance.address, owner.address))
     assert len(actual) == 1
@@ -513,3 +557,16 @@ def test_contracts_get_non_contract_address(chain, owner):
 def test_contracts_get_attempts_to_convert(chain):
     with pytest.raises(ConversionError):
         chain.contracts.get("test.eth")
+
+
+def test_cache_non_checksum_address(chain, vyper_contract_instance):
+    """
+    When caching a non-checksum address, it should use its checksum
+    form automatically.
+    """
+    if vyper_contract_instance.address in chain.contracts:
+        del chain.contracts[vyper_contract_instance.address]
+
+    lowered_address = vyper_contract_instance.address.lower()
+    chain.contracts[lowered_address] = vyper_contract_instance.contract_type
+    assert chain.contracts[vyper_contract_instance.address] == vyper_contract_instance.contract_type

@@ -15,15 +15,17 @@ from pydantic import BaseModel
 
 from ape.exceptions import (
     NetworkError,
+    NetworkMismatchError,
     NetworkNotFoundError,
     ProviderNotConnectedError,
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, RawAddress
+from ape.types import AddressType, ContractLog, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
+    ManagerAccessMixin,
     abstractmethod,
     cached_property,
     raises_not_implemented,
@@ -32,10 +34,9 @@ from ape.utils import (
 from .config import PluginConfig
 
 if TYPE_CHECKING:
-    from ape.managers.networks import NetworkManager
-
     from .explorers import ExplorerAPI
-    from .providers import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI
+    from .providers import BlockAPI, ProviderAPI
+    from .transactions import ReceiptAPI, TransactionAPI
 
 
 LOCAL_NETWORK_NAME = "local"
@@ -328,7 +329,7 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def decode_primitive_value(
+    def decode_primitive_value(  # type: ignore[empty-body]
         self, value: Any, output_type: Union[str, Tuple, List]
     ) -> Union[str, HexBytes, Tuple]:
         """
@@ -439,7 +440,7 @@ class EcosystemAPI(BaseInterfaceModel):
         return None
 
 
-class ProviderContextManager:
+class ProviderContextManager(ManagerAccessMixin):
     """
     A context manager for temporarily connecting to a network.
     When entering the context, calls the :meth:`ape.api.providers.ProviderAPI.connect` method.
@@ -458,13 +459,11 @@ class ProviderContextManager:
             ...
     """
 
-    network_manager: "NetworkManager"
     connected_providers: Dict[str, "ProviderAPI"] = {}
     provider_stack: List[str] = []
 
-    def __init__(self, provider: "ProviderAPI", network_manager: "NetworkManager"):
-        self.provider = provider
-        self.network_manager = network_manager
+    def __init__(self, provider: "ProviderAPI"):
+        self._provider = provider
 
     @property
     def empty(self) -> bool:
@@ -477,26 +476,28 @@ class ProviderContextManager:
         self.pop_provider()
 
     def push_provider(self):
-        must_connect = not self.provider.is_connected
+        must_connect = not self._provider.is_connected
         if must_connect:
-            self.provider.connect()
+            self._provider.connect()
 
-        provider_id = self.get_provider_id(self.provider)
+        provider_id = self.get_provider_id(self._provider)
+        if provider_id is None:
+            raise ProviderNotConnectedError()
+
         self.provider_stack.append(provider_id)
-
         if provider_id in self.connected_providers:
             # Using already connected instance
             if must_connect:
                 # Disconnect if had to connect to check chain ID
-                self.provider.disconnect()
+                self._provider.disconnect()
 
-            self.provider = self.connected_providers[provider_id]
+            self._provider = self.connected_providers[provider_id]
         else:
             # Adding provider for the first time. Retain connection.
-            self.connected_providers[provider_id] = self.provider
+            self.connected_providers[provider_id] = self._provider
 
-        self.network_manager.active_provider = self.provider
-        return self.provider
+        self.network_manager.active_provider = self._provider
+        return self._provider
 
     def pop_provider(self):
         if self.empty:
@@ -530,14 +531,14 @@ class ProviderContextManager:
 
     @classmethod
     def get_provider_id(cls, provider: "ProviderAPI") -> Optional[str]:
-        try:
-            return (
-                f"{provider.network.ecosystem.name}:"
-                f"{provider.network.name}:{provider.name}-"
-                f"{provider.chain_id}"
-            )
-        except ProviderNotConnectedError:
+        if not provider.is_connected:
             return None
+
+        return (
+            f"{provider.network.ecosystem.name}:"
+            f"{provider.network.name}:{provider.name}-"
+            f"{provider.chain_id}"
+        )
 
 
 class NetworkAPI(BaseInterfaceModel):
@@ -605,6 +606,10 @@ class NetworkAPI(BaseInterfaceModel):
     @property
     def _network_config(self) -> Dict:
         return self.config.get(self.name, {})
+
+    @cached_property
+    def gas_limit(self) -> GasLimit:
+        return self._network_config.get("gas_limit", "auto")
 
     @property
     def chain_id(self) -> int:
@@ -716,7 +721,7 @@ class NetworkAPI(BaseInterfaceModel):
     def get_provider(
         self,
         provider_name: Optional[str] = None,
-        provider_settings: dict = None,
+        provider_settings: Optional[Dict] = None,
     ):
         """
         Get a provider for the given name. If given ``None``, returns the default provider.
@@ -733,12 +738,14 @@ class NetworkAPI(BaseInterfaceModel):
 
         provider_name = provider_name or self.default_provider
         if not provider_name:
+            from ape.managers.config import CONFIG_FILE_NAME
+
             raise NetworkError(
                 f"No default provider for network '{self.name}'. "
-                f"Set one in your ape-config.yaml:\n"
+                f"Set one in your {CONFIG_FILE_NAME}:\n"
                 f"\n{self.ecosystem.name}:"
                 f"\n  {self.name}:"
-                f"\n    default_provider: <DEFAULT_PROVIDER>"
+                "\n    default_provider: <DEFAULT_PROVIDER>"
             )
 
         provider_settings = provider_settings or {}
@@ -768,7 +775,7 @@ class NetworkAPI(BaseInterfaceModel):
     def use_provider(
         self,
         provider_name: str,
-        provider_settings: dict = None,
+        provider_settings: Optional[Dict] = None,
     ) -> ProviderContextManager:
         """
         Use and connect to a provider in a temporary context. When entering the context, it calls
@@ -792,11 +799,9 @@ class NetworkAPI(BaseInterfaceModel):
             :class:`ape.api.networks.ProviderContextManager`
         """
 
+        settings = provider_settings or {}
         return ProviderContextManager(
-            provider=self.get_provider(
-                provider_name=provider_name, provider_settings=provider_settings
-            ),
-            network_manager=self.network_manager,
+            provider=self.get_provider(provider_name=provider_name, provider_settings=settings),
         )
 
     @property
@@ -856,7 +861,8 @@ class NetworkAPI(BaseInterfaceModel):
             :class:`~ape.api.networks.ProviderContextManager`
         """
         if self.default_provider:
-            return self.use_provider(self.default_provider, provider_settings=provider_settings)
+            settings = provider_settings or {}
+            return self.use_provider(self.default_provider, provider_settings=settings)
 
         raise NetworkError(f"No providers for network '{self.name}'.")
 
@@ -875,6 +881,21 @@ class NetworkAPI(BaseInterfaceModel):
 
         logger.info(f"Publishing and verifying contract using '{self.explorer.name}'.")
         self.explorer.publish_contract(address)
+
+    def verify_chain_id(self, chain_id: int):
+        """
+        Verify a chain ID for this network.
+
+        Args:
+            chain_id (int): The chain ID to verify.
+
+        Raises:
+            :class:`~ape.exceptions.NetworkMismatchError`: When the network is
+              not local or adhoc and has a different hardcoded chain ID than
+              the given one.
+        """
+        if self.name not in ("adhoc", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
+            raise NetworkMismatchError(chain_id, self)
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:

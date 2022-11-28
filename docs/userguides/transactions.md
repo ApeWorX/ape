@@ -227,8 +227,43 @@ Additionally, you can view the traces of other transactions on your network.
 from ape import networks
 
 txn_hash = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
-receipt = networks.provider.get_transaction(txn_hash)
+receipt = networks.provider.get_receipt(txn_hash)
 receipt.show_trace()
+```
+
+In Ape, you can also show the trace for a call.
+Use the `show_trace=` kwarg on a contract call and Ape will display the trace before returning the data.
+
+```python
+token.balanceOf(account, show_trace=True)
+```
+
+**NOTE**: This may not work on all providers, but it should work on common ones such as `ape-hardhat` or `ape-geth`.
+
+## Gas Reports
+
+To view the gas report of a transaction receipt, use the [`ReceiptAPI.show_gas_report()`](../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report) method:
+
+```python
+from ape import networks
+
+txn_hash = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
+receipt = networks.provider.get_receipt(txn_hash)
+receipt.show_gas_report()
+```
+
+It will output tables of contracts and methods with gas usages that look like this:
+
+```bash
+                            DAI Gas
+
+  Method           Times called    Min.    Max.    Mean   Median
+ ────────────────────────────────────────────────────────────────
+  balanceOf                   4   1302    13028   1302    1302
+  allowance                   2   1377    1377    1337    1337
+│ approve                     1   22414   22414   22414   22414
+│ burn                        1   11946   11946   11946   11946
+│ mint                        1   25845   25845   25845   25845
 ```
 
 ## Estimate Gas Cost

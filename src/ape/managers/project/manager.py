@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Dict, List, Optional, Type, Union
+from typing import Dict, Iterable, List, Optional, Type, Union
 
 from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
@@ -84,7 +84,7 @@ class ProjectManager(BaseManager):
             List[pathlib.Path]: A list of a source file paths in the project.
         """
         files: List[Path] = []
-        if not self.contracts_folder.exists():
+        if not self.contracts_folder.is_dir():
             return files
 
         for extension in self.compiler_manager.registered_compilers:
@@ -99,7 +99,7 @@ class ProjectManager(BaseManager):
         in the project. ``False`` otherwise.
         """
 
-        return not self.contracts_folder.exists() or not self.contracts_folder.iterdir()
+        return not self.contracts_folder.is_dir() or not self.contracts_folder.iterdir()
 
     @property
     def interfaces_folder(self) -> Path:
@@ -147,7 +147,7 @@ class ProjectManager(BaseManager):
         compiler_list: List[Compiler] = []
         contracts_folder = self.config_manager.contracts_folder
         for ext, compiler in self.compiler_manager.registered_compilers.items():
-            sources = [x for x in self.source_paths if x.suffix == ext]
+            sources = [x for x in self.source_paths if x.is_file() and x.suffix == ext]
             if not sources:
                 continue
 
@@ -191,7 +191,7 @@ class ProjectManager(BaseManager):
         Use when publishing your package manifest.
         """
 
-        return self.config_manager.meta  # type: ignore
+        return self.config_manager.meta
 
     @property
     def tracked_deployments(self) -> Dict[BIP122_URI, Dict[str, EthPMContractInstance]]:
@@ -208,7 +208,7 @@ class ProjectManager(BaseManager):
 
         for ecosystem_path in [x for x in self._package_deployments_folder.iterdir() if x.is_dir()]:
             for deployment_path in [x for x in ecosystem_path.iterdir() if x.suffix == ".json"]:
-                ethpm_instance = EthPMContractInstance.parse_raw(deployment_path.read_text())
+                ethpm_instance = EthPMContractInstance.parse_file(deployment_path)
                 if not ethpm_instance:
                     continue
 
@@ -294,7 +294,7 @@ class ProjectManager(BaseManager):
                     name=name,
                     path=path,
                     version=version,
-                )  # type: ignore
+                )
                 if proj.is_valid:
                     return proj
 
@@ -368,7 +368,18 @@ class ProjectManager(BaseManager):
 
             # Fixes anomaly when accessing non-ContractType attributes.
             # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
-            return self.__getattribute__(attr_name)  # type: ignore
+            try:
+                return self.__getattribute__(attr_name)
+            except AttributeError as err:
+                message = f"ProjectManager has no attribute or contract named '{attr_name}'."
+                missing_exts = self.extensions_with_missing_compilers([])
+                if missing_exts:
+                    message = (
+                        f"{message} Could it be from one of the missing compilers for extensions: "
+                        + f'{", ".join(sorted(missing_exts))}?'
+                    )
+
+                raise AttributeError(message) from err
 
         return contract
 
@@ -396,7 +407,9 @@ class ProjectManager(BaseManager):
 
         return contract
 
-    def extensions_with_missing_compilers(self, extensions: Optional[List[str]]) -> List[str]:
+    def extensions_with_missing_compilers(
+        self, extensions: Optional[List[str]] = None
+    ) -> List[str]:
         """
         All file extensions in the ``contracts/`` directory (recursively)
         that do not correspond to a registered compiler.
@@ -470,7 +483,7 @@ class ProjectManager(BaseManager):
         return find_in_dir(self.contracts_folder)
 
     def load_contracts(
-        self, file_paths: Optional[Union[List[Path], Path]] = None, use_cache: bool = True
+        self, file_paths: Optional[Union[Iterable[Path], Path]] = None, use_cache: bool = True
     ) -> Dict[str, ContractType]:
         """
         Compile and get the contract types in the project.
@@ -488,34 +501,45 @@ class ProjectManager(BaseManager):
             Dict[str, ``ContractType``]: A dictionary of contract names to their
             types for each compiled contract.
         """
-        self._load_dependencies()
 
-        if not self.contracts_folder.exists():
+        # NOTE: Always load dependencies even when there is no contracts folder.
+        #  This is to support projects that only use dependencies.
+        self._load_dependencies()
+        if not self.contracts_folder.is_dir():
             return {}
 
         in_source_cache = self.contracts_folder / ".cache"
-        if not use_cache and in_source_cache.exists():
+        if not use_cache and in_source_cache.is_dir():
             shutil.rmtree(str(in_source_cache))
 
-        file_paths = [file_paths] if isinstance(file_paths, Path) else file_paths
-        manifest = self._project.create_manifest(file_paths, use_cache=use_cache)
+        if isinstance(file_paths, Path):
+            file_path_list = [file_paths]
+        elif file_paths is not None:
+            file_path_list = list(file_paths)
+        else:
+            file_path_list = None
+
+        manifest = self._project.create_manifest(file_paths=file_path_list, use_cache=use_cache)
         return manifest.contract_types or {}
 
     def _load_dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
         if self.path.name in self._cached_dependencies:
             return self._cached_dependencies[self.path.name]
 
-        dependencies: Dict[str, Dict[str, DependencyAPI]] = {}
+        self._cached_dependencies[self.path.name] = {}
         for dependency_config in self.config_manager.dependencies:
             dependency_config.extract_manifest()
             version_id = dependency_config.version_id
-            if dependency_config.name in dependencies:
-                dependencies[dependency_config.name][version_id] = dependency_config
+            if dependency_config.name in self._cached_dependencies[self.path.name]:
+                self._cached_dependencies[self.path.name][dependency_config.name][
+                    version_id
+                ] = dependency_config
             else:
-                dependencies[dependency_config.name] = {version_id: dependency_config}
+                self._cached_dependencies[self.path.name][dependency_config.name] = {
+                    version_id: dependency_config
+                }
 
-        self._cached_dependencies[self.path.name] = dependencies
-        return dependencies
+        return self._cached_dependencies[self.path.name]
 
     def track_deployment(self, contract: ContractInstance):
         """
@@ -566,7 +590,7 @@ class ProjectManager(BaseManager):
         deployments_folder.mkdir(exist_ok=True, parents=True)
         destination = deployments_folder / f"{contract_name}.json"
 
-        if destination.exists():
+        if destination.is_file():
             logger.debug("Deployment already tracked. Re-tracking.")
             destination.unlink()
 

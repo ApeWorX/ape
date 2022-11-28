@@ -4,17 +4,13 @@ import traceback
 from typing import Any, Dict
 
 import click
+import importlib_metadata as metadata
 import yaml
 
 from ape.cli import Abort, ape_cli_context
 from ape.exceptions import ApeException
 from ape.logging import LogLevel, logger
 from ape.plugins import clean_plugin_name
-
-try:
-    from importlib import metadata  # type: ignore
-except ImportError:
-    import importlib_metadata as metadata  # type: ignore
 
 _DIFFLIB_CUT_OFF = 0.6
 
@@ -75,9 +71,9 @@ class ApeCLI(click.MultiCommand):
         group_name = "ape_cli_subcommands"
         if not self._commands:
             try:
-                entry_points = metadata.entry_points(group=group_name)  # type: ignore
+                entry_points = metadata.entry_points(group=group_name)
             except TypeError:
-                entry_points = metadata.entry_points()  # type: ignore
+                entry_points = metadata.entry_points()
                 entry_points = (
                     entry_points[group_name] if group_name in entry_points else []  # type: ignore
                 )
@@ -86,7 +82,7 @@ class ApeCLI(click.MultiCommand):
                 raise Abort("Missing registered cli subcommands")
 
             self._commands = {
-                clean_plugin_name(entry_point.name): entry_point.load  # type: ignore
+                clean_plugin_name(entry_point.name): entry_point.load
                 for entry_point in entry_points
             }
 

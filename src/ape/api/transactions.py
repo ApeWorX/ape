@@ -3,16 +3,16 @@ import time
 from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from ethpm_types import HexBytes
-from ethpm_types.abi import EventABI
+from ethpm_types.abi import EventABI, MethodABI
 from evm_trace import TraceFrame
 from pydantic import validator
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
-from ape.exceptions import ContractError, TransactionError
+from ape.exceptions import TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, TransactionSignature
+from ape.types import AddressType, ContractLog, GasLimit, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -28,9 +28,9 @@ class TransactionAPI(BaseInterfaceModel):
     """
 
     chain_id: int = Field(0, alias="chainId")
-    receiver: Optional[str] = Field(None, alias="to")
-    sender: Optional[str] = Field(None, alias="from")
-    gas_limit: Optional[int] = Field(None, alias="gas")
+    receiver: Optional[AddressType] = Field(None, alias="to")
+    sender: Optional[AddressType] = Field(None, alias="from")
+    gas_limit: Optional[GasLimit] = Field(None, alias="gas")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
     data: bytes = b""
@@ -45,6 +45,13 @@ class TransactionAPI(BaseInterfaceModel):
 
     class Config:
         allow_population_by_field_name = True
+
+    @validator("data", pre=True)
+    def validate_data(cls, value):
+        if isinstance(value, str):
+            return HexBytes(value)
+
+        return value
 
     @property
     def total_transfer_value(self) -> int:
@@ -168,6 +175,10 @@ class ReceiptAPI(BaseInterfaceModel):
         return value
 
     @property
+    def call_tree(self) -> Optional[Any]:
+        return None
+
+    @property
     def failed(self) -> bool:
         """
         Whether the receipt represents a failing transaction.
@@ -262,7 +273,7 @@ class ReceiptAPI(BaseInterfaceModel):
         if self.sender:
             sender_nonce = self.provider.get_nonce(self.sender)
 
-            while sender_nonce == self.nonce:  # type: ignore
+            while sender_nonce == self.nonce:
                 time.sleep(1)
                 sender_nonce = self.provider.get_nonce(self.sender)
                 iteration += 1
@@ -304,24 +315,32 @@ class ReceiptAPI(BaseInterfaceModel):
         return self
 
     @property
+    def method_called(self) -> Optional[MethodABI]:
+        """
+        The method ABI of the method called to produce this receipt.
+        Requires both that the user is using a provider that supports traces
+        as well as for this to have been a contract invocation.
+        """
+
+        call_tree = self.call_tree
+        if not call_tree:
+            return None
+
+        return self.chain_manager.contracts.lookup_method(call_tree.address, call_tree.calldata)
+
+    @property
     def return_value(self) -> Any:
         """
         Obtain the final return value of the call. Requires tracing to function,
         since this is not available from the receipt object.
         """
-        call_tree = self.provider.get_call_tree(self.txn_hash)
+        call_tree = self.call_tree
+        if not call_tree:
+            return None
 
-        contract_type = self.chain_manager.contracts.get(call_tree.address)
-        if not contract_type:
-            raise ContractError("Cannot find contract type to decode with. Is it published?")
-
-        selector = call_tree.calldata
-        if selector in contract_type.mutable_methods:
-            method_abi = contract_type.mutable_methods[selector]
-        elif selector in contract_type.view_methods:
-            method_abi = contract_type.view_methods[selector]
-        else:
-            raise ContractError(f"Selector '{selector}' not found in {contract_type.name}")
+        method_abi = self.method_called
+        if not method_abi:
+            return None
 
         output = self.provider.network.ecosystem.decode_returndata(method_abi, call_tree.returndata)
         if isinstance(output, tuple) and len(output) < 2:
@@ -331,7 +350,9 @@ class ReceiptAPI(BaseInterfaceModel):
         return output
 
     @raises_not_implemented
-    def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
+    def show_trace(  # type: ignore[empty-body]
+        self, verbose: bool = False, file: IO[str] = sys.stdout
+    ):
         """
         Display the complete sequence of contracts and methods called during
         the transaction.
@@ -340,3 +361,23 @@ class ReceiptAPI(BaseInterfaceModel):
             verbose (bool): Set to ``True`` to include more information.
             file (IO[str]): The file to send output to. Defaults to stdout.
         """
+
+    @raises_not_implemented
+    def show_gas_report(self, file: IO[str] = sys.stdout):  # type: ignore[empty-body]
+        """
+        Display a gas report for the calls made in this transaction.
+        """
+
+    def track_gas(self):
+        """
+        Track this receipt's gas in the on-going sessional gas-report.
+        Requires using a provider that support transaction traces.
+        This gets called when running tests with the ``--gas`` flag.
+        """
+
+        call_tree = self.call_tree
+        receiver = self.receiver
+        if call_tree and receiver is not None:
+            self.chain_manager._reports.append_gas(
+                call_tree, receiver, sender=self.sender, transaction_hash=self.txn_hash
+            )

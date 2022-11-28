@@ -140,7 +140,7 @@ Use the `networks` fixture to change the active provider in tests.
 ```python
 def test_multi_chain(networks):
     assert "Something"  # Make assertion in root network
-    
+
     # NOTE: Assume have ecosystem named "foo" with network "local" and provider "bar"
     with networks.foo.local.use_provider("bar"):
         assert "Something else"
@@ -197,7 +197,7 @@ ape test --network ethereum:local:geth
 
 Each testing plugin should work the same way. You will have access to the same test accounts.
 
-Another option for testing providers is the [ape-hardhat plugin](https://github.com/ApeWorX/ape-hardhat), which does not come with `ape` but can be installed by including it in the `plugins` list in your `ape-config.yaml` file or manually installing it using the command:
+Another option for testing providers is the [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) plugin, which does not come with `ape` but can be installed by including it in the `plugins` list in your `ape-config.yaml` file or manually installing it using the command:
 
 ```bash
 ape plugins install hardhat
@@ -210,7 +210,7 @@ If you want to use sample projects, follow this link to [Ape Academy](https://gi
 ```
 project                     # The root project directory
 └── tests/                  # Project tests folder, ran using the 'ape test' command to run all tests within the folder.
-    └── conftest.py         # A file to define global variable for testing 
+    └── conftest.py         # A file to define global variable for testing
     └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use 'ape test test_accounts.py' command
     └── test_mint.py        # A test file
 ```
@@ -225,6 +225,101 @@ def test_account_balance(project, owner, receiver, nft):
     assert actual == expect
 ```
 
+## Testing Transaction Failures
+
+Similar to `pytest.raises()`, you can use `ape.reverts()` to assert that contract transactions fail and revert.
+
+From our earlier example we can see this in action:
+
+```python
+def test_authorization(my_contract, owner, not_owner):
+    my_contract.set_owner(sender=owner)
+    assert owner == my_contract.owner()
+
+    with ape.reverts("!authorized"):
+        my_contract.authorized_method(sender=not_owner)
+```
+
+`reverts()` takes two optional parameters:
+
+### `expected_message`
+
+This is the expected revert reason given when the transaction fails.
+If the message in the `ContractLogicError` raised by the transaction failure is empty or does not match the `expected_message`, then `ape.reverts()` will raise an `AssertionError`.
+
+### `dev_message`
+
+This is the expected dev message corresponding to the line in the contract's source code where the error occurred.
+These can be helpful in optimizing for gas usage and keeping revert reason strings shorter.
+
+Dev messages take the form of a comment in Vyper, and should be placed on the line that may cause a transaction revert:
+
+```python
+assert x != 0  # dev: invalid value
+```
+
+Take for example:
+
+```python
+# @version 0.3.7
+
+@external
+def check_value(_value: uint256) -> bool:
+    assert _value != 0  # dev: invalid value
+    return True
+```
+
+We can explicitly cause a transaction revert and check the failed line by supplying an expected `dev_message`:
+
+```python
+def test_authorization(my_contract, owner):
+    with ape.reverts(dev_message="dev: invalid value"):
+        my_contract.check_value(sender=owner)
+```
+
+When the transaction reverts and `ContractLogicError` is raised, `ape.reverts()` will check the source contract to see if the failed line contains a message.
+
+There are a few scenarios where `AssertionError` will be raised when using `dev_message`:
+- If the line in the source contract has a different dev message or no dev message
+- If the contract source cannot be obtained
+- If the transaction trace cannot be obtained
+
+Because `dev_message` relies on transaction tracing to function, you must use a provider like [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) when testing with `dev_message`.
+
+### Caveats
+
+#### Language Support
+
+As of `ape` version `0.5.6`, `dev_messages` assertions are available for contracts compiled with [ape-vyper](https://github.com/ApeWorX/ape-vyper), but not for those compiled with [ape-solidity](https://github.com/ApeWorX/ape-solidity) or [ape-cairo](https://github.com/ApeWorX/ape-cairo).
+
+#### Inlining
+
+Due to function inlining, the position of the `# dev: ...` message may sometimes be one line higher than expected:
+
+```python
+@external
+def foo(_x: decimal) -> decimal:  # dev: correct location
+    return sqrt(_x)  # dev: incorrect location
+```
+
+This typically only applies when trying to add dev messages to statements containing built-in function calls.
+
+#### Non-reentrant Functions
+
+Similarly, if you require dev assertions for non-reentrant functions you must be sure to leave the comment on the function that should not have reentry:
+
+```python
+@internal
+@nonreentrant('lock')
+def _foo_internal():  # dev: correct location
+    pass
+
+@external
+@nonreentrant('lock')
+def foo():
+    self._foo_internal()  # dev: incorrect location
+```
+
 ## Multi-chain Testing
 
 The Ape framework supports connecting to alternative providers in tests.
@@ -235,10 +330,10 @@ The easiest way to achieve this is to use the `networks` provider context-manage
 def test_my_fantom_test(networks):
     # The test starts in 1 ecosystem but switches to another
     assert networks.provider.network.ecosystem.name == "ethereum"
-    
+
     with networks.fantom.local.use_provider("test") as provider:
         assert provider.network.ecosystem.name == "fantom"
-    
+
     # You can also use the context manager like this:
     with networks.parse_network_choice("fantom:local:test") as provider:
        assert provider.network.ecosystem.name == "fantom"
@@ -266,3 +361,81 @@ When you exit a provider's context, Ape **does not** disconnect the provider.
 When you re-enter that provider's context, Ape uses the previously-connected provider.
 At the end of the tests, Ape disconnects all the providers.
 Thus, you can enter and exit a provider's context as much as you need in tests.
+
+## Gas Reporting
+
+To include a gas report at the end of your tests, you can use the `--gas` flag.
+**NOTE**: This feature requires using a provider with tracing support, such as [ape-hardhat](https://github.com/ApeWorX/ape-hardhat).
+
+```bash
+ape test --network ethereum:local:hardhat --gas
+```
+
+At the end of test suite, you will see tables such as:
+
+```sh
+                            FundMe Gas
+
+  Method           Times called    Min.    Max.    Mean   Median
+ ────────────────────────────────────────────────────────────────
+  fund                        8   57198   91398   82848    91398
+  withdraw                    2   28307   38679   33493    33493
+  changeOnStatus              2   23827   45739   34783    34783
+  getSecret                   1   24564   24564   24564    24564
+
+                  Transferring ETH Gas
+
+  Method     Times called   Min.   Max.   Mean   Median
+ ───────────────────────────────────────────────────────
+  to:test0              2   2400   9100   5750     5750
+
+                     TestContract Gas
+
+  Method      Times called    Min.    Max.    Mean   Median
+ ───────────────────────────────────────────────────────────
+  setNumber              1   51021   51021   51021    51021
+```
+
+The following demonstrates how to use the `ape-config.yaml` file to exclude contracts and / or methods from the gas report:
+
+```yaml
+test:
+  gas:
+    exclude:
+      - method_name: DEBUG_*         # Exclude all methods starting with `DEBUG_`.
+      - contract_name: MockToken     # Exclude all methods in contract named `MockToken`.
+      - contract_name: PoolContract  # Exclude methods starting with `reset_` in `PoolContract`.
+        method_name: reset_*
+```
+
+Similarly, you can exclude sources via the CLI option `--gas-exclude`.
+The value `--gas-exclude` takes is a comma-separated list of colon-separated values representing the structure similar as above, except you must explicitly use `*` where meaning "all".
+For example to exclude all methods starting with `DEBUG_`, you would do:
+
+```bash
+ape test --gas --gas-exclude "*:DEBUG_*".
+```
+
+To exclude all methods in the `MockToken` contract, do:
+
+```bash
+ape test --gas --gas-exclude MockToken
+```
+
+And finally, to exclude all methods starting with `reset_` in `PoolContract`, do:
+
+```bash
+ape test --gas --gas-exclude "PoolContract:reset_*"
+```
+
+## Iterative Testing
+
+Ape has a set of flags that controls running your test suite locally in a "watch" mode,
+which means watching for updates to files in your project and re-triggering the test suite.
+
+To enable this mode, run `ape test --watch` to set up this mode using the default settings.
+While in this mode, any time a `.py` file (i.e. your tests) or smart contract source file
+(i.e. any files that get compiled using your installed compiler plugins) is added, removed,
+or changed, then the `ape test` task will be re-triggered, based on a polling interval.
+
+To exit this mode, press Ctrl+D (on Linux or macOS) to stop the execution and undo it.

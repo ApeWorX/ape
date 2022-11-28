@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import Dict
 
-from setuptools import find_packages, setup  # type: ignore
+from setuptools import find_packages, setup
 
 here = Path(__file__).parent.absolute()
 packages_data: Dict = {}
@@ -18,17 +18,17 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=22.3.0,<23.0",  # auto-formatter and linter
-        "mypy>=0.971,<1.0",  # Static type analyzer
-        "types-PyYAML",  # NOTE: Needed due to mypy typeshed
-        "types-requests",  # NOTE: Needed due to mypy typeshed
-        "types-pkg-resources",  # NOTE: Needed due to mypy typeshed
+        "black>=22.10.0,<23",  # auto-formatter and linter
+        "mypy>=0.991",  # Static type analyzer
+        "types-PyYAML",  # Needed due to mypy typeshed
+        "types-requests",  # Needed due to mypy typeshed
+        "types-setuptools",  # Needed due to mypy typeshed
         "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",
-        "flake8>=4.0.1,<5.0",  # Style linter
-        "flake8-breakpoint>=1.1.0,<2.0.0",  # detect breakpoints left in code
-        "flake8-print>=4.0.0,<5.0.0",  # detect print statements left in code
-        "isort>=5.10.1,<6.0",  # Import sorting linter
+        "flake8>=5.0.4,<6",  # Style linter
+        "flake8-breakpoint>=1.1.0,<2",  # detect breakpoints left in code
+        "flake8-print>=4.0.0,<5",  # detect print statements left in code
+        "isort>=5.10.1,<6",  # Import sorting linter
         "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy types
     ],
     "doc": [
@@ -52,20 +52,7 @@ extras_require = {
     # NOTE: These are extras that someone can install to get up and running quickly w/ ape
     #       They should be kept up to date with what works and what doesn't out of the box
     #       Usage example: `pipx install eth-ape[recommended-plugins]`
-    "recommended-plugins": [
-        "ape-alchemy",  # Alchemy public network provider
-        "ape-ens",  # ENS converter
-        "ape-etherscan",  # Etherscan explorer plugin
-        "ape-foundry",  # Foundry local and fork network EVM provider
-        "ape-hardhat",  # Hardhat local and fork network EVM provider
-        "ape-infura",  # Infura public network provider
-        "ape-ledger",  # Ledger Nano S/X hardware wallet
-        "ape-solidity",  # Solidity compiler support
-        "ape-template",  # Cookiecutter template support
-        "ape-tokens",  # Tokenlists converter
-        "ape-trezor",  # Trezor Model T/One hardware wallet
-        "ape-vyper",  # Vyper compiler support
-    ],
+    "recommended-plugins": (here / "recommended-plugins.txt").read_text().split("\n"),
 }
 
 # NOTE: `pip install -e .[dev]` to install package
@@ -98,34 +85,33 @@ setup(
         "click>=8.1.3,<9",
         "ijson>=3.1.4,<4",
         "importlib-metadata",
-        "ipython>=7.31.1,<8",
+        "ipython>=8.5.0,<9",
         "packaging>=20.9,<21",
         "pandas>=1.3.0,<2",
         "pluggy>=1.0.0,<2",
         "pydantic>=1.9.2,<2",
-        "pygit2>=1.7.2,<2",
         "PyGithub>=1.54,<2",
-        "SQLAlchemy>=1.4.35",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
         "pyyaml>=6.0,<7",
         "requests>=2.28.1,<3",
-        "rich>=10.14,<11",
-        "singledispatchmethod ; python_version<'3.8'",
+        "rich>=12.5.1,<13",
+        "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
-        "typing-extensions ; python_version<'3.8'",
         "traitlets>=5.3.0",
+        "watchdog>=2.1.9,<3.0",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=3.0.1,<4",
-        "eth-account>=0.6.1,<0.7",
+        "eth-account>=0.7,<0.8",
+        "eth-typing>=3.1,<4",
         "eth-utils>=2.0.0,<3",
-        "hexbytes>=0.2.2,<1",
+        "hexbytes>=0.2.3,<1",
         "py-geth>=3.8.0,<4",
-        "web3[tester]==6.0.0b4",
-        # ** Dependencies maintained by Apeworx **
-        "eip712>=0.1.1,<0.2",
-        "ethpm-types>=0.3.2,<0.4",
-        "evm-trace>=0.1.0.a6",
+        "web3[tester]==6.0.0b7",
+        # ** Dependencies maintained by ApeWorX **
+        "eip712>=0.1.4,<0.2",
+        "ethpm-types>=0.3.12,<0.4",
+        "evm-trace>=0.1.0a12",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
@@ -142,7 +128,7 @@ setup(
             "ape_init=ape_init._cli:cli",
         ],
     },
-    python_requires=">=3.7.2,<3.11",
+    python_requires=">=3.8,<3.11",
     extras_require=extras_require,
     py_modules=packages_data["__modules__"],
     license="Apache-2.0",
@@ -159,7 +145,6 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: POSIX",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",

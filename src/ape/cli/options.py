@@ -28,7 +28,7 @@ class ApeCliContextObject(ManagerAccessMixin):
         self.config_manager.load()
 
     @staticmethod
-    def abort(msg: str, base_error: Exception = None):
+    def abort(msg: str, base_error: Optional[Exception] = None):
         """
         End execution of the current command invocation.
 
@@ -87,7 +87,7 @@ def ape_cli_context():
 
 
 def network_option(
-    default: Optional[str] = None,
+    default: Optional[str] = "auto",
     ecosystem: Optional[Union[List[str], str]] = None,
     network: Optional[Union[List[str], str]] = None,
     provider: Optional[Union[List[str], str]] = None,
@@ -112,11 +112,16 @@ def network_option(
         kwargs: Additional overrides to ``click.option``.
     """
 
-    if default is None and not required:
+    auto = default == "auto"
+
+    if auto and not required:
         if ecosystem:
             default = ecosystem[0] if isinstance(ecosystem, (list, tuple)) else ecosystem
         else:
             default = networks.default_ecosystem.name
+
+    elif auto:
+        default = None
 
     return click.option(
         "--network",
@@ -250,7 +255,7 @@ def incompatible_with(incompatible_opts):
                 found_incompatible = ", ".join(
                     [f"--{opt.replace('_', '-')}" for opt in opts if opt in incompatible_opts]
                 )
-                if self.name in opts and found_incompatible:
+                if self.name is not None and self.name in opts and found_incompatible:
                     name = self.name.replace("_", "-")
                     raise click.BadOptionUsage(
                         option_name=self.name,

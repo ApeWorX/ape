@@ -11,14 +11,14 @@ from eth_account._utils.legacy_transactions import (
 from eth_utils import decode_hex, encode_hex, keccak, to_int
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
+from evm_trace import CallTreeNode
 from pydantic import BaseModel, Field, root_validator, validator
-from rich.console import Console as RichConsole
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.types import ContractLog
-from ape.utils import CallTraceParser, TraceStyles
+from ape.utils import cached_property
 
 
 class TransactionStatusEnum(IntEnum):
@@ -68,8 +68,9 @@ class BaseTransaction(TransactionAPI):
         return signed_txn
 
     @property
-    def txn_hash(self):
-        return HexBytes(keccak(self.serialize_transaction()))
+    def txn_hash(self) -> HexBytes:
+        txn_bytes = self.serialize_transaction()
+        return HexBytes(keccak(txn_bytes))
 
 
 class StaticFeeTransaction(BaseTransaction):
@@ -149,6 +150,14 @@ class Receipt(ReceiptAPI):
     def failed(self) -> bool:
         return self.status != TransactionStatusEnum.NO_ERROR
 
+    @cached_property
+    def call_tree(self) -> Optional[CallTreeNode]:
+        if not self.receiver:
+            # Not an function invoke
+            return None
+
+        return self.provider.get_call_tree(self.txn_hash)
+
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
             raise OutOfGasError()
@@ -157,29 +166,41 @@ class Receipt(ReceiptAPI):
             raise TransactionError(message=f"Transaction '{txn_hash}' failed.")
 
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
-        tree_factory = CallTraceParser(self, verbose=verbose)
-        call_tree = self.provider.get_call_tree(self.txn_hash)
-        root = tree_factory.parse_as_tree(call_tree)
-        console = RichConsole(file=file)
-        console.print(f"Call trace for [bold blue]'{self.txn_hash}'[/]")
+        call_tree = self.call_tree
+        if not call_tree:
+            return
+
+        revert_message = None
 
         if call_tree.failed:
             default_message = "reverted without message"
             if not call_tree.returndata.hex().startswith(
                 "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
             ):
-                suffix = default_message
+                revert_message = default_message
             else:
                 decoded_result = decode(("string",), call_tree.returndata[4:])
                 if len(decoded_result) == 1:
-                    suffix = f'reverted with message: "{decoded_result[0]}"'
+                    revert_message = f'reverted with message: "{decoded_result[0]}"'
                 else:
-                    suffix = default_message
+                    revert_message = default_message
 
-            console.print(f"[bold red]{suffix}[/]")
+        self.chain_manager._reports.show_trace(
+            call_tree,
+            sender=self.sender,
+            transaction_hash=self.txn_hash,
+            revert_message=revert_message,
+            verbose=verbose,
+        )
 
-        console.print(f"txn.origin=[{TraceStyles.CONTRACTS}]{self.sender}[/]")
-        console.print(root)
+    def show_gas_report(self, file: IO[str] = sys.stdout):
+        call_tree = self.call_tree
+        if not call_tree:
+            return
+
+        self.chain_manager._reports.show_gas(
+            call_tree, sender=self.sender, transaction_hash=self.txn_hash
+        )
 
     def decode_logs(
         self,
@@ -253,4 +274,4 @@ class Receipt(ReceiptAPI):
             log_index=log["logIndex"],
             transaction_hash=log["transactionHash"],
             transaction_index=log["transactionIndex"],
-        )  # type: ignore
+        )

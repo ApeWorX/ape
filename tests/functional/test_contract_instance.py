@@ -1,12 +1,12 @@
 import re
 
 import pytest
-from eth_utils import is_checksum_address
+from eth_utils import is_checksum_address, to_hex
 from hexbytes import HexBytes
 
 from ape import Contract
 from ape.contracts import ContractInstance
-from ape.exceptions import ChainError, ContractError
+from ape.exceptions import ChainError, ContractError, ContractLogicError
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
@@ -33,6 +33,68 @@ def test_init_specify_contract_type(
     assert contract.contract_type == vyper_contract_type
     assert contract.setNumber(2, sender=owner)
     assert contract.myNumber() == 2
+
+
+def test_contract_calls(owner, contract_instance):
+    contract_instance.setNumber(2, sender=owner)
+    assert contract_instance.myNumber() == 2
+
+
+def test_invoke_transaction(owner, contract_instance):
+    # Test mutable method call with invoke_transaction
+    receipt = contract_instance.invoke_transaction("setNumber", 3, sender=owner)
+    assert contract_instance.myNumber() == 3
+    assert not receipt.failed
+    # Test view method can be called with invoke transaction and returns a receipt
+    view_receipt = contract_instance.invoke_transaction("myNumber", sender=owner)
+    assert not view_receipt.failed
+
+
+def test_call_view_method(owner, contract_instance):
+    contract_instance.setNumber(2, sender=owner)
+    value = contract_instance.call_view_method("myNumber")
+    assert value == 2
+    # Test that a mutable method can be called and is treated as a call (a simulation)
+    contract_instance.call_view_method("setNumber", 3, sender=owner)
+    # myNumber should still equal 2 because the above line is call
+    assert contract_instance.myNumber() == 2
+
+
+def test_call_use_block_identifier(contract_instance, owner, chain):
+    expected = 2
+    contract_instance.setNumber(expected, sender=owner)
+    block_id = chain.blocks.height  # int
+    contract_instance.setNumber(3, sender=owner)  # latest
+    actual = contract_instance.myNumber(block_identifier=block_id)
+    assert actual == expected
+
+    # Ensure works with hex
+    block_id = to_hex(block_id)
+    actual = contract_instance.myNumber(block_identifier=block_id)
+    assert actual == expected
+
+    # Ensure works keywords like "latest"
+    actual = contract_instance.myNumber(block_identifier="latest")
+    assert actual == 3
+
+
+def test_revert(sender, contract_instance):
+    # 'sender' is not the owner so it will revert (with a message)
+    with pytest.raises(ContractLogicError, match="!authorized"):
+        contract_instance.setNumber(5, sender=sender)
+
+
+def test_revert_no_message(owner, contract_instance):
+    # The Contract raises empty revert when setting number to 5.
+    expected = "Transaction failed."  # Default message
+    with pytest.raises(ContractLogicError, match=expected):
+        contract_instance.setNumber(5, sender=owner)
+
+
+@pytest.mark.parametrize("gas", ("200000", 200000, "max", "auto", "0x235426"))
+def test_revert_specify_gas(sender, contract_instance, gas):
+    with pytest.raises(ContractLogicError, match="!authorized"):
+        contract_instance.setNumber(5, sender=sender, gas=gas)
 
 
 def test_call_using_block_identifier(
@@ -159,6 +221,11 @@ def test_contract_instance_as_address_input(contract_instance, sender):
 
 def test_account_as_address_input(contract_instance, sender):
     contract_instance.setAddress(sender, sender=sender)
+    assert contract_instance.theAddress() == sender
+
+
+def test_int_as_address_input(contract_instance, sender):
+    contract_instance.setAddress(int(sender.address, 16), sender=sender)
     assert contract_instance.theAddress() == sender
 
 
@@ -322,7 +389,7 @@ def test_estimate_gas_cost_call_account_as_input(contract_instance, eth_tester_p
 
 def test_call_transact(vyper_contract_instance, owner):
     receipt = vyper_contract_instance.myNumber.transact(sender=owner)
-    assert receipt.transaction.sender == owner
+    assert receipt.sender == owner
     assert receipt.status == TransactionStatusEnum.NO_ERROR
 
 
@@ -330,14 +397,49 @@ def test_receipt(contract_instance, owner):
     receipt = contract_instance.receipt
     assert receipt.txn_hash == contract_instance.txn_hash
     assert receipt.contract_address == contract_instance.address
-    assert receipt.transaction.sender == owner
+    assert receipt.sender == owner
 
 
 def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
-    receipt = contract_instance.setNumber(123, sender=owner)
+    receipt = contract_instance.setNumber(555, sender=owner)
     expected_err = (
         "Receipt missing 'contract_address' field. "
         "Was this from a deploy transaction (e.g. `project.MyContract.deploy()`)?"
     )
     with pytest.raises(ContractError, match=expected_err):
         ContractInstance.from_receipt(receipt, contract_instance.contract_type)
+
+
+def test_transact_specify_auto_gas(vyper_contract_instance, owner):
+    """
+    Tests that we can specify "auto" gas even though "max" is the default for
+    local networks.
+    """
+    receipt = vyper_contract_instance.setNumber(111, sender=owner, gas="auto")
+    assert not receipt.failed
+
+
+def test_transact_specify_max_gas(vyper_contract_instance, owner):
+    receipt = vyper_contract_instance.setNumber(222, sender=owner, gas="max")
+    assert not receipt.failed
+
+
+def test_dir(vyper_contract_instance):
+    actual = dir(vyper_contract_instance)
+    expected = [
+        # From base class
+        "address",
+        "balance",
+        "code",
+        "contract_type",
+        "codesize",
+        "nonce",
+        "is_contract",
+        "provider",
+        "receipt",
+        "txn_hash",
+        *vyper_contract_instance._events_,
+        *vyper_contract_instance._mutable_methods_,
+        *vyper_contract_instance._view_methods_,
+    ]
+    assert sorted(actual) == sorted(expected)

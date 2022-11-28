@@ -248,8 +248,8 @@ def is_dynamic_sized_type(abi_type: Union[ABIType, str]) -> bool:
 class LogInputABICollection:
     def __init__(self, abi: EventABI):
         self.abi = abi
-        self.topics = [i for i in abi.inputs if i.indexed]
-        self.data: List[EventABIType] = [i for i in abi.inputs if not i.indexed]
+        self.topic_abi_types = [i for i in abi.inputs if i.indexed]
+        self.data_abi_types: List[EventABIType] = [i for i in abi.inputs if not i.indexed]
 
         names = [i.name for i in abi.inputs]
         if len(set(names)) < len(names):
@@ -261,18 +261,18 @@ class LogInputABICollection:
 
     def decode(self, topics: List[str], data: str) -> Dict:
         decoded = {}
-        for abi, topic_value in zip(self.topics, topics[1:]):
+        for abi, topic_value in zip(self.topic_abi_types, topics[1:]):
             # reference types as indexed arguments are written as a hash
             # https://docs.soliditylang.org/en/v0.8.15/contracts.html#events
             abi_type = "bytes32" if is_dynamic_sized_type(abi.type) else abi.canonical_type
             value = decode([abi_type], decode_hex(topic_value))[0]
             decoded[abi.name] = self.decode_value(abi_type, value)
 
-        data_abi_types = [abi.canonical_type for abi in self.data]
+        data_abi_types = [abi.canonical_type for abi in self.data_abi_types]
         hex_data = decode_hex(data) if isinstance(data, str) else data
         data_values = decode(data_abi_types, hex_data)
 
-        for abi, value in zip(self.data, data_values):
+        for abi, value in zip(self.data_abi_types, data_values):
             decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 
         return decoded
@@ -286,44 +286,15 @@ class LogInputABICollection:
         return value
 
 
-def parse_type(output_type: str) -> Union[str, Tuple, List]:
-    if not output_type.startswith("("):
-        return output_type
-
-    # Strip off first opening parens
-    output_type = output_type[1:]
-    found_types: List[Union[str, Tuple, List]] = []
-
-    while output_type:
-        if output_type.startswith(")"):
-            result = tuple(found_types)
-            if "[" in output_type:
-                return [result]
-
-            return result
-
-        elif output_type[0] == "(" and ")" in output_type:
-            # A tuple within the tuple
-            end_index = output_type.index(")") + 1
-            found_type = parse_type(output_type[:end_index])
-            output_type = output_type[end_index:]
-
-            if output_type.startswith("[") and "]" in output_type:
-                end_array_index = output_type.index("]") + 1
-                found_type = [found_type]
-                output_type = output_type[end_array_index:].lstrip(",")
-
-        else:
-            found_type = output_type.split(",")[0].rstrip(")")
-            end_index = len(found_type) + 1
-            output_type = output_type[end_index:]
-
-        if isinstance(found_type, str) and "[" in found_type and ")" in found_type:
-            parts = found_type.split(")")
-            found_type = parts[0]
-            output_type = f"){parts[1]}"
-
-        if found_type:
-            found_types.append(found_type)
-
-    return tuple(found_types)
+def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
+    """
+    Parses ``ABIType.dict()`` into Python types.
+    Deprecated: Use :class:`~ape.api.networks.EcosystemAPI` implemented methods.
+    """
+    if "tuple" in type["type"]:
+        r = tuple([parse_type(c) for c in type["components"]])
+        if is_array(type["type"]):
+            return [r]
+        return r
+    else:
+        return type["type"]

@@ -15,7 +15,10 @@ from ape_console._cli import console
 
 class ScriptCommand(click.MultiCommand):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs, result_callback=self.result_callback)
+        if "result_callback" not in kwargs:
+            kwargs["result_callback"] = self.result_callback
+
+        super().__init__(*args, **kwargs)
         self._namespace = {}
 
     def invoke(self, ctx: Context) -> Any:

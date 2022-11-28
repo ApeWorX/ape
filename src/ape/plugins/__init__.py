@@ -1,7 +1,7 @@
 import functools
 import importlib
 import pkgutil
-import re
+import subprocess
 from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, Type, cast
 
 from ape.__modules__ import __modules__
@@ -15,11 +15,6 @@ from .network import EcosystemPlugin, ExplorerPlugin, NetworkPlugin, ProviderPlu
 from .pluggy_patch import PluginType, hookimpl, plugin_manager
 from .project import DependencyPlugin, ProjectPlugin
 from .query import QueryPlugin
-
-_EDITABLE_KEY = "__editable___"
-_EDITABLE_INSTALL_PATTERN = re.compile(
-    rf"{_EDITABLE_KEY}(\w*)(_\d+_\d+_\d+a?\d*[_dev\d+_]?\w*_finder)"
-)
 
 
 class PluginError(Exception):
@@ -52,7 +47,7 @@ plugin_manager.hook = cast(AllPluginHooks, plugin_manager.hook)
 
 
 def clean_plugin_name(name: str) -> str:
-    return name.replace("ape_", "").replace("_", "-")
+    return name.replace("_", "-").replace("ape-", "")
 
 
 def get_hooks(plugin_type):
@@ -125,46 +120,33 @@ def valid_impl(api_class: Any) -> bool:
     return len(api_class.__abstractmethods__) == 0
 
 
-def _get_name_from_install(name: str):
-    if not name.startswith(f"{_EDITABLE_KEY}ape_"):
-        return name
-
-    # Handle strange editable install behavior
-    match = re.match(_EDITABLE_INSTALL_PATTERN, name)
-    if not match:
-        return name
-
-    groups = match.groups()
-    if not groups:
-        return name
-
-    return groups[0]
-
-
 class PluginManager:
     _unimplemented_plugins: List[str] = []
 
     def __init__(self) -> None:
-        # NOTE: This actually loads the plugins, and should only be done once
-        for _, name, ispkg in pkgutil.iter_modules():
-            new_name = _get_name_from_install(name)
-            if new_name != name:
-                # Was an editable install
-                name = new_name
-                ispkg = True
+        # NOTE: Unable to use pkgutil.iter_modules() for installed plugins
+        # because it does not work with editable installs.
+        # See https://github.com/python/cpython/issues/99805.
+        result = subprocess.check_output(["pip", "list", "--format", "freeze"])
+        packages = result.decode("utf8").split("\n")
+        installed_plugin_module_names = {
+            p.split("==")[0].replace("-", "_") for p in packages if p.startswith("ape-")
+        }
+        core_plugin_module_names = {
+            n for _, n, ispkg in pkgutil.iter_modules() if n.startswith("ape_")
+        }
+        module_names = installed_plugin_module_names.union(core_plugin_module_names)
 
-            if not name.startswith("ape_") or not ispkg:
-                continue
-
+        for module_name in module_names:
             try:
-                module = importlib.import_module(name)
+                module = importlib.import_module(module_name)
                 plugin_manager.register(module)
             except Exception as err:
-                if name in __modules__:
+                if module_name in __modules__:
                     # Always raise core plugin registration errors.
                     raise
 
-                logger.warn_from_exception(err, f"Error loading plugin package '{name}'.")
+                logger.warn_from_exception(err, f"Error loading plugin package '{module_name}'.")
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"

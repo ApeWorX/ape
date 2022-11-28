@@ -1,23 +1,35 @@
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import Callable, Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
+from typing import IO, Any, Collection, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import pandas as pd
 from ethpm_types import ContractType
+from ethpm_types.abi import MethodABI
+from evm_trace.gas import merge_reports
+from hexbytes import HexBytes
+from rich import get_console
+from rich.console import Console as RichConsole
 
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
 from ape.api.query import BlockQuery, extract_fields, validate_and_expand_columns
 from ape.contracts import ContractContainer, ContractInstance
-from ape.exceptions import ChainError, ConversionError, UnknownSnapshotError
+from ape.exceptions import (
+    APINotImplementedError,
+    ChainError,
+    ContractError,
+    ConversionError,
+    UnknownSnapshotError,
+)
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.types import AddressType, BlockID, SnapshotID
-from ape.utils import cached_property
+from ape.types import AddressType, BlockID, ContractFunctionPath, GasReport, SnapshotID
+from ape.utils import CallTraceParser, TraceStyles, parse_gas_table
 
 
 class BlockContainer(BaseManager):
@@ -330,12 +342,10 @@ class AccountHistory(BaseManager):
     A container mapping account addresses to the transaction from the active session.
     """
 
-    _map: Dict[AddressType, List[ReceiptAPI]] = {}
+    _address_list_map: Dict[AddressType, List[ReceiptAPI]] = {}
 
-    @cached_property
-    def _convert(self) -> Callable:
-
-        return self.conversion_manager.convert
+    # Faciliates faster look-ups.
+    _hash_to_receipt_map: Dict[str, ReceiptAPI] = {}
 
     def __getitem__(self, address: Union[BaseAddress, AddressType, str]) -> List[ReceiptAPI]:
         """
@@ -349,7 +359,7 @@ class AccountHistory(BaseManager):
             are no recorded transactions, returns an empty list.
         """
 
-        address_key: AddressType = self._convert(address, AddressType)
+        address_key: AddressType = self.conversion_manager.convert(address, AddressType)
         explorer = self.provider.network.explorer
         explorer_receipts = (
             [r for r in explorer.get_account_transactions(address_key)] if explorer else []
@@ -358,11 +368,11 @@ class AccountHistory(BaseManager):
 
             # NOTE: Cache the receipt by its sender and not by the address sent to the explorer API
             #  because explorers return various receipts when given contract addresses.
-            sender: AddressType = receipt.sender  # type: ignore
-            if receipt.txn_hash not in [r.txn_hash for r in self._map.get(sender, [])]:
+            sender: AddressType = receipt.sender
+            if receipt.txn_hash not in [r.txn_hash for r in self._address_list_map.get(sender, [])]:
                 self.append(receipt)
 
-        return self._map.get(address_key, [])
+        return self._address_list_map.get(address_key, [])
 
     def __iter__(self) -> Iterator[AddressType]:
         """
@@ -372,7 +382,7 @@ class AccountHistory(BaseManager):
             List[str]
         """
 
-        yield from self._map
+        yield from self._address_list_map
 
     def items(self) -> Iterator[Tuple[AddressType, List[ReceiptAPI]]]:
         """
@@ -381,7 +391,10 @@ class AccountHistory(BaseManager):
         Returns:
             Iterator[Tuple[``AddressType``, :class:`~ape.api.transactions.ReceiptAPI`]]
         """
-        yield from self._map.items()
+        yield from self._address_list_map.items()
+
+    def values(self) -> Iterator[List[ReceiptAPI]]:
+        yield from self._address_list_map.values()
 
     def append(self, txn_receipt: ReceiptAPI):
         """
@@ -397,15 +410,16 @@ class AccountHistory(BaseManager):
               :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
 
-        address = self._convert(txn_receipt.sender, AddressType)
-        if address not in self._map:
-            self._map[address] = [txn_receipt]
+        self._hash_to_receipt_map[txn_receipt.txn_hash] = txn_receipt
+        address = self.conversion_manager.convert(txn_receipt.sender, AddressType)
+        if address not in self._address_list_map:
+            self._address_list_map[address] = [txn_receipt]
             return
 
-        if txn_receipt.txn_hash in [r.txn_hash for r in self._map[address]]:
-            raise ChainError(f"Transaction '{txn_receipt.txn_hash}' already known.")
+        if txn_receipt.txn_hash in [r.txn_hash for r in self._address_list_map[address]]:
+            logger.warning(f"Transaction '{txn_receipt.txn_hash}' already known.")
 
-        self._map[address].append(txn_receipt)
+        self._address_list_map[address].append(txn_receipt)
 
     def revert_to_block(self, block_number: int):
         """
@@ -415,10 +429,36 @@ class AccountHistory(BaseManager):
             block_number (int): The block number to revert to.
         """
 
-        self._map = {
+        self._address_list_map = {
             a: [r for r in receipts if r.block_number <= block_number]
             for a, receipts in self.items()
         }
+        self._hash_to_receipt_map = {
+            h: r for h, r in self._hash_to_receipt_map.items() if r.block_number <= block_number
+        }
+
+    def get_receipt(self, transaction_hash: str) -> ReceiptAPI:
+        """
+        Get a receipt from the history by its transaction hash.
+        If the receipt is not currently cached, will use the provider
+        to retrieve it.
+
+        Args:
+            transaction_hash (str): The hash of the transaction.
+
+        Returns:
+            :class:`~ape.api.transactions.ReceiptAPI`: The receipt.
+        """
+
+        receipt = self._hash_to_receipt_map.get(transaction_hash)
+        if not receipt:
+            # TODO: Replace with query manager once supports receipts
+            #  instead of transactions.
+            # TODO: Add timeout = 0 once in API method to not wait for txns
+            receipt = self.provider.get_receipt(transaction_hash)
+            self.append(receipt)
+
+        return receipt
 
 
 class ContractCache(BaseManager):
@@ -501,10 +541,39 @@ class ContractCache(BaseManager):
             contract_type (ContractType): The contract's type.
         """
 
+        if self.network_manager.active_provider:
+            address = self.provider.network.ecosystem.decode_address(int(address, 16))
+        else:
+            logger.warning("Not connected to a provider. Assuming Ethereum-style checksums.")
+            ethereum = self.network_manager.ethereum
+            address = ethereum.decode_address(int(address, 16))
+
         self._cache_contract_type(address, contract_type)
 
         # NOTE: The txn_hash is not included when caching this way.
         self._cache_deployment(address, contract_type)
+
+    def __delitem__(self, address: AddressType):
+        """
+        Delete a cached contract.
+        If using a live network, it will also delete the file-cache for the contract.
+
+        Args:
+            address (AddressType): The address to remove from the cache.
+        """
+
+        if address in self._local_contract_types:
+            del self._local_contract_types[address]
+
+        if self._is_live_network:
+            if not self._contract_types_cache.is_dir():
+                return
+
+            address_file = self._contract_types_cache / f"{address}.json"
+            address_file.unlink(missing_ok=True)
+
+    def __contains__(self, address: AddressType) -> bool:
+        return self.get(address) is not None
 
     def cache_deployment(self, contract_instance: ContractInstance):
         """
@@ -515,11 +584,53 @@ class ContractCache(BaseManager):
               to cache.
         """
 
+        proxy_info = self.provider.network.ecosystem.get_proxy_info(contract_instance.address)
+        if proxy_info:
+            self.cache_proxy_info(contract_instance.address, proxy_info)
+            contract_type = self.get(proxy_info.target)
+            if contract_type:
+                self._cache_contract_type(contract_instance.address, contract_type)
+
+            return
+
         address = contract_instance.address
         contract_type = contract_instance.contract_type
         txn_hash = contract_instance.txn_hash
         self._cache_contract_type(address, contract_type)
         self._cache_deployment(address, contract_type, txn_hash)
+
+    def cache_proxy_info(self, address: AddressType, proxy_info: ProxyInfoAPI):
+        """
+        Cache proxy info for a particular address, useful for plugins adding already
+        deployed proxies. When you deploy a proxy locally, it will also call this method.
+
+        Args:
+            address (AddressType): The address of the proxy contract.
+            proxy_info (:class:`~ape.api.networks.ProxyInfo`): The proxy info class
+              to cache.
+        """
+
+        if self.get_proxy_info(address) and self._is_live_network:
+            return
+
+        self._local_proxies[address] = proxy_info
+
+        if self._is_live_network:
+            self._cache_proxy_info_to_disk(address, proxy_info)
+
+    def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfoAPI]:
+        """
+        Get proxy information about a contract using its address,
+        either from a local cache, a disk cache, or the provider.
+
+        Args:
+            address (AddressType): The address of the proxy contract.
+
+        Returns:
+            Optional[:class:`~ape.api.networks.ProxyInfoAPI`]
+        """
+
+        return self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
 
     def _cache_contract_type(self, address: AddressType, contract_type: ContractType):
         self._local_contract_types[address] = contract_type
@@ -560,6 +671,9 @@ class ContractCache(BaseManager):
             Dict[AddressType, ContractType]: A mapping of addresses to their respective
             contract types.
         """
+        if not addresses:
+            logger.warning("No addresses provided.")
+            return {}
 
         def get_contract_type(address: AddressType):
             address = self.conversion_manager.convert(address, AddressType)
@@ -571,10 +685,22 @@ class ContractCache(BaseManager):
             else:
                 return address, contract_type
 
-        addresses = [self.conversion_manager.convert(a, AddressType) for a in addresses]
+        converted_addresses: List[AddressType] = []
+        for address in converted_addresses:
+            if not self.conversion_manager.is_type(address, AddressType):
+                converted_address = self.conversion_manager.convert(address, AddressType)
+                converted_addresses.append(converted_address)
+            else:
+                converted_addresses.append(address)
+
         contract_types = {}
-        num_threads = concurrency if concurrency is not None else min(len(addresses), 4)
-        with ThreadPoolExecutor(num_threads) as pool:
+        default_max_threads = 4
+        max_threads = (
+            concurrency
+            if concurrency is not None
+            else min(len(addresses), default_max_threads) or default_max_threads
+        )
+        with ThreadPoolExecutor(max_workers=max_threads) as pool:
             for address, contract_type in pool.map(get_contract_type, addresses):
                 if contract_type is None:
                     continue
@@ -633,7 +759,7 @@ class ContractCache(BaseManager):
 
             if proxy_info:
                 self._local_proxies[address_key] = proxy_info
-                return self.get(proxy_info.target)
+                return self.get(proxy_info.target, default=default)
 
             if not self.provider.get_code(address_key):
                 if default:
@@ -679,7 +805,7 @@ class ContractCache(BaseManager):
 
     def instance_at(
         self,
-        address: Union[str, "AddressType"],
+        address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
     ) -> ContractInstance:
@@ -703,17 +829,17 @@ class ContractCache(BaseManager):
             :class:`~ape.contracts.base.ContractInstance`
         """
 
-        try:
-            # Handles ENS domain names
-            address = self.conversion_manager.convert(address, AddressType)
-        except ConversionError:
-            address = address
-
-        address = self.provider.network.ecosystem.decode_address(address)
+        if self.conversion_manager.is_type(address, AddressType):
+            contract_address = cast(AddressType, address)
+        else:
+            try:
+                contract_address = self.conversion_manager.convert(address, AddressType)
+            except ConversionError as err:
+                raise ValueError(f"Unknown address value '{address}'.") from err
 
         try:
             # Always attempt to get an existing contract type to update caches
-            contract_type = self.get(address, default=contract_type)
+            contract_type = self.get(contract_address, default=contract_type)
         except Exception as err:
             if contract_type:
                 # If a default contract type was provided, don't error and use it.
@@ -722,7 +848,7 @@ class ContractCache(BaseManager):
                 raise  # Current exception
 
         if not contract_type:
-            raise ChainError(f"Failed to get contract type for address '{address}'.")
+            raise ChainError(f"Failed to get contract type for address '{contract_address}'.")
         elif not isinstance(contract_type, ContractType):
             raise TypeError(
                 f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
@@ -732,11 +858,11 @@ class ContractCache(BaseManager):
             # Check for txn_hash in deployments.
             deployments = self._deployments.get(contract_type.name) or []
             for deployment in deployments:
-                if deployment["address"] == address:
+                if deployment["address"] == contract_address:
                     txn_hash = deployment.get("transaction_hash")
                     break
 
-        return ContractInstance(address, contract_type, txn_hash=txn_hash)
+        return ContractInstance(contract_address, contract_type, txn_hash=txn_hash)
 
     def get_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
         """
@@ -781,19 +907,53 @@ class ContractCache(BaseManager):
 
         return instances
 
+    def lookup_method(
+        self, contract: Union[AddressType, ContractType], selector: HexBytes
+    ) -> MethodABI:
+        """
+        Find the method ABI from the given contract address and selector.
+
+        Args:
+            contract_address (``AddressType``): The address of the contract.
+            selector (``HexBytes``): The method ID.
+
+        Returns:
+            ``ethpm_types.abi.MethodABI``: The ABI object of the method.
+        """
+
+        if isinstance(contract, ContractType):
+            contract_type = contract
+        else:
+            contract_type = self[contract]
+
+        if selector in contract_type.mutable_methods:
+            return contract_type.mutable_methods[selector]
+        elif selector in contract_type.view_methods:
+            return contract_type.view_methods[selector]
+
+        raise ContractError(f"Selector '{selector.hex()}' not found in {contract_type.name}")
+
+    def clear_local_caches(self):
+        """
+        Reset local caches to a blank state.
+        """
+        self._local_contract_types = {}
+        self._local_proxies = {}
+        self._local_deployments_mapping = {}
+
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         address_file = self._contract_types_cache / f"{address}.json"
         if not address_file.is_file():
             return None
 
-        return ContractType.parse_raw(address_file.read_text())
+        return ContractType.parse_file(address_file)
 
     def _get_proxy_info_from_disk(self, address: AddressType) -> Optional[ProxyInfoAPI]:
         address_file = self._proxy_info_cache / f"{address}.json"
         if not address_file.is_file():
             return None
 
-        return ProxyInfoAPI.parse_raw(address_file.read_text())
+        return ProxyInfoAPI.parse_file(address_file)
 
     def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
         if not self._network.explorer:
@@ -824,7 +984,7 @@ class ContractCache(BaseManager):
     def _load_deployments_cache(self) -> Dict:
         return (
             json.loads(self._deployments_mapping_cache.read_text())
-            if self._deployments_mapping_cache.exists()
+            if self._deployments_mapping_cache.is_file()
             else {}
         )
 
@@ -832,6 +992,96 @@ class ContractCache(BaseManager):
         self._deployments_mapping_cache.parent.mkdir(exist_ok=True, parents=True)
         with self._deployments_mapping_cache.open("w") as fp:
             json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
+
+
+class ReportManager(BaseManager):
+    """
+    A class representing the active Ape session. Useful for tracking data and
+    building reports.
+
+    **NOTE**: This class is not part of the public API.
+    """
+
+    track_gas: bool = False
+    gas_exclusions: List[ContractFunctionPath] = []
+    sessional_gas_report: Optional[GasReport] = None
+    rich_console_map: Dict[str, RichConsole] = {}
+
+    def show_trace(
+        self,
+        call_tree: Any,
+        sender: Optional[AddressType] = None,
+        transaction_hash: Optional[str] = None,
+        revert_message: Optional[str] = None,
+        file: Optional[IO[str]] = None,
+        verbose: bool = False,
+    ):
+        parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash, verbose=verbose)
+        root = parser.parse_as_tree(call_tree)
+        console = self._get_console(file)
+
+        if transaction_hash:
+            console.print(f"Call trace for [bold blue]'{transaction_hash}'[/]")
+        if revert_message:
+            console.print(f"[bold red]{revert_message}[/]")
+        if sender:
+            console.print(f"tx.origin=[{TraceStyles.CONTRACTS}]{sender}[/]")
+
+        console.print(root)
+
+    def show_gas(
+        self,
+        call_tree: Any,
+        sender: Optional[AddressType] = None,
+        transaction_hash: Optional[str] = None,
+        file: Optional[IO[str]] = None,
+    ):
+        console = self._get_console(file)
+        parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash)
+        tables = parser.parse_as_gas_report(call_tree)
+        console.print(*tables)
+
+    def show_session_gas(
+        self,
+        file: Optional[IO[str]] = None,
+    ) -> bool:
+        if not self.sessional_gas_report:
+            return False
+
+        tables = parse_gas_table(self.sessional_gas_report)
+        console = self._get_console(file)
+        console.print(*tables)
+        return True
+
+    def append_gas(
+        self,
+        call_tree: Any,
+        contract_address: AddressType,
+        sender: Optional[AddressType] = None,
+        transaction_hash: Optional[str] = None,
+    ):
+        contract_type = self.chain_manager.contracts.get(contract_address)
+        if not contract_type:
+            # Skip unknown contracts.
+            return
+
+        parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash)
+        gas_report = parser._get_rich_gas_report(call_tree, exclude=self.gas_exclusions)
+        if gas_report and self.sessional_gas_report:
+            self.sessional_gas_report = merge_reports(self.sessional_gas_report, gas_report)
+        elif gas_report:
+            self.sessional_gas_report = gas_report
+
+    def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
+        if not file:
+            return get_console()
+
+        # Configure custom file console
+        file_id = str(file)
+        if file_id not in self.rich_console_map:
+            self.rich_console_map[file_id] = RichConsole(file=file)
+
+        return self.rich_console_map[file_id]
 
 
 class ChainManager(BaseManager):
@@ -850,6 +1100,7 @@ class ChainManager(BaseManager):
     _block_container_map: Dict[int, BlockContainer] = {}
     _account_history_map: Dict[int, AccountHistory] = {}
     contracts: ContractCache = ContractCache()
+    _reports: ReportManager = ReportManager()
 
     @property
     def blocks(self) -> BlockContainer:
@@ -977,6 +1228,50 @@ class ChainManager(BaseManager):
         self.provider.revert(snapshot_id)
         self.account_history.revert_to_block(self.blocks.height)
 
+    @contextmanager
+    def isolate(self):
+        """
+        Run code in an isolated context.
+        Requires using a local provider that supports snapshotting.
+
+        Usages example::
+
+            owner = accounts[0]
+            with chain.isolate():
+                contract = owner.deploy(project.MyContract)
+                receipt = contract.fooBar(sender=owner)
+        """
+
+        try:
+            snapshot = self.snapshot()
+        except APINotImplementedError:
+            logger.warning("Provider does not support snapshotting.")
+
+        start_ecosystem_name = self.provider.network.ecosystem.name
+        start_network_name = self.provider.network.name
+        start_provider_name = self.provider.name
+
+        try:
+            yield
+        finally:
+            if snapshot is None:
+                logger.error("Failed to create snapshot.")
+                return
+
+            end_ecosystem_name = self.provider.network.ecosystem.name
+            end_network_name = self.provider.network.name
+            end_provider_name = self.provider.name
+
+            if (
+                start_ecosystem_name != end_ecosystem_name
+                or start_network_name != end_network_name
+                or start_provider_name != end_provider_name
+            ):
+                logger.warning("Provider changed before isolation completed.")
+                return
+
+            self.chain_manager.restore(snapshot)
+
     def mine(
         self,
         num_blocks: int = 1,
@@ -1007,7 +1302,7 @@ class ChainManager(BaseManager):
 
     def set_balance(self, account: Union[BaseAddress, AddressType], amount: Union[int, str]):
         if isinstance(account, BaseAddress):
-            account = account.address  # type: ignore
+            account = account.address
 
         if isinstance(amount, str) and len(str(amount).split(" ")) > 1:
             # Support values like "1000 ETH".
@@ -1017,3 +1312,6 @@ class ChainManager(BaseManager):
             amount = int(amount, 16)
 
         return self.provider.set_balance(account, amount)
+
+    def get_receipt(self, transaction_hash: str) -> ReceiptAPI:
+        return self.chain_manager.account_history.get_receipt(transaction_hash)

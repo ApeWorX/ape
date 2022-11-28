@@ -38,6 +38,22 @@ default_ecosystem: <ecosystem-name>
     default_provider: <provider-name>
 ```
 
+You may also configure a specific gas limit for a given network:
+
+```yaml
+<ecosystem-name>:
+  default_network: <network-name>
+  <network-name>:
+    gas_limit: "max"
+```
+
+You may use one of:
+- `"auto"` - gas limit is estimated for each transaction
+- `"max"` - the maximum block gas limit is used
+- A number or numeric string, base 10 or 16 (e.g. `1234`, `"1234"`, `0x1234`, `"0x1234"`)
+
+For the local network configuration, the default is `"max"`. Otherwise it is `"auto"`.
+
 ## Local Network
 
 The default network in Ape is the local network (keyword `"local"`).

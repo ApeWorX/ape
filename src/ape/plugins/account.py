@@ -13,7 +13,9 @@ class AccountPlugin(PluginType):
     """
 
     @hookspec
-    def account_types(self) -> Tuple[Type[AccountContainerAPI], Type[AccountAPI]]:
+    def account_types(  # type: ignore[empty-body]
+        self,
+    ) -> Tuple[Type[AccountContainerAPI], Type[AccountAPI]]:
         """
         A hook for returning a tuple of an account container and an account type.
         Each account-base plugin defines and returns their own types here.

@@ -35,7 +35,8 @@ class CompilerAPI(BaseInterfaceModel):
             Set[str]: A set of available compiler versions.
         """
 
-    def get_compiler_settings(
+    @raises_not_implemented
+    def get_compiler_settings(  # type: ignore[empty-body]
         self, contract_filepaths: List[Path], base_path: Optional[Path] = None
     ) -> Dict[Version, Dict]:
         """
@@ -43,7 +44,8 @@ class CompilerAPI(BaseInterfaceModel):
         by the compiler version number.
 
         Args:
-            all_paths (List[pathlib.Path]): The list of paths.
+            contract_filepaths (List[pathlib.Path]): The list of paths.
+            base_path (Optional[pathlib.Path]): The contracts folder base path.
 
         Returns:
             Dict[Version, Dict]: A dict of compiler settings by compiler version.
@@ -67,7 +69,7 @@ class CompilerAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_imports(
+    def get_imports(  # type: ignore[empty-body]
         self, contract_filepaths: List[Path], base_path: Optional[Path]
     ) -> Dict[str, List[str]]:
         """
@@ -84,7 +86,7 @@ class CompilerAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_version_map(
+    def get_version_map(  # type: ignore[empty-body]
         self,
         contract_filepaths: List[Path],
         base_path: Optional[Path] = None,

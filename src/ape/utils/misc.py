@@ -1,9 +1,9 @@
 import asyncio
 import json
 import sys
-from functools import lru_cache
+from functools import cached_property, lru_cache, singledispatchmethod
 from pathlib import Path
-from typing import Any, Coroutine, Dict, List, Mapping, Optional
+from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional
 
 import requests
 import yaml
@@ -12,19 +12,9 @@ from importlib_metadata import PackageNotFoundError, distributions, packages_dis
 from importlib_metadata import version as version_metadata
 from tqdm.auto import tqdm  # type: ignore
 
-from ape.exceptions import APINotImplementedError
+from ape.exceptions import APINotImplementedError, ProviderNotConnectedError
 from ape.logging import logger
 from ape.utils.os import expand_environment_variables
-
-try:
-    from functools import cached_property  # type: ignore
-except ImportError:
-    from backports.cached_property import cached_property  # type: ignore
-try:
-    from functools import singledispatchmethod  # type: ignore
-except ImportError:
-    from singledispatchmethod import singledispatchmethod  # type: ignore
-
 
 EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
@@ -130,7 +120,7 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
     Returns:
         Dict (dict): Configured settings parsed from a config file.
     """
-    if path.exists():
+    if path.is_file():
         contents = path.read_text()
         if expand_envars:
             contents = expand_environment_variables(contents)
@@ -302,7 +292,35 @@ def run_until_complete(item: Any) -> Any:
     return loop.run_until_complete(item)
 
 
+def allow_disconnected(fn: Callable):
+    """
+    A decorator that instead of raising :class:`~ape.exceptions.ProviderNotConnectedError`
+    warns and returns ``None``.
+
+    Usage example::
+
+        from typing import Optional
+        from ape.types import SnapshotID
+        from ape.utils import return_none_when_disconnected
+
+        @allow_disconnected
+        def try_snapshot(self) -> Optional[SnapshotID]:
+            return self.chain.snapshot()
+
+    """
+
+    def inner(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except ProviderNotConnectedError:
+            logger.warning("Provider is not connected.")
+            return None
+
+    return inner
+
+
 __all__ = [
+    "allow_disconnected",
     "cached_property",
     "extract_nested_value",
     "gas_estimation_error_message",

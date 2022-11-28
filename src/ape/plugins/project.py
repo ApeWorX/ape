@@ -14,7 +14,7 @@ class ProjectPlugin(PluginType):
     via ``.gitmodules``.
     """
 
-    @hookspec
+    @hookspec  # type: ignore[empty-body]
     def projects(self) -> Iterator[Type[ProjectAPI]]:
         """
         A hook that returns a :class:`~ape.api.projects.ProjectAPI` subclass type.
@@ -31,7 +31,7 @@ class DependencyPlugin(PluginType):
     """
 
     @hookspec
-    def dependencies(self) -> Dict[str, Type[DependencyAPI]]:
+    def dependencies(self) -> Dict[str, Type[DependencyAPI]]:  # type: ignore[empty-body]
         """
         A hook that returns a :class:`~ape.api.projects.DependencyAPI` mapped
         to its ``ape-config.yaml`` file dependencies special key. For example,

@@ -7,7 +7,6 @@ from ethpm_types.utils import compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
 
-from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
@@ -57,7 +56,7 @@ class ProjectAPI(BaseInterfaceModel):
         Create a manifest from the project.
 
         Args:
-            file_paths (Optional[List]): An optional list of paths to compile
+            file_paths (Optional[List[Path]]): An optional list of paths to compile
               from this project.
             use_cache (bool): Set to ``False`` to clear caches and force a re-compile.
 
@@ -106,16 +105,10 @@ class ProjectAPI(BaseInterfaceModel):
         initial_manifest: Optional[PackageManifest] = None,
     ) -> PackageManifest:
         manifest = initial_manifest or PackageManifest()
-
-        if name:
-            manifest.name = PackageName(name.lower())
-
-        if version:
-            manifest.version = version
-
+        manifest.name = PackageName(name.lower()) if name is not None else manifest.name
+        manifest.version = version or manifest.version
         manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
-
         return manifest
 
     @classmethod
@@ -132,8 +125,8 @@ class ProjectAPI(BaseInterfaceModel):
         source_dict: Dict[str, Source] = {}
         for source_path in contract_filepaths:
             key = str(get_relative_path(source_path, base_path))
-            source_dict[key] = Source(  # type: ignore
-                checksum=Checksum(  # type: ignore
+            source_dict[key] = Source(
+                checksum=Checksum(
                     algorithm="md5",
                     hash=compute_checksum(source_path.read_bytes()),
                 ),
@@ -200,7 +193,7 @@ class DependencyAPI(BaseInterfaceModel):
     @abstractmethod
     def extract_manifest(self) -> PackageManifest:
         """
-        Create a :class:`~ape.api.projects.ProjectAPI` implementation,
+        Create a ``PackageManifest`` definition,
         presumably by downloading and compiling the dependency.
 
         Implementations may use ``self.project_manager`` to call method
@@ -209,7 +202,7 @@ class DependencyAPI(BaseInterfaceModel):
         based on the project's structure.
 
         Returns:
-            :class:`~ape.api.projects.ProjectAPI`
+            ``PackageManifest``
         """
 
     @property
@@ -244,16 +237,8 @@ class DependencyAPI(BaseInterfaceModel):
 
         return None
 
-    def _extract_local_manifest(self, project_path: Path):
-        project_path = project_path.resolve()
-        contracts_folder = project_path / self.contracts_folder
-        project = self.project_manager.get_project(
-            project_path,
-            contracts_folder=contracts_folder,
-            name=self.name,
-            version=self.version,
-        )
-
+    def _extract_local_manifest(self, project_path: Path, compile: bool = False):
+        project = self._get_project(project_path)
         all_sources = get_all_files_in_directory(project.contracts_folder)
 
         excluded_files = set()
@@ -261,13 +246,13 @@ class DependencyAPI(BaseInterfaceModel):
             excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
 
         sources = [s for s in all_sources if s not in excluded_files]
-        project_manifest = project.create_manifest(file_paths=sources)
 
-        if not project_manifest.contract_types:
-            raise ProjectError(
-                f"No contract types found in dependency '{self.name}'. "
-                "Do you have the correct compilers installed?"
-            )
+        # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
+        # for later usage via imports. For legacy reasons, many dependency-esque projects
+        # are not meant to compile on their own.
+        project_manifest = project._create_manifest(
+            sources, project.contracts_folder, {}, name=project.name, version=project.version
+        )
 
         # Cache the manifest for future use outside of this tempdir.
         self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
@@ -275,13 +260,23 @@ class DependencyAPI(BaseInterfaceModel):
 
         return project_manifest
 
+    def _get_project(self, project_path: Path) -> ProjectAPI:
+        project_path = project_path.resolve()
+        contracts_folder = project_path / self.contracts_folder
+        return self.project_manager.get_project(
+            project_path,
+            contracts_folder=contracts_folder,
+            name=self.name,
+            version=self.version,
+        )
+
 
 def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
     if not file_path.is_file():
         return None
 
     try:
-        return PackageManifest.parse_raw(file_path.read_text())
+        return PackageManifest.parse_file(file_path)
     except ValidationError as err:
         logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
         logger.debug(str(err))

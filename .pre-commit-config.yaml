@@ -10,22 +10,21 @@ repos:
       - id: isort
 
 -   repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 22.10.0
     hooks:
       - id: black
         name: black
 
--   repo: https://gitlab.com/pycqa/flake8
-    rev: 4.0.1
+-   repo: https://github.com/pycqa/flake8
+    rev: 5.0.4
     hooks:
     -   id: flake8
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.971
+    rev: v0.991
     hooks:
     -   id: mypy
-        additional_dependencies: [types-PyYAML, types-requests, types-pkg-resources]
-
+        additional_dependencies: [types-PyYAML, types-requests, types-pkg-resources, types-setuptools]
 
 default_language_version:
-    python: python3.8
+    python: python3

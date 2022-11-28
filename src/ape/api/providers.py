@@ -11,14 +11,16 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix
+from eth_utils import add_0x_prefix, is_hex, to_hex
 from evm_trace import CallTreeNode, TraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
+from web3.eth import TxParams
+from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
 from web3.types import RPCEndpoint
@@ -29,6 +31,7 @@ from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
+    BlockNotFoundError,
     ContractLogicError,
     ProviderError,
     ProviderNotConnectedError,
@@ -36,10 +39,11 @@ from ape.exceptions import (
     SubprocessError,
     SubprocessTimeoutError,
     TransactionError,
+    TransactionNotFoundError,
     VirtualMachineError,
 )
 from ape.logging import logger
-from ape.types import AddressType, BlockID, ContractLog, LogFilter, SnapshotID
+from ape.types import AddressType, BlockID, ContractCode, ContractLog, LogFilter, SnapshotID
 from ape.utils import (
     EMPTY_BYTES32,
     BaseInterfaceModel,
@@ -72,27 +76,22 @@ class BlockAPI(BaseInterfaceModel):
 
     @root_validator(pre=True)
     def convert_parent_hash(cls, data):
-        if "parent_hash" in data:
-            parent_hash = data["parent_hash"]
-        elif "parentHash" in data:
-            parent_hash = data["parentHash"]
-        else:
-            parent_hash = EMPTY_BYTES32
-
-        data["parentHash"] = parent_hash or EMPTY_BYTES32
+        parent_hash = data.get("parent_hash", data.get("parentHash")) or EMPTY_BYTES32
+        data["parentHash"] = parent_hash
         return data
 
     @validator("hash", "parent_hash", pre=True)
     def validate_hexbytes(cls, value):
         # NOTE: pydantic treats these values as bytes and throws an error
         if value and not isinstance(value, HexBytes):
-            raise ValueError(f"Hash `{value}` is not a valid Hexbyte.")
+            raise ValueError(f"Hash `{value}` is not a valid Hexbytes.")
+
         return value
 
     @cached_property
     def transactions(self) -> List[TransactionAPI]:
         query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-        return list(self.query_manager.query(query))  # type: ignore
+        return cast(List[TransactionAPI], list(self.query_manager.query(query)))
 
 
 class ProviderAPI(BaseInterfaceModel):
@@ -131,6 +130,13 @@ class ProviderAPI(BaseInterfaceModel):
     How many parallel threads to use when fetching logs.
     """
 
+    @property
+    @abstractmethod
+    def is_connected(self) -> bool:
+        """
+        ``True`` if currently connected to the provider. ``False`` otherwise.
+        """
+
     @abstractmethod
     def connect(self):
         """
@@ -142,13 +148,6 @@ class ProviderAPI(BaseInterfaceModel):
         """
         Disconnect from a provider, such as tear-down a process or quit an HTTP session.
         """
-
-    @property
-    def is_connected(self) -> bool:
-        """
-        ``True`` if currently connected to the provider. ``False`` otherwise.
-        """
-        return self.chain_id is not None
 
     @abstractmethod
     def update_settings(self, new_settings: dict):
@@ -181,19 +180,19 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_code(self, address: str) -> bytes:
+    def get_code(self, address: AddressType) -> ContractCode:
         """
         Get the bytes a contract.
 
         Args:
-            address (str): The address of the contract.
+            address (``AddressType``): The address of the contract.
 
         Returns:
-            bytes: The contract byte-code.
+            :class:`~ape.types.ContractCode`: The contract bytecode.
         """
 
     @raises_not_implemented
-    def get_storage_at(self, address: str, slot: int) -> bytes:
+    def get_storage_at(self, address: str, slot: int) -> bytes:  # type: ignore[empty-body]
         """
         Gets the raw value of a storage slot of a contract.
 
@@ -206,12 +205,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_nonce(self, address: str) -> int:
+    def get_nonce(self, address: AddressType) -> int:
         """
         Get the number of times an account has transacted.
 
         Args:
-            address (str): The address of the account.
+            address (``AddressType``): The address of the account.
 
         Returns:
             int
@@ -240,6 +239,14 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @property
+    def max_gas(self) -> int:
+        """
+        The max gas limit value you can use.
+        """
+        # TODO: Make abstract
+        return 0
+
+    @property
     def config(self) -> PluginConfig:
         """
         The provider's configuration.
@@ -255,7 +262,14 @@ class ProviderAPI(BaseInterfaceModel):
             NotImplementedError: When the provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__ typed transactions.
         """
-        raise NotImplementedError("priority_fee is not implemented by this provider")
+        raise APINotImplementedError("priority_fee is not implemented by this provider")
+
+    @property
+    def supports_tracing(self) -> bool:
+        """
+        ``True`` when the provider can provide transaction traces.
+        """
+        return False
 
     @property
     def base_fee(self) -> int:
@@ -268,7 +282,7 @@ class ProviderAPI(BaseInterfaceModel):
             NotImplementedError: When this provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
         """
-        raise NotImplementedError("base_fee is not implemented by this provider")
+        raise APINotImplementedError("base_fee is not implemented by this provider")
 
     @abstractmethod
     def get_block(self, block_id: BlockID) -> BlockAPI:
@@ -279,25 +293,30 @@ class ProviderAPI(BaseInterfaceModel):
             block_id (:class:`~ape.types.BlockID`): The ID of the block to get.
                 Can be ``"latest"``, ``"earliest"``, ``"pending"``, a block hash or a block number.
 
+        Raises:
+            :class:`~ape.exceptions.BlockNotFoundError`: Likely the exception raised when a block
+              is not found (depends on implementation).
+
         Returns:
             :class:`~ape.types.BlockID`: The block for the given ID.
         """
 
     @abstractmethod
-    def send_call(self, txn: TransactionAPI) -> bytes:  # Return value of function
+    def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:  # Return value of function
         """
         Execute a new transaction call immediately without creating a
-        transaction on the block chain.
+        transaction on the blockchain.
 
         Args:
-            txn: :class:`~ape.api.transactions.TransactionAPI`
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction
+              to send as a call.
 
         Returns:
             str: The result of the transaction call.
         """
 
     @abstractmethod
-    def get_transaction(self, txn_hash: str) -> ReceiptAPI:
+    def get_receipt(self, txn_hash: str) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
 
@@ -347,7 +366,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def snapshot(self) -> SnapshotID:
+    def snapshot(self) -> SnapshotID:  # type: ignore[empty-body]
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -358,7 +377,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def revert(self, snapshot_id: SnapshotID):
+    def revert(self, snapshot_id: SnapshotID):  # type: ignore[empty-body]
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -369,7 +388,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def set_timestamp(self, new_timestamp: int):
+    def set_timestamp(self, new_timestamp: int):  # type: ignore[empty-body]
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -380,7 +399,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def mine(self, num_blocks: int = 1):
+    def mine(self, num_blocks: int = 1):  # type: ignore[empty-body]
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -391,7 +410,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def set_balance(self, address: AddressType, amount: int):
+    def set_balance(self, address: AddressType, amount: int):  # type: ignore[empty-body]
         """
         Change the balance of an account.
 
@@ -403,13 +422,27 @@ class ProviderAPI(BaseInterfaceModel):
     def __repr__(self) -> str:
         try:
             chain_id = self.chain_id
-        except ProviderNotConnectedError:
+        except Exception as err:
+            logger.error(str(err))
             chain_id = None
 
         return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
 
     @raises_not_implemented
-    def unlock_account(self, address: AddressType) -> bool:
+    def set_code(  # type: ignore[empty-body]
+        self, address: AddressType, code: ContractCode
+    ) -> bool:
+        """
+        Change the code of a smart contract, for development purposes.
+        Test providers implement this method when they support it.
+
+        Args:
+            address (AddressType): An address on the network.
+            code (:class:`~ape.types.ContractCode`): The new bytecode.
+        """
+
+    @raises_not_implemented
+    def unlock_account(self, address: AddressType) -> bool:  # type: ignore[empty-body]
         """
         Ask the provider to allow an address to submit transactions without validating
         signatures. This feature is intended to be subclassed by a
@@ -427,7 +460,9 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
+    def get_transaction_trace(  # type: ignore[empty-body]
+        self, txn_hash: str
+    ) -> Iterator[TraceFrame]:
         """
         Provide a detailed description of opcodes.
 
@@ -439,7 +474,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_call_tree(self, txn_hash: str) -> CallTreeNode:
+    def get_call_tree(self, txn_hash: str) -> CallTreeNode:  # type: ignore[empty-body]
         """
         Create a tree structure of calls for a transaction.
 
@@ -467,21 +502,36 @@ class ProviderAPI(BaseInterfaceModel):
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
         txn.chain_id = self.network.chain_id
 
-        from ape_ethereum.transactions import TransactionType
+        from ape_ethereum.transactions import StaticFeeTransaction, TransactionType
 
         txn_type = TransactionType(txn.type)
-        if txn_type == TransactionType.STATIC and txn.gas_price is None:  # type: ignore
-            txn.gas_price = self.gas_price  # type: ignore
+        if (
+            txn_type == TransactionType.STATIC
+            and isinstance(txn, StaticFeeTransaction)
+            and txn.gas_price is None
+        ):
+            txn.gas_price = self.gas_price
         elif txn_type == TransactionType.DYNAMIC:
-            if txn.max_priority_fee is None:  # type: ignore
-                txn.max_priority_fee = self.priority_fee  # type: ignore
+            if txn.max_priority_fee is None:
+                txn.max_priority_fee = self.priority_fee
 
             if txn.max_fee is None:
                 txn.max_fee = self.base_fee + txn.max_priority_fee
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
-        if txn.gas_limit is None:
+        gas_limit = txn.gas_limit or self.network.gas_limit
+        if isinstance(gas_limit, str) and gas_limit.isnumeric():
+            txn.gas_limit = int(gas_limit)
+        elif isinstance(gas_limit, str) and is_hex(gas_limit):
+            txn.gas_limit = int(gas_limit, 16)
+        elif gas_limit == "max":
+            txn.gas_limit = self.max_gas
+        elif gas_limit in ("auto", None):
             txn.gas_limit = self.estimate_gas_cost(txn)
+        else:
+            txn.gas_limit = gas_limit
+
+        assert txn.gas_limit not in ("auto", "max")
         # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.required_confirmations is None:
@@ -490,10 +540,6 @@ class ProviderAPI(BaseInterfaceModel):
             raise TransactionError(message="'required_confirmations' must be a positive integer.")
 
         return txn
-
-    def _try_track_receipt(self, receipt: ReceiptAPI):
-        if self.chain_manager:
-            self.chain_manager.account_history.append(receipt)
 
     def get_virtual_machine_error(self, exception: Exception) -> VirtualMachineError:
         """
@@ -600,7 +646,7 @@ class Web3Provider(ProviderAPI, ABC):
     @property
     def web3(self) -> Web3:
         """
-        Access to the ``web3`` object as if you did ``Web3(HTTPProvder(uri))``.
+        Access to the ``web3`` object as if you did ``Web3(HTTPProvider(uri))``.
         """
 
         if not self._web3:
@@ -638,7 +684,23 @@ class Web3Provider(ProviderAPI, ABC):
         if self._web3 is None:
             return False
 
-        return run_until_complete(self._web3.isConnected())
+        return run_until_complete(self._web3.is_connected())
+
+    @property
+    def max_gas(self) -> int:
+        block = self.web3.eth.get_block("latest")
+        return block["gasLimit"]
+
+    @cached_property
+    def supports_tracing(self) -> bool:
+        try:
+            self.get_call_tree(None)
+        except APINotImplementedError:
+            return False
+        except Exception:
+            return True
+
+        return True
 
     def update_settings(self, new_settings: dict):
         self.disconnect()
@@ -661,13 +723,17 @@ class Web3Provider(ProviderAPI, ABC):
 
         Returns:
             int: The estimated cost of gas to execute the transaction
-            reported in the fee-currency's smallest unit, e.g. Wei.
+            reported in the fee-currency's smallest unit, e.g. Wei. If the
+            provider's network has been configured with a gas limit override, it
+            will be returned. If the gas limit configuration is "max" this will
+            return the block maximum gas limit.
         """
 
         txn_dict = txn.dict()
         try:
             block_id = kwargs.pop("block_identifier", None)
-            return self.web3.eth.estimate_gas(txn_dict, block_identifier=block_id)  # type: ignore
+            txn_params = cast(TxParams, txn_dict)
+            return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
         except ValueError as err:
             tx_error = self.get_virtual_machine_error(err)
 
@@ -681,18 +747,28 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def chain_id(self) -> int:
+        default_chain_id = None
         if self.network.name not in (
             "adhoc",
             LOCAL_NETWORK_NAME,
         ) and not self.network.name.endswith("-fork"):
             # If using a live network, the chain ID is hardcoded.
-            return self.network.chain_id
+            default_chain_id = self.network.chain_id
 
-        elif hasattr(self.web3, "eth"):
-            return self.web3.eth.chain_id
+        try:
+            if hasattr(self.web3, "eth"):
+                return self.web3.eth.chain_id
 
-        else:
-            raise ProviderNotConnectedError()
+        except ProviderNotConnectedError:
+            if default_chain_id is not None:
+                return default_chain_id
+
+            raise  # Original error
+
+        if default_chain_id is not None:
+            return default_chain_id
+
+        raise ProviderNotConnectedError()
 
     @property
     def gas_price(self) -> int:
@@ -706,7 +782,11 @@ class Web3Provider(ProviderAPI, ABC):
         if isinstance(block_id, str) and block_id.isnumeric():
             block_id = int(block_id)
 
-        block_data = dict(self.web3.eth.get_block(block_id))
+        try:
+            block_data = dict(self.web3.eth.get_block(block_id))
+        except BlockNotFound as err:
+            raise BlockNotFoundError(block_id) from err
+
         return self.network.ecosystem.decode_block(block_data)
 
     def get_nonce(self, address: str, **kwargs) -> int:
@@ -729,7 +809,7 @@ class Web3Provider(ProviderAPI, ABC):
     def get_balance(self, address: str) -> int:
         return self.web3.eth.get_balance(address)
 
-    def get_code(self, address: str) -> bytes:
+    def get_code(self, address: AddressType) -> ContractCode:
         return self.web3.eth.get_code(address)
 
     def get_storage_at(self, address: str, slot: int, **kwargs) -> bytes:
@@ -749,9 +829,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         block_id = kwargs.pop("block_identifier", None)
         try:
-            return self.web3.eth.get_storage_at(
-                address, slot, block_identifier=block_id
-            )  # type: ignore
+            return self.web3.eth.get_storage_at(address, slot, block_identifier=block_id)
         except ValueError as err:
             if "RPC Endpoint has not been implemented" in str(err):
                 raise APINotImplementedError(str(err)) from err
@@ -771,20 +849,93 @@ class Web3Provider(ProviderAPI, ABC):
                   checking a past estimation cost of a transaction.
                 * ``state_overrides`` (Dict): Modify the state of the blockchain
                   prior to sending the call, for testing purposes.
+                * ``show_trace`` (bool): Set to ``True`` to display the call's
+                  trace. Defaults to ``False``.
+                * ``show_gas_report (bool): Set to ``True`` to display the call's
+                  gas report. Defaults to ``False``.
+                * ``skip_trace`` (bool): Set to ``True`` to skip the trace no matter
+                  what. This is useful if you are making a more background contract call
+                  of some sort, such as proxy-checking, and you are running a global
+                  call-tracer such as using the ``--gas`` flag in tests.
 
         Returns:
             str: The result of the transaction call.
         """
+        skip_trace = kwargs.pop("skip_trace", False)
+        if skip_trace:
+            return self._send_call(txn, **kwargs)
 
+        track_gas = self.chain_manager._reports.track_gas
+        show_trace = kwargs.pop("show_trace", False)
+        show_gas = kwargs.pop("show_gas_report", False)
+        needs_trace = track_gas or show_trace or show_gas
+        if not needs_trace or not self.provider.supports_tracing or not txn.receiver:
+            return self._send_call(txn, **kwargs)
+
+        # The user is requesting information related to a call's trace,
+        # such as gas usage data.
         try:
-            block_id = kwargs.pop("block_identifier", None)
-            state = kwargs.pop("state_override", None)
-            return self.web3.eth.call(txn.dict(), block_id, state)  # type: ignore
+            with self.chain_manager.isolate():
+                return self._send_call_as_txn(
+                    txn, track_gas=track_gas, show_trace=show_trace, show_gas=show_gas, **kwargs
+                )
 
-        except ValueError as err:
+        except APINotImplementedError:
+            return self._send_call(txn, **kwargs)
+
+    def _send_call_as_txn(
+        self,
+        txn: TransactionAPI,
+        track_gas: bool = False,
+        show_trace: bool = False,
+        show_gas: bool = False,
+        **kwargs,
+    ) -> bytes:
+        account = self.account_manager.test_accounts[0]
+        receipt = account.call(txn)
+        call_tree = receipt.call_tree
+        if not call_tree:
+            return self._send_call(txn, **kwargs)
+
+        if track_gas:
+            receipt.track_gas()
+        if show_trace:
+            self.chain_manager._reports.show_trace(call_tree)
+        if show_gas:
+            self.chain_manager._reports.show_gas(call_tree)
+
+        return call_tree.returndata
+
+    def _send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
+        arguments = self._prepare_call(txn, **kwargs)
+        return self._eth_call(arguments)
+
+    def _eth_call(self, arguments: List) -> bytes:
+        try:
+            result = self._make_request("eth_call", arguments)
+        except Exception as err:
             raise self.get_virtual_machine_error(err) from err
 
-    def get_transaction(
+        return HexBytes(result)
+
+    def _prepare_call(self, txn: TransactionAPI, **kwargs) -> List:
+        txn_dict = txn.dict()
+        fields_to_convert = ("data", "chainId", "value")
+        for field in fields_to_convert:
+            value = txn_dict.get(field)
+            if value is not None and not isinstance(value, str):
+                txn_dict[field] = to_hex(value)
+
+        block_identifier = kwargs.pop("block_identifier", "latest")
+        if isinstance(block_identifier, int):
+            block_identifier = to_hex(block_identifier)
+        arguments = [txn_dict, block_identifier]
+        if "state_override" in kwargs:
+            arguments.append(kwargs["state_override"])
+
+        return arguments
+
+    def get_receipt(
         self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
     ) -> ReceiptAPI:
         """
@@ -793,9 +944,13 @@ class Web3Provider(ProviderAPI, ABC):
         Args:
             txn_hash (str): The hash of the transaction to retrieve.
             required_confirmations (int): The amount of block confirmations
-              to wait before returning the receipt.
+              to wait before returning the receipt. Defaults to ``0``.
             timeout (Optional[int]): The amount of time to wait for a receipt
-              before timing out.
+              before timing out. Defaults ``None``.
+
+        Raises:
+            :class:`~ape.exceptions.TransactionNotFoundError`: Likely the exception raised
+              when the transaction receipt is not found (depends on implementation).
 
         Returns:
             :class:`~api.providers.ReceiptAPI`:
@@ -814,9 +969,9 @@ class Web3Provider(ProviderAPI, ABC):
                 HexBytes(txn_hash), timeout=timeout
             )
         except TimeExhausted as err:
-            raise ProviderError(f"Transaction '{txn_hash}' not found.") from err
+            raise TransactionNotFoundError(txn_hash) from err
 
-        txn = dict(self.web3.eth.get_transaction(txn_hash))  # type: ignore
+        txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
         receipt = self.network.ecosystem.decode_receipt(
             {
                 "provider": self,
@@ -834,9 +989,9 @@ class Web3Provider(ProviderAPI, ABC):
             if block_id.isnumeric():
                 block_id = add_0x_prefix(block_id)
 
-        block = self.web3.eth.get_block(block_id, full_transactions=True)
-        for transaction in block.get("transactions"):  # type: ignore
-            yield self.network.ecosystem.create_transaction(**transaction)  # type: ignore
+        block = cast(Dict, self.web3.eth.get_block(block_id, full_transactions=True))
+        for transaction in block.get("transactions", []):
+            yield self.network.ecosystem.create_transaction(**transaction)
 
     def block_ranges(self, start=0, stop=None, page=None):
         if stop is None:
@@ -877,20 +1032,41 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValueError as err:
-            raise self.get_virtual_machine_error(err) from err
+            vm_err = self.get_virtual_machine_error(err)
 
-        required_confirmations = (
-            txn.required_confirmations
-            if txn.required_confirmations is not None
-            else self.network.required_confirmations
+            if "nonce too low" in str(vm_err):
+                # Add additional nonce information
+                new_err_msg = f"Nonce '{txn.nonce}' is too low"
+                raise VirtualMachineError(
+                    base_err=vm_err.base_err, message=new_err_msg, code=vm_err.code
+                )
+
+            vm_err.txn = txn
+            raise vm_err from err
+
+        receipt = self.get_receipt(
+            txn_hash.hex(),
+            required_confirmations=(
+                txn.required_confirmations
+                if txn.required_confirmations is not None
+                else self.network.required_confirmations
+            ),
         )
 
-        receipt = self.get_transaction(
-            txn_hash.hex(), required_confirmations=required_confirmations
-        )
-        receipt.raise_for_status()
+        if receipt.failed:
+            txn_dict = receipt.transaction.dict()
+            txn_params = cast(TxParams, txn_dict)
+
+            # Replay txn to get revert reason
+            try:
+                self.web3.eth.call(txn_params)
+            except Exception as err:
+                vm_err = self.get_virtual_machine_error(err)
+                vm_err.txn = txn
+                raise vm_err from err
+
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
-        self._try_track_receipt(receipt)
+        self.chain_manager.account_history.append(receipt)
         return receipt
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
@@ -1041,16 +1217,35 @@ class SubprocessProvider(ProviderAPI):
                     _timeout.check()
 
     def produce_stdout_queue(self):
-        for line in iter(self.process.stdout.readline, b""):
+        process = self.process
+        if self.stdout_queue is None or process is None:
+            return
+
+        stdout = process.stdout
+        if stdout is None:
+            return
+
+        for line in iter(stdout.readline, b""):
             self.stdout_queue.put(line)
             time.sleep(0)
 
     def produce_stderr_queue(self):
-        for line in iter(self.process.stderr.readline, b""):
+        process = self.process
+        if self.stderr_queue is None or process is None:
+            return
+
+        stderr = process.stderr
+        if stderr is None:
+            return
+
+        for line in iter(stderr.readline, b""):
             self.stderr_queue.put(line)
             time.sleep(0)
 
     def consume_stdout_queue(self):
+        if self.stdout_queue is None:
+            return
+
         for line in self.stdout_queue:
             output = line.decode("utf8").strip()
             logger.debug(output)
@@ -1062,6 +1257,9 @@ class SubprocessProvider(ProviderAPI):
             time.sleep(0)
 
     def consume_stderr_queue(self):
+        if self.stderr_queue is None:
+            return
+
         for line in self.stderr_queue:
             logger.debug(line.decode("utf8").strip())
             self._stdout_logger.debug(line)
@@ -1106,21 +1304,24 @@ class SubprocessProvider(ProviderAPI):
 
         def _try_close(warn_message):
             try:
-                self.process.send_signal(SIGINT)
+                if self.process:
+                    self.process.send_signal(SIGINT)
+
                 self._wait_for_popen(self.PROCESS_WAIT_TIMEOUT)
             except KeyboardInterrupt:
                 logger.warning(warn_message)
 
         try:
-            if self.process.poll() is None:
+            if self.process is not None and self.process.poll() is None:
                 _try_close(f"{warn_prefix}. Press Ctrl+C 1 more times to force quit")
 
-            if self.process.poll() is None:
+            if self.process is not None and self.process.poll() is None:
                 self.process.kill()
                 self._wait_for_popen(2)
 
         except KeyboardInterrupt:
-            self.process.kill()
+            if self.process is not None:
+                self.process.kill()
 
         self.process = None
 
