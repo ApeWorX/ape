@@ -141,7 +141,7 @@ class GithubClient:
         repo_path: str,
         target_path: Path,
         branch: Optional[str] = None,
-        scheme: str = "ssh",
+        scheme: str = "http",
     ):
         """
         Clone a repository from Github.
