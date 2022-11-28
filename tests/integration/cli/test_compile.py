@@ -238,4 +238,6 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache):
 
     result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
-    assert "Compiling 'DependencyInProjectOnly.json'" in result.output
+
+    # Dependencies are not compiled automatically
+    assert "Compiling 'DependencyInProjectOnly.json'" not in result.output

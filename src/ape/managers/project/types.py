@@ -30,7 +30,7 @@ class _ProjectSources:
         return self.cached_manifest.sources or {}
 
     @cached_property
-    def contract_types(self) -> Dict[str, ContractType]:
+    def remaining_cached_contract_types(self) -> Dict[str, ContractType]:
         cached_contract_types = self.cached_manifest.contract_types or {}
 
         # Filter out deleted sources.
@@ -175,29 +175,32 @@ class BaseProject(ProjectAPI):
                 )
             )
             project_sources = _ProjectSources(manifest, source_paths, self.contracts_folder)
-            contract_types = project_sources.contract_types
+            contract_types = project_sources.remaining_cached_contract_types
+            compiled_contract_types = self._compile(project_sources)
+            contract_types.update(compiled_contract_types)
+            manifest = self._create_manifest(
+                source_paths,
+                self.contracts_folder,
+                contract_types,
+                initial_manifest=manifest,
+                name=self.name,
+                version=self.version,
+            )
+            # Cache the updated manifest so `self.cached_manifest` reads it next time
+            self.manifest_cachefile.write_text(manifest.json())
+            return manifest
 
-            # Set the context in case compiling a dependency (or anything outside the root project).
+    def _compile(self, project_sources: _ProjectSources) -> Dict[str, ContractType]:
+        # Set the context in case compiling a dependency (or anything outside the root project).
+        if self.project_manager.path.absolute() != self.path.absolute():
             with self.config_manager.using_project(
                 self.path, contracts_folder=self.contracts_folder
             ):
                 self.project_manager._load_dependencies()
-                compiled_contract_types = self.compiler_manager.compile(
-                    project_sources.sources_needing_compilation
-                )
-                contract_types.update(compiled_contract_types)
-                manifest = self._create_manifest(
-                    source_paths,
-                    self.contracts_folder,
-                    contract_types,
-                    initial_manifest=manifest,
-                    name=self.name,
-                    version=self.version,
-                )
-
-                # Cache the updated manifest so `self.cached_manifest` reads it next time
-                self.manifest_cachefile.write_text(manifest.json())
-                return manifest
+                return self.compiler_manager.compile(project_sources.sources_needing_compilation)
+        else:
+            # Already in project
+            return self.compiler_manager.compile(project_sources.sources_needing_compilation)
 
     def _get_base_manifest(self, use_cache: bool = True) -> PackageManifest:
         if self.cached_manifest and use_cache:
