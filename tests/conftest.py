@@ -6,17 +6,10 @@ from tempfile import mkdtemp
 from typing import Dict
 
 import pytest
-import yaml
 from click.testing import CliRunner
 
 import ape
 from ape.exceptions import APINotImplementedError, UnknownSnapshotError
-from ape.managers.config import CONFIG_FILE_NAME
-
-# default_config_file = ape.config.PROJECT_FOLDER / CONFIG_FILE_NAME
-# NOTE: Ensure that we don't use local paths for these
-# ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
-# ape.config.PROJECT_FOLDER = Path(mkdtemp()).resolve()
 
 # Needed to test tracing support in core `ape test` command.
 pytest_plugins = ["pytester"]
@@ -212,22 +205,7 @@ def eth_tester_isolation(eth_tester_provider):
 
 @pytest.fixture(scope="session")
 def temp_config(config):
-    # @contextmanager
     def func(data: Dict):
-        # with tempfile.TemporaryDirectory() as temp_dir_str:
-        #     temp_dir = Path(temp_dir_str)
-        #     config._cached_configs = {}
-        #     config_file = temp_dir / CONFIG_FILE_NAME
-        #     config_file.touch()
-        #     config_file.write_text(yaml.dump(data))
-        #     config.load(force_reload=True)
-
-        #     with config.using_project(temp_dir):
-        #         yield
-
-        #     config_file.unlink()
-        #     config._cached_configs = {}
-    # return func
         return config.load(force_reload=True, additional_config=data)
     return func
 

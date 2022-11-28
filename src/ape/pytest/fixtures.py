@@ -7,7 +7,6 @@ import pytest
 from ape.api import ReceiptAPI, TestAccountAPI
 from ape.logging import logger
 from ape.managers.chain import ChainManager
-from ape.managers.config import ConfigManager
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 from ape.pytest.config import ConfigWrapper
@@ -36,7 +35,7 @@ class PytestApeFixtures(ManagerAccessMixin):
             # Has reason to use traces?
             and self.config_wrapper.track_gas
         )
-    
+
     @pytest.fixture(scope="session")
     def accounts(self) -> List[TestAccountAPI]:
         """
