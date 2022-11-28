@@ -3,8 +3,6 @@ from typing import Dict
 
 import pytest
 
-from ape.pytest.config import ConfigWrapper
-from ape.utils import ManagerAccessMixin
 from ape.api import PluginConfig
 from ape.managers.config import DeploymentConfigCollection
 from ape.types import GasLimit
@@ -109,6 +107,7 @@ def test_network_gas_limit_invalid_numeric_string(temp_config):
 
 
 def test_dependencies(dependency_config):
+
     assert len(dependency_config.dependencies) == 1
     assert dependency_config.dependencies[0].name == "testdependency"
     assert dependency_config.dependencies[0].contracts_folder == "source/v0.1"

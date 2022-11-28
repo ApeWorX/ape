@@ -252,8 +252,6 @@ def dependency_config(temp_config):
             }
         ]
     }
-    # with temp_config(dependencies_config):
-    #     yield
     new_config = temp_config(dependencies_config)
     return new_config
 
