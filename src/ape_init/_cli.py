@@ -33,7 +33,11 @@ def cli(cli_ctx, github):
             else:
                 folder.mkdir(exist_ok=False)
 
-        body = """
+        git_ignore_path = project_folder / ".gitignore"
+        if git_ignore_path.exists():
+            cli_ctx.logger.warning(f"'{git_ignore_path}' exists")
+        else:
+            body = """
 # User Specified Ignored
 
 
@@ -47,28 +51,10 @@ __pycache__
 # Environments
 .env
 .venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# pyenv
-.python-version
-
-# Distribution / packaging
-.Python
-build/
-eggs/
-.eggs/
-*.egg-info/
-*.egg
 """
-
-        git_ignore_path = project_folder / ".gitignore"
-        with git_ignore_path.open("w", encoding="utf-8") as f:
-            f.write(body)
-            f.close()
+            with git_ignore_path.open("w", encoding="utf-8") as f:
+                f.write(body)
+                f.close()
 
         ape_config = project_folder / "ape-config.yaml"
         if ape_config.exists():
