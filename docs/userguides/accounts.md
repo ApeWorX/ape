@@ -78,7 +78,7 @@ If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask
 In addition, you can also use a custom HDPath by using the `--hdpath` flag:
 
 ```bash
-ape accounts import <ALIAS> --use-mnemonic --hdpath
+ape accounts import <ALIAS> --use-mnemonic --hdpath <HDPATH>
 ```
 
 It will prompt you for the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) to the account you'd like to use after you input the seed phrase.
