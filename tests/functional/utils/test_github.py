@@ -59,7 +59,7 @@ class TestGithubClient:
         cmd = git_patch.call_args[0][0]
         assert cmd[0].endswith("git")
         assert cmd[1] == "clone"
-        assert cmd[2] == "git@github.com:dapphub/ds-test.git"
+        assert cmd[2] == "https://github.com/dapphub/ds-test.git"
         # cmd[3] is the temporary output path
         assert cmd[4] == "--branch"
         assert cmd[5] == "master"

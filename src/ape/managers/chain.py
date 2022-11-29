@@ -946,14 +946,14 @@ class ContractCache(BaseManager):
         if not address_file.is_file():
             return None
 
-        return ContractType.parse_raw(address_file.read_text())
+        return ContractType.parse_file(address_file)
 
     def _get_proxy_info_from_disk(self, address: AddressType) -> Optional[ProxyInfoAPI]:
         address_file = self._proxy_info_cache / f"{address}.json"
         if not address_file.is_file():
             return None
 
-        return ProxyInfoAPI.parse_raw(address_file.read_text())
+        return ProxyInfoAPI.parse_file(address_file)
 
     def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
         if not self._network.explorer:

@@ -927,6 +927,8 @@ class Web3Provider(ProviderAPI, ABC):
                 txn_dict[field] = to_hex(value)
 
         block_identifier = kwargs.pop("block_identifier", "latest")
+        if isinstance(block_identifier, int):
+            block_identifier = to_hex(block_identifier)
         arguments = [txn_dict, block_identifier]
         if "state_override" in kwargs:
             arguments.append(kwargs["state_override"])

@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "hardhat": "^2.10.1",
+    "prettier": "^2.7.1"
+  },
+  "scripts": {
+    "lint": "prettier --write",
+    "lint:check": "prettier --check"
+  }
+}

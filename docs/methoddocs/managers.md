@@ -86,7 +86,21 @@
 ```
 
 ```{eval-rst}
-.. automodule:: ape.managers.project.types
+.. autoclass:: ape.managers.project.types.BaseProject
+    :members:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
+```
+
+```{eval-rst}
+.. autoclass:: ape.managers.project.types.ApeProject
+    :members:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
+```
+
+```{eval-rst}
+.. autoclass:: ape.managers.project.types.BrownieProject
     :members:
     :special-members:
     :exclude-members: __repr__, __weakref__, __metaclass__, __init__

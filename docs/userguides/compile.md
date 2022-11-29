@@ -43,3 +43,20 @@ This is useful if you are unable or unwilling to install a compiler.
 If your project includes Solidity (`.sol`) or Vyper (`.vy`) files, you will have to install additional compilers.
 To include additional compilers in your project, you can add the plugins to the `plugins` list in your `ape-config.yaml` or install them using the CLI.
 For information on how to configure plugins in your project, follow [this guide](./installing_plugins.html).
+
+## Ignore Files
+
+You can configure files to be ignored from compilation.
+By default, Ape ignores files `package.json`, `package-lock.json`, `tsconfig.json`.
+To override this list, edit your `ape-config.yaml` similarly:
+
+```yaml
+compiler:
+  ignore_files:
+    - "*package.json"
+    - "*package-lock.json"
+    - "*tsconfig.json"
+    - "*custom.json"  # Append a custom ignore
+```
+
+**NOTE**: You must include the defaults in the list when overriding if you wish to retain them.

@@ -1,3 +1,4 @@
+import re
 import shutil
 
 import pytest
@@ -11,7 +12,7 @@ skip_non_compilable_projects = skip_projects(
     "no-config",
     "script",
     "only-dependencies",
-    "unregistered-contracts",
+    "bad-contracts",
     "test",
     "geth",
 )
@@ -22,7 +23,7 @@ skip_non_compilable_projects = skip_projects(
     "multiple-interfaces",
     "only-dependencies",
     "test",
-    "unregistered-contracts",
+    "bad-contracts",
     "with-dependencies",
     "with-contracts",
 )
@@ -33,20 +34,21 @@ def test_compile_missing_contracts_dir(ape_cli, runner, project):
     assert "Nothing to compile" in result.output
 
 
-@skip_projects_except("unregistered-contracts")
-def test_missing_extensions(ape_cli, runner, project):
+@skip_projects_except("bad-contracts")
+def test_skip_contracts(ape_cli, runner, project, switch_config):
     result = runner.invoke(ape_cli, ["compile", "--force"])
-    assert result.exit_code == 0, result.output
-    assert "WARNING: No compilers detected for the following extensions:" in result.output
-    assert ".test" in result.output
-    assert ".foobar" in result.output
+    assert "INFO: Compiling 'subdir/tsconfig.json'." not in result.output
+    assert "INFO: Compiling 'package.json'." not in result.output
 
-
-@skip_projects_except("unregistered-contracts")
-def test_no_compiler_for_extension(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["compile", "contracts/Contract.test"])
-    assert result.exit_code == 0, result.output
-    assert "WARNING: No compilers detected for the following extensions: .test" in result.output
+    # Simulate configuring Ape to not ignore tsconfig.json for some reason.
+    content = """
+    compiler:
+      ignore_files:
+        - "*package.json"
+    """
+    with switch_config(project, content):
+        result = runner.invoke(ape_cli, ["compile", "--force"])
+        assert "INFO: Compiling 'subdir/tsconfig.json'." in result.output
 
 
 @skip_non_compilable_projects
@@ -57,7 +59,15 @@ def test_compile(ape_cli, runner, project, clean_cache):
     # First time it compiles, it compiles the files with registered compilers successfully.
     # Files with multiple extensions are currently not supported.
     all_files = [f for f in project.path.glob("contracts/**/*")]
-    expected_files = [f for f in all_files if f.name.count(".") == 1]
+
+    # Don't expect directories that may happen to have `.json` in name
+    # as well as hidden files, such as `.gitkeep`. Both examples are present
+    # in the test project!
+    expected_files = [
+        f
+        for f in all_files
+        if f.name.count(".") == 1 and f.is_file() and not f.name.startswith(".")
+    ]
     unexpected_files = [f for f in all_files if f not in expected_files]
 
     manifest = project.extract_manifest()
@@ -95,6 +105,32 @@ def test_compile_when_sources_change(ape_cli, runner, project, clean_cache):
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" not in result.output
+
+
+@skip_projects_except("multiple-interfaces")
+def test_compile_when_contract_type_collision(ape_cli, runner, project, clean_cache):
+    source_path = project.contracts_folder / "Interface.json"
+    temp_dir = project.contracts_folder / "temp"
+    source_copy = temp_dir / "Interface.json"
+    expected = (
+        r"ERROR: \(CompilerError\) ContractType collision between sources '"
+        r"([\w\/]+\.json)' and '([\w\/]+\.json)'\."
+    )
+    temp_dir.mkdir()
+    try:
+        source_copy.touch()
+        source_copy.write_text(source_path.read_text())
+        result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+        assert result.exit_code == 1
+        actual = result.output
+        search_result = re.search(expected, actual)
+        assert search_result, actual
+        groups = search_result.groups()
+        assert {groups[0], groups[1]} == {"Interface.json", "temp/Interface.json"}
+
+    finally:
+        if temp_dir.is_dir():
+            shutil.rmtree(temp_dir)
 
 
 @skip_projects_except("multiple-interfaces")
@@ -202,4 +238,6 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache):
 
     result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
-    assert "Compiling 'DependencyInProjectOnly.json'" in result.output
+
+    # Dependencies are not compiled automatically
+    assert "Compiling 'DependencyInProjectOnly.json'" not in result.output
