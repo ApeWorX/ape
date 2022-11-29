@@ -81,45 +81,45 @@ def test_source_path_out_of_project(contract_container):
     assert not contract_container.source_path
 
 
-def test_encode_constructor_calldata(contract_container, calldata):
+def test_encode_constructor_input(contract_container, calldata):
     constructor = contract_container.constructor
-    actual = constructor.encode_calldata(222)
+    actual = constructor.encode_input(222)
     expected = calldata[4:]  # Strip off setNumber() method ID
     assert actual == expected
 
 
-def test_decode_constructor_calldata(contract_container, calldata):
+def test_decode_constructor_input(contract_container, calldata):
     constructor = contract_container.constructor
     constructor_calldata = calldata[4:]  # Strip off setNumber() method ID
-    actual = constructor.decode_calldata(constructor_calldata)
+    actual = constructor.decode_input(constructor_calldata)
     expected = {"num": 222}
     assert actual == expected
 
 
-def test_encode_calldata(solidity_contract_container, solidity_contract_instance):
+def test_encode_input(solidity_contract_container, solidity_contract_instance):
     arguments = (222, solidity_contract_instance.address)
     expected = (
         f"Could not find function matching argument set "
         f"'222 {solidity_contract_instance.address}'."
     )
     with pytest.raises(ContractError, match=expected):
-        solidity_contract_container.encode_calldata(*arguments)
+        solidity_contract_container.encode_input(*arguments)
 
 
-def test_encode_anonymous_calldata(contract_container, unique_calldata):
+def test_encode_anonymous_input(contract_container, unique_calldata):
     arguments = list(range(10))
-    actual = contract_container.encode_calldata(*arguments)
+    actual = contract_container.encode_input(*arguments)
     expected = unique_calldata
     assert actual == expected
 
 
-def test_decode_calldata(contract_container, calldata):
-    actual = contract_container.decode_calldata(calldata)
+def test_decode_input(contract_container, calldata):
+    actual = contract_container.decode_input(calldata)
     expected = {"num": 222}
     assert actual == expected
 
 
-def test_encode_ambivalent_calldata(contract_container, calldata):
+def test_encode_ambivalent_input(contract_container, calldata):
     expected = "Could not find function matching argument set '222'."
     with pytest.raises(ContractError, match=expected):
-        contract_container.encode_calldata(222)
+        contract_container.encode_input(222)

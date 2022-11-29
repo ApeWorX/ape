@@ -446,80 +446,80 @@ def test_dir(vyper_contract_instance):
     assert sorted(actual) == sorted(expected)
 
 
-def test_encode_call_calldata(contract_instance, calldata):
+def test_encode_call_input(contract_instance, calldata):
     method = contract_instance.setNumber.call
-    actual = method.encode_calldata(222)
+    actual = method.encode_input(222)
     expected = calldata
     assert actual == expected
 
 
-def test_decode_call_calldata(contract_instance, calldata):
+def test_decode_call_input(contract_instance, calldata):
     method = contract_instance.setNumber.call
-    actual = method.decode_calldata(calldata)
+    actual = method.decode_input(calldata)
     expected = {"num": 222}
     assert actual == expected
 
 
-def test_decode_call_calldata_no_method_id(contract_instance, calldata):
+def test_decode_call_input_no_method_id(contract_instance, calldata):
     """
     Ensure Ape can figure out the method if the ID is missing.
     """
     anonymous_calldata = calldata[4:]
     method = contract_instance.setNumber.call
-    actual = method.decode_calldata(anonymous_calldata)
+    actual = method.decode_input(anonymous_calldata)
     expected = {"num": 222}
     assert actual == expected
 
 
-def test_encode_transaction_calldata(contract_instance, calldata):
+def test_encode_transaction_input(contract_instance, calldata):
     method = contract_instance.setNumber
-    actual = method.encode_calldata(222)
+    actual = method.encode_input(222)
     expected = calldata
     assert actual == expected
 
 
-def test_encode_calldata(solidity_contract_instance, calldata_with_address):
+def test_encode_input(solidity_contract_instance, calldata_with_address):
     arguments = (222, solidity_contract_instance.address)
     expected = (
         f"Could not find function matching argument set "
         f"'222 {solidity_contract_instance.address}'."
     )
     with pytest.raises(ContractError, match=expected):
-        solidity_contract_instance.encode_calldata(*arguments)
+        solidity_contract_instance.encode_input(*arguments)
 
 
-def test_encode_anonymous_calldata(contract_instance, unique_calldata):
+def test_encode_anonymous_input(contract_instance, unique_calldata):
     arguments = list(range(10))
-    actual = contract_instance.encode_calldata(*arguments)
+    actual = contract_instance.encode_input(*arguments)
     expected = unique_calldata
     assert actual == expected
 
 
-def test_decode_transaction_calldata(contract_instance, calldata):
+def test_decode_transaction_input(contract_instance, calldata):
     method = contract_instance.setNumber
-    actual = method.decode_calldata(calldata)
+    actual = method.decode_input(calldata)
     expected = {"num": 222}
     assert actual == expected
 
 
-def test_decode_transaction_calldata_no_method_id(contract_instance, calldata):
+def test_decode_transaction_input_no_method_id(contract_instance, calldata):
     """
     Ensure Ape can figure out the method if the ID is missing.
     """
     anonymous_calldata = calldata[4:]
     method = contract_instance.setNumber
-    actual = method.decode_calldata(anonymous_calldata)
+    actual = method.decode_input(anonymous_calldata)
     expected = {"num": 222}
     assert actual == expected
 
 
-def test_decode_calldata(contract_instance, calldata):
-    actual = contract_instance.decode_calldata(calldata)
+def test_decode_input(contract_instance, calldata):
+    actual = contract_instance.decode_input(calldata)
     expected = {"num": 222}
     assert actual == expected
 
 
-def test_decode_ambivalent_calldata(solidity_contract_instance, calldata_with_address):
+def test_decode_ambivalent_input(solidity_contract_instance, calldata_with_address):
     anonymous_calldata = calldata_with_address[4:]
     method = solidity_contract_instance.setNumber
     expected = (
@@ -527,4 +527,4 @@ def test_decode_ambivalent_calldata(solidity_contract_instance, calldata_with_ad
         "Try prepending a method ID to the beginning of the calldata."
     )
     with pytest.raises(ContractError, match=expected):
-        method.decode_calldata(anonymous_calldata)
+        method.decode_input(anonymous_calldata)

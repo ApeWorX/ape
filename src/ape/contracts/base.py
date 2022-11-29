@@ -48,12 +48,12 @@ class ContractConstructor(ManagerAccessMixin):
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
 
-    def encode_calldata(self, *args) -> HexBytes:
+    def encode_input(self, *args) -> HexBytes:
         ecosystem = self.provider.network.ecosystem
         encoded_calldata = ecosystem.encode_calldata(self.abi, *args)
         return HexBytes(encoded_calldata)
 
-    def decode_calldata(self, calldata: bytes) -> Dict[str, Any]:
+    def decode_input(self, calldata: bytes) -> Dict[str, Any]:
         return self.provider.network.ecosystem.decode_calldata(self.abi, calldata)
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
@@ -121,7 +121,7 @@ class ContractMethodHandler(ManagerAccessMixin):
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
 
-    def encode_calldata(self, *args) -> HexBytes:
+    def encode_input(self, *args) -> HexBytes:
         args = self._convert_tuple(args)
         selected_abi = _select_method_abi(self.abis, args)
         ecosystem = self.provider.network.ecosystem
@@ -129,7 +129,7 @@ class ContractMethodHandler(ManagerAccessMixin):
         method_id = ecosystem.get_method_selector(selected_abi)
         return HexBytes(method_id + encoded_calldata)
 
-    def decode_calldata(self, calldata: bytes) -> Dict[str, Any]:
+    def decode_input(self, calldata: bytes) -> Dict[str, Any]:
         matching_abis = []
         err = ContractError(
             f"Unable to find matching method ABI for calldata '{calldata.hex()}'. "
@@ -607,27 +607,7 @@ class ContractEvent(ManagerAccessMixin):
 class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
 
-    def decode_calldata(self, calldata: bytes) -> Dict[str, Any]:
-        ecosystem = self.provider.network.ecosystem
-        if calldata in self.contract_type.mutable_methods:
-            method = self.contract_type.mutable_methods[calldata]
-        elif calldata in self.contract_type.view_methods:
-            method = self.contract_type.view_methods[calldata]
-        else:
-            method = None
-
-        if not method:
-            raise ContractError(
-                f"Unable to find method ABI from calldata '{calldata.hex()}'. "
-                "Try prepending the method ID to the beginning of the calldata."
-            )
-
-        method_id = ecosystem.get_method_selector(method)
-        cutoff = len(method_id)
-        rest_calldata = calldata[cutoff:]
-        return ecosystem.decode_calldata(method, rest_calldata)
-
-    def encode_calldata(self, *args: Any) -> HexBytes:
+    def encode_input(self, *args: Any) -> HexBytes:
         arguments = args
         input_length = len(arguments)
         methods = [*self.contract_type.view_methods, *self.contract_type.mutable_methods]
@@ -652,6 +632,26 @@ class ContractTypeWrapper(ManagerAccessMixin):
             abi = self.contract_type.mutable_methods[selector]
 
         return self.provider.network.ecosystem.encode_calldata(abi, *arguments)
+
+    def decode_input(self, calldata: bytes) -> Dict[str, Any]:
+        ecosystem = self.provider.network.ecosystem
+        if calldata in self.contract_type.mutable_methods:
+            method = self.contract_type.mutable_methods[calldata]
+        elif calldata in self.contract_type.view_methods:
+            method = self.contract_type.view_methods[calldata]
+        else:
+            method = None
+
+        if not method:
+            raise ContractError(
+                f"Unable to find method ABI from calldata '{calldata.hex()}'. "
+                "Try prepending the method ID to the beginning of the calldata."
+            )
+
+        method_id = ecosystem.get_method_selector(method)
+        cutoff = len(method_id)
+        rest_calldata = calldata[cutoff:]
+        return ecosystem.decode_calldata(method, rest_calldata)
 
 
 class ContractInstance(BaseAddress, ContractTypeWrapper):
