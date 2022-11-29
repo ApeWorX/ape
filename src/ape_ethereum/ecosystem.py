@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, encode_hex, keccak, to_bytes, to_checksum_address
+from eth_utils import add_0x_prefix, encode_hex, keccak, to_checksum_address
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field, validator
@@ -24,7 +24,6 @@ from ape.utils import (
     Struct,
     StructParser,
     is_array,
-    parse_type,
     returns_array,
 )
 from ape_ethereum.transactions import (
@@ -317,16 +316,37 @@ class Ethereum(EcosystemAPI):
 
         return Block.parse_obj(data)
 
-    def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> bytes:
+    def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> HexBytes:
         if abi.inputs:
             input_types = [i.canonical_type for i in abi.inputs]
             return encode(input_types, args)
 
         return HexBytes(b"")
 
+    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
+        input_types_str = [i.canonical_type for i in abi.inputs]
+        input_types = [_parse_type(i.dict()) for i in abi.inputs]
+
+        try:
+            raw_input_values = decode(input_types_str, calldata)
+            input_values = [
+                self.decode_primitive_value(v, t) for v, t in zip(raw_input_values, input_types)
+            ]
+        except InsufficientDataBytes as err:
+            raise DecodingError(str(err)) from err
+
+        arguments = {}
+        index = 0
+        for i, v in zip(abi.inputs, input_values):
+            name = i.name or f"{index}"
+            arguments[name] = v
+            index += 1
+
+        return arguments
+
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types_str = [o.canonical_type for o in abi.outputs]
-        output_types = [parse_type(o.dict()) for o in abi.outputs]
+        output_types = [_parse_type(o.dict()) for o in abi.outputs]
 
         try:
             vm_return_values = decode(output_types_str, raw_data)
@@ -408,7 +428,7 @@ class Ethereum(EcosystemAPI):
         txn = self.create_transaction(receiver=address, **kwargs)
 
         # Add method ID
-        txn.data = keccak(to_bytes(text=abi.selector))[:4]
+        txn.data = self.get_method_selector(abi)
         txn.data += self.encode_calldata(abi, *args)
 
         return txn  # type: ignore
@@ -513,3 +533,11 @@ class Ethereum(EcosystemAPI):
                 transaction_hash=log["transactionHash"],
                 transaction_index=log["transactionIndex"],
             )
+
+
+def _parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
+    if "tuple" not in type["type"]:
+        return type["type"]
+
+    result = tuple([_parse_type(c) for c in type["components"]])
+    return [result] if is_array(type["type"]) else result

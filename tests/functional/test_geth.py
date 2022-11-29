@@ -66,7 +66,7 @@ def test_uri_uses_value_from_config(geth_provider, temp_config):
 
 def test_tx_revert(accounts, sender, geth_contract):
     # 'sender' is not the owner so it will revert (with a message)
-    contract = accounts.test_accounts[-1].deploy(geth_contract)
+    contract = accounts.test_accounts[-1].deploy(geth_contract, 0)
     with pytest.raises(ContractLogicError, match="!authorized"):
         contract.setNumber(5, sender=sender)
 
@@ -75,7 +75,7 @@ def test_revert_no_message(accounts, geth_contract):
     # The Contract raises empty revert when setting number to 5.
     expected = "Transaction failed."  # Default message
     owner = accounts.test_accounts[-2]
-    contract = owner.deploy(geth_contract)
+    contract = owner.deploy(geth_contract, 0)
     with pytest.raises(ContractLogicError, match=expected):
         contract.setNumber(5, sender=owner)
 
@@ -83,7 +83,7 @@ def test_revert_no_message(accounts, geth_contract):
 @geth_process_test
 def test_contract_interaction(geth_provider, geth_contract, accounts):
     owner = accounts.test_accounts[-2]
-    contract = owner.deploy(geth_contract)
+    contract = owner.deploy(geth_contract, 0)
     contract.setNumber(102, sender=owner)
     assert contract.myNumber() == 102
 
@@ -91,7 +91,7 @@ def test_contract_interaction(geth_provider, geth_contract, accounts):
 @geth_process_test
 def test_get_call_tree(geth_provider, geth_contract, accounts):
     owner = accounts.test_accounts[-3]
-    contract = owner.deploy(geth_contract)
+    contract = owner.deploy(geth_contract, 0)
     receipt = contract.setNumber(10, sender=owner)
     result = geth_provider.get_call_tree(receipt.txn_hash)
     expected = rf"CALL: {contract.address}.<0x3fb5c1cb> \[\d+ gas\]"
@@ -126,7 +126,7 @@ def test_repr_on_live_network_and_disconnected(networks):
 @geth_process_test
 def test_get_logs(geth_provider, accounts, geth_contract):
     owner = accounts.test_accounts[-4]
-    contract = owner.deploy(geth_contract)
+    contract = owner.deploy(geth_contract, 0)
     contract.setNumber(101010, sender=owner)
     actual = contract.NumberChange[-1]
     assert actual.event_name == "NumberChange"
@@ -215,7 +215,7 @@ def test_get_receipt_not_exists_with_timeout(geth_provider):
 @geth_process_test
 def test_get_receipt(accounts, geth_contract, geth_provider):
     owner = accounts.test_accounts[-5]
-    contract = owner.deploy(geth_contract)
+    contract = owner.deploy(geth_contract, 0)
     receipt = contract.setNumber(111111, sender=owner)
     actual = geth_provider.get_receipt(receipt.txn_hash)
     assert receipt.txn_hash == actual.txn_hash
@@ -227,7 +227,7 @@ def test_get_receipt(accounts, geth_contract, geth_provider):
 @geth_process_test
 def test_snapshot_and_revert(geth_provider, accounts, geth_contract):
     owner = accounts.test_accounts[-6]
-    contract = owner.deploy(geth_contract)
+    contract = owner.deploy(geth_contract, 0)
 
     snapshot = geth_provider.snapshot()
     start_nonce = owner.nonce

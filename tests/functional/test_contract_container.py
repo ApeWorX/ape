@@ -1,15 +1,16 @@
 import pytest
 
 from ape import Contract
-from ape.exceptions import NetworkError, ProjectError
+from ape.exceptions import ContractError, NetworkError, ProjectError
 from ape_ethereum.ecosystem import ProxyType
 
 
 def test_deploy(
     sender, contract_container, networks_connected_to_tester, project, chain, clean_contracts_cache
 ):
-    contract = contract_container.deploy(sender=sender, something_else="IGNORED")
+    contract = contract_container.deploy(4, sender=sender, something_else="IGNORED")
     assert contract.txn_hash
+    assert contract.myNumber() == 4
 
     # Verify can reload same contract from cache
     contract_from_cache = Contract(contract.address)
@@ -20,27 +21,27 @@ def test_deploy(
 
 def test_deploy_and_publish_local_network(owner, contract_container):
     with pytest.raises(ProjectError, match="Can only publish deployments on a live network"):
-        contract_container.deploy(sender=owner, publish=True)
+        contract_container.deploy(0, sender=owner, publish=True)
 
 
 def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, dummy_live_network):
     dummy_live_network.__dict__["explorer"] = None
     expected_message = "Unable to publish contract - no explorer plugin installed."
     with pytest.raises(NetworkError, match=expected_message):
-        contract_container.deploy(sender=owner, publish=True, required_confirmations=0)
+        contract_container.deploy(0, sender=owner, publish=True, required_confirmations=0)
 
 
 def test_deploy_and_publish(mocker, owner, contract_container, dummy_live_network):
     mock_explorer = mocker.MagicMock()
     dummy_live_network.__dict__["explorer"] = mock_explorer
-    contract = contract_container.deploy(sender=owner, publish=True, required_confirmations=0)
+    contract = contract_container.deploy(0, sender=owner, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
 
 
 def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_network):
     mock_explorer = mocker.MagicMock()
     dummy_live_network.__dict__["explorer"] = mock_explorer
-    contract_container.deploy(sender=owner, publish=False, required_confirmations=0)
+    contract_container.deploy(0, sender=owner, publish=False, required_confirmations=0)
     assert not mock_explorer.call_count
 
 
@@ -78,3 +79,41 @@ def test_source_path_in_project(project_with_contract):
 
 def test_source_path_out_of_project(contract_container):
     assert not contract_container.source_path
+
+
+def test_encode_constructor_calldata(contract_container, calldata):
+    constructor = contract_container.constructor
+    actual = constructor.encode_calldata(222)
+    expected = calldata[4:]  # Strip off setNumber() method ID
+    assert actual == expected
+
+
+def test_decode_constructor_calldata(contract_container, calldata):
+    constructor = contract_container.constructor
+    constructor_calldata = calldata[4:]  # Strip off setNumber() method ID
+    actual = constructor.decode_calldata(constructor_calldata)
+    expected = {"num": 222}
+    assert actual == expected
+
+
+def test_decode_calldata_from_root_container(contract_container, calldata):
+    actual = contract_container.decode_calldata(calldata)
+    expected = {"num": 222}
+    assert actual == expected
+
+
+def test_decode_anonymous_calldata_from_root_container(contract_container, calldata):
+    anonymous_calldata = calldata[4:]
+    expected = (
+        "Unable to find method ABI from calldata "
+        f"'{anonymous_calldata.hex()}'. Try prepending the method ID to "
+        f"the beginning of the calldata"
+    )
+    with pytest.raises(ContractError, match=expected):
+        contract_container.decode_calldata(anonymous_calldata)
+
+
+def test_encode_calldata_from_root_container_arg_length_not_unique(contract_container, calldata):
+    expected = "Could not find function matching argument set '222'."
+    with pytest.raises(ContractError, match=expected):
+        contract_container.encode_calldata(222)

@@ -56,7 +56,8 @@ contract TestContractSol {
         _;
     }
 
-    constructor() {
+    constructor(uint256 num) {
+        myNumber = num;
         owner = msg.sender;
 
         dynArray[0] = [uint(0)];
@@ -77,6 +78,15 @@ contract TestContractSol {
         require(num != 5);
         prevNumber = myNumber;
         myNumber = num;
+        emit NumberChange(blockhash(block.number - 1), prevNumber, "Dynamic", num, "Dynamic");
+    }
+
+    function setNumber(uint256 num, address _address) public onlyOwner {
+        // Purposely have same method name as above for testing purposes.
+        require(num != 5);
+        prevNumber = myNumber;
+        myNumber = num;
+        theAddress = _address;
         emit NumberChange(blockhash(block.number - 1), prevNumber, "Dynamic", num, "Dynamic");
     }
 
@@ -205,5 +215,20 @@ contract TestContractSol {
         address[3][] memory arr = new address[3][](2);
         arr[0] = [msg.sender, msg.sender, msg.sender];
         return arr;
+    }
+
+    function functionWithUniqueAmountOfArguments(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 a3,
+        uint256 a4,
+        uint256 a5,
+        uint256 a6,
+        uint256 a7,
+        uint256 a8,
+        uint256 a9
+    ) public view {
+
     }
 }
