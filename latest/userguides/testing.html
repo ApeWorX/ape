@@ -361,6 +361,12 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <h3><code class="docutils literal notranslate"><span class="pre">expected_message</span></code><a class="headerlink" href="#expected-message" title="Permalink to this headline"></a></h3>
 <p>This is the expected revert reason given when the transaction fails.
 If the message in the <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code> raised by the transaction failure is empty or does not match the <code class="docutils literal notranslate"><span class="pre">expected_message</span></code>, then <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> will raise an <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code>.</p>
+<p>You may also supply an <code class="docutils literal notranslate"><span class="pre">re.Pattern</span></code> object to assert on a message pattern, rather than on an exact match.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Matches explicitly &quot;foo&quot; or &quot;bar&quot;</span>
+<span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(foo|bar)$&quot;</span><span class="p">)):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
 </section>
 <section id="dev-message">
 <h3><code class="docutils literal notranslate"><span class="pre">dev_message</span></code><a class="headerlink" href="#dev-message" title="Permalink to this headline"></a></h3>
@@ -393,6 +399,12 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 <li><p>If the transaction trace cannot be obtained</p></li>
 </ul>
 <p>Because <code class="docutils literal notranslate"><span class="pre">dev_message</span></code> relies on transaction tracing to function, you must use a provider like <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a> when testing with <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>.</p>
+<p>You may also supply an <code class="docutils literal notranslate"><span class="pre">re.Pattern</span></code> object to assert on a dev message pattern, rather than on an exact match.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Matches explictly &quot;dev: foo&quot; or &quot;dev: bar&quot;</span>
+<span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">dev_message</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^dev: (foo|bar)$&quot;</span><span class="p">)):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
 </section>
 <section id="caveats">
 <h3>Caveats<a class="headerlink" href="#caveats" title="Permalink to this headline"></a></h3>
