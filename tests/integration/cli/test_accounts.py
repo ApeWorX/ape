@@ -114,7 +114,7 @@ def test_import_mnemonic_default_hdpath(
     # Add account from mnemonic with default hdpath of ETHEREUM_DEFAULT_PATH
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", "--mnemonic", ALIAS],
+        ["accounts", "import", "--use-mnemonic", ALIAS],
         input="\n".join([f"{MNEMONIC}", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -131,8 +131,8 @@ def test_import_mnemonic_custom_hdpath(
     # Add account from mnemonic with custom hdpath
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", "--mnemonic", "--hdpath", ALIAS],
-        input="\n".join([f"{MNEMONIC}", CUSTOM_HDPATH, PASSWORD, PASSWORD]),
+        ["accounts", "import", ALIAS, "--use-mnemonic", "--hdpath", CUSTOM_HDPATH],
+        input="\n".join([f"{MNEMONIC}", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert temp_account_mnemonic_custom_hdpath.address in result.output
@@ -145,7 +145,7 @@ def test_import_invalid_mnemonic(ape_cli, runner):
     # Add account from invalid mnemonic
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", "--mnemonic", ALIAS],
+        ["accounts", "import", "--use-mnemonic", ALIAS],
         input="\n".join([f"{INVALID_MNEMONIC}", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 1, result.output
