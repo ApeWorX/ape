@@ -38,19 +38,15 @@ def cli(cli_ctx, github):
             cli_ctx.logger.warning(f"'{git_ignore_path}' exists")
         else:
             body = """
-# User Specified Ignored
-
-
 # Ape stuff
 .build/
-.pytest_cache
-__pycache__
-.env
-.cache
+.cache/
 
-# Environments
+# Python
 .env
 .venv
+.pytest_cache
+__pycache__
 """
             with git_ignore_path.open("w", encoding="utf-8") as f:
                 f.write(body)
