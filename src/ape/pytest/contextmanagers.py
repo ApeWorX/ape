@@ -1,5 +1,6 @@
+import re
 from collections import deque
-from typing import Optional, Type
+from typing import Optional, Type, Union
 
 import ape
 from ape.exceptions import (
@@ -11,7 +12,11 @@ from ape.exceptions import (
 
 
 class RevertsContextManager:
-    def __init__(self, expected_message: Optional[str] = None, dev_message: Optional[str] = None):
+    def __init__(
+        self,
+        expected_message: Optional[Union[str, re.Pattern]] = None,
+        dev_message: Optional[Union[str, re.Pattern]] = None,
+    ):
         self.expected_message = expected_message
         self.dev_message = dev_message
 
@@ -75,7 +80,13 @@ class RevertsContextManager:
         if offending_source is None or offending_source.line_start is None:
             raise AssertionError("Could not find line that caused revert.")
 
-        assertion_error_prefix = f"Expected dev revert message '{self.dev_message}'."
+        assertion_error_message = (
+            self.dev_message.pattern
+            if isinstance(self.dev_message, re.Pattern)
+            else self.dev_message
+        )
+
+        assertion_error_prefix = f"Expected dev revert message '{assertion_error_message}'"
 
         dev_messages = contract.contract_type.dev_messages or {}
 
@@ -84,7 +95,13 @@ class RevertsContextManager:
 
         contract_dev_message = dev_messages[offending_source.line_start]
 
-        if contract_dev_message != self.dev_message:
+        message_matches = (
+            (self.dev_message.match(contract_dev_message) is not None)
+            if isinstance(self.dev_message, re.Pattern)
+            else (contract_dev_message == self.dev_message)
+        )
+
+        if not message_matches:
             raise AssertionError(f"{assertion_error_prefix} but got '{contract_dev_message}'.")
 
     def _check_expected_message(self, exception: ContractLogicError):
@@ -97,10 +114,21 @@ class RevertsContextManager:
         """
         actual = exception.revert_message
 
-        # Validate the expected revert message if given one.
-        if self.expected_message is not None and self.expected_message != actual:
-            assertion_error_prefix = f"Expected revert message '{self.expected_message}'"
+        assertion_error_message = (
+            self.expected_message.pattern
+            if isinstance(self.expected_message, re.Pattern)
+            else self.expected_message
+        )
 
+        assertion_error_prefix = f"Expected revert message '{assertion_error_message}'"
+
+        message_matches = (
+            (self.expected_message.match(actual) is not None)
+            if isinstance(self.expected_message, re.Pattern)
+            else (actual == self.expected_message)
+        )
+
+        if not message_matches:
             if actual == TransactionError.DEFAULT_MESSAGE:
                 # The transaction failed without a revert message
                 # but the user is expecting one.
