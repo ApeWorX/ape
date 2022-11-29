@@ -131,7 +131,7 @@ def test_import_mnemonic_custom_hdpath(
     # Add account from mnemonic with custom hdpath
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", ALIAS, "--use-mnemonic", "--hdpath", CUSTOM_HDPATH],
+        ["accounts", "import", ALIAS, "--use-mnemonic", "--hd-path", CUSTOM_HDPATH],
         input="\n".join([f"{MNEMONIC}", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output

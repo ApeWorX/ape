@@ -94,7 +94,7 @@ def generate(cli_ctx, alias):
     "--use-mnemonic", "import_from_mnemonic", help="Import a key from a mnemonic", is_flag=True
 )
 @click.option(
-    "--hdpath",
+    "--hd-path",
     "custom_hd_path",
     help="Account HD path to use when importing by mnemonic",
     default=ETHEREUM_DEFAULT_PATH,
