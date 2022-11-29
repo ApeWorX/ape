@@ -75,14 +75,14 @@ ape accounts import <ALIAS> --use-mnemonic
 It will then prompt you for the [mnemonic seed](https://en.bitcoin.it/wiki/Seed_phrase). 
 If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase). 
 
-In addition, you can also use a custom HDPath by using the `--hdpath` flag:
+In addition, you can also use a custom HDPath by using the `--hdpath` option:
 
 ```bash
 ape accounts import <ALIAS> --use-mnemonic --hdpath <HDPATH>
 ```
 
-It will prompt you for the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) to the account you'd like to use after you input the seed phrase.
-If you don't know what HDPath to use you can use the default (Ethereum network, first account) by just pressing enter when it asks for the mnemonic seed.
+If you use the `--hdpath` option, you will need to pass the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) you'd like to use as an argument in the command.
+If you do not use the `--hdpath` option, you will use the default HDPath of (Ethereum network, first account).
 
 Then, in your scripts, you can [load](../methoddocs/managers.html#ape.managers.accounts.AccountManager.load) an account:
 
