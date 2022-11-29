@@ -112,7 +112,7 @@ def test_dev_revert_pattern_fails(owner, reverts_contract_instance, geth_provide
 
 
 @geth_process_test
-def test_both(owner, reverts_contract_instance, geth_provider):
+def test_both_message_and_dev_str(owner, reverts_contract_instance, geth_provider):
     """
     Test matching a revert message with a supplied message as well as a contract dev revert message
     with a supplied dev message.
