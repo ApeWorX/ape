@@ -34,8 +34,8 @@ def cli(cli_ctx, github):
                 folder.mkdir(exist_ok=False)
 
         git_ignore_path = project_folder / ".gitignore"
-        if git_ignore_path.exists():
-            cli_ctx.logger.warning(f"'{git_ignore_path}' exists")
+        if git_ignore_path.is_file():
+            cli_ctx.logger.warning(f"Unable to create .gitignore: '{git_ignore_path}' file exists.")
         else:
             body = """
 # Ape stuff
@@ -48,9 +48,8 @@ def cli(cli_ctx, github):
 .pytest_cache
 __pycache__
 """
-            with git_ignore_path.open("w", encoding="utf-8") as f:
-                f.write(body)
-                f.close()
+            git_ignore_path.touch()
+            git_ignore_path.write_text(body)
 
         ape_config = project_folder / "ape-config.yaml"
         if ape_config.exists():
