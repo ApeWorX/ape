@@ -608,6 +608,18 @@ class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
 
     def encode_input(self, *args: Any) -> HexBytes:
+        """
+        Encode the given input arguments using this contract.
+        It will attempt to locate the method in this contract
+        with the same number of arguments.
+
+        Args:
+            *args (Any): The contract method arguments.
+
+        Returns:
+            HexBytes: The encoded input calldata.
+        """
+
         arguments = args
         input_length = len(arguments)
         methods = [*self.contract_type.view_methods, *self.contract_type.mutable_methods]
@@ -633,7 +645,19 @@ class ContractTypeWrapper(ManagerAccessMixin):
 
         return self.provider.network.ecosystem.encode_calldata(abi, *arguments)
 
-    def decode_input(self, calldata: bytes) -> Dict[str, Any]:
+    def decode_input(self, calldata: bytes) -> Dict:
+        """
+        Decode the given calldata using this contract.
+        If the calldata has a method ID prefix, Ape with detect it and find
+        the corresponding method. Else, it not be able to succeed.
+
+        Args:
+            calldata (bytes): The calldata to decode.
+
+        Returns:
+            Dict
+        """
+
         ecosystem = self.provider.network.ecosystem
         if calldata in self.contract_type.mutable_methods:
             method = self.contract_type.mutable_methods[calldata]
