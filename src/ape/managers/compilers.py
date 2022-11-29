@@ -194,7 +194,7 @@ class CompilerManager(BaseManager):
         return references_dict
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
-        extensions = set(path.suffix for path in contract_filepaths)
+        extensions = {path.suffix for path in contract_filepaths}
         unhandled_extensions = {s for s in extensions - set(self.registered_compilers) if s}
         if len(unhandled_extensions) > 0:
             unhandled_extensions_str = ", ".join(unhandled_extensions)
