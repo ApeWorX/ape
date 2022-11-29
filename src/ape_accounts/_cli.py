@@ -91,19 +91,17 @@ def generate(cli_ctx, alias):
     name="import", short_help="Add a new keyfile account by entering a private key or seed phrase"
 )
 @click.option(
-    "--mnemonic", "import_from_mnemonic", help="Import a key from a mnemonic", is_flag=True
+    "--use-mnemonic", "import_from_mnemonic", help="Import a key from a mnemonic", is_flag=True
 )
-@click.option("--hdpath", "custom_hd_path", help="Input HD Path to use", is_flag=True)
+@click.option(
+    "--hdpath", "custom_hd_path", help="Input HD Path to use", default=ETHEREUM_DEFAULT_PATH, show_default=True, 
+)
 @non_existing_alias_argument()
 @ape_cli_context()
 def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
     if import_from_mnemonic:
         mnemonic = click.prompt("Enter mnemonic seed phrase", hide_input=True)
-        if not custom_hd_path:
-            custom_hd_path = ETHEREUM_DEFAULT_PATH
-        else:
-            custom_hd_path = click.prompt("Input HD Path to use", default=ETHEREUM_DEFAULT_PATH)
         EthAccount.enable_unaudited_hdwallet_features()
         try:
             account = EthAccount.from_mnemonic(mnemonic, account_path=custom_hd_path)
