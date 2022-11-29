@@ -82,7 +82,7 @@ ape accounts import <ALIAS> --use-mnemonic --hdpath <HDPATH>
 ```
 
 If you use the `--hdpath` option, you will need to pass the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) you'd like to use as an argument in the command.
-If you do not use the `--hdpath` option, you will use the default HDPath of (Ethereum network, first account).
+If you do not use the `--hdpath` option, Ape will use the default HDPath of (Ethereum network, first account).
 
 Then, in your scripts, you can [load](../methoddocs/managers.html#ape.managers.accounts.AccountManager.load) an account:
 
