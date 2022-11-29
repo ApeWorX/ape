@@ -109,21 +109,39 @@ receipt = contract.set_number(sender=dev)
 
 ## Decoding and Encoding Inputs
 
-If you want to separately decode and encoding inputs without sending a transaction or making a call, you can achieve this with Ape.
-If you know the method you want to use when decoding or encoding, you can do this:
+If you want to separately decode and encode inputs without sending a transaction or making a call, you can achieve this with Ape.
+If you know the method you want to use when decoding or encoding, you can call methods `encode_input()` or `decode_input()` on the method handler from the project's contract container:
 
 ```python
-project.MyContract.my_method.encode_input(*args)
-project.MyContract.my_method.decode_input(bytes)
+from ape import project
+
+# HexBytes(0x3fb5c1cb00000000000000000000000000000000000000000000000000000000000000de)
+bytes_value = project.MyContract.my_method.encode_input(0, 1, 2)
 ```
 
-Where `MyContract` is a `ContractContainer` class with method `my_method`.
-
-If you don't know the method and you have some calldata, you can use a `ContractInstance` or `ContractContainer` directly:
+In the example above, the bytes value returned contains the method ID selector prefix `3fb5c1c`.
+Alternatively, you can decode input:
 
 ```python
+from hexbytes import HexBytes
+from ape import project
+
+selector_str, input_dict = project.MyContract.my_method.decode_input(HexBytes("0x123..."))
+```
+
+In the example above, `selector_str` is the string version of the method ID, e.g. `my_method(unit256,uint256)`.
+The input dict is a mapping of input names to their decoded values, e.g `{"foo": 2, "owner": "0x123..."}`.
+If an input does not have a name, its key is its stringified input index.
+
+If you don't know the method's ABI and you have calldata, you can use a `ContractInstance` or `ContractContainer` directly:
+
+```python
+from ape import Contract
+
+# Fetch a contract. Alternatively, use a local contract container from `ape.project`.
 contract = Contract("0x...")
-# TODO
-contract.encode_input()
-contract.decode_input()
+
+# Only works if unique amount of args.
+bytes_value = contract.encode_input(0, 1, 2, 4, 5)
+method_id, input_dict = contract.decode_input(bytes_value)
 ```
