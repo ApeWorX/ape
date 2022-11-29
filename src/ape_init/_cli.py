@@ -49,7 +49,7 @@ def cli(cli_ctx, github):
 __pycache__
 """
             git_ignore_path.touch()
-            git_ignore_path.write_text(body)
+            git_ignore_path.write_text(body.lstrip())
 
         ape_config = project_folder / "ape-config.yaml"
         if ape_config.exists():
