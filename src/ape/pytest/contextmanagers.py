@@ -80,11 +80,13 @@ class RevertsContextManager:
         if offending_source is None or offending_source.line_start is None:
             raise AssertionError("Could not find line that caused revert.")
 
-        assertion_error_prefix = "Expected dev revert message '{}.'".format(
+        assertion_error_message = (
             self.dev_message.pattern
             if isinstance(self.dev_message, re.Pattern)
             else self.dev_message
         )
+
+        assertion_error_prefix = f"Expected dev revert message '{assertion_error_message}'"
 
         dev_messages = contract.contract_type.dev_messages or {}
 
@@ -112,11 +114,13 @@ class RevertsContextManager:
         """
         actual = exception.revert_message
 
-        assertion_error_prefix = "Expected revert message '{}.'".format(
+        assertion_error_message = (
             self.expected_message.pattern
             if isinstance(self.expected_message, re.Pattern)
             else self.expected_message
         )
+
+        assertion_error_prefix = f"Expected revert message '{assertion_error_message}'"
 
         message_matches = (
             (self.expected_message.match(actual) is not None)
