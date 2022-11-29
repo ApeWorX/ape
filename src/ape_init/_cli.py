@@ -39,6 +39,10 @@ def cli(cli_ctx, github):
 
 # Ape stuff
 .build/
+.pytest_cache
+__pycache__
+.env
+.cache
 
 # Environments
 .env
