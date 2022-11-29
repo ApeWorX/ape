@@ -110,13 +110,14 @@ receipt = contract.set_number(sender=dev)
 ## Decoding and Encoding Inputs
 
 If you want to separately decode and encode inputs without sending a transaction or making a call, you can achieve this with Ape.
-If you know the method you want to use when decoding or encoding, you can call methods `encode_input()` or `decode_input()` on the method handler from the project's contract container:
+If you know the method you want to use when decoding or encoding, you can call methods `encode_input()` or `decode_input()` on the method handler from a contract:
 
 ```python
-from ape import project
+from ape import Contract
 
 # HexBytes(0x3fb5c1cb00000000000000000000000000000000000000000000000000000000000000de)
-bytes_value = project.MyContract.my_method.encode_input(0, 1, 2)
+contract = Contract("0x...")
+bytes_value = contract.my_method.encode_input(0, 1, 2)
 ```
 
 In the example above, the bytes value returned contains the method ID selector prefix `3fb5c1c`.
@@ -124,9 +125,10 @@ Alternatively, you can decode input:
 
 ```python
 from hexbytes import HexBytes
-from ape import project
+from ape import Contract
 
-selector_str, input_dict = project.MyContract.my_method.decode_input(HexBytes("0x123..."))
+contract = Contract("0x...")
+selector_str, input_dict = contract.my_method.decode_input(HexBytes("0x123..."))
 ```
 
 In the example above, `selector_str` is the string version of the method ID, e.g. `my_method(unit256,uint256)`.
@@ -136,10 +138,13 @@ If an input does not have a name, its key is its stringified input index.
 If you don't know the method's ABI and you have calldata, you can use a `ContractInstance` or `ContractContainer` directly:
 
 ```python
-from ape import Contract
+import ape
 
-# Fetch a contract. Alternatively, use a local contract container from `ape.project`.
-contract = Contract("0x...")
+# Fetch a contract
+contract = ape.Contract("0x...")
+
+# Alternative, use a contract container from ape.project
+# contract = ape.project.MyContract
 
 # Only works if unique amount of args.
 bytes_value = contract.encode_input(0, 1, 2, 4, 5)
