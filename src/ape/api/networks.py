@@ -371,6 +371,8 @@ class EcosystemAPI(BaseInterfaceModel):
 
         Returns:
             Dict: A mapping of input names to decoded values.
+            If an input is anonymous, it should use the stringified
+            index of the input as the key.
         """
 
     @abstractmethod
@@ -474,8 +476,18 @@ class EcosystemAPI(BaseInterfaceModel):
         Get a contract method selector, typically via hashing such as ``keccak``.
         Defaults to using ``keccak`` but can be overridden in different ecosystems.
 
+        Override example::
+
+            from ape.api import EcosystemAPI
+            from hexbytes import HexBytes
+
+            class MyEcosystem(EcosystemAPI):
+                def get_method_selector(self, abi: MethodABI) -> HexBytes:
+                    return HexBytes(abi.selector.encode())  # Simple bytes selector
+
         Args:
-            value (str): The value to hash.
+            abi (MethodABI): The ABI object to use when calculating the
+              selector bytes.
 
         Returns:
             HexBytes: The hashed method selector value.

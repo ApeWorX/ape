@@ -456,7 +456,7 @@ def test_encode_call_input(contract_instance, calldata):
 def test_decode_call_input(contract_instance, calldata):
     method = contract_instance.setNumber.call
     actual = method.decode_input(calldata)
-    expected = {"num": 222}
+    expected = "setNumber(uint256)", {"num": 222}
     assert actual == expected
 
 
@@ -467,7 +467,7 @@ def test_decode_call_input_no_method_id(contract_instance, calldata):
     anonymous_calldata = calldata[4:]
     method = contract_instance.setNumber.call
     actual = method.decode_input(anonymous_calldata)
-    expected = {"num": 222}
+    expected = "setNumber(uint256)", {"num": 222}
     assert actual == expected
 
 
@@ -498,7 +498,7 @@ def test_encode_ambiguous_input(solidity_contract_instance, calldata_with_addres
 def test_decode_transaction_input(contract_instance, calldata):
     method = contract_instance.setNumber
     actual = method.decode_input(calldata)
-    expected = {"num": 222}
+    expected = "setNumber(uint256)", {"num": 222}
     assert actual == expected
 
 
@@ -509,13 +509,13 @@ def test_decode_transaction_input_no_method_id(contract_instance, calldata):
     anonymous_calldata = calldata[4:]
     method = contract_instance.setNumber
     actual = method.decode_input(anonymous_calldata)
-    expected = {"num": 222}
+    expected = "setNumber(uint256)", {"num": 222}
     assert actual == expected
 
 
 def test_decode_input(contract_instance, calldata):
     actual = contract_instance.decode_input(calldata)
-    expected = {"num": 222}
+    expected = "setNumber(uint256)", {"num": 222}
     assert actual == expected
 
 

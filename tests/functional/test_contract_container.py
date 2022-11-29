@@ -92,7 +92,7 @@ def test_decode_constructor_input(contract_container, calldata):
     constructor = contract_container.constructor
     constructor_calldata = calldata[4:]  # Strip off setNumber() method ID
     actual = constructor.decode_input(constructor_calldata)
-    expected = {"num": 222}
+    expected = "constructor(uint256)", {"num": 222}
     assert actual == expected
 
 
@@ -115,5 +115,5 @@ def test_encode_ambiguous_input(solidity_contract_container, solidity_contract_i
 
 def test_decode_input(contract_container, calldata):
     actual = contract_container.decode_input(calldata)
-    expected = {"num": 222}
+    expected = "setNumber(uint256)", {"num": 222}
     assert actual == expected

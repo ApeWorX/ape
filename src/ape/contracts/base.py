@@ -53,8 +53,11 @@ class ContractConstructor(ManagerAccessMixin):
         encoded_calldata = ecosystem.encode_calldata(self.abi, *args)
         return HexBytes(encoded_calldata)
 
-    def decode_input(self, calldata: bytes) -> Dict[str, Any]:
-        return self.provider.network.ecosystem.decode_calldata(self.abi, calldata)
+    def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
+        input_str = ",".join([str(i.internalType or i.type) for i in self.abi.inputs])
+        selector = f"constructor({input_str})"
+        decoded_inputs = self.provider.network.ecosystem.decode_calldata(self.abi, calldata)
+        return selector, decoded_inputs
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
@@ -129,7 +132,7 @@ class ContractMethodHandler(ManagerAccessMixin):
         method_id = ecosystem.get_method_selector(selected_abi)
         return HexBytes(method_id + encoded_calldata)
 
-    def decode_input(self, calldata: bytes) -> Dict[str, Any]:
+    def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
         matching_abis = []
         err = ContractError(
             f"Unable to find matching method ABI for calldata '{calldata.hex()}'. "
@@ -143,9 +146,12 @@ class ContractMethodHandler(ManagerAccessMixin):
                 matching_abis.append(abi)
 
         if len(matching_abis) == 1:
-            return self.provider.network.ecosystem.decode_calldata(
+            abi = matching_abis[0]
+            decoded_input = self.provider.network.ecosystem.decode_calldata(
                 matching_abis[0], HexBytes(rest_calldata)
             )
+            return abi.selector, decoded_input
+
         elif len(matching_abis) > 1:
             raise err
 
@@ -161,10 +167,11 @@ class ContractMethodHandler(ManagerAccessMixin):
                 continue
 
             if decoded_calldata:
-                valid_results.append(decoded_calldata)
+                valid_results.append((abi, decoded_calldata))
 
         if len(valid_results) == 1:
-            return valid_results[0]
+            selected_abi, decoded_calldata = valid_results[0]
+            return selected_abi.selector, decoded_calldata
 
         raise err
 
@@ -648,7 +655,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
         method_id = ecosystem.get_method_selector(abi)
         return HexBytes(method_id + encoded_arguments)
 
-    def decode_input(self, calldata: bytes) -> Dict:
+    def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
         """
         Decode the given calldata using this contract.
         If the calldata has a method ID prefix, Ape with detect it and find
@@ -658,7 +665,10 @@ class ContractTypeWrapper(ManagerAccessMixin):
             calldata (bytes): The calldata to decode.
 
         Returns:
-            Dict
+            Tuple[str, Dict[str, Any]]: A tuple containing the method selector
+            along a mapping of input names to their decoded values.
+            If an input does not have a number, it will have the stringified
+            index as its key.
         """
 
         ecosystem = self.provider.network.ecosystem
@@ -678,7 +688,8 @@ class ContractTypeWrapper(ManagerAccessMixin):
         method_id = ecosystem.get_method_selector(method)
         cutoff = len(method_id)
         rest_calldata = calldata[cutoff:]
-        return ecosystem.decode_calldata(method, rest_calldata)
+        input_dict = ecosystem.decode_calldata(method, rest_calldata)
+        return method.selector, input_dict
 
 
 class ContractInstance(BaseAddress, ContractTypeWrapper):
