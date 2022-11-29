@@ -113,9 +113,8 @@ If you want to separately decode and encoding inputs without sending a transacti
 If you know the method you want to use when decoding or encoding, you can do this:
 
 ```python
-TODO
-project.MyContract.my_method.encode_input()
-project.MyContract.my_method.decode_input()
+project.MyContract.my_method.encode_input(*args)
+project.MyContract.my_method.decode_input(bytes)
 ```
 
 Where `MyContract` is a `ContractContainer` class with method `my_method`.

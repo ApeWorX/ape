@@ -622,6 +622,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
 
         arguments = args
         input_length = len(arguments)
+        ecosystem = self.provider.network.ecosystem
         methods = [*self.contract_type.view_methods, *self.contract_type.mutable_methods]
         selectors = [x.selector for x in methods if len(x.inputs) == input_length]
         if not selectors:
@@ -643,7 +644,9 @@ class ContractTypeWrapper(ManagerAccessMixin):
         elif selector in self.contract_type.mutable_methods:
             abi = self.contract_type.mutable_methods[selector]
 
-        return self.provider.network.ecosystem.encode_calldata(abi, *arguments)
+        encoded_arguments = ecosystem.encode_calldata(abi, *arguments)
+        method_id = ecosystem.get_method_selector(abi)
+        return HexBytes(method_id + encoded_arguments)
 
     def decode_input(self, calldata: bytes) -> Dict:
         """

@@ -96,7 +96,14 @@ def test_decode_constructor_input(contract_container, calldata):
     assert actual == expected
 
 
-def test_encode_input(solidity_contract_container, solidity_contract_instance):
+def test_encode_input(contract_container, unique_calldata):
+    arguments = list(range(10))
+    actual = contract_container.encode_input(*arguments)
+    expected = unique_calldata
+    assert actual == expected
+
+
+def test_encode_ambiguous_input(solidity_contract_container, solidity_contract_instance):
     arguments = (222, solidity_contract_instance.address)
     expected = (
         f"Could not find function matching argument set "
@@ -106,20 +113,7 @@ def test_encode_input(solidity_contract_container, solidity_contract_instance):
         solidity_contract_container.encode_input(*arguments)
 
 
-def test_encode_anonymous_input(contract_container, unique_calldata):
-    arguments = list(range(10))
-    actual = contract_container.encode_input(*arguments)
-    expected = unique_calldata
-    assert actual == expected
-
-
 def test_decode_input(contract_container, calldata):
     actual = contract_container.decode_input(calldata)
     expected = {"num": 222}
     assert actual == expected
-
-
-def test_encode_ambivalent_input(contract_container, calldata):
-    expected = "Could not find function matching argument set '222'."
-    with pytest.raises(ContractError, match=expected):
-        contract_container.encode_input(222)
