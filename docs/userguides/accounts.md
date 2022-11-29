@@ -66,6 +66,24 @@ ape accounts import <ALIAS>
 It will prompt you for the private key.
 If you need help exporting your private key from Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
 
+You can also import accounts from mnemonic seed by using the `--use-mnemonic` flag:
+
+```bash
+ape accounts import <ALIAS> --use-mnemonic
+```
+
+It will then prompt you for the [mnemonic seed](https://en.bitcoin.it/wiki/Seed_phrase). 
+If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase). 
+
+In addition, you can also use a custom HDPath by using the `--hd-path` option:
+
+```bash
+ape accounts import <ALIAS> --use-mnemonic --hd-path <HDPATH>
+```
+
+If you use the `--hd-path` option, you will need to pass the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) you'd like to use as an argument in the command.
+If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
+
 Then, in your scripts, you can [load](../methoddocs/managers.html#ape.managers.accounts.AccountManager.load) an account:
 
 ```python

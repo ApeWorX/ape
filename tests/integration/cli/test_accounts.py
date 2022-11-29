@@ -2,14 +2,16 @@ import json
 
 import pytest
 from eth_account import Account
+from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 
 from tests.integration.cli.utils import assert_failure, run_once
 
 ALIAS = "test"
 PASSWORD = "a"
 PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
-IMPORT_VALID_INPUT = "\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD])
-GENERATE_VALID_INPUT = "\n".join(["random entropy", PASSWORD, PASSWORD])
+MNEMONIC = "test test test test test test test test test test test junk"
+INVALID_MNEMONIC = "test test"
+CUSTOM_HDPATH = "m/44'/61'/0'/0/0"  # Ethereum Classic ($ETC) HDPath
 
 
 @pytest.fixture(autouse=True)
@@ -38,11 +40,27 @@ def temp_account():
     return Account.from_key(bytes.fromhex(PRIVATE_KEY))
 
 
+@pytest.fixture()
+def temp_account_mnemonic_default_hdpath():
+    Account.enable_unaudited_hdwallet_features()
+    return Account.from_mnemonic(MNEMONIC, account_path=ETHEREUM_DEFAULT_PATH)
+
+
+@pytest.fixture()
+def temp_account_mnemonic_custom_hdpath():
+    Account.enable_unaudited_hdwallet_features()
+    return Account.from_mnemonic(MNEMONIC, account_path=CUSTOM_HDPATH)
+
+
 @run_once
-def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
+def test_import_valid_private_key(ape_cli, runner, temp_account, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
-    # Add account from private keys
-    result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
+    # Add account from valid private key
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "import", ALIAS],
+        input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
+    )
     assert result.exit_code == 0, result.output
     assert temp_account.address in result.output
     assert ALIAS in result.output
@@ -50,9 +68,25 @@ def test_import(ape_cli, runner, temp_account, temp_keyfile_path):
 
 
 @run_once
-def test_import_alias_already_in_use(ape_cli, runner, temp_account):
+def test_import_invalid_private_key(ape_cli, runner):
+    # Add account from invalid private key
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "import", ALIAS],
+        input="\n".join(["0xhello", PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 1, result.output
+    assert_failure(result, "Key can't be imported: Non-hexadecimal digit found")
+
+
+@run_once
+def test_import_alias_already_in_use(ape_cli, runner):
     def invoke_import():
-        return runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
+        return runner.invoke(
+            ape_cli,
+            ["accounts", "import", ALIAS],
+            input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
+        )
 
     result = invoke_import()
     assert result.exit_code == 0, result.output
@@ -61,27 +95,89 @@ def test_import_alias_already_in_use(ape_cli, runner, temp_account):
 
 
 @run_once
-def test_import_account_instantiation_failure(mocker, ape_cli, runner, temp_account):
+def test_import_account_instantiation_failure(mocker, ape_cli, runner):
     eth_account_from_key_patch = mocker.patch("ape_accounts._cli.EthAccount.from_key")
     eth_account_from_key_patch.side_effect = Exception("Can't instantiate this account!")
-    result = runner.invoke(ape_cli, ["accounts", "import", ALIAS], input=IMPORT_VALID_INPUT)
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "import", ALIAS],
+        input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
+    )
     assert_failure(result, "Key can't be imported: Can't instantiate this account!")
+
+
+@run_once
+def test_import_mnemonic_default_hdpath(
+    ape_cli, runner, temp_account_mnemonic_default_hdpath, temp_keyfile_path
+):
+    assert not temp_keyfile_path.is_file()
+    # Add account from mnemonic with default hdpath of ETHEREUM_DEFAULT_PATH
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "import", "--use-mnemonic", ALIAS],
+        input="\n".join([f"{MNEMONIC}", PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 0, result.output
+    assert temp_account_mnemonic_default_hdpath.address in result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_import_mnemonic_custom_hdpath(
+    ape_cli, runner, temp_account_mnemonic_custom_hdpath, temp_keyfile_path
+):
+    assert not temp_keyfile_path.is_file()
+    # Add account from mnemonic with custom hdpath
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "import", ALIAS, "--use-mnemonic", "--hd-path", CUSTOM_HDPATH],
+        input="\n".join([f"{MNEMONIC}", PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 0, result.output
+    assert temp_account_mnemonic_custom_hdpath.address in result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_import_invalid_mnemonic(ape_cli, runner):
+    # Add account from invalid mnemonic
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "import", "--use-mnemonic", ALIAS],
+        input="\n".join([f"{INVALID_MNEMONIC}", PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 1, result.output
+    assert_failure(
+        result,
+        f"Seed phrase can't be imported: Provided words: '{INVALID_MNEMONIC}'"
+        + ", are not a valid BIP39 mnemonic phrase!",
+    )
 
 
 @run_once
 def test_generate(ape_cli, runner, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
     # Generate new private key
-    result = runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "generate", ALIAS],
+        input="\n".join(["random entropy", PASSWORD, PASSWORD]),
+    )
     assert result.exit_code == 0, result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
 
 
 @run_once
-def test_generate_alias_already_in_use(ape_cli, runner, temp_account):
+def test_generate_alias_already_in_use(ape_cli, runner):
     def invoke_generate():
-        return runner.invoke(ape_cli, ["accounts", "generate", ALIAS], input=GENERATE_VALID_INPUT)
+        return runner.invoke(
+            ape_cli,
+            ["accounts", "generate", ALIAS],
+            input="\n".join(["random entropy", PASSWORD, PASSWORD]),
+        )
 
     result = invoke_generate()
     assert result.exit_code == 0, result.output
