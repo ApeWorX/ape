@@ -96,24 +96,30 @@ def test_decode_constructor_calldata(contract_container, calldata):
     assert actual == expected
 
 
-def test_decode_calldata_from_root_container(contract_container, calldata):
+def test_encode_calldata(solidity_contract_container, solidity_contract_instance):
+    arguments = (222, solidity_contract_instance.address)
+    expected = (
+        f"Could not find function matching argument set "
+        f"'222 {solidity_contract_instance.address}'."
+    )
+    with pytest.raises(ContractError, match=expected):
+        solidity_contract_container.encode_calldata(*arguments)
+
+
+def test_encode_anonymous_calldata(contract_container, unique_calldata):
+    arguments = list(range(10))
+    actual = contract_container.encode_calldata(*arguments)
+    expected = unique_calldata
+    assert actual == expected
+
+
+def test_decode_calldata(contract_container, calldata):
     actual = contract_container.decode_calldata(calldata)
     expected = {"num": 222}
     assert actual == expected
 
 
-def test_decode_anonymous_calldata_from_root_container(contract_container, calldata):
-    anonymous_calldata = calldata[4:]
-    expected = (
-        "Unable to find method ABI from calldata "
-        f"'{anonymous_calldata.hex()}'. Try prepending the method ID to "
-        f"the beginning of the calldata"
-    )
-    with pytest.raises(ContractError, match=expected):
-        contract_container.decode_calldata(anonymous_calldata)
-
-
-def test_encode_calldata_from_root_container_arg_length_not_unique(contract_container, calldata):
+def test_encode_ambivalent_calldata(contract_container, calldata):
     expected = "Could not find function matching argument set '222'."
     with pytest.raises(ContractError, match=expected):
         contract_container.encode_calldata(222)

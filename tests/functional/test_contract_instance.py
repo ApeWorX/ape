@@ -478,12 +478,21 @@ def test_encode_transaction_calldata(contract_instance, calldata):
     assert actual == expected
 
 
-def test_encode_transaction_calldata_from_instance(
-    solidity_contract_instance, calldata_with_address
-):
-    method = solidity_contract_instance.setNumber
-    actual = method.encode_calldata(222, solidity_contract_instance)
-    assert actual == calldata_with_address
+def test_encode_calldata(solidity_contract_instance, calldata_with_address):
+    arguments = (222, solidity_contract_instance.address)
+    expected = (
+        f"Could not find function matching argument set "
+        f"'222 {solidity_contract_instance.address}'."
+    )
+    with pytest.raises(ContractError, match=expected):
+        solidity_contract_instance.encode_calldata(*arguments)
+
+
+def test_encode_anonymous_calldata(contract_instance, unique_calldata):
+    arguments = list(range(10))
+    actual = contract_instance.encode_calldata(*arguments)
+    expected = unique_calldata
+    assert actual == expected
 
 
 def test_decode_transaction_calldata(contract_instance, calldata):
@@ -504,9 +513,13 @@ def test_decode_transaction_calldata_no_method_id(contract_instance, calldata):
     assert actual == expected
 
 
-def test_decode_transaction_calldata_two_methods_same_selector_prefix(
-    solidity_contract_instance, calldata_with_address
-):
+def test_decode_calldata(contract_instance, calldata):
+    actual = contract_instance.decode_calldata(calldata)
+    expected = {"num": 222}
+    assert actual == expected
+
+
+def test_decode_ambivalent_calldata(solidity_contract_instance, calldata_with_address):
     anonymous_calldata = calldata_with_address[4:]
     method = solidity_contract_instance.setNumber
     expected = (
@@ -515,20 +528,3 @@ def test_decode_transaction_calldata_two_methods_same_selector_prefix(
     )
     with pytest.raises(ContractError, match=expected):
         method.decode_calldata(anonymous_calldata)
-
-
-def test_decode_calldata_from_instance(contract_instance, calldata):
-    actual = contract_instance.decode_calldata(calldata)
-    expected = {"num": 222}
-    assert actual == expected
-
-
-def test_decode_anonymous_calldata_from_instance(contract_instance, calldata):
-    anonymous_calldata = calldata[4:]
-    expected = (
-        "Unable to find method ABI from calldata "
-        f"'{anonymous_calldata.hex()}'. Try prepending the method ID to "
-        f"the beginning of the calldata"
-    )
-    with pytest.raises(ContractError, match=expected):
-        contract_instance.decode_calldata(anonymous_calldata)

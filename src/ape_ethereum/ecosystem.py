@@ -317,11 +317,12 @@ class Ethereum(EcosystemAPI):
         return Block.parse_obj(data)
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> HexBytes:
-        if abi.inputs:
-            input_types = [i.canonical_type for i in abi.inputs]
-            return encode(input_types, args)
+        if not abi.inputs:
+            return HexBytes(b"")
 
-        return HexBytes(b"")
+        input_types = [i.canonical_type for i in abi.inputs]
+        encoded_calldata = encode(input_types, args)
+        return HexBytes(encoded_calldata)
 
     def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
         input_types_str = [i.canonical_type for i in abi.inputs]
