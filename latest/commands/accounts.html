@@ -206,11 +206,28 @@ scripts or the console using the accounts.load() method.</p>
 </section>
 <section id="accounts-import">
 <h2>import<a class="headerlink" href="#accounts-import" title="Permalink to this headline"></a></h2>
-<p>Add a new keyfile account by entering a private key</p>
+<p>Add a new keyfile account by entering a private key or seed phrase</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>accounts import <span class="o">[</span>OPTIONS<span class="o">]</span> ALIAS
 </pre></div>
 </div>
 <p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-accounts-import-use-mnemonic">
+<span class="sig-name descname"><span class="pre">--use-mnemonic</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-accounts-import-use-mnemonic" title="Permalink to this definition"></a></dt>
+<dd><p>Import a key from a mnemonic</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-accounts-import-hd-path">
+<span class="sig-name descname"><span class="pre">--hd-path</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;custom_hd_path&gt;</span></span><a class="headerlink" href="#cmdoption-accounts-import-hd-path" title="Permalink to this definition"></a></dt>
+<dd><p>Account HD path to use when importing by mnemonic</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>m/44’/60’/0’/0/0</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-accounts-import-v">
 <span id="cmdoption-accounts-import-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-accounts-import-v" title="Permalink to this definition"></a></dt>
