@@ -106,3 +106,25 @@ assert contract.get_static_list() == [1, 2, 3]
 # Mutable calls are transactions and require a sender
 receipt = contract.set_number(sender=dev)
 ```
+
+## Decoding and Encoding Inputs
+
+If you want to separately decode and encoding inputs without sending a transaction or making a call, you can achieve this with Ape.
+If you know the method you want to use when decoding or encoding, you can do this:
+
+```python
+TODO
+project.MyContract.my_method.encode_input()
+project.MyContract.my_method.decode_input()
+```
+
+Where `MyContract` is a `ContractContainer` class with method `my_method`.
+
+If you don't know the method and you have some calldata, you can use a `ContractInstance` or `ContractContainer` directly:
+
+```python
+contract = Contract("0x...")
+# TODO
+contract.encode_input()
+contract.decode_input()
+```
