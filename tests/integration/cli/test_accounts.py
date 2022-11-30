@@ -213,15 +213,16 @@ def test_generate_24_words(ape_cli, runner, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
     # Generate new private key
     show_mnemonic = ""
+    word_count = 24
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--word-count", 24],
+        ["accounts", "generate", ALIAS, "--word-count", word_count],
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
     mnemonic_length = len(result.output.split(":")[4].split("\n")[0].split())
-    assert mnemonic_length == 24
+    assert mnemonic_length == word_count
     assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
@@ -251,15 +252,16 @@ def test_generate_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path)
     assert not temp_keyfile_path.is_file()
     # Generate new private key
     show_mnemonic = ""
+    word_count = 24
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--word-count", 24, "--hd-path", CUSTOM_HDPATH],
+        ["accounts", "generate", ALIAS, "--word-count", word_count, "--hd-path", CUSTOM_HDPATH],
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
     mnemonic_length = len(result.output.split(":")[4].split("\n")[0].split())
-    assert mnemonic_length == 24
+    assert mnemonic_length == word_count
     assert CUSTOM_HDPATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
