@@ -94,7 +94,6 @@ def generate(cli_ctx, alias, generate_mnemonic, hide_mnemonic):
         )
         if not hide_mnemonic:
             print(f"Newly generated mnemonic is: {mnemonic}")
-        breakpoint()
     else:
         extra_entropy = click.prompt(
             "Add extra entropy for key generation...",
