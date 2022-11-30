@@ -248,7 +248,7 @@ class DependencyAPI(BaseInterfaceModel):
         with tempfile.TemporaryDirectory() as temp_dir:
             project = self._get_project(Path(temp_dir))
             contracts_folder = project.contracts_folder.absolute()
-            contracts_folder.mkdir()
+            contracts_folder.mkdir(parents=True, exist_ok=True)
             for source_id, source_obj in sources.items():
                 content = source_obj.content or ""
                 absolute_path = contracts_folder / source_id
