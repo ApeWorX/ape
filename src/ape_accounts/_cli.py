@@ -65,21 +65,43 @@ def _list(cli_ctx, show_all_plugins):
 
 
 @cli.command(short_help="Create a new keyfile account with a random private key")
+@click.option(
+    "--use-mnemonic", "generate_mnemonic", help="Generate a mnemonic and private key", is_flag=True
+)
+@click.option(
+    "--hide-mnemonic",
+    "hide_mnemonic",
+    help="Hide the newly generated mnemonic from the terminal",
+    is_flag=True,
+)
 @non_existing_alias_argument()
 @ape_cli_context()
-def generate(cli_ctx, alias):
+def generate(cli_ctx, alias, generate_mnemonic, hide_mnemonic):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
-    extra_entropy = click.prompt(
-        "Add extra entropy for key generation...",
-        hide_input=True,
-    )
-
-    account = EthAccount.create(extra_entropy)
     passphrase = click.prompt(
         "Create Passphrase",
         hide_input=True,
         confirmation_prompt=True,
     )
+    if generate_mnemonic:
+        word_count = click.prompt("Number of words - default:", default=12)
+        custom_hd_path = click.prompt(
+            "Specify an HD path for deriving seed phrase - default:", default="m/44'/60'/0'/0/0"
+        )
+        EthAccount.enable_unaudited_hdwallet_features()
+        account, mnemonic = EthAccount.create_with_mnemonic(
+            passphrase, word_count, "english", custom_hd_path
+        )
+        if not hide_mnemonic:
+            print(f"Newly generated mnemonic is: {mnemonic}")
+        breakpoint()
+    else:
+        extra_entropy = click.prompt(
+            "Add extra entropy for key generation...",
+            hide_input=True,
+        )
+        account = EthAccount.create(extra_entropy)
+
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
     cli_ctx.logger.success(
         f"A new account '{account.address}' has been added with the id '{alias}'"
