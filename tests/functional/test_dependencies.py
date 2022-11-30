@@ -22,6 +22,10 @@ def already_downloaded_dependencies(temp_config, config, oz_dependencies_config)
     manifests_directory = Path(__file__).parent / "data" / "manifests"
     oz_manifests = manifests_directory / "OpenZeppelin"
     oz_manifests_dest = config.packages_folder / "OpenZeppelin"
+
+    if oz_manifests_dest.is_dir():
+        shutil.rmtree(oz_manifests_dest)
+
     shutil.copytree(oz_manifests, oz_manifests_dest)
     with temp_config(oz_dependencies_config):
         yield
