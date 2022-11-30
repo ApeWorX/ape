@@ -89,7 +89,7 @@ def generate(cli_ctx, alias, word_count, custom_hd_path):
     )
     cli_ctx.logger.success(f"Newly generated mnemonic is: {mnemonic}")
     passphrase = click.prompt(
-        "Create Passphrase",
+        "Create Passphrase to encrypt account",
         hide_input=True,
         confirmation_prompt=True,
     )
@@ -135,7 +135,7 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
             return
 
     passphrase = click.prompt(
-        "Create Passphrase",
+        "Create Passphrase to encrypt account",
         hide_input=True,
         confirmation_prompt=True,
     )
