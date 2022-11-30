@@ -180,7 +180,22 @@ def test_generate_mnemonic(ape_cli, runner, temp_keyfile_path):
         input="\n".join([PASSWORD, PASSWORD, "", ""]),
     )
     assert result.exit_code == 0, result.output
+    assert "Newly generated mnemonic is" in result.output
     assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_generate_hidden_mnemonic(ape_cli, runner, temp_keyfile_path):
+    assert not temp_keyfile_path.is_file()
+    # Generate new private key
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "generate", ALIAS, "--use-mnemonic", "--hide-mnemonic"],
+        input="\n".join([PASSWORD, PASSWORD, "", ""]),
+    )
+    assert result.exit_code == 0, result.output
+    assert "Newly generated mnemonic is" not in result.output
     assert temp_keyfile_path.is_file()
 
 
