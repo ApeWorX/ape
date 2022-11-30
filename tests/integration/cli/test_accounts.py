@@ -168,6 +168,7 @@ def test_generate_default(ape_cli, runner, temp_keyfile_path):
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
+    assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
 
@@ -184,6 +185,7 @@ def test_generate_hide_mnemonic_prompt(ape_cli, runner, temp_keyfile_path):
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" not in result.output
+    assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
 
@@ -199,6 +201,7 @@ def test_generate_hide_mnemonic_option(ape_cli, runner, temp_keyfile_path):
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" not in result.output
+    assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
 
@@ -215,6 +218,7 @@ def test_generate_24_words(ape_cli, runner, temp_keyfile_path):
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output  # should check for 24 words
+    assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
 
