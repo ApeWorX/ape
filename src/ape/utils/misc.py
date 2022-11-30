@@ -237,7 +237,7 @@ def stream_response(download_url: str, progress_bar_description: str = "Download
     total_size = int(response.headers.get("content-length", 0))
     progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True, leave=False)
     progress_bar.set_description(progress_bar_description)
-    content = bytes()
+    content = b""
     for data in response.iter_content(1024, decode_unicode=True):
         progress_bar.update(len(data))
         content += data

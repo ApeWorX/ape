@@ -35,8 +35,7 @@ class TestAccountManager(list, ManagerAccessMixin):
     @property
     def accounts(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
-            for account in container.accounts:
-                yield account
+            yield from container.accounts
 
     def aliases(self) -> Iterator[str]:
         for account in self.accounts:
@@ -183,8 +182,7 @@ class AccountManager(BaseManager):
 
     def __iter__(self) -> Iterator[AccountAPI]:
         for container in self.containers.values():
-            for account in container.accounts:
-                yield account
+            yield from container.accounts
 
     def __repr__(self) -> str:
         return "[" + ", ".join(repr(a) for a in self) + "]"

@@ -23,7 +23,7 @@ extras_require = {
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
-        "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy typeshed
+        "pandas-stubs==1.2.0.62",  # Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",
         "flake8>=5.0.4,<6",  # Style linter
         "flake8-breakpoint>=1.1.0,<2",  # detect breakpoints left in code
