@@ -68,12 +68,6 @@ def _list(cli_ctx, show_all_plugins):
     short_help="Create a new keyfile account with a random mnemonic seed phrase"
 )
 @click.option(
-    "--hide-mnemonic",
-    "hide_mnemonic",
-    help="Hide the newly generated mnemonic from the terminal",
-    is_flag=True,
-)
-@click.option(
     "--word-count",
     "word_count",
     help="Number of words to use to generate seed phrase",
@@ -100,8 +94,7 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
     account, mnemonic = EthAccount.create_with_mnemonic(
         passphrase, word_count, "english", custom_hd_path
     )
-    if not hide_mnemonic:
-        cli_ctx.logger.success(f"Newly generated mnemonic is: {mnemonic}")
+    cli_ctx.logger.success(f"Newly generated mnemonic is: {mnemonic}")
 
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
     cli_ctx.logger.success(
