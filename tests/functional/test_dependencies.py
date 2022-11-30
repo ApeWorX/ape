@@ -45,6 +45,13 @@ def test_dependency_with_longer_contracts_folder(dependency_config, config, proj
     assert actual == expected
 
 
+def test_access_dependency_contracts(already_downloaded_dependencies, project_manager):
+    name = "OpenZeppelin"
+    oz_442 = project_manager.dependencies[name]["4.4.2"]
+    contract = oz_442.AccessControl
+    assert contract.contract_type.name == "AccessControl"
+
+
 def test_dependency_with_non_version_version_id(recwarn, dependency_manager):
     dependency_config = {
         "github": "apeworx/testfoobartest",

@@ -231,7 +231,8 @@ def test_compile_non_ape_project_deletes_ape_config_file(ape_cli, runner, projec
 
 
 @skip_projects_except("only-dependencies")
-def test_compile_only_dependency(ape_cli, runner, project, clean_cache):
+def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
+    expected_log_message = "Compiling 'DependencyInProjectOnly.json'"
     dependency_cache = project.path / "renamed_contracts_folder" / ".build"
     if dependency_cache.is_dir():
         shutil.rmtree(str(dependency_cache))
@@ -240,4 +241,16 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache):
     assert result.exit_code == 0, result.output
 
     # Dependencies are not compiled automatically
-    assert "Compiling 'DependencyInProjectOnly.json'" not in result.output
+    assert expected_log_message not in result.output
+
+    # Trigger actual dependency compilation
+    dependency = project.dependencies["dependency-in-project-only"]["local"]
+    _ = dependency.DependencyInProjectOnly
+    log_record = caplog.records.pop()
+    assert expected_log_message in log_record.message
+
+    # It should not need to compile again.
+    _ = dependency.DependencyInProjectOnly
+    if caplog.records:
+        log_record = caplog.records.pop()
+        assert expected_log_message not in log_record.message, "Compiled twice!"

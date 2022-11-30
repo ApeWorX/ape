@@ -1,3 +1,4 @@
+import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -230,22 +231,43 @@ class DependencyAPI(BaseInterfaceModel):
         return container
 
     def get(self, contract_name: str) -> Optional["ContractContainer"]:
-        manifest = self.extract_manifest()
+        manifest = self._get_compiled_manifest()
         if hasattr(manifest, contract_name):
             contract_type = getattr(manifest, contract_name)
             return self.chain_manager.contracts.get_container(contract_type)
 
         return None
 
-    def _extract_local_manifest(self, project_path: Path, compile: bool = False):
+    def _get_compiled_manifest(self) -> PackageManifest:
+        manifest = self.extract_manifest()
+        if manifest.contract_types:
+            # Already compiled
+            return manifest
+
+        sources = manifest.sources or {}  # NOTE: Already handled excluded files
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project = self._get_project(Path(temp_dir))
+            contracts_folder = project.contracts_folder.absolute()
+            contracts_folder.mkdir()
+            for source_id, source_obj in sources.items():
+                content = source_obj.content or ""
+                absolute_path = contracts_folder / source_id
+                source_path = contracts_folder / get_relative_path(
+                    absolute_path, contracts_folder.absolute()
+                )
+                source_path.touch()
+                source_path.write_text(content)
+
+            manifest = project.create_manifest()
+            self._write_manifest_to_cache(manifest)
+            return manifest
+
+    def _extract_local_manifest(self, project_path: Path):
+        if self._target_manifest_cache_file.is_file():
+            return PackageManifest.parse_file(self._target_manifest_cache_file)
+
         project = self._get_project(project_path)
-        all_sources = get_all_files_in_directory(project.contracts_folder)
-
-        excluded_files = set()
-        for pattern in set(self.exclude):
-            excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
-
-        sources = [s for s in all_sources if s not in excluded_files]
+        sources = self._get_sources(project)
 
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
         # for later usage via imports. For legacy reasons, many dependency-esque projects
@@ -253,12 +275,17 @@ class DependencyAPI(BaseInterfaceModel):
         project_manifest = project._create_manifest(
             sources, project.contracts_folder, {}, name=project.name, version=project.version
         )
-
-        # Cache the manifest for future use outside of this tempdir.
-        self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
-        self._target_manifest_cache_file.write_text(project_manifest.json())
-
+        self._write_manifest_to_cache(project_manifest)
         return project_manifest
+
+    def _get_sources(self, project: ProjectAPI) -> List[Path]:
+        all_sources = get_all_files_in_directory(project.contracts_folder)
+
+        excluded_files = set()
+        for pattern in set(self.exclude):
+            excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
+
+        return [s for s in all_sources if s not in excluded_files]
 
     def _get_project(self, project_path: Path) -> ProjectAPI:
         project_path = project_path.resolve()
@@ -269,6 +296,11 @@ class DependencyAPI(BaseInterfaceModel):
             name=self.name,
             version=self.version,
         )
+
+    def _write_manifest_to_cache(self, manifest: PackageManifest):
+        self._target_manifest_cache_file.unlink(missing_ok=True)
+        self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
+        self._target_manifest_cache_file.write_text(manifest.json())
 
 
 def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
