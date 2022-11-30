@@ -205,7 +205,7 @@ def test_generate_alias_already_in_use(ape_cli, runner):
         return runner.invoke(
             ape_cli,
             ["accounts", "generate", ALIAS],
-            input="\n".join(["random entropy", PASSWORD, PASSWORD]),
+            input="\n".join([PASSWORD, PASSWORD, "random entropy"]),
         )
 
     result = invoke_generate()
