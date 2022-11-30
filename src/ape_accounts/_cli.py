@@ -76,6 +76,20 @@ def _list(cli_ctx, show_all_plugins):
     help="Hide the newly generated mnemonic from the terminal",
     is_flag=True,
 )
+@click.option(
+    "--word-count",
+    "word_count",
+    help="Number of words to use to generate seed phrase",
+    default=12,
+    show_default=True
+)
+@click.option(
+    "--hdpath",
+    "custom_hd_path",
+    help="Specify an HD path for deriving seed phrase",
+    default="m/44'/60'/0'/0/0",
+    show_default=True
+)
 @non_existing_alias_argument()
 @ape_cli_context()
 def generate(cli_ctx, alias, generate_mnemonic, hide_mnemonic):
@@ -86,10 +100,6 @@ def generate(cli_ctx, alias, generate_mnemonic, hide_mnemonic):
         confirmation_prompt=True,
     )
     if generate_mnemonic:
-        word_count = click.prompt("Number of words - default:", default=12)
-        custom_hd_path = click.prompt(
-            "Specify an HD path for deriving seed phrase - default:", default="m/44'/60'/0'/0/0"
-        )
         EthAccount.enable_unaudited_hdwallet_features()
         account, mnemonic = EthAccount.create_with_mnemonic(
             passphrase, word_count, "english", custom_hd_path
