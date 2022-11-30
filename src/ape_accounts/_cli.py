@@ -66,6 +66,12 @@ def _list(cli_ctx, show_all_plugins):
 
 @cli.command(short_help="Create a new keyfile account with a random mnemonic seed phrase")
 @click.option(
+    "--hide-mnemonic",
+    "hide_mnemonic",
+    help="Hide the newly generated mnemonic from the terminal",
+    is_flag=True,
+)
+@click.option(
     "--word-count",
     "word_count",
     help="Number of words to use to generate seed phrase",
@@ -81,13 +87,14 @@ def _list(cli_ctx, show_all_plugins):
 )
 @non_existing_alias_argument()
 @ape_cli_context()
-def generate(cli_ctx, alias, word_count, custom_hd_path):
+def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
     EthAccount.enable_unaudited_hdwallet_features()
     account, mnemonic = EthAccount.create_with_mnemonic(
         num_words=word_count, account_path=custom_hd_path
     )
-    cli_ctx.logger.success(f"Newly generated mnemonic is: {mnemonic}")
+    if not hide_mnemonic and click.confirm("Show mnemonic?", default=True):
+        cli_ctx.logger.success(f"Newly generated mnemonic is: {mnemonic}")
     passphrase = click.prompt(
         "Create Passphrase to encrypt account",
         hide_input=True,
