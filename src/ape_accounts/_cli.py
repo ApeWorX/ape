@@ -2,6 +2,7 @@ import json
 
 import click
 from eth_account import Account as EthAccount
+from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_utils import to_bytes
 
 from ape import accounts
@@ -86,17 +87,38 @@ def generate(cli_ctx, alias):
 
 
 # Different name because `import` is a keyword
-@cli.command(name="import", short_help="Add a new keyfile account by entering a private key")
+@cli.command(
+    name="import", short_help="Add a new keyfile account by entering a private key or seed phrase"
+)
+@click.option(
+    "--use-mnemonic", "import_from_mnemonic", help="Import a key from a mnemonic", is_flag=True
+)
+@click.option(
+    "--hd-path",
+    "custom_hd_path",
+    help="Account HD path to use when importing by mnemonic",
+    default=ETHEREUM_DEFAULT_PATH,
+    show_default=True,
+)
 @non_existing_alias_argument()
 @ape_cli_context()
-def _import(cli_ctx, alias):
+def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
-    key = click.prompt("Enter Private Key", hide_input=True)
-    try:
-        account = EthAccount.from_key(to_bytes(hexstr=key))
-    except Exception as error:
-        cli_ctx.abort(f"Key can't be imported: {error}")
-        return
+    if import_from_mnemonic:
+        mnemonic = click.prompt("Enter mnemonic seed phrase", hide_input=True)
+        EthAccount.enable_unaudited_hdwallet_features()
+        try:
+            account = EthAccount.from_mnemonic(mnemonic, account_path=custom_hd_path)
+        except Exception as error:
+            cli_ctx.abort(f"Seed phrase can't be imported: {error}")
+            return
+    else:
+        key = click.prompt("Enter Private Key", hide_input=True)
+        try:
+            account = EthAccount.from_key(to_bytes(hexstr=key))
+        except Exception as error:
+            cli_ctx.abort(f"Key can't be imported: {error}")
+            return
 
     passphrase = click.prompt(
         "Create Passphrase",

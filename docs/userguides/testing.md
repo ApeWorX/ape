@@ -247,6 +247,14 @@ def test_authorization(my_contract, owner, not_owner):
 This is the expected revert reason given when the transaction fails.
 If the message in the `ContractLogicError` raised by the transaction failure is empty or does not match the `expected_message`, then `ape.reverts()` will raise an `AssertionError`.
 
+You may also supply an `re.Pattern` object to assert on a message pattern, rather than on an exact match.
+
+```python
+# Matches explicitly "foo" or "bar"
+with ape.reverts(re.compile(r"^(foo|bar)$")):
+    ...
+```
+
 ### `dev_message`
 
 This is the expected dev message corresponding to the line in the contract's source code where the error occurred.
@@ -285,6 +293,14 @@ There are a few scenarios where `AssertionError` will be raised when using `dev_
 - If the transaction trace cannot be obtained
 
 Because `dev_message` relies on transaction tracing to function, you must use a provider like [ape-hardhat](https://github.com/ApeWorX/ape-hardhat) when testing with `dev_message`.
+
+You may also supply an `re.Pattern` object to assert on a dev message pattern, rather than on an exact match.
+
+```python
+# Matches explictly "dev: foo" or "dev: bar"
+with ape.reverts(dev_message=re.compile(r"^dev: (foo|bar)$")):
+    ...
+```
 
 ### Caveats
 
