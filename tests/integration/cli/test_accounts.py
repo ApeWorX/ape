@@ -195,7 +195,7 @@ def test_generate_mnemonic_24_words(ape_cli, runner, temp_keyfile_path):
         input="\n".join([PASSWORD, PASSWORD, "24", ""]),
     )
     assert result.exit_code == 0, result.output
-    assert "Newly generated mnemonic is" in result.output #should check for 24 words
+    assert "Newly generated mnemonic is" in result.output  # should check for 24 words
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
 
@@ -226,7 +226,7 @@ def test_generate_mnemonic_24_words_and_custom_hdpath(ape_cli, runner, temp_keyf
         input="\n".join([PASSWORD, PASSWORD, "24", CUSTOM_HDPATH]),
     )
     assert result.exit_code == 0, result.output
-    assert "Newly generated mnemonic is" in result.output #should check for 24 words
+    assert "Newly generated mnemonic is" in result.output  # should check for 24 words
     assert CUSTOM_HDPATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
