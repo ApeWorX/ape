@@ -157,27 +157,13 @@ def test_import_invalid_mnemonic(ape_cli, runner):
 
 
 @run_once
-def test_generate(ape_cli, runner, temp_keyfile_path):
+def test_generate_default(ape_cli, runner, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
     # Generate new private key
     result = runner.invoke(
         ape_cli,
         ["accounts", "generate", ALIAS],
-        input="\n".join([PASSWORD, PASSWORD, "random entropy"]),
-    )
-    assert result.exit_code == 0, result.output
-    assert ALIAS in result.output
-    assert temp_keyfile_path.is_file()
-
-
-@run_once
-def test_generate_mnemonic_default(ape_cli, runner, temp_keyfile_path):
-    assert not temp_keyfile_path.is_file()
-    # Generate new private key
-    result = runner.invoke(
-        ape_cli,
-        ["accounts", "generate", ALIAS, "--use-mnemonic"],
-        input="\n".join([PASSWORD, PASSWORD, "", ""]),
+        input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
@@ -186,13 +172,13 @@ def test_generate_mnemonic_default(ape_cli, runner, temp_keyfile_path):
 
 
 @run_once
-def test_generate_mnemonic_24_words(ape_cli, runner, temp_keyfile_path):
+def test_generate_24_words(ape_cli, runner, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
     # Generate new private key
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--use-mnemonic"],
-        input="\n".join([PASSWORD, PASSWORD, "24", ""]),
+        ["accounts", "generate", ALIAS, "--word-count", 24],
+        input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output  # should check for 24 words
@@ -201,13 +187,13 @@ def test_generate_mnemonic_24_words(ape_cli, runner, temp_keyfile_path):
 
 
 @run_once
-def test_generate_mnemonic_custom_hdpath(ape_cli, runner, temp_keyfile_path):
+def test_generate_custom_hdpath(ape_cli, runner, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
     # Generate new private key
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--use-mnemonic"],
-        input="\n".join([PASSWORD, PASSWORD, "", CUSTOM_HDPATH]),
+        ["accounts", "generate", ALIAS, "--hdpath", CUSTOM_HDPATH],
+        input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
@@ -217,13 +203,13 @@ def test_generate_mnemonic_custom_hdpath(ape_cli, runner, temp_keyfile_path):
 
 
 @run_once
-def test_generate_mnemonic_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path):
+def test_generate_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
     # Generate new private key
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--use-mnemonic"],
-        input="\n".join([PASSWORD, PASSWORD, "24", CUSTOM_HDPATH]),
+        ["accounts", "generate", ALIAS, "--word-count", 24, "--hdpath", CUSTOM_HDPATH],
+        input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output  # should check for 24 words
