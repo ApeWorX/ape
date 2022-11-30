@@ -64,22 +64,20 @@ def _list(cli_ctx, show_all_plugins):
             click.echo()
 
 
-@cli.command(
-    short_help="Create a new keyfile account with a random mnemonic seed phrase"
-)
+@cli.command(short_help="Create a new keyfile account with a random mnemonic seed phrase")
 @click.option(
     "--word-count",
     "word_count",
     help="Number of words to use to generate seed phrase",
     default=12,
-    show_default=True
+    show_default=True,
 )
 @click.option(
     "--hdpath",
     "custom_hd_path",
     help="Specify an HD path for deriving seed phrase",
     default="m/44'/60'/0'/0/0",
-    show_default=True
+    show_default=True,
 )
 @non_existing_alias_argument()
 @ape_cli_context()
