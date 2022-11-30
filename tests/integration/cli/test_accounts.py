@@ -163,7 +163,21 @@ def test_generate(ape_cli, runner, temp_keyfile_path):
     result = runner.invoke(
         ape_cli,
         ["accounts", "generate", ALIAS],
-        input="\n".join(["random entropy", PASSWORD, PASSWORD]),
+        input="\n".join([PASSWORD, PASSWORD, "random entropy"]),
+    )
+    assert result.exit_code == 0, result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_generate_mnemonic(ape_cli, runner, temp_keyfile_path):
+    assert not temp_keyfile_path.is_file()
+    # Generate new private key
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "generate", ALIAS, "--use-mnemonic"],
+        input="\n".join([PASSWORD, PASSWORD, "", ""]),
     )
     assert result.exit_code == 0, result.output
     assert ALIAS in result.output
