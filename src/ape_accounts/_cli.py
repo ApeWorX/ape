@@ -76,7 +76,7 @@ def _list(cli_ctx, show_all_plugins):
     "--hdpath",
     "custom_hd_path",
     help="Specify an HD path for deriving seed phrase",
-    default="m/44'/60'/0'/0/0",
+    default=ETHEREUM_DEFAULT_PATH,
     show_default=True,
 )
 @non_existing_alias_argument()
