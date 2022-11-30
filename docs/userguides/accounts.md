@@ -59,7 +59,9 @@ Ape will prompt you for entropy which is used to increase randomness when creati
 
 Ape will then prompt you whether you want to show your mnemonic.
 
-If you do not want to see your mnemonic you can select `n` or alternatively you can use the `--hide-mnemonic` option.
+If you do not want to see your mnemonic you can select `n`. 
+
+Alternatively you can use the `--hide-mnemonic` option to skip the prompt.
 
 ```bash
 ape accounts generate <ALIAS> --hide-mnemonic
@@ -68,6 +70,10 @@ ape accounts generate <ALIAS> --hide-mnemonic
 If you elected to show your mnemonic Ape will then show you your newly generated mnemonic.
 
 Ape will then prompt you for a passphrase which you will need to enter twice to confirm.
+
+This passphrase is used to encrypt your account on disk, for extra security. 
+
+You will be prompted for it each time you load your account, so make sure to remember it.
 
 After entering the passphrase Ape will then show you your new account address, HDPath, and account alias.
 
