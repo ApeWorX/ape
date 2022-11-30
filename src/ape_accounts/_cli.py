@@ -64,7 +64,9 @@ def _list(cli_ctx, show_all_plugins):
             click.echo()
 
 
-@cli.command(short_help="Create a new keyfile account with a random private key")
+@cli.command(
+    short_help="Create a new keyfile account with a random private key or a mnemonic seed phrase"
+)
 @click.option(
     "--use-mnemonic", "generate_mnemonic", help="Generate a mnemonic and private key", is_flag=True
 )
