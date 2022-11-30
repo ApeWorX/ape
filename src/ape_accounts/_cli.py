@@ -89,6 +89,13 @@ def _list(cli_ctx, show_all_plugins):
 def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
     EthAccount.enable_unaudited_hdwallet_features()
+    # os.urandom (used internally for this method) requries a certain amount of entropy
+    # Adding entropy increases os.urandom randomness output
+    # Despite not being used in create_with_mnemonic
+    click.prompt(
+        "Add extra entropy for key generation...",
+        hide_input=True,
+    )
     account, mnemonic = EthAccount.create_with_mnemonic(
         num_words=word_count, account_path=custom_hd_path
     )
