@@ -424,7 +424,7 @@ class CacheQueryProvider(QueryAPI):
                 elif col == "receiver" and "receiver" in new_dict:
                     new_dict["receiver"] = new_dict["receiver"].encode()
                 elif col == "receiver" and "receiver" not in new_dict:
-                    new_dict["receiver"] = bytes()
+                    new_dict["receiver"] = b""
                 elif col == "block_hash":
                     new_dict["block_hash"] = query.block_id
                 elif col == "signature":
