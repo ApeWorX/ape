@@ -59,7 +59,7 @@ Ape will prompt you for entropy which is used to increase randomness when creati
 
 Ape will then prompt you whether you want to show your mnemonic.
 
-If you do not want to see your mnemonic you can select `n` or alternatively you can use the `--hide-mnemonic` flag.
+If you do not want to see your mnemonic you can select `n` or alternatively you can use the `--hide-mnemonic` option.
 
 ```bash
 ape accounts generate <ALIAS> --hide-mnemonic
@@ -69,9 +69,9 @@ If you elected to show your mnemonic Ape will then show you your newly generated
 
 Ape will then prompt you for a passphrase which you will need to enter twice to confirm.
 
-After entering the passphrase Ape will then show you your new account address, HDPath, and account alias. 
+After entering the passphrase Ape will then show you your new account address, HDPath, and account alias.
 
-If you want to use custom HDPath you can use the `--hd-path` option:
+If you want to use a custom HDPath, use the `--hd-path` option:
 
 ```bash
 ape accounts generate <ALIAS> --hd-path <HDPATH>
@@ -79,7 +79,7 @@ ape accounts generate <ALIAS> --hd-path <HDPATH>
 
 If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
 
-If you want to use a custom mnemonic phrase word length you can use the `--word-count` option:
+If you want to use a custom mnemonic phrase word length, use the `--word-count` option:
 
 ```bash
 ape accounts generate <ALIAS> --word-count <WORDCOUNT>
@@ -87,7 +87,7 @@ ape accounts generate <ALIAS> --word-count <WORDCOUNT>
 
 If you do not use the `--word-count` option, Ape will use the default word count of 12.
 
-You can use all of these together or separately to control the way ape creates and displays your account information. 
+You can use all of these together or separately to control the way Ape creates and displays your account information.
 
 If you already have an account and you wish to import it into Ape (say, from Metamask), you can use the [import command](../commands/accounts.html#accounts-import):
 
