@@ -81,7 +81,7 @@ def _list(cli_ctx, show_all_plugins):
 )
 @non_existing_alias_argument()
 @ape_cli_context()
-def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
+def generate(cli_ctx, alias, word_count, custom_hd_path):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
     passphrase = click.prompt(
         "Create Passphrase",
