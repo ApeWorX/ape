@@ -93,7 +93,7 @@ def generate(cli_ctx, alias, generate_mnemonic, hide_mnemonic):
             passphrase, word_count, "english", custom_hd_path
         )
         if not hide_mnemonic:
-            print(f"Newly generated mnemonic is: {mnemonic}")
+            cli_ctx.logger.success(f"Newly generated mnemonic is: {mnemonic}")
     else:
         extra_entropy = click.prompt(
             "Add extra entropy for key generation...",
