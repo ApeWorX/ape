@@ -73,7 +73,6 @@ def _list(cli_ctx, show_all_plugins):
 )
 @click.option(
     "--word-count",
-    "word_count",
     help="Number of words to use to generate seed phrase",
     default=12,
     show_default=True,
