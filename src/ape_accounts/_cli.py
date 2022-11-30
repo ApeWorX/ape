@@ -67,7 +67,6 @@ def _list(cli_ctx, show_all_plugins):
 @cli.command(short_help="Create a new keyfile account with a random mnemonic seed phrase")
 @click.option(
     "--hide-mnemonic",
-    "hide_mnemonic",
     help="Hide the newly generated mnemonic from the terminal",
     is_flag=True,
 )
