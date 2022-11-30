@@ -55,7 +55,27 @@ For example, you can [generate](../commands/accounts.html#accounts-generate) an 
 ape accounts generate <ALIAS>
 ```
 
-It will prompt you for a passphrase.
+Ape will prompt you for entropy which is used to increase randomness when creating your account.
+
+Ape will then prompt you whether you want to show your mnemonic.
+
+If you do not want to see your mnemonic you can select `n` or alternatively you can use the `--hide-mnemonic` flag.
+
+```bash
+ape accounts generate <ALIAS> --hide-mnemonic
+```
+
+If you elected to show your mnemonic Ape will then show you your newly generated mnemonic.
+
+Ape will then prompt you for a passphrase which you will need to enter twice to confirm.
+
+After entering the passphrase Ape will then show you your new account address, HDPath, and account alias. 
+
+If you want to use custom HDPath you can use the `--hd-path` option:
+
+```bash
+ape accounts generate <ALIAS> --hd-path <HDPATH>
+```
 
 If you already have an account and you wish to import it into Ape (say, from Metamask), you can use the [import command](../commands/accounts.html#accounts-import):
 
