@@ -83,17 +83,16 @@ def _list(cli_ctx, show_all_plugins):
 @ape_cli_context()
 def generate(cli_ctx, alias, word_count, custom_hd_path):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
-    passphrase = click.prompt(
-        "Create Passphrase",
-        hide_input=True,
-        confirmation_prompt=True,
-    )
     EthAccount.enable_unaudited_hdwallet_features()
     account, mnemonic = EthAccount.create_with_mnemonic(
         num_words=word_count, account_path=custom_hd_path
     )
     cli_ctx.logger.success(f"Newly generated mnemonic is: {mnemonic}")
-
+    passphrase = click.prompt(
+        "Create Passphrase",
+        hide_input=True,
+        confirmation_prompt=True,
+    )
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
     cli_ctx.logger.success(
         f"A new account '{account.address}' with HDPath {custom_hd_path} has been added with the id '{alias}'"
