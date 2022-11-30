@@ -22,6 +22,10 @@ def already_downloaded_dependencies(temp_config, config, oz_dependencies_config)
     manifests_directory = Path(__file__).parent / "data" / "manifests"
     oz_manifests = manifests_directory / "OpenZeppelin"
     oz_manifests_dest = config.packages_folder / "OpenZeppelin"
+
+    if oz_manifests_dest.is_dir():
+        shutil.rmtree(oz_manifests_dest)
+
     shutil.copytree(oz_manifests, oz_manifests_dest)
     with temp_config(oz_dependencies_config):
         yield
@@ -43,6 +47,13 @@ def test_dependency_with_longer_contracts_folder(dependency_config, config, proj
     expected = "source/v0.1"
     actual = dependency.contracts_folder
     assert actual == expected
+
+
+def test_access_dependency_contracts(already_downloaded_dependencies, project_manager):
+    name = "OpenZeppelin"
+    oz_442 = project_manager.dependencies[name]["4.4.2"]
+    contract = oz_442.AccessControl
+    assert contract.contract_type.name == "AccessControl"
 
 
 def test_dependency_with_non_version_version_id(recwarn, dependency_manager):
