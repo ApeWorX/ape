@@ -192,7 +192,7 @@ def test_generate_custom_hdpath(ape_cli, runner, temp_keyfile_path):
     # Generate new private key
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--hdpath", CUSTOM_HDPATH],
+        ["accounts", "generate", ALIAS, "--hd-path", CUSTOM_HDPATH],
         input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -208,7 +208,7 @@ def test_generate_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path)
     # Generate new private key
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--word-count", 24, "--hdpath", CUSTOM_HDPATH],
+        ["accounts", "generate", ALIAS, "--word-count", 24, "--hd-path", CUSTOM_HDPATH],
         input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output

@@ -73,7 +73,7 @@ def _list(cli_ctx, show_all_plugins):
     show_default=True,
 )
 @click.option(
-    "--hdpath",
+    "--hd-path",
     "custom_hd_path",
     help="Specify an HD path for deriving seed phrase",
     default=ETHEREUM_DEFAULT_PATH,
