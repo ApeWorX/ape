@@ -90,7 +90,7 @@ def generate(cli_ctx, alias, word_count, custom_hd_path):
     )
     EthAccount.enable_unaudited_hdwallet_features()
     account, mnemonic = EthAccount.create_with_mnemonic(
-        passphrase, word_count, "english", custom_hd_path
+        num_words=word_count, language="english", account_path=custom_hd_path
     )
     cli_ctx.logger.success(f"Newly generated mnemonic is: {mnemonic}")
 
@@ -122,7 +122,7 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
         mnemonic = click.prompt("Enter mnemonic seed phrase", hide_input=True)
         EthAccount.enable_unaudited_hdwallet_features()
         try:
-            account = EthAccount.from_mnemonic(mnemonic, account_path=custom_hd_path)
+            account = EthAccount.from_mnemonic(mnemonic=mnemonic, account_path=custom_hd_path)
         except Exception as error:
             cli_ctx.abort(f"Seed phrase can't be imported: {error}")
             return
