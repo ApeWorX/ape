@@ -90,7 +90,7 @@ def generate(cli_ctx, alias, word_count, custom_hd_path):
     )
     EthAccount.enable_unaudited_hdwallet_features()
     account, mnemonic = EthAccount.create_with_mnemonic(
-        num_words=word_count, language="english", account_path=custom_hd_path
+        num_words=word_count, account_path=custom_hd_path
     )
     cli_ctx.logger.success(f"Newly generated mnemonic is: {mnemonic}")
 
