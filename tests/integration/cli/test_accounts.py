@@ -168,6 +168,8 @@ def test_generate_default(ape_cli, runner, temp_keyfile_path):
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
+    mnemonic_length = len(result.output.split(":")[4].split("\n")[0].split())
+    assert mnemonic_length == 12
     assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
@@ -217,7 +219,9 @@ def test_generate_24_words(ape_cli, runner, temp_keyfile_path):
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
-    assert "Newly generated mnemonic is" in result.output  # should check for 24 words
+    assert "Newly generated mnemonic is" in result.output
+    mnemonic_length = len(result.output.split(":")[4].split("\n")[0].split())
+    assert mnemonic_length == 24
     assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
@@ -235,6 +239,8 @@ def test_generate_custom_hdpath(ape_cli, runner, temp_keyfile_path):
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
+    mnemonic_length = len(result.output.split(":")[4].split("\n")[0].split())
+    assert mnemonic_length == 12
     assert CUSTOM_HDPATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
@@ -251,7 +257,9 @@ def test_generate_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path)
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
-    assert "Newly generated mnemonic is" in result.output  # should check for 24 words
+    assert "Newly generated mnemonic is" in result.output
+    mnemonic_length = len(result.output.split(":")[4].split("\n")[0].split())
+    assert mnemonic_length == 24
     assert CUSTOM_HDPATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
