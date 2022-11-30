@@ -100,7 +100,7 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
         num_words=word_count, account_path=custom_hd_path
     )
     if not hide_mnemonic and click.confirm("Show mnemonic?", default=True):
-        cli_ctx.logger.success(f"Newly generated mnemonic is: {mnemonic}")
+        cli_ctx.logger.info(f"Newly generated mnemonic is: {mnemonic}")
     passphrase = click.prompt(
         "Create Passphrase to encrypt account",
         hide_input=True,
