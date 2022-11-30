@@ -96,7 +96,7 @@ def generate(cli_ctx, alias, word_count, custom_hd_path):
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
     cli_ctx.logger.success(
         f"A new account '{account.address}' with "
-        + "HDPath {custom_hd_path} has been added with the id '{alias}'"
+        + f"HDPath {custom_hd_path} has been added with the id '{alias}'"
     )
 
 
