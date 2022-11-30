@@ -100,7 +100,7 @@ class BaseProject(ProjectAPI):
         if self.config_file.is_file():
             return True
 
-        logger.warning(
+        logger.debug(
             f"'{self.path.name}' is not an 'ApeProject', but attempting to process as one."
         )
 
