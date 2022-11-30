@@ -64,25 +64,51 @@ def _list(cli_ctx, show_all_plugins):
             click.echo()
 
 
-@cli.command(short_help="Create a new keyfile account with a random private key")
+@cli.command(short_help="Create a new keyfile account with a random mnemonic seed phrase")
+@click.option(
+    "--hide-mnemonic",
+    help="Hide the newly generated mnemonic from the terminal",
+    is_flag=True,
+)
+@click.option(
+    "--word-count",
+    help="Number of words to use to generate seed phrase",
+    default=12,
+    show_default=True,
+)
+@click.option(
+    "--hd-path",
+    "custom_hd_path",
+    help="Specify an HD path for deriving seed phrase",
+    default=ETHEREUM_DEFAULT_PATH,
+    show_default=True,
+)
 @non_existing_alias_argument()
 @ape_cli_context()
-def generate(cli_ctx, alias):
+def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
-    extra_entropy = click.prompt(
+    EthAccount.enable_unaudited_hdwallet_features()
+    # os.urandom (used internally for this method) requries a certain amount of entropy
+    # Adding entropy increases os.urandom randomness output
+    # Despite not being used in create_with_mnemonic
+    click.prompt(
         "Add extra entropy for key generation...",
         hide_input=True,
     )
-
-    account = EthAccount.create(extra_entropy)
+    account, mnemonic = EthAccount.create_with_mnemonic(
+        num_words=word_count, account_path=custom_hd_path
+    )
+    if not hide_mnemonic and click.confirm("Show mnemonic?", default=True):
+        cli_ctx.logger.info(f"Newly generated mnemonic is: {mnemonic}")
     passphrase = click.prompt(
-        "Create Passphrase",
+        "Create Passphrase to encrypt account",
         hide_input=True,
         confirmation_prompt=True,
     )
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
     cli_ctx.logger.success(
-        f"A new account '{account.address}' has been added with the id '{alias}'"
+        f"A new account '{account.address}' with "
+        + f"HDPath {custom_hd_path} has been added with the id '{alias}'"
     )
 
 
@@ -108,7 +134,7 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
         mnemonic = click.prompt("Enter mnemonic seed phrase", hide_input=True)
         EthAccount.enable_unaudited_hdwallet_features()
         try:
-            account = EthAccount.from_mnemonic(mnemonic, account_path=custom_hd_path)
+            account = EthAccount.from_mnemonic(mnemonic=mnemonic, account_path=custom_hd_path)
         except Exception as error:
             cli_ctx.abort(f"Seed phrase can't be imported: {error}")
             return
@@ -121,7 +147,7 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
             return
 
     passphrase = click.prompt(
-        "Create Passphrase",
+        "Create Passphrase to encrypt account",
         hide_input=True,
         confirmation_prompt=True,
     )

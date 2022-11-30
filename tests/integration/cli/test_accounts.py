@@ -157,15 +157,102 @@ def test_import_invalid_mnemonic(ape_cli, runner):
 
 
 @run_once
-def test_generate(ape_cli, runner, temp_keyfile_path):
+def test_generate_default(ape_cli, runner, temp_keyfile_path):
+    assert not temp_keyfile_path.is_file()
+    # Generate new private key
+    show_mnemonic = ""
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "generate", ALIAS],
+        input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 0, result.output
+    assert "Newly generated mnemonic is" in result.output
+    assert ETHEREUM_DEFAULT_PATH in result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_generate_hide_mnemonic_prompt(ape_cli, runner, temp_keyfile_path):
+    assert not temp_keyfile_path.is_file()
+    # Generate new private key
+    show_mnemonic = "n"
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "generate", ALIAS],
+        input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 0, result.output
+    assert "Newly generated mnemonic is" not in result.output
+    assert ETHEREUM_DEFAULT_PATH in result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_generate_hide_mnemonic_option(ape_cli, runner, temp_keyfile_path):
     assert not temp_keyfile_path.is_file()
     # Generate new private key
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS],
+        ["accounts", "generate", ALIAS, "--hide-mnemonic"],
         input="\n".join(["random entropy", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
+    assert "Newly generated mnemonic is" not in result.output
+    assert ETHEREUM_DEFAULT_PATH in result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_generate_24_words(ape_cli, runner, temp_keyfile_path):
+    assert not temp_keyfile_path.is_file()
+    # Generate new private key
+    show_mnemonic = ""
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "generate", ALIAS, "--word-count", 24],
+        input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 0, result.output
+    assert "Newly generated mnemonic is" in result.output  # should check for 24 words
+    assert ETHEREUM_DEFAULT_PATH in result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_generate_custom_hdpath(ape_cli, runner, temp_keyfile_path):
+    assert not temp_keyfile_path.is_file()
+    # Generate new private key
+    show_mnemonic = ""
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "generate", ALIAS, "--hd-path", CUSTOM_HDPATH],
+        input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 0, result.output
+    assert "Newly generated mnemonic is" in result.output
+    assert CUSTOM_HDPATH in result.output
+    assert ALIAS in result.output
+    assert temp_keyfile_path.is_file()
+
+
+@run_once
+def test_generate_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path):
+    assert not temp_keyfile_path.is_file()
+    # Generate new private key
+    show_mnemonic = ""
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "generate", ALIAS, "--word-count", 24, "--hd-path", CUSTOM_HDPATH],
+        input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 0, result.output
+    assert "Newly generated mnemonic is" in result.output  # should check for 24 words
+    assert CUSTOM_HDPATH in result.output
     assert ALIAS in result.output
     assert temp_keyfile_path.is_file()
 
@@ -173,10 +260,11 @@ def test_generate(ape_cli, runner, temp_keyfile_path):
 @run_once
 def test_generate_alias_already_in_use(ape_cli, runner):
     def invoke_generate():
+        show_mnemonic = ""
         return runner.invoke(
             ape_cli,
             ["accounts", "generate", ALIAS],
-            input="\n".join(["random entropy", PASSWORD, PASSWORD]),
+            input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
         )
 
     result = invoke_generate()
