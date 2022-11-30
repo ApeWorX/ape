@@ -55,7 +55,45 @@ For example, you can [generate](../commands/accounts.html#accounts-generate) an 
 ape accounts generate <ALIAS>
 ```
 
-It will prompt you for a passphrase.
+Ape will prompt you for entropy which is used to increase randomness when creating your account.
+
+Ape will then prompt you whether you want to show your mnemonic.
+
+If you do not want to see your mnemonic you can select `n`. 
+
+Alternatively you can use the `--hide-mnemonic` option to skip the prompt.
+
+```bash
+ape accounts generate <ALIAS> --hide-mnemonic
+```
+
+If you elected to show your mnemonic Ape will then show you your newly generated mnemonic.
+
+Ape will then prompt you for a passphrase which you will need to enter twice to confirm.
+
+This passphrase is used to encrypt your account on disk, for extra security. 
+
+You will be prompted for it each time you load your account, so make sure to remember it.
+
+After entering the passphrase Ape will then show you your new account address, HDPath, and account alias.
+
+If you want to use a custom HDPath, use the `--hd-path` option:
+
+```bash
+ape accounts generate <ALIAS> --hd-path <HDPATH>
+```
+
+If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
+
+If you want to use a custom mnemonic phrase word length, use the `--word-count` option:
+
+```bash
+ape accounts generate <ALIAS> --word-count <WORDCOUNT>
+```
+
+If you do not use the `--word-count` option, Ape will use the default word count of 12.
+
+You can use all of these together or separately to control the way Ape creates and displays your account information.
 
 If you already have an account and you wish to import it into Ape (say, from Metamask), you can use the [import command](../commands/accounts.html#accounts-import):
 
@@ -64,6 +102,7 @@ ape accounts import <ALIAS>
 ```
 
 It will prompt you for the private key.
+
 If you need help exporting your private key from Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
 
 You can also import accounts from mnemonic seed by using the `--use-mnemonic` flag:
@@ -73,6 +112,7 @@ ape accounts import <ALIAS> --use-mnemonic
 ```
 
 It will then prompt you for the [mnemonic seed](https://en.bitcoin.it/wiki/Seed_phrase). 
+
 If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase). 
 
 In addition, you can also use a custom HDPath by using the `--hd-path` option:
@@ -82,6 +122,7 @@ ape accounts import <ALIAS> --use-mnemonic --hd-path <HDPATH>
 ```
 
 If you use the `--hd-path` option, you will need to pass the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) you'd like to use as an argument in the command.
+
 If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
 
 Then, in your scripts, you can [load](../methoddocs/managers.html#ape.managers.accounts.AccountManager.load) an account:

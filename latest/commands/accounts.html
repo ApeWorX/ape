@@ -185,11 +185,39 @@ scripts or the console using the accounts.load() method.</p>
 </section>
 <section id="accounts-generate">
 <h2>generate<a class="headerlink" href="#accounts-generate" title="Permalink to this headline"></a></h2>
-<p>Create a new keyfile account with a random private key</p>
+<p>Create a new keyfile account with a random mnemonic seed phrase</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>accounts generate <span class="o">[</span>OPTIONS<span class="o">]</span> ALIAS
 </pre></div>
 </div>
 <p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-accounts-generate-hide-mnemonic">
+<span class="sig-name descname"><span class="pre">--hide-mnemonic</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-accounts-generate-hide-mnemonic" title="Permalink to this definition"></a></dt>
+<dd><p>Hide the newly generated mnemonic from the terminal</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-accounts-generate-word-count">
+<span class="sig-name descname"><span class="pre">--word-count</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;word_count&gt;</span></span><a class="headerlink" href="#cmdoption-accounts-generate-word-count" title="Permalink to this definition"></a></dt>
+<dd><p>Number of words to use to generate seed phrase</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>12</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-accounts-generate-hd-path">
+<span class="sig-name descname"><span class="pre">--hd-path</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;custom_hd_path&gt;</span></span><a class="headerlink" href="#cmdoption-accounts-generate-hd-path" title="Permalink to this definition"></a></dt>
+<dd><p>Specify an HD path for deriving seed phrase</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>m/44’/60’/0’/0/0</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-accounts-generate-v">
 <span id="cmdoption-accounts-generate-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-accounts-generate-v" title="Permalink to this definition"></a></dt>
