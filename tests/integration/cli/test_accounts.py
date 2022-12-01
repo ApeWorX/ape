@@ -152,7 +152,7 @@ def test_export(ape_cli, runner, temp_keyfile):
     assert result.exit_code == 0, result.output
     assert f"0x{PRIVATE_KEY}" in result.output
     assert address in result.output
-    breakpoint()
+
 
 @run_once
 def test_import_invalid_mnemonic(ape_cli, runner):
