@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 
 from ape.exceptions import ConversionError
 from ape.types import AddressType, ContractCode
@@ -89,6 +89,22 @@ class BaseAddress(BaseInterface):
         """
 
         return self.provider.get_balance(self.address)
+
+    # @balance.setter
+    # NOTE: commented out because of failure noted within `__setattr__`
+    def _set_balance_(self, value: Any):
+        if isinstance(value, str):
+            value = self.conversion_manager.convert(value, int)
+
+        self.provider.set_balance(self.address, value)
+
+    def __setattr__(self, attr: str, value: Any) -> None:
+        # NOTE: Need to do this until https://github.com/pydantic/pydantic/pull/2625 is figured out
+        if attr == "balance":
+            self._set_balance_(value)
+
+        else:
+            super().__setattr__(attr, value)
 
     @property
     def code(self) -> ContractCode:
