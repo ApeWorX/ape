@@ -2,6 +2,10 @@ on: ["push", "pull_request"]
 
 name: Test
 
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
     linting:
         runs-on: ubuntu-latest
