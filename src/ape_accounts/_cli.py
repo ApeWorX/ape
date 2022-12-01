@@ -157,7 +157,7 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
     )
 
 
-@cli.command(short_help="Unlock an account and export the private key")
+@cli.command(short_help="Export an account private key")
 @ape_cli_context()
 @existing_alias_argument()
 def export(cli_ctx, alias):
