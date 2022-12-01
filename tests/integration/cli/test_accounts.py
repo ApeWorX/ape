@@ -142,7 +142,7 @@ def test_import_mnemonic_custom_hdpath(
 
 @run_once
 def test_export(ape_cli, runner, temp_keyfile):
-    address = json.loads(temp_keyfile.read_text())['address']
+    address = json.loads(temp_keyfile.read_text())["address"]
     # export key
     result = runner.invoke(
         ape_cli,
