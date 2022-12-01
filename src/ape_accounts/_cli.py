@@ -157,6 +157,17 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
     )
 
 
+@cli.command(name="export", short_help="Unlock an account and export the private key")
+@ape_cli_context()
+@existing_alias_argument()
+def _export(cli_ctx, alias):
+    path = _get_container().data_folder.joinpath(f"{alias}.json")
+    account = json.loads(path.read_text())
+    password = click.prompt("Enter password to decrypt account", hide_input=True)
+    private_key = EthAccount.decrypt(account, password)
+    cli_ctx.logger.success(f"Account 0x{account['address']} private key: {private_key.hex()}")
+
+
 @cli.command(short_help="Change the password of an existing account")
 @existing_alias_argument(account_type=KeyfileAccount)
 @ape_cli_context()
