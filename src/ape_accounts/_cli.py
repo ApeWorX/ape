@@ -64,7 +64,7 @@ def _list(cli_ctx, show_all_plugins):
             click.echo()
 
 
-@cli.command(short_help="Create a new keyfile account with a random mnemonic seed phrase")
+@cli.command(short_help="Create an account with a random mnemonic seed phrase")
 @click.option(
     "--hide-mnemonic",
     help="Hide the newly generated mnemonic from the terminal",
@@ -113,9 +113,7 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
 
 
 # Different name because `import` is a keyword
-@cli.command(
-    name="import", short_help="Add a new keyfile account by entering a private key or seed phrase"
-)
+@cli.command(name="import", short_help="Import an account by private key or seed phrase")
 @click.option(
     "--use-mnemonic", "import_from_mnemonic", help="Import a key from a mnemonic", is_flag=True
 )
