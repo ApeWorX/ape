@@ -157,7 +157,7 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
 
 @cli.command(short_help="Export an account private key")
 @ape_cli_context()
-@existing_alias_argument()
+@existing_alias_argument(account_type=KeyfileAccount)
 def export(cli_ctx, alias):
     path = _get_container().data_folder.joinpath(f"{alias}.json")
     account = json.loads(path.read_text())
