@@ -99,7 +99,7 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
         num_words=word_count, account_path=custom_hd_path
     )
     if not hide_mnemonic and click.confirm("Show mnemonic?", default=True):
-        cli_ctx.logger.info(f"Newly generated mnemonic is: {mnemonic}")
+        cli_ctx.logger.info(f"Newly generated mnemonic is: {click.style(mnemonic, bold=True)}")
     passphrase = click.prompt(
         "Create Passphrase to encrypt account",
         hide_input=True,
@@ -163,7 +163,9 @@ def export(cli_ctx, alias):
     account = json.loads(path.read_text())
     password = click.prompt("Enter password to decrypt account", hide_input=True)
     private_key = EthAccount.decrypt(account, password)
-    cli_ctx.logger.success(f"Account 0x{account['address']} private key: {private_key.hex()}")
+    cli_ctx.logger.success(
+        f"Account 0x{account['address']} private key: {click.style(private_key.hex(), bold=True)})"
+    )
 
 
 @cli.command(short_help="Change the password of an existing account")
