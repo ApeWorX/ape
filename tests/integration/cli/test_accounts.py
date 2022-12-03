@@ -141,6 +141,20 @@ def test_import_mnemonic_custom_hdpath(
 
 
 @run_once
+def test_export(ape_cli, runner, temp_keyfile):
+    address = json.loads(temp_keyfile.read_text())["address"]
+    # export key
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "export", ALIAS],
+        input="\n".join([PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 0, result.output
+    assert f"0x{PRIVATE_KEY}" in result.output
+    assert address in result.output
+
+
+@run_once
 def test_import_invalid_mnemonic(ape_cli, runner):
     # Add account from invalid mnemonic
     result = runner.invoke(

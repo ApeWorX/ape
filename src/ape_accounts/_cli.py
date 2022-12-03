@@ -64,7 +64,7 @@ def _list(cli_ctx, show_all_plugins):
             click.echo()
 
 
-@cli.command(short_help="Create a new keyfile account with a random mnemonic seed phrase")
+@cli.command(short_help="Create an account with a random mnemonic seed phrase")
 @click.option(
     "--hide-mnemonic",
     help="Hide the newly generated mnemonic from the terminal",
@@ -99,7 +99,7 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
         num_words=word_count, account_path=custom_hd_path
     )
     if not hide_mnemonic and click.confirm("Show mnemonic?", default=True):
-        cli_ctx.logger.info(f"Newly generated mnemonic is: {mnemonic}")
+        cli_ctx.logger.info(f"Newly generated mnemonic is: {click.style(mnemonic, bold=True)}")
     passphrase = click.prompt(
         "Create Passphrase to encrypt account",
         hide_input=True,
@@ -113,9 +113,7 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
 
 
 # Different name because `import` is a keyword
-@cli.command(
-    name="import", short_help="Add a new keyfile account by entering a private key or seed phrase"
-)
+@cli.command(name="import", short_help="Import an account by private key or seed phrase")
 @click.option(
     "--use-mnemonic", "import_from_mnemonic", help="Import a key from a mnemonic", is_flag=True
 )
@@ -154,6 +152,19 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
     path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
     cli_ctx.logger.success(
         f"A new account '{account.address}' has been added with the id '{alias}'"
+    )
+
+
+@cli.command(short_help="Export an account private key")
+@ape_cli_context()
+@existing_alias_argument(account_type=KeyfileAccount)
+def export(cli_ctx, alias):
+    path = _get_container().data_folder.joinpath(f"{alias}.json")
+    account = json.loads(path.read_text())
+    password = click.prompt("Enter password to decrypt account", hide_input=True)
+    private_key = EthAccount.decrypt(account, password)
+    cli_ctx.logger.success(
+        f"Account 0x{account['address']} private key: {click.style(private_key.hex(), bold=True)})"
     )
 
 
