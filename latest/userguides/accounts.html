@@ -217,6 +217,13 @@ All the available CLI commands for this accounts plugin can be found <a class="r
 </div>
 <p>If you use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, you will need to pass the <a class="reference external" href="https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths">HDPath</a> you’d like to use as an argument in the command.</p>
 <p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).</p>
+<p>You can also <a class="reference external" href="../commands/accounts.html#accounts-export">export</a> the private key of an account:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts <span class="nb">export</span> &lt;ALIAS&gt;
+</pre></div>
+</div>
+<p>Ape will ask you for the password to the account and then give you the private key of that account.</p>
+<p>You can then use that private key with <a class="reference external" href="../commands/accounts.html#accounts-import">import</a>.</p>
+<p>You can alternatively load the private key into <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4">Metamask wallet</a>.</p>
 <p>Then, in your scripts, you can <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.load">load</a> an account:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
 

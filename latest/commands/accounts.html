@@ -81,6 +81,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">accounts</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#accounts-change-password">change-password</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#accounts-delete">delete</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#accounts-export">export</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#accounts-generate">generate</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#accounts-import">import</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#accounts-list">list</a></li>
@@ -183,9 +184,30 @@ scripts or the console using the accounts.load() method.</p>
 </dd></dl>
 
 </section>
+<section id="accounts-export">
+<h2>export<a class="headerlink" href="#accounts-export" title="Permalink to this headline"></a></h2>
+<p>Export an account private key</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>accounts <span class="nb">export</span> <span class="o">[</span>OPTIONS<span class="o">]</span> <span class="o">{}</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-accounts-export-v">
+<span id="cmdoption-accounts-export-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-accounts-export-v" title="Permalink to this definition"></a></dt>
+<dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-accounts-export-arg-ALIAS">
+<span id="cmdoption-accounts-export-arg-alias"></span><span class="sig-name descname"><span class="pre">ALIAS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-accounts-export-arg-ALIAS" title="Permalink to this definition"></a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
 <section id="accounts-generate">
 <h2>generate<a class="headerlink" href="#accounts-generate" title="Permalink to this headline"></a></h2>
-<p>Create a new keyfile account with a random mnemonic seed phrase</p>
+<p>Create an account with a random mnemonic seed phrase</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>accounts generate <span class="o">[</span>OPTIONS<span class="o">]</span> ALIAS
 </pre></div>
 </div>
@@ -234,7 +256,7 @@ scripts or the console using the accounts.load() method.</p>
 </section>
 <section id="accounts-import">
 <h2>import<a class="headerlink" href="#accounts-import" title="Permalink to this headline"></a></h2>
-<p>Add a new keyfile account by entering a private key or seed phrase</p>
+<p>Import an account by private key or seed phrase</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>accounts import <span class="o">[</span>OPTIONS<span class="o">]</span> ALIAS
 </pre></div>
 </div>
