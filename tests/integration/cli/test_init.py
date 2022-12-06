@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import shutil
 from tests.integration.cli.utils import run_once
 
 """
@@ -23,25 +23,34 @@ def test_init_success(ape_cli, runner):
     # Successfull creation of project
     # ape init command
 
+    # removes and cleans cwd
     project_folder = Path.cwd()
-    result = runner.invoke(ape_cli, ["init"], input="init_success")
+    #shutil.rmtree(project_folder)
+
+    # creates the ape project
+    result = runner.invoke(ape_cli, ["init"], input="\n".join(["init_success", "y"]))
 
     assert result.exit_code == 0, result.output
+    # checks if the directory existence
     for folder_name in ["contracts", "tests", "scripts"]:
-        # Create target Directory
         folder = project_folder / folder_name
         assert folder.exists()
 
+    # checks if the files exist
     git_ignore_file = project_folder / ".gitignore"
     assert git_ignore_file.is_file()
+    assert ".env" in git_ignore_file.read_text()
 
     config = project_folder / "ape-config.yaml"
     assert config.is_file()
+    breakpoint()
     assert "init_success" in config.read_text()
 
-    result = runner.invoke(["rm", "-rf"])
+    # remove ape project
+    shutil.rmtree(project_folder)
 
-    assert project_folder.exists()
+    # assert that project folder is removed
+    assert not project_folder.exists()
 
 
 def test_fail_all_files_and_folders_exist():
