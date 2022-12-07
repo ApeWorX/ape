@@ -730,6 +730,14 @@ class Web3Provider(ProviderAPI, ABC):
         """
 
         txn_dict = txn.dict()
+
+        # "auto" does not usually work
+        if "gas" in txn_dict and txn_dict["gas"] == "auto":
+            txn_dict.pop("gas")
+            # Also pop these, they are overriden by "auto"
+            txn_dict.pop("maxFeePerGas", None)
+            txn_dict.pop("maxPriorityFeePerGas", None)
+
         try:
             block_id = kwargs.pop("block_identifier", None)
             txn_params = cast(TxParams, txn_dict)
