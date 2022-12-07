@@ -216,19 +216,20 @@ class Ethereum(EcosystemAPI):
 
             return ProxyInfo(type=type, target=target)
 
-        # gnosis safe stores implementation in slot 0, read `masterCopy()` to be sure
+        # gnosis safe stores implementation in slot 0, read `NAME()` to be sure
         abi = MethodABI(
             type="function",
-            name="masterCopy",
+            name="NAME",
             stateMutability="view",
-            outputs=[ABIType(type="address")],
+            outputs=[ABIType(type="string")],
         )
         try:
-            master_copy = ContractCall(abi, address)()
+            name = ContractCall(abi, address)()
             storage = self.provider.get_storage_at(address, 0)
-            slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
-            if master_copy == slot_0:
-                return ProxyInfo(type=ProxyType.GnosisSafe, target=master_copy)
+            target = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+            if name in ("Gnosis Safe", "Default Callback Handler"):
+                return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
+
         except (DecodingError, TransactionError):
             pass
 
