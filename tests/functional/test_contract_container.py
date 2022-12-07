@@ -1,7 +1,7 @@
 import pytest
 
 from ape import Contract
-from ape.exceptions import ContractError, NetworkError, ProjectError
+from ape.exceptions import NetworkError, ProjectError
 from ape_ethereum.ecosystem import ProxyType
 
 
@@ -94,23 +94,6 @@ def test_decode_constructor_input(contract_container, calldata):
     actual = constructor.decode_input(constructor_calldata)
     expected = "constructor(uint256)", {"num": 222}
     assert actual == expected
-
-
-def test_encode_input(contract_container, unique_calldata):
-    arguments = list(range(10))
-    actual = contract_container.encode_input(*arguments)
-    expected = unique_calldata
-    assert actual == expected
-
-
-def test_encode_ambiguous_input(solidity_contract_container, solidity_contract_instance):
-    arguments = (222, solidity_contract_instance.address)
-    expected = (
-        f"Could not find function matching argument set "
-        f"'222 {solidity_contract_instance.address}'."
-    )
-    with pytest.raises(ContractError, match=expected):
-        solidity_contract_container.encode_input(*arguments)
 
 
 def test_decode_input(contract_container, calldata):

@@ -478,23 +478,6 @@ def test_encode_transaction_input(contract_instance, calldata):
     assert actual == expected
 
 
-def test_encode_input(contract_instance, unique_calldata):
-    arguments = list(range(10))
-    actual = contract_instance.encode_input(*arguments)
-    expected = unique_calldata
-    assert actual == expected
-
-
-def test_encode_ambiguous_input(solidity_contract_instance, calldata_with_address):
-    arguments = (222, solidity_contract_instance.address)
-    expected = (
-        f"Could not find function matching argument set "
-        f"'222 {solidity_contract_instance.address}'."
-    )
-    with pytest.raises(ContractError, match=expected):
-        solidity_contract_instance.encode_input(*arguments)
-
-
 def test_decode_transaction_input(contract_instance, calldata):
     method = contract_instance.setNumber
     actual = method.decode_input(calldata)
