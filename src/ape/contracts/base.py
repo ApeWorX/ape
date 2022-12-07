@@ -614,47 +614,6 @@ class ContractEvent(ManagerAccessMixin):
 class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
 
-    def encode_input(self, *args: Any) -> HexBytes:
-        """
-        Encode the given input arguments using this contract.
-        It will attempt to locate the method in this contract
-        with the same number of arguments.
-
-        Args:
-            *args (Any): The contract method arguments.
-
-        Returns:
-            HexBytes: The encoded input calldata.
-        """
-
-        arguments = args
-        input_length = len(arguments)
-        ecosystem = self.provider.network.ecosystem
-        methods = [*self.contract_type.view_methods, *self.contract_type.mutable_methods]
-        selectors = [x.selector for x in methods if len(x.inputs) == input_length]
-        if not selectors:
-            raise ContractError(
-                f"Could not find function matching argument set "
-                f"'{' '.join([str(x) for x in arguments])}'. "
-                f"Argument length does not match any available methods."
-            )
-
-        elif len(selectors) > 1:
-            raise ContractError(
-                f"Could not find function matching argument set "
-                f"'{' '.join([str(x) for x in arguments])}'."
-            )
-
-        selector = selectors[0]
-        if selector in self.contract_type.view_methods:
-            abi = self.contract_type.view_methods[selector]
-        elif selector in self.contract_type.mutable_methods:
-            abi = self.contract_type.mutable_methods[selector]
-
-        encoded_arguments = ecosystem.encode_calldata(abi, *arguments)
-        method_id = ecosystem.get_method_selector(abi)
-        return HexBytes(method_id + encoded_arguments)
-
     def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
         """
         Decode the given calldata using this contract.
