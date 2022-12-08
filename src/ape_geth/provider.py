@@ -12,6 +12,7 @@ from evm_trace import (
     CallType,
     ParityTraceList,
     TraceFrame,
+    get_calltree_from_geth_call_trace,
     get_calltree_from_geth_trace,
     get_calltree_from_parity_trace,
 )
@@ -274,6 +275,11 @@ class BaseGethProvider(Web3Provider, ABC):
         for frame in frames:
             yield TraceFrame(**frame)
 
+    def _get_transaction_trace_using_call_tracer(self, txn_hash: str) -> Dict:
+        return self._make_request(
+            "debug_traceTransaction", [txn_hash, {"enableMemory": True, "tracer": "callTracer"}]
+        )
+
     def get_call_tree(self, txn_hash: str) -> CallTreeNode:
         if "erigon" in self.client_version.lower():
             return self._get_parity_call_tree(txn_hash)
@@ -293,27 +299,8 @@ class BaseGethProvider(Web3Provider, ABC):
         return get_calltree_from_parity_trace(traces)
 
     def _get_geth_call_tree(self, txn_hash: str) -> CallTreeNode:
-        frames = self.get_transaction_trace(txn_hash)
-        receipt = self.get_receipt(txn_hash)
-
-        if not receipt.receiver:
-            raise ProviderError("Receipt missing receiver.")
-
-        # Subtract base gas costs.
-        # (21_000 + 4 gas per 0-byte and 16 gas per non-zero byte).
-        data_gas = sum([4 if x == 0 else 16 for x in receipt.data])
-        method_gas_cost = receipt.gas_used - 21_000 - data_gas
-
-        return get_calltree_from_geth_trace(
-            frames,
-            gas_cost=method_gas_cost,
-            gas_limit=receipt.gas_limit,
-            address=receipt.receiver,
-            calldata=receipt.data,
-            value=receipt.value,
-            call_type=CallType.CALL,
-            failed=receipt.failed,
-        )
+        calls = self._get_transaction_trace_using_call_tracer(txn_hash)
+        return get_calltree_from_geth_call_trace(calls)
 
     def _log_connection(self, client_name: str):
         logger.info(f"Connecting to existing {client_name} node at '{self._clean_uri}'.")
