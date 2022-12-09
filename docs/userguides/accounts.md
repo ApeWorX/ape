@@ -43,7 +43,7 @@ The accounts generated from this seed are solely for testing and debugging purpo
 
 Learn more about test accounts from the [testing guide](./testing.html#accounts-fixture).
 
-If your testing provider supports this feature, it is possible to directly set the balanaces of any address, by performing the following action:
+If your testing provider supports this feature, it is possible to directly set the balances of any address by performing the following action:
 
 ```python
 account.balance += int(1e18)  # Gives `account` 1 Ether
