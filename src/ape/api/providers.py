@@ -934,6 +934,12 @@ class Web3Provider(ProviderAPI, ABC):
             if value is not None and not isinstance(value, str):
                 txn_dict[field] = to_hex(value)
 
+        # Remove unneeded properties
+        txn_dict.pop("gas", None)
+        txn_dict.pop("gasLimit", None)
+        txn_dict.pop("maxFeePerGas", None)
+        txn_dict.pop("maxPriorityFeePerGas", None)
+
         block_identifier = kwargs.pop("block_identifier", "latest")
         if isinstance(block_identifier, int):
             block_identifier = to_hex(block_identifier)
