@@ -14,10 +14,6 @@ ape-config.yaml
 """
 
 
-# def test_github_clone():
-#     pass
-
-
 @run_once
 def test_init_success(ape_cli, runner, project):
     # Successfull creation of project
@@ -50,6 +46,31 @@ def test_init_success(ape_cli, runner, project):
         os.chdir(project.path)
 
 
-# def test_fail_all_files_and_folders_exist():
-#     # failed to create a folder because it exist
-#     pass
+@run_once
+def test_fail_all_files_and_folders_exist(ape_cli, runner, project):
+    # failed to create a folder because it exist
+    # ape init command
+
+    # add project folder and directories
+    project_folder_path = project.path / "init_fail"
+    project_folder_path.mkdir()
+    os.chdir(str(project_folder_path))
+
+    try:
+        for folder_name in ["contracts", "tests", "scripts"]:
+            # Create target Directory
+            folder = project_folder_path / folder_name
+            if folder.exists():
+                pass
+            else:
+                folder.mkdir(exist_ok=False)
+
+        result = runner.invoke(ape_cli, ["init"], input="\n".join(["init_fail", "y"]))
+        # checks if the directory existence
+        assert result.exit_code == 0, result.output
+        assert "contracts' exists" in result.output
+        assert "scripts' exists" in result.output
+        assert "tests' exists" in result.output
+
+    finally:
+        os.chdir(project.path)
