@@ -125,6 +125,18 @@ If you use the `--hd-path` option, you will need to pass the [HDPath](https://he
 
 If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
 
+You can also [export](../commands/accounts.html#accounts-export) the private key of an account:
+
+```bash
+ape accounts export <ALIAS>
+```
+
+Ape will ask you for the password to the account and then give you the private key of that account.
+
+You can then use that private key with [import](../commands/accounts.html#accounts-import).
+
+You can alternatively load the private key into [Metamask wallet](https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4).
+
 Then, in your scripts, you can [load](../methoddocs/managers.html#ape.managers.accounts.AccountManager.load) an account:
 
 ```python
