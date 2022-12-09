@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
-from subprocess import PIPE, Popen
+from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
@@ -42,7 +42,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
     VirtualMachineError,
 )
-from ape.logging import logger
+from ape.logging import LogLevel, logger
 from ape.types import AddressType, BlockID, ContractCode, ContractLog, LogFilter, SnapshotID
 from ape.utils import (
     EMPTY_BYTES32,
@@ -1200,8 +1200,9 @@ class SubprocessProvider(ProviderAPI):
             pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
             self.stderr_queue = JoinableQueue()
             self.stdout_queue = JoinableQueue()
+            out_file = PIPE if logger.level <= LogLevel.DEBUG else DEVNULL
             self.process = Popen(
-                self.build_command(), preexec_fn=pre_exec_fn, stdout=PIPE, stderr=PIPE
+                self.build_command(), preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file
             )
             spawn(self.produce_stdout_queue)
             spawn(self.produce_stderr_queue)
