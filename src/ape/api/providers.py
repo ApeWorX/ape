@@ -730,6 +730,14 @@ class Web3Provider(ProviderAPI, ABC):
         """
 
         txn_dict = txn.dict()
+
+        # NOTE: "auto" means to enter this method, so remove it from dict
+        if "gas" in txn_dict and txn_dict["gas"] == "auto":
+            txn_dict.pop("gas")
+            # Also pop these, they are overriden by "auto"
+            txn_dict.pop("maxFeePerGas", None)
+            txn_dict.pop("maxPriorityFeePerGas", None)
+
         try:
             block_id = kwargs.pop("block_identifier", None)
             txn_params = cast(TxParams, txn_dict)
@@ -925,6 +933,12 @@ class Web3Provider(ProviderAPI, ABC):
             value = txn_dict.get(field)
             if value is not None and not isinstance(value, str):
                 txn_dict[field] = to_hex(value)
+
+        # Remove unneeded properties
+        txn_dict.pop("gas", None)
+        txn_dict.pop("gasLimit", None)
+        txn_dict.pop("maxFeePerGas", None)
+        txn_dict.pop("maxPriorityFeePerGas", None)
 
         block_identifier = kwargs.pop("block_identifier", "latest")
         if isinstance(block_identifier, int):
