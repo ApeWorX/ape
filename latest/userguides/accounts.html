@@ -166,6 +166,10 @@ Pre-funded test accounts are accessible via the <a class="reference external" hr
 <p><strong>WARN</strong>: NEVER put a seed phrase with real funds here.
 The accounts generated from this seed are solely for testing and debugging purposes.</p>
 <p>Learn more about test accounts from the <a class="reference external" href="./testing.html#accounts-fixture">testing guide</a>.</p>
+<p>If your testing provider supports this feature, it is possible to directly set the balances of any address by performing the following action:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">account</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e18</span><span class="p">)</span>  <span class="c1"># Gives `account` 1 Ether</span>
+</pre></div>
+</div>
 </section>
 <section id="live-network-accounts">
 <h2>Live Network Accounts<a class="headerlink" href="#live-network-accounts" title="Permalink to this headline"></a></h2>
