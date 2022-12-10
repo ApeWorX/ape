@@ -60,6 +60,9 @@ class ProjectManager(BaseManager):
         in this project's ``ape-config.yaml`` file.
         """
 
+        # Ensure project is configured first. This will migrate dependency configs
+        # if they are specified alternative ways, such as in brownie-projects.
+        self._project.configure()
         return self._load_dependencies()
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
@@ -501,12 +504,6 @@ class ProjectManager(BaseManager):
             Dict[str, ``ContractType``]: A dictionary of contract names to their
             types for each compiled contract.
         """
-
-        # NOTE: Always load dependencies even when there is no contracts folder.
-        #  This is to support projects that only use dependencies.
-        self._load_dependencies()
-        if not self.contracts_folder.is_dir():
-            return {}
 
         in_source_cache = self.contracts_folder / ".cache"
         if not use_cache and in_source_cache.is_dir():

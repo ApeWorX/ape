@@ -1,3 +1,4 @@
+import shutil
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional
@@ -12,6 +13,7 @@ from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
     abstractmethod,
+    cached_property,
     get_all_files_in_directory,
     get_relative_path,
 )
@@ -37,6 +39,8 @@ class ProjectAPI(BaseInterfaceModel):
 
     version: Optional[str] = None
     """The version of the project whe another project uses it as a dependency."""
+
+    config_file_name: str = "ape-config.yaml"
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.path.name}>"
@@ -94,6 +98,14 @@ class ProjectAPI(BaseInterfaceModel):
         # NOTE: If we use the cache folder, we expect it to exist
         folder.mkdir(exist_ok=True, parents=True)
         return folder
+
+    def configure(self, **kwargs) -> bool:
+        """
+        Returns ``True`` if had to configure the project.
+        Implemented in base-classes.
+        """
+
+        return False
 
     @classmethod
     def _create_manifest(
@@ -177,8 +189,8 @@ class DependencyAPI(BaseInterfaceModel):
         Most often, this is either a version number or a branch name.
         """
 
-    @property
-    def _target_manifest_cache_file(self) -> Path:
+    @cached_property
+    def _base_cache_path(self) -> Path:
         version_id = self.version_id
 
         try:
@@ -188,8 +200,11 @@ class DependencyAPI(BaseInterfaceModel):
         except InvalidVersion:
             pass
 
-        name = self.name
-        return self.config_manager.packages_folder / name / version_id / f"{name}.json"
+        return self.config_manager.packages_folder / self.name / version_id
+
+    @property
+    def _target_manifest_cache_file(self) -> Path:
+        return self._base_cache_path / f"{self.name}.json"
 
     @abstractmethod
     def extract_manifest(self) -> PackageManifest:
@@ -247,6 +262,14 @@ class DependencyAPI(BaseInterfaceModel):
         sources = manifest.sources or {}  # NOTE: Already handled excluded files
         with tempfile.TemporaryDirectory() as temp_dir:
             project = self._get_project(Path(temp_dir))
+            cached_config_file = self._base_cache_path / project.config_file_name
+
+            if cached_config_file.is_file():
+                # Dependency uses a config file. Re-configure the project.
+                project_config_file = project.path / project.config_file_name
+                shutil.copy(cached_config_file, project_config_file)
+                project.configure()
+
             contracts_folder = project.contracts_folder.absolute()
             contracts_folder.mkdir(parents=True, exist_ok=True)
             for source_id, source_obj in sources.items():
@@ -255,6 +278,7 @@ class DependencyAPI(BaseInterfaceModel):
                 source_path = contracts_folder / get_relative_path(
                     absolute_path, contracts_folder.absolute()
                 )
+                source_path.parent.mkdir(parents=True, exist_ok=True)
                 source_path.touch()
                 source_path.write_text(content)
 
@@ -262,11 +286,17 @@ class DependencyAPI(BaseInterfaceModel):
             self._write_manifest_to_cache(manifest)
             return manifest
 
-    def _extract_local_manifest(self, project_path: Path):
-        if self._target_manifest_cache_file.is_file():
-            return PackageManifest.parse_file(self._target_manifest_cache_file)
-
+    def _extract_local_manifest(self, project_path: Path) -> PackageManifest:
+        cached_manifest = (
+            PackageManifest.parse_file(self._target_manifest_cache_file)
+            if self._target_manifest_cache_file.is_file()
+            else None
+        )
         project = self._get_project(project_path)
+        target_config_file = self._base_cache_path / project.config_file_name
+        if cached_manifest and target_config_file.is_file():
+            return cached_manifest
+
         sources = self._get_sources(project)
 
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
@@ -276,6 +306,12 @@ class DependencyAPI(BaseInterfaceModel):
             sources, project.contracts_folder, {}, name=project.name, version=project.version
         )
         self._write_manifest_to_cache(project_manifest)
+
+        project_config = project.path / project.config_file_name
+        if project_config.is_file():
+            target_config_file.unlink(missing_ok=True)
+            shutil.copy(project_config, target_config_file)
+
         return project_manifest
 
     def _get_sources(self, project: ProjectAPI) -> List[Path]:
