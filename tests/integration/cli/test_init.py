@@ -25,7 +25,7 @@ def test_init_success(ape_cli, runner, project):
     os.chdir(str(project_folder_path))
 
     try:
-        result = runner.invoke(ape_cli, ["init"], input="\n".join(["init_success"])) 
+        result = runner.invoke(ape_cli, ["init"], input="\n".join(["init_success"]))
 
         assert result.exit_code == 0, result.output
         # checks if the directory exist
