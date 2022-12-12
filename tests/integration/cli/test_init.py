@@ -19,7 +19,7 @@ def test_init_success(ape_cli, runner, project):
     # Successfull creation of project
     # ape init command
 
-    # removes and cleans cwd
+    # Changes cwd to a temporary directory
     project_folder_path = project.path / "init_success"
     project_folder_path.mkdir()
     os.chdir(str(project_folder_path))
@@ -28,7 +28,7 @@ def test_init_success(ape_cli, runner, project):
         result = runner.invoke(ape_cli, ["init"], input="\n".join(["init_success", "y"]))
 
         assert result.exit_code == 0, result.output
-        # checks if the directory existence
+        # checks if the directory exist
         for folder_name in ["contracts", "tests", "scripts"]:
             folder = project_folder_path / folder_name
             assert folder.is_dir()
@@ -48,7 +48,7 @@ def test_init_success(ape_cli, runner, project):
 
 @run_once
 def test_fail_all_files_and_folders_exist(ape_cli, runner, project):
-    # failed to create a folder because it exist
+    # failed to create all folders because they exist
     # ape init command
 
     # add project folder and directories
