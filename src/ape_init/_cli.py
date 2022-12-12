@@ -57,4 +57,4 @@ __pycache__
         else:
             project_name = click.prompt("Please enter project name")
             ape_config.write_text(f"name: {project_name}\n")
-            click.prompt(f"{project_name} is written in ape-config.yaml\n")
+            click.prompt(f"{project_name} is written in ape-config.yaml")
