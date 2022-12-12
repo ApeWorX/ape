@@ -129,7 +129,7 @@ class BaseProject(ProjectAPI):
 
         return files
 
-    def configure(self, **kwargs) -> bool:
+    def process_config_file(self, **kwargs) -> bool:
         if self.config_file.is_file():
             # Don't override existing config file.
             return False
@@ -157,7 +157,7 @@ class BaseProject(ProjectAPI):
 
         created_temporary_config_file = False
         try:
-            created_temporary_config_file = self.configure(**kwargs)
+            created_temporary_config_file = self.process_config_file(**kwargs)
             if created_temporary_config_file:
                 self.config_manager.load(force_reload=True)
 
@@ -239,7 +239,7 @@ class BrownieProject(BaseProject):
     def is_valid(self) -> bool:
         return self.brownie_config_path.is_file()
 
-    def configure(self, **kwargs) -> bool:
+    def process_config_file(self, **kwargs) -> bool:
         # Migrate the brownie-config.yaml file to ape-config.yaml
 
         migrated_config_data: Dict[str, Any] = {}
@@ -310,4 +310,4 @@ class BrownieProject(BaseProject):
 
             migrated_config_data["solidity"] = migrated_solidity_config
 
-        return super().configure(**kwargs, **migrated_config_data)
+        return super().process_config_file(**kwargs, **migrated_config_data)

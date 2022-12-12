@@ -100,10 +100,10 @@ class ProjectAPI(BaseInterfaceModel):
         folder.mkdir(exist_ok=True, parents=True)
         return folder
 
-    def configure(self, **kwargs) -> bool:
+    def process_config_file(self, **kwargs) -> bool:
         """
-        Returns ``True`` if had to configure the project.
-        Implemented in base-classes.
+        Process the project's config file.
+        Returns ``True`` if had to create a temporary ``ape-config.yaml`` file.
         """
 
         return False

@@ -62,7 +62,7 @@ class ProjectManager(BaseManager):
 
         # Ensure project is configured first. This will migrate dependency configs
         # if they are specified alternative ways, such as in brownie-projects.
-        self._project.configure()
+        self._project.process_config_file()
         return self._load_dependencies()
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
