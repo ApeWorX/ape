@@ -1,8 +1,9 @@
-import shutil
+import os.path
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+import yaml
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
@@ -230,14 +231,30 @@ class DependencyAPI(BaseInterfaceModel):
         return _load_manifest_from_file(self._target_manifest_cache_file)
 
     def __getitem__(self, contract_name: str) -> "ContractContainer":
-        container = self.get(contract_name)
+        try:
+            container = self.get(contract_name)
+        except Exception as err:
+            raise IndexError(str(err)) from err
+
         if not container:
             raise IndexError(f"Contract '{contract_name}' not found.")
 
         return container
 
     def __getattr__(self, contract_name: str) -> "ContractContainer":
-        container = self.get(contract_name)
+        try:
+            return self.__getattribute__(contract_name)
+        except AttributeError:
+            pass
+
+        try:
+            container = self.get(contract_name)
+        except Exception as err:
+            raise AttributeError(
+                f"Dependency project '{self.name}' has no contract "
+                f"or attribute '{contract_name}'.\n{err}"
+            ) from err
+
         if not container:
             raise AttributeError(
                 f"Dependency project '{self.name}' has no contract '{contract_name}'."
@@ -262,14 +279,6 @@ class DependencyAPI(BaseInterfaceModel):
         sources = manifest.sources or {}  # NOTE: Already handled excluded files
         with tempfile.TemporaryDirectory() as temp_dir:
             project = self._get_project(Path(temp_dir))
-            cached_config_file = self._base_cache_path / project.config_file_name
-
-            if cached_config_file.is_file():
-                # Dependency uses a config file. Re-configure the project.
-                project_config_file = project.path / project.config_file_name
-                shutil.copy(cached_config_file, project_config_file)
-                project.configure()
-
             contracts_folder = project.contracts_folder.absolute()
             contracts_folder.mkdir(parents=True, exist_ok=True)
             for source_id, source_obj in sources.items():
@@ -283,6 +292,38 @@ class DependencyAPI(BaseInterfaceModel):
                 source_path.parent.mkdir(parents=True, exist_ok=True)
                 source_path.touch()
                 source_path.write_text(content)
+
+            # Handle dependencies and import remappings indicated in the manifest file
+            target_config_file = project.path / project.config_file_name
+            config_data: Dict[str, Any] = {}
+            for compiler in [x for x in manifest.compilers or [] if x.settings]:
+                name = compiler.name.lower()
+                compiler_data = config_data.get(name, {})
+                settings = compiler.settings or {}
+                new_remappings: List[str] = []
+                if "remappings" in settings:
+                    existing_remappings = compiler_data.get("remappings", [])
+                    new_remappings = list(set([*settings["remappings"], *existing_remappings]))
+
+                cleaned_remappings = []
+                for remapping in new_remappings:
+                    parts = remapping.split("=")
+                    link = parts[1]
+                    if link.startswith(f".cache{os.path.sep}"):
+                        link = os.path.sep.join(link.split(f".cache{os.path.sep}"))[1:]
+
+                    new_entry = f"{parts[0]}={link}"
+                    cleaned_remappings.append(new_entry)
+
+                if cleaned_remappings:
+                    compiler_data["import_remapping"] = cleaned_remappings
+
+                if compiler_data:
+                    config_data[name] = compiler_data
+
+            if config_data:
+                with open(target_config_file, "w+") as cf:
+                    yaml.safe_dump(config_data, cf)
 
             manifest = project.create_manifest()
             self._write_manifest_to_cache(manifest)
@@ -302,6 +343,7 @@ class DependencyAPI(BaseInterfaceModel):
         with self.config_manager.using_project(project.path):
             # Load dependencies of dependencies before loading dependencies.
             self.project_manager._load_dependencies()
+            compiler_data = self.project_manager.compiler_data
 
         sources = self._get_sources(project)
 
@@ -311,16 +353,10 @@ class DependencyAPI(BaseInterfaceModel):
         project_manifest = project._create_manifest(
             sources, project.contracts_folder, {}, name=project.name, version=project.version
         )
+        if compiler_data:
+            project_manifest.compilers = compiler_data
+
         self._write_manifest_to_cache(project_manifest)
-        target_config_file = self._base_cache_path / project.config_file_name
-
-        # The dependency's config file may be needed for compiling, such as getting the
-        # import remappings. So copy it into the cache.
-        project_config = project.path / project.config_file_name
-        if project_config.is_file():
-            target_config_file.unlink(missing_ok=True)
-            shutil.copy(project_config, target_config_file)
-
         return project_manifest
 
     def _get_sources(self, project: ProjectAPI) -> List[Path]:
