@@ -290,7 +290,7 @@ class DependencyAPI(BaseInterfaceModel):
 
     def _extract_local_manifest(self, project_path: Path) -> PackageManifest:
         cached_manifest = (
-            PackageManifest.parse_file(self._target_manifest_cache_file)
+            _load_manifest_from_file(self._target_manifest_cache_file)
             if self._target_manifest_cache_file.is_file()
             else None
         )
