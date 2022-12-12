@@ -278,6 +278,8 @@ class DependencyAPI(BaseInterfaceModel):
                 source_path = contracts_folder / get_relative_path(
                     absolute_path, contracts_folder.absolute()
                 )
+
+                # Create content, including sub-directories.
                 source_path.parent.mkdir(parents=True, exist_ok=True)
                 source_path.touch()
                 source_path.write_text(content)
