@@ -147,4 +147,7 @@ class LocalDependency(DependencyAPI):
         return self.version
 
     def extract_manifest(self) -> PackageManifest:
+        if self._target_manifest_cache_file.is_file():
+            return PackageManifest.parse_file(self._target_manifest_cache_file)
+
         return self._extract_local_manifest(self.path)

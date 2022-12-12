@@ -292,10 +292,14 @@ class DependencyAPI(BaseInterfaceModel):
             if self._target_manifest_cache_file.is_file()
             else None
         )
-        project = self._get_project(project_path)
-        target_config_file = self._base_cache_path / project.config_file_name
-        if cached_manifest and target_config_file.is_file():
+        if cached_manifest:
             return cached_manifest
+
+        project = self._get_project(project_path)
+
+        with self.config_manager.using_project(project.path):
+            # Load dependencies of dependencies before loading dependencies.
+            self.project_manager._load_dependencies()
 
         sources = self._get_sources(project)
 
@@ -306,7 +310,10 @@ class DependencyAPI(BaseInterfaceModel):
             sources, project.contracts_folder, {}, name=project.name, version=project.version
         )
         self._write_manifest_to_cache(project_manifest)
+        target_config_file = self._base_cache_path / project.config_file_name
 
+        # The dependency's config file may be needed for compiling, such as getting the
+        # import remappings. So copy it into the cache.
         project_config = project.path / project.config_file_name
         if project_config.is_file():
             target_config_file.unlink(missing_ok=True)
