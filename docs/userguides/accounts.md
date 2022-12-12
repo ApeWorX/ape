@@ -43,6 +43,12 @@ The accounts generated from this seed are solely for testing and debugging purpo
 
 Learn more about test accounts from the [testing guide](./testing.html#accounts-fixture).
 
+If your testing provider supports this feature, it is possible to directly set the balances of any address by performing the following action:
+
+```python
+account.balance += int(1e18)  # Gives `account` 1 Ether
+```
+
 ## Live Network Accounts
 
 When using live networks, you need to get your accounts into Ape.
@@ -59,7 +65,7 @@ Ape will prompt you for entropy which is used to increase randomness when creati
 
 Ape will then prompt you whether you want to show your mnemonic.
 
-If you do not want to see your mnemonic you can select `n`. 
+If you do not want to see your mnemonic you can select `n`.
 
 Alternatively you can use the `--hide-mnemonic` option to skip the prompt.
 
@@ -71,7 +77,7 @@ If you elected to show your mnemonic Ape will then show you your newly generated
 
 Ape will then prompt you for a passphrase which you will need to enter twice to confirm.
 
-This passphrase is used to encrypt your account on disk, for extra security. 
+This passphrase is used to encrypt your account on disk, for extra security.
 
 You will be prompted for it each time you load your account, so make sure to remember it.
 
@@ -111,9 +117,9 @@ You can also import accounts from mnemonic seed by using the `--use-mnemonic` fl
 ape accounts import <ALIAS> --use-mnemonic
 ```
 
-It will then prompt you for the [mnemonic seed](https://en.bitcoin.it/wiki/Seed_phrase). 
+It will then prompt you for the [mnemonic seed](https://en.bitcoin.it/wiki/Seed_phrase).
 
-If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase). 
+If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see [this guide](https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase).
 
 In addition, you can also use a custom HDPath by using the `--hd-path` option:
 
@@ -124,6 +130,18 @@ ape accounts import <ALIAS> --use-mnemonic --hd-path <HDPATH>
 If you use the `--hd-path` option, you will need to pass the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) you'd like to use as an argument in the command.
 
 If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
+
+You can also [export](../commands/accounts.html#accounts-export) the private key of an account:
+
+```bash
+ape accounts export <ALIAS>
+```
+
+Ape will ask you for the password to the account and then give you the private key of that account.
+
+You can then use that private key with [import](../commands/accounts.html#accounts-import).
+
+You can alternatively load the private key into [Metamask wallet](https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4).
 
 Then, in your scripts, you can [load](../methoddocs/managers.html#ape.managers.accounts.AccountManager.load) an account:
 

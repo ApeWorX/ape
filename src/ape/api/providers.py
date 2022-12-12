@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
-from subprocess import PIPE, Popen
+from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
@@ -42,7 +42,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
     VirtualMachineError,
 )
-from ape.logging import logger
+from ape.logging import LogLevel, logger
 from ape.types import AddressType, BlockID, ContractCode, ContractLog, LogFilter, SnapshotID
 from ape.utils import (
     EMPTY_BYTES32,
@@ -730,6 +730,14 @@ class Web3Provider(ProviderAPI, ABC):
         """
 
         txn_dict = txn.dict()
+
+        # NOTE: "auto" means to enter this method, so remove it from dict
+        if "gas" in txn_dict and txn_dict["gas"] == "auto":
+            txn_dict.pop("gas")
+            # Also pop these, they are overriden by "auto"
+            txn_dict.pop("maxFeePerGas", None)
+            txn_dict.pop("maxPriorityFeePerGas", None)
+
         try:
             block_id = kwargs.pop("block_identifier", None)
             txn_params = cast(TxParams, txn_dict)
@@ -925,6 +933,12 @@ class Web3Provider(ProviderAPI, ABC):
             value = txn_dict.get(field)
             if value is not None and not isinstance(value, str):
                 txn_dict[field] = to_hex(value)
+
+        # Remove unneeded properties
+        txn_dict.pop("gas", None)
+        txn_dict.pop("gasLimit", None)
+        txn_dict.pop("maxFeePerGas", None)
+        txn_dict.pop("maxPriorityFeePerGas", None)
 
         block_identifier = kwargs.pop("block_identifier", "latest")
         if isinstance(block_identifier, int):
@@ -1200,8 +1214,9 @@ class SubprocessProvider(ProviderAPI):
             pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
             self.stderr_queue = JoinableQueue()
             self.stdout_queue = JoinableQueue()
+            out_file = PIPE if logger.level <= LogLevel.DEBUG else DEVNULL
             self.process = Popen(
-                self.build_command(), preexec_fn=pre_exec_fn, stdout=PIPE, stderr=PIPE
+                self.build_command(), preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file
             )
             spawn(self.produce_stdout_queue)
             spawn(self.produce_stderr_queue)
