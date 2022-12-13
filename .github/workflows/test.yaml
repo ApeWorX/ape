@@ -74,6 +74,7 @@ jobs:
             path: $HOME/.local/bin
             key: ${{ runner.os }}-geth-${{ env.GETH_VERSION }}
 
+        # Currently assumes unix system and will be part of work to include windows systems
         - name: Install Geth
           if: steps.cache-geth.outputs.cache-hit != 'true'
           run: |
