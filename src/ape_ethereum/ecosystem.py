@@ -226,8 +226,8 @@ class Ethereum(EcosystemAPI):
         )
         try:
             name = ContractCall(abi, address)()
-            storage = self.provider.get_storage_at(address, 0)
-            target = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+            raw_target = self.provider.get_storage_at(address, 0)[-20:].hex()
+            target = self.conversion_manager.convert(raw_target, AddressType)
             # NOTE: `target` is set in initialized proxies
             if name in ("Gnosis Safe", "Default Callback Handler") and target != ZERO_ADDRESS:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
@@ -255,7 +255,7 @@ class Ethereum(EcosystemAPI):
 
             target = ContractCall(implementation_abi, address)()
             # avoid recursion
-            if target != "0x0000000000000000000000000000000000000000":
+            if target != ZERO_ADDRESS:
                 return ProxyInfo(type=ProxyType.Delegate, target=target)
 
         except (DecodingError, TransactionError, ValueError):
