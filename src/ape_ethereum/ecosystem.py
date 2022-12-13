@@ -19,6 +19,7 @@ from ape.types import AddressType, ContractLog, GasLimit, RawAddress, Transactio
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    ZERO_ADDRESS,
     LogInputABICollection,
     Struct,
     StructParser,
@@ -227,7 +228,8 @@ class Ethereum(EcosystemAPI):
             name = ContractCall(abi, address)()
             storage = self.provider.get_storage_at(address, 0)
             target = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
-            if name in ("Gnosis Safe", "Default Callback Handler"):
+            # NOTE: `target` is set in initialized proxies
+            if name in ("Gnosis Safe", "Default Callback Handler") and target != ZERO_ADDRESS:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
 
         except (DecodingError, TransactionError):
