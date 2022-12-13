@@ -65,7 +65,7 @@ def test_fail_all_files_and_folders_exist(ape_cli, runner, project):
             else:
                 folder.mkdir(exist_ok=False)
 
-        result = runner.invoke(ape_cli, ["init"], input="\n".join(["init_fail", "y"]))
+        result = runner.invoke(ape_cli, ["init"], input="\n".join(["init_fail"]))
         # checks if the directory existence
         assert result.exit_code == 0, result.output
         assert "contracts' exists" in result.output
