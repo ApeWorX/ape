@@ -19,6 +19,7 @@ from ape.types import AddressType, ContractLog, GasLimit, RawAddress, Transactio
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    ZERO_ADDRESS,
     LogInputABICollection,
     Struct,
     StructParser,
@@ -216,19 +217,21 @@ class Ethereum(EcosystemAPI):
 
             return ProxyInfo(type=type, target=target)
 
-        # gnosis safe stores implementation in slot 0, read `masterCopy()` to be sure
+        # gnosis safe stores implementation in slot 0, read `NAME()` to be sure
         abi = MethodABI(
             type="function",
-            name="masterCopy",
+            name="NAME",
             stateMutability="view",
-            outputs=[ABIType(type="address")],
+            outputs=[ABIType(type="string")],
         )
         try:
-            master_copy = ContractCall(abi, address)()
-            storage = self.provider.get_storage_at(address, 0)
-            slot_0 = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
-            if master_copy == slot_0:
-                return ProxyInfo(type=ProxyType.GnosisSafe, target=master_copy)
+            name = ContractCall(abi, address)()
+            raw_target = self.provider.get_storage_at(address, 0)[-20:].hex()
+            target = self.conversion_manager.convert(raw_target, AddressType)
+            # NOTE: `target` is set in initialized proxies
+            if name in ("Gnosis Safe", "Default Callback Handler") and target != ZERO_ADDRESS:
+                return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
+
         except (DecodingError, TransactionError):
             pass
 
@@ -252,7 +255,7 @@ class Ethereum(EcosystemAPI):
 
             target = ContractCall(implementation_abi, address)()
             # avoid recursion
-            if target != "0x0000000000000000000000000000000000000000":
+            if target != ZERO_ADDRESS:
                 return ProxyInfo(type=ProxyType.Delegate, target=target)
 
         except (DecodingError, TransactionError, ValueError):
