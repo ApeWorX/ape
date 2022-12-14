@@ -54,10 +54,8 @@ class ContractConstructor(ManagerAccessMixin):
         return HexBytes(encoded_calldata)
 
     def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
-        input_str = ",".join([str(i.internalType or i.type) for i in self.abi.inputs])
-        selector = f"constructor({input_str})"
         decoded_inputs = self.provider.network.ecosystem.decode_calldata(self.abi, calldata)
-        return selector, decoded_inputs
+        return self.abi.selector, decoded_inputs
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
