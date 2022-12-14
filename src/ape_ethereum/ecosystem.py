@@ -318,7 +318,7 @@ class Ethereum(EcosystemAPI):
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> HexBytes:
         if not abi.inputs:
-            return HexBytes(b"")
+            return HexBytes("")
 
         input_types = [i.canonical_type for i in abi.inputs]
         encoded_calldata = encode(input_types, args)
