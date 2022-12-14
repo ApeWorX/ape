@@ -617,8 +617,8 @@ class ContractTypeWrapper(ManagerAccessMixin):
     def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
         """
         Decode the given calldata using this contract.
-        If the calldata has a method ID prefix, Ape with detect it and find
-        the corresponding method. Else, it not be able to succeed.
+        If the calldata has a method ID prefix, Ape will detect it and find
+        the corresponding method, else it will error.
 
         Args:
             calldata (bytes): The calldata to decode.
