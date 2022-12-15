@@ -917,7 +917,7 @@ class ContractCache(BaseManager):
         Find the method ABI from the given contract address and selector.
 
         Args:
-            contract_address (``AddressType``): The address of the contract.
+            contract (``AddressType``): The address of the contract.
             selector (``HexBytes``): The method ID.
 
         Returns:
