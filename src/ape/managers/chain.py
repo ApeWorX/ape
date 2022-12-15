@@ -1293,7 +1293,7 @@ class ChainManager(BaseManager):
             timestamp (Optional[int]): Designate a time (in seconds) to begin mining.
                 Defaults to None.
             deltatime (Optional[int]): Designate a change in time (in seconds) to begin mining.
-                Defaults to None
+                Defaults to None.
         """
         if timestamp and deltatime:
             raise ValueError("Cannot give both `timestamp` and `deltatime` arguments together.")
