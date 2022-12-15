@@ -790,7 +790,8 @@ class ContractCache(BaseManager):
 
         return contract_type
 
-    def get_container(self, contract_type: ContractType) -> ContractContainer:
+    @classmethod
+    def get_container(cls, contract_type: ContractType) -> ContractContainer:
         """
         Get a contract container for the given contract type.
 
