@@ -214,6 +214,7 @@ project                     # The root project directory
     └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use 'ape test test_accounts.py' command
     └── test_mint.py        # A test file
 ```
+
 Here is an example of a test function from a sample [NFT project](https://github.com/ApeAcademy/ERC721)
 
 ```python
@@ -288,6 +289,7 @@ def test_authorization(my_contract, owner):
 When the transaction reverts and `ContractLogicError` is raised, `ape.reverts()` will check the source contract to see if the failed line contains a message.
 
 There are a few scenarios where `AssertionError` will be raised when using `dev_message`:
+
 - If the line in the source contract has a different dev message or no dev message
 - If the contract source cannot be obtained
 - If the transaction trace cannot be obtained
