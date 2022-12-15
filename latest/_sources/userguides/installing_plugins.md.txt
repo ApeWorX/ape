@@ -3,10 +3,10 @@
 Plugins are core to Ape's architecture.
 Here are some plugin examples in Ape:
 
-* `CompilerAPI`: For supporting various languages, like Vyper or Solidity.
-* `ProviderAPI`: For connecting the blockchain, such as Alchemy, Geth, or a local Hardhat node.
-* `EcosystemAPI`: A suite of networks, such as Ethereum, Fantom, or Starknet.
-* CLI plugins: Extending the `click` CLI in Ape.
+- `CompilerAPI`: For supporting various languages, like Vyper or Solidity.
+- `ProviderAPI`: For connecting the blockchain, such as Alchemy, Geth, or a local Hardhat node.
+- `EcosystemAPI`: A suite of networks, such as Ethereum, Fantom, or Starknet.
+- CLI plugins: Extending the `click` CLI in Ape.
 
 ## Core Plugins
 

@@ -64,7 +64,7 @@ project.MyContract.deploy(sender=account)
 
 ### Dependencies
 
-To set up dependencies in your ``ape-config.yaml`` file, follow [this guide](https://docs.apeworx.io/ape/stable/userguides/config.html#dependencies).
+To set up dependencies in your `ape-config.yaml` file, follow [this guide](https://docs.apeworx.io/ape/stable/userguides/config.html#dependencies).
 If you are using dependencies from a remote source, they will download when you run `ape compile` or other commands that compile beforehand.
 Dependencies only need to download and compile once.
 

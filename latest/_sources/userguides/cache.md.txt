@@ -1,6 +1,7 @@
 # Cache
-** Note: This is in Beta release. This functionality is in constant development and many features are in planning stages.
-Use the cache plugin to store provider data in a sqlite database.**
+
+**Note**: This is in Beta release. This functionality is in constant development and many features are in planning stages.
+Use the cache plugin to store provider data in a sqlite database.\*\*
 
 ```bash
 ape cache init --network <ecosystem-name>:<network-name>
@@ -30,6 +31,7 @@ In [2]: chain.blocks[-2].transactions
 ```
 
 On a deployed contract, you can query events:
+
 - Below, FooHappened is the event from your contract instance that you want to query from.
 
 ```python
@@ -43,6 +45,7 @@ See [this guide](../userguides/contracts.html) for more information how to get a
 Exit the IPython interpreter.
 
 You can query the cache database directly, for debugging purposes. For example, to get the `blocks` table data from the SQLite db we can do the following:
+
 ```bash
 ape cache query --network ethereum:mainnet:infura "SELECT * FROM blocks"
 ```

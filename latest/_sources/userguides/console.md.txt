@@ -13,15 +13,15 @@ Out[1]: 1647323479
 
 Your console comes with pre-initialized root ape objects in your namespace.
 
-| Name       | Class                                                                                                      |
-|:----------:|:----------------------------------------------------------------------------------------------------------:|
-| `accounts` | [AccountManager](../methoddocs/managers.html?highlight=accounts#module-ape.managers.accounts)              | 
-| `networks` | [NetworkManager](../methoddocs/managers.html?highlight=networks#module-ape.managers.networks)              | 
-| `chain`    | [ChainManager](../methoddocs/managers.html?highlight=chain#module-ape.managers.chain)                      | 
-| `project`  | [ProjectManager](../methoddocs/managers.html?highlight=project#module-ape.managers.project.manager)        | 
-| `query`    | [QueryManager](../methoddocs/managers.html?highlight=query#module-ape.managers.query)                      |
+|    Name    |                                                   Class                                                    |
+| :--------: | :--------------------------------------------------------------------------------------------------------: |
+| `accounts` |       [AccountManager](../methoddocs/managers.html?highlight=accounts#module-ape.managers.accounts)        |
+| `networks` |       [NetworkManager](../methoddocs/managers.html?highlight=networks#module-ape.managers.networks)        |
+|  `chain`   |           [ChainManager](../methoddocs/managers.html?highlight=chain#module-ape.managers.chain)            |
+| `project`  |    [ProjectManager](../methoddocs/managers.html?highlight=project#module-ape.managers.project.manager)     |
+|  `query`   |           [QueryManager](../methoddocs/managers.html?highlight=query#module-ape.managers.query)            |
 | `convert`  | [convert](../methoddocs/managers.html?highlight=query#ape.managers.converters.AddressAPIConverter.convert) |
-| `ape`      | [ape](../methoddocs/ape.html)                                                                              |
+|   `ape`    |                                       [ape](../methoddocs/ape.html)                                        |
 
 You can access them as if they are already initialized:
 
@@ -39,7 +39,7 @@ Out[1]: <NetworkManager active_provider=<test chain_id=61>>
 ```
 
 **NOTE**: To change the network of the active console, use the `--network` option.
-Follow [this guide]("./networks.html") for more information on networks in Ape.
+Follow [this guide](./networks.html) for more information on networks in Ape.
 
 ## Namespace Extras
 

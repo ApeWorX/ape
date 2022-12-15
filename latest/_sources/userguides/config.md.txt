@@ -1,6 +1,6 @@
 # Configure Ape
 
-An `ape-config.yaml` file allows you to configure ape. This guide serves as an index of the settings you can include 
+An `ape-config.yaml` file allows you to configure ape. This guide serves as an index of the settings you can include
 in an `ape-config.yaml` file.
 
 ## Contracts Folder
@@ -91,8 +91,8 @@ dependencies:
 
 This is helpful when:
 
-* Working on multiple packages at once
-* When there is not a suitable `DependencyAPI` implementation available for downloading your dependency
+- Working on multiple packages at once
+- When there is not a suitable `DependencyAPI` implementation available for downloading your dependency
 
 ## Deployments
 
@@ -111,7 +111,7 @@ deployments:
 
 ## Geth
 
-When using the ``geth`` provider, you can customize its settings.
+When using the `geth` provider, you can customize its settings.
 For example, to change the URI for an Ethereum network, do:
 
 ```yaml
