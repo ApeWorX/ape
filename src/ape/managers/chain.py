@@ -232,7 +232,7 @@ class BlockContainer(BaseManager):
     ) -> Iterator[BlockAPI]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
-        **NOTE**: This is a daemon method; it does not terminate unless an exception occurrs
+        **NOTE**: This is a daemon method; it does not terminate unless an exception occurs
         or a ``stop`` is given.
 
         Usage example::
