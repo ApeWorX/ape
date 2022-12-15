@@ -276,13 +276,16 @@ class BlockContainer(BaseManager):
             raise ValueError("'stop' argument must be in the future.")
 
         # Get number of last block with the necessary amount of confirmations.
-        latest_confirmed_block_number = self.height - required_confirmations
-        has_yielded_before_reorg = False
+        last_yielded_hash = None
+        last_yielded_number = None
 
         if start_block is not None:
-            # Front-load historically confirmed blocks.
-            yield from self.range(start_block, latest_confirmed_block_number + 1)
-            has_yielded_before_reorg = True
+            # Front-load historical blocks.
+            for block in self.range(start_block, self.height - required_confirmations + 1):
+                last_yielded_hash = block.hash
+                last_yielded_number = block.number
+                time_since_last = time.time()
+                yield block
 
         time.sleep(block_time)
         time_since_last = time.time()
@@ -294,43 +297,45 @@ class BlockContainer(BaseManager):
 
         while True:
             confirmable_block_number = self.height - required_confirmations
+            confirmable_block = self._get_block(confirmable_block_number)
+
             if (
-                confirmable_block_number < latest_confirmed_block_number
-                and has_yielded_before_reorg
+                last_yielded_hash is not None
+                and confirmable_block.hash == last_yielded_hash
+                and last_yielded_number is not None
+                and confirmable_block_number == last_yielded_number
             ):
+                # No changes
+                _try_timeout()
+                continue
+
+            elif (
+                last_yielded_number is not None
+                and confirmable_block_number < last_yielded_number
+                or (
+                    confirmable_block_number == last_yielded_number
+                    and confirmable_block.hash != last_yielded_hash
+                )
+            ):
+                # Re-org detected.
                 logger.error(
                     "Chain has reorganized since returning the last block. "
                     "Try adjusting the required network confirmations."
                 )
-                # Reset to prevent timeout
+                # Next, drop down and yield the new blocks (even though duplicate numbers)
+
+            # Yield new blocks
+            new_blocks_found = False
+            for block in self.range(confirmable_block_number, self.height):
+                last_yielded_hash = block.hash
+                last_yielded_number = block.number
                 time_since_last = time.time()
+                new_blocks_found = True
+                yield block
 
-            elif confirmable_block_number >= latest_confirmed_block_number:
-                # Yield all missed confirmable blocks
-                new_blocks_count = (confirmable_block_number - latest_confirmed_block_number) + 1
-                _try_timeout()
-                if not new_blocks_count:
-                    continue
-
-                block_num = latest_confirmed_block_number
-                for i in range(new_blocks_count):
-                    block = self._get_block(block_num)
-
-                    yield block
-                    time_since_last = time.time()
-
-                    if stop_block and block.number == stop_block:
-                        return
-
-                    block_num += 1
-
-                has_yielded_before_reorg = True
-                latest_confirmed_block_number = block_num
-
-            else:
+            if not new_blocks_found:
                 _try_timeout()
 
-            has_yielded_before_reorg = False
             time.sleep(block_time)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
@@ -344,7 +349,7 @@ class AccountHistory(BaseManager):
 
     _address_list_map: Dict[AddressType, List[ReceiptAPI]] = {}
 
-    # Faciliates faster look-ups.
+    # Facilitates faster look-ups.
     _hash_to_receipt_map: Dict[str, ReceiptAPI] = {}
 
     def __getitem__(self, address: Union[BaseAddress, AddressType, str]) -> List[ReceiptAPI]:
