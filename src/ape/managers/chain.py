@@ -1004,7 +1004,7 @@ class ReportManager(BaseManager):
 
     track_gas: bool = False
     gas_exclusions: List[ContractFunctionPath] = []
-    sessional_gas_report: Optional[GasReport] = None
+    session_gas_report: Optional[GasReport] = None
     rich_console_map: Dict[str, RichConsole] = {}
 
     def show_trace(
@@ -1045,10 +1045,10 @@ class ReportManager(BaseManager):
         self,
         file: Optional[IO[str]] = None,
     ) -> bool:
-        if not self.sessional_gas_report:
+        if not self.session_gas_report:
             return False
 
-        tables = parse_gas_table(self.sessional_gas_report)
+        tables = parse_gas_table(self.session_gas_report)
         console = self._get_console(file)
         console.print(*tables)
         return True
@@ -1067,10 +1067,10 @@ class ReportManager(BaseManager):
 
         parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash)
         gas_report = parser._get_rich_gas_report(call_tree, exclude=self.gas_exclusions)
-        if gas_report and self.sessional_gas_report:
-            self.sessional_gas_report = merge_reports(self.sessional_gas_report, gas_report)
+        if gas_report and self.session_gas_report:
+            self.session_gas_report = merge_reports(self.session_gas_report, gas_report)
         elif gas_report:
-            self.sessional_gas_report = gas_report
+            self.session_gas_report = gas_report
 
     def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
         if not file:

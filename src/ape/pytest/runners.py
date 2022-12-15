@@ -182,4 +182,4 @@ class PytestApeRunner(ManagerAccessMixin):
         #  which may run pytest many times in-process.
         self.receipt_capture.clear()
         self.chain_manager.contracts.clear_local_caches()
-        self.chain_manager._reports.sessional_gas_report = None
+        self.chain_manager._reports.session_gas_report = None
