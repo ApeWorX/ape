@@ -1245,6 +1245,7 @@ class ChainManager(BaseManager):
                 receipt = contract.fooBar(sender=owner)
         """
 
+        snapshot = None
         try:
             snapshot = self.snapshot()
         except APINotImplementedError:
