@@ -825,6 +825,8 @@ class ContractCache(BaseManager):
               plugin, you can also provide an ENS domain name.
             contract_type (Optional[``ContractType``]): Optionally provide the contract type
               in case it is not already known.
+            txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
+              contract, if known. Useful for publishing. Defaults to ``None``.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
