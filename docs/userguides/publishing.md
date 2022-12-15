@@ -42,7 +42,7 @@ For more information on accessing contract instances, follow [this guide](./cont
 
 ## Publishing to Explorer
 
-If you want to publish your contracts to an explorer, you can use the [publish_contract](../methoddocs/api.html#ape.explorers.ExplorerAPI.publish_contract) on the ``ExplorerAPI``.
+If you want to publish your contracts to an explorer, you can use the [publish_contract](../methoddocs/api.html#ape.explorers.ExplorerAPI.publish_contract) on the `ExplorerAPI`.
 
 ```python
 from ape import networks

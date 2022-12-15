@@ -117,13 +117,17 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         data = txn.dict(exclude_none=True)
-        if "gas" not in data or data["gas"] == 0:
-            data["gas"] = int(1e12)
-
         block_id = kwargs.pop("block_identifier", None)
         state = kwargs.pop("state_override", None)
         call_kwargs = {"block_identifier": block_id, "state_override": state}
-        tx_params = cast(TxParams, txn.dict())
+
+        # Remove unneeded properties
+        data.pop("gas", None)
+        data.pop("gasLimit", None)
+        data.pop("maxFeePerGas", None)
+        data.pop("maxPriorityFeePerGas", None)
+
+        tx_params = cast(TxParams, data)
 
         try:
             return self.web3.eth.call(tx_params, **call_kwargs)

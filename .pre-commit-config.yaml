@@ -10,7 +10,7 @@ repos:
       - id: isort
 
 -   repo: https://github.com/psf/black
-    rev: 22.10.0
+    rev: 22.12.0
     hooks:
       - id: black
         name: black
@@ -25,6 +25,12 @@ repos:
     hooks:
     -   id: mypy
         additional_dependencies: [types-PyYAML, types-requests, types-pkg-resources, types-setuptools]
+
+-   repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.14
+    hooks:
+    -   id: mdformat
+        additional_dependencies: [mdformat-gfm, mdformat-frontmatter]
 
 default_language_version:
     python: python3

@@ -2,15 +2,15 @@
 
 Your plugin project can be any type of python project, so long as its package name starts with `ape_` (such as `ape_ethereum`).
 To create an `ape` plugin, implement one or more API classes from the `ape.api` namespace and/or add key
- `ape_cli_subcommands` to your entry-points list in your project's `setup.py`, depending on what type of plugin you want to create.
+`ape_cli_subcommands` to your entry-points list in your project's `setup.py`, depending on what type of plugin you want to create.
 This guide is intended to assist in both of those use cases.
 
 The following is a list of example plugins to use as a reference when developing plugins:
 
-* [the Solidity plugin](https://github.com/apeworx/ape-solidity), an example `CompilerAPI`
-* [the Infura plugin](https://github.com/apeworx/ape-infura), an example `ProviderAPI`
-* [the Trezor plugin](https://github.com/apeworx/ape-trezor), an example `AccountAPI`
-* [the Tokenlists plugin](https://github.com/apeworx/ape-tokens), an example CLI Extension
+- [the Solidity plugin](https://github.com/apeworx/ape-solidity), an example `CompilerAPI`
+- [the Infura plugin](https://github.com/apeworx/ape-infura), an example `ProviderAPI`
+- [the Trezor plugin](https://github.com/apeworx/ape-trezor), an example `AccountAPI`
+- [the Tokenlists plugin](https://github.com/apeworx/ape-tokens), an example CLI Extension
 
 ## Initialize a Plugin Project
 
@@ -113,8 +113,8 @@ def my_cmd(alias):
 
 ## Using Plugins
 
-Once you have finished implementing and registering your API classes, they will now be part of `ape`. For example, 
-if you implemented the `AccountAPI`, you can now use accounts created from this plugin. The top-level `ape` manager 
+Once you have finished implementing and registering your API classes, they will now be part of `ape`. For example,
+if you implemented the `AccountAPI`, you can now use accounts created from this plugin. The top-level `ape` manager
 classes are indifferent about the source of the plugin.
 
 ```python
@@ -163,7 +163,7 @@ def cli():
 ## Logging
 
 Use Ape's logger in your plugin by importing it from the `ape.logging` module or by using it off the CLI context (from using the `@ape_cli_context` decorator).
-  
+
 ### Import the logger from the logging module
 
 ```python

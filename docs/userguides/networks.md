@@ -48,6 +48,7 @@ You may also configure a specific gas limit for a given network:
 ```
 
 You may use one of:
+
 - `"auto"` - gas limit is estimated for each transaction
 - `"max"` - the maximum block gas limit is used
 - A number or numeric string, base 10 or 16 (e.g. `1234`, `"1234"`, `0x1234`, `"0x1234"`)
@@ -60,8 +61,8 @@ The default network in Ape is the local network (keyword `"local"`).
 It is meant for running tests and debugging contracts.
 Out-of-the-box, Ape ships with two development providers you can use for the `local` network:
 
-* [EthTester](https://github.com/ethereum/eth-tester)
-* An Ephemeral Geth process
+- [EthTester](https://github.com/ethereum/eth-tester)
+- An Ephemeral Geth process
 
 ```bash
 ape test --network ::test

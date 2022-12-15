@@ -37,7 +37,7 @@ assert receipt.sender == dev
 
 ### Deployment from Ape Console
 
-Deploying from [ape console](./console.html) allows you to interact with a contract in real time. You can also use the `--network` flag to connect a live network. 
+Deploying from [ape console](./console.html) allows you to interact with a contract in real time. You can also use the `--network` flag to connect a live network.
 
 ```bash
 ape console --network ethereum:goerli:alchemy

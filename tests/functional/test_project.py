@@ -158,7 +158,7 @@ def test_brownie_project_configure(config, base_projects_directory):
         expected_config_file.unlink()
 
     project = BrownieProject(path=project_path, contracts_folder="contracts")
-    project.configure()
+    project.process_config_file()
     assert expected_config_file.is_file()
 
     with open(expected_config_file) as ape_config_file:

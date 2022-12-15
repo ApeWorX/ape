@@ -204,7 +204,7 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         cmd.append(contract_path)
 
     result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     for name in (
         "default",
         "renamed-contracts-folder",
@@ -212,7 +212,7 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         "renamed-complex-contracts-folder",
         "renamed-contracts-folder-specified-in-config",
     ):
-        assert name in project.dependencies
+        assert name in list(project.dependencies.keys())
         assert type(project.dependencies[name]["local"]["name"]) == ContractContainer
 
 
