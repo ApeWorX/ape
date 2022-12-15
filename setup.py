@@ -30,9 +30,8 @@ extras_require = {
         "flake8-print>=4.0.0,<5",  # detect print statements left in code
         "isort>=5.10.1,<6",  # Import sorting linter
         "mdformat>=0.7.16",  # Auto-formatter for markdown
-        "mdformat-gfm>=0.3.5",  # Needed for formatting markdown
-        "mdformat-frontmatter>=0.4.1",  # Needed for formatting markdown
-        "mdformat-footnote>=0.1.1",  # Needed for formatting markdown
+        "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
+        "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
     ],
     "doc": [
         "myst-parser>=0.17.0,<0.18",  # Tools for parsing markdown files in the docs
