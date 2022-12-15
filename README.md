@@ -9,10 +9,10 @@ In the latest release, Ape requires:
 
 **Windows**:
 
-1.  Install Windows Subsystem Linux
-    [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install)
-2.  Choose Ubuntu 20.04 OR Any other Linux Distribution with Python
-    3.8 or later
+1. Install Windows Subsystem Linux
+   [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install)
+2. Choose Ubuntu 20.04 OR Any other Linux Distribution with Python
+   3.8 or later
 
 Check your python command by entering:
 
@@ -44,7 +44,7 @@ pipx install eth-ape'[recommended-plugins]'
 
 **Suggestion**: Create a virtual environment using `virtualenv` or `venv.`
 
-You may skip creating a virtual environment if you know you don\'t require one for your use case.
+You may skip creating a virtual environment if you know you don't require one for your use case.
 
 - [virtualenv](https://pypi.org/project/virtualenv/)
 - [venv](https://docs.python.org/3/library/venv.html)
@@ -53,7 +53,7 @@ You may skip creating a virtual environment if you know you don\'t require one f
 
 ### virtualenv via `homebrew`
 
-* (MacOS Option) Install via homebrew [brew](https://formulae.brew.sh/formula/virtualenv)
+- (MacOS Option) Install via homebrew [brew](https://formulae.brew.sh/formula/virtualenv)
 
 First, create your virtual environment folder:
 
@@ -115,8 +115,8 @@ sudo rm -rf **\~/.vvm**
 Some plugins require environment variables to connect to their external systems, such project IDs or API keys.
 Follow instructions from individual plugin documentations, such as:
 
-* [ape-alchemy](https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#quick-usage)
-* [ape-infura](https://github.com/ApeWorX/ape-infura#readme)
+- [ape-alchemy](https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#quick-usage)
+- [ape-infura](https://github.com/ApeWorX/ape-infura#readme)
 
 Generally, set environment variables by doing the following:
 
@@ -247,4 +247,4 @@ with networks.ethereum.mainnet.use_provider("infura"):
     ...  # Work with the infura provider here
 ```
 
-To learn more about networks in Ape, see [this guide](https://docs.apeworx.io/ape/stable/commands/networks.html). 
+To learn more about networks in Ape, see [this guide](https://docs.apeworx.io/ape/stable/commands/networks.html).

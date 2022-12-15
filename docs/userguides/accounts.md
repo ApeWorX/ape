@@ -174,8 +174,8 @@ signature = account.sign_message(message)
 Because of the plugin system in Ape, we are able to support other types of accounts including hardware wallet accounts.
 Check out these plugins:
 
-* [ape-ledger](https://github.com/ApeWorX/ape-ledger)
-* [ape-trezor](https://github.com/ApeWorX/ape-trezor)
+- [ape-ledger](https://github.com/ApeWorX/ape-ledger)
+- [ape-trezor](https://github.com/ApeWorX/ape-trezor)
 
 To install one of these plugins, do the following:
 

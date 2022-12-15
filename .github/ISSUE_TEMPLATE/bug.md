@@ -3,11 +3,12 @@ name: Bug report
 about: Report an error that you've encountered.
 labels: 'category: bug'
 ---
+
 ### Environment information
 
-* OS: macOS / linux / win
-* Python Version: x.x.x
-* `ape` and plugin versions:
+- OS: macOS / linux / win
+- Python Version: x.x.x
+- `ape` and plugin versions:
 
 ```sh
 $ ape --version
@@ -17,7 +18,7 @@ $ ape plugins list
 # ...copy and paste result of above command here...
 ```
 
-* Contents of your `ape-config.yaml` (NOTE: do not post anything private like RPC urls or secrets!):
+- Contents of your `ape-config.yaml` (NOTE: do not post anything private like RPC urls or secrets!):
 
 ```sh
 $ cat ape-config.yaml
@@ -28,9 +29,9 @@ $ cat ape-config.yaml
 
 Please include information like:
 
-* what command you ran
-* the code that caused the failure (see [this link](https://help.github.com/articles/basic-writing-and-formatting-syntax/) for help with formatting code)
-* full output of the error you received
+- what command you ran
+- the code that caused the failure (see [this link](https://help.github.com/articles/basic-writing-and-formatting-syntax/) for help with formatting code)
+- full output of the error you received
 
 ### How can it be fixed?
 
