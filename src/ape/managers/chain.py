@@ -675,15 +675,15 @@ class ContractCache(BaseManager):
             logger.warning("No addresses provided.")
             return {}
 
-        def get_contract_type(address: AddressType):
-            address = self.conversion_manager.convert(address, AddressType)
-            contract_type = self.get(address)
+        def get_contract_type(addr: AddressType):
+            addr = self.conversion_manager.convert(addr, AddressType)
+            ct = self.get(addr)
 
-            if not contract_type:
-                logger.warning(f"Failed to locate contract at '{address}'.")
-                return address, None
+            if not ct:
+                logger.warning(f"Failed to locate contract at '{addr}'.")
+                return addr, None
             else:
-                return address, contract_type
+                return addr, ct
 
         converted_addresses: List[AddressType] = []
         for address in converted_addresses:
