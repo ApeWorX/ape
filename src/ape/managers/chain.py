@@ -284,17 +284,19 @@ class BlockContainer(BaseManager):
         # Get number of last block with the necessary amount of confirmations.
         last_yielded_hash = None
         last_yielded_number = None
+        block = None
 
         if start_block is not None:
             # Front-load historical blocks.
             for block in self.range(start_block, self.height - required_confirmations + 1):
-                last_yielded_hash = block.hash
-                last_yielded_number = block.number
-                time_since_last = time.time()
                 yield block
 
+        if block:
+            last_yielded_hash = block.hash
+            last_yielded_number = block.number
+            time_since_last = time.time()
+
         time.sleep(block_time)
-        time_since_last = time.time()
 
         def _try_timeout():
             if time.time() - time_since_last > timeout:
@@ -352,15 +354,15 @@ class BlockContainer(BaseManager):
                 start = confirmable_block_number
 
             # Yield blocks
-            new_blocks_found = False
+            block = None
             for block in self.range(start, confirmable_block_number + 1):
+                yield block
+
+            if block:
                 last_yielded_hash = block.hash
                 last_yielded_number = block.number
                 time_since_last = time.time()
-                new_blocks_found = True
-                yield block
-
-            if not new_blocks_found:
+            else:
                 _try_timeout()
 
             time.sleep(block_time)
