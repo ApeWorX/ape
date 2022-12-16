@@ -343,6 +343,9 @@ class BlockContainer(BaseManager):
                 # First time iterating
                 start = confirmable_block_number
 
+            else:
+                start = confirmable_block_number
+
             # Yield blocks
             new_blocks_found = False
             for block in self.range(start, confirmable_block_number + 1):

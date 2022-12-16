@@ -531,17 +531,16 @@ def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollD
 
     assert blocks.full()
 
-    block_numbers: List[int] = [blocks.get().number for _ in range(6)]
-
-    # Show that there are duplicate blocks
-    assert len(set(block_numbers)) < len(block_numbers)
-
     # Show that re-org was detected
     expected_error = (
         "Chain has reorganized since returning the last block. "
         "Try adjusting the required network confirmations."
     )
     assert expected_error in caplog.records[-1].message
+
+    # Show that there are duplicate blocks
+    block_numbers: List[int] = [blocks.get().number for _ in range(6)]
+    assert len(set(block_numbers)) < len(block_numbers)
 
 
 def test_poll_blocks_timeout(
