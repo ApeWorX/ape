@@ -233,6 +233,11 @@ class BlockContainer(BaseManager):
     ) -> Iterator[BlockAPI]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
+
+        **NOTE**: When a chain reorganization occurs, this method logs an error and
+        yields the missed blocks even if they were previously yielded with different
+        block numbers.
+
         **NOTE**: This is a daemon method; it does not terminate unless an exception occurs
         or a ``stop`` is given.
 
