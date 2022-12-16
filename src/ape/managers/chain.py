@@ -326,7 +326,13 @@ class BlockContainer(BaseManager):
 
             # Yield new blocks
             new_blocks_found = False
-            for block in self.range(confirmable_block_number, self.height):
+            start = (
+                last_yielded_number + 1
+                if last_yielded_number is not None
+                else self.height - required_confirmations
+            )
+            end = self.height - required_confirmations + 1
+            for block in self.range(start, end):
                 last_yielded_hash = block.hash
                 last_yielded_number = block.number
                 time_since_last = time.time()
