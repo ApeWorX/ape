@@ -21,6 +21,7 @@ from ape.api.query import BlockQuery, extract_fields, validate_and_expand_column
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     APINotImplementedError,
+    BlockNotFoundError,
     ChainError,
     ContractError,
     ConversionError,
@@ -297,7 +298,12 @@ class BlockContainer(BaseManager):
 
         while True:
             confirmable_block_number = self.height - required_confirmations
-            confirmable_block = self._get_block(confirmable_block_number)
+            try:
+                confirmable_block = self._get_block(confirmable_block_number)
+            except BlockNotFoundError:
+                # Handle race condition with required_confs = 0 and re-org
+                _try_timeout()
+                time.sleep(block_time)
 
             if (
                 last_yielded_hash is not None
@@ -307,6 +313,7 @@ class BlockContainer(BaseManager):
             ):
                 # No changes
                 _try_timeout()
+                time.sleep(block_time)
                 continue
 
             elif (
@@ -322,17 +329,23 @@ class BlockContainer(BaseManager):
                     "Chain has reorganized since returning the last block. "
                     "Try adjusting the required network confirmations."
                 )
-                # Next, drop down and yield the new blocks (even though duplicate numbers)
+                # NOTE: One limitation is that it does not detect if the re-org is exactly
+                # the same as what was already yielded, from start to end.
 
-            # Yield new blocks
+                # Next, drop down and yield the new blocks (even though duplicate numbers)
+                start = confirmable_block_number
+
+            elif last_yielded_number is not None and last_yielded_number < confirmable_block_number:
+                # New blocks
+                start = last_yielded_number + 1
+
+            elif last_yielded_number is None:
+                # First time iterating
+                start = confirmable_block_number
+
+            # Yield blocks
             new_blocks_found = False
-            start = (
-                last_yielded_number + 1
-                if last_yielded_number is not None
-                else self.height - required_confirmations
-            )
-            end = self.height - required_confirmations + 1
-            for block in self.range(start, end):
+            for block in self.range(start, confirmable_block_number + 1):
                 last_yielded_hash = block.hash
                 last_yielded_number = block.number
                 time_since_last = time.time()
