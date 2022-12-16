@@ -527,7 +527,13 @@ def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollD
 
         # Simulate re-org by reverting to the snapshot
         chain_that_mined_5.restore(snapshot)
-        chain_that_mined_5.mine(5)
+
+        # Allow it time to trigger realizing there was a re-org
+        time.sleep(1)
+        chain_that_mined_5.mine(2)
+        time.sleep(1)
+
+        chain_that_mined_5.mine(3)
 
     assert blocks.full()
 
@@ -536,6 +542,7 @@ def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollD
         "Chain has reorganized since returning the last block. "
         "Try adjusting the required network confirmations."
     )
+    assert caplog.records, "Didn't detect re-org"
     assert expected_error in caplog.records[-1].message
 
     # Show that there are duplicate blocks
