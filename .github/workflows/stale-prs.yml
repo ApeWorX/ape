@@ -1,5 +1,4 @@
 name: "Close stale PRs"
-description: 'Close pull requests with no recent activity'
 on:
   schedule:
     - cron: '30 1 * * *'
