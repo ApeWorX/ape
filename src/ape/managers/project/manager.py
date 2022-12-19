@@ -246,13 +246,11 @@ class ProjectManager(BaseManager):
                 self.path, self.contracts_folder
             )
 
-        project = self._cached_projects[self.path.name]
-        project.path = self.path
-        return project
+        return self._cached_projects[self.path.name]
 
     def extract_manifest(self) -> PackageManifest:
         """
-        Extracts a package manifest from the project
+        Extracts a package manifest from the project.
 
         Returns:
             ethpm_types.manifest.PackageManifest
