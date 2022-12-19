@@ -282,8 +282,6 @@ class BlockContainer(BaseManager):
             raise ValueError("'stop' argument must be in the future.")
 
         # Get number of last block with the necessary amount of confirmations.
-        last_yielded_hash = None
-        last_yielded_number = None
         block = None
 
         if start_block is not None:
@@ -294,9 +292,17 @@ class BlockContainer(BaseManager):
         if block:
             last_yielded_hash = block.hash
             last_yielded_number = block.number
-            time_since_last = time.time()
 
-        time.sleep(block_time)
+            # Only sleep if pre-yielded a block
+            time.sleep(block_time)
+
+        else:
+            last_yielded_hash = None
+            last_yielded_number = None
+
+        # Set `time_since_last` even if haven't yield yet.
+        # This helps with timing out the first time.
+        time_since_last = time.time()
 
         def _try_timeout():
             if time.time() - time_since_last > timeout:
