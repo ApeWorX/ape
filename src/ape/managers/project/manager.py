@@ -137,16 +137,19 @@ class ProjectManager(BaseManager):
 
         return self.path / "tests"
 
-    # TODO: Make this work for generating and caching the manifest file
     @property
     def compiler_data(self) -> List[Compiler]:
         """
-        A list of objects representing the raw-data specifics of a compiler.
-
-        Returns:
-            List[``Compiler``]
+        A list of ``Compiler`` objects representing the raw-data specifics of a compiler.
         """
+        return self._get_compiler_data()
 
+    def _get_compiler_data(self, compile_if_needed: bool = True):
+        contract_types: Iterable[ContractType] = (
+            self.contracts.values()  # type: ignore[assignment]
+            if compile_if_needed
+            else self._get_cached_contract_types()
+        )
         compiler_list: List[Compiler] = []
         contracts_folder = self.config_manager.contracts_folder
         for ext, compiler in self.compiler_manager.registered_compilers.items():
@@ -173,7 +176,7 @@ class ProjectManager(BaseManager):
                 version_settings = settings.get(version, {}) if version and settings else {}
                 source_ids = [str(get_relative_path(p, contracts_folder)) for p in paths]
                 filtered_contract_types = [
-                    ct for ct in self.contracts.values() if ct.source_id in source_ids
+                    ct for ct in contract_types if ct.source_id in source_ids
                 ]
                 contract_type_names = [ct.name for ct in filtered_contract_types]
                 compiler_list.append(
@@ -518,6 +521,12 @@ class ProjectManager(BaseManager):
 
         manifest = self._project.create_manifest(file_paths=file_path_list, use_cache=use_cache)
         return manifest.contract_types or {}
+
+    def _get_cached_contract_types(self) -> Dict[str, ContractType]:
+        if not self._project.cached_manifest:
+            return {}
+
+        return self._project.cached_manifest.contract_types or {}
 
     def _load_dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
         if self.path.name in self._cached_dependencies:
