@@ -343,7 +343,7 @@ class DependencyAPI(BaseInterfaceModel):
         with self.config_manager.using_project(project.path):
             # Load dependencies of dependencies before loading dependencies.
             self.project_manager._load_dependencies()
-            compiler_data = self.project_manager.compiler_data
+            compiler_data = self.project_manager._get_compiler_data(compile_if_needed=False)
 
         sources = self._get_sources(project)
 
