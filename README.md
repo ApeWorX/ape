@@ -42,7 +42,7 @@ There are three ways to install ape: `pipx`, `pip`, or `Docker`.
 
 1. Install `pipx` via their [installation instructions](https://pypa.github.io/pipx/) or `pip` via their [installation instructions](https://pip.pypa.io/en/stable/cli/pip_install/)
 
-1. Install **`ape`** via `pipx install eth-ape` or `pip install eth-ape`
+2. Install **`ape`** via `pipx install eth-ape` or `pip install eth-ape`
 
 ### via `docker`
 

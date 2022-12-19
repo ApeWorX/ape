@@ -20,8 +20,8 @@ def test_add():
 Tests are generally divisible into three parts:
 
 1. Set-up
-1. Invocation
-1. Assertion
+2. Invocation
+3. Assertion
 
 In the example above, we created a fixture that deploys our smart-contract.
 This is an example of a 'setup' phase.

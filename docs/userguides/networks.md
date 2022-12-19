@@ -104,7 +104,7 @@ ape run script --network https://foo.bar
 Some reasons for this include:
 
 1. You may need to integrate with other plugins, such as explorer plugins for getting contract types.
-1. Some chains may not implement EIP-1559 or may have forked from a specific configuration.
-1. Response differences in uncommon blocks, such as the `"pending"` block or the genesis block.
-1. Revert messages and exception-handling differences.
-1. You are limited to using `web3.py` and EVM-based chains.
+2. Some chains may not implement EIP-1559 or may have forked from a specific configuration.
+3. Response differences in uncommon blocks, such as the `"pending"` block or the genesis block.
+4. Revert messages and exception-handling differences.
+5. You are limited to using `web3.py` and EVM-based chains.

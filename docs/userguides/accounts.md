@@ -4,7 +4,7 @@ Accounts in Ape come from [AccountAPI](../methoddocs/api.html#ape.api.accounts.A
 There are typically two types of accounts:
 
 1. Test accounts
-1. Live network accounts
+2. Live network accounts
 
 Test accounts are useful for local network testing and debugging contracts.
 Live network accounts are for interacting with live blockchains and should be secured.
