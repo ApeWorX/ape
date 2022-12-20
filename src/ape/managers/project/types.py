@@ -145,6 +145,7 @@ class BaseProject(ProjectAPI):
             str(self.contracts_folder).replace(str(self.path), "").strip("/")
         )
         config_data["contracts_folder"] = contracts_folder_config_item
+        self.config_file.parent.mkdir(parents=True, exist_ok=True)
         self.config_file.touch()
         with open(self.config_file, "w") as f:
             yaml.safe_dump(config_data, f)

@@ -147,7 +147,7 @@ class ProjectManager(BaseManager):
         contract_types: Iterable[ContractType] = (
             self.contracts.values()  # type: ignore[assignment]
             if compile_if_needed
-            else self._get_cached_contract_types()
+            else self._get_cached_contract_types().values()
         )
         compiler_list: List[Compiler] = []
         contracts_folder = self.config_manager.contracts_folder
@@ -257,12 +257,10 @@ class ProjectManager(BaseManager):
         return manifest
 
     def _extract_manifest_dependencies(self) -> Optional[Dict[PackageName, AnyUrl]]:
-        self._load_dependencies()
         package_dependencies = {}
-        for dependency_name, version_deps in self.dependencies.items():
-            package_name = dependency_name.replace("_", "-").lower()
-            for version, dependency_obj in version_deps.items():
-                package_dependencies[PackageName(package_name)] = dependency_obj.url
+        for dependency_config in self.config_manager.dependencies:
+            package_name = dependency_config.name.replace("_", "-").lower()
+            package_dependencies[PackageName(package_name)] = dependency_config.url
 
         return package_dependencies
 
@@ -295,7 +293,9 @@ class ProjectManager(BaseManager):
             :class:`~ape.api.projects.ProjectAPI`
         """
         if path.name in self._cached_projects:
-            return self._cached_projects[path.name]
+            cached_project = self._cached_projects[path.name]
+            if version == cached_project.version:
+                return cached_project
 
         contracts_folder = contracts_folder or path / "contracts"
 

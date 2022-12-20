@@ -367,19 +367,19 @@ class DependencyAPI(BaseInterfaceModel):
         if cached_manifest:
             return cached_manifest
 
-        with self.config_manager.using_project(project_path):
-            dependencies = self.project_manager._extract_manifest_dependencies()
-            compiler_data = self.project_manager._get_compiler_data(compile_if_needed=False)
-
-        project = self._get_project(project_path)
-        sources = self._get_sources(project)
-
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
         # for later usage via imports. For legacy reasons, many dependency-esque projects
         # are not meant to compile on their own.
-        project_manifest = project._create_manifest(
-            sources, project.contracts_folder, {}, name=project.name, version=project.version
-        )
+
+        with self.config_manager.using_project(project_path):
+            project = self._get_project(project_path)
+            sources = self._get_sources(project)
+            dependencies = self.project_manager._extract_manifest_dependencies()
+            project_manifest = project._create_manifest(
+                sources, project.contracts_folder, {}, name=project.name, version=project.version
+            )
+            compiler_data = self.project_manager._get_compiler_data(compile_if_needed=False)
+
         if dependencies:
             project_manifest.dependencies = dependencies
         if compiler_data:
@@ -422,4 +422,5 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
     except ValidationError as err:
         logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
         logger.debug(str(err))
+        breakpoint()
         return None

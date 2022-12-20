@@ -160,7 +160,7 @@ class LocalDependency(DependencyAPI):
     @property
     def url(self) -> str:
         path = self._target_manifest_cache_file.resolve().absolute()
-        return f"file://{str(path).strip(os.path.sep)}"
+        return f"file://{path}"
 
     def extract_manifest(self) -> PackageManifest:
         if self._target_manifest_cache_file.is_file():
