@@ -8,7 +8,7 @@ from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
 from packaging.version import InvalidVersion, Version
-from pydantic import AnyUrl, ValidationError
+from pydantic import ValidationError
 
 from ape.logging import logger
 from ape.utils import (
@@ -192,7 +192,7 @@ class DependencyAPI(BaseInterfaceModel):
 
     @property
     @abstractmethod
-    def url(self) -> AnyUrl:
+    def url(self) -> str:
         """
         The URL to use when listing in a PackageManifest.
         """

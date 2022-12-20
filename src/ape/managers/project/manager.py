@@ -44,7 +44,7 @@ class ProjectManager(BaseManager):
     """The project path."""
 
     _cached_projects: Dict[str, ProjectAPI] = {}
-    _cached_dependencies: Dict[str, Dict[str, Dict[str, DependencyAPI]]] = {}
+    _cached_dependencies: Dict[str, Dict[str, DependencyAPI]] = {}
 
     def __init__(
         self,
@@ -257,9 +257,7 @@ class ProjectManager(BaseManager):
         return manifest
 
     def _extract_manifest_dependencies(self) -> Optional[Dict[PackageName, AnyUrl]]:
-        if not self.dependencies:
-            return None
-
+        self._load_dependencies()
         package_dependencies = {}
         for dependency_name, version_deps in self.dependencies.items():
             package_name = dependency_name.replace("_", "-").lower()
@@ -550,23 +548,29 @@ class ProjectManager(BaseManager):
         return self.local_project.cached_manifest.contract_types or {}
 
     def _load_dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
-        if self.path.name in self._cached_dependencies:
-            return self._cached_dependencies[self.path.name]
-
-        self._cached_dependencies[self.path.name] = {}
         for dependency_config in self.config_manager.dependencies:
-            dependency_config.extract_manifest()
+            dependency_name = dependency_config.name
             version_id = dependency_config.version_id
-            if dependency_config.name in self._cached_dependencies[self.path.name]:
-                self._cached_dependencies[self.path.name][dependency_config.name][
-                    version_id
-                ] = dependency_config
-            else:
-                self._cached_dependencies[self.path.name][dependency_config.name] = {
-                    version_id: dependency_config
-                }
 
-        return self._cached_dependencies[self.path.name]
+            if (
+                dependency_name in self._cached_dependencies
+                and version_id in self._cached_dependencies[dependency_name]
+            ):
+                # Already cached
+                continue
+
+            # Cache manifest for next time.
+            if dependency_name in self._cached_dependencies:
+                # Dependency is cached but version is not.
+                self._cached_dependencies[dependency_name][version_id] = dependency_config
+            else:
+                # First time caching dependency
+                self._cached_dependencies[dependency_name] = {version_id: dependency_config}
+
+            # Only extract manifest if wasn't cached and must happen after caching.
+            dependency_config.extract_manifest()
+
+        return self._cached_dependencies
 
     def track_deployment(self, contract: ContractInstance):
         """
