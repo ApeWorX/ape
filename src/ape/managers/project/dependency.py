@@ -78,14 +78,14 @@ class GithubDependency(DependencyAPI):
         return latest_release.tag_name
 
     @property
-    def url(self) -> str:
-        _url = f"https://github.com/{self.github.strip('/')}"
+    def uri(self) -> str:
+        _uri = f"https://github.com/{self.github.strip('/')}"
         if self.version and not self.version.startswith("v"):
-            _url = f"{_url}/releases/tag/v{self.version}"
+            _uri = f"{_uri}/releases/tag/v{self.version}"
         elif self.version:
-            _url = f"{_url}/releases/tag/{self.version}"
+            _uri = f"{_uri}/releases/tag/{self.version}"
 
-        return _url
+        return _uri
 
     def __repr__(self):
         return f"<{self.__class__.__name__} github={self.github}>"
@@ -158,7 +158,7 @@ class LocalDependency(DependencyAPI):
         return self.version
 
     @property
-    def url(self) -> str:
+    def uri(self) -> str:
         path = self._target_manifest_cache_file.resolve().absolute()
         return f"file://{path}"
 

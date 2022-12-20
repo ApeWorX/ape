@@ -7,7 +7,7 @@ from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta
 from ethpm_types.contract_type import BIP122_URI
 from ethpm_types.manifest import PackageName
-from pydantic import AnyUrl
+from ethpm_types.utils import AnyUrl
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -260,7 +260,7 @@ class ProjectManager(BaseManager):
         package_dependencies = {}
         for dependency_config in self.config_manager.dependencies:
             package_name = dependency_config.name.replace("_", "-").lower()
-            package_dependencies[PackageName(package_name)] = dependency_config.url
+            package_dependencies[PackageName(package_name)] = dependency_config.uri
 
         return package_dependencies
 

@@ -192,9 +192,9 @@ class DependencyAPI(BaseInterfaceModel):
 
     @property
     @abstractmethod
-    def url(self) -> str:
+    def uri(self) -> str:
         """
-        The URL to use when listing in a PackageManifest.
+        The URI to use when listing in a PackageManifest.
         """
 
     @cached_property
@@ -420,7 +420,7 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
     try:
         return PackageManifest.parse_file(file_path)
     except ValidationError as err:
-        logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
+        logger.warning(f"Existing manifest file '{file_path}' corrupted. ARe-building.")
         logger.debug(str(err))
         breakpoint()
         return None
