@@ -306,51 +306,51 @@ class DependencyAPI(BaseInterfaceModel):
             config_data: Dict[str, Any] = {}
             for compiler in [x for x in manifest.compilers or [] if x.settings]:
                 name = compiler.name.lower()
-                compiler_data = config_data.get(name, {})
+                compiler_data = {}
                 settings = compiler.settings or {}
-                new_remappings: List[str] = []
-                if "remappings" in settings:
-                    existing_remappings = compiler_data.get("remappings", [])
-                    new_remappings = list(set([*settings["remappings"], *existing_remappings]))
-
-                cleaned_remappings = []
-                for remapping in new_remappings:
+                remappings = []
+                for remapping in settings.get("remappings") or []:
                     parts = remapping.split("=")
-                    name = parts[0]
+                    key = parts[0]
                     link = parts[1]
                     if link.startswith(f".cache{os.path.sep}"):
                         link = os.path.sep.join(link.split(f".cache{os.path.sep}"))[1:]
 
-                    packages_used.add(name)
-                    new_entry = f"{name}={link}"
-                    cleaned_remappings.append(new_entry)
+                    packages_used.add(link)
+                    new_entry = f"{key}={link}"
+                    remappings.append(new_entry)
 
-                if cleaned_remappings:
-                    compiler_data["import_remapping"] = cleaned_remappings
+                if remappings:
+                    compiler_data["import_remapping"] = remappings
 
                 if compiler_data:
                     config_data[name] = compiler_data
 
             # Handle dependencies indicated in the manifest file
             dependencies_config: List[Dict] = []
-            for package_name, url in {
-                p: d for p, d in (manifest.dependencies or {}).items() if p in packages_used
-            }.items():
+            dependencies = manifest.dependencies or {}
+            dependencies_used = {
+                p: d for p, d in dependencies.items() if any(p.lower() in x for x in packages_used)
+            }
+            for package_name, uri in dependencies_used.items():
                 dependency = {"name": str(package_name)}
-                url_str = str(url)
-                if url.scheme == "https":
+                if uri.startswith("https://"):
                     # Assume GitHub dependency
-                    version = url_str.split("/")[-1]
-                    dependency["github"] = url_str.replace(f"/releases/tag/{version}", "")
-                    dependency["github"] = dependency["github"].replace("github.com/", "")
+                    version = uri.split("/")[-1]
+                    dependency["github"] = uri.replace(f"/releases/tag/{version}", "")
+                    dependency["github"] = dependency["github"].replace("https://github.com/", "")
                     dependency["version"] = version
 
-                elif url_str.startswith("file://"):
-                    dependency["local"] = url_str.replace("file://", "")
+                elif uri.startswith("file://"):
+                    dependency["local"] = uri.replace("file://", "")
 
-            config_data["dependencies"] = dependencies_config
+                dependencies_config.append(dependency)
+
+            if dependencies_config:
+                config_data["dependencies"] = dependencies_config
 
             if config_data:
+                target_config_file.unlink(missing_ok=True)
                 with open(target_config_file, "w+") as cf:
                     yaml.safe_dump(config_data, cf)
 
@@ -420,7 +420,6 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
     try:
         return PackageManifest.parse_file(file_path)
     except ValidationError as err:
-        logger.warning(f"Existing manifest file '{file_path}' corrupted. ARe-building.")
+        logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
         logger.debug(str(err))
-        breakpoint()
         return None
