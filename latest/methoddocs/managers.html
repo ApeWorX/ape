@@ -580,7 +580,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">None</s
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.ContractCache.get_container">
-<span class="sig-name descname"><span class="pre">get_container</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ethpm_types.contract_type.ContractType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ape.contracts.base.ContractContainer</span></a></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.get_container" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_container</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ethpm_types.contract_type.ContractType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ape.contracts.base.ContractContainer</span></a></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.get_container" title="Permalink to this definition"></a></dt>
 <dd><p>Get a contract container for the given contract type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -672,6 +672,8 @@ next time.</p>
 plugin, you can also provide an ENS domain name.</p></li>
 <li><p><strong>contract_type</strong> (Optional[<code class="docutils literal notranslate"><span class="pre">ContractType</span></code>]) – Optionally provide the contract type
 in case it is not already known.</p></li>
+<li><p><strong>txn_hash</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The hash of the transaction responsible for deploying the
+contract, if known. Useful for publishing. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns</dt>
@@ -687,7 +689,7 @@ in case it is not already known.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>contract_address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p></li>
+<li><p><strong>contract</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p></li>
 <li><p><strong>selector</strong> (<code class="docutils literal notranslate"><span class="pre">HexBytes</span></code>) – The method ID.</p></li>
 </ul>
 </dd>
@@ -765,8 +767,11 @@ move backwards. For example, <code class="docutils literal notranslate"><span cl
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.BlockContainer.poll_blocks">
 <span class="sig-name descname"><span class="pre">poll_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_confirmations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_block_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">ape.api.providers.BlockAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.BlockContainer.poll_blocks" title="Permalink to this definition"></a></dt>
-<dd><p>Poll new blocks. Optionally set a start block to include historical blocks.
-<strong>NOTE</strong>: This is a daemon method; it does not terminate unless an exception occurrs
+<dd><p>Poll new blocks. Optionally set a start block to include historical blocks.</p>
+<p><strong>NOTE</strong>: When a chain reorganization occurs, this method logs an error and
+yields the missed blocks, even if they were previously yielded with different
+block numbers.</p>
+<p><strong>NOTE</strong>: This is a daemon method; it does not terminate unless an exception occurs
 or a <code class="docutils literal notranslate"><span class="pre">stop</span></code> is given.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
@@ -944,7 +949,7 @@ Defaults to 1 block.</p></li>
 <li><p><strong>timestamp</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Designate a time (in seconds) to begin mining.
 Defaults to None.</p></li>
 <li><p><strong>deltatime</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Designate a change in time (in seconds) to begin mining.
-Defaults to None</p></li>
+Defaults to None.</p></li>
 </ul>
 </dd>
 </dl>
