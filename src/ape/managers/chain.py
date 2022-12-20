@@ -21,6 +21,7 @@ from ape.api.query import BlockQuery, extract_fields, validate_and_expand_column
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     APINotImplementedError,
+    BlockNotFoundError,
     ChainError,
     ContractError,
     ConversionError,
@@ -232,7 +233,12 @@ class BlockContainer(BaseManager):
     ) -> Iterator[BlockAPI]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
-        **NOTE**: This is a daemon method; it does not terminate unless an exception occurrs
+
+        **NOTE**: When a chain reorganization occurs, this method logs an error and
+        yields the missed blocks, even if they were previously yielded with different
+        block numbers.
+
+        **NOTE**: This is a daemon method; it does not terminate unless an exception occurs
         or a ``stop`` is given.
 
         Usage example::
@@ -276,15 +282,26 @@ class BlockContainer(BaseManager):
             raise ValueError("'stop' argument must be in the future.")
 
         # Get number of last block with the necessary amount of confirmations.
-        latest_confirmed_block_number = self.height - required_confirmations
-        has_yielded_before_reorg = False
+        block = None
 
         if start_block is not None:
-            # Front-load historically confirmed blocks.
-            yield from self.range(start_block, latest_confirmed_block_number + 1)
-            has_yielded_before_reorg = True
+            # Front-load historical blocks.
+            for block in self.range(start_block, self.height - required_confirmations + 1):
+                yield block
 
-        time.sleep(block_time)
+        if block:
+            last_yielded_hash = block.hash
+            last_yielded_number = block.number
+
+            # Only sleep if pre-yielded a block
+            time.sleep(block_time)
+
+        else:
+            last_yielded_hash = None
+            last_yielded_number = None
+
+        # Set `time_since_last` even if haven't yield yet.
+        # This helps with timing out the first time.
         time_since_last = time.time()
 
         def _try_timeout():
@@ -294,43 +311,66 @@ class BlockContainer(BaseManager):
 
         while True:
             confirmable_block_number = self.height - required_confirmations
+            try:
+                confirmable_block = self._get_block(confirmable_block_number)
+            except BlockNotFoundError:
+                # Handle race condition with required_confs = 0 and re-org
+                _try_timeout()
+                time.sleep(block_time)
+
             if (
-                confirmable_block_number < latest_confirmed_block_number
-                and has_yielded_before_reorg
+                last_yielded_hash is not None
+                and confirmable_block.hash == last_yielded_hash
+                and last_yielded_number is not None
+                and confirmable_block_number == last_yielded_number
             ):
+                # No changes
+                _try_timeout()
+                time.sleep(block_time)
+                continue
+
+            elif (
+                last_yielded_number is not None
+                and confirmable_block_number < last_yielded_number
+                or (
+                    confirmable_block_number == last_yielded_number
+                    and confirmable_block.hash != last_yielded_hash
+                )
+            ):
+                # Re-org detected.
                 logger.error(
                     "Chain has reorganized since returning the last block. "
                     "Try adjusting the required network confirmations."
                 )
-                # Reset to prevent timeout
+                # NOTE: One limitation is that it does not detect if the re-org is exactly
+                # the same as what was already yielded, from start to end.
+
+                # Next, drop down and yield the new blocks (even though duplicate numbers)
+                start = confirmable_block_number
+
+            elif last_yielded_number is not None and last_yielded_number < confirmable_block_number:
+                # New blocks
+                start = last_yielded_number + 1
+
+            elif last_yielded_number is None:
+                # First time iterating
+                start = confirmable_block_number
+
+            else:
+                start = confirmable_block_number
+
+            # Yield blocks
+            block = None
+            for block in self.range(start, confirmable_block_number + 1):
+                yield block
+
+            if block:
+                last_yielded_hash = block.hash
+                last_yielded_number = block.number
                 time_since_last = time.time()
-
-            elif confirmable_block_number >= latest_confirmed_block_number:
-                # Yield all missed confirmable blocks
-                new_blocks_count = (confirmable_block_number - latest_confirmed_block_number) + 1
-                _try_timeout()
-                if not new_blocks_count:
-                    continue
-
-                block_num = latest_confirmed_block_number
-                for i in range(new_blocks_count):
-                    block = self._get_block(block_num)
-
-                    yield block
-                    time_since_last = time.time()
-
-                    if stop_block and block.number == stop_block:
-                        return
-
-                    block_num += 1
-
-                has_yielded_before_reorg = True
-                latest_confirmed_block_number = block_num
-
             else:
                 _try_timeout()
 
-            has_yielded_before_reorg = False
             time.sleep(block_time)
 
     def _get_block(self, block_id: BlockID) -> BlockAPI:
@@ -344,7 +384,7 @@ class AccountHistory(BaseManager):
 
     _address_list_map: Dict[AddressType, List[ReceiptAPI]] = {}
 
-    # Faciliates faster look-ups.
+    # Facilitates faster look-ups.
     _hash_to_receipt_map: Dict[str, ReceiptAPI] = {}
 
     def __getitem__(self, address: Union[BaseAddress, AddressType, str]) -> List[ReceiptAPI]:
@@ -675,15 +715,15 @@ class ContractCache(BaseManager):
             logger.warning("No addresses provided.")
             return {}
 
-        def get_contract_type(address: AddressType):
-            address = self.conversion_manager.convert(address, AddressType)
-            contract_type = self.get(address)
+        def get_contract_type(addr: AddressType):
+            addr = self.conversion_manager.convert(addr, AddressType)
+            ct = self.get(addr)
 
-            if not contract_type:
-                logger.warning(f"Failed to locate contract at '{address}'.")
-                return address, None
+            if not ct:
+                logger.warning(f"Failed to locate contract at '{addr}'.")
+                return addr, None
             else:
-                return address, contract_type
+                return addr, ct
 
         converted_addresses: List[AddressType] = []
         for address in converted_addresses:
@@ -790,7 +830,8 @@ class ContractCache(BaseManager):
 
         return contract_type
 
-    def get_container(self, contract_type: ContractType) -> ContractContainer:
+    @classmethod
+    def get_container(cls, contract_type: ContractType) -> ContractContainer:
         """
         Get a contract container for the given contract type.
 
@@ -824,6 +865,8 @@ class ContractCache(BaseManager):
               plugin, you can also provide an ENS domain name.
             contract_type (Optional[``ContractType``]): Optionally provide the contract type
               in case it is not already known.
+            txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
+              contract, if known. Useful for publishing. Defaults to ``None``.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
@@ -914,7 +957,7 @@ class ContractCache(BaseManager):
         Find the method ABI from the given contract address and selector.
 
         Args:
-            contract_address (``AddressType``): The address of the contract.
+            contract (``AddressType``): The address of the contract.
             selector (``HexBytes``): The method ID.
 
         Returns:
@@ -1004,7 +1047,7 @@ class ReportManager(BaseManager):
 
     track_gas: bool = False
     gas_exclusions: List[ContractFunctionPath] = []
-    sessional_gas_report: Optional[GasReport] = None
+    session_gas_report: Optional[GasReport] = None
     rich_console_map: Dict[str, RichConsole] = {}
 
     def show_trace(
@@ -1045,10 +1088,10 @@ class ReportManager(BaseManager):
         self,
         file: Optional[IO[str]] = None,
     ) -> bool:
-        if not self.sessional_gas_report:
+        if not self.session_gas_report:
             return False
 
-        tables = parse_gas_table(self.sessional_gas_report)
+        tables = parse_gas_table(self.session_gas_report)
         console = self._get_console(file)
         console.print(*tables)
         return True
@@ -1067,10 +1110,10 @@ class ReportManager(BaseManager):
 
         parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash)
         gas_report = parser._get_rich_gas_report(call_tree, exclude=self.gas_exclusions)
-        if gas_report and self.sessional_gas_report:
-            self.sessional_gas_report = merge_reports(self.sessional_gas_report, gas_report)
+        if gas_report and self.session_gas_report:
+            self.session_gas_report = merge_reports(self.session_gas_report, gas_report)
         elif gas_report:
-            self.sessional_gas_report = gas_report
+            self.session_gas_report = gas_report
 
     def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
         if not file:
@@ -1242,6 +1285,7 @@ class ChainManager(BaseManager):
                 receipt = contract.fooBar(sender=owner)
         """
 
+        snapshot = None
         try:
             snapshot = self.snapshot()
         except APINotImplementedError:
@@ -1290,7 +1334,7 @@ class ChainManager(BaseManager):
             timestamp (Optional[int]): Designate a time (in seconds) to begin mining.
                 Defaults to None.
             deltatime (Optional[int]): Designate a change in time (in seconds) to begin mining.
-                Defaults to None
+                Defaults to None.
         """
         if timestamp and deltatime:
             raise ValueError("Cannot give both `timestamp` and `deltatime` arguments together.")
