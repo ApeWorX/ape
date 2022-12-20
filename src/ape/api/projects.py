@@ -8,7 +8,7 @@ from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import compute_checksum
 from packaging.version import InvalidVersion, Version
-from pydantic import ValidationError
+from pydantic import AnyUrl, ValidationError
 
 from ape.logging import logger
 from ape.utils import (
@@ -190,6 +190,13 @@ class DependencyAPI(BaseInterfaceModel):
         Most often, this is either a version number or a branch name.
         """
 
+    @property
+    @abstractmethod
+    def url(self) -> AnyUrl:
+        """
+        The URL to use when listing in a PackageManifest.
+        """
+
     @cached_property
     def _base_cache_path(self) -> Path:
         version_id = self.version_id
@@ -293,8 +300,9 @@ class DependencyAPI(BaseInterfaceModel):
                 source_path.touch()
                 source_path.write_text(content)
 
-            # Handle dependencies and import remappings indicated in the manifest file
+            # Handle import remappings indicated in the manifest file
             target_config_file = project.path / project.config_file_name
+            packages_used = set()
             config_data: Dict[str, Any] = {}
             for compiler in [x for x in manifest.compilers or [] if x.settings]:
                 name = compiler.name.lower()
@@ -308,11 +316,13 @@ class DependencyAPI(BaseInterfaceModel):
                 cleaned_remappings = []
                 for remapping in new_remappings:
                     parts = remapping.split("=")
+                    name = parts[0]
                     link = parts[1]
                     if link.startswith(f".cache{os.path.sep}"):
                         link = os.path.sep.join(link.split(f".cache{os.path.sep}"))[1:]
 
-                    new_entry = f"{parts[0]}={link}"
+                    packages_used.add(name)
+                    new_entry = f"{name}={link}"
                     cleaned_remappings.append(new_entry)
 
                 if cleaned_remappings:
@@ -320,6 +330,25 @@ class DependencyAPI(BaseInterfaceModel):
 
                 if compiler_data:
                     config_data[name] = compiler_data
+
+            # Handle dependencies indicated in the manifest file
+            dependencies_config: List[Dict] = []
+            for package_name, url in {
+                p: d for p, d in (manifest.dependencies or {}).items() if p in packages_used
+            }.items():
+                dependency = {"name": str(package_name)}
+                url_str = str(url)
+                if url.scheme == "https":
+                    # Assume GitHub dependency
+                    version = url_str.split("/")[-1]
+                    dependency["github"] = url_str.replace(f"/releases/tag/{version}", "")
+                    dependency["github"] = dependency["github"].replace("github.com/", "")
+                    dependency["version"] = version
+
+                elif url_str.startswith("file://"):
+                    dependency["local"] = url_str.replace("file://", "")
+
+            config_data["dependencies"] = dependencies_config
 
             if config_data:
                 with open(target_config_file, "w+") as cf:
@@ -338,13 +367,11 @@ class DependencyAPI(BaseInterfaceModel):
         if cached_manifest:
             return cached_manifest
 
-        project = self._get_project(project_path)
-
-        with self.config_manager.using_project(project.path):
-            # Load dependencies of dependencies before loading dependencies.
-            self.project_manager._load_dependencies()
+        with self.config_manager.using_project(project_path):
+            dependencies = self.project_manager._extract_manifest_dependencies()
             compiler_data = self.project_manager._get_compiler_data(compile_if_needed=False)
 
+        project = self._get_project(project_path)
         sources = self._get_sources(project)
 
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
@@ -353,6 +380,8 @@ class DependencyAPI(BaseInterfaceModel):
         project_manifest = project._create_manifest(
             sources, project.contracts_folder, {}, name=project.name, version=project.version
         )
+        if dependencies:
+            project_manifest.dependencies = dependencies
         if compiler_data:
             project_manifest.compilers = compiler_data
 

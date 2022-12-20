@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, Optional, Type
 
 from ethpm_types import PackageManifest
-from pydantic import root_validator
+from pydantic import AnyUrl, root_validator
 
 from ape.api import DependencyAPI
 from ape.api.projects import _load_manifest_from_file
@@ -77,6 +77,16 @@ class GithubDependency(DependencyAPI):
         latest_release = github_client.get_release(self.github, "latest")
         return latest_release.tag_name
 
+    @property
+    def url(self) -> AnyUrl:
+        _url = f"github.com/{self.github.strip('/')}"
+        if self.version and not self.version.startswith("v"):
+            _url = f"{_url}/releases/tag/v{self.version}"
+        elif self.version:
+            _url = f"{_url}/releases/tag/{self.version}"
+
+        return AnyUrl(_url, scheme="https")
+
     def __repr__(self):
         return f"<{self.__class__.__name__} github={self.github}>"
 
@@ -146,6 +156,10 @@ class LocalDependency(DependencyAPI):
     @property
     def version_id(self) -> str:
         return self.version
+
+    @property
+    def url(self) -> AnyUrl:
+        return AnyUrl(str(self.path), scheme="file")
 
     def extract_manifest(self) -> PackageManifest:
         if self._target_manifest_cache_file.is_file():
