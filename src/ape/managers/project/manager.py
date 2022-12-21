@@ -298,6 +298,28 @@ class ProjectManager(BaseManager):
                 return cached_project
 
         contracts_folder = contracts_folder or path / "contracts"
+        if not contracts_folder.is_dir():
+            extensions = list(self.compiler_manager.registered_compilers.keys())
+
+            def find_contracts_folder(base_dir: Path):
+                files = []
+                dirs = []
+                list(
+                    map(
+                        lambda x: files.append(x) if x.is_file() else dirs.append(x),
+                        base_dir.iterdir(),
+                    )
+                )
+                if any(x.suffix in extensions for x in files):
+                    return base_dir
+
+                for sub in dirs:
+                    if find_contracts_folder(sub):
+                        return sub
+
+                return None
+
+            contracts_folder = find_contracts_folder(path) or contracts_folder
 
         def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
             with self.config_manager.using_project(path, contracts_folder=contracts_folder):
