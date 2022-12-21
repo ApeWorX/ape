@@ -257,7 +257,7 @@ class ProjectManager(BaseManager):
         return manifest
 
     def _extract_manifest_dependencies(self) -> Optional[Dict[PackageName, AnyUrl]]:
-        package_dependencies = {}
+        package_dependencies: Dict[PackageName, AnyUrl] = {}
         for dependency_config in self.config_manager.dependencies:
             package_name = dependency_config.name.replace("_", "-").lower()
             package_dependencies[PackageName(package_name)] = dependency_config.uri

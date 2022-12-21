@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 import yaml
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
-from ethpm_types.utils import compute_checksum
+from ethpm_types.utils import AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
 
@@ -192,7 +192,7 @@ class DependencyAPI(BaseInterfaceModel):
 
     @property
     @abstractmethod
-    def uri(self) -> str:
+    def uri(self) -> AnyUrl:
         """
         The URI to use when listing in a PackageManifest.
         """
