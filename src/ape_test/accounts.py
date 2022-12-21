@@ -59,10 +59,13 @@ class TestAccount(TestAccountAPI):
             s=to_bytes(signed_msg.s),
         )
 
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
-        signed_txn = EthAccount.sign_transaction(txn.dict(), self.private_key)
-        return TransactionSignature(
-            v=signed_txn.v,
-            r=to_bytes(signed_txn.r),
-            s=to_bytes(signed_txn.s),
+    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionAPI]:
+        # Signs anything that's given to it
+        signature = EthAccount.sign_transaction(txn.dict(), self.private_key)
+        txn.signature = TransactionSignature(
+            v=signature.v,
+            r=to_bytes(signature.r),
+            s=to_bytes(signature.s),
         )
+
+        return txn
