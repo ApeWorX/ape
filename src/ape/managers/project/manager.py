@@ -314,7 +314,7 @@ class ProjectManager(BaseManager):
 
                     if sub.is_file() and sub not in files_to_ignore:
                         if sub.suffix in extensions:
-                            return sub
+                            return sub.parent
 
                     elif sub.is_dir():
                         next_subs.append(sub)
