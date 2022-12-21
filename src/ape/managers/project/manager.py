@@ -300,22 +300,30 @@ class ProjectManager(BaseManager):
         contracts_folder = contracts_folder or path / "contracts"
         if not contracts_folder.is_dir():
             extensions = list(self.compiler_manager.registered_compilers.keys())
+            path_patterns_to_ignore = self.config_manager.compiler.ignore_files
 
-            def find_contracts_folder(base_dir: Path):
-                files = []
-                dirs = []
-                list(
-                    map(
-                        lambda x: files.append(x) if x.is_file() else dirs.append(x),
-                        base_dir.iterdir(),
-                    )
-                )
-                if any(x.suffix in extensions for x in files):
-                    return base_dir
+            def find_contracts_folder(sub_dir: Path) -> Optional[Path]:
+                files_to_ignore = []
+                for pattern in path_patterns_to_ignore:
+                    files_to_ignore.extend(list(sub_dir.glob(pattern)))
 
-                for sub in dirs:
-                    if find_contracts_folder(sub):
-                        return sub
+                next_subs = []
+                for sub in sub_dir.iterdir():
+                    if sub.name.startswith("."):
+                        continue
+
+                    if sub.is_file() and sub not in files_to_ignore:
+                        if sub.suffix in extensions:
+                            return sub
+
+                    elif sub.is_dir():
+                        next_subs.append(sub)
+
+                # No source was found. Search next level of dirs.
+                for next_sub in next_subs:
+                    found = find_contracts_folder(next_sub)
+                    if found:
+                        return found
 
                 return None
 
