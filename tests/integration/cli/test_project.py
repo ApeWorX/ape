@@ -12,5 +12,4 @@ def test_get_project_without_contracts_path(project):
 def test_get_project_with_contracts_path(project):
     project_path = project.path / "renamed_contracts_folder"
     project = project.get_project(project_path, project_path / "sources")
-    assert project.contracts_folder != project_path / "contracts"
     assert project.contracts_folder == project_path / "sources"
