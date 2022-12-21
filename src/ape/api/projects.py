@@ -300,7 +300,7 @@ class DependencyAPI(BaseInterfaceModel):
                 source_path.touch()
                 source_path.write_text(content)
 
-            # Handle import remappings indicated in the manifest file
+            # Handle import remapping entries indicated in the manifest file
             target_config_file = project.path / project.config_file_name
             packages_used = set()
             config_data: Dict[str, Any] = {}
@@ -308,7 +308,7 @@ class DependencyAPI(BaseInterfaceModel):
                 name = compiler.name.lower()
                 compiler_data = {}
                 settings = compiler.settings or {}
-                remappings = []
+                remapping_list = []
                 for remapping in settings.get("remappings") or []:
                     parts = remapping.split("=")
                     key = parts[0]
@@ -318,10 +318,10 @@ class DependencyAPI(BaseInterfaceModel):
 
                     packages_used.add(link)
                     new_entry = f"{key}={link}"
-                    remappings.append(new_entry)
+                    remapping_list.append(new_entry)
 
-                if remappings:
-                    compiler_data["import_remapping"] = remappings
+                if remapping_list:
+                    compiler_data["import_remapping"] = remapping_list
 
                 if compiler_data:
                     config_data[name] = compiler_data
@@ -333,16 +333,21 @@ class DependencyAPI(BaseInterfaceModel):
                 p: d for p, d in dependencies.items() if any(p.lower() in x for x in packages_used)
             }
             for package_name, uri in dependencies_used.items():
+                if "://" not in str(uri) and hasattr(uri, "scheme"):
+                    uri_str = f"{uri.scheme}://{uri}"
+                else:
+                    uri_str = str(uri)
+
                 dependency = {"name": str(package_name)}
-                if uri.startswith("https://"):
+                if uri_str.startswith("https://"):
                     # Assume GitHub dependency
-                    version = uri.split("/")[-1]
-                    dependency["github"] = uri.replace(f"/releases/tag/{version}", "")
+                    version = uri_str.split("/")[-1]
+                    dependency["github"] = uri_str.replace(f"/releases/tag/{version}", "")
                     dependency["github"] = dependency["github"].replace("https://github.com/", "")
                     dependency["version"] = version
 
-                elif uri.startswith("file://"):
-                    dependency["local"] = uri.replace("file://", "")
+                elif uri_str.startswith("file://"):
+                    dependency["local"] = uri_str.replace("file://", "")
 
                 dependencies_config.append(dependency)
 
