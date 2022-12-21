@@ -25,7 +25,8 @@ def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
 def test_txn_hash(owner, eth_tester_provider):
     txn = StaticFeeTransaction()
     txn = owner.prepare_transaction(txn)
-    txn.signature = owner.sign_transaction(txn)
+    txn = owner.sign_transaction(txn)
+    assert txn
 
     actual = txn.txn_hash.hex()
     receipt = eth_tester_provider.send_transaction(txn)
