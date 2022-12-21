@@ -13,7 +13,7 @@ from ape.managers.project import BrownieProject
 
 @pytest.fixture
 def ape_project(project_manager):
-    return project_manager._project
+    return project_manager.local_project
 
 
 @pytest.fixture

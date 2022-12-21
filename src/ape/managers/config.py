@@ -287,18 +287,24 @@ class ConfigManager(BaseInterfaceModel):
         self.contracts_folder = contracts_folder
         self.project_manager.path = project_folder
         os.chdir(project_folder)
+        clean_config = False
 
         try:
             # Process and reload the project's configuration
-            self.project_manager.local_project.process_config_file()
+            clean_config = self.project_manager.local_project.process_config_file()
             self.load(force_reload=True)
 
             yield self.project_manager
 
         finally:
+            temp_project_path = self.project_manager.path
             self.PROJECT_FOLDER = initial_project_folder
             self.contracts_folder = initial_contracts_folder
             self.project_manager.path = initial_project_folder
 
             if initial_project_folder.is_dir():
                 os.chdir(initial_project_folder)
+
+            config_file = temp_project_path / "ape-config.yaml"
+            if clean_config and config_file.is_file():
+                config_file.unlink()
