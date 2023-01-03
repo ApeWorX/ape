@@ -293,7 +293,6 @@ class ConfigManager(BaseInterfaceModel):
             # Process and reload the project's configuration
             clean_config = self.project_manager.local_project.process_config_file()
             self.load(force_reload=True)
-
             yield self.project_manager
 
         finally:

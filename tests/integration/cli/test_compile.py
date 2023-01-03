@@ -30,7 +30,7 @@ skip_non_compilable_projects = skip_projects(
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
     assert result.exit_code == 0, result.output
-    assert "WARNING" in result.output, result.output
+    assert "WARNING" in result.output, f"Detected contracts folder in '{project.path}'"
     assert "Nothing to compile" in result.output
 
 
