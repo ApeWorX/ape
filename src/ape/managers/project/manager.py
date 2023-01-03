@@ -403,7 +403,7 @@ class ProjectManager(BaseManager):
             pass
 
         try:
-            # NOTE: Will compile project
+            # NOTE: Will compile project (if needed)
             contract = self._get_contract(attr_name)
             if contract:
                 return contract
