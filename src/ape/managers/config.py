@@ -304,6 +304,6 @@ class ConfigManager(BaseInterfaceModel):
             if initial_project_folder.is_dir():
                 os.chdir(initial_project_folder)
 
-            config_file = temp_project_path / "ape-config.yaml"
+            config_file = temp_project_path / CONFIG_FILE_NAME
             if clean_config and config_file.is_file():
                 config_file.unlink()
