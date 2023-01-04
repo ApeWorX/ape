@@ -41,7 +41,7 @@ Please submit disclosures to **all** of the following main points of contact for
 
 For all security related issues, ApeWorX has the following main points of contact:
 
-| Contact                                                | Keybase                                                     |
+| Contact                                                | Keybase                                                      |
 | ------------------------------------------------------ | ------------------------------------------------------------ |
 | [@fubuloubu](https://github.com/fubuloubu)             | [@fubuloubu](https://keybase.io/fubuloubu/chat)              |
 | [@NotPeopling2day](https://github.com/NotPeopling2day) | [@NotPeopling2day](https://keybase.io/notepeopling2day/chat) |
