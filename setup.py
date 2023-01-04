@@ -86,6 +86,7 @@ setup(
         "Funding": "https://gitcoin.co/grants/5958/ape-maintenance-fund",
         "Source": "https://github.com/ApeWorX/ape",
         "Tracker": "https://github.com/ApeWorX/ape/issues",
+        "Twitter": "https://twitter.com/ApeFramework",
     },
     include_package_data=True,
     install_requires=[
