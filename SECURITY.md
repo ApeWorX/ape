@@ -1,8 +1,6 @@
 # Security Policy
 
-This document describes the Security Policy for ApeWorX Ltd.,
-including vulnerability disclosures for the [Ape Framework](https://github.com/ApeWorX/ape)
-and any of it's [maintained plugins](https://github.com/ApeWorX?q=%22ape-%22&type=public&language=&sort=).
+This document describes the Security Policy for ApeWorX Ltd., including vulnerability disclosures for the [Ape Framework](https://github.com/ApeWorX/ape) and any of it's [maintained plugins](https://github.com/search?q=org%3Aapeworx+ape-+-repo%3AApeWorX%2Fape++-repo%3AApeWorX%2Fapeworx.github.io&type=Repositories).
 We are committed to conduct our Security Process in a professional and civil manner.
 Public shaming, under-reporting, or misrepresentation of vulnerabilities will not be tolerated.
 
@@ -10,8 +8,7 @@ To submit a finding, please follow the steps outlined in receiving disclosures [
 
 ## Responsible Disclosure Standard
 
-ApeWorX follows a community [standard](https://github.com/RD-Crypto-Spec/Responsible-Disclosure#the-standard)
-for responsible disclosure in cryptocurrency and related software.
+ApeWorX follows a community [standard](https://github.com/RD-Crypto-Spec/Responsible-Disclosure#the-standard) for responsible disclosure in cryptocurrency and related software.
 This document is a public commitment to following the standard.
 
 This standard provides detailed information for:
@@ -30,8 +27,7 @@ Any expected deviations and necessary clarifications around the standard are exp
 ### Supported Versions
 
 Ape is currently under active development, targeting a 1.x release.
-Any security issues found on the latest minor version of Ape will be fixed and released in either
-a patch or minor release.
+Any security issues found on the latest minor version of Ape will be fixed and released in either a patch or minor release.
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -39,15 +35,9 @@ a patch or minor release.
 
 ### Directly to ApeWorX
 
-ApeWorX is committed to working with researchers who submit security vulnerability notifications to us,
-to resolve those issues on an appropriate timeline, and to perform a coordinated release,
-giving credit to the reporter if they would so like.
+ApeWorX is committed to working with researchers who submit security vulnerability notifications to us, to resolve those issues on an appropriate timeline, and to perform a coordinated release, giving credit to the reporter if they would so like.
 
-Please submit disclosures to **all** of the following main points of contact for
-security related issues according to the
-[initial contact](https://github.com/RD-Crypto-Spec/Responsible-Disclosure#initial-contact)
-and [giving details](https://github.com/RD-Crypto-Spec/Responsible-Disclosure#giving-details)
-guidelines.
+Please submit disclosures to **all** of the following main points of contact for security related issues according to the [initial contact](https://github.com/RD-Crypto-Spec/Responsible-Disclosure#initial-contact) and [giving details](https://github.com/RD-Crypto-Spec/Responsible-Disclosure#giving-details) guidelines.
 
 For all security related issues, ApeWorX has the following main points of contact:
 
@@ -57,9 +47,7 @@ For all security related issues, ApeWorX has the following main points of contac
 
 ## Sending Disclosures
 
-In the case where we become aware of security issues affecting projects using Ape,
-our intention is to engage in responsible disclosures with them as described in the adopted 
-[standard](https://github.com/RD-Crypto-Spec/Responsible-Disclosure).
+In the case where we become aware of security issues affecting projects using Ape, our intention is to engage in responsible disclosures with them as described in the adopted [standard](https://github.com/RD-Crypto-Spec/Responsible-Disclosure).
 
 ## Bilateral Responsible Disclosure Agreements
 
