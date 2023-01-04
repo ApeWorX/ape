@@ -133,11 +133,11 @@
   <section id="compile">
 <h1>Compile<a class="headerlink" href="#compile" title="Permalink to this headline"></a></h1>
 <p>Compile your project using the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape compile
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>compile
 </pre></div>
 </div>
 <p>Configure the location Ape looks for contracts by editing the <code class="docutils literal notranslate"><span class="pre">contracts_folder</span></code> key in your project’s <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span><span class="w">  </span><span class="c1"># Default is &#39;contracts/&#39;</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span><span class="w">  </span><span class="c1"># Default is &#39;contracts/&#39;</span>
 </pre></div>
 </div>
 <section id="the-json-compiler">
@@ -177,12 +177,12 @@ For information on how to configure plugins in your project, follow <a class="re
 <p>You can configure files to be ignored from compilation.
 By default, Ape ignores files <code class="docutils literal notranslate"><span class="pre">package.json</span></code>, <code class="docutils literal notranslate"><span class="pre">package-lock.json</span></code>, <code class="docutils literal notranslate"><span class="pre">tsconfig.json</span></code>.
 To override this list, edit your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> similarly:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compiler</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">ignore_files</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*package.json&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*package-lock.json&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*tsconfig.json&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*custom.json&quot;</span><span class="w">  </span><span class="c1"># Append a custom ignore</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compiler</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ignore_files</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*package.json&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*package-lock.json&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*tsconfig.json&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*custom.json&quot;</span><span class="w">  </span><span class="c1"># Append a custom ignore</span>
 </pre></div>
 </div>
 <p><strong>NOTE</strong>: You must include the defaults in the list when overriding if you wish to retain them.</p>

@@ -232,9 +232,9 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 </pre></div>
 </div>
 <p>You can configure your accounts by changing the <code class="docutils literal notranslate"><span class="pre">mnemonic</span></code> or <code class="docutils literal notranslate"><span class="pre">number_of_accounts</span></code> settings in the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span><span class="w"></span>
-<span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
+<span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 </pre></div>
 </div>
 <p>If you are using a fork-provider, such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">Hardhat</a>, you can use impersonated accounts by accessing random addresses off the fixture:</p>
@@ -300,27 +300,27 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 </section>
 <section id="ape-testing-commands">
 <h2>Ape testing commands<a class="headerlink" href="#ape-testing-commands" title="Permalink to this headline"></a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span>
 </pre></div>
 </div>
 <p>To run a particular test:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> test_my_contract
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>test_my_contract
 </pre></div>
 </div>
 <p>Use ape test <code class="docutils literal notranslate"><span class="pre">-I</span></code> to open the interactive mode at the point of exception. This allows the user to inspect the point of failure in your tests.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> test_my_contract -I -s
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>test_my_contract<span class="w"> </span>-I<span class="w"> </span>-s
 </pre></div>
 </div>
 </section>
 <section id="test-providers">
 <h2>Test Providers<a class="headerlink" href="#test-providers" title="Permalink to this headline"></a></h2>
 <p>Out-of-the-box, your tests run using the <code class="docutils literal notranslate"><span class="pre">eth-tester</span></code> provider, which comes bundled with ape. If you have <code class="docutils literal notranslate"><span class="pre">geth</span></code> installed, you can use the <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> plugin that also comes with ape.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --network ethereum:local:geth
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:geth
 </pre></div>
 </div>
 <p>Each testing plugin should work the same way. You will have access to the same test accounts.</p>
 <p>Another option for testing providers is the <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a> plugin, which does not come with <code class="docutils literal notranslate"><span class="pre">ape</span></code> but can be installed by including it in the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file or manually installing it using the command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install hardhat
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>hardhat
 </pre></div>
 </div>
 </section>
@@ -481,54 +481,54 @@ Thus, you can enter and exit a provider’s context as much as you need in tests
 <h2>Gas Reporting<a class="headerlink" href="#gas-reporting" title="Permalink to this headline"></a></h2>
 <p>To include a gas report at the end of your tests, you can use the <code class="docutils literal notranslate"><span class="pre">--gas</span></code> flag.
 <strong>NOTE</strong>: This feature requires using a provider with tracing support, such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a>.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --network ethereum:local:hardhat --gas
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:hardhat<span class="w"> </span>--gas
 </pre></div>
 </div>
 <p>At the end of test suite, you will see tables such as:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>                            FundMe Gas
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="w">                            </span>FundMe<span class="w"> </span>Gas
 
-  Method           Times called    Min.    Max.    Mean   Median
- ────────────────────────────────────────────────────────────────
-  fund                        <span class="m">8</span>   <span class="m">57198</span>   <span class="m">91398</span>   <span class="m">82848</span>    <span class="m">91398</span>
-  withdraw                    <span class="m">2</span>   <span class="m">28307</span>   <span class="m">38679</span>   <span class="m">33493</span>    <span class="m">33493</span>
-  changeOnStatus              <span class="m">2</span>   <span class="m">23827</span>   <span class="m">45739</span>   <span class="m">34783</span>    <span class="m">34783</span>
-  getSecret                   <span class="m">1</span>   <span class="m">24564</span>   <span class="m">24564</span>   <span class="m">24564</span>    <span class="m">24564</span>
+<span class="w">  </span>Method<span class="w">           </span>Times<span class="w"> </span>called<span class="w">    </span>Min.<span class="w">    </span>Max.<span class="w">    </span>Mean<span class="w">   </span>Median
+<span class="w"> </span>────────────────────────────────────────────────────────────────
+<span class="w">  </span>fund<span class="w">                        </span><span class="m">8</span><span class="w">   </span><span class="m">57198</span><span class="w">   </span><span class="m">91398</span><span class="w">   </span><span class="m">82848</span><span class="w">    </span><span class="m">91398</span>
+<span class="w">  </span>withdraw<span class="w">                    </span><span class="m">2</span><span class="w">   </span><span class="m">28307</span><span class="w">   </span><span class="m">38679</span><span class="w">   </span><span class="m">33493</span><span class="w">    </span><span class="m">33493</span>
+<span class="w">  </span>changeOnStatus<span class="w">              </span><span class="m">2</span><span class="w">   </span><span class="m">23827</span><span class="w">   </span><span class="m">45739</span><span class="w">   </span><span class="m">34783</span><span class="w">    </span><span class="m">34783</span>
+<span class="w">  </span>getSecret<span class="w">                   </span><span class="m">1</span><span class="w">   </span><span class="m">24564</span><span class="w">   </span><span class="m">24564</span><span class="w">   </span><span class="m">24564</span><span class="w">    </span><span class="m">24564</span>
 
-                  Transferring ETH Gas
+<span class="w">                  </span>Transferring<span class="w"> </span>ETH<span class="w"> </span>Gas
 
-  Method     Times called   Min.   Max.   Mean   Median
- ───────────────────────────────────────────────────────
-  to:test0              <span class="m">2</span>   <span class="m">2400</span>   <span class="m">9100</span>   <span class="m">5750</span>     <span class="m">5750</span>
+<span class="w">  </span>Method<span class="w">     </span>Times<span class="w"> </span>called<span class="w">   </span>Min.<span class="w">   </span>Max.<span class="w">   </span>Mean<span class="w">   </span>Median
+<span class="w"> </span>───────────────────────────────────────────────────────
+<span class="w">  </span>to:test0<span class="w">              </span><span class="m">2</span><span class="w">   </span><span class="m">2400</span><span class="w">   </span><span class="m">9100</span><span class="w">   </span><span class="m">5750</span><span class="w">     </span><span class="m">5750</span>
 
-                     TestContract Gas
+<span class="w">                     </span>TestContract<span class="w"> </span>Gas
 
-  Method      Times called    Min.    Max.    Mean   Median
- ───────────────────────────────────────────────────────────
-  setNumber              <span class="m">1</span>   <span class="m">51021</span>   <span class="m">51021</span>   <span class="m">51021</span>    <span class="m">51021</span>
+<span class="w">  </span>Method<span class="w">      </span>Times<span class="w"> </span>called<span class="w">    </span>Min.<span class="w">    </span>Max.<span class="w">    </span>Mean<span class="w">   </span>Median
+<span class="w"> </span>───────────────────────────────────────────────────────────
+<span class="w">  </span>setNumber<span class="w">              </span><span class="m">1</span><span class="w">   </span><span class="m">51021</span><span class="w">   </span><span class="m">51021</span><span class="w">   </span><span class="m">51021</span><span class="w">    </span><span class="m">51021</span>
 </pre></div>
 </div>
 <p>The following demonstrates how to use the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file to exclude contracts and / or methods from the gas report:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">gas</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEBUG_*</span><span class="w">         </span><span class="c1"># Exclude all methods starting with `DEBUG_`.</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MockToken</span><span class="w">     </span><span class="c1"># Exclude all methods in contract named `MockToken`.</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PoolContract</span><span class="w">  </span><span class="c1"># Exclude methods starting with `reset_` in `PoolContract`.</span><span class="w"></span>
-<span class="w">        </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reset_*</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">gas</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEBUG_*</span><span class="w">         </span><span class="c1"># Exclude all methods starting with `DEBUG_`.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MockToken</span><span class="w">     </span><span class="c1"># Exclude all methods in contract named `MockToken`.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PoolContract</span><span class="w">  </span><span class="c1"># Exclude methods starting with `reset_` in `PoolContract`.</span>
+<span class="w">        </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reset_*</span>
 </pre></div>
 </div>
 <p>Similarly, you can exclude sources via the CLI option <code class="docutils literal notranslate"><span class="pre">--gas-exclude</span></code>.
 The value <code class="docutils literal notranslate"><span class="pre">--gas-exclude</span></code> takes is a comma-separated list of colon-separated values representing the structure similar as above, except you must explicitly use <code class="docutils literal notranslate"><span class="pre">*</span></code> where meaning “all”.
 For example to exclude all methods starting with <code class="docutils literal notranslate"><span class="pre">DEBUG_</span></code>, you would do:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --gas --gas-exclude <span class="s2">&quot;*:DEBUG_*&quot;</span>.
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--gas<span class="w"> </span>--gas-exclude<span class="w"> </span><span class="s2">&quot;*:DEBUG_*&quot;</span>.
 </pre></div>
 </div>
 <p>To exclude all methods in the <code class="docutils literal notranslate"><span class="pre">MockToken</span></code> contract, do:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --gas --gas-exclude MockToken
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--gas<span class="w"> </span>--gas-exclude<span class="w"> </span>MockToken
 </pre></div>
 </div>
 <p>And finally, to exclude all methods starting with <code class="docutils literal notranslate"><span class="pre">reset_</span></code> in <code class="docutils literal notranslate"><span class="pre">PoolContract</span></code>, do:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --gas --gas-exclude <span class="s2">&quot;PoolContract:reset_*&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--gas<span class="w"> </span>--gas-exclude<span class="w"> </span><span class="s2">&quot;PoolContract:reset_*&quot;</span>
 </pre></div>
 </div>
 </section>

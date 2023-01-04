@@ -177,7 +177,7 @@ Two plugins with the same API may do entirely different things and yet be interc
     <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_web3</span>  <span class="o">=</span> <span class="n">Web3</span><span class="p">(</span><span class="n">HTTPProvider</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;https://localhost:1337&quot;</span><span class="p">)))</span>
 
-    <span class="sd">&quot;&quot;&quot;Implement rest of abstract methods&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implement rest of abstract methods&quot;&quot;&quot;</span>
 </pre></div>
 </div>
 <section id="registering-api-classes">
@@ -205,12 +205,12 @@ To create a CLI plugin, create any type of <code class="docutils literal notrans
 
 <span class="nd">@click</span><span class="o">.</span><span class="n">group</span>
 <span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;My custom commands.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;My custom commands.&quot;&quot;&quot;</span>
 
 
 <span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">my_sub_cmd</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;My subcommand.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;My subcommand.&quot;&quot;&quot;</span>
 </pre></div>
 </div>
 <p>Then, register it using <code class="docutils literal notranslate"><span class="pre">entrypoints</span></code>, which is a built-in python registry of items declared in <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>.</p>
@@ -252,7 +252,7 @@ classes are indifferent about the source of the plugin.</p>
 </pre></div>
 </div>
 <p>Similarly, if you implemented a <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code>, that provider is now accessible in the CLI via the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape console my_script --network ethereum:local:my_provider_plugin
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>console<span class="w"> </span>my_script<span class="w"> </span>--network<span class="w"> </span>ethereum:local:my_provider_plugin
 </pre></div>
 </div>
 <p><strong>NOTE</strong>: The <code class="docutils literal notranslate"><span class="pre">--network</span></code> option is available on the commands <code class="docutils literal notranslate"><span class="pre">test</span></code> and <code class="docutils literal notranslate"><span class="pre">console</span></code> as well as any CLI command that uses the <a class="reference external" href="../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option">network option decorator</a>.
@@ -276,7 +276,7 @@ To learn more about networks in Ape, follow <a class="reference external" href="
 
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Utilities for my plugin&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Utilities for my plugin&quot;&quot;&quot;</span>
 </pre></div>
 </div>
 </section>

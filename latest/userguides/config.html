@@ -143,19 +143,19 @@ in an <code class="docutils literal notranslate"><span class="pre">ape-config.ya
 <h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Permalink to this headline"></a></h2>
 <p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
 This is useful when using a different naming convention, such as <code class="docutils literal notranslate"><span class="pre">src/</span></code> rather than <code class="docutils literal notranslate"><span class="pre">contracts/</span></code>.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
 </pre></div>
 </div>
 <p>You can also use an absolute path.
 This is useful for projects that compile contracts outside their directory.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;~/GlobalContracts&quot;</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;~/GlobalContracts&quot;</span>
 </pre></div>
 </div>
 </section>
 <section id="default-ecosystem">
 <h2>Default Ecosystem<a class="headerlink" href="#default-ecosystem" title="Permalink to this headline"></a></h2>
 <p>You can change the default ecosystem by including the following:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fantom</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fantom</span>
 </pre></div>
 </div>
 <p>The default ecosystem is <code class="docutils literal notranslate"><span class="pre">ethereum</span></code>.</p>
@@ -165,45 +165,45 @@ This is useful for projects that compile contracts outside their directory.</p>
 <p>Configure dependencies for your ape project.
 Ape downloads and caches dependencies in the <code class="docutils literal notranslate"><span class="pre">.ape/packages/&lt;name&gt;/&lt;version-id&gt;</span></code> directory where <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> refers to the name of the dependency and <code class="docutils literal notranslate"><span class="pre">&lt;version-id&gt;</span></code> refers to the version or branch of the package.</p>
 <p>For example:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin</span><span class="w"></span>
-<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin/openzeppelin-contracts</span><span class="w"></span>
-<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin/openzeppelin-contracts</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span>
 </pre></div>
 </div>
 <p>will download the <a class="reference external" href="https://github.com/OpenZeppelin/openzeppelin-contracts">Open Zeppelin</a> package with version <code class="docutils literal notranslate"><span class="pre">4.4.2</span></code>.</p>
 <p>To ignore files from a dependency project, use the <code class="docutils literal notranslate"><span class="pre">exclude</span></code> setting to specify glob patterns:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dependency-project-name</span><span class="w"></span>
-<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">org-name/dependency-project-name</span><span class="w"></span>
-<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">package.json</span><span class="w">    </span><span class="c1"># Ignore package.json files.</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mocks/**/*</span><span class="w">      </span><span class="c1"># Ignore all files in the &#39;mocks&#39; directory</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dependency-project-name</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">org-name/dependency-project-name</span>
+<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">package.json</span><span class="w">    </span><span class="c1"># Ignore package.json files.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mocks/**/*</span><span class="w">      </span><span class="c1"># Ignore all files in the &#39;mocks&#39; directory</span>
 </pre></div>
 </div>
 <p>To use dependencies in the <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> plugin, configure <code class="docutils literal notranslate"><span class="pre">import_remappings</span></code>:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">solidity</span><span class="p">:</span><span class="w"> </span>
-<span class="w">  </span><span class="nt">import_remapping</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@openzeppelin=OpenZeppelin/4.4.2&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">import_remapping</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@openzeppelin=OpenZeppelin/4.4.2&quot;</span>
 </pre></div>
 </div>
 <p>Now, in your solidity files, import <code class="docutils literal notranslate"><span class="pre">OpenZeppelin</span></code> sources via:</p>
-<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">import</span><span class="w"> </span><span class="s2">&quot;@openzeppelin/token/ERC721/ERC721.sol&quot;</span><span class="p">;</span><span class="w"></span>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">import</span><span class="w"> </span><span class="s2">&quot;@openzeppelin/token/ERC721/ERC721.sol&quot;</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>You can also set the branch and name of the dependency’s contracts folder, e.g.:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DappToolsERC20</span><span class="w"></span>
-<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dapphub/erc20</span><span class="w"></span>
-<span class="w">    </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dappnix</span><span class="w"></span>
-<span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DappToolsERC20</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dapphub/erc20</span>
+<span class="w">    </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dappnix</span>
+<span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
 </pre></div>
 </div>
 <p>You can also use local dependencies:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDependency</span><span class="w"></span>
-<span class="w">    </span><span class="nt">local</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local/path/to/MyDependency</span><span class="w"></span>
-<span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src/contracts</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDependency</span>
+<span class="w">    </span><span class="nt">local</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local/path/to/MyDependency</span>
+<span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src/contracts</span>
 </pre></div>
 </div>
 <p>This is helpful when:</p>
@@ -215,14 +215,14 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 <section id="deployments">
 <h2>Deployments<a class="headerlink" href="#deployments" title="Permalink to this headline"></a></h2>
 <p>Share import deployments to public networks with your teammates:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">deployments</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyContract</span><span class="w"></span>
-<span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0xc123aAacCcbBbaAa444777000111222111222111</span><span class="w"></span>
-<span class="w">    </span><span class="nt">ropsten</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyContract</span><span class="w"></span>
-<span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0xc222000cCcbBbaAa444777000111222111222222</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">deployments</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyContract</span>
+<span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0xc123aAacCcbBbaAa444777000111222111222111</span>
+<span class="w">    </span><span class="nt">ropsten</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyContract</span>
+<span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0xc222000cCcbBbaAa444777000111222111222222</span>
 </pre></div>
 </div>
 </section>
@@ -230,26 +230,26 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 <h2>Geth<a class="headerlink" href="#geth" title="Permalink to this headline"></a></h2>
 <p>When using the <code class="docutils literal notranslate"><span class="pre">geth</span></code> provider, you can customize its settings.
 For example, to change the URI for an Ethereum network, do:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5030</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5030</span>
 </pre></div>
 </div>
 </section>
 <section id="networks">
 <h2>Networks<a class="headerlink" href="#networks" title="Permalink to this headline"></a></h2>
 <p>Set default network and network providers:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet-fork</span><span class="w"></span>
-<span class="w">  </span><span class="nt">mainnet_fork</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hardhat</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet-fork</span>
+<span class="w">  </span><span class="nt">mainnet_fork</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hardhat</span>
 </pre></div>
 </div>
 <p>Set the gas limit for a given network:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet-fork</span><span class="w"></span>
-<span class="w">  </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">max</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet-fork</span>
+<span class="w">  </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">max</span>
 </pre></div>
 </div>
 <p>You may use one of:</p>
@@ -263,23 +263,23 @@ For example, to change the URI for an Ethereum network, do:</p>
 <section id="plugins">
 <h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline"></a></h2>
 <p>Set which plugins you want to always use:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span><span class="w"></span>
-<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1.0b2</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ens</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1.0b2</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ens</span>
 </pre></div>
 </div>
 <p>Install these plugins by running command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install
 </pre></div>
 </div>
 </section>
 <section id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline"></a></h2>
 <p>Configure your test accounts:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span><span class="w"></span>
-<span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
+<span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 </pre></div>
 </div>
 </section>

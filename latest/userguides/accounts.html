@@ -158,9 +158,9 @@ Pre-funded test accounts are accessible via the <a class="reference external" hr
 </pre></div>
 </div>
 <p>You can configure your test accounts using your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span><span class="w"></span>
-<span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
+<span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 </pre></div>
 </div>
 <p><strong>WARN</strong>: NEVER put a seed phrase with real funds here.
@@ -177,14 +177,14 @@ The accounts generated from this seed are solely for testing and debugging purpo
 Ape ships with a keyfile accounts plugin to assist with this.
 All the available CLI commands for this accounts plugin can be found <a class="reference external" href="../commands/accounts.html">here</a>.</p>
 <p>For example, you can <a class="reference external" href="../commands/accounts.html#accounts-generate">generate</a> an account:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts generate &lt;ALIAS&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;
 </pre></div>
 </div>
 <p>Ape will prompt you for entropy which is used to increase randomness when creating your account.</p>
 <p>Ape will then prompt you whether you want to show your mnemonic.</p>
 <p>If you do not want to see your mnemonic you can select <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 <p>Alternatively you can use the <code class="docutils literal notranslate"><span class="pre">--hide-mnemonic</span></code> option to skip the prompt.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts generate &lt;ALIAS&gt; --hide-mnemonic
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--hide-mnemonic
 </pre></div>
 </div>
 <p>If you elected to show your mnemonic Ape will then show you your newly generated mnemonic.</p>
@@ -193,36 +193,36 @@ All the available CLI commands for this accounts plugin can be found <a class="r
 <p>You will be prompted for it each time you load your account, so make sure to remember it.</p>
 <p>After entering the passphrase Ape will then show you your new account address, HDPath, and account alias.</p>
 <p>If you want to use a custom HDPath, use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts generate &lt;ALIAS&gt; --hd-path &lt;HDPATH&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--hd-path<span class="w"> </span>&lt;HDPATH&gt;
 </pre></div>
 </div>
 <p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).</p>
 <p>If you want to use a custom mnemonic phrase word length, use the <code class="docutils literal notranslate"><span class="pre">--word-count</span></code> option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts generate &lt;ALIAS&gt; --word-count &lt;WORDCOUNT&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--word-count<span class="w"> </span>&lt;WORDCOUNT&gt;
 </pre></div>
 </div>
 <p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--word-count</span></code> option, Ape will use the default word count of 12.</p>
 <p>You can use all of these together or separately to control the way Ape creates and displays your account information.</p>
 <p>If you already have an account and you wish to import it into Ape (say, from Metamask), you can use the <a class="reference external" href="../commands/accounts.html#accounts-import">import command</a>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts import &lt;ALIAS&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;
 </pre></div>
 </div>
 <p>It will prompt you for the private key.</p>
 <p>If you need help exporting your private key from Metamask, see <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key">this guide</a>.</p>
 <p>You can also import accounts from mnemonic seed by using the <code class="docutils literal notranslate"><span class="pre">--use-mnemonic</span></code> flag:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts import &lt;ALIAS&gt; --use-mnemonic
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--use-mnemonic
 </pre></div>
 </div>
 <p>It will then prompt you for the <a class="reference external" href="https://en.bitcoin.it/wiki/Seed_phrase">mnemonic seed</a>.</p>
 <p>If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase">this guide</a>.</p>
 <p>In addition, you can also use a custom HDPath by using the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts import &lt;ALIAS&gt; --use-mnemonic --hd-path &lt;HDPATH&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--use-mnemonic<span class="w"> </span>--hd-path<span class="w"> </span>&lt;HDPATH&gt;
 </pre></div>
 </div>
 <p>If you use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, you will need to pass the <a class="reference external" href="https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths">HDPath</a> you’d like to use as an argument in the command.</p>
 <p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).</p>
 <p>You can also <a class="reference external" href="../commands/accounts.html#accounts-export">export</a> the private key of an account:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape accounts <span class="nb">export</span> &lt;ALIAS&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span><span class="nb">export</span><span class="w"> </span>&lt;ALIAS&gt;
 </pre></div>
 </div>
 <p>Ape will ask you for the password to the account and then give you the private key of that account.</p>
@@ -261,7 +261,7 @@ Check out these plugins:</p>
 <li><p><a class="reference external" href="https://github.com/ApeWorX/ape-trezor">ape-trezor</a></p></li>
 </ul>
 <p>To install one of these plugins, do the following:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install ledger
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>ledger
 </pre></div>
 </div>
 </section>

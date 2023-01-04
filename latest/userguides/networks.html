@@ -139,15 +139,15 @@
 <h2>Selecting a Network<a class="headerlink" href="#selecting-a-network" title="Permalink to this headline"></a></h2>
 <p>Commonly, you will use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option to configure your network during Ape commands.
 The following is a list of common Ape commands that can use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --network ethereum:local:foundry
-ape console --network arbitrum:testnet:alchemy
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry
+ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>arbitrum:testnet:alchemy
 </pre></div>
 </div>
 <p>You can also use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on scripts that use the <code class="docutils literal notranslate"><span class="pre">main()</span></code> method approach or scripts that implement that <code class="docutils literal notranslate"><span class="pre">NetworkBoundCommand</span></code> command type.
 See <a class="reference external" href="./scripts.html">the scripting guide</a> to learn more about scripts and how to add the network option.</p>
 <p><strong>NOTE</strong>: You can omit values to use defaults.
 For example, the default ecosystem is <code class="docutils literal notranslate"><span class="pre">ethereum</span></code> and the default network is <code class="docutils literal notranslate"><span class="pre">local</span></code>, so you can do:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape run --network ::foundry
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>--network<span class="w"> </span>::foundry
 </pre></div>
 </div>
 <p>as a short-cut for <code class="docutils literal notranslate"><span class="pre">ethereum:local:foundry</span></code>.</p>
@@ -156,19 +156,19 @@ For example, the default ecosystem is <code class="docutils literal notranslate"
 <h2>Configuring Networks<a class="headerlink" href="#configuring-networks" title="Permalink to this headline"></a></h2>
 <p>Change network defaults using your project’s <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
 The following configuration changes the default ecosystem, network, and provider such that if you omitted the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on network-bound commands, it would use the value <code class="docutils literal notranslate"><span class="pre">&lt;ecosystem-name&gt;:&lt;network-name&gt;:&lt;provider-name&gt;</span></code>.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;ecosystem-name&gt;</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;ecosystem-name&gt;</span>
 
-<span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;network-name&gt;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;provider-name&gt;</span><span class="w"></span>
+<span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;network-name&gt;</span>
+<span class="w">  </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;provider-name&gt;</span>
 </pre></div>
 </div>
 <p>You may also configure a specific gas limit for a given network:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;network-name&gt;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;max&quot;</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;network-name&gt;</span>
+<span class="w">  </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;max&quot;</span>
 </pre></div>
 </div>
 <p>You may use one of:</p>
@@ -188,8 +188,8 @@ Out-of-the-box, Ape ships with two development providers you can use for the <co
 <li><p><a class="reference external" href="https://github.com/ethereum/eth-tester">EthTester</a></p></li>
 <li><p>An Ephemeral Geth process</p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape <span class="nb">test</span> --network ::test
-ape <span class="nb">test</span> --network ::geth  <span class="c1"># Launch a local development geth process</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::test
+ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::geth<span class="w">  </span><span class="c1"># Launch a local development geth process</span>
 </pre></div>
 </div>
 <p>To learn more about testing in ape, follow <a class="reference external" href="./testing.html">this guide</a>.</p>
@@ -200,22 +200,22 @@ ape <span class="nb">test</span> --network ::geth  <span class="c1"># Launch a l
 The geth plugin is abstract in that it represents any node, not just geth nodes.
 However, it will work best when connected to a geth node.
 To configure network URIs in geth, you can use the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://foo.node.bar</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://foo.node.bar</span>
 </pre></div>
 </div>
 </section>
 <section id="ad-hoc-network-connection">
 <h2>Ad-hoc Network Connection<a class="headerlink" href="#ad-hoc-network-connection" title="Permalink to this headline"></a></h2>
 <p>If you would like to connect to a URI using the <code class="docutils literal notranslate"><span class="pre">geth</span></code> provider, you can specify a URI for the provider name in the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape run script --network etheruem:mainnet:https://foo.bar
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>script<span class="w"> </span>--network<span class="w"> </span>etheruem:mainnet:https://foo.bar
 </pre></div>
 </div>
 <p>Additionally, if you want to connect to an unknown ecosystem or network, you can use the URI by itself.
 However, this is not recommended.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape run script --network https://foo.bar
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>script<span class="w"> </span>--network<span class="w"> </span>https://foo.bar
 </pre></div>
 </div>
 <p><strong>WARNING</strong>: The recommended approach is to find or build a plugin to have more native support.

@@ -144,7 +144,7 @@ Here are some plugin examples in Ape:</p>
 <h2>Core Plugins<a class="headerlink" href="#core-plugins" title="Permalink to this headline"></a></h2>
 <p>Ape ships with core plugins to help Ape work out-of-the-box.
 To see the core plugins that come with Ape, run the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins list --all
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>list<span class="w"> </span>--all
 </pre></div>
 </div>
 <p>Normally, the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">plugins</span> <span class="pre">list</span></code> command shows you all the plugins you have installed.
@@ -154,22 +154,22 @@ However, when you include the <code class="docutils literal notranslate"><span c
 <section id="installing-plugins">
 <h2>Installing Plugins<a class="headerlink" href="#installing-plugins" title="Permalink to this headline"></a></h2>
 <p>To add plugins to your project, edit your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span><span class="w"></span>
-<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4.0</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hardhat</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ens</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">etherscan</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4.0</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hardhat</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ens</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">etherscan</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">name</span></code> field is required.
 Additionally, you may specify a <code class="docutils literal notranslate"><span class="pre">version</span></code>.</p>
 <p>To install the plugins listed in your project, run the following command from the project’s root directory:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install .
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
 <p>To install plugins individually, run the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape plugins install vyper solidity
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>vyper<span class="w"> </span>solidity
 </pre></div>
 </div>
 </section>
