@@ -14,7 +14,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
 
         - name: Setup Python
           uses: actions/setup-python@v2
@@ -42,7 +42,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
 
         - name: Setup Python
           uses: actions/setup-python@v2
@@ -70,7 +70,7 @@ jobs:
           GETH_VERSION: 1.10.26
 
         steps:
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             fetch-depth: 0
 
@@ -113,7 +113,7 @@ jobs:
             fail-fast: true
 
         steps:
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
 
         - name: Setup Python
           uses: actions/setup-python@v2
