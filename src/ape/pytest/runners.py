@@ -24,6 +24,9 @@ class PytestApeRunner(ManagerAccessMixin):
         self._provider_is_connected = False
         ape.reverts = RevertsContextManager  # type: ignore
 
+        # Ensure the gas report starts off None for this runner.
+        self.chain_manager._reports.session_gas_report = None
+
     @property
     def _provider_context(self) -> ProviderContextManager:
         return self.network_manager.parse_network_choice(self.config_wrapper.network)
@@ -182,4 +185,4 @@ class PytestApeRunner(ManagerAccessMixin):
         #  which may run pytest many times in-process.
         self.receipt_capture.clear()
         self.chain_manager.contracts.clear_local_caches()
-        self.chain_manager._reports.sessional_gas_report = None
+        self.chain_manager._reports.session_gas_report = None

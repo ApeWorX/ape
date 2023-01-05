@@ -34,7 +34,7 @@ contract.my_method()
 ```
 
 2. **Pre-existing Contract Types**: If you have a contract type JSON that was compiled elsewhere, you can include it in your project.
-This is useful if you are unable or unwilling to install a compiler.
+   This is useful if you are unable or unwilling to install a compiler.
 
 **WARN**: You may have to adjust the name and source ID of the contract type in the JSON to match the new file name in your project.
 

@@ -18,7 +18,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=22.10.0,<23",  # auto-formatter and linter
+        "black>=22.12.0,<23",  # Auto-formatter and linter
         "mypy>=0.991",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
@@ -29,7 +29,9 @@ extras_require = {
         "flake8-breakpoint>=1.1.0,<2",  # detect breakpoints left in code
         "flake8-print>=4.0.0,<5",  # detect print statements left in code
         "isort>=5.10.1,<6",  # Import sorting linter
-        "pandas-stubs==1.2.0.62",  # NOTE: Needed due to mypy types
+        "mdformat>=0.7.16",  # Auto-formatter for markdown
+        "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
+        "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
     ],
     "doc": [
         "myst-parser>=0.17.0,<0.18",  # Tools for parsing markdown files in the docs
@@ -78,10 +80,16 @@ setup(
     long_description_content_type="text/markdown",
     author="ApeWorX Ltd.",
     author_email="admin@apeworx.io",
-    url="https://github.com/ApeWorX/ape",
+    url="https://apeworx.io",
+    project_urls={
+        "Documentation": "https://docs.apeworx.io/ape/",
+        "Funding": "https://gitcoin.co/grants/5958/ape-maintenance-fund",
+        "Source": "https://github.com/ApeWorX/ape",
+        "Tracker": "https://github.com/ApeWorX/ape/issues",
+        "Twitter": "https://twitter.com/ApeFramework",
+    },
     include_package_data=True,
     install_requires=[
-        "backports.cached_property ; python_version<'3.8'",
         "click>=8.1.3,<9",
         "ijson>=3.1.4,<4",
         "importlib-metadata",
@@ -110,7 +118,7 @@ setup(
         "web3[tester]==6.0.0b7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.1.4,<0.2",
-        "ethpm-types>=0.3.12,<0.4",
+        "ethpm-types>=0.3.15,<0.4",
         "evm-trace>=0.1.0a14",
     ],
     entry_points={

@@ -30,7 +30,7 @@ skip_non_compilable_projects = skip_projects(
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["compile"])
     assert result.exit_code == 0, result.output
-    assert "WARNING" in result.output, result.output
+    assert "WARNING" in result.output, f"Detected contracts folder in '{project.path.name}'"
     assert "Nothing to compile" in result.output
 
 
@@ -204,7 +204,7 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         cmd.append(contract_path)
 
     result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     for name in (
         "default",
         "renamed-contracts-folder",
@@ -212,7 +212,7 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         "renamed-complex-contracts-folder",
         "renamed-contracts-folder-specified-in-config",
     ):
-        assert name in project.dependencies
+        assert name in list(project.dependencies.keys())
         assert type(project.dependencies[name]["local"]["name"]) == ContractContainer
 
 

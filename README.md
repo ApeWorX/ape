@@ -1,4 +1,20 @@
-# Quick Start
+# Overview
+
+**Ape Framework** is an easy-to-use Web3 development tool.
+Users can compile, test, and interact with smart contracts all in one command line session.
+With our **modular plugin system**, Ape supports multiple contract languages and chains.
+
+Ape is built by [ApeWorX LTD](https://www.apeworx.io/).
+
+Join our [ApeWorX Discord server](https://discord.gg/apeworx) to stay up to date on new releases, plugins and tutorials.
+
+If you want to just get started, jump down to the [Playing with Ape](#playing-with-ape)
+
+## Documentation
+
+Read our [technical documentation](https://docs.apeworx.io/ape/stable/) to get a deeper understanding of our open source Framework.
+
+Read our [academic platform](https://academy.apeworx.io/) will help you master Ape Framework with tutorials and challenges.
 
 ## Prerequisite
 
@@ -6,90 +22,31 @@ In the latest release, Ape requires:
 
 - Linux or macOS
 - Python 3.8 or later
+- **Windows**: Install Windows Subsystem Linux [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install) with Python 3.8 or later
 
-**Windows**:
-
-1.  Install Windows Subsystem Linux
-    [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install)
-2.  Choose Ubuntu 20.04 OR Any other Linux Distribution with Python
-    3.8 or later
-
-Check your python command by entering:
-
-```bash
-python3 --version
-```
+Check your python version in a terminal with `python3 --version`
 
 ## Installation
 
-There are 3 ways to install ape: `pipx`, `pip`, or `Docker`.
+There are three ways to install ape: `pipx`, `pip`, or `Docker`.
 
-### via `pipx`
+### Considerations for Installing:
 
-Install `pipx` via their [installation instructions](https://pypa.github.io/pipx/)
+- We advise installing in a [virtualenv](https://pypi.org/project/virtualenv/) or [venv](https://docs.python.org/3/library/venv.html) to avoid interfering with *OS-level site packages*.
 
-Then install `ape` via
+- We advise installing **`ape`** with recommended plugins `pip install eth-ape'[recommended-plugins]'`
 
-```bash
-pipx install eth-ape
-```
+- We advise for **macOS** users to install virtual env via [homebrew](https://formulae.brew.sh/formula/virtualenv)
 
-To install Ape and a list of common, recommended plugins at the same time, do:
+### via `pipx` or `pip`
 
-```bash
-pipx install eth-ape'[recommended-plugins]'
-```
+1. Install `pipx` via their [installation instructions](https://pypa.github.io/pipx/) or `pip` via their [installation instructions](https://pip.pypa.io/en/stable/cli/pip_install/)
 
-### via `pip`
-
-**Suggestion**: Create a virtual environment using `virtualenv` or `venv.`
-
-You may skip creating a virtual environment if you know you don\'t require one for your use case.
-
-- [virtualenv](https://pypi.org/project/virtualenv/)
-- [venv](https://docs.python.org/3/library/venv.html)
-
-**NOTE**: For MacOS users, we advise installing in a virtual environment to avoid interfering with OS-level site packages.
-
-### virtualenv via `homebrew`
-
-* (MacOS Option) Install via homebrew [brew](https://formulae.brew.sh/formula/virtualenv)
-
-First, create your virtual environment folder:
-
-```bash
-python3 -m venv <path/to/new/env>
-```
-
-Then, activate your virtual environment:
-
-```bash
-source <venv_folder>/bin/activate
-```
-
-You should see `(name_of_venv) DESKTOP_NAME:~/path:$`.
-
-To deactivate the virtual environment, do:
-
-```bash
-deactivate
-```
-
-Now that you have Python installed in your virtual environment, install the `eth-ape` Python package:
-You can install the latest release via [pip](https://pypi.org/project/pip/):
-
-```bash
-pip install -U pip
-pip install eth-ape
-```
-
-To install Ape and a list of common, recommended plugins at the same time, do:
-
-```bash
-pip install eth-ape'[recommended-plugins]'
-```
+2. Install **`ape`** via `pipx install eth-ape` or `pip install eth-ape`
 
 ### via `docker`
+
+Ape can also run in a docker contianer.
 
 Please visit our [Dockerhub](https://hub.docker.com/repository/docker/apeworx/ape) for more details on using Ape with Docker.
 
@@ -110,43 +67,43 @@ sudo rm -rf **\~/.solcx**
 sudo rm -rf **\~/.vvm**
 ```
 
-## Environment Variables:
+## Playing with Ape
 
-Some plugins require environment variables to connect to their external systems, such project IDs or API keys.
-Follow instructions from individual plugin documentations, such as:
+After you installed Ape, you can run `ape --version` to make sure it works and it is the latest version.
 
-* [ape-alchemy](https://github.com/ApeWorX/ape-alchemy/blob/main/README.md#quick-usage)
-* [ape-infura](https://github.com/ApeWorX/ape-infura#readme)
+There are two ways to interact with Ape:
 
-Generally, set environment variables by doing the following:
+- [CLI Reference](https://docs.apeworx.io/ape/latest/index.html)
 
-```bash
-# Used by the `ape-infura` plugin
-export WEB3_INFURA_PROJECT_ID=<YOUR_INFURA_PROJECT_ID>
-# Used by the `ape-alchemy` plugin
-export WEB3_ALCHEMY_API_KEY=<YOUR_ALCHEMY_KEY>
-```
+- [Python Reference](https://docs.apeworx.io/ape/latest/index.html)
 
-Place these in environment files, such as your `.bashrc` or `.zshrc`.
+Ape is both a CLI tool and a Python SDK.
 
-## Quick Usage
+The CLI tool contains all the Ape commands and the Python SDK contains the classes and types needed to compose scripts, console actions, and tests.
 
-Use `-h` to list all the commands:
+## **Ape Modular Plugin System:**
 
-```bash
-ape -h
-```
+Our [list of plugins](https://www.apeworx.io/#plugins) is the best way to have the most interoperable experience with Web3.
 
-### Projects
+**NOTE**: If a plugin does not originate from the [ApeWorX GitHub Organization](https://github.com/ApeWorX?q=ape&type=all), you will get a warning about installing 3rd-party plugins.
+
+Install 3rd party plugins at your own risk.
+
+Additionally, plugins that come bundled with **`ape`** in the core installation cannot be removed and are part of the **`ape`** core software.
+
+## Projects
 
 When using Ape, you generally will work with a project.
-To quickly get started using ape, generate a project using the `ape init` command:
 
 ```bash
 ape init
 ```
 
 For more in-depth information about smart-contract projects using the Ape framework, see the [projects guide](https://docs.apeworx.io/ape/stable/userguides/projects.html).
+
+- Learn more about **installing** plugins from following this [installing user guide](https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html).
+
+- Learn more about **developing** your own plugins from this [developing user guide](docs/userguides/developing_plugins.md).
 
 ### Accounts
 
@@ -175,13 +132,6 @@ ape plugins list -a
 ape plugins install vyper
 ape plugins list -a
 ```
-
-**NOTE**: If a plugin does not originate from the [ApeWorX GitHub organization](https://github.com/ApeWorX?q=ape&type=all), you will get a warning about installing 3rd-party plugins.
-Install 3rd party plugins at your own risk.
-Additionally, plugins that come bundled with `ape` in the core installation cannot be removed and are part of the `ape` core software.
-
-Learn more about installing plugins from following [this guide](https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html).
-Learn more about developing your own plugins from [this guide](https://docs.apeworx.io/ape/stable/userguides/projects.html).
 
 ### Compiling
 
@@ -247,4 +197,4 @@ with networks.ethereum.mainnet.use_provider("infura"):
     ...  # Work with the infura provider here
 ```
 
-To learn more about networks in Ape, see [this guide](https://docs.apeworx.io/ape/stable/commands/networks.html). 
+To learn more about networks in Ape, see [this guide](https://docs.apeworx.io/ape/stable/commands/networks.html).

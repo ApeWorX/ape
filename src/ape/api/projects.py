@@ -1,10 +1,12 @@
+import os.path
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+import yaml
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
-from ethpm_types.utils import compute_checksum
+from ethpm_types.utils import AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
 
@@ -12,6 +14,7 @@ from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
     abstractmethod,
+    cached_property,
     get_all_files_in_directory,
     get_relative_path,
 )
@@ -37,6 +40,8 @@ class ProjectAPI(BaseInterfaceModel):
 
     version: Optional[str] = None
     """The version of the project whe another project uses it as a dependency."""
+
+    config_file_name: str = "ape-config.yaml"
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.path.name}>"
@@ -94,6 +99,14 @@ class ProjectAPI(BaseInterfaceModel):
         # NOTE: If we use the cache folder, we expect it to exist
         folder.mkdir(exist_ok=True, parents=True)
         return folder
+
+    def process_config_file(self, **kwargs) -> bool:
+        """
+        Process the project's config file.
+        Returns ``True`` if had to create a temporary ``ape-config.yaml`` file.
+        """
+
+        return False
 
     @classmethod
     def _create_manifest(
@@ -178,7 +191,14 @@ class DependencyAPI(BaseInterfaceModel):
         """
 
     @property
-    def _target_manifest_cache_file(self) -> Path:
+    @abstractmethod
+    def uri(self) -> AnyUrl:
+        """
+        The URI to use when listing in a PackageManifest.
+        """
+
+    @cached_property
+    def _base_cache_path(self) -> Path:
         version_id = self.version_id
 
         try:
@@ -188,8 +208,11 @@ class DependencyAPI(BaseInterfaceModel):
         except InvalidVersion:
             pass
 
-        name = self.name
-        return self.config_manager.packages_folder / name / version_id / f"{name}.json"
+        return self.config_manager.packages_folder / self.name / version_id
+
+    @property
+    def _target_manifest_cache_file(self) -> Path:
+        return self._base_cache_path / f"{self.name}.json"
 
     @abstractmethod
     def extract_manifest(self) -> PackageManifest:
@@ -215,14 +238,30 @@ class DependencyAPI(BaseInterfaceModel):
         return _load_manifest_from_file(self._target_manifest_cache_file)
 
     def __getitem__(self, contract_name: str) -> "ContractContainer":
-        container = self.get(contract_name)
+        try:
+            container = self.get(contract_name)
+        except Exception as err:
+            raise IndexError(str(err)) from err
+
         if not container:
             raise IndexError(f"Contract '{contract_name}' not found.")
 
         return container
 
     def __getattr__(self, contract_name: str) -> "ContractContainer":
-        container = self.get(contract_name)
+        try:
+            return self.__getattribute__(contract_name)
+        except AttributeError:
+            pass
+
+        try:
+            container = self.get(contract_name)
+        except Exception as err:
+            raise AttributeError(
+                f"Dependency project '{self.name}' has no contract "
+                f"or attribute '{contract_name}'.\n{err}"
+            ) from err
+
         if not container:
             raise AttributeError(
                 f"Dependency project '{self.name}' has no contract '{contract_name}'."
@@ -255,26 +294,102 @@ class DependencyAPI(BaseInterfaceModel):
                 source_path = contracts_folder / get_relative_path(
                     absolute_path, contracts_folder.absolute()
                 )
+
+                # Create content, including sub-directories.
+                source_path.parent.mkdir(parents=True, exist_ok=True)
                 source_path.touch()
                 source_path.write_text(content)
+
+            # Handle import remapping entries indicated in the manifest file
+            target_config_file = project.path / project.config_file_name
+            packages_used = set()
+            config_data: Dict[str, Any] = {}
+            for compiler in [x for x in manifest.compilers or [] if x.settings]:
+                name = compiler.name.lower()
+                compiler_data = {}
+                settings = compiler.settings or {}
+                remapping_list = []
+                for remapping in settings.get("remappings") or []:
+                    parts = remapping.split("=")
+                    key = parts[0]
+                    link = parts[1]
+                    if link.startswith(f".cache{os.path.sep}"):
+                        link = os.path.sep.join(link.split(f".cache{os.path.sep}"))[1:]
+
+                    packages_used.add(link)
+                    new_entry = f"{key}={link}"
+                    remapping_list.append(new_entry)
+
+                if remapping_list:
+                    compiler_data["import_remapping"] = remapping_list
+
+                if compiler_data:
+                    config_data[name] = compiler_data
+
+            # Handle dependencies indicated in the manifest file
+            dependencies_config: List[Dict] = []
+            dependencies = manifest.dependencies or {}
+            dependencies_used = {
+                p: d for p, d in dependencies.items() if any(p.lower() in x for x in packages_used)
+            }
+            for package_name, uri in dependencies_used.items():
+                if "://" not in str(uri) and hasattr(uri, "scheme"):
+                    uri_str = f"{uri.scheme}://{uri}"
+                else:
+                    uri_str = str(uri)
+
+                dependency = {"name": str(package_name)}
+                if uri_str.startswith("https://"):
+                    # Assume GitHub dependency
+                    version = uri_str.split("/")[-1]
+                    dependency["github"] = uri_str.replace(f"/releases/tag/{version}", "")
+                    dependency["github"] = dependency["github"].replace("https://github.com/", "")
+                    dependency["version"] = version
+
+                elif uri_str.startswith("file://"):
+                    dependency["local"] = uri_str.replace("file://", "")
+
+                dependencies_config.append(dependency)
+
+            if dependencies_config:
+                config_data["dependencies"] = dependencies_config
+
+            if config_data:
+                target_config_file.unlink(missing_ok=True)
+                with open(target_config_file, "w+") as cf:
+                    yaml.safe_dump(config_data, cf)
 
             manifest = project.create_manifest()
             self._write_manifest_to_cache(manifest)
             return manifest
 
-    def _extract_local_manifest(self, project_path: Path):
-        if self._target_manifest_cache_file.is_file():
-            return PackageManifest.parse_file(self._target_manifest_cache_file)
-
-        project = self._get_project(project_path)
-        sources = self._get_sources(project)
+    def _extract_local_manifest(self, project_path: Path) -> PackageManifest:
+        cached_manifest = (
+            _load_manifest_from_file(self._target_manifest_cache_file)
+            if self._target_manifest_cache_file.is_file()
+            else None
+        )
+        if cached_manifest:
+            return cached_manifest
 
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
         # for later usage via imports. For legacy reasons, many dependency-esque projects
         # are not meant to compile on their own.
-        project_manifest = project._create_manifest(
-            sources, project.contracts_folder, {}, name=project.name, version=project.version
-        )
+
+        with self.config_manager.using_project(project_path):
+            project = self._get_project(project_path)
+            sources = self._get_sources(project)
+            dependencies = self.project_manager._extract_manifest_dependencies()
+            project_manifest = project._create_manifest(
+                sources, project.contracts_folder, {}, name=project.name, version=project.version
+            )
+            compiler_data = self.project_manager._get_compiler_data(compile_if_needed=False)
+
+        if dependencies:
+            project_manifest.dependencies = dependencies
+        if compiler_data:
+            project_manifest.compilers = compiler_data
+
         self._write_manifest_to_cache(project_manifest)
         return project_manifest
 

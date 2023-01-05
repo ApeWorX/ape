@@ -1,6 +1,7 @@
 import time
 from datetime import datetime, timedelta
 from queue import Queue
+from typing import List
 
 import pytest
 from ethpm_types import ContractType
@@ -508,6 +509,45 @@ def test_poll_blocks(chain_that_mined_5, eth_tester_provider, owner, PollDaemon)
     third = blocks.get().number
     assert first == second - 1
     assert second == third - 1
+
+
+def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollDaemon, caplog):
+    blocks: Queue = Queue(maxsize=6)
+    poller = chain_that_mined_5.blocks.poll_blocks()
+
+    with PollDaemon("blocks", poller, blocks.put, blocks.full):
+        # Sleep first to ensure listening before mining.
+        time.sleep(1)
+
+        snapshot = chain_that_mined_5.snapshot()
+        chain_that_mined_5.mine(2)
+
+        # Wait to allow blocks before re-org to get yielded
+        time.sleep(5)
+
+        # Simulate re-org by reverting to the snapshot
+        chain_that_mined_5.restore(snapshot)
+
+        # Allow it time to trigger realizing there was a re-org
+        time.sleep(1)
+        chain_that_mined_5.mine(2)
+        time.sleep(1)
+
+        chain_that_mined_5.mine(3)
+
+    assert blocks.full()
+
+    # Show that re-org was detected
+    expected_error = (
+        "Chain has reorganized since returning the last block. "
+        "Try adjusting the required network confirmations."
+    )
+    assert caplog.records, "Didn't detect re-org"
+    assert expected_error in caplog.records[-1].message
+
+    # Show that there are duplicate blocks
+    block_numbers: List[int] = [blocks.get().number for _ in range(6)]
+    assert len(set(block_numbers)) < len(block_numbers)
 
 
 def test_poll_blocks_timeout(

@@ -129,7 +129,7 @@ class BaseProject(ProjectAPI):
 
         return files
 
-    def configure(self, **kwargs) -> bool:
+    def process_config_file(self, **kwargs) -> bool:
         if self.config_file.is_file():
             # Don't override existing config file.
             return False
@@ -145,17 +145,25 @@ class BaseProject(ProjectAPI):
             str(self.contracts_folder).replace(str(self.path), "").strip("/")
         )
         config_data["contracts_folder"] = contracts_folder_config_item
-
+        self.config_file.parent.mkdir(parents=True, exist_ok=True)
+        self.config_file.touch()
         with open(self.config_file, "w") as f:
             yaml.safe_dump(config_data, f)
-            return True
+
+        return True
 
     @contextmanager
-    def _configured(self, **kwargs):
+    def _as_ape_project(self, **kwargs):
+        # Create and clean-up the temporary ape-config.yaml file if there is one.
+
         created_temporary_config_file = False
         try:
-            created_temporary_config_file = self.configure(**kwargs)
+            created_temporary_config_file = self.process_config_file(**kwargs)
+            if created_temporary_config_file:
+                self.config_manager.load(force_reload=True)
+
             yield
+
         finally:
             if created_temporary_config_file and self.config_file.is_file():
                 self.config_file.unlink()
@@ -163,9 +171,9 @@ class BaseProject(ProjectAPI):
     def create_manifest(
         self, file_paths: Optional[List[Path]] = None, use_cache: bool = True
     ) -> PackageManifest:
-        # Create a config file if one doesn't exist to forward values from
-        # the root project's 'ape-config.yaml' 'dependencies:' config.
-        with self._configured():
+        # Read the project config and migrate project-settings to Ape settings if needed.
+        with self._as_ape_project():
+            self.project_manager._load_dependencies()
             manifest = self._get_base_manifest(use_cache=use_cache)
             source_paths: List[Path] = list(
                 set(
@@ -222,17 +230,17 @@ class ApeProject(BaseProject):
 
 
 class BrownieProject(BaseProject):
-    BROWNIE_CONFIG_FILE_NAME = "brownie-config.yaml"
+    config_file_name = "brownie-config.yaml"
 
     @property
     def brownie_config_path(self) -> Path:
-        return self.path / self.BROWNIE_CONFIG_FILE_NAME
+        return self.path / self.config_file_name
 
     @property
     def is_valid(self) -> bool:
         return self.brownie_config_path.is_file()
 
-    def configure(self):
+    def process_config_file(self, **kwargs) -> bool:
         # Migrate the brownie-config.yaml file to ape-config.yaml
 
         migrated_config_data: Dict[str, Any] = {}
@@ -303,4 +311,4 @@ class BrownieProject(BaseProject):
 
             migrated_config_data["solidity"] = migrated_solidity_config
 
-        super().configure(**migrated_config_data)
+        return super().process_config_file(**kwargs, **migrated_config_data)
