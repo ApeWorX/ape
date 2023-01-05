@@ -1,0 +1,214 @@
+@import url("https://fonts.googleapis.com/css?family=Space+Mono&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Rubik&display=swap");
+
+#version-picker-label {
+  color: #ffffff;
+  display: inline;
+}
+
+body {
+  font-weight: 400;
+  font-family: "Rubik", sans-serif;
+  min-height: 100%;
+  background: #f2f3f8;
+}
+
+p {
+  font-weight: 400;
+  font-family: "Rubik", sans-serif;
+}
+
+h1 {
+  font-size: 70px;
+  line-height: 70px;
+  font-family: "Space Mono", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  color: #000000;
+}
+
+h2 {
+  font-size: 42px;
+  line-height: 42px;
+  font-family: "Space Mono", sans-serif;
+  letter-spacing: -0.05em;
+}
+
+h3 {
+  font-size: 24px;
+  line-height: 24px;
+  font-family: "Space Mono", sans-serif;
+  letter-spacing: -0.05em;
+  font-weight: 300;
+}
+
+a {
+  color: #e70000;
+  cursor: pointer;
+}
+
+a:visited {
+  color: #e70000;
+}
+
+a:hover {
+  color: #00e774;
+}
+
+.wy-nav-content-wrap {
+  margin-left: 300px;
+  background: #fff;
+  min-height: 100%;
+}
+
+.wy-side-scroll {
+  width: 320px;
+  background-color: #f2f3f8;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: 100%;
+}
+
+.wy-nav-top {
+  display: block;
+  background-color: #000;
+  padding: 0.4045em 0.809em;
+  position: relative;
+  line-height: 50px;
+  text-align: center;
+  font-size: 100%;
+}
+
+.wy-side-nav-search {
+  display: block;
+  width: 300px;
+  padding: 0.809em;
+  margin-bottom: 0.809em;
+  z-index: 200;
+  background-color: #000000;
+  text-align: center;
+  color: #fafafa;
+}
+
+.wy-menu-vertical header,
+.wy-menu-vertical p.caption {
+  color: #7cffb4;
+  font-family: "Space Mono", sans-serif;
+  height: 32px;
+  line-height: 32px;
+  display: block;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 20px;
+  white-space: nowrap;
+  background-color: black;
+}
+
+.wy-menu-vertical a {
+  line-height: 18px;
+  padding: 0.4045em 1.618em;
+  display: block;
+  position: relative;
+  font-size: 90%;
+  color: #000000;
+}
+
+.rst-content code.literal,
+.rst-content tt.literal {
+  color: #ff7e7e;
+}
+
+footer {
+  color: grey;
+  display: none;
+}
+
+.wy-nav-top {
+  display: none;
+  background: #000000;
+  color: #fff;
+  padding: 0.4045em 0.809em;
+  position: relative;
+  line-height: 50px;
+  text-align: center;
+  font-size: 100%;
+}
+
+.wy-nav-side {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  padding-bottom: 2em;
+  width: 300px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  min-height: 100%;
+  background-color: #f2f3f8;
+  z-index: 200;
+}
+
+@media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
+  .wy-nav-side {
+    display: none;
+  }
+  .wy-nav-side.shift {
+    display: block;
+  }
+  .wy-nav-content-wrap {
+    margin-left: 0;
+    background-color: #f2f3f8;
+    min-height: 100%;
+  }
+  .wy-nav-top {
+    display: block;
+    color: #fff;
+    padding: 0.4045em 0.809em;
+    position: relative;
+    line-height: 50px;
+    text-align: center;
+    font-size: 100%;
+  }
+
+  .wy-side-nav-search {
+    display: block;
+    width: 300px;
+    padding: 0.809em;
+    margin-bottom: 0.809em;
+    z-index: 200;
+    background-color: #000000;
+    text-align: center;
+    color: #fafafa;
+  }
+
+  h1 {
+    font-size: 40px;
+    line-height: 40px;
+    font-family: "Space Mono", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: -0.05em;
+    color: #000000;
+  }
+
+  h2 {
+    font-size: 34px;
+    line-height: 34px;
+    font-family: "Space Mono", sans-serif;
+    letter-spacing: -0.05em;
+  }
+
+  a {
+    color: #c2006b;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  a:visited {
+    color: #c2006b;
+  }
+
+  a:hover {
+    color: rgb(0, 0, 0);
+  }
+}
