@@ -26,7 +26,7 @@ Any expected deviations and necessary clarifications around the standard are exp
 
 ### Supported Versions
 
-Ape is currently under active development, targeting a 1.x release.
+Ape is currently under active development, we support the latest release by major version.
 Any security issues found on the latest minor version of Ape will be fixed and released in either a patch or minor release.
 
 | Version | Supported          |
