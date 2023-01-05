@@ -24,6 +24,9 @@ class PytestApeRunner(ManagerAccessMixin):
         self._provider_is_connected = False
         ape.reverts = RevertsContextManager  # type: ignore
 
+        # Ensure the gas report starts off None for this runner.
+        self.chain_manager._reports.session_gas_report = None
+
     @property
     def _provider_context(self) -> ProviderContextManager:
         return self.network_manager.parse_network_choice(self.config_wrapper.network)
