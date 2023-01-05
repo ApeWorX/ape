@@ -69,7 +69,7 @@ class ContractConstructor(ManagerAccessMixin):
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             sender = kwargs["sender"]
-            return sender.call(txn)
+            return sender.call(txn, **kwargs)
 
         return self.provider.send_transaction(txn)
 
@@ -274,7 +274,7 @@ class ContractTransaction(ManagerAccessMixin):
         txn = self.serialize_transaction(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
-            return kwargs["sender"].call(txn)
+            return kwargs["sender"].call(txn, **kwargs)
 
         return self.provider.send_transaction(txn)
 
@@ -1069,7 +1069,7 @@ class ContractContainer(ContractTypeWrapper):
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             # Handle account-related preparation if needed, such as signing
-            receipt = kwargs["sender"].call(txn)
+            receipt = kwargs["sender"].call(txn, **kwargs)
 
         else:
             txn = self.provider.prepare_transaction(txn)

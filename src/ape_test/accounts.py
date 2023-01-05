@@ -59,7 +59,7 @@ class TestAccount(TestAccountAPI):
             s=to_bytes(signed_msg.s),
         )
 
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionAPI]:
+    def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
         # Signs anything that's given to it
         signature = EthAccount.sign_transaction(txn.dict(), self.private_key)
         txn.signature = TransactionSignature(

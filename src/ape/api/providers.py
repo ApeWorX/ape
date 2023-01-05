@@ -859,7 +859,7 @@ class Web3Provider(ProviderAPI, ABC):
         **kwargs,
     ) -> bytes:
         account = self.account_manager.test_accounts[0]
-        receipt = account.call(txn)
+        receipt = account.call(txn, **kwargs)
         call_tree = receipt.call_tree
         if not call_tree:
             return self._send_call(txn, **kwargs)

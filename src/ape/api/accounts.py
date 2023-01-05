@@ -63,12 +63,13 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
 
     @abstractmethod
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionAPI]:
+    def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
         """
         Sign a transaction.
 
         Args:
           txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to sign.
+          **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
           :class:`~ape.api.transactions.TransactionAPI` (optional): A signed transaction.
@@ -78,7 +79,12 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         """
 
-    def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
+    def call(
+        self,
+        txn: TransactionAPI,
+        send_everything: bool = False,
+        **signer_options,
+    ) -> ReceiptAPI:
         """
         Make a transaction call.
 
@@ -92,6 +98,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             txn (:class:`~ape.api.transactions.TransactionAPI`): An invoke-transaction.
             send_everything (bool): ``True`` will send the difference from balance and fee.
               Defaults to ``False``.
+            **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
@@ -129,7 +136,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             else:
                 txn.value = amount_to_send
 
-        signed_txn = self.sign_transaction(txn)
+        signed_txn = self.sign_transaction(txn, **signer_options)
         if not signed_txn:
             raise SignatureError("The transaction was not signed.")
 
@@ -159,21 +166,19 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             sender=self.address, receiver=receiver, **kwargs
         )
 
-        if value and "send_everything" in kwargs and kwargs["send_everything"]:
-            raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
-
         if data:
             txn.data = self.conversion_manager.convert(data, bytes)
 
-        if value:
-            txn.value = self.conversion_manager.convert(value, int)
-            return self.call(txn)
-
-        elif not kwargs.get("send_everything"):
+        if not value and not kwargs.get("send_everything"):
             raise AccountsError("Must provide 'VALUE' or use 'send_everything=True'")
 
-        else:
-            return self.call(txn, send_everything=True)
+        elif value and "send_everything" in kwargs and kwargs["send_everything"]:
+            raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
+
+        elif value:
+            txn.value = self.conversion_manager.convert(value, int)
+
+        return self.call(txn, **kwargs)
 
     def deploy(
         self, contract: "ContractContainer", *args, publish: bool = False, **kwargs
@@ -196,7 +201,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         txn = contract(*args, **kwargs)
         txn.sender = self.address
-        receipt = self.call(txn)
+        receipt = self.call(txn, **kwargs)
 
         address = receipt.contract_address
         if not address:
@@ -449,10 +454,10 @@ class ImpersonatedAccount(AccountAPI):
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         raise NotImplementedError("This account cannot sign messages")
 
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionAPI]:
+    def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
         # Returns input transaction unsigned (since it doesn't have access to the key)
         return txn
 
-    def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
+    def call(self, txn: TransactionAPI, send_everything: bool = False, **kwargs) -> ReceiptAPI:
         txn = self.prepare_transaction(txn)
         return self.provider.send_transaction(txn)

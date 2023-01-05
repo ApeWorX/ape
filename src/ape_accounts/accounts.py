@@ -118,7 +118,7 @@ class KeyfileAccount(AccountAPI):
             s=to_bytes(signed_msg.s),
         )
 
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionAPI]:
+    def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
         user_approves = self.__autosign or click.confirm(f"{txn}\n\nSign: ")
         if not user_approves:
             return None
