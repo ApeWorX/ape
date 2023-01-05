@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Dict, Optional, Type
 
 from ethpm_types import PackageManifest
-from pydantic import root_validator
+from ethpm_types.utils import AnyUrl
+from pydantic import FileUrl, HttpUrl, root_validator
 
 from ape.api import DependencyAPI
 from ape.api.projects import _load_manifest_from_file
@@ -77,6 +78,16 @@ class GithubDependency(DependencyAPI):
         latest_release = github_client.get_release(self.github, "latest")
         return latest_release.tag_name
 
+    @property
+    def uri(self) -> AnyUrl:
+        _uri = f"https://github.com/{self.github.strip('/')}"
+        if self.version and not self.version.startswith("v"):
+            _uri = f"{_uri}/releases/tag/v{self.version}"
+        elif self.version:
+            _uri = f"{_uri}/releases/tag/{self.version}"
+
+        return HttpUrl(_uri, scheme="https")
+
     def __repr__(self):
         return f"<{self.__class__.__name__} github={self.github}>"
 
@@ -137,7 +148,7 @@ class LocalDependency(DependencyAPI):
 
     @property
     def path(self) -> Path:
-        given_path = Path(self.local).absolute()
+        given_path = Path(self.local).resolve().absolute()
         if not given_path.is_dir():
             raise ProjectError(f"No project exists at path '{given_path}'.")
 
@@ -146,6 +157,11 @@ class LocalDependency(DependencyAPI):
     @property
     def version_id(self) -> str:
         return self.version
+
+    @property
+    def uri(self) -> AnyUrl:
+        path = self._target_manifest_cache_file.resolve().absolute()
+        return FileUrl(f"file://{path}", scheme="file")
 
     def extract_manifest(self) -> PackageManifest:
         if self._target_manifest_cache_file.is_file():

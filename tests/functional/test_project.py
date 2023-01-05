@@ -1,4 +1,5 @@
 import shutil
+from pathlib import Path
 
 import pytest
 import yaml
@@ -10,10 +11,14 @@ from ape import Contract
 from ape.exceptions import ProjectError
 from ape.managers.project import BrownieProject
 
+WITH_DEPS_PROJECT = (
+    Path(__file__).parent.parent / "integration" / "cli" / "projects" / "with-dependencies"
+)
+
 
 @pytest.fixture
 def ape_project(project_manager):
-    return project_manager._project
+    return project_manager.local_project
 
 
 @pytest.fixture
@@ -274,6 +279,28 @@ def test_track_deployment_from_unknown_contract_given_txn_hash(
     assert actual.runtime_bytecode == contract.contract_type.runtime_bytecode
 
 
-def test_compiler_data(project):
+def test_compiler_data(project_manager):
     # See ape-solidity / ape-vyper for better tests
-    assert not project.compiler_data
+    assert not project_manager.compiler_data
+
+
+def test_get_project_without_contracts_path(project_manager):
+    project_path = WITH_DEPS_PROJECT / "default"
+    project = project_manager.get_project(project_path)
+    assert project.contracts_folder == project_path / "contracts"
+
+
+def test_get_project_with_contracts_path(project_manager):
+    project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder"
+    project = project_manager.get_project(project_path, project_path / "sources")
+    assert project.contracts_folder == project_path / "sources"
+
+
+def test_get_project_figure_out_contracts_path(project_manager):
+    """
+    Tests logic where `contracts` is not the contracts folder but it still is able
+    to figure it out.
+    """
+    project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder"
+    project = project_manager.get_project(project_path)
+    assert project.contracts_folder == project_path / "sources"

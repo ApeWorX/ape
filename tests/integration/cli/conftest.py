@@ -121,7 +121,7 @@ def clean_cache(project):
     Use this fixture to ensure a project
     does not have a cached compilation.
     """
-    cache_file = project._project.manifest_cachefile
+    cache_file = project.local_project.manifest_cachefile
     if cache_file.is_file():
         cache_file.unlink()
 
