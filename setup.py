@@ -90,10 +90,8 @@ setup(
     },
     include_package_data=True,
     install_requires=[
-        "backports.cached_property ; python_version<'3.8'",
         "click>=8.1.3,<9",
         "ijson>=3.1.4,<4",
-        "importlib-metadata",
         "ipython>=8.5.0,<9",
         "packaging>=20.9,<21",
         "pandas>=1.3.0,<2",
