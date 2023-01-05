@@ -44,7 +44,8 @@ For all security related issues, ApeWorX has the following main points of contac
 | Contact                                                | Keybase                                                      |
 | ------------------------------------------------------ | ------------------------------------------------------------ |
 | [@fubuloubu](https://github.com/fubuloubu)             | [@fubuloubu](https://keybase.io/fubuloubu/chat)              |
-| [@NotPeopling2day](https://github.com/NotPeopling2day) | [@NotPeopling2day](https://keybase.io/notepeopling2day/chat) |
+| [@NotPeopling2day](https://github.com/NotPeopling2day) | [@NotPeopling2day](https://keybase.io/notpeopling2day/chat) |
+| [@unparalleled-js](https://github.com/unparalleled-js) | [@Antazoey](https://keybase.io/antazoey/chat) |
 
 ## Sending Disclosures
 
