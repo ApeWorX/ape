@@ -5,6 +5,13 @@ def test_provider(project, networks):
     assert networks.provider.name == "geth"
 
 
+def test_provider_get_balance(project, networks, accounts):
+    """
+    Test that the address is an AddressType.
+    """
+    assert networks.provider.get_balance(accounts.test_accounts[0])
+
+
 def test_contract_interaction(owner, contract):
     """
     Traditional ape-test style test.

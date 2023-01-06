@@ -168,12 +168,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_balance(self, address: str) -> int:
+    def get_balance(self, address: AddressType) -> int:
         """
         Get the balance of an account.
 
         Args:
-            address (str): The address of the account.
+            address (``AddressType``): The address of the contract.
 
         Returns:
             int: The account balance.
