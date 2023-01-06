@@ -377,7 +377,7 @@ class BlockContainer(BaseManager):
         return self.provider.get_block(block_id)
 
 
-class AccountHistory(BaseManager):
+class TransactionHistory(BaseManager):
     """
     A container mapping account addresses to the transaction from the active session.
     """
@@ -447,7 +447,7 @@ class AccountHistory(BaseManager):
         Args:
             txn_receipt (:class:`~ape.api.transactions.ReceiptAPI`): The transaction receipt.
               **NOTE**: The receipt is accessible in the list returned from
-              :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
+              :meth:`~ape.managers.chain.TransactionHistory.__getitem__`.
         """
 
         self._hash_to_receipt_map[txn_receipt.txn_hash] = txn_receipt
@@ -1141,7 +1141,7 @@ class ChainManager(BaseManager):
     _snapshots: List[SnapshotID] = []
     _chain_id_map: Dict[str, int] = {}
     _block_container_map: Dict[int, BlockContainer] = {}
-    _account_history_map: Dict[int, AccountHistory] = {}
+    _transaction_history_map: Dict[int, TransactionHistory] = {}
     contracts: ContractCache = ContractCache()
     _reports: ReportManager = ReportManager()
 
@@ -1157,15 +1157,15 @@ class ChainManager(BaseManager):
         return self._block_container_map[self.chain_id]
 
     @property
-    def account_history(self) -> AccountHistory:
+    def transaction_history(self) -> TransactionHistory:
         """
         A mapping of transactions from the active session to the account responsible.
         """
-        if self.chain_id not in self._account_history_map:
-            history = AccountHistory()
-            self._account_history_map[self.chain_id] = history
+        if self.chain_id not in self._transaction_history_map:
+            history = TransactionHistory()
+            self._transaction_history_map[self.chain_id] = history
 
-        return self._account_history_map[self.chain_id]
+        return self._transaction_history_map[self.chain_id]
 
     @property
     def chain_id(self) -> int:
@@ -1269,7 +1269,7 @@ class ChainManager(BaseManager):
             self._snapshots = self._snapshots[:snapshot_index]
 
         self.provider.revert(snapshot_id)
-        self.account_history.revert_to_block(self.blocks.height)
+        self.transaction_history.revert_to_block(self.blocks.height)
 
     @contextmanager
     def isolate(self):
@@ -1358,4 +1358,4 @@ class ChainManager(BaseManager):
         return self.provider.set_balance(account, amount)
 
     def get_receipt(self, transaction_hash: str) -> ReceiptAPI:
-        return self.chain_manager.account_history.get_receipt(transaction_hash)
+        return self.chain_manager.transaction_history.get_receipt(transaction_hash)

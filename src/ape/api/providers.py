@@ -1080,7 +1080,7 @@ class Web3Provider(ProviderAPI, ABC):
                 raise vm_err from err
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
-        self.chain_manager.account_history.append(receipt)
+        self.chain_manager.transaction_history.append(receipt)
         return receipt
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
