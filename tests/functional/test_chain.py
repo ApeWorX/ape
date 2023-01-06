@@ -24,7 +24,6 @@ def contract_1(project_with_contract):
 
 
 def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, owner):
-    breakpoint()
     initial_balance = receiver.balance  # Initial balance at block 0.
     blocks_to_mine = 5
     snapshot_ids = []
