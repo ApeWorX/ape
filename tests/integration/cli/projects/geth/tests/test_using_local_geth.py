@@ -9,7 +9,10 @@ def test_provider_get_balance(project, networks, accounts):
     """
     Test that the address is an AddressType.
     """
-    assert networks.provider.get_balance(accounts.test_accounts[0])
+    balance = networks.provider.get_balance(accounts.test_accounts[0].address)
+
+    assert type(balance) == int
+    assert balance == 1000000000000000000000000
 
 
 def test_contract_interaction(owner, contract):
