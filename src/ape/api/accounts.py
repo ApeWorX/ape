@@ -398,7 +398,7 @@ class AccountContainerAPI(BaseInterfaceModel):
             self.__getitem__(address)
             return True
 
-        except IndexError:
+        except (IndexError, AttributeError):
             return False
 
     def _verify_account_type(self, account):
