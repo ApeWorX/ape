@@ -66,7 +66,7 @@ class ScriptCommand(click.MultiCommand):
         elif "main" in code.co_names:
             logger.debug(f"Found 'main' method in script: {relative_filepath}")
 
-            @click.command(cls=NetworkBoundCommand, short_help=f"Run '{relative_filepath}:main'")
+            @click.command(cls=NetworkBoundCommand, short_help=f"Run '{relative_filepath}:main'", name=relative_filepath.stem)
             @network_option()
             def call(network):
                 _ = network  # Downstream might use this
@@ -114,14 +114,33 @@ class ScriptCommand(click.MultiCommand):
         if not self._project.scripts_folder.exists():
             return {}
 
-        commands = {}
-        for filepath in self._project.scripts_folder.glob("*.py"):
-            if filepath.stem.startswith("_"):
-                continue  # Ignore any "private" files
+        return self._get_cli_commands(self._project.scripts_folder)
+        #TODO: loop through and find subdirectories
+        # refactor logic to be recursive function 
+        # (couple different methods that call eachother)
+        # in each subdirectory change those to groups 
+        # each python module turn it to scripts
 
-            cmd = self._get_command(filepath)
-            if cmd:  # NOTE: Don't allow calling commands that failed to load
-                commands[filepath.stem] = cmd
+    def _get_cli_commands(self, base_path: Path) -> Dict:
+        commands = {}
+
+        for filepath in base_path.iterdir():
+            if filepath.stem.startswith("_"):
+                continue # Ignore any "private" files
+
+            elif filepath.is_dir():
+                group = click.Group(name=filepath.stem)
+                subcommands = self._get_cli_commands(filepath)
+                for subcommand in subcommands.values():
+                    group.add_command(subcommand)
+                commands[filepath.stem] = group
+                #TODO: commands is a group, subcommands is a networkboundcommand. 
+                # this needs to be reconciled.
+
+            if filepath.suffix == ".py":
+                cmd = self._get_command(filepath)
+                if cmd:  # NOTE: Don't allow calling commands that failed to load
+                    commands[filepath.stem] = cmd
 
         return commands
 
