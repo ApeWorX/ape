@@ -112,7 +112,7 @@ class KeyfileAccount(AccountAPI):
             return None
 
         signed_msg = EthAccount.sign_message(msg, self.__key)
-        return MessageSignature(  # type: ignore
+        return MessageSignature(
             v=signed_msg.v,
             r=to_bytes(signed_msg.r),
             s=to_bytes(signed_msg.s),
@@ -126,7 +126,7 @@ class KeyfileAccount(AccountAPI):
         signed_txn = EthAccount.sign_transaction(
             txn.dict(exclude_none=True, by_alias=True), self.__key
         )
-        return TransactionSignature(  # type: ignore
+        return TransactionSignature(
             v=signed_txn.v,
             r=to_bytes(signed_txn.r),
             s=to_bytes(signed_txn.s),

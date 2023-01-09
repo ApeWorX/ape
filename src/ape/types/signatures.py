@@ -1,15 +1,11 @@
-from typing import TYPE_CHECKING, Iterator, Union
+from dataclasses import dataclass
+from typing import Iterator, Union
 
 from eth_account import Account
 from eth_account.messages import SignableMessage
 from eth_utils import to_bytes
 
 from ape.types import AddressType
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
 
 
 @dataclass(frozen=True)
