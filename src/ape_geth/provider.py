@@ -382,7 +382,7 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         return self.get_block("latest").number or 0
 
     @raises_not_implemented
-    def revert(self, snapshot_id: SnapshotID):  # type: ignore[empty-body]
+    def revert(self, snapshot_id: SnapshotID):
         # TODO: Replace with impl below after
         #  https://github.com/ethereum/go-ethereum/issues/26154 resolved
         pass
@@ -409,11 +409,11 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         self._make_request("debug_setHead", [block_number_hex_str])
 
     @raises_not_implemented
-    def set_timestamp(self, new_timestamp: int):  # type: ignore[empty-body]
+    def set_timestamp(self, new_timestamp: int):
         pass
 
     @raises_not_implemented
-    def mine(self, num_blocks: int = 1):  # type: ignore[empty-body]
+    def mine(self, num_blocks: int = 1):
         pass
 
     def send_call(self, txn: TransactionAPI, **kwargs: Any) -> bytes:

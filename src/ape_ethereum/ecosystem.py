@@ -466,7 +466,7 @@ class Ethereum(EcosystemAPI):
             kwargs["data"] = kwargs.pop("input")
 
         if all(field in kwargs for field in ("v", "r", "s")):
-            kwargs["signature"] = TransactionSignature(  # type: ignore
+            kwargs["signature"] = TransactionSignature(
                 v=kwargs["v"],
                 r=bytes(kwargs["r"]),
                 s=bytes(kwargs["s"]),
