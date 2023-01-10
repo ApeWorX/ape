@@ -85,7 +85,11 @@ class ScriptCommand(click.MultiCommand):
         else:
             logger.warning(f"No 'main' method or 'cli' command in script: {relative_filepath}")
 
-            @click.command(cls=NetworkBoundCommand, short_help=f"Run '{relative_filepath}'")
+            @click.command(
+                cls=NetworkBoundCommand,
+                short_help=f"Run '{relative_filepath}:main'",
+                name=relative_filepath.stem,
+            )
             @network_option()
             def call(network):
                 _ = network  # Downstream might use this
@@ -119,11 +123,6 @@ class ScriptCommand(click.MultiCommand):
             return {}
 
         return self._get_cli_commands(self._project.scripts_folder)
-        # TODO: loop through and find subdirectories
-        # refactor logic to be recursive function
-        # (couple different methods that call eachother)
-        # in each subdirectory change those to groups
-        # each python module turn it to scripts
 
     def _get_cli_commands(self, base_path: Path) -> Dict:
         commands = {}
@@ -133,13 +132,13 @@ class ScriptCommand(click.MultiCommand):
                 continue  # Ignore any "private" files
 
             elif filepath.is_dir():
-                group = click.Group(name=filepath.stem)
+                group = click.Group(
+                    name=filepath.stem, short_help=f"Run a script from 'scripts/{filepath.stem}'"
+                )
                 subcommands = self._get_cli_commands(filepath)
                 for subcommand in subcommands.values():
                     group.add_command(subcommand)
                 commands[filepath.stem] = group
-                # TODO: commands is a group, subcommands is a networkboundcommand.
-                # this needs to be reconciled.
 
             if filepath.suffix == ".py":
                 cmd = self._get_command(filepath)
