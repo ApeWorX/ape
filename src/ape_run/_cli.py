@@ -53,7 +53,8 @@ class ScriptCommand(click.MultiCommand):
 
             with use_temp_sys_path(filepath.parent.parent):
                 try:
-                    ns = run_module(f"scripts.{filepath.stem}")
+                    path = str(filepath).replace(os.path.sep, ".").split("scripts.")[-1].replace(filepath.suffix, "")
+                    ns = run_module(f"scripts.{path}")
                 except Exception as e:
                     logger.error_from_exception(
                         e, f"Exception while parsing script: {relative_filepath}"
@@ -75,7 +76,8 @@ class ScriptCommand(click.MultiCommand):
             def call(network):
                 _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
-                    ns = run_module(f"scripts.{filepath.stem}")
+                    path = str(filepath).replace(os.path.sep, ".").split("scripts.")[-1].replace(filepath.suffix, "")
+                    ns = run_module(f"scripts.{path}")
 
                 ns["main"]()  # Execute the script
                 self._namespace[filepath.stem] = ns
@@ -133,7 +135,7 @@ class ScriptCommand(click.MultiCommand):
 
             elif filepath.is_dir():
                 group = click.Group(
-                    name=filepath.stem, short_help=f"Run a script from 'scripts/{filepath.stem}'"
+                    name=filepath.stem, short_help=f"Run a script from '{filepath.stem}'"
                 )
                 subcommands = self._get_cli_commands(filepath)
                 for subcommand in subcommands.values():
