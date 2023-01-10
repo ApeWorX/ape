@@ -28,7 +28,7 @@ def test_add_spacing_to_strings():
 
 
 def test_raises_not_implemented():
-    @raises_not_implemented  # type: ignore[empty-body]
+    @raises_not_implemented
     def unimplemented_api_method():
         pass
 

@@ -4,6 +4,7 @@ requires = ["setuptools>=51.1.1", "wheel", "setuptools_scm[toml]>=5.0"]
 [tool.mypy]
 exclude = ["build/", "dist/", "docs/", "tests/integration/cli/projects/"]
 check_untyped_defs = true
+plugins = ["pydantic.mypy"]
 
 [tool.setuptools_scm]
 write_to = "src/ape/version.py"
