@@ -1,3 +1,4 @@
+import os
 import traceback
 from pathlib import Path
 from runpy import run_module
@@ -53,7 +54,12 @@ class ScriptCommand(click.MultiCommand):
 
             with use_temp_sys_path(filepath.parent.parent):
                 try:
-                    path = str(filepath).replace(os.path.sep, ".").split("scripts.")[-1].replace(filepath.suffix, "")
+                    path = (
+                        str(filepath)
+                        .replace(os.path.sep, ".")
+                        .split("scripts.")[-1]
+                        .replace(filepath.suffix, "")
+                    )
                     ns = run_module(f"scripts.{path}")
                 except Exception as e:
                     logger.error_from_exception(
@@ -76,7 +82,12 @@ class ScriptCommand(click.MultiCommand):
             def call(network):
                 _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
-                    path = str(filepath).replace(os.path.sep, ".").split("scripts.")[-1].replace(filepath.suffix, "")
+                    path = (
+                        str(filepath)
+                        .replace(os.path.sep, ".")
+                        .split("scripts.")[-1]
+                        .replace(filepath.suffix, "")
+                    )
                     ns = run_module(f"scripts.{path}")
 
                 ns["main"]()  # Execute the script
