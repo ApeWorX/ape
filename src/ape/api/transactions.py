@@ -41,7 +41,7 @@ class TransactionAPI(BaseInterfaceModel):
     # If left as None, will get set to the network's default required confirmations.
     required_confirmations: Optional[int] = Field(None, exclude=True)
 
-    signature: Optional[TransactionSignature] = Field(exclude=True)
+    signature: Optional[TransactionSignature] = Field(None, exclude=True)
 
     class Config:
         allow_population_by_field_name = True
@@ -350,9 +350,7 @@ class ReceiptAPI(BaseInterfaceModel):
         return output
 
     @raises_not_implemented
-    def show_trace(  # type: ignore[empty-body]
-        self, verbose: bool = False, file: IO[str] = sys.stdout
-    ):
+    def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         """
         Display the complete sequence of contracts and methods called during
         the transaction.
@@ -363,7 +361,7 @@ class ReceiptAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def show_gas_report(self, file: IO[str] = sys.stdout):  # type: ignore[empty-body]
+    def show_gas_report(self, file: IO[str] = sys.stdout):
         """
         Display a gas report for the calls made in this transaction.
         """
