@@ -173,7 +173,7 @@ class ProviderAPI(BaseInterfaceModel):
         Get the balance of an account.
 
         Args:
-            address (``AddressType``): The address of the contract.
+            address (``AddressType``): The address of the account.
 
         Returns:
             int: The account balance.
