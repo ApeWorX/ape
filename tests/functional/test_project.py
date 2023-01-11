@@ -219,7 +219,7 @@ def test_track_deployment_from_previously_deployed_contract(
     base_deployments_path,
     bip122_chain_id,
 ):
-    receipt = owner.deploy(vyper_contract_container, required_confirmations=0).receipt
+    receipt = owner.deploy(vyper_contract_container, 0, required_confirmations=0).receipt
     address = receipt.contract_address
     contract = Contract(address, txn_hash=receipt.txn_hash)
     name = contract.contract_type.name
@@ -249,7 +249,7 @@ def test_track_deployment_from_unknown_contract_missing_txn_hash(
     project_manager,
 ):
     snapshot = chain.snapshot()
-    contract = owner.deploy(vyper_contract_container, required_confirmations=0)
+    contract = owner.deploy(vyper_contract_container, 0, required_confirmations=0)
     chain.restore(snapshot)
 
     contract = Contract(contract.address)
