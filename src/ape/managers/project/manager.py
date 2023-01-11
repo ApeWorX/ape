@@ -145,7 +145,7 @@ class ProjectManager(BaseManager):
 
     def _get_compiler_data(self, compile_if_needed: bool = True):
         contract_types: Iterable[ContractType] = (
-            self.contracts.values()  # type: ignore[assignment]
+            self.contracts.values()
             if compile_if_needed
             else self._get_cached_contract_types().values()
         )
