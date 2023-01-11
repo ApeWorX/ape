@@ -80,10 +80,16 @@ setup(
     long_description_content_type="text/markdown",
     author="ApeWorX Ltd.",
     author_email="admin@apeworx.io",
-    url="https://github.com/ApeWorX/ape",
+    url="https://apeworx.io",
+    project_urls={
+        "Documentation": "https://docs.apeworx.io/ape/",
+        "Funding": "https://gitcoin.co/grants/5958/ape-maintenance-fund",
+        "Source": "https://github.com/ApeWorX/ape",
+        "Tracker": "https://github.com/ApeWorX/ape/issues",
+        "Twitter": "https://twitter.com/ApeFramework",
+    },
     include_package_data=True,
     install_requires=[
-        "backports.cached_property ; python_version<'3.8'",
         "click>=8.1.3,<9",
         "ijson>=3.1.4,<4",
         "importlib-metadata",
@@ -112,7 +118,7 @@ setup(
         "web3[tester]==6.0.0b7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.1.4,<0.2",
-        "ethpm-types>=0.3.12,<0.4",
+        "ethpm-types>=0.3.15,<0.4",
         "evm-trace>=0.1.0a14",
     ],
     entry_points={

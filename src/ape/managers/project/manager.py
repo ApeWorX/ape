@@ -6,6 +6,8 @@ from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta
 from ethpm_types.contract_type import BIP122_URI
+from ethpm_types.manifest import PackageName
+from ethpm_types.utils import AnyUrl
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -60,9 +62,6 @@ class ProjectManager(BaseManager):
         in this project's ``ape-config.yaml`` file.
         """
 
-        # Ensure project is configured first. This will migrate dependency configs
-        # if they are specified alternative ways, such as in brownie-projects.
-        self._project.process_config_file()
         return self._load_dependencies()
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
@@ -146,9 +145,9 @@ class ProjectManager(BaseManager):
 
     def _get_compiler_data(self, compile_if_needed: bool = True):
         contract_types: Iterable[ContractType] = (
-            self.contracts.values()  # type: ignore[assignment]
+            self.contracts.values()
             if compile_if_needed
-            else self._get_cached_contract_types()
+            else self._get_cached_contract_types().values()
         )
         compiler_list: List[Compiler] = []
         contracts_folder = self.config_manager.contracts_folder
@@ -240,13 +239,8 @@ class ProjectManager(BaseManager):
         return project_classes
 
     @property
-    def _project(self) -> ProjectAPI:
-        if self.path.name not in self._cached_projects:
-            self._cached_projects[self.path.name] = self.get_project(
-                self.path, self.contracts_folder
-            )
-
-        return self._cached_projects[self.path.name]
+    def local_project(self) -> ProjectAPI:
+        return self.get_project(self.path, self.contracts_folder)
 
     def extract_manifest(self) -> PackageManifest:
         """
@@ -255,15 +249,24 @@ class ProjectManager(BaseManager):
         Returns:
             ethpm_types.manifest.PackageManifest
         """
-        manifest = self._project.create_manifest()
+        manifest = self.local_project.create_manifest()
         manifest.meta = self.meta
         manifest.compilers = self.compiler_data
         manifest.deployments = self.tracked_deployments
+        manifest.dependencies = self._extract_manifest_dependencies()
         return manifest
+
+    def _extract_manifest_dependencies(self) -> Optional[Dict[PackageName, AnyUrl]]:
+        package_dependencies: Dict[PackageName, AnyUrl] = {}
+        for dependency_config in self.config_manager.dependencies:
+            package_name = dependency_config.name.replace("_", "-").lower()
+            package_dependencies[PackageName(package_name)] = dependency_config.uri
+
+        return package_dependencies
 
     @property
     def _package_deployments_folder(self) -> Path:
-        return self._project._cache_folder / "deployments"
+        return self.local_project._cache_folder / "deployments"
 
     def get_project(
         self,
@@ -289,7 +292,42 @@ class ProjectManager(BaseManager):
         Returns:
             :class:`~ape.api.projects.ProjectAPI`
         """
+        if path.name in self._cached_projects:
+            cached_project = self._cached_projects[path.name]
+            if version == cached_project.version:
+                return cached_project
+
         contracts_folder = contracts_folder or path / "contracts"
+        if not contracts_folder.is_dir():
+            extensions = list(self.compiler_manager.registered_compilers.keys())
+            path_patterns_to_ignore = self.config_manager.compiler.ignore_files
+
+            def find_contracts_folder(sub_dir: Path) -> Optional[Path]:
+                files_to_ignore = []
+                for pattern in path_patterns_to_ignore:
+                    files_to_ignore.extend(list(sub_dir.glob(pattern)))
+
+                next_subs = []
+                for sub in sub_dir.iterdir():
+                    if sub.name.startswith("."):
+                        continue
+
+                    if sub.is_file() and sub not in files_to_ignore:
+                        if sub.suffix in extensions:
+                            return sub.parent
+
+                    elif sub.is_dir():
+                        next_subs.append(sub)
+
+                # No source was found. Search next level of dirs.
+                for next_sub in next_subs:
+                    found = find_contracts_folder(next_sub)
+                    if found:
+                        return found
+
+                return None
+
+            contracts_folder = find_contracts_folder(path) or contracts_folder
 
         def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
             with self.config_manager.using_project(path, contracts_folder=contracts_folder):
@@ -308,12 +346,14 @@ class ProjectManager(BaseManager):
         for project_cls in project_plugin_types:
             project = _try_create_project(project_cls)
             if project:
+                self._cached_projects[path.name] = project
                 return project
 
         # Try 'ApeProject' last, in case there was a more specific one earlier.
         ape_project = _try_create_project(ApeProject)
 
         if ape_project:
+            self._cached_projects[path.name] = ape_project
             return ape_project
 
         raise ProjectError(f"'{self.path.name}' is not recognized as a project.")
@@ -354,9 +394,20 @@ class ProjectManager(BaseManager):
             :class:`~ape.contracts.ContractContainer`
         """
 
-        contract = self._get_contract(attr_name)
+        # Fixes anomaly when accessing non-ContractType attributes.
+        # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
+        try:
+            return self.__getattribute__(attr_name)
+        except AttributeError:
+            # Check if a contract.
+            pass
 
-        if not contract:
+        try:
+            # NOTE: Will compile project (if needed)
+            contract = self._get_contract(attr_name)
+            if contract:
+                return contract
+
             # Check if using namespacing.
             namespaced_contracts = [
                 ct
@@ -370,22 +421,20 @@ class ProjectManager(BaseManager):
             if namespaced_contracts:
                 return ContractNamespace(attr_name, namespaced_contracts)
 
-            # Fixes anomaly when accessing non-ContractType attributes.
-            # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
-            try:
-                return self.__getattribute__(attr_name)
-            except AttributeError as err:
-                message = f"ProjectManager has no attribute or contract named '{attr_name}'."
-                missing_exts = self.extensions_with_missing_compilers([])
-                if missing_exts:
-                    message = (
-                        f"{message} Could it be from one of the missing compilers for extensions: "
-                        + f'{", ".join(sorted(missing_exts))}?'
-                    )
+        except Exception as err:
+            # __getattr__ has to raise `AttributeError`
+            raise AttributeError(str(err)) from err
 
-                raise AttributeError(message) from err
+        # Contract not found
+        message = f"ProjectManager has no attribute or contract named '{attr_name}'."
+        missing_exts = self.extensions_with_missing_compilers([])
+        if missing_exts:
+            message = (
+                f"{message} Could it be from one of the missing compilers for extensions: "
+                + f'{", ".join(sorted(missing_exts))}?'
+            )
 
-        return contract
+        raise AttributeError(message)
 
     def get_contract(self, contract_name: str) -> ContractContainer:
         """
@@ -517,33 +566,48 @@ class ProjectManager(BaseManager):
         else:
             file_path_list = None
 
-        manifest = self._project.create_manifest(file_paths=file_path_list, use_cache=use_cache)
+        manifest = self.local_project.create_manifest(
+            file_paths=file_path_list, use_cache=use_cache
+        )
         return manifest.contract_types or {}
 
     def _get_cached_contract_types(self) -> Dict[str, ContractType]:
-        if not self._project.cached_manifest:
+        if not self.local_project.cached_manifest:
             return {}
 
-        return self._project.cached_manifest.contract_types or {}
+        return self.local_project.cached_manifest.contract_types or {}
 
     def _load_dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
-        if self.path.name in self._cached_dependencies:
-            return self._cached_dependencies[self.path.name]
+        project_id = str(self.path)
+        if project_id in self._cached_dependencies:
+            return self._cached_dependencies[project_id]
 
-        self._cached_dependencies[self.path.name] = {}
         for dependency_config in self.config_manager.dependencies:
-            dependency_config.extract_manifest()
+            dependency_name = dependency_config.name
             version_id = dependency_config.version_id
-            if dependency_config.name in self._cached_dependencies[self.path.name]:
-                self._cached_dependencies[self.path.name][dependency_config.name][
-                    version_id
-                ] = dependency_config
-            else:
-                self._cached_dependencies[self.path.name][dependency_config.name] = {
-                    version_id: dependency_config
-                }
+            project_dependencies = self._cached_dependencies.get(project_id, {})
 
-        return self._cached_dependencies[self.path.name]
+            if (
+                dependency_name in project_dependencies
+                and version_id in project_dependencies[dependency_name]
+            ):
+                # Already cached
+                continue
+
+            # Cache manifest for next time.
+            if dependency_name in project_dependencies:
+                # Dependency is cached but version is not.
+                project_dependencies[dependency_name][version_id] = dependency_config
+            else:
+                # First time caching dependency
+                project_dependencies[dependency_name] = {version_id: dependency_config}
+
+            self._cached_dependencies[project_id] = project_dependencies
+
+            # Only extract manifest if wasn't cached and must happen after caching.
+            dependency_config.extract_manifest()
+
+        return self._cached_dependencies.get(project_id, {})
 
     def track_deployment(self, contract: ContractInstance):
         """
