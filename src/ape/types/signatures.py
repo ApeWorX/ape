@@ -21,12 +21,7 @@ class _Signature:
         yield self.s
 
     def __repr__(self) -> str:
-        return (
-            f"<{self.__class__.__name__} "
-            f"v={self.v} "
-            f"r={to_hex(self.r)} "
-            f"s={to_hex(self.s)}>"
-        )
+        return f"<{self.__class__.__name__} v={self.v} r={to_hex(self.r)} s={to_hex(self.s)}>"
 
     def encode_vrs(self) -> bytes:
         return to_bytes(self.v) + self.r + self.s
