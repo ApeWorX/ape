@@ -88,7 +88,7 @@ class ScriptCommand(click.MultiCommand):
                         .split("scripts.")[-1]
                         .replace(filepath.suffix, "")
                     )
-                    ns = run_module(f"scripts.{path}")
+                    ns = run_module(f"{path}")
 
                 ns["main"]()  # Execute the script
                 self._namespace[filepath.stem] = ns
