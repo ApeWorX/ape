@@ -77,6 +77,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#from-any-address">From Any Address</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#from-previous-deployment">From Previous Deployment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#contract-interaction">Contract Interaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#decoding-and-encoding-inputs">Decoding and Encoding Inputs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
@@ -221,6 +222,44 @@ For example, let’s say you have a Vyper contract containing some functions:</p
 
 <span class="c1"># Mutable calls are transactions and require a sender</span>
 <span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">set_number</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="decoding-and-encoding-inputs">
+<h2>Decoding and Encoding Inputs<a class="headerlink" href="#decoding-and-encoding-inputs" title="Permalink to this headline"></a></h2>
+<p>If you want to separately decode and encode inputs without sending a transaction or making a call, you can achieve this with Ape.
+If you know the method you want to use when decoding or encoding, you can call methods <code class="docutils literal notranslate"><span class="pre">encode_input()</span></code> or <code class="docutils literal notranslate"><span class="pre">decode_input()</span></code> on the method handler from a contract:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Contract</span>
+
+<span class="c1"># HexBytes(0x3fb5c1cb00000000000000000000000000000000000000000000000000000000000000de)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+<span class="n">bytes_value</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="o">.</span><span class="n">encode_input</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the example above, the bytes value returned contains the method ID selector prefix <code class="docutils literal notranslate"><span class="pre">3fb5c1c</span></code>.
+Alternatively, you can decode input:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">hexbytes</span> <span class="kn">import</span> <span class="n">HexBytes</span>
+<span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Contract</span>
+
+<span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+<span class="n">selector_str</span><span class="p">,</span> <span class="n">input_dict</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="o">.</span><span class="n">decode_input</span><span class="p">(</span><span class="n">HexBytes</span><span class="p">(</span><span class="s2">&quot;0x123...&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>In the example above, <code class="docutils literal notranslate"><span class="pre">selector_str</span></code> is the string version of the method ID, e.g. <code class="docutils literal notranslate"><span class="pre">my_method(unit256,uint256)</span></code>.
+The input dict is a mapping of input names to their decoded values, e.g <code class="docutils literal notranslate"><span class="pre">{&quot;foo&quot;:</span> <span class="pre">2,</span> <span class="pre">&quot;owner&quot;:</span> <span class="pre">&quot;0x123...&quot;}</span></code>.
+If an input does not have a name, its key is its stringified input index.</p>
+<p>If you don’t know the method’s ABI and you have calldata, you can use a <code class="docutils literal notranslate"><span class="pre">ContractInstance</span></code> or <code class="docutils literal notranslate"><span class="pre">ContractContainer</span></code> directly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+
+<span class="c1"># Fetch a contract</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+
+<span class="c1"># Alternative, use a contract container from ape.project</span>
+<span class="c1"># contract = ape.project.MyContract</span>
+
+<span class="c1"># Only works if unique amount of args.</span>
+<span class="n">bytes_value</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">encode_input</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">method_id</span><span class="p">,</span> <span class="n">input_dict</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">decode_input</span><span class="p">(</span><span class="n">bytes_value</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
