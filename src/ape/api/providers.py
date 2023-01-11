@@ -326,12 +326,18 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_receipt(self, txn_hash: str) -> ReceiptAPI:
+    def get_receipt(
+        self, txn_hash: str,  required_confirmations: int = 0, timeout: Optional[int] = None
+    ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
 
         Args:
             txn_hash (str): The hash of the transaction to retrieve.
+            required_confirmations (int): The amount of block confirmations
+              to wait before returning the receipt. Defaults to ``0``.
+            timeout (Optional[int]): The amount of time to wait for a receipt
+              before timing out. Defaults ``None``.
 
         Returns:
             :class:`~api.providers.ReceiptAPI`:
