@@ -134,7 +134,7 @@ class ContractLogicError(VirtualMachineError):
         return cls(str(err))
 
 
-class OutOfGasError(TransactionError):
+class OutOfGasError(VirtualMachineError):
     """
     Raised when detecting a transaction failed because it ran
     out of gas.
