@@ -485,10 +485,7 @@ class ProviderAPI(BaseInterfaceModel):
             CallTreeNode: Transaction execution call-tree objects.
         """
 
-    @raises_not_implemented
-    def prepare_transaction(  # type: ignore[empty-body]
-        self, txn: TransactionAPI
-    ) -> TransactionAPI:
+    def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
         """
         Set default values on the transaction.
 
@@ -501,6 +498,7 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
+        return txn
 
     def get_virtual_machine_error(self, exception: Exception) -> VirtualMachineError:
         """
