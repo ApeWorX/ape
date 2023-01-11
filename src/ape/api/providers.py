@@ -377,7 +377,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def revert(self, snapshot_id: SnapshotID):  # type: ignore[empty-body]
+    def revert(self, snapshot_id: SnapshotID):
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -388,7 +388,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def set_timestamp(self, new_timestamp: int):  # type: ignore[empty-body]
+    def set_timestamp(self, new_timestamp: int):
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -399,7 +399,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def mine(self, num_blocks: int = 1):  # type: ignore[empty-body]
+    def mine(self, num_blocks: int = 1):
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -410,7 +410,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def set_balance(self, address: AddressType, amount: int):  # type: ignore[empty-body]
+    def set_balance(self, address: AddressType, amount: int):
         """
         Change the balance of an account.
 
@@ -671,7 +671,7 @@ class Web3Provider(ProviderAPI, ABC):
         if not hasattr(block, "base_fee"):
             raise APINotImplementedError("No base fee found in block.")
         else:
-            base_fee = block.base_fee  # type: ignore
+            base_fee = getattr(block, "base_fee")
 
         if base_fee is None:
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
