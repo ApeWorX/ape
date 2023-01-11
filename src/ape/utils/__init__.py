@@ -8,7 +8,6 @@ from ape.utils.abi import (
     is_dynamic_sized_type,
     is_named_tuple,
     is_struct,
-    parse_type,
     returns_array,
 )
 from ape.utils.basemodel import (
@@ -85,7 +84,6 @@ __all__ = [
     "LogInputABICollection",
     "ManagerAccessMixin",
     "parse_gas_table",
-    "parse_type",
     "raises_not_implemented",
     "returns_array",
     "run_until_complete",

@@ -157,7 +157,7 @@ def test_contract_logs_range_by_address(
 def test_contracts_log_multiple_addresses(
     chain, contract_instance, contract_container, owner, assert_log_values
 ):
-    another_instance = contract_container.deploy(sender=owner)
+    another_instance = contract_container.deploy(0, sender=owner)
     start_block = chain.blocks.height
     contract_instance.setNumber(1, sender=owner)
     another_instance.setNumber(1, sender=owner)

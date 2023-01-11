@@ -144,7 +144,7 @@ def test_account_history_caches_sender_over_address_key(
 ):
     # When getting receipts from the explorer for contracts, it includes transactions
     # made to the contract. This test shows we cache by sender and not address key.
-    contract = sender.deploy(vyper_contract_container)
+    contract = sender.deploy(vyper_contract_container, 0)
     network = ethereum.local
     txn = ethereum.create_transaction(
         receiver=contract.address, sender=sender.address, value=10000000000000000000000

@@ -42,7 +42,8 @@ dynArray: public(DynArray[uint256, 1024][3])
 mixedArray: public(DynArray[DynArray[uint256, 1024][3], 1024][5])
 
 @external
-def __init__():
+def __init__(num: uint256):
+    self.myNumber = num
     self.owner = msg.sender
     self.dynArray[0] = [0]
     self.dynArray[1] = [0, 1]
@@ -62,6 +63,15 @@ def setNumber(num: uint256):
     assert num != 5
     self.prevNumber = self.myNumber
     self.myNumber = num
+    log NumberChange(block.prevhash, self.prevNumber, "Dynamic", num, "Dynamic")
+
+@external
+def setNumber(num: uint256, _address: address):
+    assert msg.sender == self.owner, "!authorized"
+    assert num != 5
+    self.prevNumber = self.myNumber
+    self.myNumber = num
+    self.theAddress = _address
     log NumberChange(block.prevhash, self.prevNumber, "Dynamic", num, "Dynamic")
 
 @external
@@ -201,3 +211,19 @@ def getNestedArrayMixedDynamic() -> DynArray[DynArray[uint256, 1024][3], 1024][5
 @external
 def getNestedAddressArray() -> DynArray[address[3], 1024]:
     return [[msg.sender, msg.sender, msg.sender], [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]]
+
+@view
+@external
+def functionWithUniqueAmountOfArguments(
+    a0: uint256,
+    a1: uint256,
+    a2: uint256,
+    a3: uint256,
+    a4: uint256,
+    a5: uint256,
+    a6: uint256,
+    a7: uint256,
+    a8: uint256,
+    a9: uint256
+):
+    pass
