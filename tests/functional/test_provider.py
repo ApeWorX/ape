@@ -145,3 +145,13 @@ def test_get_contract_logs_single_log_unmatched(
 
 def test_supports_tracing(eth_tester_provider):
     assert not eth_tester_provider.supports_tracing
+
+
+def test_provider_get_balance(project, networks, accounts):
+    """
+    Test that the address is an AddressType.
+    """
+    balance = networks.provider.get_balance(accounts.test_accounts[0].address)
+
+    assert type(balance) == int
+    assert balance == 1000000000000000000000000
