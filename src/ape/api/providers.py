@@ -15,7 +15,7 @@ from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
-from evm_trace import CallTreeNode, TraceFrame
+from evm_trace import CallTreeNode as EvmCallTreeNode
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
@@ -43,7 +43,16 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import LogLevel, logger
-from ape.types import AddressType, BlockID, ContractCode, ContractLog, LogFilter, SnapshotID
+from ape.types import (
+    AddressType,
+    BlockID,
+    CallTreeNode,
+    ContractCode,
+    ContractLog,
+    LogFilter,
+    SnapshotID,
+    TraceFrame,
+)
 from ape.utils import (
     EMPTY_BYTES32,
     BaseInterfaceModel,
@@ -470,7 +479,7 @@ class ProviderAPI(BaseInterfaceModel):
             txn_hash (str): The hash of a transaction to trace.
 
         Returns:
-            Iterator(TraceFrame): Transaction execution trace object.
+            Iterator(:class:`~ape.type.trace.TraceFrame`): Transaction execution trace.
         """
 
     @raises_not_implemented
@@ -482,7 +491,8 @@ class ProviderAPI(BaseInterfaceModel):
             txn_hash (str): The hash of a transaction to trace.
 
         Returns:
-            CallTreeNode: Transaction execution call-tree objects.
+            :class:`~ape.types.trace.CallTreeNode`: Transaction execution
+            call-tree objects.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
@@ -864,6 +874,10 @@ class Web3Provider(ProviderAPI, ABC):
         if not call_tree:
             return self._send_call(txn, **kwargs)
 
+        # Grab raw retrurndata before enrichment
+        returndata = call_tree.outputs
+        call_tree = self.network.ecosystem.enrich_calltree(call_tree)
+
         if track_gas:
             receipt.track_gas()
         if show_trace:
@@ -871,7 +885,7 @@ class Web3Provider(ProviderAPI, ABC):
         if show_gas:
             self.chain_manager._reports.show_gas(call_tree)
 
-        return call_tree.returndata
+        return returndata
 
     def _send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         arguments = self._prepare_call(txn, **kwargs)
@@ -1084,6 +1098,19 @@ class Web3Provider(ProviderAPI, ABC):
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self.chain_manager.history.append(receipt)
         return receipt
+
+    def _create_call_tree_node(self, evm_call: EvmCallTreeNode) -> CallTreeNode:
+        address = self.provider.network.ecosystem.decode_address(evm_call.address)
+        return CallTreeNode(
+            contract_id=address,
+            gas_cost=evm_call.gas_cost,
+            method_id=evm_call.calldata[:4].hex(),
+            inputs=evm_call.calldata[4:].hex(),
+            outputs=evm_call.returndata.hex(),
+            failed=evm_call.failed,
+            raw=evm_call.dict(),
+            calls=[self._create_call_tree_node(x) for x in evm_call.calls],
+        )
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
         coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)

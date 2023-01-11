@@ -1,10 +1,18 @@
 import re
 from enum import IntEnum
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
-from eth_utils import encode_hex, keccak, to_checksum_address
+from eth_typing import Hash32
+from eth_utils import (
+    encode_hex,
+    humanize_hash,
+    is_0x_prefixed,
+    is_hex_address,
+    keccak,
+    to_checksum_address,
+)
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field, validator
@@ -12,9 +20,16 @@ from pydantic import Field, validator
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
-from ape.exceptions import ApeException, APINotImplementedError, DecodingError
+from ape.exceptions import ApeException, APINotImplementedError, ContractError, DecodingError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, GasLimit, RawAddress, TransactionSignature
+from ape.types import (
+    AddressType,
+    CallTreeNode,
+    ContractLog,
+    GasLimit,
+    RawAddress,
+    TransactionSignature,
+)
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -148,6 +163,8 @@ class Ethereum(EcosystemAPI):
     Default transaction type should be overidden id chain doesn't support EIP-1559
     """
 
+    fee_token_symbol: str = "ETH"
+
     @property
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
@@ -223,7 +240,7 @@ class Ethereum(EcosystemAPI):
             outputs=[ABIType(type="string")],
         )
         try:
-            name = ContractCall(abi, address)()
+            name = ContractCall(abi, address)(skip_trace=True)
             raw_target = self.provider.get_storage_at(address, 0)[-20:].hex()
             target = self.conversion_manager.convert(raw_target, AddressType)
             # NOTE: `target` is set in initialized proxies
@@ -247,11 +264,11 @@ class Ethereum(EcosystemAPI):
             outputs=[ABIType(type="address")],
         )
         try:
-            proxy_type = ContractCall(proxy_type_abi, address)()
+            proxy_type = ContractCall(proxy_type_abi, address)(skip_trace=True)
             if proxy_type not in (1, 2):
                 raise ValueError(f"ProxyType '{proxy_type}' not permitted by EIP-897.")
 
-            target = ContractCall(implementation_abi, address)()
+            target = ContractCall(implementation_abi, address)(skip_trace=True)
             # avoid recursion
             if target != ZERO_ADDRESS:
                 return ProxyInfo(type=ProxyType.Delegate, target=target)
@@ -323,7 +340,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
         input_types_str = [i.canonical_type for i in abi.inputs]
-        input_types = [_parse_type(i.dict()) for i in abi.inputs]
+        input_types = [parse_type(i.dict()) for i in abi.inputs]
 
         try:
             raw_input_values = decode(input_types_str, calldata)
@@ -344,7 +361,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types_str = [o.canonical_type for o in abi.outputs]
-        output_types = [_parse_type(o.dict()) for o in abi.outputs]
+        output_types = [parse_type(o.dict()) for o in abi.outputs]
 
         try:
             vm_return_values = decode(output_types_str, raw_data)
@@ -375,6 +392,37 @@ class Ethereum(EcosystemAPI):
             return ([o for o in output_values[0]],)
 
         return tuple(output_values)
+
+    def _enrich_value(self, value: Any) -> Any:
+        if isinstance(value, HexBytes):
+            try:
+                string_value = value.strip(b"\x00").decode("utf8")
+                return f"'{string_value}'"
+            except UnicodeDecodeError:
+                # Truncate bytes if very long.
+                if len(value) > 24:
+                    return humanize_hash(cast(Hash32, value))
+
+                hex_str = HexBytes(value).hex()
+                if is_hex_address(hex_str):
+                    return self._enrich_value(hex_str)
+
+                return hex_str
+
+        elif isinstance(value, str) and is_hex_address(value):
+            return self._enrich_address(self.decode_address(value))
+
+        elif value and isinstance(value, str):
+            # Surround non-address strings with quotes.
+            return f'"{value}"'
+
+        elif isinstance(value, (list, tuple)):
+            return [self._enrich_value(v) for v in value]
+
+        elif isinstance(value, Struct):
+            return {k: self._enrich_value(v) for k, v in value.items()}
+
+        return value
 
     def decode_primitive_value(
         self, value: Any, output_type: Union[str, Tuple, List]
@@ -528,10 +576,127 @@ class Ethereum(EcosystemAPI):
                 transaction_index=log["transactionIndex"],
             )
 
+    def enrich_calltree(
+        self, call: CallTreeNode, use_symbol_for_tokens: bool = False
+    ) -> CallTreeNode:
+        # Enrich subcalls first to make sure it happens before any _return_ statement.
 
-def _parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
+        call.calls = [self.enrich_calltree(c) for c in call.calls]
+
+        not_address_type: bool = not self.conversion_manager.is_type(call.contract_id, AddressType)
+        if not_address_type and is_hex_address(call.contract_id):
+            call.contract_id = self.decode_address(call.contract_id)
+        elif not_address_type:
+            # Already enriched.
+            return call
+
+        # Collapse pre-compile address calls
+        address = cast(AddressType, call.contract_id)
+        address_int = int(address, 16)
+        if 1 <= address_int <= 9:
+            sub_calls = [self.enrich_calltree(c) for c in call.calls]
+            if len(sub_calls) == 1:
+                return sub_calls[0]
+
+            intermediary_node = CallTreeNode(contract_id=f"{address_int}")
+            for sub_tree in sub_calls:
+                intermediary_node.add(sub_tree)
+
+            return intermediary_node
+
+        contract_type = self.chain_manager.contracts.get(address)
+        if not contract_type:
+            return call
+
+        call.contract_id = self._enrich_address(
+            address, use_symbol_for_tokens=use_symbol_for_tokens
+        )
+        method_id_bytes = HexBytes(call.method_id) if call.method_id else None
+        if method_id_bytes and method_id_bytes in contract_type.methods:
+            method_abi = contract_type.methods[method_id_bytes]
+            call.method_id = method_abi.name or call.method_id
+            call = self._enrich_calldata(call, method_abi)
+            call = self._enrich_returndata(call, method_abi)
+
+        return call
+
+    def _enrich_address(self, address: AddressType, use_symbol_for_tokens: bool = False) -> str:
+        contract_type = self.chain_manager.contracts.get(address)
+        if not contract_type:
+            return address
+
+        elif use_symbol_for_tokens and "symbol" in contract_type.view_methods:
+            # Use token symbol as name
+            contract = self.chain_manager.contracts.instance_at(
+                address, contract_type=contract_type
+            )
+
+            try:
+                symbol = contract.symbol(skip_trace=True)
+            except ContractError:
+                symbol = None
+
+            if symbol and str(symbol).strip():
+                return str(symbol).strip()
+
+        name = contract_type.name.strip() if contract_type.name else None
+        return name or self._get_contract_id_from_address(address)
+
+    def _get_contract_id_from_address(self, address: "AddressType") -> str:
+        if address in self.account_manager:
+            return f"Transferring {self.fee_token_symbol}"
+
+        return address
+
+    def _enrich_calldata(self, call: CallTreeNode, method_abi: MethodABI) -> CallTreeNode:
+        calldata = call.inputs
+        if isinstance(calldata, str):
+            calldata_arg = HexBytes(calldata)
+        elif isinstance(calldata, HexBytes):
+            calldata_arg = calldata
+
+        try:
+            call.inputs = self.decode_calldata(method_abi, calldata_arg)
+        except DecodingError:
+            call.inputs = ["<?>" for _ in method_abi.inputs]
+        else:
+            call.inputs = {k: self._enrich_value(v) for k, v in call.inputs.items()}
+
+        return call
+
+    def _enrich_returndata(self, call: CallTreeNode, method_abi: MethodABI) -> CallTreeNode:
+        default_return_value = "<?>"
+
+        if isinstance(call.outputs, str) and is_0x_prefixed(call.outputs):
+            return_value_bytes = HexBytes(call.outputs)
+        elif isinstance(call.outputs, HexBytes):
+            return_value_bytes = call.outputs
+        else:
+            return_value_bytes = None
+
+        if not return_value_bytes:
+            call.outputs = tuple([default_return_value for _ in method_abi.outputs])
+            return call
+
+        else:
+            try:
+                return_values = (
+                    self.decode_returndata(method_abi, return_value_bytes)
+                    if not call.failed
+                    else None
+                )
+            except (DecodingError, InsufficientDataBytes):
+                return_values = tuple([default_return_value for _ in method_abi.outputs])
+
+            values = tuple([self._enrich_value(v) for v in return_values or ()])
+            call.outputs = values[0] if len(values) == 1 else values
+
+        return call
+
+
+def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
     if "tuple" not in type["type"]:
         return type["type"]
 
-    result = tuple([_parse_type(c) for c in type["components"]])
+    result = tuple([parse_type(c) for c in type["components"]])
     return [result] if is_array(type["type"]) else result

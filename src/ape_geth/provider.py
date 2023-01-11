@@ -7,11 +7,9 @@ import ijson  # type: ignore
 import requests
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex, to_wei
+from evm_trace import CallType, ParityTraceList
+from evm_trace import TraceFrame as EvmTraceFrame
 from evm_trace import (
-    CallTreeNode,
-    CallType,
-    ParityTraceList,
-    TraceFrame,
     get_calltree_from_geth_call_trace,
     get_calltree_from_geth_trace,
     get_calltree_from_parity_trace,
@@ -34,7 +32,7 @@ from yarl import URL
 from ape.api import PluginConfig, TestProviderAPI, TransactionAPI, UpstreamProvider, Web3Provider
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import logger
-from ape.types import SnapshotID
+from ape.types import CallTreeNode, SnapshotID, TraceFrame
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_MNEMONIC,
@@ -273,7 +271,14 @@ class BaseGethProvider(Web3Provider, ABC):
             "debug_traceTransaction", [txn_hash, {"enableMemory": True}], "result.structLogs.item"
         )
         for frame in frames:
-            yield TraceFrame(**frame)
+            evm_frame = EvmTraceFrame(**frame)
+            yield TraceFrame(
+                pc=evm_frame.pc,
+                op=evm_frame.op,
+                gas=evm_frame.gas,
+                gas_cost=evm_frame.gas_cost,
+                depth=evm_frame.depth,
+            )
 
     def _get_transaction_trace_using_call_tracer(self, txn_hash: str) -> Dict:
         return self._make_request(
@@ -296,11 +301,13 @@ class BaseGethProvider(Web3Provider, ABC):
             raise ProviderError(f"Failed to get trace for '{txn_hash}'.")
 
         traces = ParityTraceList.parse_obj(result)
-        return get_calltree_from_parity_trace(traces)
+        evm_call = get_calltree_from_parity_trace(traces)
+        return self._create_call_tree_node(evm_call)
 
     def _get_geth_call_tree(self, txn_hash: str) -> CallTreeNode:
         calls = self._get_transaction_trace_using_call_tracer(txn_hash)
-        return get_calltree_from_geth_call_trace(calls)
+        evm_call = get_calltree_from_geth_call_trace(calls)
+        return self._create_call_tree_node(evm_call)
 
     def _log_connection(self, client_name: str):
         logger.info(f"Connecting to existing {client_name} node at '{self._clean_uri}'.")
@@ -434,11 +441,10 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
         result = self._make_request("debug_traceCall", arguments)
         trace_data = result.get("structLogs", [])
-        trace_frames = (TraceFrame(**f) for f in trace_data)
+        trace_frames = (EvmTraceFrame(**f) for f in trace_data)
         return_value = HexBytes(result["returnValue"])
         root_node_kwargs = {
             "gas_cost": result.get("gas", 0),
-            "gas_limit": txn.gas_limit,
             "address": txn.receiver,
             "calldata": txn.data,
             "value": txn.value,
@@ -447,16 +453,24 @@ class GethDev(BaseGethProvider, TestProviderAPI):
             "returndata": return_value,
         }
 
-        call_tree = get_calltree_from_geth_trace(trace_frames, **root_node_kwargs)
+        evm_call_tree = get_calltree_from_geth_trace(trace_frames, **root_node_kwargs)
+        call_tree = self._create_call_tree_node(evm_call_tree)
         receiver = txn.receiver
         if track_gas and call_tree and receiver is not None:
             # Gas report being collected, likely for showing a report
             # at the end of a test run.
-            self.chain_manager._reports.append_gas(call_tree, receiver)
+            enriched_call_tree = self.provider.network.ecosystem.enrich_calltree(
+                call_tree, use_symbol_for_tokens=False
+            )
+            self.chain_manager._reports.append_gas(enriched_call_tree, receiver)
         if show_trace:
-            self.chain_manager._reports.show_trace(call_tree)
+            enriched_call_tree = self.provider.network.ecosystem.enrich_calltree(call_tree)
+            self.chain_manager._reports.show_trace(enriched_call_tree)
         if show_gas:
-            self.chain_manager._reports.show_gas(call_tree)
+            enriched_call_tree = self.provider.network.ecosystem.enrich_calltree(
+                call_tree, use_symbol_for_tokens=False
+            )
+            self.chain_manager._reports.show_gas(enriched_call_tree)
 
         return return_value
 

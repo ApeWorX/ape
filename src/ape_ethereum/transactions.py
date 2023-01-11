@@ -10,14 +10,13 @@ from eth_account._utils.legacy_transactions import (
 )
 from eth_utils import decode_hex, encode_hex, keccak, to_int
 from ethpm_types import HexBytes
-from ethpm_types.abi import EventABI
-from evm_trace import CallTreeNode
+from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, root_validator, validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
-from ape.types import ContractLog
+from ape.types import CallTreeNode, ContractLog
 from ape.utils import cached_property
 
 
@@ -158,6 +157,18 @@ class Receipt(ReceiptAPI):
 
         return self.provider.get_call_tree(self.txn_hash)
 
+    @cached_property
+    def method_called(self) -> Optional[MethodABI]:
+        contract_type = self.chain_manager.contracts.get(self.receiver)
+        if not contract_type:
+            return None
+
+        method_id = self.data[:4]
+        if method_id not in contract_type.methods:
+            return None
+
+        return contract_type.methods[method_id]
+
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
             raise OutOfGasError()
@@ -170,16 +181,18 @@ class Receipt(ReceiptAPI):
         if not call_tree:
             return
 
+        call_tree = self.provider.network.ecosystem.enrich_calltree(call_tree)
         revert_message = None
 
         if call_tree.failed:
             default_message = "reverted without message"
-            if not call_tree.returndata.hex().startswith(
+            returndata = call_tree.raw_tree["returndata"]
+            if not returndata.startswith(
                 "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
             ):
                 revert_message = default_message
             else:
-                decoded_result = decode(("string",), call_tree.returndata[4:])
+                decoded_result = decode(("string",), returndata[4:])
                 if len(decoded_result) == 1:
                     revert_message = f'reverted with message: "{decoded_result[0]}"'
                 else:
@@ -197,6 +210,22 @@ class Receipt(ReceiptAPI):
         call_tree = self.call_tree
         if not call_tree:
             return
+
+        call_tree = self.provider.network.ecosystem.enrich_calltree(
+            call_tree, use_symbol_for_tokens=False
+        )
+
+        # Enrich transfers.
+        if (
+            call_tree.contract_id.startswith("Transferring ")
+            and self.receiver is not None
+            and self.receiver in self.account_manager
+        ):
+            receiver_id = self.account_manager[self.receiver].alias or self.receiver
+            call_tree.method_id = f"to:{receiver_id}"
+
+        elif call_tree.contract_id.startswith("Transferring "):
+            call_tree.method_id = f"to:{self.receiver}"
 
         self.chain_manager._reports.show_gas(
             call_tree, sender=self.sender, transaction_hash=self.txn_hash
