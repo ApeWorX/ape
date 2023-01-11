@@ -2,7 +2,7 @@ from typing import Iterator, Union
 
 from eth_account import Account
 from eth_account.messages import SignableMessage
-from eth_utils import to_bytes
+from eth_utils import add_0x_prefix, to_bytes
 from pydantic.dataclasses import dataclass
 
 from ape.types import AddressType
@@ -21,7 +21,12 @@ class _Signature:
         yield self.s
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} v={self.v} r={self.r.hex()} s={self.s.hex()}>"
+        return (
+            f"<{self.__class__.__name__} "
+            f"v={self.v} "
+            f"r={add_0x_prefix(self.r.hex())} "
+            f"s={add_0x_prefix(self.s.hex())}>"
+        )
 
     def encode_vrs(self) -> bytes:
         return to_bytes(self.v) + self.r + self.s
