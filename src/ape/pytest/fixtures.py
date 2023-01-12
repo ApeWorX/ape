@@ -153,7 +153,7 @@ class ReceiptCapture(ManagerAccessMixin):
             self.capture(txn.txn_hash.hex())
 
     def capture(self, transaction_hash: str):
-        receipt = self.chain_manager.transaction_history.get_receipt(transaction_hash)
+        receipt = self.chain_manager.history.get_receipt(transaction_hash)
         if not receipt:
             return
 
