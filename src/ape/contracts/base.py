@@ -48,6 +48,15 @@ class ContractConstructor(ManagerAccessMixin):
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
 
+    def encode_input(self, *args) -> HexBytes:
+        ecosystem = self.provider.network.ecosystem
+        encoded_calldata = ecosystem.encode_calldata(self.abi, *args)
+        return HexBytes(encoded_calldata)
+
+    def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
+        decoded_inputs = self.provider.network.ecosystem.decode_calldata(self.abi, calldata)
+        return self.abi.selector, decoded_inputs
+
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
         args = self.conversion_manager.convert(args, tuple)
         kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
@@ -60,7 +69,7 @@ class ContractConstructor(ManagerAccessMixin):
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             sender = kwargs["sender"]
-            return sender.call(txn)
+            return sender.call(txn, **kwargs)
 
         return self.provider.send_transaction(txn)
 
@@ -99,7 +108,7 @@ class ContractCall(ManagerAccessMixin):
         return output
 
 
-class ContractCallHandler(ManagerAccessMixin):
+class ContractMethodHandler(ManagerAccessMixin):
 
     contract: "ContractInstance"
     abis: List[MethodABI]
@@ -113,9 +122,62 @@ class ContractCallHandler(ManagerAccessMixin):
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
 
+    def encode_input(self, *args) -> HexBytes:
+        args = self._convert_tuple(args)
+        selected_abi = _select_method_abi(self.abis, args)
+        ecosystem = self.provider.network.ecosystem
+        encoded_calldata = ecosystem.encode_calldata(selected_abi, *args)
+        method_id = ecosystem.get_method_selector(selected_abi)
+        return HexBytes(method_id + encoded_calldata)
+
+    def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
+        matching_abis = []
+        err = ContractError(
+            f"Unable to find matching method ABI for calldata '{calldata.hex()}'. "
+            "Try prepending a method ID to the beginning of the calldata."
+        )
+        for abi in self.abis:
+            selector = self.provider.network.ecosystem.get_method_selector(abi)
+            if calldata.startswith(selector):
+                cutoff = len(selector)
+                rest_calldata = calldata[cutoff:]
+                matching_abis.append(abi)
+
+        if len(matching_abis) == 1:
+            abi = matching_abis[0]
+            decoded_input = self.provider.network.ecosystem.decode_calldata(
+                matching_abis[0], HexBytes(rest_calldata)
+            )
+            return abi.selector, decoded_input
+
+        elif len(matching_abis) > 1:
+            raise err
+
+        # Brute-force find method ABI
+        valid_results = []
+        for abi in self.abis:
+            decoded_calldata = {}
+            try:
+                decoded_calldata = self.provider.network.ecosystem.decode_calldata(
+                    abi, HexBytes(calldata)
+                )
+            except Exception:
+                continue
+
+            if decoded_calldata:
+                valid_results.append((abi, decoded_calldata))
+
+        if len(valid_results) == 1:
+            selected_abi, decoded_calldata = valid_results[0]
+            return selected_abi.selector, decoded_calldata
+
+        raise err
+
     def _convert_tuple(self, v: tuple) -> tuple:
         return self.conversion_manager.convert(v, tuple)
 
+
+class ContractCallHandler(ContractMethodHandler):
     def __call__(self, *args, **kwargs) -> Any:
         if not self.contract.is_contract:
             network = self.provider.network.name
@@ -212,21 +274,12 @@ class ContractTransaction(ManagerAccessMixin):
         txn = self.serialize_transaction(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
-            return kwargs["sender"].call(txn)
+            return kwargs["sender"].call(txn, **kwargs)
 
         return self.provider.send_transaction(txn)
 
 
-class ContractTransactionHandler(ManagerAccessMixin):
-    def __init__(self, contract: "ContractInstance", abis: List[MethodABI]) -> None:
-        super().__init__()
-        self.contract = contract
-        self.abis = abis
-
-    def __repr__(self) -> str:
-        abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
-        return abis[-1].signature
-
+class ContractTransactionHandler(ContractMethodHandler):
     def as_transaction(self, *args, **kwargs) -> TransactionAPI:
         """
         Get a :class:`~ape.api.transactions.TransactionAPI`
@@ -276,9 +329,6 @@ class ContractTransactionHandler(ManagerAccessMixin):
         """
 
         return ContractCallHandler(self.contract, self.abis)
-
-    def _convert_tuple(self, v: tuple) -> tuple:
-        return self.conversion_manager.convert(v, tuple)
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         function_arguments = self._convert_tuple(args)
@@ -559,7 +609,47 @@ class ContractEvent(ManagerAccessMixin):
             yield from self.range(new_block.number, stop=new_block.number + 1)
 
 
-class ContractInstance(BaseAddress):
+class ContractTypeWrapper(ManagerAccessMixin):
+    contract_type: ContractType
+
+    def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
+        """
+        Decode the given calldata using this contract.
+        If the calldata has a method ID prefix, Ape will detect it and find
+        the corresponding method, else it will error.
+
+        Args:
+            calldata (bytes): The calldata to decode.
+
+        Returns:
+            Tuple[str, Dict[str, Any]]: A tuple containing the method selector
+            along a mapping of input names to their decoded values.
+            If an input does not have a number, it will have the stringified
+            index as its key.
+        """
+
+        ecosystem = self.provider.network.ecosystem
+        if calldata in self.contract_type.mutable_methods:
+            method = self.contract_type.mutable_methods[calldata]
+        elif calldata in self.contract_type.view_methods:
+            method = self.contract_type.view_methods[calldata]
+        else:
+            method = None
+
+        if not method:
+            raise ContractError(
+                f"Unable to find method ABI from calldata '{calldata.hex()}'. "
+                "Try prepending the method ID to the beginning of the calldata."
+            )
+
+        method_id = ecosystem.get_method_selector(method)
+        cutoff = len(method_id)
+        rest_calldata = calldata[cutoff:]
+        input_dict = ecosystem.decode_calldata(method, rest_calldata)
+        return method.selector, input_dict
+
+
+class ContractInstance(BaseAddress, ContractTypeWrapper):
     """
     An interactive instance of a smart contract.
     After you deploy a contract using the :class:`~ape.api.accounts.AccountAPI.deploy` method,
@@ -849,24 +939,26 @@ class ContractInstance(BaseAddress):
             raise AttributeError(f"{self.__class__.__name__} has corrupted ABI.")
 
         if attr_name in self._view_methods_:
-            handler = self._view_methods_[attr_name]
+            return self._view_methods_[attr_name]
 
         elif attr_name in self._mutable_methods_:
-            handler = self._mutable_methods_[attr_name]
+            return self._mutable_methods_[attr_name]
 
-        else:
+        elif attr_name in self._events_:
             handler_options = self._events_[attr_name]
             if len(handler_options) > 1:
                 raise AttributeError(
                     f"Multiple events named '{attr_name}' in '{self.contract_type.name}'.\n"
                     f"Use '{self.get_event_by_signature.__name__}' look-up."
                 )
-            handler = handler_options[0]
 
-        return handler
+            return handler_options[0]
+
+        else:
+            raise AttributeError(f"No attribute '{attr_name}' found in contract '{self.address}'.")
 
 
-class ContractContainer(ManagerAccessMixin):
+class ContractContainer(ContractTypeWrapper):
     """
     A wrapper around the contract type that has access to the provider.
     When you import your contracts from the :class:`ape.managers.project.ProjectManager`, you
@@ -952,28 +1044,32 @@ class ContractContainer(ManagerAccessMixin):
         else:
             return None
 
-    def __call__(self, *args, **kwargs) -> TransactionAPI:
-        args = self.conversion_manager.convert(args, tuple)
-        constructor = ContractConstructor(
+    @cached_property
+    def constructor(self) -> ContractConstructor:
+        return ContractConstructor(
             abi=self.contract_type.constructor,
             deployment_bytecode=self.contract_type.get_deployment_bytecode() or HexBytes(b""),
         )
 
+    def __call__(self, *args, **kwargs) -> TransactionAPI:
+        args = self.conversion_manager.convert(args, tuple)
         args_length = len(args)
         inputs_length = (
-            len(constructor.abi.inputs) if constructor.abi and constructor.abi.inputs else 0
+            len(self.constructor.abi.inputs)
+            if self.constructor.abi and self.constructor.abi.inputs
+            else 0
         )
         if inputs_length != args_length:
             raise ArgumentsLengthError(args_length, inputs_length=inputs_length)
 
-        return constructor.serialize_transaction(*args, **kwargs)
+        return self.constructor.serialize_transaction(*args, **kwargs)
 
     def deploy(self, *args, publish: bool = False, **kwargs) -> ContractInstance:
         txn = self(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             # Handle account-related preparation if needed, such as signing
-            receipt = kwargs["sender"].call(txn)
+            receipt = kwargs["sender"].call(txn, **kwargs)
 
         else:
             txn = self.provider.prepare_transaction(txn)

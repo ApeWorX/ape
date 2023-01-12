@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from statistics import mean, median
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union, cast
 
-from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import Hash32
 from eth_utils import humanize_hash, is_hex_address
@@ -21,7 +20,7 @@ from rich.tree import Tree
 
 from ape.exceptions import ContractError, DecodingError
 from ape.utils import ManagerAccessMixin
-from ape.utils.abi import Struct, parse_type
+from ape.utils.abi import Struct
 from ape.utils.misc import ZERO_ADDRESS
 
 if TYPE_CHECKING:
@@ -149,7 +148,10 @@ class CallTraceParser(ManagerAccessMixin):
 
             if method_abi:
                 raw_calldata = call.calldata[4:]
-                arguments = self.decode_calldata(method_abi, raw_calldata)
+                arguments = {
+                    k: self.decode_value(v)
+                    for k, v in self.decode_calldata(method_abi, raw_calldata).items()
+                }
 
                 # The revert-message appears at the top of the trace output.
                 try:
@@ -222,28 +224,10 @@ class CallTraceParser(ManagerAccessMixin):
         return parent
 
     def decode_calldata(self, method: MethodABI, raw_data: bytes) -> Dict:
-        input_types_str = [i.canonical_type for i in method.inputs]
-        input_types = [parse_type(i.dict()) for i in method.inputs]
-
         try:
-            raw_input_values = decode(input_types_str, raw_data)
-            input_values = [
-                self.decode_value(
-                    self._ecosystem.decode_primitive_value(v, t),
-                )
-                for v, t in zip(raw_input_values, input_types)
-            ]
-        except (DecodingError, InsufficientDataBytes):
-            input_values = ["<?>" for _ in input_types]
-
-        arguments = {}
-        index = 0
-        for i, v in zip(method.inputs, input_values):
-            name = i.name or f"{index}"
-            arguments[name] = v
-            index += 1
-
-        return arguments
+            return self._ecosystem.decode_calldata(method, raw_data)
+        except DecodingError:
+            return {i.name: "<?>" for i in method.inputs}
 
     def decode_returndata(self, method: MethodABI, raw_data: bytes) -> Any:
         values = [self.decode_value(v) for v in self._ecosystem.decode_returndata(method, raw_data)]

@@ -8,7 +8,7 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import to_int
+from eth_utils import keccak, to_int
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
@@ -359,6 +359,38 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
+    def decode_calldata(  # type: ignore[empty-body]
+        self, abi: Union[ConstructorABI, MethodABI], calldata: bytes
+    ) -> Dict:
+        """
+        Decode method calldata.
+
+        Args:
+            abi (MethodABI): The method called.
+            calldata (bytes): The raw calldata bytes.
+
+        Returns:
+            Dict: A mapping of input names to decoded values.
+            If an input is anonymous, it should use the stringified
+            index of the input as the key.
+        """
+
+    @abstractmethod
+    def encode_calldata(  # type: ignore[empty-body]
+        self, abi: Union[ConstructorABI, MethodABI], *args: Any
+    ) -> HexBytes:
+        """
+        Encode method calldata.
+
+        Args:
+            abi (Union[ConstructorABI, MethodABI]): The ABI of the method called.
+            *args (Any): The arguments given to the method.
+
+        Returns:
+            HexBytes: The encoded calldata of the arguments to the given method.
+        """
+
+    @abstractmethod
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Any:
         """
         Get the result of a contract call.
@@ -438,6 +470,30 @@ class EcosystemAPI(BaseInterfaceModel):
             does not use any known proxy pattern.
         """
         return None
+
+    def get_method_selector(self, abi: MethodABI) -> HexBytes:
+        """
+        Get a contract method selector, typically via hashing such as ``keccak``.
+        Defaults to using ``keccak`` but can be overridden in different ecosystems.
+
+        Override example::
+
+            from ape.api import EcosystemAPI
+            from hexbytes import HexBytes
+
+            class MyEcosystem(EcosystemAPI):
+                def get_method_selector(self, abi: MethodABI) -> HexBytes:
+                    return HexBytes(abi.selector.encode())  # Simple bytes selector
+
+        Args:
+            abi (MethodABI): The ABI object to use when calculating the
+              selector bytes.
+
+        Returns:
+            HexBytes: The hashed method selector value.
+        """
+
+        return HexBytes(keccak(text=abi.selector)[:4])
 
 
 class ProviderContextManager(ManagerAccessMixin):

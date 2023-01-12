@@ -108,14 +108,15 @@ def test_call_using_block_identifier(
     assert actual == 1
 
 
-def test_repr(contract_instance):
+def test_repr(vyper_contract_instance):
     assert re.match(
-        rf"<TestContract((Sol)|(Vy)) {contract_instance.address}>", repr(contract_instance)
+        rf"<TestContract((Sol)|(Vy)) {vyper_contract_instance.address}>",
+        repr(vyper_contract_instance),
     )
-    assert repr(contract_instance.setNumber) == "setNumber(uint256 num)"
-    assert repr(contract_instance.myNumber) == "myNumber() -> uint256"
+    assert repr(vyper_contract_instance.setNumber) == "setNumber(uint256 num)"
+    assert repr(vyper_contract_instance.myNumber) == "myNumber() -> uint256"
     assert (
-        repr(contract_instance.NumberChange) == "NumberChange(bytes32 b, uint256 prevNum, "
+        repr(vyper_contract_instance.NumberChange) == "NumberChange(bytes32 b, uint256 prevNum, "
         "string dynData, uint256 indexed newNum, string indexed dynIndexed)"
     )
 
@@ -443,3 +444,70 @@ def test_dir(vyper_contract_instance):
         *vyper_contract_instance._view_methods_,
     ]
     assert sorted(actual) == sorted(expected)
+
+
+def test_encode_call_input(contract_instance, calldata):
+    method = contract_instance.setNumber.call
+    actual = method.encode_input(222)
+    expected = calldata
+    assert actual == expected
+
+
+def test_decode_call_input(contract_instance, calldata):
+    method = contract_instance.setNumber.call
+    actual = method.decode_input(calldata)
+    expected = "setNumber(uint256)", {"num": 222}
+    assert actual == expected
+
+
+def test_decode_call_input_no_method_id(contract_instance, calldata):
+    """
+    Ensure Ape can figure out the method if the ID is missing.
+    """
+    anonymous_calldata = calldata[4:]
+    method = contract_instance.setNumber.call
+    actual = method.decode_input(anonymous_calldata)
+    expected = "setNumber(uint256)", {"num": 222}
+    assert actual == expected
+
+
+def test_encode_transaction_input(contract_instance, calldata):
+    method = contract_instance.setNumber
+    actual = method.encode_input(222)
+    expected = calldata
+    assert actual == expected
+
+
+def test_decode_transaction_input(contract_instance, calldata):
+    method = contract_instance.setNumber
+    actual = method.decode_input(calldata)
+    expected = "setNumber(uint256)", {"num": 222}
+    assert actual == expected
+
+
+def test_decode_transaction_input_no_method_id(contract_instance, calldata):
+    """
+    Ensure Ape can figure out the method if the ID is missing.
+    """
+    anonymous_calldata = calldata[4:]
+    method = contract_instance.setNumber
+    actual = method.decode_input(anonymous_calldata)
+    expected = "setNumber(uint256)", {"num": 222}
+    assert actual == expected
+
+
+def test_decode_input(contract_instance, calldata):
+    actual = contract_instance.decode_input(calldata)
+    expected = "setNumber(uint256)", {"num": 222}
+    assert actual == expected
+
+
+def test_decode_ambiguous_input(solidity_contract_instance, calldata_with_address):
+    anonymous_calldata = calldata_with_address[4:]
+    method = solidity_contract_instance.setNumber
+    expected = (
+        f"Unable to find matching method ABI for calldata '{anonymous_calldata.hex()}'. "
+        "Try prepending a method ID to the beginning of the calldata."
+    )
+    with pytest.raises(ContractError, match=expected):
+        method.decode_input(anonymous_calldata)

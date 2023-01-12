@@ -145,7 +145,7 @@ def solidity_contract_container(solidity_contract_type) -> ContractContainer:
 def solidity_contract_instance(
     owner, solidity_contract_container, networks_connected_to_tester
 ) -> ContractInstance:
-    return owner.deploy(solidity_contract_container)
+    return owner.deploy(solidity_contract_container, 0)
 
 
 @pytest.fixture
@@ -162,7 +162,7 @@ def vyper_contract_container(vyper_contract_type) -> ContractContainer:
 def vyper_contract_instance(
     owner, vyper_contract_container, networks_connected_to_tester
 ) -> ContractInstance:
-    return owner.deploy(vyper_contract_container, required_confirmations=0)
+    return owner.deploy(vyper_contract_container, 0, required_confirmations=0)
 
 
 @pytest.fixture
@@ -430,3 +430,35 @@ def dummy_live_network(chain):
 def proxy_contract_container():
     contract_type = ContractType.parse_raw(_get_raw_contract("proxy"))
     return ContractContainer(contract_type)
+
+
+@pytest.fixture
+def calldata():
+    return HexBytes(
+        "0x3fb5c1cb00000000000000000000000000000000000000000000000000000000000000de"
+    )  # setNumber(222)
+
+
+@pytest.fixture
+def calldata_with_address():
+    return HexBytes(
+        "0x9e6b154b00000000000000000000000000000000000000000000000000000000000000de"
+        "000000000000000000000000f7f78379391c5df2db5b66616d18ff92edb82022"
+    )  # setNumber(222, 0xf7f78379391c5df2db5b66616d18ff92edb82022)
+
+
+@pytest.fixture
+def unique_calldata():
+    return HexBytes(
+        "0xacab48d8"
+        "0000000000000000000000000000000000000000000000000000000000000000"
+        "0000000000000000000000000000000000000000000000000000000000000001"
+        "0000000000000000000000000000000000000000000000000000000000000002"
+        "0000000000000000000000000000000000000000000000000000000000000003"
+        "0000000000000000000000000000000000000000000000000000000000000004"
+        "0000000000000000000000000000000000000000000000000000000000000005"
+        "0000000000000000000000000000000000000000000000000000000000000006"
+        "0000000000000000000000000000000000000000000000000000000000000007"
+        "0000000000000000000000000000000000000000000000000000000000000008"
+        "0000000000000000000000000000000000000000000000000000000000000009"
+    )  # functionWithUniqueArguments(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
