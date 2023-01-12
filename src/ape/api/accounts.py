@@ -172,7 +172,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         if not value and not kwargs.get("send_everything"):
             raise AccountsError("Must provide 'VALUE' or use 'send_everything=True'")
 
-        elif value and "send_everything" in kwargs and kwargs["send_everything"]:
+        elif value and kwargs.get("send_everything"):
             raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
 
         elif value:
@@ -231,7 +231,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Args:
             data (Union[:class:`~ape.types.signatures.SignableMessage`, :class:`~ape.api.transactions.TransactionAPI`]):  # noqa: E501
               The message or transaction to verify.
-            signature (Optional[``_Signature``]): The :class:`~ape.types.signatures.MessageSignature`.
+            signature (Optional[:class:`~ape.types.signatures.MessageSignature`]):
+              The signature to check.
 
         Returns:
             bool: ``True`` if the data was signed by this account. ``False`` otherwise.
