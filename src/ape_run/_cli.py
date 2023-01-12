@@ -49,14 +49,9 @@ class ScriptCommand(click.MultiCommand):
 
         def _get_filepath(filepath):
             path = ".".join(
-                (
-                    str(filepath)
-                    .replace(os.path.sep, ".")
-                    .split("scripts.")[-1]
-                    .split(".")[:-1]
-                )
+                (str(filepath).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1])
             )
-            return path 
+            return path
 
         # NOTE: Introspect code structure only for given patterns (do not execute it to find hooks)
         if "cli" in code.co_names:
