@@ -337,7 +337,8 @@ class ProviderAPI(BaseInterfaceModel):
             required_confirmations (int): The amount of block confirmations
               to wait before returning the receipt. Defaults to ``0``.
             timeout (Optional[int]): The amount of time to wait for a receipt
-              before timing out. Defaults ``None``.
+              before timing out. Defaults ``None``. When ``None``, the default
+              value returns from the network value in ``ape-config.yaml``.
 
         Returns:
             :class:`~api.providers.ReceiptAPI`:
