@@ -47,6 +47,17 @@ class ScriptCommand(click.MultiCommand):
             logger.error_from_exception(e, f"Exception while parsing script: {relative_filepath}")
             return None  # Prevents stalling scripts
 
+        def _get_filepath(filepath):
+            path = ".".join(
+                (
+                    str(filepath)
+                    .replace(os.path.sep, ".")
+                    .split("scripts.")[-1]
+                    .split(".")[:-1]
+                )
+            )
+            return path 
+
         # NOTE: Introspect code structure only for given patterns (do not execute it to find hooks)
         if "cli" in code.co_names:
             # If the module contains a click cli subcommand, process it and return the subcommand
@@ -54,12 +65,7 @@ class ScriptCommand(click.MultiCommand):
 
             with use_temp_sys_path(filepath.parent.parent):
                 try:
-                    path = (
-                        str(filepath)
-                        .replace(os.path.sep, ".")
-                        .split("scripts.")[-1]
-                        .replace(filepath.suffix, "")
-                    )
+                    path = _get_filepath(filepath)
                     ns = run_module(f"scripts.{path}")
                 except Exception as e:
                     logger.error_from_exception(
@@ -68,7 +74,9 @@ class ScriptCommand(click.MultiCommand):
                     return None  # Prevents stalling scripts
 
             self._namespace[filepath.stem] = ns
-            return ns["cli"]
+            cli_obj = ns["cli"]
+            cli_obj.name = filepath.stem
+            return cli_obj
 
         elif "main" in code.co_names:
             logger.debug(f"Found 'main' method in script: {relative_filepath}")
@@ -82,12 +90,7 @@ class ScriptCommand(click.MultiCommand):
             def call(network):
                 _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
-                    path = (
-                        str(filepath)
-                        .replace(os.path.sep, ".")
-                        .split("scripts.")[-1]
-                        .replace(filepath.suffix, "")
-                    )
+                    path = _get_filepath(filepath)
                     ns = run_module(f"scripts.{path}")
 
                 ns["main"]()  # Execute the script
