@@ -2430,6 +2430,23 @@ for checking previous contract storage values.</p></li>
 <dd><p>The max gas limit value you can use.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.providers.Web3Provider.prepare_transaction">
+<span class="sig-name descname"><span class="pre">prepare_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">ape.api.transactions.TransactionAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">ape.api.transactions.TransactionAPI</span></a></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.prepare_transaction" title="Permalink to this definition"></a></dt>
+<dd><p>Set default values on the transaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.TransactionError" title="ape.exceptions.TransactionError"><strong>TransactionError</strong></a> – When given negative required confirmations.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to prepare.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.providers.Web3Provider.priority_fee">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">priority_fee</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.providers.Web3Provider.priority_fee" title="Permalink to this definition"></a></dt>
