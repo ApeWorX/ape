@@ -54,8 +54,8 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     assert chain.blocks[-1].number == start_block + restore_index
 
     # Verify we lost and kept the expected transaction hashes from the account history
-    assert receipt_to_keep.txn_hash in [x.txn_hash for x in chain.transaction_history[owner]]
-    assert receipt_to_lose.txn_hash not in [x.txn_hash for x in chain.transaction_history[owner]]
+    assert receipt_to_keep.txn_hash in [x.txn_hash for x in chain.history[owner]]
+    assert receipt_to_lose.txn_hash not in [x.txn_hash for x in chain.history[owner]]
 
     # Head back to the start block
     chain.restore(snapshot_ids[0])
@@ -88,7 +88,7 @@ def test_get_receipt_uses_cache(mocker, eth_tester_provider, chain, vyper_contra
     assert not rpc_spy.call_count
 
     # Show it uses the provider when the receipt is not cached.
-    del chain.transaction_history._hash_to_receipt_map[expected.txn_hash]
+    del chain.history._hash_to_receipt_map[expected.txn_hash]
     chain.get_receipt(expected.txn_hash)
     assert rpc_spy.call_count == 1
 
@@ -97,9 +97,9 @@ def test_get_receipt_uses_cache(mocker, eth_tester_provider, chain, vyper_contra
     assert rpc_spy.call_count == 1  # Not changed
 
 
-def test_get_receipt_from_transaction_history(chain, vyper_contract_instance, owner):
+def test_get_receipt_from_history(chain, vyper_contract_instance, owner):
     expected = vyper_contract_instance.setNumber(3, sender=owner)
-    actual = chain.transaction_history.get_receipt(expected.txn_hash)
+    actual = chain.history.get_receipt(expected.txn_hash)
     assert actual.txn_hash == expected.txn_hash
     assert actual.sender == expected.sender
     assert actual.receiver == expected.receiver
@@ -128,10 +128,10 @@ def test_snapshot_and_restore_no_snapshots(chain):
         chain.restore()
 
 
-def test_transaction_history(sender, receiver, chain):
-    length_at_start = len(chain.transaction_history[sender])
+def test_history(sender, receiver, chain):
+    length_at_start = len(chain.history[sender].all)
     receipt = sender.transfer(receiver, "1 wei")
-    transactions_from_cache = chain.transaction_history[sender]
+    transactions_from_cache = chain.history[sender]
     assert len(transactions_from_cache) == length_at_start + 1
 
     txn = transactions_from_cache[-1]
@@ -139,7 +139,7 @@ def test_transaction_history(sender, receiver, chain):
     assert txn.receiver == receipt.receiver == receiver
 
 
-def test_transaction_history_caches_sender_over_address_key(
+def test_history_caches_sender_over_address_key(
     mocker, chain, eth_tester_provider, sender, vyper_contract_container, ethereum
 ):
     # When getting receipts from the explorer for contracts, it includes transactions
@@ -160,7 +160,7 @@ def test_transaction_history_caches_sender_over_address_key(
     )
 
     # The receipt is already known and cached by the sender.
-    chain.transaction_history.append(known_receipt)
+    chain.history.append(known_receipt)
 
     # We ask for receipts from the contract, but it returns ones sent to the contract.
     def get_txns_patch(address):
@@ -173,7 +173,7 @@ def test_transaction_history_caches_sender_over_address_key(
     eth_tester_provider.network = network
 
     # Previously, this would error because the receipt was cached with the wrong sender
-    actual = [t for t in chain.transaction_history[contract.address]]
+    actual = [t for t in chain.history[contract.address]]
 
     # Actual is 0 because the receipt was cached under the sender.
     assert len(actual) == 0

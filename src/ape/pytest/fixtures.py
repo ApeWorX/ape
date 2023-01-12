@@ -146,7 +146,7 @@ class ReceiptCapture(ManagerAccessMixin):
             t
             for b in blocks
             for t in b.transactions
-            if t.receiver and t.sender and t.sender in self.chain_manager.transaction_history
+            if t.receiver and t.sender and t.sender in self.chain_manager.history
         ]
 
         for txn in transactions:
