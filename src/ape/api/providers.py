@@ -498,47 +498,6 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
-
-        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
-        txn.chain_id = self.network.chain_id
-
-        from ape_ethereum.transactions import StaticFeeTransaction, TransactionType
-
-        txn_type = TransactionType(txn.type)
-        if (
-            txn_type == TransactionType.STATIC
-            and isinstance(txn, StaticFeeTransaction)
-            and txn.gas_price is None
-        ):
-            txn.gas_price = self.gas_price
-        elif txn_type == TransactionType.DYNAMIC:
-            if txn.max_priority_fee is None:
-                txn.max_priority_fee = self.priority_fee
-
-            if txn.max_fee is None:
-                txn.max_fee = self.base_fee + txn.max_priority_fee
-            # else: Assume user specified the correct amount or txn will fail and waste gas
-
-        gas_limit = txn.gas_limit or self.network.gas_limit
-        if isinstance(gas_limit, str) and gas_limit.isnumeric():
-            txn.gas_limit = int(gas_limit)
-        elif isinstance(gas_limit, str) and is_hex(gas_limit):
-            txn.gas_limit = int(gas_limit, 16)
-        elif gas_limit == "max":
-            txn.gas_limit = self.max_gas
-        elif gas_limit in ("auto", None):
-            txn.gas_limit = self.estimate_gas_cost(txn)
-        else:
-            txn.gas_limit = gas_limit
-
-        assert txn.gas_limit not in ("auto", "max")
-        # else: Assume user specified the correct amount or txn will fail and waste gas
-
-        if txn.required_confirmations is None:
-            txn.required_confirmations = self.network.required_confirmations
-        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
-            raise TransactionError(message="'required_confirmations' must be a positive integer.")
-
         return txn
 
     def get_virtual_machine_error(self, exception: Exception) -> VirtualMachineError:
@@ -1041,6 +1000,49 @@ class Web3Provider(ProviderAPI, ABC):
             return [vars(d) for d in self.web3.eth.get_logs(filter_params)]
 
         return self._make_request("eth_getLogs", [filter_params])
+
+    def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
+        txn.chain_id = self.network.chain_id
+
+        from ape_ethereum.transactions import StaticFeeTransaction, TransactionType
+
+        txn_type = TransactionType(txn.type)
+        if (
+            txn_type == TransactionType.STATIC
+            and isinstance(txn, StaticFeeTransaction)
+            and txn.gas_price is None
+        ):
+            txn.gas_price = self.gas_price
+        elif txn_type == TransactionType.DYNAMIC:
+            if txn.max_priority_fee is None:
+                txn.max_priority_fee = self.priority_fee
+
+            if txn.max_fee is None:
+                txn.max_fee = self.base_fee + txn.max_priority_fee
+            # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        gas_limit = txn.gas_limit or self.network.gas_limit
+        if isinstance(gas_limit, str) and gas_limit.isnumeric():
+            txn.gas_limit = int(gas_limit)
+        elif isinstance(gas_limit, str) and is_hex(gas_limit):
+            txn.gas_limit = int(gas_limit, 16)
+        elif gas_limit == "max":
+            txn.gas_limit = self.max_gas
+        elif gas_limit in ("auto", None):
+            txn.gas_limit = self.estimate_gas_cost(txn)
+        else:
+            txn.gas_limit = gas_limit
+
+        assert txn.gas_limit not in ("auto", "max")
+        # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        if txn.required_confirmations is None:
+            txn.required_confirmations = self.network.required_confirmations
+        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
+            raise TransactionError(message="'required_confirmations' must be a positive integer.")
+
+        return txn
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
