@@ -37,7 +37,7 @@ def test_run_subdirectories(ape_cli, runner):
     assert result.exit_code == 0, result.output
     # By default, no commands are run
     assert "Super secret script output" not in result.output
-    result = runner.invoke(ape_cli, ["run", "subdirectory","subdirectory_deploy"])
+    result = runner.invoke(ape_cli, ["run", "subdirectory", "subdirectory_deploy"])
     assert result.exit_code == 0
     assert "Super secret script output" in result.output
 
