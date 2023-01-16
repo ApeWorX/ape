@@ -47,7 +47,7 @@ class ScriptCommand(click.MultiCommand):
             logger.error_from_exception(e, f"Exception while parsing script: {relative_filepath}")
             return None  # Prevents stalling scripts
 
-        def _get_module(filepath: Path):
+        def _get_module(filepath: Path) -> str:
             path = ".".join(
                 (str(filepath).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1])
             )
