@@ -186,7 +186,7 @@ class Receipt(ReceiptAPI):
 
         if call_tree.failed:
             default_message = "reverted without message"
-            returndata = call_tree.raw_tree["returndata"]
+            returndata = call_tree.raw["returndata"]
             if not returndata.startswith(
                 "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
             ):
