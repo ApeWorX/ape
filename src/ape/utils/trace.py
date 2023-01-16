@@ -1,3 +1,4 @@
+import json
 from statistics import mean, median
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
@@ -41,21 +42,21 @@ class TraceStyles:
     """The gas used of the call."""
 
 
-def parse_rich_tree(call: "CallTreeNode") -> Tree:
-    tree = _create_tree(call)
+def parse_rich_tree(call: "CallTreeNode", verbose: bool = False) -> Tree:
+    tree = _create_tree(call, verbose=verbose)
     for sub_call in call.calls:
-        sub_tree = parse_rich_tree(sub_call)
+        sub_tree = parse_rich_tree(sub_call, verbose=verbose)
         tree.add(sub_tree)
 
     return tree
 
 
-def _create_tree(call: "CallTreeNode") -> Tree:
-    signature = parse_as_str(call, stylize=True)
+def _create_tree(call: "CallTreeNode", verbose: bool = False) -> Tree:
+    signature = parse_as_str(call, stylize=True, verbose=verbose)
     return Tree(signature)
 
 
-def parse_as_str(call: "CallTreeNode", stylize: bool = False) -> str:
+def parse_as_str(call: "CallTreeNode", stylize: bool = False, verbose: bool = False) -> str:
     contract = str(call.contract_id)
     method = str(call.method_id)
     if stylize:
@@ -92,6 +93,11 @@ def parse_as_str(call: "CallTreeNode", stylize: bool = False) -> str:
             gas_value = f"[{TraceStyles.GAS_COST}]{gas_value}[/]"
 
         signature += f" {gas_value}"
+
+    if verbose:
+        verbose_items = {k: v for k, v in call.raw.items() if type(v) in (int, str, bytes, float)}
+        extra = json.dumps(verbose_items, indent=2)
+        signature = f"{signature}\n{extra}"
 
     return signature
 

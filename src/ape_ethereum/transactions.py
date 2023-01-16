@@ -203,6 +203,7 @@ class Receipt(ReceiptAPI):
             sender=self.sender,
             transaction_hash=self.txn_hash,
             revert_message=revert_message,
+            verbose=verbose,
         )
 
     def show_gas_report(self, file: IO[str] = sys.stdout):

@@ -1071,8 +1071,9 @@ class ReportManager(BaseManager):
         transaction_hash: Optional[str] = None,
         revert_message: Optional[str] = None,
         file: Optional[IO[str]] = None,
+        verbose: bool = False,
     ):
-        root = call_tree.as_rich_tree()
+        root = call_tree.as_rich_tree(verbose=verbose)
         console = self._get_console(file)
 
         if transaction_hash:

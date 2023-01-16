@@ -109,7 +109,7 @@ class CallTreeNode(BaseInterfaceModel):
 
         self.calls.append(sub_call)
 
-    def as_rich_tree(self) -> Tree:
+    def as_rich_tree(self, verbose: bool = False) -> Tree:
         """
         Return this object as a ``rich.tree.Tree`` for pretty-printing.
 
@@ -117,7 +117,7 @@ class CallTreeNode(BaseInterfaceModel):
             ``Tree``
         """
 
-        return parse_rich_tree(self)
+        return parse_rich_tree(self, verbose=verbose)
 
     def as_gas_tables(self, exclude: Optional[List["ContractFunctionPath"]] = None) -> List[Table]:
         """

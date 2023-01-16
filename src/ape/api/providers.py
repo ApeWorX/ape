@@ -1110,6 +1110,7 @@ class Web3Provider(ProviderAPI, ABC):
             failed=evm_call.failed,
             raw=evm_call.dict(),
             calls=[self._create_call_tree_node(x) for x in evm_call.calls],
+            call_type=evm_call.call_type.value,
         )
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
