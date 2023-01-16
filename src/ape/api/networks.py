@@ -494,16 +494,13 @@ class EcosystemAPI(BaseInterfaceModel):
 
         return HexBytes(keccak(text=abi.selector)[:4])
 
-    def enrich_calltree(
-        self, call: CallTreeNode, use_symbol_for_tokens: bool = True
-    ) -> CallTreeNode:
+    def enrich_calltree(self, call: CallTreeNode, **kwargs) -> CallTreeNode:
         """
         Enhance the data in the call tree using information about the ecosystem.
 
         Args:
             call (:class:`~ape.types.trace.CallTreeNode`): The call tree node to enrich.
-            use_symbol_for_tokens (bool): When ``True``, uses the result from ``symbol()``
-              as the enriched contract identifier.
+            kwargs: Additional kwargs to help with enrichment.
 
         Returns:
             :class:`~ape.types.trace.CallTreeNode`

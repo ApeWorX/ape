@@ -576,11 +576,10 @@ class Ethereum(EcosystemAPI):
                 transaction_index=log["transactionIndex"],
             )
 
-    def enrich_calltree(
-        self, call: CallTreeNode, use_symbol_for_tokens: bool = False
-    ) -> CallTreeNode:
+    def enrich_calltree(self, call: CallTreeNode, **kwargs) -> CallTreeNode:
         # Enrich subcalls first to make sure it happens before any _return_ statement.
 
+        use_symbol_for_tokens = kwargs.get("use_symbol_for_tokens", False)
         call.calls = [self.enrich_calltree(c) for c in call.calls]
 
         not_address_type: bool = not self.conversion_manager.is_type(call.contract_id, AddressType)
