@@ -51,14 +51,14 @@ def parse_rich_tree(call: "CallTreeNode") -> Tree:
 
 
 def _create_tree(call: "CallTreeNode") -> Tree:
-    signature = parse_as_str(call, use_styles=True)
+    signature = parse_as_str(call, stylize=True)
     return Tree(signature)
 
 
-def parse_as_str(call: "CallTreeNode", use_styles: bool = False) -> str:
+def parse_as_str(call: "CallTreeNode", stylize: bool = False) -> str:
     contract = str(call.contract_id)
     method = str(call.method_id)
-    if use_styles:
+    if stylize:
         contract = f"[{TraceStyles.CONTRACTS}]{contract}[/]"
         method = f"[{TraceStyles.METHODS}]{method}[/]"
 
@@ -66,13 +66,13 @@ def parse_as_str(call: "CallTreeNode", use_styles: bool = False) -> str:
 
     if call.call_type is not None and call.call_type.upper() == "DELEGATECALL":
         delegate = "(delegate)"
-        if use_styles:
+        if stylize:
             delegate = f"[orange]{delegate}[/]"
 
         call_path = f"{delegate} {call_path}"
 
     signature = call_path
-    arguments_str = _get_inputs_str(call.inputs, use_styles=use_styles)
+    arguments_str = _get_inputs_str(call.inputs, stylize=stylize)
     signature = f"{signature}{arguments_str}"
 
     return_str = _get_outputs_str(call.outputs)
@@ -81,14 +81,14 @@ def parse_as_str(call: "CallTreeNode", use_styles: bool = False) -> str:
 
     if call.value:
         value = str(call.value)
-        if use_styles:
+        if stylize:
             value = f"[{TraceStyles.VALUE}]{value}[/]"
 
         signature += f" {value}"
 
     if call.gas_cost:
         gas_value = f"[{call.gas_cost} gas]"
-        if use_styles:
+        if stylize:
             gas_value = f"[{TraceStyles.GAS_COST}]{gas_value}[/]"
 
         signature += f" {gas_value}"
@@ -96,8 +96,8 @@ def parse_as_str(call: "CallTreeNode", use_styles: bool = False) -> str:
     return signature
 
 
-def _get_inputs_str(inputs: Any, use_styles: bool = False) -> str:
-    color = TraceStyles.INPUTS if use_styles else None
+def _get_inputs_str(inputs: Any, stylize: bool = False) -> str:
+    color = TraceStyles.INPUTS if stylize else None
     if inputs in ["0x", None, (), [], {}]:
         return "()"
     elif isinstance(inputs, dict):
@@ -106,22 +106,22 @@ def _get_inputs_str(inputs: Any, use_styles: bool = False) -> str:
     return f"({inputs})"
 
 
-def _get_outputs_str(outputs: Any, use_styles: bool = False) -> Optional[str]:
+def _get_outputs_str(outputs: Any, stylize: bool = False) -> Optional[str]:
     if outputs in ["0x", None, (), [], {}]:
         return None
 
     elif isinstance(outputs, dict):
-        color = TraceStyles.OUTPUTS if use_styles else None
+        color = TraceStyles.OUTPUTS if stylize else None
         return _dict_to_str(outputs, color=color)
 
     elif isinstance(outputs, (list, tuple)):
         return (
             f"[{TraceStyles.OUTPUTS}]{_list_to_str(outputs)}[/]"
-            if use_styles
+            if stylize
             else _list_to_str(outputs)
         )
 
-    return f"[{TraceStyles.OUTPUTS}]{outputs}[/]" if use_styles else outputs
+    return f"[{TraceStyles.OUTPUTS}]{outputs}[/]" if stylize else outputs
 
 
 def parse_gas_table(report: "GasReport") -> List[Table]:

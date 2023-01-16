@@ -37,6 +37,9 @@ class CallTreeNode(BaseInterfaceModel):
     def __str__(self) -> str:
         return parse_as_str(self)
 
+    def _repr_pretty_(self, *args, **kwargs) -> str:
+        return parse_as_str(self.enrich(), stylize=True)
+
     def enrich(self):
         self.provider.network.ecosystem.enrich_calltree(self)
 
