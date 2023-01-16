@@ -356,7 +356,7 @@ class PollDaemonThread(threading.Thread):
 
             try:
                 self._handler(next(self._poller))
-            except ChainError:
+            except (ChainError, StopIteration):
                 # Check if can stop once more before exiting
                 if self._do_stop():
                     return
