@@ -213,14 +213,13 @@ def test_blocks_range(chain_that_mined_5):
 def test_blocks_range_too_high_stop(chain_that_mined_5):
     num_blocks = len(chain_that_mined_5.blocks)
     num_blocks_add_1 = num_blocks + 1
-    with pytest.raises(ChainError) as err:
-        # Have to run through generator to trigger code in definition.
-        _ = [_ for _ in chain_that_mined_5.blocks.range(num_blocks_add_1)]
-
-    assert str(err.value) == (
-        f"'stop={num_blocks_add_1}' cannot be greater than the chain length ({num_blocks}). "
-        f"Use 'poll_blocks()' to wait for future blocks."
+    expected = (
+        rf"'stop={num_blocks_add_1}' cannot be greater than the chain length \({num_blocks}\)\. "
+        rf"Use 'poll_blocks\(\)' to wait for future blocks\."
     )
+    with pytest.raises(ChainError, match=expected):
+        # Have to run through generator to trigger code in definition.
+        list(chain_that_mined_5.blocks.range(num_blocks_add_1))
 
 
 def test_block_range_with_step(chain_that_mined_5):
