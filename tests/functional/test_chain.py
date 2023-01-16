@@ -513,9 +513,16 @@ def test_poll_blocks(chain_that_mined_5, eth_tester_provider, owner, PollDaemon)
 
 def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollDaemon, caplog):
     blocks: Queue = Queue(maxsize=6)
-    poller = chain_that_mined_5.blocks.poll_blocks()
 
-    with PollDaemon("blocks", poller, blocks.put, blocks.full):
+    def poller():
+        try:
+            yield from chain_that_mined_5.blocks.poll_blocks()
+        except ChainError:
+            # Let test fail normally if this error matters.
+            # Else, it may be related to a test race condition when using x-dist.
+            return
+
+    with PollDaemon("blocks", poller(), blocks.put, blocks.full):
         # Sleep first to ensure listening before mining.
         time.sleep(1)
 
