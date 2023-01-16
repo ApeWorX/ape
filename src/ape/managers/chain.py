@@ -389,7 +389,7 @@ class AccountHistory(BaseInterfaceModel):
     """
 
     address: AddressType
-    _session_receipts: List[ReceiptAPI] = []
+    sessional: List[ReceiptAPI] = []
 
     @property
     def outgoing(self) -> Iterator[ReceiptAPI]:
@@ -407,50 +407,20 @@ class AccountHistory(BaseInterfaceModel):
                 self.chain_manager.history.append(receipt)
                 continue
 
-            elif receipt.txn_hash not in [t.txn_hash for t in self._session_receipts]:
-                yield receipt
-
-    @property
-    def all(self) -> Iterator[ReceiptAPI]:
-        """
-        All account transactions, from earliest to latest.
-        """
-        sessional = sorted(self._session_receipts, key=lambda x: x.block_number)
-        for receipt in self.outgoing:
-            if not sessional or receipt.block_number <= sessional[0].block_number:
-                yield receipt
-            else:
-                yield sessional.pop(0)
-
-                # Catch up before yielding outgoing receipt.
-                if sessional:
-                    for i in range(len(sessional)):
-                        if sessional[i].block_number <= receipt.block_number:
-                            yield sessional.pop(i)
-                        else:
-                            break
-
-                # All sessional receipts before this outgoing receipt have been yielded.
-                yield receipt
-
-        # Yield remaining sessional.
-        for sessional_receipt in sessional:
-            yield sessional_receipt
+            yield receipt
 
     def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
-        yield from self.all
+        yield from self.outgoing
 
     def __len__(self) -> int:
-        return len(list(self.all))
+        return len(list(self.outgoing))
 
     def append(self, receipt: ReceiptAPI):
-        if receipt.txn_hash not in [x.txn_hash for x in self._session_receipts]:
-            self._session_receipts.append(receipt)
+        if receipt.txn_hash not in [x.txn_hash for x in self.sessional]:
+            self.sessional.append(receipt)
 
     def revert_to_block(self, block_number: int):
-        self._session_receipts = [
-            x for x in self._session_receipts if x.block_number <= block_number
-        ]
+        self.sessional = [x for x in self.sessional if x.block_number <= block_number]
 
 
 class TransactionHistory(BaseManager):
