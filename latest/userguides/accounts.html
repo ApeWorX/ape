@@ -165,6 +165,11 @@ Pre-funded test accounts are accessible via the <a class="reference external" hr
 </div>
 <p><strong>WARN</strong>: NEVER put a seed phrase with real funds here.
 The accounts generated from this seed are solely for testing and debugging purposes.</p>
+<p>You can create a new test account by doing the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">generate_test_account</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: Creating a new test account means it will be unfunded by default.</p>
 <p>Learn more about test accounts from the <a class="reference external" href="./testing.html#accounts-fixture">testing guide</a>.</p>
 <p>If your testing provider supports this feature, it is possible to directly set the balances of any address by performing the following action:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">account</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e18</span><span class="p">)</span>  <span class="c1"># Gives `account` 1 Ether</span>
