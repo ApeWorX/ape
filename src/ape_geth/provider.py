@@ -459,18 +459,12 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         if track_gas and call_tree and receiver is not None:
             # Gas report being collected, likely for showing a report
             # at the end of a test run.
-            enriched_call_tree = self.provider.network.ecosystem.enrich_calltree(
-                call_tree, use_symbol_for_tokens=False
-            )
-            self.chain_manager._reports.append_gas(enriched_call_tree, receiver)
+            self.chain_manager._reports.append_gas(call_tree.enrich(), receiver)
         if show_trace:
-            enriched_call_tree = self.provider.network.ecosystem.enrich_calltree(call_tree)
-            self.chain_manager._reports.show_trace(enriched_call_tree)
+            call_tree.enrich()
+            self.chain_manager._reports.show_trace(call_tree.enrich())
         if show_gas:
-            enriched_call_tree = self.provider.network.ecosystem.enrich_calltree(
-                call_tree, use_symbol_for_tokens=False
-            )
-            self.chain_manager._reports.show_gas(enriched_call_tree)
+            self.chain_manager._reports.show_gas(call_tree.enrich())
 
         return return_value
 

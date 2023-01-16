@@ -181,7 +181,7 @@ class Receipt(ReceiptAPI):
         if not call_tree:
             return
 
-        call_tree = self.provider.network.ecosystem.enrich_calltree(call_tree)
+        call_tree.enrich()
         revert_message = None
 
         if call_tree.failed:
@@ -211,9 +211,7 @@ class Receipt(ReceiptAPI):
         if not call_tree:
             return
 
-        call_tree = self.provider.network.ecosystem.enrich_calltree(
-            call_tree, use_symbol_for_tokens=False
-        )
+        call_tree.enrich()
 
         # Enrich transfers.
         if (

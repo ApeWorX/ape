@@ -386,7 +386,7 @@ class ReceiptAPI(BaseInterfaceModel):
         call_tree = self.call_tree
         receiver = self.receiver
         if call_tree and receiver is not None:
-            call_tree = self.provider.network.ecosystem.enrich_calltree(call_tree)
+            call_tree.enrich()
             self.chain_manager._reports.append_gas(
                 call_tree, receiver, sender=self.sender, transaction_hash=self.txn_hash
             )

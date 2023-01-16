@@ -876,7 +876,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         # Grab raw retrurndata before enrichment
         returndata = call_tree.outputs
-        call_tree = self.network.ecosystem.enrich_calltree(call_tree)
+        call_tree.enrich()
 
         if track_gas:
             receipt.track_gas()
