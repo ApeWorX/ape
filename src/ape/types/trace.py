@@ -153,7 +153,7 @@ class CallTreeNode(BaseInterfaceModel):
         for exclusion in exclusions:
             if exclusion.method_name is None and fnmatch(self.contract_id, exclusion.contract_name):
                 # Skip this whole contract. Search contracts from sub-calls.
-                return _merge_gas_reports(*[c.get_gas_report(exclude) for c in self.calls])
+                return merge_reports(*[c.get_gas_report(exclude) for c in self.calls])
 
             for excl in exclusions:
                 if not excl.method_name:
@@ -166,7 +166,7 @@ class CallTreeNode(BaseInterfaceModel):
 
                 elif self.method_id and fnmatch(self.method_id, excl.method_name):
                     # Skip this report because of the method name exclusion criteria.
-                    return _merge_gas_reports(*[c.get_gas_report(exclude) for c in self.calls])
+                    return merge_reports(*[c.get_gas_report(exclude) for c in self.calls])
 
         reports = [c.get_gas_report(exclude) for c in self.calls]
         if self.method_id:
@@ -177,16 +177,7 @@ class CallTreeNode(BaseInterfaceModel):
             }
             reports.append(report)
 
-        return _merge_gas_reports(*reports)
-
-
-def _merge_gas_reports(*reports: GasReport) -> GasReport:
-    if len(reports) == 1:
-        return reports[0]
-    elif len(reports) > 1:
         return merge_reports(*reports)
-
-    return {}
 
 
 class TraceFrame(BaseInterfaceModel):
