@@ -2,6 +2,7 @@ import sys
 import time
 from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
+from eth_utils import is_hex, to_int
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import validator
@@ -9,9 +10,9 @@ from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
-from ape.exceptions import TransactionError
+from ape.exceptions import NetworkError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, GasLimit, TraceFrame, TransactionSignature
+from ape.types import AddressType, ContractLog, TraceFrame, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -29,7 +30,7 @@ class TransactionAPI(BaseInterfaceModel):
     chain_id: int = Field(0, alias="chainId")
     receiver: Optional[AddressType] = Field(None, alias="to")
     sender: Optional[AddressType] = Field(None, alias="from")
-    gas_limit: Optional[GasLimit] = Field(None, alias="gas")
+    gas_limit: Optional[int] = Field(None, alias="gas")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
     data: bytes = b""
@@ -44,6 +45,31 @@ class TransactionAPI(BaseInterfaceModel):
 
     class Config:
         allow_population_by_field_name = True
+
+    @validator("gas_limit", pre=True)
+    def validate_gas_limit(cls, value):
+        if value is None:
+            if not cls.network_manager.active_provider:
+                raise NetworkError("Must be connected to use default gas config.")
+
+            value = cls.network_manager.active_provider.network.gas_limit
+
+        if value == "auto":
+            return None  # Delegate to `ProviderAPI.estimate_gas_cost`
+
+        elif value == "max":
+            if not cls.network_manager.active_provider:
+                raise NetworkError("Must be connected to use 'max'.")
+
+            return cls.network_manager.active_provider.max_gas
+
+        elif isinstance(value, str) and is_hex(value):
+            return to_int(hexstr=value)
+
+        elif isinstance(value, str) and value.isnumeric():
+            return to_int(value)
+
+        return value
 
     @validator("data", pre=True)
     def validate_data(cls, value):
