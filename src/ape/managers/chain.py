@@ -389,29 +389,68 @@ class AccountHistory(BaseInterfaceModel):
     """
 
     address: AddressType
-    _transaction_list: List[ReceiptAPI] = []
+    _session_receipts: List[ReceiptAPI] = []
 
     @property
     def outgoing(self) -> Iterator[ReceiptAPI]:
         """
-        All outgoing transactions.
+        All outgoing transactions, from earliest to latest.
         """
         explorer = self.provider.network.explorer
         explorer_receipts = (
             [r for r in explorer.get_account_transactions(self.address)] if explorer else []
         )
         for receipt in explorer_receipts:
-            # TODO: Use cache
-            if receipt.txn_hash not in [t.txn_hash for t in self._transaction_list]:
+            if receipt.sender != self.address:
+                # Likely ``self.address`` is a contract.
+                # Cache the receipts by their sender instead and skip them here.
+                self.chain_manager.history.append(receipt)
+                continue
+
+            elif receipt.txn_hash not in [t.txn_hash for t in self._session_receipts]:
                 yield receipt
 
     @property
     def all(self) -> Iterator[ReceiptAPI]:
         """
-        All account transactions.
+        All account transactions, from earliest to latest.
         """
-        yield from self.outgoing
-        yield from self._transaction_list
+        sessional = sorted(self._session_receipts, key=lambda x: x.block_number)
+        for receipt in self.outgoing:
+            if not sessional or receipt.block_number <= sessional[0].block_number:
+                yield receipt
+            else:
+                yield sessional.pop(0)
+
+                # Catch up before yielding outgoing receipt.
+                if sessional:
+                    for i in range(len(sessional)):
+                        if sessional[i].block_number <= receipt.block_number:
+                            yield sessional.pop(i)
+                        else:
+                            break
+
+                # All sessional receipts before this outgoing receipt have been yielded.
+                yield receipt
+
+        # Yield remaining sessional.
+        for sessional_receipt in sessional:
+            yield sessional_receipt
+
+    def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
+        yield from self.all
+
+    def __len__(self) -> int:
+        return len(list(self.all))
+
+    def append(self, receipt: ReceiptAPI):
+        if receipt.txn_hash not in [x.txn_hash for x in self._session_receipts]:
+            self._session_receipts.append(receipt)
+
+    def revert_to_block(self, block_number: int):
+        self._session_receipts = [
+            x for x in self._session_receipts if x.block_number <= block_number
+        ]
 
 
 class TransactionHistory(BaseManager):
@@ -419,19 +458,8 @@ class TransactionHistory(BaseManager):
     A container mapping Transaction History to the transaction from the active session.
     """
 
-    _address_list_map: Dict[AddressType, AccountHistory] = {}
-
-    # Facilitates faster look-ups.
+    _account_history_cache: Dict[AddressType, AccountHistory] = {}
     _hash_to_receipt_map: Dict[str, ReceiptAPI] = {}
-
-    def get_account_history(self, address: Union[BaseAddress, AddressType]) -> AccountHistory:
-
-        address_key: AddressType = self.conversion_manager.convert(address, AddressType)
-
-        if address_key not in self._address_list_map:
-            self._address_list_map[address_key] = AccountHistory(address=address_key)
-
-        return self._address_list_map[address_key]
 
     @singledispatchmethod
     def __getitem__(self, key):
@@ -470,22 +498,28 @@ class TransactionHistory(BaseManager):
 
             return receipt
 
+    @singledispatchmethod
+    def __contains__(self, key):
+        raise NotImplementedError(f"Cannot use type of {type(key)} as Index")
+
     def append(self, txn_receipt: ReceiptAPI):
         """
-        Add a transaction to the stored list for the given account address.
+        Add a transaction to the cache This is useful for sessional-transactions.
+
         Raises:
             :class:`~ape.exceptions.ChainError`: When trying to append a transaction
             receipt that is already in the list.
+
         Args:
             txn_receipt (:class:`~ape.api.transactions.ReceiptAPI`): The transaction receipt.
-            **NOTE**: The receipt is accessible in the list returned from
-            :meth:`~ape.managers.chain.AccountHistory.__getitem__`.
         """
 
         self._hash_to_receipt_map[txn_receipt.txn_hash] = txn_receipt
         address = self.conversion_manager.convert(txn_receipt.sender, AddressType)
-        if address not in self._address_list_map:
-            self._address_list_map[address] = AccountHistory(address=address)
+        if address not in self._account_history_cache:
+            self._account_history_cache[address] = AccountHistory(address=address)
+
+        self._account_history_cache[address].append(txn_receipt)
 
     def revert_to_block(self, block_number: int):
         """
@@ -498,6 +532,16 @@ class TransactionHistory(BaseManager):
         self._hash_to_receipt_map = {
             h: r for h, r in self._hash_to_receipt_map.items() if r.block_number <= block_number
         }
+        for account_history in self._account_history_cache.values():
+            account_history.revert_to_block(block_number)
+
+    def get_account_history(self, address: Union[BaseAddress, AddressType]) -> AccountHistory:
+        address_key: AddressType = self.conversion_manager.convert(address, AddressType)
+
+        if address_key not in self._account_history_cache:
+            self._account_history_cache[address_key] = AccountHistory(address=address_key)
+
+        return self._account_history_cache[address_key]
 
 
 class ContractCache(BaseManager):

@@ -10,6 +10,7 @@ from hexbytes import HexBytes
 import ape
 from ape.contracts import ContractInstance
 from ape.exceptions import APINotImplementedError, ChainError, ConversionError
+from ape.managers.chain import AccountHistory
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 
@@ -54,8 +55,9 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     assert chain.blocks[-1].number == start_block + restore_index
 
     # Verify we lost and kept the expected transaction hashes from the account history
-    assert receipt_to_keep.txn_hash in [x.txn_hash for x in chain.history[owner]]
-    assert receipt_to_lose.txn_hash not in [x.txn_hash for x in chain.history[owner]]
+    owner_txns = [x.txn_hash for x in chain.history[owner]]
+    assert receipt_to_keep.txn_hash in owner_txns
+    assert receipt_to_lose.txn_hash not in owner_txns
 
     # Head back to the start block
     chain.restore(snapshot_ids[0])
@@ -99,7 +101,7 @@ def test_get_receipt_uses_cache(mocker, eth_tester_provider, chain, vyper_contra
 
 def test_get_receipt_from_history(chain, vyper_contract_instance, owner):
     expected = vyper_contract_instance.setNumber(3, sender=owner)
-    actual = chain.history.get_receipt(expected.txn_hash)
+    actual = chain.history[expected.txn_hash]
     assert actual.txn_hash == expected.txn_hash
     assert actual.sender == expected.sender
     assert actual.receiver == expected.receiver
@@ -129,9 +131,9 @@ def test_snapshot_and_restore_no_snapshots(chain):
 
 
 def test_history(sender, receiver, chain):
-    length_at_start = len(chain.history[sender].all)
+    length_at_start = len(chain.history[sender])
     receipt = sender.transfer(receiver, "1 wei")
-    transactions_from_cache = chain.history[sender]
+    transactions_from_cache = list(chain.history[sender].all)
     assert len(transactions_from_cache) == length_at_start + 1
 
     txn = transactions_from_cache[-1]
@@ -177,6 +179,26 @@ def test_history_caches_sender_over_address_key(
 
     # Actual is 0 because the receipt was cached under the sender.
     assert len(actual) == 0
+
+
+def test_account_history_all_ascends(mocker, dummy_live_network, address):
+    mock_explorer = mocker.MagicMock()
+
+    def fn(*args, **kwargs):
+        yield mocker.MagicMock(block_number=1, sender=address)
+        yield mocker.MagicMock(block_number=9, sender=address)
+
+    mock_explorer.get_account_transactions.side_effect = fn
+    dummy_live_network.__dict__["explorer"] = mock_explorer
+
+    account_history = AccountHistory(address=address)
+    session_0 = mocker.MagicMock(block_number=7, sender=address)
+    session_1 = mocker.MagicMock(block_number=4, sender=address)
+
+    account_history._session_receipts = [session_0, session_1]
+    actual = [x.block_number for x in account_history.all]
+    expected = [1, 4, 7, 9]
+    assert actual == expected
 
 
 def test_iterate_blocks(chain_that_mined_5):

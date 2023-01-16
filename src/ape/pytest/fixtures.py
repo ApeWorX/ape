@@ -142,18 +142,13 @@ class ReceiptCapture(ManagerAccessMixin):
 
     def capture_range(self, start_block: int, stop_block: int):
         blocks = self.chain_manager.blocks.range(start_block, stop_block + 1)
-        transactions = [
-            t
-            for b in blocks
-            for t in b.transactions
-            if t.receiver and t.sender and t.sender in self.chain_manager.history
-        ]
+        transactions = [t for b in blocks for t in b.transactions if t.receiver and t.sender]
 
         for txn in transactions:
             self.capture(txn.txn_hash.hex())
 
     def capture(self, transaction_hash: str):
-        receipt = self.chain_manager.history.get_receipt(transaction_hash)
+        receipt = self.chain_manager.history[transaction_hash]
         if not receipt:
             return
 
