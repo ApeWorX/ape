@@ -432,6 +432,12 @@ class TestAccountContainerAPI(AccountContainerAPI):
     ``AccountContainerAPI`` directly. This is how they show up in the ``accounts`` test fixture.
     """
 
+    @abstractmethod
+    def generate_account(self) -> "TestAccountAPI":
+        """
+        Generate a new test account
+        """
+
 
 class TestAccountAPI(AccountAPI):
     """

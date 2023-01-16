@@ -8,6 +8,7 @@ from ape.exceptions import AccountsError, NetworkError, ProjectError, SignatureE
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
+from ape_test.accounts import TestAccount
 
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
 
@@ -362,6 +363,19 @@ def test_test_accounts_repr(test_accounts):
 def test_account_comparison_to_non_account(core_account):
     # Before, would get a ConversionError.
     assert core_account != "foo"
+
+
+def test_create_account(test_accounts):
+    created_acc = test_accounts.generate_test_account()
+
+    assert isinstance(created_acc, TestAccount)
+    assert created_acc.index == len(test_accounts)
+
+    second_created_acc = test_accounts.generate_test_account()
+
+    assert created_acc.address != second_created_acc.address
+
+    assert second_created_acc.index == created_acc.index + 1
 
 
 def test_dir(core_account):
