@@ -315,6 +315,7 @@ class BlockContainer(BaseManager):
 
         while True:
             confirmable_block_number = self.height - required_confirmations
+            confirmable_block = None
             try:
                 confirmable_block = self._get_block(confirmable_block_number)
             except BlockNotFoundError:
@@ -324,6 +325,7 @@ class BlockContainer(BaseManager):
 
             if (
                 last_yielded_hash is not None
+                and confirmable_block is not None
                 and confirmable_block.hash == last_yielded_hash
                 and last_yielded_number is not None
                 and confirmable_block_number == last_yielded_number
@@ -338,6 +340,7 @@ class BlockContainer(BaseManager):
                 and confirmable_block_number < last_yielded_number
                 or (
                     confirmable_block_number == last_yielded_number
+                    and confirmable_block is not None
                     and confirmable_block.hash != last_yielded_hash
                 )
             ):
@@ -1068,7 +1071,6 @@ class ReportManager(BaseManager):
         transaction_hash: Optional[str] = None,
         revert_message: Optional[str] = None,
         file: Optional[IO[str]] = None,
-        verbose: bool = False,
     ):
         root = call_tree.as_rich_tree()
         console = self._get_console(file)
