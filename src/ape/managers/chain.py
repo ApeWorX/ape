@@ -499,7 +499,7 @@ class TransactionHistory(BaseManager):
 
         Raises:
             :class:`~ape.exceptions.ChainError`: When trying to append a transaction
-            receipt that is already in the list.
+              receipt that is already in the list.
 
         Args:
             txn_receipt (:class:`~ape.api.transactions.ReceiptAPI`): The transaction receipt.
