@@ -6,15 +6,17 @@ from eth_utils import to_bytes
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
 from ape.types import AddressType, MessageSignature, TransactionSignature
-from ape.utils import GeneratedDevAccount, cached_property, generate_dev_accounts
+from ape.utils import GeneratedDevAccount, generate_dev_accounts
 
 
 class TestAccountContainer(TestAccountContainerAPI):
+    _num_generated = 0
+
     @property
     def config(self):
         return self.config_manager.get_config("test")
 
-    @cached_property
+    @property
     def _dev_accounts(self) -> List[GeneratedDevAccount]:
         mnemonic = self.config["mnemonic"]
         return generate_dev_accounts(mnemonic, number_of_accounts=self.config["number_of_accounts"])
@@ -36,6 +38,19 @@ class TestAccountContainer(TestAccountContainerAPI):
 
     def __len__(self) -> int:
         return len(self._dev_accounts)
+
+    def generate_account(self) -> "TestAccountAPI":
+        new_index = len(self) + self._num_generated
+        self._num_generated += 1
+        generated_account = generate_dev_accounts(
+            self.config["mnemonic"], 1, start_index=new_index
+        )[0]
+        acc = TestAccount(
+            index=new_index,
+            address_str=generated_account.address,
+            private_key=generated_account.private_key,
+        )
+        return acc
 
 
 class TestAccount(TestAccountAPI):
@@ -59,10 +74,13 @@ class TestAccount(TestAccountAPI):
             s=to_bytes(signed_msg.s),
         )
 
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
-        signed_txn = EthAccount.sign_transaction(txn.dict(), self.private_key)
-        return TransactionSignature(
-            v=signed_txn.v,
-            r=to_bytes(signed_txn.r),
-            s=to_bytes(signed_txn.s),
+    def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
+        # Signs anything that's given to it
+        signature = EthAccount.sign_transaction(txn.dict(), self.private_key)
+        txn.signature = TransactionSignature(
+            v=signature.v,
+            r=to_bytes(signature.r),
+            s=to_bytes(signature.s),
         )
+
+        return txn

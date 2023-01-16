@@ -25,7 +25,8 @@ Config example::
 def generate_dev_accounts(
     mnemonic: str = DEFAULT_TEST_MNEMONIC,
     number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
-    hd_path_format="m/44'/60'/0'/{}",
+    hd_path_format: str = "m/44'/60'/0'/{}",
+    start_index: int = 0,
 ) -> List[GeneratedDevAccount]:
     """
     Create accounts from the given test mnemonic.
@@ -44,7 +45,7 @@ def generate_dev_accounts(
     seed = seed_from_mnemonic(mnemonic, "")
     accounts = []
 
-    for i in range(number_of_accounts):
+    for i in range(start_index, start_index + number_of_accounts):
         hd_path = HDPath(hd_path_format.format(i))
         private_key = HexBytes(hd_path.derive(seed)).hex()
         address = Account.from_key(private_key).address
