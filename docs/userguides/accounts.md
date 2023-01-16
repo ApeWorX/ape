@@ -41,6 +41,14 @@ test:
 **WARN**: NEVER put a seed phrase with real funds here.
 The accounts generated from this seed are solely for testing and debugging purposes.
 
+You can create a new test account by doing the following:
+
+```python
+account = accounts.test_accounts.generate_test_account()
+```
+
+**NOTE**: Creating a new test account means it will be unfunded by default.
+
 Learn more about test accounts from the [testing guide](./testing.html#accounts-fixture).
 
 If your testing provider supports this feature, it is possible to directly set the balances of any address by performing the following action:
