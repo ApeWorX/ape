@@ -389,7 +389,14 @@ class AccountHistory(BaseInterfaceModel):
     """
 
     address: AddressType
+    """
+    The address to get history for.
+    """
+
     sessional: List[ReceiptAPI] = []
+    """
+    The receipts from the current Python session.
+    """
 
     @property
     def outgoing(self) -> Iterator[ReceiptAPI]:
@@ -413,13 +420,31 @@ class AccountHistory(BaseInterfaceModel):
         yield from self.outgoing
 
     def __len__(self) -> int:
-        return len(list(self.outgoing))
+        """
+        The transaction count of the address.
+        """
+
+        return self.provider.get_nonce(self.address)
 
     def append(self, receipt: ReceiptAPI):
+        """
+        Add a receipt to the sessional cache.
+
+        Args:
+            receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt to append.
+        """
+
         if receipt.txn_hash not in [x.txn_hash for x in self.sessional]:
             self.sessional.append(receipt)
 
     def revert_to_block(self, block_number: int):
+        """
+        Remove all receipts after the given block number.
+
+        Args:
+            block_number (int): The block number to revert to.
+        """
+
         self.sessional = [x for x in self.sessional if x.block_number <= block_number]
 
 
@@ -437,7 +462,7 @@ class TransactionHistory(BaseManager):
 
     @__getitem__.register
     def __getitem_base_address(self, address: BaseAddress) -> AccountHistory:
-        return self.get_account_history(address)
+        return self._get_account_history(address)
 
     @__getitem__.register
     def __getitem_str(self, account_or_hash: str) -> Union[AccountHistory, ReceiptAPI]:
@@ -455,7 +480,7 @@ class TransactionHistory(BaseManager):
 
         try:
             address = self.provider.network.ecosystem.decode_address(account_or_hash)
-            return self.get_account_history(address)
+            return self._get_account_history(address)
         except Exception:
             # Use Transaction hash
             receipt = self._hash_to_receipt_map.get(account_or_hash)
@@ -467,10 +492,6 @@ class TransactionHistory(BaseManager):
                 self.append(receipt)
 
             return receipt
-
-    @singledispatchmethod
-    def __contains__(self, key):
-        raise NotImplementedError(f"Cannot use type of {type(key)} as Index")
 
     def append(self, txn_receipt: ReceiptAPI):
         """
@@ -505,7 +526,7 @@ class TransactionHistory(BaseManager):
         for account_history in self._account_history_cache.values():
             account_history.revert_to_block(block_number)
 
-    def get_account_history(self, address: Union[BaseAddress, AddressType]) -> AccountHistory:
+    def _get_account_history(self, address: Union[BaseAddress, AddressType]) -> AccountHistory:
         address_key: AddressType = self.conversion_manager.convert(address, AddressType)
 
         if address_key not in self._account_history_cache:
