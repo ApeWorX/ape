@@ -39,6 +39,6 @@ EXPECTED = HexBytes(
 def test_encode_structs():
     encode_calldata = networks.ethereum.encode_calldata
 
-    assert EXPECTED == encode_calldata(ABI, (1, b"2", True))
-    assert EXPECTED == encode_calldata(ABI, {"a": 1, "b": b"2", "c": True})
-    assert EXPECTED == encode_calldata(ABI, Struct(a=1, b=b"2", c=True))
+    assert encode_calldata(ABI, (1, b"2", True)) == EXPECTED
+    assert encode_calldata(ABI, {"a": 1, "b": b"2", "c": True}) == EXPECTED
+    assert encode_calldata(ABI, Struct(a=1, b=b"2", c=True)) == EXPECTED
