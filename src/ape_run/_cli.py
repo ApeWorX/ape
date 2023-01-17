@@ -47,7 +47,7 @@ class ScriptCommand(click.MultiCommand):
             logger.error_from_exception(e, f"Exception while parsing script: {relative_filepath}")
             return None  # Prevents stalling scripts
 
-        def _get_module(filepath: Path) -> str:
+        def _module_str(filepath: Path) -> str:
             path = ".".join(
                 (str(filepath).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1])
             )
@@ -60,7 +60,7 @@ class ScriptCommand(click.MultiCommand):
 
             with use_temp_sys_path(filepath.parent.parent):
                 try:
-                    path = _get_module(filepath)
+                    path = _module_str(filepath)
                     ns = run_module(f"scripts.{path}")
                 except Exception as e:
                     logger.error_from_exception(
@@ -85,7 +85,7 @@ class ScriptCommand(click.MultiCommand):
             def call(network):
                 _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
-                    path = _get_module(filepath)
+                    path = _module_str(filepath)
                     ns = run_module(f"scripts.{path}")
 
                 ns["main"]()  # Execute the script
@@ -105,7 +105,7 @@ class ScriptCommand(click.MultiCommand):
             def call(network):
                 _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
-                    path = _get_module(filepath)
+                    path = _module_str(filepath)
                     ns = run_module(f"scripts.{path}")
 
                 # Nothing to call, everything executes on loading
