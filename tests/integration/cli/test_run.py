@@ -32,12 +32,14 @@ def test_run(ape_cli, runner, project):
 
 
 @skip_projects_except("script")
-def test_run_subdirectories(ape_cli, runner):
+def test_run_subdirectories(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["run"])
     assert result.exit_code == 0, result.output
     # By default, no commands are run
     assert "Super secret script output" not in result.output
-    result = runner.invoke(ape_cli, ["run", "subdirectory", "subdirectory_deploy"])
+    subdirectory_scripts = [s for s in (project.scripts_folder / "subdirectory").rglob("*.py") if not s.name.startswith("error")]
+    for each in subdirectory_scripts:
+        result = runner.invoke(ape_cli, ["run", "subdirectory", each.stem])
     assert result.exit_code == 0
     assert "Super secret script output" in result.output
 
