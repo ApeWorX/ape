@@ -354,17 +354,20 @@ class PollDaemonThread(threading.Thread):
             if self._do_stop():
                 return
 
-            try:
-                self._handler(next(self._poller))
-            except (ChainError, StopIteration):
-                # Check if can stop once more before exiting
-                if self._do_stop():
-                    return
+            item = next(self._poller, None)
+            if item:
+                try:
+                    self._handler(item)
+                except ChainError:
+                    # Check if can stop once more before exiting
+                    if self._do_stop():
+                        return
 
-                raise  # The timeout ChainError
+                    raise  # The timeout ChainError
+
+            # else: goto timeout logic
 
             time.sleep(1)
-
             if timeout_iterations is None:
                 continue
 
