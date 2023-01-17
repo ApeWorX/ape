@@ -385,94 +385,96 @@ to compiler API classes.</p>
 <section id="chain">
 <h2>Chain<a class="headerlink" href="#chain" title="Permalink to this headline"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.chain.</span></span><span class="sig-name descname"><span class="pre">AccountHistory</span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory" title="Permalink to this definition"></a></dt>
-<dd><p>A container mapping account addresses to the transaction from the active session.</p>
+<dt class="sig sig-object py" id="ape.managers.chain.TransactionHistory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.chain.</span></span><span class="sig-name descname"><span class="pre">TransactionHistory</span></span><a class="headerlink" href="#ape.managers.chain.TransactionHistory" title="Permalink to this definition"></a></dt>
+<dd><p>A container mapping Transaction History to the transaction from the active session.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.__getitem__">
-<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">ape.api.address.BaseAddress</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.__getitem__" title="Permalink to this definition"></a></dt>
-<dd><p>Get the list of transactions from the active session for the given address.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The sender of the desired transactions.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The list of transactions. If there
-are no recorded transactions, returns an empty list.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>List[<a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.__iter__">
-<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.__iter__" title="Permalink to this definition"></a></dt>
-<dd><p>Iterate through the accounts listed in the history map.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>List[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.append">
-<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory.append" title="Permalink to this definition"></a></dt>
-<dd><p>Add a transaction to the stored list for the given account address.</p>
+<dt class="sig sig-object py" id="ape.managers.chain.TransactionHistory.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.TransactionHistory.append" title="Permalink to this definition"></a></dt>
+<dd><p>Add a transaction to the cache This is useful for sessional-transactions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ChainError" title="ape.exceptions.ChainError"><strong>ChainError</strong></a> – When trying to append a transaction
     receipt that is already in the list.</p>
 </dd>
 <dt class="field-even">Parameters</dt>
-<dd class="field-even"><p><strong>txn_receipt</strong> (<a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>) – The transaction receipt.
-<strong>NOTE</strong>: The receipt is accessible in the list returned from
-<a class="reference internal" href="#ape.managers.chain.AccountHistory.__getitem__" title="ape.managers.chain.AccountHistory.__getitem__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__getitem__()</span></code></a>.</p>
+<dd class="field-even"><p><strong>txn_receipt</strong> (<a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>) – The transaction receipt.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.get_receipt">
-<span class="sig-name descname"><span class="pre">get_receipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transaction_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.get_receipt" title="Permalink to this definition"></a></dt>
-<dd><p>Get a receipt from the history by its transaction hash.
-If the receipt is not currently cached, will use the provider
-to retrieve it.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>transaction_hash</strong> (<em>str</em>) – The hash of the transaction.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The receipt.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.items">
-<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.items" title="Permalink to this definition"></a></dt>
-<dd><p>Iterate through the list of address-types to list of transaction receipts.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Iterator[Tuple[<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>, <a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.revert_to_block">
-<span class="sig-name descname"><span class="pre">revert_to_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory.revert_to_block" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.managers.chain.TransactionHistory.revert_to_block">
+<span class="sig-name descname"><span class="pre">revert_to_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.TransactionHistory.revert_to_block" title="Permalink to this definition"></a></dt>
 <dd><p>Remove all receipts past the given block number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>block_number</strong> (<em>int</em>) – The block number to revert to.</p>
 </dd>
 </dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.chain.</span></span><span class="sig-name descname"><span class="pre">AccountHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sessional</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory" title="Permalink to this definition"></a></dt>
+<dd><p>A container mapping account addresses to the transaction from the active session.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.__hash__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.__iter__" title="Permalink to this definition"></a></dt>
+<dd><p>so <cite>dict(model)</cite> works</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.__len__">
+<span class="sig-name descname"><span class="pre">__len__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.__len__" title="Permalink to this definition"></a></dt>
+<dd><p>The transaction count of the address.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.address">
+<span class="sig-name descname"><span class="pre">address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.address" title="Permalink to this definition"></a></dt>
+<dd><p>The address to get history for.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory.append" title="Permalink to this definition"></a></dt>
+<dd><p>Add a receipt to the sessional cache.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>receipt</strong> (<a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>) – The receipt to append.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.outgoing">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outgoing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.outgoing" title="Permalink to this definition"></a></dt>
+<dd><p>All outgoing transactions, from earliest to latest.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.revert_to_block">
+<span class="sig-name descname"><span class="pre">revert_to_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory.revert_to_block" title="Permalink to this definition"></a></dt>
+<dd><p>Remove all receipts after the given block number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>block_number</strong> (<em>int</em>) – The block number to revert to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.sessional">
+<span class="sig-name descname"><span class="pre">sessional</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ape.api.transactions.ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.sessional" title="Permalink to this definition"></a></dt>
+<dd><p>The receipts from the current Python session.</p>
 </dd></dl>
 
 </dd></dl>
@@ -882,12 +884,6 @@ Access the chain manager singleton from the root <code class="docutils literal n
 </pre></div>
 </div>
 <dl class="py property">
-<dt class="sig sig-object py" id="ape.managers.chain.ChainManager.account_history">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">account_history</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.managers.chain.AccountHistory" title="ape.managers.chain.AccountHistory"><span class="pre">ape.managers.chain.AccountHistory</span></a></em><a class="headerlink" href="#ape.managers.chain.ChainManager.account_history" title="Permalink to this definition"></a></dt>
-<dd><p>A mapping of transactions from the active session to the account responsible.</p>
-</dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.chain.ChainManager.base_fee">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_fee</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.managers.chain.ChainManager.base_fee" title="Permalink to this definition"></a></dt>
 <dd><p>The minimum value required to get your transaction included on the next block.
@@ -918,6 +914,12 @@ See <a class="reference external" href="https://chainlist.org/">ChainList</a> fo
 <dt class="sig sig-object py" id="ape.managers.chain.ChainManager.gas_price">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gas_price</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.managers.chain.ChainManager.gas_price" title="Permalink to this definition"></a></dt>
 <dd><p>The price for what it costs to transact.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.chain.ChainManager.history">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">history</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.managers.chain.TransactionHistory" title="ape.managers.chain.TransactionHistory"><span class="pre">ape.managers.chain.TransactionHistory</span></a></em><a class="headerlink" href="#ape.managers.chain.ChainManager.history" title="Permalink to this definition"></a></dt>
+<dd><p>A mapping of transactions from the active session to the account responsible.</p>
 </dd></dl>
 
 <dl class="py method">

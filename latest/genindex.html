@@ -449,8 +449,6 @@
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.accounts.TestAccountManager.__getitem__">(ape.managers.accounts.TestAccountManager method)</a>
 </li>
-        <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.__getitem__">(ape.managers.chain.AccountHistory method)</a>
-</li>
         <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.__getitem__">(ape.managers.chain.BlockContainer method)</a>
 </li>
       </ul></li>
@@ -486,6 +484,8 @@
         <li><a href="methoddocs/api.html#ape.api.query.ContractMethodQuery.__hash__">(ape.api.query.ContractMethodQuery attribute)</a>
 </li>
         <li><a href="methoddocs/api.html#ape.api.query.QueryAPI.__hash__">(ape.api.query.QueryAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.__hash__">(ape.managers.chain.AccountHistory attribute)</a>
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.config.CompilerConfig.__hash__">(ape.managers.config.CompilerConfig attribute)</a>
 </li>
@@ -523,6 +523,8 @@
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.accounts.TestAccountManager.__len__">(ape.managers.accounts.TestAccountManager method)</a>
 </li>
+        <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.__len__">(ape.managers.chain.AccountHistory method)</a>
+</li>
         <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.__len__">(ape.managers.chain.BlockContainer method)</a>
 </li>
       </ul></li>
@@ -539,8 +541,6 @@
       <li><a href="methoddocs/cli.html#ape.cli.utils.Abort">Abort</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.options.ApeCliContextObject.abort">abort() (ape.cli.options.ApeCliContextObject static method)</a>
-</li>
-      <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.account_history">account_history (ape.managers.chain.ChainManager property)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.options.account_option">account_option() (in module ape.cli.options)</a>
 </li>
@@ -659,6 +659,8 @@
 </li>
         <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance.address">(ape.contracts.base.ContractInstance property)</a>
 </li>
+        <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.address">(ape.managers.chain.AccountHistory attribute)</a>
+</li>
         <li><a href="methoddocs/utils.html#ape.utils.GeneratedDevAccount.address">(ape.utils.GeneratedDevAccount attribute)</a>
 </li>
       </ul></li>
@@ -732,8 +734,6 @@
         <li><a href="methoddocs/api.html#module-ape.api.config">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ape.api.convert
 
@@ -741,6 +741,8 @@
         <li><a href="methoddocs/api.html#module-ape.api.convert">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ape.api.explorers
 
@@ -981,6 +983,8 @@
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.append">(ape.managers.chain.AccountHistory method)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.chain.TransactionHistory.append">(ape.managers.chain.TransactionHistory method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ArgumentsLengthError">ArgumentsLengthError</a>
@@ -1546,10 +1550,10 @@
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager.get_imports">get_imports() (ape.managers.compilers.CompilerManager method)</a>
 </li>
-      <li><a href="methoddocs/cli.html#ape.cli.choices.NetworkChoice.get_metavar">get_metavar() (ape.cli.choices.NetworkChoice method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/cli.html#ape.cli.choices.NetworkChoice.get_metavar">get_metavar() (ape.cli.choices.NetworkChoice method)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.get_method_selector">get_method_selector() (ape.api.networks.EcosystemAPI method)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.get_multiple">get_multiple() (ape.managers.chain.ContractCache method)</a>
@@ -1584,8 +1588,6 @@
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.get_receipt">(ape.api.providers.Web3Provider method)</a>
-</li>
-        <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.get_receipt">(ape.managers.chain.AccountHistory method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager.get_references">get_references() (ape.managers.compilers.CompilerManager method)</a>
@@ -1632,13 +1634,15 @@
 </li>
       <li><a href="methoddocs/types.html#ape.types.signatures.SignableMessage.header">header (ape.types.signatures.SignableMessage attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.height">height (ape.managers.chain.BlockContainer property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/managers.html#ape.managers.converters.HexAddressConverter">HexAddressConverter (class in ape.managers.converters)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.HexConverter">HexConverter (class in ape.managers.converters)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.history">history (ape.managers.chain.ChainManager property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1723,12 +1727,8 @@
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.isolate">isolate() (ape.managers.chain.ChainManager method)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.items">items() (ape.managers.chain.AccountHistory method)</a>
-
-      <ul>
-        <li><a href="methoddocs/utils.html#ape.utils.Struct.items">(ape.utils.Struct method)</a>
+      <li><a href="methoddocs/utils.html#ape.utils.Struct.items">items() (ape.utils.Struct method)</a>
 </li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -1971,6 +1971,8 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.outgoing">outgoing (ape.managers.chain.AccountHistory property)</a>
+</li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.OutOfGasError">OutOfGasError</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.output_format_choice">output_format_choice() (in module ape.cli.choices)</a>
@@ -2241,7 +2243,11 @@
       <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.revert">revert() (ape.api.providers.TestProviderAPI method)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.revert_to_block">revert_to_block() (ape.managers.chain.AccountHistory method)</a>
+
+      <ul>
+        <li><a href="methoddocs/managers.html#ape.managers.chain.TransactionHistory.revert_to_block">(ape.managers.chain.TransactionHistory method)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.RPCTimeoutError">RPCTimeoutError</a>
 </li>
       <li>
@@ -2281,6 +2287,8 @@
         <li><a href="methoddocs/api.html#ape.api.transactions.TransactionAPI.serialize_transaction">(ape.api.transactions.TransactionAPI method)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.sessional">sessional (ape.managers.chain.AccountHistory attribute)</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.set_default_ecosystem">set_default_ecosystem() (ape.managers.networks.NetworkManager method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.set_default_network">set_default_network() (ape.api.networks.EcosystemAPI method)</a>
@@ -2394,10 +2402,10 @@
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.TimestampConverter">TimestampConverter (class in ape.managers.converters)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.transactions.ReceiptAPI.total_fees_paid">total_fees_paid (ape.api.transactions.ReceiptAPI property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.transactions.TransactionAPI.total_transfer_value">total_transfer_value (ape.api.transactions.TransactionAPI property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.transactions.ReceiptAPI.trace">trace (ape.api.transactions.ReceiptAPI property)</a>
@@ -2419,6 +2427,8 @@
       <li><a href="methoddocs/api.html#ape.api.transactions.TransactionAPI">TransactionAPI (class in ape.api.transactions)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.TransactionError">TransactionError</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.TransactionHistory">TransactionHistory (class in ape.managers.chain)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.TransactionNotFoundError">TransactionNotFoundError</a>
 </li>

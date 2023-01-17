@@ -19,6 +19,13 @@
 ## Chain
 
 ```{eval-rst}
+.. autoclass:: ape.managers.chain.TransactionHistory
+    :members:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
+```
+
+```{eval-rst}
 .. autoclass:: ape.managers.chain.AccountHistory
     :members:
     :special-members:
