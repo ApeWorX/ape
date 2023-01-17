@@ -109,19 +109,15 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         gas_limit = txn.gas_limit
 
         if not isinstance(gas_limit, int):
-            raise TransactionError(message="Transaction not prepared.")
+            raise TransactionError("Transaction not prepared.")
 
         # The conditions below should never reached but are here for mypy's sake.
         # The `max_fee` was either set manaully or from `prepare_transaction()`.
         # The `gas_limit` was either set manually or from `prepare_transaction()`.
         if max_fee is None:
-            raise TransactionError(
-                message="`max_fee` failed to get set in transaction preparation."
-            )
+            raise TransactionError("`max_fee` failed to get set in transaction preparation.")
         elif gas_limit is None:
-            raise TransactionError(
-                message="`gas_limit` failed to get set in transaction preparation."
-            )
+            raise TransactionError("`gas_limit` failed to get set in transaction preparation.")
 
         total_fees = max_fee * gas_limit
 
