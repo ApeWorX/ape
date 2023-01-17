@@ -89,6 +89,11 @@ def owner(test_accounts):
     return test_accounts[2]
 
 
+@pytest.fixture
+def address():
+    return TEST_ADDRESS
+
+
 @contextmanager
 def _temp_keyfile_account(base_path: Path, alias: str, keyparams, sender):
     test_keyfile_path = base_path / f"{alias}.json"

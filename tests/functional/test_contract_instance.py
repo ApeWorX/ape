@@ -10,17 +10,13 @@ from ape.exceptions import ChainError, ContractError, ContractLogicError
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
-from .conftest import TEST_ADDRESS
-
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
 
-def test_init_at_unknown_address(networks_connected_to_tester):
+def test_init_at_unknown_address(networks_connected_to_tester, address):
     _ = networks_connected_to_tester  # Need fixture or else get ProviderNotConnectedError
-    with pytest.raises(
-        ChainError, match=f"Failed to get contract type for address '{TEST_ADDRESS}'."
-    ):
-        Contract(TEST_ADDRESS)
+    with pytest.raises(ChainError, match=f"Failed to get contract type for address '{address}'."):
+        Contract(address)
 
 
 def test_init_specify_contract_type(
