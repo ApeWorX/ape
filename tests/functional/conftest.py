@@ -321,6 +321,7 @@ class PollDaemonThread(threading.Thread):
         self._handler = handler
         self._do_stop = stop_condition
         self._exception = None
+        self._max_iterations = 100
 
     def __enter__(self):
         self.start()
@@ -331,7 +332,7 @@ class PollDaemonThread(threading.Thread):
 
     def run(self):
         try:
-            self._run_until_stop()
+            self._run_until_stop(timeout_iterations=self._max_iterations)
         except Exception as err:
             self._exception = err
 
@@ -354,18 +355,14 @@ class PollDaemonThread(threading.Thread):
             if self._do_stop():
                 return
 
-            item = next(self._poller, None)
-            if item:
-                try:
-                    self._handler(item)
-                except ChainError:
-                    # Check if can stop once more before exiting
-                    if self._do_stop():
-                        return
+            try:
+                self._handler(next(self._poller, None))
+            except (ChainError, StopIteration):
+                # Check if can stop once more before exiting
+                if self._do_stop():
+                    return
 
-                    raise  # The timeout ChainError
-
-            # else: goto timeout logic
+                raise  # The timeout ChainError
 
             time.sleep(1)
             if timeout_iterations is None:
