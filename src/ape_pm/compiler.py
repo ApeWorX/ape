@@ -39,6 +39,10 @@ class InterfaceCompiler(CompilerAPI):
             ):
                 # Raw contract type JSON
                 contract_type_data = data
+                if "deployedBytecode" in data:
+                    contract_type_data["runtimeBytecode"] = {"bytecode": data["deployedBytecode"]}
+                if "bytecode" in data:
+                    contract_type_data["deploymentBytecode"] = {"bytecode": data["bytecode"]}
 
             else:
                 logger.warning(f"Unable to parse {ContractType.__name__} from '{source_id}'.")
