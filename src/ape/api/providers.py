@@ -710,7 +710,7 @@ class Web3Provider(ProviderAPI, ABC):
                 raise tx_error from err
 
             message = gas_estimation_error_message(tx_error)
-            raise TransactionError(base_err=tx_error, message=message) from err
+            raise TransactionError(message, base_err=tx_error) from err
 
     @property
     def chain_id(self) -> int:
@@ -931,7 +931,7 @@ class Web3Provider(ProviderAPI, ABC):
         """
 
         if required_confirmations < 0:
-            raise TransactionError(message="Required confirmations cannot be negative.")
+            raise TransactionError("Required confirmations cannot be negative.")
 
         timeout = (
             timeout if timeout is not None else self.provider.network.transaction_acceptance_timeout
@@ -1040,7 +1040,7 @@ class Web3Provider(ProviderAPI, ABC):
         if txn.required_confirmations is None:
             txn.required_confirmations = self.network.required_confirmations
         elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
-            raise TransactionError(message="'required_confirmations' must be a positive integer.")
+            raise TransactionError("'required_confirmations' must be a positive integer.")
 
         return txn
 
