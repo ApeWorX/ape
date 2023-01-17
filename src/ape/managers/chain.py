@@ -368,8 +368,12 @@ class BlockContainer(BaseManager):
 
             # Yield blocks
             block = None
-            for block in self.range(start, confirmable_block_number + 1):
-                yield block
+
+            # Reset 'stop' in case a re-org occurred.
+            stop: int = min(confirmable_block_number + 1, len(self))
+            if start < stop:
+                for block in self.range(start, stop):
+                    yield block
 
             if block:
                 last_yielded_hash = block.hash
