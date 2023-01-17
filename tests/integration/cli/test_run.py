@@ -44,8 +44,8 @@ def test_run_subdirectories(ape_cli, runner, project):
     ]
     for each in subdirectory_scripts:
         result = runner.invoke(ape_cli, ["run", "subdirectory", each.stem])
-    assert result.exit_code == 0
-    assert "Super secret script output" in result.output
+        assert result.exit_code == 0
+        assert "Super secret script output" in result.output
 
 
 @skip_projects_except("script")
