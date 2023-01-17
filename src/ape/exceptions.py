@@ -86,16 +86,16 @@ class TransactionError(ContractError):
 
     def __init__(
         self,
-        base_err: Optional[Exception] = None,
         message: Optional[str] = None,
+        base_err: Optional[Exception] = None,
         code: Optional[int] = None,
         txn: Optional["TransactionAPI"] = None,
     ):
-        self.base_err = base_err
         if not message:
             message = str(base_err) if base_err else self.DEFAULT_MESSAGE
-
         self.message = message
+
+        self.base_err = base_err
         self.code = code
         self.txn = txn
 
