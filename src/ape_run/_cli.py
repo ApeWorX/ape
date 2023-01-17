@@ -70,7 +70,7 @@ class ScriptCommand(click.MultiCommand):
 
             self._namespace[filepath.stem] = ns
             cli_obj = ns["cli"]
-            cli_obj.name = filepath.stem if cli_obj.name == "cli" else cli_obj.name
+            cli_obj.name = filepath.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
             return cli_obj
 
         elif "main" in code.co_names:
