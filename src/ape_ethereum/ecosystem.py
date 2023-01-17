@@ -13,7 +13,7 @@ from pydantic import Field, validator
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
-from ape.exceptions import APINotImplementedError, DecodingError, TransactionError
+from ape.exceptions import ApeException, APINotImplementedError, DecodingError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, GasLimit, RawAddress, TransactionSignature
 from ape.utils import (
@@ -231,7 +231,7 @@ class Ethereum(EcosystemAPI):
             if name in ("Gnosis Safe", "Default Callback Handler") and target != ZERO_ADDRESS:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
 
-        except (DecodingError, TransactionError):
+        except (ApeException):
             pass
 
         # delegate proxy, read `proxyType()` and `implementation()`
@@ -257,7 +257,7 @@ class Ethereum(EcosystemAPI):
             if target != ZERO_ADDRESS:
                 return ProxyInfo(type=ProxyType.Delegate, target=target)
 
-        except (DecodingError, TransactionError, ValueError):
+        except (ApeException, ValueError):
             pass
 
         return None
