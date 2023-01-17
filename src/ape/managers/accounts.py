@@ -20,7 +20,7 @@ class TestAccountManager(list, ManagerAccessMixin):
         accounts_str = ", ".join([a.address for a in self.accounts])
         return f"[{accounts_str}]"
 
-    @property
+    @cached_property
     def containers(self) -> Dict[str, TestAccountContainerAPI]:
         containers = {}
         account_types = [
@@ -96,6 +96,9 @@ class TestAccountManager(list, ManagerAccessMixin):
 
     def __contains__(self, address: AddressType) -> bool:  # type: ignore
         return any(address in container for container in self.containers.values())
+
+    def generate_test_account(self, container_name: str = "test") -> TestAccountAPI:
+        return self.containers[container_name].generate_account()
 
 
 class AccountManager(BaseManager):
