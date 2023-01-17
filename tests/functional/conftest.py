@@ -337,6 +337,7 @@ class PollDaemonThread(threading.Thread):
             self._exception = err
 
     def stop(self):
+        time.sleep(1)
         self.join()
 
         # Attempt to wait for stop condition
@@ -356,8 +357,8 @@ class PollDaemonThread(threading.Thread):
                 return
 
             try:
-                self._handler(next(self._poller, None))
-            except (ChainError, StopIteration):
+                self._handler(next(self._poller))
+            except ChainError:
                 # Check if can stop once more before exiting
                 if self._do_stop():
                     return
