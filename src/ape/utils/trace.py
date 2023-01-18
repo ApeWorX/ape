@@ -127,7 +127,7 @@ def _get_outputs_str(outputs: Any, stylize: bool = False) -> Optional[str]:
             else _list_to_str(outputs)
         )
 
-    return f"[{TraceStyles.OUTPUTS}]{outputs}[/]" if stylize else outputs
+    return f"[{TraceStyles.OUTPUTS}]{outputs}[/]" if stylize else str(outputs)
 
 
 def parse_gas_table(report: "GasReport") -> List[Table]:

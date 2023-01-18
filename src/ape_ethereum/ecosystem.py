@@ -393,7 +393,7 @@ class Ethereum(EcosystemAPI):
 
         return tuple(output_values)
 
-    def _enrich_value(self, value: Any) -> Any:
+    def _enrich_value(self, value: Any, **kwargs) -> Any:
         if isinstance(value, HexBytes):
             try:
                 string_value = value.strip(b"\x00").decode("utf8")
@@ -405,22 +405,23 @@ class Ethereum(EcosystemAPI):
 
                 hex_str = HexBytes(value).hex()
                 if is_hex_address(hex_str):
-                    return self._enrich_value(hex_str)
+                    return self._enrich_value(hex_str, **kwargs)
 
                 return hex_str
 
         elif isinstance(value, str) and is_hex_address(value):
-            return self._enrich_address(self.decode_address(value))
+            address = self.decode_address(value)
+            return self._enrich_address(address, **kwargs)
 
         elif value and isinstance(value, str):
             # Surround non-address strings with quotes.
             return f'"{value}"'
 
         elif isinstance(value, (list, tuple)):
-            return [self._enrich_value(v) for v in value]
+            return [self._enrich_value(v, **kwargs) for v in value]
 
         elif isinstance(value, Struct):
-            return {k: self._enrich_value(v) for k, v in value.items()}
+            return {k: self._enrich_value(v, **kwargs) for k, v in value.items()}
 
         return value
 
@@ -565,6 +566,7 @@ class Ethereum(EcosystemAPI):
             except InsufficientDataBytes:
                 logger.debug("failed to decode log data for %s", log, exc_info=True)
                 continue
+
             yield ContractLog(
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],
@@ -579,8 +581,14 @@ class Ethereum(EcosystemAPI):
     def enrich_calltree(self, call: CallTreeNode, **kwargs) -> CallTreeNode:
         # Enrich subcalls first to make sure it happens before any _return_ statement.
 
-        use_symbol_for_tokens = kwargs.get("use_symbol_for_tokens", False)
-        if not kwargs.get("in_place", True):
+        kwargs["use_symbol_for_tokens"] = kwargs.get("use_symbol_for_tokens", False)
+        kwargs["in_place"] = kwargs.get("in_place", True)
+
+        if call.txn_hash:
+            receipt = self.chain_manager.get_receipt(call.txn_hash)
+            kwargs["sender"] = receipt.sender
+
+        if not kwargs["in_place"]:
             call = call.copy()
 
         call.calls = [self.enrich_calltree(c, **kwargs) for c in call.calls]
@@ -588,6 +596,7 @@ class Ethereum(EcosystemAPI):
         not_address_type: bool = not self.conversion_manager.is_type(call.contract_id, AddressType)
         if not_address_type and is_hex_address(call.contract_id):
             call.contract_id = self.decode_address(call.contract_id)
+
         elif not_address_type:
             # Already enriched.
             return call
@@ -596,7 +605,7 @@ class Ethereum(EcosystemAPI):
         address = cast(AddressType, call.contract_id)
         address_int = int(address, 16)
         if 1 <= address_int <= 9:
-            sub_calls = [self.enrich_calltree(c) for c in call.calls]
+            sub_calls = [self.enrich_calltree(c, **kwargs) for c in call.calls]
             if len(sub_calls) == 1:
                 return sub_calls[0]
 
@@ -610,24 +619,28 @@ class Ethereum(EcosystemAPI):
         if not contract_type:
             return call
 
-        call.contract_id = self._enrich_address(
-            address, use_symbol_for_tokens=use_symbol_for_tokens
-        )
+        call.contract_id = self._enrich_address(address, **kwargs)
         method_id_bytes = HexBytes(call.method_id) if call.method_id else None
         if method_id_bytes and method_id_bytes in contract_type.methods:
             method_abi = contract_type.methods[method_id_bytes]
             call.method_id = method_abi.name or call.method_id
-            call = self._enrich_calldata(call, method_abi)
-            call = self._enrich_returndata(call, method_abi)
+            call = self._enrich_calldata(call, method_abi, **kwargs)
+            call = self._enrich_returndata(call, method_abi, **kwargs)
 
         return call
 
-    def _enrich_address(self, address: AddressType, use_symbol_for_tokens: bool = False) -> str:
+    def _enrich_address(self, address: AddressType, **kwargs) -> str:
+        if address and address == kwargs.get("sender"):
+            return "tx.origin"
+
+        elif address == ZERO_ADDRESS:
+            return "ZERO_ADDRESS"
+
         contract_type = self.chain_manager.contracts.get(address)
         if not contract_type:
             return address
 
-        elif use_symbol_for_tokens and "symbol" in contract_type.view_methods:
+        elif kwargs.get("use_symbol_for_tokens") and "symbol" in contract_type.view_methods:
             # Use token symbol as name
             contract = self.chain_manager.contracts.instance_at(
                 address, contract_type=contract_type
@@ -650,7 +663,7 @@ class Ethereum(EcosystemAPI):
 
         return address
 
-    def _enrich_calldata(self, call: CallTreeNode, method_abi: MethodABI) -> CallTreeNode:
+    def _enrich_calldata(self, call: CallTreeNode, method_abi: MethodABI, **kwargs) -> CallTreeNode:
         calldata = call.inputs
         if isinstance(calldata, str):
             calldata_arg = HexBytes(calldata)
@@ -662,11 +675,13 @@ class Ethereum(EcosystemAPI):
         except DecodingError:
             call.inputs = ["<?>" for _ in method_abi.inputs]
         else:
-            call.inputs = {k: self._enrich_value(v) for k, v in call.inputs.items()}
+            call.inputs = {k: self._enrich_value(v, **kwargs) for k, v in call.inputs.items()}
 
         return call
 
-    def _enrich_returndata(self, call: CallTreeNode, method_abi: MethodABI) -> CallTreeNode:
+    def _enrich_returndata(
+        self, call: CallTreeNode, method_abi: MethodABI, **kwargs
+    ) -> CallTreeNode:
         default_return_value = "<?>"
 
         if isinstance(call.outputs, str) and is_0x_prefixed(call.outputs):
@@ -690,7 +705,7 @@ class Ethereum(EcosystemAPI):
             except (DecodingError, InsufficientDataBytes):
                 return_values = tuple([default_return_value for _ in method_abi.outputs])
 
-            values = tuple([self._enrich_value(v) for v in return_values or ()])
+            values = tuple([self._enrich_value(v, **kwargs) for v in return_values or ()])
             call.outputs = values[0] if len(values) == 1 else values
 
         return call

@@ -12,6 +12,7 @@ from ape.utils.trace import parse_as_str, parse_gas_table, parse_rich_tree
 if TYPE_CHECKING:
     from ape.types import ContractFunctionPath
 
+
 GasReport = Dict[str, Dict[str, List[int]]]
 """
 A gas report in Ape.
@@ -31,6 +32,11 @@ class CallTreeNode(BaseInterfaceModel):
     The identifier representing the method in this node.
     A non-enriched identifier is a method selector.
     An enriched identifier is method signature.
+    """
+
+    txn_hash: Optional[str] = None
+    """
+    The transaction hash, if known and/or exists.
     """
 
     failed: bool = False

@@ -8,7 +8,7 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import decode_hex, encode_hex, keccak, to_int
+from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, root_validator, validator
@@ -186,8 +186,8 @@ class Receipt(ReceiptAPI):
 
         if call_tree.failed:
             default_message = "reverted without message"
-            returndata = call_tree.raw["returndata"]
-            if not returndata.startswith(
+            returndata = HexBytes(call_tree.raw["returndata"])
+            if not to_hex(returndata).startswith(
                 "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
             ):
                 revert_message = default_message
