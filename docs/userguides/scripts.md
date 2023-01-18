@@ -24,9 +24,10 @@ To execute the script, run the following:
 ape run helloworld
 ```
 
-You can also execute scripts in subdirectories. 
+You can also execute scripts in subdirectories.
 Ror example assuming we name the script `hello/helloworld.py`.
 To execute that script, run the following:
+
 ```bash
 ape run hello helloworld
 ```
