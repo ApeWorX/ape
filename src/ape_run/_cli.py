@@ -137,7 +137,7 @@ class ScriptCommand(click.MultiCommand):
         return self._get_cli_commands(self._project.scripts_folder)
 
     def _get_cli_commands(self, base_path: Path) -> Dict:
-        commands = {}
+        commands: Dict[str, Command] = {}
 
         for filepath in base_path.iterdir():
             if filepath.stem.startswith("_"):
