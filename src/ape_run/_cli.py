@@ -5,7 +5,7 @@ from runpy import run_module
 from typing import Any, Dict, Union
 
 import click
-from click import Context
+from click import Command, Context
 
 from ape.cli import NetworkBoundCommand, network_option
 from ape.logging import logger
@@ -47,11 +47,11 @@ class ScriptCommand(click.MultiCommand):
             logger.error_from_exception(e, f"Exception while parsing script: {relative_filepath}")
             return None  # Prevents stalling scripts
 
-        def _module_str(filepath: Path) -> str:
-            path = ".".join(
-                (str(filepath).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1])
+        def _module_str(_filepath: Path) -> str:
+            suffix = ".".join(
+                (str(_filepath).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1])
             )
-            return path
+            return f"scripts.{suffix}"
 
         # NOTE: Introspect code structure only for given patterns (do not execute it to find hooks)
         if "cli" in code.co_names:
@@ -60,16 +60,15 @@ class ScriptCommand(click.MultiCommand):
 
             with use_temp_sys_path(filepath.parent.parent):
                 try:
-                    path = _module_str(filepath)
-                    ns = run_module(f"scripts.{path}")
+                    cli_ns = run_module(_module_str(filepath))
                 except Exception as e:
                     logger.error_from_exception(
                         e, f"Exception while parsing script: {relative_filepath}"
                     )
                     return None  # Prevents stalling scripts
 
-            self._namespace[filepath.stem] = ns
-            cli_obj = ns["cli"]
+            self._namespace[filepath.stem] = cli_ns
+            cli_obj = cli_ns["cli"]
             cli_obj.name = filepath.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
             return cli_obj
 
@@ -85,11 +84,10 @@ class ScriptCommand(click.MultiCommand):
             def call(network):
                 _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
-                    path = _module_str(filepath)
-                    ns = run_module(f"scripts.{path}")
+                    main_ns = run_module(_module_str(filepath))
 
-                ns["main"]()  # Execute the script
-                self._namespace[filepath.stem] = ns
+                main_ns["main"]()  # Execute the script
+                self._namespace[filepath.stem] = main_ns
 
             return call
 
@@ -105,11 +103,10 @@ class ScriptCommand(click.MultiCommand):
             def call(network):
                 _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
-                    path = _module_str(filepath)
-                    ns = run_module(f"scripts.{path}")
+                    empty_ns = run_module(_module_str(filepath))
 
                 # Nothing to call, everything executes on loading
-                self._namespace[filepath.stem] = ns
+                self._namespace[filepath.stem] = empty_ns
 
             return call
 
