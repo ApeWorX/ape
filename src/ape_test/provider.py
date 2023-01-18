@@ -161,7 +161,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 vm_err.txn = txn
                 raise vm_err from err
 
-        self.chain_manager.account_history.append(receipt)
+        self.chain_manager.history.append(receipt)
         return receipt
 
     def snapshot(self) -> SnapshotID:
