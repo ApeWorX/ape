@@ -76,7 +76,7 @@ def parse_as_str(call: "CallTreeNode", stylize: bool = False, verbose: bool = Fa
     arguments_str = _get_inputs_str(call.inputs, stylize=stylize)
     signature = f"{signature}{arguments_str}"
 
-    return_str = _get_outputs_str(call.outputs)
+    return_str = _get_outputs_str(call.outputs, stylize=stylize)
     if return_str:
         signature = f"{signature} -> {return_str}"
 
@@ -106,6 +106,7 @@ def _get_inputs_str(inputs: Any, stylize: bool = False) -> str:
     color = TraceStyles.INPUTS if stylize else None
     if inputs in ["0x", None, (), [], {}]:
         return "()"
+
     elif isinstance(inputs, dict):
         return _dict_to_str(inputs, color=color)
 
