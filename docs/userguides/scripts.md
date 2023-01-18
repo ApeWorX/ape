@@ -25,7 +25,7 @@ ape run helloworld
 ```
 
 You can also execute scripts in subdirectories.
-Ror example assuming we name the script `hello/helloworld.py`.
+For example, assuming we have script `<project>/scripts/hello/helloworld.py`, we would execute it by running:
 To execute that script, run the following:
 
 ```bash
