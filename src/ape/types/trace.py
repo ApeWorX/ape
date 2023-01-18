@@ -85,19 +85,25 @@ class CallTreeNode(BaseInterfaceModel):
         return parse_as_str(self)
 
     def _repr_pretty_(self, *args, **kwargs):
-        self.chain_manager._reports.show_trace(self.enrich())
+        enriched_tree = self.enrich(use_symbol_for_tokens=True)
+        self.chain_manager._reports.show_trace(enriched_tree)
 
-    def enrich(self) -> "CallTreeNode":
+    def enrich(self, **kwargs) -> "CallTreeNode":
         """
         Enrich the properties on this call tree using data from contracts
         and using information about the ecosystem.
+
+        Args:
+            **kwargs: Key-word arguments to pass to
+              :meth:`~ape.api.networks.EcosystemAPI.enrich_calltree`, such as
+              ``use_symbol_for_tokens``.
 
         Returns:
             :class:`~ape.types.trace.CallTreeNode`: This call tree node with
             its properties enriched.
         """
 
-        return self.provider.network.ecosystem.enrich_calltree(self)
+        return self.provider.network.ecosystem.enrich_calltree(self, **kwargs)
 
     def add(self, sub_call: "CallTreeNode"):
         """

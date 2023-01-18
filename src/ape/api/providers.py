@@ -877,14 +877,22 @@ class Web3Provider(ProviderAPI, ABC):
 
         # Grab raw retrurndata before enrichment
         returndata = call_tree.outputs
-        call_tree.enrich()
+
+        if track_gas and show_gas and not show_trace:
+            # Optimization to enrich early and in_place=True.
+            call_tree.enrich()
 
         if track_gas:
-            receipt.track_gas()
-        if show_trace:
-            self.chain_manager._reports.show_trace(call_tree)
+            # in_place=False in case show_trace is True
+            receipt.track_gas(call_tree.enrich(in_place=False))
+
         if show_gas:
-            self.chain_manager._reports.show_gas(call_tree)
+            # in_place=False in case show_trace is True
+            self.chain_manager._reports.show_gas(call_tree.enrich(in_place=False))
+
+        if show_trace:
+            call_tree = call_tree.enrich(use_symbol_for_tokens=True)
+            self.chain_manager._reports.show_trace(call_tree)
 
         return returndata
 

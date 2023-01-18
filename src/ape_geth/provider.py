@@ -449,15 +449,25 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         evm_call_tree = get_calltree_from_geth_trace(trace_frames, **root_node_kwargs)
         call_tree = self._create_call_tree_node(evm_call_tree)
         receiver = txn.receiver
+
+        if track_gas and show_gas and not show_trace:
+            # Optimization to enrich early and in_place=True.
+            call_tree.enrich()
+
         if track_gas and call_tree and receiver is not None:
             # Gas report being collected, likely for showing a report
             # at the end of a test run.
-            self.chain_manager._reports.append_gas(call_tree.enrich(), receiver)
-        if show_trace:
-            call_tree.enrich()
-            self.chain_manager._reports.show_trace(call_tree.enrich())
+            # Use `in_place=False` in case also `show_trace=True`
+            enriched_call_tree = call_tree.enrich(in_place=False)
+            self.chain_manager._reports.append_gas(enriched_call_tree, receiver)
+
         if show_gas:
-            self.chain_manager._reports.show_gas(call_tree.enrich())
+            enriched_call_tree = call_tree.enrich(in_place=False)
+            self.chain_manager._reports.show_gas(enriched_call_tree)
+
+        if show_trace:
+            call_tree = call_tree.enrich(use_symbol_for_tokens=True)
+            self.chain_manager._reports.show_trace(call_tree)
 
         return return_value
 

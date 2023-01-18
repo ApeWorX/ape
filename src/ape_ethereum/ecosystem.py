@@ -580,7 +580,10 @@ class Ethereum(EcosystemAPI):
         # Enrich subcalls first to make sure it happens before any _return_ statement.
 
         use_symbol_for_tokens = kwargs.get("use_symbol_for_tokens", False)
-        call.calls = [self.enrich_calltree(c) for c in call.calls]
+        if not kwargs.get("in_place", True):
+            call = call.copy()
+
+        call.calls = [self.enrich_calltree(c, **kwargs) for c in call.calls]
 
         not_address_type: bool = not self.conversion_manager.is_type(call.contract_id, AddressType)
         if not_address_type and is_hex_address(call.contract_id):

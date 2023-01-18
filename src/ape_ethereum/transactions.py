@@ -181,7 +181,7 @@ class Receipt(ReceiptAPI):
         if not call_tree:
             return
 
-        call_tree.enrich()
+        call_tree.enrich(use_symbol_for_tokens=True)
         revert_message = None
 
         if call_tree.failed:
