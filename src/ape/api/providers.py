@@ -16,6 +16,7 @@ from typing import Any, Dict, Iterator, List, Optional, cast
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
 from evm_trace import CallTreeNode as EvmCallTreeNode
+from evm_trace import TraceFrame as EvmTraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
@@ -1111,6 +1112,16 @@ class Web3Provider(ProviderAPI, ABC):
             raw=evm_call.dict(),
             calls=[self._create_call_tree_node(x) for x in evm_call.calls],
             call_type=evm_call.call_type.value,
+        )
+
+    @classmethod
+    def _create_trace_frame(cls, evm_frame: EvmTraceFrame) -> TraceFrame:
+        return TraceFrame(
+            pc=evm_frame.pc,
+            op=evm_frame.op,
+            gas=evm_frame.gas,
+            gas_cost=evm_frame.gas_cost,
+            depth=evm_frame.depth,
         )
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
