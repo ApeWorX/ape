@@ -1,10 +1,11 @@
+import os
 import traceback
 from pathlib import Path
 from runpy import run_module
 from typing import Any, Dict, Union
 
 import click
-from click import Context
+from click import Command, Context
 
 from ape.cli import NetworkBoundCommand, network_option
 from ape.logging import logger
@@ -46,6 +47,12 @@ class ScriptCommand(click.MultiCommand):
             logger.error_from_exception(e, f"Exception while parsing script: {relative_filepath}")
             return None  # Prevents stalling scripts
 
+        def _module_str(_filepath: Path) -> str:
+            suffix = ".".join(
+                (str(_filepath).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1])
+            )
+            return f"scripts.{suffix}"
+
         # NOTE: Introspect code structure only for given patterns (do not execute it to find hooks)
         if "cli" in code.co_names:
             # If the module contains a click cli subcommand, process it and return the subcommand
@@ -53,43 +60,53 @@ class ScriptCommand(click.MultiCommand):
 
             with use_temp_sys_path(filepath.parent.parent):
                 try:
-                    ns = run_module(f"scripts.{filepath.stem}")
+                    cli_ns = run_module(_module_str(filepath))
                 except Exception as e:
                     logger.error_from_exception(
                         e, f"Exception while parsing script: {relative_filepath}"
                     )
                     return None  # Prevents stalling scripts
 
-            self._namespace[filepath.stem] = ns
-            return ns["cli"]
+            self._namespace[filepath.stem] = cli_ns
+            cli_obj = cli_ns["cli"]
+            cli_obj.name = filepath.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
+            return cli_obj
 
         elif "main" in code.co_names:
             logger.debug(f"Found 'main' method in script: {relative_filepath}")
 
-            @click.command(cls=NetworkBoundCommand, short_help=f"Run '{relative_filepath}:main'")
+            @click.command(
+                cls=NetworkBoundCommand,
+                short_help=f"Run '{relative_filepath}:main'",
+                name=relative_filepath.stem,
+            )
             @network_option()
             def call(network):
                 _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
-                    ns = run_module(f"scripts.{filepath.stem}")
+                    main_ns = run_module(_module_str(filepath))
 
-                ns["main"]()  # Execute the script
-                self._namespace[filepath.stem] = ns
+                main_ns["main"]()  # Execute the script
+                self._namespace[filepath.stem] = main_ns
 
             return call
 
         else:
             logger.warning(f"No 'main' method or 'cli' command in script: {relative_filepath}")
 
-            @click.command(cls=NetworkBoundCommand, short_help=f"Run '{relative_filepath}'")
+            @click.command(
+                cls=NetworkBoundCommand,
+                short_help=f"Run '{relative_filepath}:main'",
+                name=relative_filepath.stem,
+            )
             @network_option()
             def call(network):
                 _ = network  # Downstream might use this
                 with use_temp_sys_path(filepath.parent.parent):
-                    ns = run_module(f"scripts.{filepath.stem}")
+                    empty_ns = run_module(_module_str(filepath))
 
                 # Nothing to call, everything executes on loading
-                self._namespace[filepath.stem] = ns
+                self._namespace[filepath.stem] = empty_ns
 
             return call
 
@@ -114,14 +131,28 @@ class ScriptCommand(click.MultiCommand):
         if not self._project.scripts_folder.exists():
             return {}
 
-        commands = {}
-        for filepath in self._project.scripts_folder.glob("*.py"):
+        return self._get_cli_commands(self._project.scripts_folder)
+
+    def _get_cli_commands(self, base_path: Path) -> Dict:
+        commands: Dict[str, Command] = {}
+
+        for filepath in base_path.iterdir():
             if filepath.stem.startswith("_"):
                 continue  # Ignore any "private" files
 
-            cmd = self._get_command(filepath)
-            if cmd:  # NOTE: Don't allow calling commands that failed to load
-                commands[filepath.stem] = cmd
+            elif filepath.is_dir():
+                group = click.Group(
+                    name=filepath.stem, short_help=f"Run a script from '{filepath.stem}'"
+                )
+                subcommands = self._get_cli_commands(filepath)
+                for subcommand in subcommands.values():
+                    group.add_command(subcommand)
+                commands[filepath.stem] = group
+
+            if filepath.suffix == ".py":
+                cmd = self._get_command(filepath)
+                if cmd:  # NOTE: Don't allow calling commands that failed to load
+                    commands[filepath.stem] = cmd
 
         return commands
 
