@@ -150,6 +150,11 @@ To execute the script, run the following:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>helloworld
 </pre></div>
 </div>
+<p>You can also execute scripts in subdirectories.
+For example, assuming we have script <code class="docutils literal notranslate"><span class="pre">&lt;project&gt;/scripts/hello/helloworld.py</span></code>, we would execute it by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>hello<span class="w"> </span>helloworld
+</pre></div>
+</div>
 <p>Note that by default, <code class="docutils literal notranslate"><span class="pre">cli</span></code> scripts do not have <a class="reference external" href="../methoddocs/cli.html?highlight=options#ape.cli.options.network_option"><code class="docutils literal notranslate"><span class="pre">ape.cli.network_option</span></code></a> installed, giving you more flexibility in how you define your scripts.
 However, you can add the <code class="docutils literal notranslate"><span class="pre">network_option</span></code> to your scripts by importing both the <code class="docutils literal notranslate"><span class="pre">NetworkBoundCommand</span></code> and the <code class="docutils literal notranslate"><span class="pre">network_option</span></code> from the <code class="docutils literal notranslate"><span class="pre">ape.cli</span></code> namespace:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
