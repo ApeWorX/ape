@@ -5,7 +5,7 @@ from runpy import run_module
 from typing import Any, Dict, Union
 
 import click
-from click import Context
+from click import Context, Command
 
 from ape.cli import NetworkBoundCommand, network_option
 from ape.logging import logger
