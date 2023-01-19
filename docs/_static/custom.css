@@ -1,83 +1,95 @@
-@import url("https://fonts.googleapis.com/css?family=Space+Mono&display=swap");
-@import url("https://fonts.googleapis.com/css?family=Rubik&display=swap");
+@import url('https://fonts.cdnfonts.com/css/barlow'); 
 
 #version-picker-label {
   color: #ffffff;
   display: inline;
+  border-style:solid;
+  border-color:black;
+  border-width:thin;
+  font-family: 'Barlow', sans-serif;
 }
 
 body {
   font-weight: 400;
-  font-family: "Rubik", sans-serif;
+  font-family: 'Barlow', sans-serif;
   min-height: 100%;
-  background: #f2f3f8;
+  background: #fff;
+  font-size:16px;
 }
 
 p {
   font-weight: 400;
-  font-family: "Rubik", sans-serif;
+  font-family: 'Barlow', sans-serif;
+  font-size:18px;
 }
 
 h1 {
-  font-size: 70px;
+  font-size: clamp(4rem, 10vw + 0.5rem ,9rem);
   line-height: 70px;
-  font-family: "Space Mono", sans-serif;
+  font-family: 'Barlow', sans-serif;
   text-transform: uppercase;
   letter-spacing: -0.05em;
   color: #000000;
+  padding:5px;
 }
 
 h2 {
   font-size: 42px;
   line-height: 42px;
-  font-family: "Space Mono", sans-serif;
+  font-family: 'Barlow', sans-serif;
   letter-spacing: -0.05em;
+  padding:5px;
 }
 
 h3 {
   font-size: 24px;
   line-height: 24px;
-  font-family: "Space Mono", sans-serif;
+  font-family: 'Barlow', sans-serif;
   letter-spacing: -0.05em;
   font-weight: 300;
+  padding:5px;
 }
 
 a {
-  color: #e70000;
+  color: #000000;
   cursor: pointer;
+  text-decoration:none;
+  
 }
 
-a:visited {
-  color: #e70000;
-}
 
 a:hover {
-  color: #00e774;
+  color: #00000099;
+  font-size:16px;
 }
 
 .wy-nav-content-wrap {
   margin-left: 300px;
   background: #fff;
   min-height: 100%;
+  padding:20px;
 }
 
 .wy-side-scroll {
   width: 320px;
-  background-color: #f2f3f8;
+  background-color: #ffffff;
   position: relative;
   overflow-x: hidden;
   overflow-y: scroll;
   height: 100%;
+  padding:20px;
 }
 
 .wy-nav-top {
   display: block;
-  background-color: #000;
+  background-color: rgb(255, 255, 255);
   padding: 0.4045em 0.809em;
   position: relative;
   line-height: 50px;
   text-align: center;
   font-size: 100%;
+  font-family: 'Barlow', sans-serif;
+  color:black;
 }
 
 .wy-side-nav-search {
@@ -93,8 +105,8 @@ a:hover {
 
 .wy-menu-vertical header,
 .wy-menu-vertical p.caption {
-  color: #7cffb4;
-  font-family: "Space Mono", sans-serif;
+  color: #000000;
+  font-family: 'Barlow', sans-serif;
   height: 32px;
   line-height: 32px;
   display: block;
@@ -102,7 +114,7 @@ a:hover {
   text-transform: uppercase;
   font-size: 20px;
   white-space: nowrap;
-  background-color: black;
+  background-color: rgb(255, 255, 255);
 }
 
 .wy-menu-vertical a {
@@ -126,8 +138,8 @@ footer {
 
 .wy-nav-top {
   display: none;
-  background: #000000;
-  color: #fff;
+  background: #ffffff;
+  color: rgb(0, 0, 0);
   padding: 0.4045em 0.809em;
   position: relative;
   line-height: 50px;
@@ -185,7 +197,7 @@ footer {
   h1 {
     font-size: 40px;
     line-height: 40px;
-    font-family: "Space Mono", sans-serif;
+    font-family: 'Barlow', sans-serif;
     text-transform: uppercase;
     letter-spacing: -0.05em;
     color: #000000;
@@ -194,13 +206,13 @@ footer {
   h2 {
     font-size: 34px;
     line-height: 34px;
-    font-family: "Space Mono", sans-serif;
+    font-family: 'Barlow', sans-serif;
     letter-spacing: -0.05em;
   }
 
   a {
-    color: #c2006b;
-    text-decoration: underline;
+    color: #000000;
+    text-decoration: none;
     cursor: pointer;
   }
 
